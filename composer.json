@@ -53,7 +53,7 @@
             "@php artisan key:generate --ansi"
         ],
         "analyse": [
-            "@php ./vendor/bin/phpstan analyse --memory-limit=2G"
+            "@php ./vendor/bin/phpstan analyse --memory-limit=2G --configuration=phpstan.neon"
         ]
     },
     "extra": {

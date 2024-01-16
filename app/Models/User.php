@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
+use Database\Factories\UserFactory;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -18,6 +21,7 @@ use Laravel\Passport\HasApiTokens;
  * @property string $name
  *
  * @method HasMany<Team> ownedTeams()
+ * @method static UserFactory factory()
  */
 class User extends Authenticatable
 {
