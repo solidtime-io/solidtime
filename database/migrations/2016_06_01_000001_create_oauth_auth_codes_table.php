@@ -11,12 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('teams', function (Blueprint $table) {
-            $table->uuid('id')->primary();
+        Schema::create('oauth_auth_codes', function (Blueprint $table) {
+            $table->string('id', 100)->primary();
             $table->foreignUuid('user_id')->index();
-            $table->string('name');
-            $table->boolean('personal_team');
-            $table->timestamps();
+            $table->uuid('client_id');
+            $table->text('scopes')->nullable();
+            $table->boolean('revoked');
+            $table->dateTime('expires_at')->nullable();
         });
     }
 
@@ -25,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('teams');
+        Schema::dropIfExists('oauth_auth_codes');
     }
 };
