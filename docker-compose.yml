@@ -6,6 +6,15 @@ services:
             args:
                 WWWGROUP: '${WWWGROUP}'
         image: sail-8.3/app
+        labels:
+            - "traefik.enable=true"
+            - "traefik.docker.network=${NETWORK_NAME}"
+            - "traefik.http.routers.timetracking.rule=Host(`${NGINX_HOST_NAME}`)"
+            - "traefik.http.routers.timetracking.entrypoints=web"
+            - "traefik.http.services.timetracking.loadbalancer.server.port=80"
+            - "traefik.http.routers.timetracking-https.rule=Host(`${NGINX_HOST_NAME}`)"
+            - "traefik.http.routers.timetracking-https.entrypoints=websecure"
+            - "traefik.http.routers.timetracking-https.tls=true"
         extra_hosts:
             - 'host.docker.internal:host-gateway'
         ports:
@@ -21,6 +30,7 @@ services:
             - '.:/var/www/html'
         networks:
             - sail
+            - reverse-proxy
         depends_on:
             - pgsql
     pgsql:
@@ -49,6 +59,9 @@ services:
             retries: 3
             timeout: 5s
 networks:
+    reverse-proxy:
+        name: "${NETWORK_NAME}"
+        external: true
     sail:
         driver: bridge
 volumes:
