@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import {Head, Link, router, usePage} from '@inertiajs/vue3';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import ApplicationMark from '@/Components/ApplicationMark.vue';
 import Banner from '@/Components/Banner.vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
-import route from "ziggy-js";
-import type {Team, User} from "@/types/models";
+import route from 'ziggy-js';
+import type { Team, User } from '@/types/models';
 
 defineProps({
     title: String,
@@ -18,15 +18,14 @@ const showingNavigationDropdown = ref(false);
 
 const page = usePage<{
     jetstream: {
-        canCreateTeams: boolean,
-        hasTeamFeatures: boolean,
-      managesProfilePhotos: boolean,
-      hasApiFeatures: boolean,
-    },
+        canCreateTeams: boolean;
+        hasTeamFeatures: boolean;
+        managesProfilePhotos: boolean;
+        hasApiFeatures: boolean;
+    };
     auth: {
-        user: User & {all_teams: Team[]}
-
-    },
+        user: User & { all_teams: Team[] };
+    };
 }>();
 
 const switchToTeam = (team: Team) => {
@@ -40,7 +39,6 @@ const switchToTeam = (team: Team) => {
         }
     );
 };
-
 
 const logout = () => {
     router.post(route('logout'));
@@ -341,9 +339,7 @@ const logout = () => {
                         class="pt-4 pb-1 border-t border-gray-200 dark:border-gray-600">
                         <div class="flex items-center px-4">
                             <div
-                                v-if="
-                                    page.props.jetstream.managesProfilePhotos
-                                "
+                                v-if="page.props.jetstream.managesProfilePhotos"
                                 class="shrink-0 me-3">
                                 <img
                                     class="h-10 w-10 rounded-full object-cover"
@@ -442,8 +438,7 @@ const logout = () => {
                                                     <svg
                                                         v-if="
                                                             team.id ==
-                                                            page.props.auth
-                                                                .user
+                                                            page.props.auth.user
                                                                 .current_team_id
                                                         "
                                                         class="me-2 h-5 w-5 text-green-400"
