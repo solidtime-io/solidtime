@@ -1,4 +1,4 @@
-name: NPM Build
+name: Check Typescript Generated
 
 on: [push]
 
@@ -18,6 +18,7 @@ jobs:
           node-version: '20.x'
       - run: npm ci
       - run: composer generate-typescript
+      - run: cat resources/js/types/models.ts
       - run: npm run lint:fix
       - name: Verify Changed files
         uses: tj-actions/verify-changed-files@v17
