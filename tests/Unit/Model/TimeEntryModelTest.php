@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Model;
 
+use App\Models\Organization;
 use App\Models\Project;
 use App\Models\Task;
-use App\Models\Team;
 use App\Models\TimeEntry;
 use App\Models\User;
 
@@ -30,7 +30,7 @@ class TimeEntryModelTest extends ModelTestAbstract
     public function test_it_belongs_to_a_organization(): void
     {
         // Arrange
-        $organization = Team::factory()->create();
+        $organization = Organization::factory()->create();
         $timeEntry = TimeEntry::factory()->forOrganization($organization)->create();
 
         // Act

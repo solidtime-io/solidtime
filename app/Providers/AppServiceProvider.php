@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Models\Membership;
-use App\Models\Team;
-use App\Models\TeamInvitation;
+use App\Models\Organization;
+use App\Models\OrganizationInvitation;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -31,8 +31,8 @@ class AppServiceProvider extends ServiceProvider
         Model::preventSilentlyDiscardingAttributes(! $this->app->isProduction());
         Relation::enforceMorphMap([
             'membership' => Membership::class,
-            'team' => Team::class,
-            'team_invitation' => TeamInvitation::class,
+            'team' => Organization::class,
+            'team_invitation' => OrganizationInvitation::class,
             'user' => User::class,
         ]);
     }

@@ -9,6 +9,7 @@
         "filament/filament": "^3.2",
         "guzzlehttp/guzzle": "^7.2",
         "inertiajs/inertia-laravel": "^0.6.8",
+        "korridor/laravel-model-validation-rules": "^3.0",
         "laravel/framework": "^10.10",
         "laravel/jetstream": "^4.2",
         "laravel/passport": "*",

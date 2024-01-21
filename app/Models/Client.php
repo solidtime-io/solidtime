@@ -14,7 +14,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $id
  * @property string $name
  * @property string $organization_id
- * @property-read Team $organization
+ * @property string $created_at
+ * @property string $updated_at
+ * @property-read Organization $organization
  *
  * @method static ClientFactory factory()
  */
@@ -33,10 +35,10 @@ class Client extends Model
     ];
 
     /**
-     * @return BelongsTo<Team, Client>
+     * @return BelongsTo<Organization, Client>
      */
     public function organization(): BelongsTo
     {
-        return $this->belongsTo(Team::class, 'organization_id');
+        return $this->belongsTo(Organization::class, 'organization_id');
     }
 }
