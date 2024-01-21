@@ -1,10 +1,11 @@
-<script setup>
+<script setup lang="ts">
 import { ref, reactive, nextTick } from 'vue';
 import DialogModal from './DialogModal.vue';
 import InputError from './InputError.vue';
 import PrimaryButton from './PrimaryButton.vue';
 import SecondaryButton from './SecondaryButton.vue';
 import TextInput from './TextInput.vue';
+import axios from 'axios';
 
 const emit = defineEmits(['confirmed']);
 
@@ -31,16 +32,16 @@ const form = reactive({
     processing: false,
 });
 
-const passwordInput = ref(null);
+const passwordInput = ref<HTMLInputElement | null>(null);
 
 const startConfirmingPassword = () => {
-    axios.get(route('password.confirmation')).then(response => {
+    axios.get(route('password.confirmation')).then((response) => {
         if (response.data.confirmed) {
             emit('confirmed');
         } else {
             confirmingPassword.value = true;
 
-            setTimeout(() => passwordInput.value.focus(), 250);
+            setTimeout(() => passwordInput.value?.focus(), 250);
         }
     });
 };
@@ -48,19 +49,21 @@ const startConfirmingPassword = () => {
 const confirmPassword = () => {
     form.processing = true;
 
-    axios.post(route('password.confirm'), {
-        password: form.password,
-    }).then(() => {
-        form.processing = false;
+    axios
+        .post(route('password.confirm'), {
+            password: form.password,
+        })
+        .then(() => {
+            form.processing = false;
 
-        closeModal();
-        nextTick().then(() => emit('confirmed'));
-
-    }).catch(error => {
-        form.processing = false;
-        form.error = error.response.data.errors.password[0];
-        passwordInput.value.focus();
-    });
+            closeModal();
+            nextTick().then(() => emit('confirmed'));
+        })
+        .catch((error) => {
+            form.processing = false;
+            form.error = error.response.data.errors.password[0];
+            passwordInput.value?.focus();
+        });
 };
 
 const closeModal = () => {
@@ -92,24 +95,20 @@ const closeModal = () => {
                         class="mt-1 block w-3/4"
                         placeholder="Password"
                         autocomplete="current-password"
-                        @keyup.enter="confirmPassword"
-                    />
+                        @keyup.enter="confirmPassword" />
 
                     <InputError :message="form.error" class="mt-2" />
                 </div>
             </template>
 
             <template #footer>
-                <SecondaryButton @click="closeModal">
-                    Cancel
-                </SecondaryButton>
+                <SecondaryButton @click="closeModal"> Cancel </SecondaryButton>
 
                 <PrimaryButton
                     class="ms-3"
                     :class="{ 'opacity-25': form.processing }"
                     :disabled="form.processing"
-                    @click="confirmPassword"
-                >
+                    @click="confirmPassword">
                     {{ button }}
                 </PrimaryButton>
             </template>

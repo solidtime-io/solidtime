@@ -1,0 +1,23 @@
+{
+  "extends": "@vue/tsconfig/tsconfig.json",
+  "exclude": [
+    "vendor/**/*"
+  ],
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./resources/js/*"],
+      "ziggy-js": ["./vendor/tightenco/ziggy"]
+    }
+  },
+  "skipLibCheck": true,
+  "typeRoots": [
+    "./node_modules/@types",
+    "resources/js/types"
+  ],
+  "include": [
+    "resources/js/**/*.ts",
+    "resources/js/**/*.d.ts",
+    "resources/js/**/*.vue",
+    "resources/js/ziggy.d.ts",
+  ]
+}
