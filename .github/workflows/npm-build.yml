@@ -9,6 +9,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - uses: php-actions/composer@v6
+      - run: composer install
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
