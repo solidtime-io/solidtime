@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $name
  * @property string $organization_id
  * @property string $client_id
- * @property-read Team $organization
+ * @property-read Organization $organization
  * @property-read Client|null $client
  * @property-read Collection<Task> $tasks
  *
@@ -38,11 +38,11 @@ class Project extends Model
     ];
 
     /**
-     * @return BelongsTo<Team, Project>
+     * @return BelongsTo<Organization, Project>
      */
     public function organization(): BelongsTo
     {
-        return $this->belongsTo(Team::class, 'organization_id');
+        return $this->belongsTo(Organization::class, 'organization_id');
     }
 
     /**

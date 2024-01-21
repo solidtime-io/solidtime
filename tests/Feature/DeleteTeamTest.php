@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use App\Models\Team;
+use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -15,9 +15,9 @@ class DeleteTeamTest extends TestCase
 
     public function test_teams_can_be_deleted(): void
     {
-        $this->actingAs($user = User::factory()->withPersonalTeam()->create());
+        $this->actingAs($user = User::factory()->withPersonalOrganization()->create());
 
-        $user->ownedTeams()->save($team = Team::factory()->make([
+        $user->ownedTeams()->save($team = Organization::factory()->make([
             'personal_team' => false,
         ]));
 
@@ -33,7 +33,7 @@ class DeleteTeamTest extends TestCase
 
     public function test_personal_teams_cant_be_deleted(): void
     {
-        $this->actingAs($user = User::factory()->withPersonalTeam()->create());
+        $this->actingAs($user = User::factory()->withPersonalOrganization()->create());
 
         $response = $this->delete('/teams/'.$user->currentTeam->id);
 

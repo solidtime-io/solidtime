@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Models\Organization;
 use App\Models\Project;
 use App\Models\Task;
-use App\Models\Team;
 use App\Models\TimeEntry;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -32,7 +32,7 @@ class TimeEntryFactory extends Factory
             'billable' => $this->faker->boolean(),
             'tags' => [],
             'user_id' => User::factory(),
-            'organization_id' => Team::factory(),
+            'organization_id' => Organization::factory(),
         ];
     }
 
@@ -45,7 +45,7 @@ class TimeEntryFactory extends Factory
         });
     }
 
-    public function forOrganization(Team $organization): self
+    public function forOrganization(Organization $organization): self
     {
         return $this->state(function (array $attributes) use ($organization) {
             return [

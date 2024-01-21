@@ -19,7 +19,7 @@ use Illuminate\Support\Carbon;
  * @property bool $billable
  * @property array $tags
  * @property-read User $user
- * @property-read Team $organization
+ * @property-read Organization $organization
  * @property-read Project|null $project
  * @property-read Task|null $task
  *
@@ -52,11 +52,11 @@ class TimeEntry extends Model
     }
 
     /**
-     * @return BelongsTo<Team, TimeEntry>
+     * @return BelongsTo<Organization, TimeEntry>
      */
     public function organization(): BelongsTo
     {
-        return $this->belongsTo(Team::class, 'organization_id');
+        return $this->belongsTo(Organization::class, 'organization_id');
     }
 
     /**

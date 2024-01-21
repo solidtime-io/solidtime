@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "34dbd2208afb93ce559614a5c014397e",
+    "content-hash": "68ea9179372fd4db583f50784a1ca6f7",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -2508,6 +2508,70 @@
                 "source": "https://github.com/kirschbaum-development/eloquent-power-joins/tree/3.4.0"
             },
             "time": "2023-12-07T10:44:41+00:00"
+        },
+        {
+            "name": "korridor/laravel-model-validation-rules",
+            "version": "3.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/korridor/laravel-model-validation-rules.git",
+                "reference": "23537e5bd296a042bbe0c3a1c6d556c89dfbad42"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/korridor/laravel-model-validation-rules/zipball/23537e5bd296a042bbe0c3a1c6d556c89dfbad42",
+                "reference": "23537e5bd296a042bbe0c3a1c6d556c89dfbad42",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/database": "^10",
+                "illuminate/support": "^10",
+                "php": ">=8.1"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^3.6",
+                "orchestra/testbench": "^8.0",
+                "phpunit/phpunit": "^10",
+                "squizlabs/php_codesniffer": "^3.5"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Korridor\\LaravelModelValidationRules\\ModelValidationServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Korridor\\LaravelModelValidationRules\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "korridor",
+                    "email": "26689068+korridor@users.noreply.github.com"
+                }
+            ],
+            "description": "A laravel validation rule that uses eloquent to validate if a model exists",
+            "homepage": "https://github.com/korridor/laravel-model-validation-rules",
+            "keywords": [
+                "eloquent",
+                "exist",
+                "laravel",
+                "model",
+                "rule",
+                "validation"
+            ],
+            "support": {
+                "issues": "https://github.com/korridor/laravel-model-validation-rules/issues",
+                "source": "https://github.com/korridor/laravel-model-validation-rules/tree/3.0.0"
+            },
+            "time": "2023-02-16T11:15:08+00:00"
         },
         {
             "name": "laravel/fortify",

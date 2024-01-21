@@ -28,7 +28,7 @@ return new class extends Migration
             $table->uuid('organization_id');
             $table->foreign('organization_id')
                 ->references('id')
-                ->on('teams')
+                ->on('organizations')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
             $table->uuid('project_id')->nullable();

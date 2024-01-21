@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Models\Organization;
 use App\Models\Tag;
-use App\Models\Team;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -22,11 +22,11 @@ class TagFactory extends Factory
     {
         return [
             'name' => $this->faker->name,
-            'organization_id' => Team::factory(),
+            'organization_id' => Organization::factory(),
         ];
     }
 
-    public function forOrganization(Team $organization): self
+    public function forOrganization(Organization $organization): self
     {
         return $this->state(function (array $attributes) use ($organization) {
             return [

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Models\Organization;
 use App\Models\Project;
 use App\Models\Task;
-use App\Models\Team;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -24,7 +24,7 @@ class TaskFactory extends Factory
         return [
             'name' => $this->faker->word(),
             'project_id' => Project::factory(),
-            'organization_id' => Team::factory(),
+            'organization_id' => Organization::factory(),
         ];
     }
 
@@ -37,7 +37,7 @@ class TaskFactory extends Factory
         });
     }
 
-    public function forOrganization(Team $organization): self
+    public function forOrganization(Organization $organization): self
     {
         return $this->state(function (array $attributes) use ($organization) {
             return [

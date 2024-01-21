@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Actions\Jetstream\AddTeamMember;
-use App\Actions\Jetstream\CreateTeam;
-use App\Actions\Jetstream\DeleteTeam;
+use App\Actions\Jetstream\AddOrganizationMember;
+use App\Actions\Jetstream\CreateOrganization;
+use App\Actions\Jetstream\DeleteOrganization;
 use App\Actions\Jetstream\DeleteUser;
-use App\Actions\Jetstream\InviteTeamMember;
-use App\Actions\Jetstream\RemoveTeamMember;
-use App\Actions\Jetstream\UpdateTeamName;
+use App\Actions\Jetstream\InviteOrganizationMember;
+use App\Actions\Jetstream\RemoveOrganizationMember;
+use App\Actions\Jetstream\UpdateOrganization;
+use App\Models\Organization;
+use App\Models\OrganizationInvitation;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Jetstream\Jetstream;
 
@@ -31,13 +33,15 @@ class JetstreamServiceProvider extends ServiceProvider
     {
         $this->configurePermissions();
 
-        Jetstream::createTeamsUsing(CreateTeam::class);
-        Jetstream::updateTeamNamesUsing(UpdateTeamName::class);
-        Jetstream::addTeamMembersUsing(AddTeamMember::class);
-        Jetstream::inviteTeamMembersUsing(InviteTeamMember::class);
-        Jetstream::removeTeamMembersUsing(RemoveTeamMember::class);
-        Jetstream::deleteTeamsUsing(DeleteTeam::class);
+        Jetstream::createTeamsUsing(CreateOrganization::class);
+        Jetstream::updateTeamNamesUsing(UpdateOrganization::class);
+        Jetstream::addTeamMembersUsing(AddOrganizationMember::class);
+        Jetstream::inviteTeamMembersUsing(InviteOrganizationMember::class);
+        Jetstream::removeTeamMembersUsing(RemoveOrganizationMember::class);
+        Jetstream::deleteTeamsUsing(DeleteOrganization::class);
         Jetstream::deleteUsersUsing(DeleteUser::class);
+        Jetstream::useTeamModel(Organization::class);
+        Jetstream::useTeamInvitationModel(OrganizationInvitation::class);
     }
 
     /**
