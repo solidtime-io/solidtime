@@ -20,6 +20,7 @@
     "require-dev": {
         "brianium/paratest": "^7.3",
         "fakerphp/faker": "^1.9.1",
+        "fumeapp/modeltyper": "^2.2",
         "larastan/larastan": "^2.0",
         "laravel/pint": "^1.0",
         "laravel/sail": "^1.18",
@@ -57,6 +58,9 @@
         ],
         "analyse": [
             "@php ./vendor/bin/phpstan analyse --memory-limit=2G --configuration=phpstan.neon"
+        ],
+        "generate-typescript": [
+            "@php artisan model:typer > ./resources/js/types/models.ts"
         ],
         "ptest": [
             "@php artisan test --parallel --colors=always --stop-on-failure"
