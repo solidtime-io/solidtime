@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Jetstream;
 
-use App\Models\Team;
+use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\Gate;
@@ -12,28 +12,28 @@ use Illuminate\Validation\ValidationException;
 use Laravel\Jetstream\Contracts\RemovesTeamMembers;
 use Laravel\Jetstream\Events\TeamMemberRemoved;
 
-class RemoveTeamMember implements RemovesTeamMembers
+class RemoveOrganizationMember implements RemovesTeamMembers
 {
     /**
      * Remove the team member from the given team.
      */
-    public function remove(User $user, Team $team, User $teamMember): void
+    public function remove(User $user, Organization $organization, User $teamMember): void
     {
-        $this->authorize($user, $team, $teamMember);
+        $this->authorize($user, $organization, $teamMember);
 
-        $this->ensureUserDoesNotOwnTeam($teamMember, $team);
+        $this->ensureUserDoesNotOwnTeam($teamMember, $organization);
 
-        $team->removeUser($teamMember);
+        $organization->removeUser($teamMember);
 
-        TeamMemberRemoved::dispatch($team, $teamMember);
+        TeamMemberRemoved::dispatch($organization, $teamMember);
     }
 
     /**
      * Authorize that the user can remove the team member.
      */
-    protected function authorize(User $user, Team $team, User $teamMember): void
+    protected function authorize(User $user, Organization $organization, User $teamMember): void
     {
-        if (! Gate::forUser($user)->check('removeTeamMember', $team) &&
+        if (! Gate::forUser($user)->check('removeTeamMember', $organization) &&
             $user->id !== $teamMember->id) {
             throw new AuthorizationException;
         }
@@ -42,9 +42,9 @@ class RemoveTeamMember implements RemovesTeamMembers
     /**
      * Ensure that the currently authenticated user does not own the team.
      */
-    protected function ensureUserDoesNotOwnTeam(User $teamMember, Team $team): void
+    protected function ensureUserDoesNotOwnTeam(User $teamMember, Organization $organization): void
     {
-        if ($teamMember->id === $team->owner->id) {
+        if ($teamMember->id === $organization->owner->id) {
             throw ValidationException::withMessages([
                 'team' => [__('You may not leave a team that you created.')],
             ])->errorBag('removeTeamMember');

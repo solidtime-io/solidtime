@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Database\Factories;
 
 use App\Models\Client;
-use App\Models\Team;
+use App\Models\Organization;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -22,11 +22,11 @@ class ClientFactory extends Factory
     {
         return [
             'name' => $this->faker->company(),
-            'organization_id' => Team::factory(),
+            'organization_id' => Organization::factory(),
         ];
     }
 
-    public function forOrganization(Team $organization): self
+    public function forOrganization(Organization $organization): self
     {
         return $this->state(function (array $attributes) use ($organization) {
             return [

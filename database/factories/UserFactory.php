@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Models\Team;
+use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
-use Laravel\Jetstream\Features;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
+ * @extends Factory<User>
  */
 class UserFactory extends Factory
 {
@@ -50,16 +49,12 @@ class UserFactory extends Factory
     /**
      * Indicate that the user should have a personal team.
      */
-    public function withPersonalTeam(?callable $callback = null): static
+    public function withPersonalOrganization(?callable $callback = null): static
     {
-        if (! Features::hasTeamFeatures()) {
-            return $this->state([]);
-        }
-
         return $this->has(
-            Team::factory()
+            Organization::factory()
                 ->state(fn (array $attributes, User $user) => [
-                    'name' => $user->name.'\'s Team',
+                    'name' => $user->name.'\'s Organization',
                     'user_id' => $user->id,
                     'personal_team' => true,
                 ])

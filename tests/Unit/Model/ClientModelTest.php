@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Tests\Unit\Model;
 
 use App\Models\Client;
-use App\Models\Team;
+use App\Models\Organization;
 
 class ClientModelTest extends ModelTestAbstract
 {
     public function test_it_belongs_to_a_organization(): void
     {
         // Arrange
-        $organization = Team::factory()->create();
+        $organization = Organization::factory()->create();
         $client = Client::factory()->forOrganization($organization)->create();
 
         // Act

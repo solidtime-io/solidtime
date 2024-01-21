@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Jetstream;
 
-use App\Models\Team;
+use App\Models\Organization;
 use App\Models\User;
 use Closure;
 use Illuminate\Support\Facades\Gate;
@@ -15,32 +15,32 @@ use Laravel\Jetstream\Events\TeamMemberAdded;
 use Laravel\Jetstream\Jetstream;
 use Laravel\Jetstream\Rules\Role;
 
-class AddTeamMember implements AddsTeamMembers
+class AddOrganizationMember implements AddsTeamMembers
 {
     /**
      * Add a new team member to the given team.
      */
-    public function add(User $user, Team $team, string $email, ?string $role = null): void
+    public function add(User $user, Organization $organization, string $email, ?string $role = null): void
     {
-        Gate::forUser($user)->authorize('addTeamMember', $team);
+        Gate::forUser($user)->authorize('addTeamMember', $organization);
 
-        $this->validate($team, $email, $role);
+        $this->validate($organization, $email, $role);
 
         $newTeamMember = Jetstream::findUserByEmailOrFail($email);
 
-        AddingTeamMember::dispatch($team, $newTeamMember);
+        AddingTeamMember::dispatch($organization, $newTeamMember);
 
-        $team->users()->attach(
+        $organization->users()->attach(
             $newTeamMember, ['role' => $role]
         );
 
-        TeamMemberAdded::dispatch($team, $newTeamMember);
+        TeamMemberAdded::dispatch($organization, $newTeamMember);
     }
 
     /**
      * Validate the add member operation.
      */
-    protected function validate(Team $team, string $email, ?string $role): void
+    protected function validate(Organization $organization, string $email, ?string $role): void
     {
         Validator::make([
             'email' => $email,
@@ -48,7 +48,7 @@ class AddTeamMember implements AddsTeamMembers
         ], $this->rules(), [
             'email.exists' => __('We were unable to find a registered user with this email address.'),
         ])->after(
-            $this->ensureUserIsNotAlreadyOnTeam($team, $email)
+            $this->ensureUserIsNotAlreadyOnTeam($organization, $email)
         )->validateWithBag('addTeamMember');
     }
 
@@ -70,7 +70,7 @@ class AddTeamMember implements AddsTeamMembers
     /**
      * Ensure that the user is not already on the team.
      */
-    protected function ensureUserIsNotAlreadyOnTeam(Team $team, string $email): Closure
+    protected function ensureUserIsNotAlreadyOnTeam(Organization $team, string $email): Closure
     {
         return function ($validator) use ($team, $email) {
             $validator->errors()->addIf(

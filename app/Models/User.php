@@ -8,6 +8,7 @@ use Database\Factories\UserFactory;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -20,7 +21,7 @@ use Laravel\Passport\HasApiTokens;
  * @property string $id
  * @property string $name
  *
- * @method HasMany<Team> ownedTeams()
+ * @method HasMany<Organization> ownedTeams()
  * @method static UserFactory factory()
  */
 class User extends Authenticatable
@@ -78,5 +79,18 @@ class User extends Authenticatable
     {
         // TODO: Implement canAccessPanel() method.
         return false;
+    }
+
+    /**
+     * @return BelongsToMany<Organization>
+     */
+    public function organizations(): BelongsToMany
+    {
+        return $this->belongsToMany(Organization::class, Membership::class)
+            ->withPivot([
+                'role',
+            ])
+            ->withTimestamps()
+            ->as('membership');
     }
 }

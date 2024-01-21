@@ -97,7 +97,7 @@ const displayableRole = (role) => {
         <div v-if="userPermissions.canAddTeamMembers">
             <SectionBorder />
 
-            <!-- Add Team Member -->
+            <!-- Add Organization Member -->
             <FormSection @submitted="addTeamMember">
                 <template #title>
                     Add Team Member
@@ -177,7 +177,7 @@ const displayableRole = (role) => {
         <div v-if="team.team_invitations.length > 0 && userPermissions.canAddTeamMembers">
             <SectionBorder />
 
-            <!-- Team Member Invitations -->
+            <!-- Organization Member Invitations -->
             <ActionSection class="mt-10 sm:mt-0">
                 <template #title>
                     Pending Team Invitations
@@ -187,7 +187,7 @@ const displayableRole = (role) => {
                     These people have been invited to your team and have been sent an invitation email. They may join the team by accepting the email invitation.
                 </template>
 
-                <!-- Pending Team Member Invitation List -->
+                <!-- Pending Organization Member Invitation List -->
                 <template #content>
                     <div class="space-y-6">
                         <div v-for="invitation in team.team_invitations" :key="invitation.id" class="flex items-center justify-between">
@@ -196,7 +196,7 @@ const displayableRole = (role) => {
                             </div>
 
                             <div class="flex items-center">
-                                <!-- Cancel Team Invitation -->
+                                <!-- Cancel Organization Invitation -->
                                 <button
                                     v-if="userPermissions.canRemoveTeamMembers"
                                     class="cursor-pointer ms-6 text-sm text-red-500 focus:outline-none"
@@ -214,7 +214,7 @@ const displayableRole = (role) => {
         <div v-if="team.users.length > 0">
             <SectionBorder />
 
-            <!-- Manage Team Members -->
+            <!-- Manage Organization Members -->
             <ActionSection class="mt-10 sm:mt-0">
                 <template #title>
                     Team Members
@@ -224,7 +224,7 @@ const displayableRole = (role) => {
                     All of the people that are part of this team.
                 </template>
 
-                <!-- Team Member List -->
+                <!-- Organization Member List -->
                 <template #content>
                     <div class="space-y-6">
                         <div v-for="user in team.users" :key="user.id" class="flex items-center justify-between">
@@ -236,7 +236,7 @@ const displayableRole = (role) => {
                             </div>
 
                             <div class="flex items-center">
-                                <!-- Manage Team Member Role -->
+                                <!-- Manage Organization Member Role -->
                                 <button
                                     v-if="userPermissions.canUpdateTeamMembers && availableRoles.length"
                                     class="ms-2 text-sm text-gray-400 underline"
@@ -249,7 +249,7 @@ const displayableRole = (role) => {
                                     {{ displayableRole(user.membership.role) }}
                                 </div>
 
-                                <!-- Leave Team -->
+                                <!-- Leave Organization -->
                                 <button
                                     v-if="$page.props.auth.user.id === user.id"
                                     class="cursor-pointer ms-6 text-sm text-red-500"
@@ -258,7 +258,7 @@ const displayableRole = (role) => {
                                     Leave
                                 </button>
 
-                                <!-- Remove Team Member -->
+                                <!-- Remove Organization Member -->
                                 <button
                                     v-else-if="userPermissions.canRemoveTeamMembers"
                                     class="cursor-pointer ms-6 text-sm text-red-500"
@@ -328,7 +328,7 @@ const displayableRole = (role) => {
             </template>
         </DialogModal>
 
-        <!-- Leave Team Confirmation Modal -->
+        <!-- Leave Organization Confirmation Modal -->
         <ConfirmationModal :show="confirmingLeavingTeam" @close="confirmingLeavingTeam = false">
             <template #title>
                 Leave Team
@@ -354,7 +354,7 @@ const displayableRole = (role) => {
             </template>
         </ConfirmationModal>
 
-        <!-- Remove Team Member Confirmation Modal -->
+        <!-- Remove Organization Member Confirmation Modal -->
         <ConfirmationModal :show="teamMemberBeingRemoved" @close="teamMemberBeingRemoved = null">
             <template #title>
                 Remove Team Member

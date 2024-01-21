@@ -35,7 +35,7 @@ const updateTeamName = () => {
         </template>
 
         <template #form>
-            <!-- Team Owner Information -->
+            <!-- Organization Owner Information -->
             <div class="col-span-6">
                 <InputLabel value="Team Owner" />
 
@@ -51,7 +51,7 @@ const updateTeamName = () => {
                 </div>
             </div>
 
-            <!-- Team Name -->
+            <!-- Organization Name -->
             <div class="col-span-6 sm:col-span-4">
                 <InputLabel for="name" value="Team Name" />
 
