@@ -9,11 +9,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: php-actions/composer@v6
+      - uses: shivammathur/setup-php@v2
         with:
-          php_version: "8.3.1"
-          php_extensions: intl zip
-          version: 2.x
+          php-version: '8.3.1'
+          extensions: intl, zip
       - run: composer install
       - name: Use Node.js
         uses: actions/setup-node@v3
