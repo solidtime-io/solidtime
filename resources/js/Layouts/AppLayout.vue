@@ -8,7 +8,7 @@ import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import route from 'ziggy-js';
-import type { Team, User } from '@/types/models';
+import type { Organization, User } from '@/types/models';
 
 defineProps({
     title: String,
@@ -24,11 +24,11 @@ const page = usePage<{
         hasApiFeatures: boolean;
     };
     auth: {
-        user: User & { all_teams: Team[] };
+        user: User & { all_teams: Organization[] };
     };
 }>();
 
-const switchToTeam = (team: Team) => {
+const switchToTeam = (team: Organization) => {
     router.put(
         route('current-team.update'),
         {

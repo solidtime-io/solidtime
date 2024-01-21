@@ -1,3 +1,5 @@
+import type { User } from '@/types/models';
+
 export interface Permissions {
     canAddTeamMembers: boolean;
     canDeleteTeam: boolean;
@@ -28,6 +30,9 @@ export interface Role {
     description: string;
 }
 
+export type JetstreamUser = User & {
+    two_factor_enabled: boolean;
+};
 export interface Token {
     name: string;
     token: string;

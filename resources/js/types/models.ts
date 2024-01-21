@@ -1,14 +1,25 @@
+export interface Client {
+    // columns
+    id: string;
+    name: string;
+    organization_id: string;
+    created_at: string | null;
+    updated_at: string | null;
+    // relations
+    organization: Organization;
+}
+
 export interface Membership {
     // columns
     id: string;
-    team_id: string;
+    organization_id: string;
     user_id: string;
     role: string | null;
     created_at: string | null;
     updated_at: string | null;
 }
 
-export interface Team {
+export interface Organization {
     // columns
     id: string;
     user_id: string;
@@ -19,19 +30,80 @@ export interface Team {
     // relations
     owner: User;
     users: User[];
-    team_invitations: TeamInvitation[];
+    team_invitations: OrganizationInvitation[];
 }
 
-export interface TeamInvitation {
+export interface OrganizationInvitation {
     // columns
     id: string;
-    team_id: string;
+    organization_id: string;
     email: string;
     role: string | null;
     created_at: string | null;
     updated_at: string | null;
     // relations
-    team: Team;
+    organization: Organization;
+    team: Organization;
+}
+
+export interface Project {
+    // columns
+    id: string;
+    name: string;
+    color: string;
+    client_id: string | null;
+    organization_id: string;
+    created_at: string | null;
+    updated_at: string | null;
+    // relations
+    organization: Organization;
+    client: Client;
+    tasks: Task[];
+}
+
+export interface Tag {
+    // columns
+    id: string;
+    name: string;
+    organization_id: string;
+    created_at: string | null;
+    updated_at: string | null;
+    // relations
+    organization: Organization;
+}
+
+export interface Task {
+    // columns
+    id: string;
+    name: string;
+    project_id: string;
+    organization_id: string;
+    created_at: string | null;
+    updated_at: string | null;
+    // relations
+    project: Project;
+    organization: Organization;
+}
+
+export interface TimeEntry {
+    // columns
+    id: string;
+    description: string;
+    start: string;
+    end: string | null;
+    billable: boolean;
+    user_id: string;
+    organization_id: string;
+    project_id: string | null;
+    task_id: string | null;
+    tags: string[] | null;
+    created_at: string | null;
+    updated_at: string | null;
+    // relations
+    user: User;
+    organization: Organization;
+    project: Project;
+    task: Task;
 }
 
 export interface User {
@@ -49,12 +121,12 @@ export interface User {
     two_factor_secret?: string | null;
     two_factor_recovery_codes?: string | null;
     two_factor_confirmed_at: string | null;
-    two_factor_enabled: boolean;
     // mutators
     profile_photo_url: string;
     // relations
-    membership: Membership[];
-    current_team: Team;
-    owned_teams: Team[];
-    teams: Team[];
+    organizations: Organization[];
+    clients: Client[];
+    current_team: Organization;
+    owned_teams: Organization[];
+    teams: Organization[];
 }

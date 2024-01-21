@@ -4,11 +4,11 @@ import DeleteTeamForm from '@/Pages/Teams/Partials/DeleteTeamForm.vue';
 import SectionBorder from '@/Components/SectionBorder.vue';
 import TeamMemberManager from '@/Pages/Teams/Partials/TeamMemberManager.vue';
 import UpdateTeamNameForm from '@/Pages/Teams/Partials/UpdateTeamNameForm.vue';
-import type { Team } from '@/types/models';
+import type { Organization } from '@/types/models';
 import type { Permissions, Role } from '@/types/jetstream';
 
 defineProps<{
-    team: Team;
+    team: Organization;
     availableRoles: Role[];
     permissions: Permissions;
 }>();

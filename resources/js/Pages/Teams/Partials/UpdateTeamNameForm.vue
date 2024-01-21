@@ -6,11 +6,11 @@ import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
-import type { Team } from '@/types/models';
+import type { Organization } from '@/types/models';
 import type { Permissions } from '@/types/jetstream';
 
 const props = defineProps<{
-    team: Team;
+    team: Organization;
     permissions: Permissions;
 }>();
 

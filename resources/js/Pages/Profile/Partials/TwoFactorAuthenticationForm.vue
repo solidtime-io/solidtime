@@ -9,8 +9,8 @@ import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
-import type { User } from '@/types/models';
 import axios from 'axios';
+import type { JetstreamUser } from '@/types/jetstream';
 
 const props = defineProps<{
     requiresConfirmation: boolean;
@@ -18,7 +18,7 @@ const props = defineProps<{
 
 const page = usePage<{
     auth: {
-        user: User;
+        user: JetstreamUser;
     };
 }>();
 const enabling = ref(false);

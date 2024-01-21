@@ -13,13 +13,17 @@ import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import SectionBorder from '@/Components/SectionBorder.vue';
 import TextInput from '@/Components/TextInput.vue';
-import type { Team, TeamInvitation, User } from '@/types/models';
+import type {
+    Organization,
+    OrganizationInvitation,
+    User,
+} from '@/types/models';
 import type { Membership, Permissions, Role } from '@/types/jetstream';
 
 type UserWithMembership = User & { membership: Membership };
 
 const props = defineProps<{
-    team: Team;
+    team: Organization;
     availableRoles: Role[];
     userPermissions: Permissions;
 }>();
@@ -59,13 +63,13 @@ const addTeamMember = () => {
     });
 };
 
-const cancelTeamInvitation = (invitation: TeamInvitation) => {
+const cancelTeamInvitation = (invitation: OrganizationInvitation) => {
     router.delete(route('team-invitations.destroy', invitation.id), {
         preserveScroll: true,
     });
 };
 
-const manageRole = (teamMember: User & { membership?: Membership }) => {
+const manageRole = (teamMember: User & { membership: Membership }) => {
     managingRoleFor.value = teamMember;
     updateRoleForm.role = teamMember.membership.role;
     currentlyManagingRole.value = true;
