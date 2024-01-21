@@ -19,6 +19,11 @@ export interface Membership {
     updated_at: string | null;
 }
 
+export interface Notification {
+    // relations
+    notifiable: Notification;
+}
+
 export interface Organization {
     // columns
     id: string;
@@ -106,6 +111,22 @@ export interface TimeEntry {
     task: Task;
 }
 
+export interface Token {
+    // columns
+    id: string;
+    user_id: string | null;
+    client_id: string;
+    name: string | null;
+    scopes: string[] | null;
+    revoked: boolean;
+    created_at: string | null;
+    updated_at: string | null;
+    expires_at: string | null;
+    // relations
+    client: Client;
+    user: User;
+}
+
 export interface User {
     // columns
     id: string;
@@ -125,7 +146,9 @@ export interface User {
     profile_photo_url: string;
     // relations
     organizations: Organization[];
+    notifications: Notification[];
     clients: Client[];
+    tokens: Token[];
     current_team: Organization;
     owned_teams: Organization[];
     teams: Organization[];

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Models\Organization;
+use App\Models\Token;
 use App\Policies\OrganizationPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Laravel\Jetstream\Jetstream;
@@ -47,5 +48,7 @@ class AuthServiceProvider extends ServiceProvider
 
         // use passport scopes for jetstream token permissions
         Jetstream::permissions(Passport::scopeIds());
+
+        Passport::useTokenModel(Token::class);
     }
 }
