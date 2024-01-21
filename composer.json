@@ -13,9 +13,11 @@
         "laravel/jetstream": "^4.2",
         "laravel/passport": "*",
         "laravel/tinker": "^2.8",
-        "tightenco/ziggy": "^1.0"
+        "tightenco/ziggy": "^1.0",
+        "tpetry/laravel-postgresql-enhanced": "^0.33.0"
     },
     "require-dev": {
+        "brianium/paratest": "^7.3",
         "fakerphp/faker": "^1.9.1",
         "larastan/larastan": "^2.0",
         "laravel/pint": "^1.0",
@@ -54,6 +56,18 @@
         ],
         "analyse": [
             "@php ./vendor/bin/phpstan analyse --memory-limit=2G --configuration=phpstan.neon"
+        ],
+        "ptest": [
+            "@php artisan test --parallel --colors=always --stop-on-failure"
+        ],
+        "test": [
+            "@php artisan test --colors=always --stop-on-failure"
+        ],
+        "test:coverage": [
+            "@php artisan test --coverage --colors=always --stop-on-failure"
+        ],
+        "fix": [
+            "@php pint"
         ]
     },
     "extra": {
