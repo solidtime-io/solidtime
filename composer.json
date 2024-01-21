@@ -17,6 +17,7 @@
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",
+        "fumeapp/modeltyper": "^2.2",
         "larastan/larastan": "^2.0",
         "laravel/pint": "^1.0",
         "laravel/sail": "^1.18",
@@ -54,6 +55,9 @@
         ],
         "analyse": [
             "@php ./vendor/bin/phpstan analyse --memory-limit=2G --configuration=phpstan.neon"
+        ],
+        "generate-typescript": [
+            "@php artisan model:typer > ./resources/js/types/models.ts"
         ]
     },
     "extra": {
