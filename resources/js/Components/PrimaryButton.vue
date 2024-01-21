@@ -6,7 +6,7 @@ withDefaults(
         type: HtmlButtonType;
     }>(),
     {
-        type: 'button',
+        type: 'submit',
     }
 );
 </script>
