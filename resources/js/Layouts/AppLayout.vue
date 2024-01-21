@@ -111,13 +111,13 @@ const logout = () => {
 
                                     <template #content>
                                         <div class="w-60">
-                                            <!-- Team Management -->
+                                            <!-- Organization Management -->
                                             <div
                                                 class="block px-4 py-2 text-xs text-gray-400">
                                                 Manage Team
                                             </div>
 
-                                            <!-- Team Settings -->
+                                            <!-- Organization Settings -->
                                             <DropdownLink
                                                 :href="
                                                     route(
@@ -138,7 +138,7 @@ const logout = () => {
                                                 Create New Team
                                             </DropdownLink>
 
-                                            <!-- Team Switcher -->
+                                            <!-- Organization Switcher -->
                                             <template
                                                 v-if="
                                                     page.props.auth.user
@@ -381,7 +381,7 @@ const logout = () => {
                                 </ResponsiveNavLink>
                             </form>
 
-                            <!-- Team Management -->
+                            <!-- Organization Management -->
                             <template
                                 v-if="page.props.jetstream.hasTeamFeatures">
                                 <div
@@ -392,7 +392,7 @@ const logout = () => {
                                     Manage Team
                                 </div>
 
-                                <!-- Team Settings -->
+                                <!-- Organization Settings -->
                                 <ResponsiveNavLink
                                     :href="
                                         route(
@@ -411,7 +411,7 @@ const logout = () => {
                                     Create New Team
                                 </ResponsiveNavLink>
 
-                                <!-- Team Switcher -->
+                                <!-- Organization Switcher -->
                                 <template
                                     v-if="
                                         page.props.auth.user.all_teams.length >

@@ -7,14 +7,24 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Laravel\Jetstream\Membership as JetstreamMembership;
 
+/**
+ * @property string $id
+ * @property string $role
+ * @property string $organization_id
+ * @property string $user_id
+ * @property string $created_at
+ * @property string $updated_at
+ * @property-read Organization $organization
+ * @property-read User $user
+ */
 class Membership extends JetstreamMembership
 {
     use HasUuids;
 
     /**
-     * Indicates if the IDs are auto-incrementing.
+     * The table associated with the pivot model.
      *
-     * @var bool
+     * @var string
      */
-    public $incrementing = true;
+    protected $table = 'organization_user';
 }

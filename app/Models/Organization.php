@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Database\Factories\TeamFactory;
+use Database\Factories\OrganizationFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -17,10 +17,10 @@ use Laravel\Jetstream\Team as JetstreamTeam;
  * @property string $id
  * @property User $owner
  *
- * @method HasMany<TeamInvitation> teamInvitations()
- * @method static TeamFactory factory()
+ * @method HasMany<OrganizationInvitation> teamInvitations()
+ * @method static OrganizationFactory factory()
  */
-class Team extends JetstreamTeam
+class Organization extends JetstreamTeam
 {
     use HasFactory;
     use HasUuids;
