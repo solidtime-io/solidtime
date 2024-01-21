@@ -10,6 +10,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: php-actions/composer@v6
+        with:
+          php_version: "8.3"
+          php_extensions: ext-intl
+          version: 2.x
       - run: composer install
       - name: Use Node.js
         uses: actions/setup-node@v3
