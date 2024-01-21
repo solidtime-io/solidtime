@@ -60,7 +60,7 @@
             "@php ./vendor/bin/phpstan analyse --memory-limit=2G --configuration=phpstan.neon"
         ],
         "generate-typescript": [
-            "@php artisan model:typer > ./resources/js/types/models.ts"
+            "@php artisan model:typer > ./resources/js/types/models.ts || true"
         ],
         "ptest": [
             "@php artisan test --parallel --colors=always --stop-on-failure"
