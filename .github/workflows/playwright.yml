@@ -24,6 +24,9 @@ jobs:
       - name: Run composer install
         run: composer install -n --prefer-dist
 
+      - name: Create SQLite database
+        run: touch database/database.sqlite
+
       - name: Prepare Laravel Application
         run: |
           cp .env.ci .env
