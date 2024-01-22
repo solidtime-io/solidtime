@@ -6,12 +6,15 @@
         "build": "vite build",
         "lint": "eslint --ext .js,.vue,.ts --ignore-path .gitignore .",
         "lint:fix": "eslint --fix --ext .js,.vue,.ts --ignore-path .gitignore .",
-        "type-check": "vue-tsc --noEmit"
+        "type-check": "vue-tsc --noEmit",
+        "test:e2e": "npx playwright test"
     },
     "devDependencies": {
         "@inertiajs/vue3": "^1.0.0",
+        "@playwright/test": "^1.41.1",
         "@tailwindcss/forms": "^0.5.2",
         "@tailwindcss/typography": "^0.5.2",
+        "@types/node": "^20.11.5",
         "@types/ziggy-js": "^1.8.0",
         "@vitejs/plugin-vue": "^4.5.0",
         "@vue/tsconfig": "^0.5.1",
