@@ -8,6 +8,10 @@ jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
+    services:
+      mailpit:
+        image: 'axllent/mailpit:latest'
+
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
@@ -46,7 +50,7 @@ jobs:
         run: npx playwright install --with-deps
 
       - name: Run Playwright tests
-        run: npx playwright test
+        run: npx playwright test --workers 4
         env:
           PLAYWRIGHT_BASE_URL: '127.0.0.1:8000'
 
@@ -56,3 +60,4 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 30
+
