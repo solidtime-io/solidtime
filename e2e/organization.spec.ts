@@ -21,6 +21,7 @@ test('test that new editor can be invited', async ({ page }) => {
     await page.getByLabel('Email').fill(`new+${editorId}@editor.test`);
     await page.getByRole('button', { name: 'Editor' }).click();
     await page.getByRole('button', { name: 'Add' }).click();
+    await page.reload();
     await expect(page.getByRole('main')).toContainText(
         `new+${editorId}@editor.test`
     );
@@ -32,6 +33,7 @@ test('test that new admin can be invited', async ({ page }) => {
     await page.getByLabel('Email').fill(`new+${adminId}@admin.test`);
     await page.getByRole('button', { name: 'Administrator' }).click();
     await page.getByRole('button', { name: 'Add' }).click();
+    await page.reload();
     await expect(page.getByRole('main')).toContainText(
         `new+${adminId}@admin.test`
     );

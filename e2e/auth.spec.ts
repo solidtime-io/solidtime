@@ -23,7 +23,6 @@ test('can register, logout and log back in', async ({ page }) => {
     ).toBeVisible();
     await page.locator('#currentUserButton').click();
     await page.getByRole('button', { name: 'Log Out' }).click();
-    await page.waitForLoadState('networkidle');
     await page.waitForURL(PLAYWRIGHT_BASE_URL + '/');
     await page.goto(PLAYWRIGHT_BASE_URL + '/login');
     await page.getByLabel('Email').fill(email);
