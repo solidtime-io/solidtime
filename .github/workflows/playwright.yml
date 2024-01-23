@@ -52,7 +52,7 @@ jobs:
       - name: Run Playwright tests
         run: npx playwright test
         env:
-          PLAYWRIGHT_BASE_URL: '127.0.0.1:8000'
+          PLAYWRIGHT_BASE_URL: 'http://127.0.0.1:8000'
 
       - uses: actions/upload-artifact@v3
         if: always()
