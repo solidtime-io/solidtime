@@ -23,10 +23,8 @@ test('can register, logout and log back in', async ({ page }) => {
     ).toBeVisible();
     await page.locator('#currentUserButton').click();
 
-    await Promise.all([
-        page.getByRole('button', { name: 'Log Out' }).click(),
-        page.waitForURL(PLAYWRIGHT_BASE_URL + '/'),
-    ]);
+    await page.getByRole('button', { name: 'Log Out' }).click();
+    await page.waitForURL(PLAYWRIGHT_BASE_URL + '/');
     await page.goto(PLAYWRIGHT_BASE_URL + '/login');
     await page.getByLabel('Email').fill(email);
     await page.getByLabel('Password').fill(password);
@@ -44,10 +42,8 @@ test('can register and delete account', async ({ page }) => {
     await page.goto(PLAYWRIGHT_BASE_URL + '/user/profile');
     await page.getByRole('button', { name: 'Delete Account' }).click();
     await page.getByPlaceholder('Password').fill(password);
-    await Promise.all([
-        page.getByRole('button', { name: 'Delete Account' }).nth(1).click(),
-        page.waitForURL(PLAYWRIGHT_BASE_URL + '/'),
-    ]);
+    await page.getByRole('button', { name: 'Delete Account' }).nth(1).click();
+    await page.waitForURL(PLAYWRIGHT_BASE_URL + '/');
     await page.goto(PLAYWRIGHT_BASE_URL + '/login');
     await page.getByLabel('Email').fill(email);
     await page.getByLabel('Password').fill(password);
