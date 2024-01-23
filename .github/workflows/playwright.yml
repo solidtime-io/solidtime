@@ -50,7 +50,7 @@ jobs:
         run: npx playwright install --with-deps
 
       - name: Run Playwright tests
-        run: npx playwright test --workers 4
+        run: npx playwright test
         env:
           PLAYWRIGHT_BASE_URL: '127.0.0.1:8000'
 
