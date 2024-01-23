@@ -63,7 +63,7 @@ jobs:
         if: steps.playwright-cache.outputs.cache-hit != 'true'
 
       - name: Run Playwright tests
-        run: npx playwright test --workers 2
+        run: npx playwright test
         env:
           PLAYWRIGHT_BASE_URL: 'http://127.0.0.1:8000'
 
