@@ -8,8 +8,6 @@ jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
-    container:
-        image: mcr.microsoft.com/playwright:v1.41.1-jammy
     services:
       mailpit:
         image: 'axllent/mailpit:latest'
@@ -47,6 +45,9 @@ jobs:
 
       - name: Run Laravel Server
         run: php artisan serve > /dev/null 2>&1 &
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
 
       - name: Run Playwright tests
         run: npx playwright test
