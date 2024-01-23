@@ -45,7 +45,7 @@ Make sure that you use HTTPS otherwise the resources will not be loaded correctl
 
 ## Recording E2E Tests
 
-To record E2E tests, you need to install and execute playwright locally using: 
+To record E2E tests, you need to install and execute playwright locally (outside the Docker container) using: 
 
 ```bash
 npx playwright install
