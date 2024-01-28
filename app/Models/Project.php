@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 /**
  * @property string $id
  * @property string $name
+ * @property string $color
  * @property string $organization_id
  * @property string $client_id
  * @property-read Organization $organization
@@ -35,6 +36,7 @@ class Project extends Model
      */
     protected $casts = [
         'name' => 'string',
+        'color' => 'string',
     ];
 
     /**

@@ -22,23 +22,32 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->deleteAll();
-        $organization = Organization::factory()->create([
+        $organization1 = Organization::factory()->create([
             'name' => 'ACME Corp',
         ]);
         $user1 = User::factory()->withPersonalOrganization()->create([
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
+        $employee1 = User::factory()->withPersonalOrganization()->create([
+            'name' => 'Test User',
+            'email' => 'employee@example.com',
+        ]);
         $userAcmeAdmin = User::factory()->create([
             'name' => 'ACME Admin',
             'email' => 'admin@acme.test',
         ]);
-        $user1->organizations()->attach($organization, [
-            'role' => 'editor',
+        $user1->organizations()->attach($organization1, [
+            'role' => 'manager',
         ]);
-        $userAcmeAdmin->organizations()->attach($organization, [
+        $userAcmeAdmin->organizations()->attach($organization1, [
             'role' => 'admin',
         ]);
+        $timeEntriesEmployees = TimeEntry::factory()
+            ->count(10)
+            ->forUser($employee1)
+            ->forOrganization($organization1)
+            ->create();
         $client = Client::factory()->create([
             'name' => 'Big Company',
         ]);
@@ -49,6 +58,24 @@ class DatabaseSeeder extends Seeder
 
         $internalProject = Project::factory()->create([
             'name' => 'Internal Project',
+        ]);
+
+        $organization2 = Organization::factory()->create([
+            'name' => 'Rival Corp',
+        ]);
+        $user1 = User::factory()->withPersonalOrganization()->create([
+            'name' => 'Other User',
+            'email' => 'test@rival-company.test',
+        ]);
+        $user1->organizations()->attach($organization2, [
+            'role' => 'admin',
+        ]);
+        $otherCompanyProject = Project::factory()->forClient($client)->create([
+            'name' => 'Scale Company',
+        ]);
+
+        User::factory()->withPersonalOrganization()->create([
+            'email' => 'admin@example.com',
         ]);
     }
 

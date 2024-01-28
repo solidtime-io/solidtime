@@ -20,6 +20,7 @@ use Laravel\Passport\HasApiTokens;
 /**
  * @property string $id
  * @property string $name
+ * @property string $email
  *
  * @method HasMany<Organization> ownedTeams()
  * @method static UserFactory factory()
@@ -64,6 +65,7 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'is_admin' => 'boolean',
     ];
 
     /**
@@ -77,8 +79,7 @@ class User extends Authenticatable
 
     public function canAccessPanel(Panel $panel): bool
     {
-        // TODO: Implement canAccessPanel() method.
-        return false;
+        return in_array($this->email, config('auth.super_admins', []), true);
     }
 
     /**

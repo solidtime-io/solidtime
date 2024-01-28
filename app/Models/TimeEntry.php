@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Carbon\CarbonInterval;
 use Database\Factories\TimeEntryFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -42,6 +43,11 @@ class TimeEntry extends Model
         'billable' => 'bool',
         'tags' => 'array',
     ];
+
+    public function getDuration(): ?CarbonInterval
+    {
+        return $this->end === null ? null : $this->start->diffAsCarbonInterval($this->end);
+    }
 
     /**
      * @return BelongsTo<User, TimeEntry>

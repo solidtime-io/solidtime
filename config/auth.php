@@ -115,4 +115,6 @@ return [
 
     'password_timeout' => 10800,
 
+    'super_admins' => ! is_string(env('SUPER_ADMINS', null)) ? [] : explode(',', env('SUPER_ADMINS')),
+
 ];
