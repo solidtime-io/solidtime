@@ -26,4 +26,11 @@ class OrganizationFactory extends Factory
             'personal_team' => true,
         ];
     }
+
+    public function withOwner(): self
+    {
+        return $this->state(fn (array $attributes) => [
+            'user_id' => User::factory(),
+        ]);
+    }
 }

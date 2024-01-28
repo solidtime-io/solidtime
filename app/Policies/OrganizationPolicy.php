@@ -6,6 +6,7 @@ namespace App\Policies;
 
 use App\Models\Organization;
 use App\Models\User;
+use Filament\Facades\Filament;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class OrganizationPolicy
@@ -17,7 +18,11 @@ class OrganizationPolicy
      */
     public function viewAny(User $user): bool
     {
-        return true;
+        if (Filament::isServing()) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -25,6 +30,10 @@ class OrganizationPolicy
      */
     public function view(User $user, Organization $organization): bool
     {
+        if (Filament::isServing()) {
+            return true;
+        }
+
         return $user->belongsToTeam($organization);
     }
 
@@ -33,6 +42,10 @@ class OrganizationPolicy
      */
     public function create(User $user): bool
     {
+        if (Filament::isServing()) {
+            return true;
+        }
+
         return true;
     }
 
@@ -41,6 +54,10 @@ class OrganizationPolicy
      */
     public function update(User $user, Organization $organization): bool
     {
+        if (Filament::isServing()) {
+            return true;
+        }
+
         return $user->ownsTeam($organization);
     }
 
@@ -49,6 +66,10 @@ class OrganizationPolicy
      */
     public function addTeamMember(User $user, Organization $organization): bool
     {
+        if (Filament::isServing()) {
+            return true;
+        }
+
         return $user->ownsTeam($organization);
     }
 
@@ -57,6 +78,10 @@ class OrganizationPolicy
      */
     public function updateTeamMember(User $user, Organization $organization): bool
     {
+        if (Filament::isServing()) {
+            return true;
+        }
+
         return $user->ownsTeam($organization);
     }
 
@@ -65,6 +90,10 @@ class OrganizationPolicy
      */
     public function removeTeamMember(User $user, Organization $organization): bool
     {
+        if (Filament::isServing()) {
+            return true;
+        }
+
         return $user->ownsTeam($organization);
     }
 
@@ -73,6 +102,10 @@ class OrganizationPolicy
      */
     public function delete(User $user, Organization $organization): bool
     {
+        if (Filament::isServing()) {
+            return true;
+        }
+
         return $user->ownsTeam($organization);
     }
 }
