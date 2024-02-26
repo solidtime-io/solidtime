@@ -1,0 +1,126 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Controllers\Api\V1;
+
+use App\Exceptions\TimeEntryStillRunning;
+use App\Http\Requests\V1\TimeEntry\TimeEntryIndexRequest;
+use App\Http\Requests\V1\TimeEntry\TimeEntryStoreRequest;
+use App\Http\Requests\V1\TimeEntry\TimeEntryUpdateRequest;
+use App\Http\Resources\V1\TimeEntry\TimeEntryCollection;
+use App\Http\Resources\V1\TimeEntry\TimeEntryResource;
+use App\Models\Organization;
+use App\Models\TimeEntry;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Auth;
+
+class TimeEntryController extends Controller
+{
+    protected function checkPermission(Organization $organization, string $permission, ?TimeEntry $timeEntry = null): void
+    {
+        parent::checkPermission($organization, $permission);
+        if ($timeEntry !== null && $timeEntry->organization_id !== $organization->getKey()) {
+            throw new AuthorizationException('Time entry does not belong to organization');
+        }
+    }
+
+    /**
+     * Get time entries
+     *
+     * @throws AuthorizationException
+     */
+    public function index(Organization $organization, TimeEntryIndexRequest $request): JsonResource
+    {
+        if ($request->has('user_id') && $request->get('user_id') === Auth::id()) {
+            $this->checkPermission($organization, 'time-entries:view:own');
+        } else {
+            $this->checkPermission($organization, 'time-entries:view:all');
+        }
+
+        $timeEntriesQuery = TimeEntry::query()
+            ->whereBelongsTo($organization, 'organization');
+
+        if ($request->has('before')) {
+
+        }
+
+        if ($request->has('after')) {
+
+        }
+
+        if ($request->has('user_id')) {
+            $timeEntriesQuery->where('user_id', $request->input('user_id'));
+        }
+
+        $timeEntries = $timeEntriesQuery->get();
+
+        return new TimeEntryCollection($timeEntries);
+    }
+
+    /**
+     * Create time entry
+     *
+     * @throws AuthorizationException|TimeEntryStillRunning
+     */
+    public function store(Organization $organization, TimeEntryStoreRequest $request): JsonResource
+    {
+        if ($request->get('user_id') === Auth::id()) {
+            $this->checkPermission($organization, 'time-entries:create:own');
+        } else {
+            $this->checkPermission($organization, 'time-entries:create:all');
+        }
+
+        if ($request->get('end') === null && TimeEntry::where('user_id', $request->get('user_id'))->where('end', null)->exists()) {
+            // TODO: documentation
+            throw new TimeEntryStillRunning('User already has an active time entry');
+        }
+
+        $timeEntry = new TimeEntry();
+        $timeEntry->fill($request->validated());
+        $timeEntry->organization()->associate($organization);
+        $timeEntry->save();
+
+        return new TimeEntryResource($timeEntry);
+    }
+
+    /**
+     * Update time entry
+     *
+     * @throws AuthorizationException
+     */
+    public function update(Organization $organization, TimeEntry $timeEntry, TimeEntryUpdateRequest $request): JsonResource
+    {
+        if ($timeEntry->user_id === Auth::id() && $request->get('user_id') === Auth::id()) {
+            $this->checkPermission($organization, 'time-entries:update:own', $timeEntry);
+        } else {
+            $this->checkPermission($organization, 'time-entries:update:all', $timeEntry);
+        }
+
+        $timeEntry->fill($request->validated());
+        $timeEntry->save();
+
+        return new TimeEntryResource($timeEntry);
+    }
+
+    /**
+     * Delete time entry
+     *
+     * @throws AuthorizationException
+     */
+    public function destroy(Organization $organization, TimeEntry $timeEntry): JsonResponse
+    {
+        if ($timeEntry->user_id === Auth::id()) {
+            $this->checkPermission($organization, 'time-entries:delete:own', $timeEntry);
+        } else {
+            $this->checkPermission($organization, 'time-entries:delete:all', $timeEntry);
+        }
+
+        $timeEntry->delete();
+
+        return response()
+            ->json(null, 204);
+    }
+}

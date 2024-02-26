@@ -34,13 +34,13 @@ Additional System Requirements:
 Add the following entry to your `/etc/hosts`
 
 ```
-127.0.0.1 timetracker.test
-127.0.0.1 playwright.timetracker.test
+127.0.0.1 solidtime.test
+127.0.0.1 playwright.solidtime.test
 ```
 
 ## Running E2E Tests
 
-`./vendor/bin/sail up -d ` will automatically start a Playwright UI server that you can access at `https://playwright.timetracker.test`. 
+`./vendor/bin/sail up -d ` will automatically start a Playwright UI server that you can access at `https://playwright.solidtime.test`. 
 Make sure that you use HTTPS otherwise the resources will not be loaded correctly.
 
 ## Recording E2E Tests
@@ -49,7 +49,7 @@ To record E2E tests, you need to install and execute playwright locally (outside
 
 ```bash
 npx playwright install
-npx playwright codegen timetracker.test
+npx playwright codegen solidtime.test
 ``` 
 
 ## Contributing

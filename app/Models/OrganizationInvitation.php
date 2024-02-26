@@ -36,6 +36,8 @@ class OrganizationInvitation extends JetstreamTeamInvitation
 
     /**
      * Get the organization that the invitation belongs to.
+     *
+     * @return BelongsTo<Organization, OrganizationInvitation>
      */
     public function organization(): BelongsTo
     {
@@ -44,6 +46,8 @@ class OrganizationInvitation extends JetstreamTeamInvitation
 
     /**
      * Get the organization that the invitation belongs to.
+     *
+     * @return BelongsTo<Organization, OrganizationInvitation>
      */
     public function team(): BelongsTo
     {

@@ -6,35 +6,10 @@ namespace Tests\Unit\Endpoint\Api\V1;
 
 use App\Models\Organization;
 use App\Models\Project;
-use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Laravel\Jetstream\Jetstream;
 use Laravel\Passport\Passport;
-use Tests\TestCase;
 
-class ProjectEndpointTest extends TestCase
+class ProjectEndpointTest extends ApiEndpointTestAbstract
 {
-    use RefreshDatabase;
-
-    /**
-     * @param  array<string>  $permissions
-     * @return object{user: User, organization: Organization}
-     */
-    private function createUserWithPermission(array $permissions): object
-    {
-        Jetstream::role('custom-test', 'Custom Test', $permissions)->description('Role custom for testing');
-        $organization = Organization::factory()->create();
-        $user = User::factory()->create();
-        $organization->users()->attach($user, [
-            'role' => 'custom-test',
-        ]);
-
-        return (object) [
-            'user' => $user,
-            'organization' => $organization,
-        ];
-    }
-
     public function test_index_endpoint_fails_if_user_has_no_permission_to_view_projects(): void
     {
         // Arrange
@@ -67,16 +42,68 @@ class ProjectEndpointTest extends TestCase
         $response->assertJsonCount(4, 'data');
     }
 
+    public function test_show_endpoint_fails_if_user_is_not_part_of_project_organization(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'projects:view',
+        ]);
+        $otherOrganization = Organization::factory()->create();
+        $project = Project::factory()->forOrganization($otherOrganization)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.projects.show', [$data->organization->getKey(), $project->getKey()]));
+
+        // Assert
+        $response->assertStatus(403);
+    }
+
+    public function test_show_endpoint_fails_if_user_has_no_permission_to_view_projects(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+        ]);
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.projects.show', [$data->organization->getKey(), $project->getKey()]));
+
+        // Assert
+        $response->assertStatus(403);
+    }
+
+    public function test_show_endpoint_returns_project(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'projects:view',
+        ]);
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.projects.show', [$data->organization->getKey(), $project->getKey()]));
+
+        // Assert
+        $response->assertStatus(200);
+        $response->assertJsonPath('data.id', $project->getKey());
+    }
+
     public function test_store_endpoint_fails_if_user_has_no_permission_to_create_projects(): void
     {
         // Arrange
         $data = $this->createUserWithPermission([
         ]);
-        $project = Project::factory()->forOrganization($data->organization)->make();
+        $projectFake = Project::factory()->forOrganization($data->organization)->make();
         Passport::actingAs($data->user);
 
         // Act
-        $response = $this->postJson(route('api.v1.projects.store', [$data->organization->getKey()]), $project->toArray());
+        $response = $this->postJson(route('api.v1.projects.store', [$data->organization->getKey()]), [
+            'name' => $projectFake->name,
+            'color' => $projectFake->color,
+        ]);
 
         // Assert
         $response->assertStatus(403);
@@ -95,7 +122,6 @@ class ProjectEndpointTest extends TestCase
         $response = $this->postJson(route('api.v1.projects.store', [$data->organization->getKey()]), [
             'name' => $project->name,
             'color' => $project->color,
-            'organization_id' => $project->organization_id,
         ]);
 
         // Assert
@@ -105,6 +131,27 @@ class ProjectEndpointTest extends TestCase
             'color' => $project->color,
             'organization_id' => $project->organization_id,
         ]);
+    }
+
+    public function test_update_endpoint_fails_if_user_is_not_part_of_project_organization(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'projects:update',
+        ]);
+        $otherOrganization = Organization::factory()->create();
+        $project = Project::factory()->forOrganization($otherOrganization)->create();
+        $projectFake = Project::factory()->make();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.projects.update', [$data->organization->getKey(), $project->getKey()]), [
+            'name' => $projectFake->name,
+            'color' => $projectFake->color,
+        ]);
+
+        // Assert
+        $response->assertStatus(403);
     }
 
     public function test_update_endpoint_fails_if_user_has_no_permission_to_update_projects(): void
@@ -150,6 +197,23 @@ class ProjectEndpointTest extends TestCase
         ]);
     }
 
+    public function test_destroy_endpoint_fails_if_user_is_not_part_of_project_organization(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'projects:delete',
+        ]);
+        $otherOrganization = Organization::factory()->create();
+        $project = Project::factory()->forOrganization($otherOrganization)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->deleteJson(route('api.v1.projects.destroy', [$data->organization->getKey(), $project->getKey()]));
+
+        // Assert
+        $response->assertStatus(403);
+    }
+
     public function test_destroy_endpoint_fails_if_user_has_no_permission_to_delete_projects(): void
     {
         // Arrange
@@ -178,7 +242,7 @@ class ProjectEndpointTest extends TestCase
         $response = $this->deleteJson(route('api.v1.projects.destroy', [$data->organization->getKey(), $project->getKey()]));
 
         // Assert
-        $response->assertStatus(200);
+        $response->assertStatus(204);
         $this->assertDatabaseMissing(Project::class, [
             'id' => $project->getKey(),
         ]);

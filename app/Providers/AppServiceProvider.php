@@ -13,9 +13,15 @@ use App\Models\Tag;
 use App\Models\Task;
 use App\Models\TimeEntry;
 use App\Models\User;
+use Dedoc\Scramble\Scramble;
+use Dedoc\Scramble\Support\Generator\OpenApi;
+use Dedoc\Scramble\Support\Generator\SecurityScheme;
+use Dedoc\Scramble\Support\Generator\SecuritySchemes\OAuthFlow;
 use Filament\Forms\Components\Section;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -55,5 +61,19 @@ class AppServiceProvider extends ServiceProvider
         Section::configureUsing(function (Section $section): void {
             $section->columns(1);
         }, null, true);
+
+        Scramble::extendOpenApi(function (OpenApi $openApi) {
+            $openApi->secure(
+                SecurityScheme::oauth2()
+                    ->flow('authorizationCode', function (OAuthFlow $flow) {
+                        $flow
+                            ->authorizationUrl('https://solidtime.test/oauth/authorize');
+                    })
+            );
+        });
+
+        if (config('app.force_https', false) || App::isProduction()) {
+            URL::forceScheme('https');
+        }
     }
 }

@@ -7,4 +7,4 @@ parameters:
         - app/
 
     # Level 9 is the highest level
-    level: 5
+    level: 7

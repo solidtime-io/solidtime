@@ -1,11 +1,12 @@
 {
-    "name": "timetracking-project/timetracking",
+    "name": "solidtime-io/solidtime",
     "type": "project",
     "description": "An open-source time-tracking app",
     "keywords": [],
     "license": "AGPL-3.0-or-later",
     "require": {
-        "php": "^8.1",
+        "php": "8.1.*",
+        "dedoc/scramble": "^0.8.5",
         "filament/filament": "^3.2",
         "guzzlehttp/guzzle": "^7.2",
         "inertiajs/inertia-laravel": "^0.6.8",
