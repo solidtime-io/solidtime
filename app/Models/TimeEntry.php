@@ -19,9 +19,13 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $end
  * @property bool $billable
  * @property array $tags
+ * @property string $user_id
  * @property-read User $user
+ * @property string $organization_id
  * @property-read Organization $organization
+ * @property string|null $project_id
  * @property-read Project|null $project
+ * @property string|null $task_id
  * @property-read Task|null $task
  *
  * @method static TimeEntryFactory factory()

@@ -56,6 +56,14 @@ class JetstreamServiceProvider extends ServiceProvider
             'projects:create',
             'projects:update',
             'projects:delete',
+            'time-entries:view:all',
+            'time-entries:create:all',
+            'time-entries:update:all',
+            'time-entries:delete:all',
+            'time-entries:view:own',
+            'time-entries:create:own',
+            'time-entries:update:own',
+            'time-entries:delete:own',
         ])->description('Administrator users can perform any action.');
 
         Jetstream::role('manager', 'Manager', [
@@ -63,13 +71,22 @@ class JetstreamServiceProvider extends ServiceProvider
             'projects:create',
             'projects:update',
             'projects:delete',
+            'time-entries:view:all',
+            'time-entries:create:all',
+            'time-entries:update:all',
+            'time-entries:delete:all',
+            'time-entries:view:own',
+            'time-entries:create:own',
+            'time-entries:update:own',
+            'time-entries:delete:own',
         ])->description('Editor users have the ability to read, create, and update.');
 
         Jetstream::role('employee', 'Employee', [
             'projects:view',
-            'projects:create',
-            'projects:update',
-            'projects:delete',
+            'time-entries:view:own',
+            'time-entries:create:own',
+            'time-entries:update:own',
+            'time-entries:delete:own',
         ])->description('Editor users have the ability to read, create, and update.');
     }
 }

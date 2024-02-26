@@ -25,15 +25,16 @@ class OrganizationResource extends Resource
     public static function form(Form $form): Form
     {
         return $form
+            ->columns(1)
             ->schema([
                 Forms\Components\TextInput::make('name')
                     ->label('Name')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\Toggle::make('Is personal?')
+                Forms\Components\Toggle::make('personal_team')
                     ->label('Is personal?')
                     ->required(),
-                Forms\Components\Select::make('owner_id')
+                Forms\Components\Select::make('user_id')
                     ->relationship(name: 'owner', titleAttribute: 'email')
                     ->searchable(['name', 'email'])
                     ->required(),
@@ -47,7 +48,8 @@ class OrganizationResource extends Resource
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\ToggleColumn::make('is_personal')
+                Tables\Columns\IconColumn::make('personal_team')
+                    ->boolean()
                     ->label('Is personal?')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('owner.email')

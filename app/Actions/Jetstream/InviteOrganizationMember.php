@@ -8,6 +8,7 @@ use App\Models\Organization;
 use App\Models\OrganizationInvitation;
 use App\Models\User;
 use Closure;
+use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Gate;
@@ -59,7 +60,7 @@ class InviteOrganizationMember implements InvitesTeamMembers
     /**
      * Get the validation rules for inviting a team member.
      *
-     * @return array<string, ValidationRule|array|string>
+     * @return array<string, array<ValidationRule|Rule|string>>
      */
     protected function rules(Organization $organization): array
     {
