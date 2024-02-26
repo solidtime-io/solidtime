@@ -6,6 +6,7 @@ namespace Database\Factories;
 
 use App\Models\Organization;
 use App\Models\Project;
+use App\Models\Tag;
 use App\Models\Task;
 use App\Models\TimeEntry;
 use App\Models\User;
@@ -34,6 +35,18 @@ class TimeEntryFactory extends Factory
             'user_id' => User::factory(),
             'organization_id' => Organization::factory(),
         ];
+    }
+
+    public function withTags(Organization $organization): self
+    {
+        return $this->state(function (array $attributes) use ($organization): array {
+            return [
+                'tags' => [
+                    Tag::factory()->forOrganization($organization)->create()->getKey(),
+                    Tag::factory()->forOrganization($organization)->create()->getKey(),
+                ],
+            ];
+        });
     }
 
     public function forUser(User $user): self

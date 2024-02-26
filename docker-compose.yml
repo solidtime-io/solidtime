@@ -9,12 +9,12 @@ services:
         labels:
             - "traefik.enable=true"
             - "traefik.docker.network=${NETWORK_NAME}"
-            - "traefik.http.routers.timetracking.rule=Host(`${NGINX_HOST_NAME}`)"
-            - "traefik.http.routers.timetracking.entrypoints=web"
-            - "traefik.http.services.timetracking.loadbalancer.server.port=80"
-            - "traefik.http.routers.timetracking-https.rule=Host(`${NGINX_HOST_NAME}`)"
-            - "traefik.http.routers.timetracking-https.entrypoints=websecure"
-            - "traefik.http.routers.timetracking-https.tls=true"
+            - "traefik.http.routers.solidtime.rule=Host(`${NGINX_HOST_NAME}`)"
+            - "traefik.http.routers.solidtime.entrypoints=web"
+            - "traefik.http.services.solidtime.loadbalancer.server.port=80"
+            - "traefik.http.routers.solidtime-https.rule=Host(`${NGINX_HOST_NAME}`)"
+            - "traefik.http.routers.solidtime-https.entrypoints=websecure"
+            - "traefik.http.routers.solidtime-https.tls=true"
         extra_hosts:
             - 'host.docker.internal:host-gateway'
         ports:
@@ -59,9 +59,6 @@ services:
             timeout: 5s
     mailpit:
         image: 'axllent/mailpit:latest'
-        ports:
-            - '${FORWARD_MAILPIT_PORT:-1025}:1025'
-            - '${FORWARD_MAILPIT_DASHBOARD_PORT:-8025}:8025'
         networks:
             - sail
     playwright:
