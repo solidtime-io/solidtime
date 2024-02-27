@@ -23,6 +23,8 @@ return new class extends Migration
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
             $table->timestamps();
+
+            $table->index('created_at');
         });
     }
 

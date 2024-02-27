@@ -114,11 +114,13 @@ class TimeEntryController extends Controller
 
         if ($request->get('end') === null && TimeEntry::query()->where('user_id', $request->get('user_id'))->where('end', null)->exists()) {
             // TODO: API documentation
+            // TODO: Create concept for api exceptions
             throw new TimeEntryStillRunning('User already has an active time entry');
         }
 
         $timeEntry = new TimeEntry();
         $timeEntry->fill($request->validated());
+        $timeEntry->description = $request->get('description', '');
         $timeEntry->organization()->associate($organization);
         $timeEntry->save();
 
