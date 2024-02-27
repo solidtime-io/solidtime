@@ -67,13 +67,16 @@
             "@php artisan model:typer > ./resources/js/types/models.ts"
         ],
         "ptest": [
-            "@php artisan test --parallel --colors=always --stop-on-failure"
+            "@php artisan test --parallel --stop-on-failure"
         ],
         "test": [
-            "@php artisan test --colors=always --stop-on-failure"
+            "@php artisan test --stop-on-failure"
         ],
         "test:coverage": [
-            "@php artisan test --coverage --colors=always --stop-on-failure"
+            "@php artisan test --coverage --stop-on-failure"
+        ],
+        "test:coverage:report": [
+            "@php vendor/bin/phpunit --coverage-html=coverage"
         ],
         "fix": [
             "@php pint"

@@ -45,6 +45,10 @@ return new class extends Migration
                 ->restrictOnDelete();
             $table->jsonb('tags')->nullable();
             $table->timestamps();
+
+            $table->index('start');
+            $table->index('end');
+            $table->index('billable');
         });
     }
 
