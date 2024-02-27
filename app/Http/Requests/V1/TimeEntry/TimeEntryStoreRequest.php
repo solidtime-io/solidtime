@@ -26,6 +26,7 @@ class TimeEntryStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
+            // ID of the user that the time entry should belong to
             'user_id' => [
                 'required',
                 'string',
@@ -38,6 +39,7 @@ class TimeEntryStoreRequest extends FormRequest
                     });
                 }),
             ],
+            // ID of the task that the time entry should belong to
             'task_id' => [
                 'nullable',
                 'string',

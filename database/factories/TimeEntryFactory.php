@@ -10,6 +10,7 @@ use App\Models\Tag;
 use App\Models\Task;
 use App\Models\TimeEntry;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -45,6 +46,27 @@ class TimeEntryFactory extends Factory
                     Tag::factory()->forOrganization($organization)->create()->getKey(),
                     Tag::factory()->forOrganization($organization)->create()->getKey(),
                 ],
+            ];
+        });
+    }
+
+    public function startBetween(Carbon $rangeStart, Carbon $rangeEnd): self
+    {
+        $start = $this->faker->dateTimeBetween($rangeStart, $rangeEnd);
+
+        return $this->state(function (array $attributes) use ($start): array {
+            return [
+                'start' => $start,
+                'end' => $this->faker->dateTimeBetween($start, 'now'),
+            ];
+        });
+    }
+
+    public function active(): self
+    {
+        return $this->state(function (array $attributes): array {
+            return [
+                'end' => null,
             ];
         });
     }
