@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Api\V1\ProjectController;
+use App\Http\Controllers\Api\V1\TagController;
 use App\Http\Controllers\Api\V1\TimeEntryController;
 use Illuminate\Support\Facades\Route;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -19,6 +20,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 */
 
 Route::middleware('auth:api')->prefix('v1')->name('v1.')->group(static function () {
+    // Project routes
     Route::name('projects.')->group(static function () {
         Route::get('/organization/{organization}/projects', [ProjectController::class, 'index'])->name('index');
         Route::get('/organization/{organization}/projects/{project}', [ProjectController::class, 'show'])->name('show');
@@ -27,11 +29,20 @@ Route::middleware('auth:api')->prefix('v1')->name('v1.')->group(static function 
         Route::delete('/organization/{organization}/projects/{project}', [ProjectController::class, 'destroy'])->name('destroy');
     });
 
+    // Time entry routes
     Route::name('time-entries.')->group(static function () {
         Route::get('/organization/{organization}/time-entries', [TimeEntryController::class, 'index'])->name('index');
         Route::post('/organization/{organization}/time-entries', [TimeEntryController::class, 'store'])->name('store');
         Route::put('/organization/{organization}/time-entries/{timeEntry}', [TimeEntryController::class, 'update'])->name('update');
         Route::delete('/organization/{organization}/time-entries/{timeEntry}', [TimeEntryController::class, 'destroy'])->name('destroy');
+    });
+
+    // Tag routes
+    Route::name('tags.')->group(static function () {
+        Route::get('/organization/{organization}/tags', [TagController::class, 'index'])->name('index');
+        Route::post('/organization/{organization}/tags', [TagController::class, 'store'])->name('store');
+        Route::put('/organization/{organization}/tags/{tag}', [TagController::class, 'update'])->name('update');
+        Route::delete('/organization/{organization}/tags/{tag}', [TagController::class, 'destroy'])->name('destroy');
     });
 });
 
