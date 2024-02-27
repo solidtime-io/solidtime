@@ -25,6 +25,7 @@ class TimeEntryUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
+            // ID of the task that the time entry should belong to
             'task_id' => [
                 'nullable',
                 'string',

@@ -16,6 +16,7 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class TimeEntryController extends Controller
 {
@@ -41,21 +42,59 @@ class TimeEntryController extends Controller
         }
 
         $timeEntriesQuery = TimeEntry::query()
-            ->whereBelongsTo($organization, 'organization');
+            ->whereBelongsTo($organization, 'organization')
+            ->orderBy('start', 'desc');
 
         if ($request->has('before')) {
-
+            $timeEntriesQuery->whereDate('start', '<', $request->input('before'));
         }
 
         if ($request->has('after')) {
+            $timeEntriesQuery->whereDate('start', '>', $request->input('after'));
+        }
 
+        if ($request->has('active') && (bool) $request->get('active') === true) {
+            $timeEntriesQuery->whereNull('end');
         }
 
         if ($request->has('user_id')) {
             $timeEntriesQuery->where('user_id', $request->input('user_id'));
         }
 
+        $limit = $request->has('limit') ? (int) $request->get('limit', 150) : null;
+        if ($limit !== null) {
+            $timeEntriesQuery->limit($limit);
+        }
+
         $timeEntries = $timeEntriesQuery->get();
+
+        if ($timeEntries->count() === $limit && $request->has('only_full_dates') && (bool) $request->get('only_full_dates') === true) {
+            $lastDate = null;
+            /** @var TimeEntry $timeEntry */
+            foreach ($timeEntries as $timeEntry) {
+                if ($lastDate === null || $lastDate->diffInDays($timeEntry->start->startOfDay()) > 0) {
+                    $lastDate = $timeEntry->start->startOfDay();
+                }
+            }
+
+            $timeEntries = $timeEntries->filter(function (TimeEntry $timeEntry) use ($lastDate): bool {
+                return $timeEntry->end === null || $timeEntry->start->toDateString() !== $lastDate->toDateString();
+            });
+            // TODO: fix edge case with current time entry that is more than one day running
+
+            if ($timeEntries->count() === 0) {
+                Log::warning('User has has more than '.$limit.' time entries on one date', [
+                    'date' => $lastDate->toDateString(),
+                    'user_id' => $request->input('user_id'),
+                    'auth_user_id' => Auth::id(),
+                    'limit' => $limit,
+                ]);
+                $timeEntries = $timeEntriesQuery
+                    ->limit(5000)
+                    ->whereDate('start', '=', $lastDate->toDateString())
+                    ->get();
+            }
+        }
 
         return new TimeEntryCollection($timeEntries);
     }
@@ -73,8 +112,8 @@ class TimeEntryController extends Controller
             $this->checkPermission($organization, 'time-entries:create:all');
         }
 
-        if ($request->get('end') === null && TimeEntry::where('user_id', $request->get('user_id'))->where('end', null)->exists()) {
-            // TODO: documentation
+        if ($request->get('end') === null && TimeEntry::query()->where('user_id', $request->get('user_id'))->where('end', null)->exists()) {
+            // TODO: API documentation
             throw new TimeEntryStillRunning('User already has an active time entry');
         }
 
