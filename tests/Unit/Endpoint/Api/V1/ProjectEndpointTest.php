@@ -243,6 +243,7 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
 
         // Assert
         $response->assertStatus(204);
+        $response->assertNoContent();
         $this->assertDatabaseMissing(Project::class, [
             'id' => $project->getKey(),
         ]);

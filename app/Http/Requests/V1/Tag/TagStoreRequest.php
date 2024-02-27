@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Requests\V1\Project;
+namespace App\Http\Requests\V1\Tag;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
-class ProjectStoreRequest extends FormRequest
+class TagStoreRequest extends FormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -21,11 +21,6 @@ class ProjectStoreRequest extends FormRequest
                 'required',
                 'string',
                 'min:1',
-                'max:255',
-            ],
-            'color' => [
-                'required',
-                'string',
                 'max:255',
             ],
         ];

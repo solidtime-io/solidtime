@@ -64,6 +64,10 @@ class JetstreamServiceProvider extends ServiceProvider
             'time-entries:create:own',
             'time-entries:update:own',
             'time-entries:delete:own',
+            'tags:view',
+            'tags:create',
+            'tags:update',
+            'tags:delete',
         ])->description('Administrator users can perform any action.');
 
         Jetstream::role('manager', 'Manager', [
@@ -79,10 +83,15 @@ class JetstreamServiceProvider extends ServiceProvider
             'time-entries:create:own',
             'time-entries:update:own',
             'time-entries:delete:own',
+            'tags:view',
+            'tags:create',
+            'tags:update',
+            'tags:delete',
         ])->description('Editor users have the ability to read, create, and update.');
 
         Jetstream::role('employee', 'Employee', [
             'projects:view',
+            'tags:view',
             'time-entries:view:own',
             'time-entries:create:own',
             'time-entries:update:own',
