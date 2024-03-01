@@ -31,16 +31,25 @@ class ProjectFactory extends Factory
 
     public function forOrganization(Organization $organization): self
     {
-        return $this->state(function (array $attributes) use ($organization) {
+        return $this->state(function (array $attributes) use ($organization): array {
             return [
                 'organization_id' => $organization->getKey(),
             ];
         });
     }
 
+    public function withClient(): self
+    {
+        return $this->state(function (array $attributes): array {
+            return [
+                'client_id' => Client::factory(),
+            ];
+        });
+    }
+
     public function forClient(?Client $client): self
     {
-        return $this->state(function (array $attributes) use ($client) {
+        return $this->state(function (array $attributes) use ($client): array {
             return [
                 'client_id' => $client?->getKey(),
             ];

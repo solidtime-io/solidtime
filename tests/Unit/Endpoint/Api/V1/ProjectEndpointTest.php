@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Endpoint\Api\V1;
 
+use App\Models\Client;
 use App\Models\Organization;
 use App\Models\Project;
 use Laravel\Passport\Passport;
@@ -16,6 +17,7 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
         $data = $this->createUserWithPermission([
         ]);
         $projects = Project::factory()->forOrganization($data->organization)->createMany(4);
+        $projectsWithClients = Project::factory()->forOrganization($data->organization)->withClient()->createMany(4);
         Passport::actingAs($data->user);
 
         // Act
@@ -130,6 +132,33 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
             'name' => $project->name,
             'color' => $project->color,
             'organization_id' => $project->organization_id,
+        ]);
+    }
+
+    public function test_store_endpoint_creates_new_project_with_client(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'projects:create',
+        ]);
+        $client = Client::factory()->forOrganization($data->organization)->create();
+        $project = Project::factory()->forOrganization($data->organization)->make();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.projects.store', [$data->organization->getKey()]), [
+            'name' => $project->name,
+            'color' => $project->color,
+            'client_id' => $client->getKey(),
+        ]);
+
+        // Assert
+        $response->assertStatus(201);
+        $this->assertDatabaseHas(Project::class, [
+            'name' => $project->name,
+            'color' => $project->color,
+            'organization_id' => $project->organization_id,
+            'client_id' => $client->getKey(),
         ]);
     }
 

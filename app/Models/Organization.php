@@ -15,6 +15,8 @@ use Laravel\Jetstream\Team as JetstreamTeam;
 
 /**
  * @property string $id
+ * @property string $name
+ * @property bool $personal_team
  * @property User $owner
  *
  * @method HasMany<OrganizationInvitation> teamInvitations()
@@ -31,6 +33,7 @@ class Organization extends JetstreamTeam
      * @var array<string, string>
      */
     protected $casts = [
+        'name' => 'string',
         'personal_team' => 'boolean',
     ];
 
