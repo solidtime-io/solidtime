@@ -68,6 +68,12 @@ class JetstreamServiceProvider extends ServiceProvider
             'tags:create',
             'tags:update',
             'tags:delete',
+            'clients:view',
+            'clients:create',
+            'clients:update',
+            'clients:delete',
+            'organizations:view',
+            'organizations:update',
         ])->description('Administrator users can perform any action.');
 
         Jetstream::role('manager', 'Manager', [
@@ -87,6 +93,7 @@ class JetstreamServiceProvider extends ServiceProvider
             'tags:create',
             'tags:update',
             'tags:delete',
+            'organizations:view',
         ])->description('Editor users have the ability to read, create, and update.');
 
         Jetstream::role('employee', 'Employee', [
@@ -96,6 +103,7 @@ class JetstreamServiceProvider extends ServiceProvider
             'time-entries:create:own',
             'time-entries:update:own',
             'time-entries:delete:own',
+            'organizations:view',
         ])->description('Editor users have the ability to read, create, and update.');
     }
 }

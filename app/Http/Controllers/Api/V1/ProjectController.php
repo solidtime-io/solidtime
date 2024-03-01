@@ -64,6 +64,7 @@ class ProjectController extends Controller
         $project = new Project();
         $project->name = $request->input('name');
         $project->color = $request->input('color');
+        $project->client_id = $request->input('client_id');
         $project->organization()->associate($organization);
         $project->save();
 
