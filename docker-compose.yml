@@ -5,6 +5,8 @@ services:
             dockerfile: Dockerfile
             args:
                 WWWGROUP: '${WWWGROUP}'
+        ports:
+            - '${FORWARD_WEB_PORT:-8083}:80'
         image: sail-8.3/app
         labels:
             - "traefik.enable=true"
