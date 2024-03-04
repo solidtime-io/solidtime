@@ -17,10 +17,12 @@
         "laravel/jetstream": "^5.0",
         "laravel/passport": "^12.0",
         "laravel/tinker": "^2.8",
+        "nwidart/laravel-modules": "^11.0.3",
         "pxlrbt/filament-environment-indicator": "^2.0",
         "spatie/temporary-directory": "^2.2",
         "tightenco/ziggy": "^2.1.0",
-        "tpetry/laravel-postgresql-enhanced": "^0.37.0"
+        "tpetry/laravel-postgresql-enhanced": "^0.37.0",
+        "wikimedia/composer-merge-plugin": "^2.1.0"
     },
     "require-dev": {
         "brianium/paratest": "^7.3",
@@ -41,7 +43,10 @@
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/"
-        }
+        },
+        "files": [
+            "extensions/extensions_autoload.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
@@ -104,7 +109,8 @@
         "sort-packages": true,
         "allow-plugins": {
             "pestphp/pest-plugin": true,
-            "php-http/discovery": true
+            "php-http/discovery": true,
+            "wikimedia/composer-merge-plugin": true
         }
     },
     "minimum-stability": "stable",
