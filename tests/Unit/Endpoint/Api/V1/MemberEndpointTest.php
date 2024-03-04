@@ -45,6 +45,7 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
         ]));
 
         // Assert
+        $response->assertValid();
         $response->assertStatus(204);
     }
 
