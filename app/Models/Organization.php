@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use Database\Factories\OrganizationFactory;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -18,6 +19,7 @@ use Laravel\Jetstream\Team as JetstreamTeam;
  * @property string $name
  * @property bool $personal_team
  * @property User $owner
+ * @property Collection<User> $users
  *
  * @method HasMany<OrganizationInvitation> teamInvitations()
  * @method static OrganizationFactory factory()
