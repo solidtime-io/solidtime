@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Api\V1\ClientController;
+use App\Http\Controllers\Api\V1\ImportController;
 use App\Http\Controllers\Api\V1\OrganizationController;
 use App\Http\Controllers\Api\V1\ProjectController;
 use App\Http\Controllers\Api\V1\TagController;
@@ -59,6 +60,11 @@ Route::middleware('auth:api')->prefix('v1')->name('v1.')->group(static function 
         Route::post('/organizations/{organization}/clients', [ClientController::class, 'store'])->name('store');
         Route::put('/organizations/{organization}/clients/{client}', [ClientController::class, 'update'])->name('update');
         Route::delete('/organizations/{organization}/clients/{client}', [ClientController::class, 'destroy'])->name('destroy');
+    });
+
+    // Import routes
+    Route::name('import.')->group(static function () {
+        Route::post('/organizations/{organization}/import', [ImportController::class, 'import'])->name('import');
     });
 });
 

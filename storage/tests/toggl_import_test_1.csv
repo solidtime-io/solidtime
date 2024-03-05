@@ -1,0 +1,3 @@
+﻿User,Email,Client,Project,Task,Description,Billable,Start date,Start time,End date,End time,Duration,Tags,Amount (EUR)
+Peter Tester,peter.test@email.test,,Project without Client,,"",No,2024-03-04,10:23:52,2024-03-04,10:23:52,00:00:00,Development,
+Peter Tester,peter.test@email.test,Big Company,Project for Big Company,Task 1,Working hard,Yes,2024-03-04,10:23:00,2024-03-04,11:23:01,01:00:01,,111.11
