@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Requests\V1\Tag;
+namespace App\Http\Requests\V1\Import;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
-class TagStoreRequest extends FormRequest
+class ImportRequest extends FormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -17,12 +17,13 @@ class TagStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => [
-                // TODO: unique
+            'type' => [
                 'required',
                 'string',
-                'min:1',
-                'max:255',
+            ],
+            'data' => [
+                'required',
+                'string',
             ],
         ];
     }

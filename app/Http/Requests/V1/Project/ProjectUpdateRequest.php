@@ -25,6 +25,7 @@ class ProjectUpdateRequest extends FormRequest
     {
         return [
             'name' => [
+                // TODO: unique
                 'required',
                 'string',
                 'max:255',

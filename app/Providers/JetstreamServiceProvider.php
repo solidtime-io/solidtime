@@ -74,6 +74,7 @@ class JetstreamServiceProvider extends ServiceProvider
             'clients:delete',
             'organizations:view',
             'organizations:update',
+            'import',
         ])->description('Administrator users can perform any action.');
 
         Jetstream::role('manager', 'Manager', [
