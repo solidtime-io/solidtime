@@ -31,7 +31,17 @@ class UserFactory extends Factory
             'remember_token' => Str::random(10),
             'profile_photo_path' => null,
             'current_team_id' => null,
+            'is_placeholder' => false,
         ];
+    }
+
+    public function placeholder(bool $placeholder = true): static
+    {
+        return $this->state(function (array $attributes) use ($placeholder): array {
+            return [
+                'is_placeholder' => $placeholder,
+            ];
+        });
     }
 
     /**

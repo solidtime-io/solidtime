@@ -6,6 +6,9 @@ namespace App\Service\Import\Importers;
 
 class ImporterProvider
 {
+    /**
+     * @var array<string, class-string<ImporterContract>>
+     */
     private array $importers = [
         'toggl_time_entries' => TogglTimeEntriesImporter::class,
     ];
