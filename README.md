@@ -36,6 +36,7 @@ Add the following entry to your `/etc/hosts`
 ```
 127.0.0.1 solidtime.test
 127.0.0.1 playwright.solidtime.test
+127.0.0.1 mail.solidtime.test
 ```
 
 ## Running E2E Tests

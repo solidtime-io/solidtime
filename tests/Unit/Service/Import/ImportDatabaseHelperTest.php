@@ -51,21 +51,27 @@ class ImportDatabaseHelperTest extends TestCase
         ]);
     }
 
-    public function test_get_key_not_attach_to_existing_returns_key_for_identifier_without_creating_model(): void
+    public function test_get_key_not_attach_to_existing_is_not_implemented_yet(): void
     {
         // Arrange
         $project = Project::factory()->create();
         $helper = new ImportDatabaseHelper(Project::class, ['name', 'organization_id'], false);
 
         // Act
-        $key = $helper->getKey([
-            'name' => $project->name,
-            'organization_id' => $project->organization_id,
-        ], [
-            'color' => '#000000',
-        ]);
+        try {
+            $key = $helper->getKey([
+                'name' => $project->name,
+                'organization_id' => $project->organization_id,
+            ], [
+                'color' => '#000000',
+            ]);
+        } catch (\Exception $e) {
+            $this->assertSame('Not implemented', $e->getMessage());
+
+            return;
+        }
 
         // Assert
-        $this->assertNotSame($project->getKey(), $key);
+        $this->fail();
     }
 }

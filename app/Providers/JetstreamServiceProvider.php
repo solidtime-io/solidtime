@@ -75,6 +75,8 @@ class JetstreamServiceProvider extends ServiceProvider
             'organizations:view',
             'organizations:update',
             'import',
+            'users:invite-placeholder',
+            'users:view',
         ])->description('Administrator users can perform any action.');
 
         Jetstream::role('manager', 'Manager', [
@@ -95,6 +97,7 @@ class JetstreamServiceProvider extends ServiceProvider
             'tags:update',
             'tags:delete',
             'organizations:view',
+            'users:view',
         ])->description('Editor users have the ability to read, create, and update.');
 
         Jetstream::role('employee', 'Employee', [
