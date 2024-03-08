@@ -34,6 +34,7 @@ class InviteOrganizationMember implements InvitesTeamMembers
 
         InvitingTeamMember::dispatch($organization, $email, $role);
 
+        /** @var TeamInvitation $invitation */
         $invitation = $organization->teamInvitations()->create([
             'email' => $email,
             'role' => $role,
@@ -50,9 +51,7 @@ class InviteOrganizationMember implements InvitesTeamMembers
         Validator::make([
             'email' => $email,
             'role' => $role,
-        ], $this->rules($organization), [
-            'email.unique' => __('This user has already been invited to the team.'),
-        ])->after(
+        ], $this->rules($organization))->after(
             $this->ensureUserIsNotAlreadyOnTeam($organization, $email)
         )->validateWithBag('addTeamMember');
     }
@@ -68,10 +67,10 @@ class InviteOrganizationMember implements InvitesTeamMembers
             'email' => [
                 'required',
                 'email',
-                new UniqueEloquent(OrganizationInvitation::class, 'email', function (Builder $builder) use ($organization) {
+                (new UniqueEloquent(OrganizationInvitation::class, 'email', function (Builder $builder) use ($organization) {
                     /** @var Builder<OrganizationInvitation> $builder */
                     return $builder->whereBelongsTo($organization, 'organization');
-                }),
+                }))->withMessage(__('This user has already been invited to the team.')),
             ],
             'role' => Jetstream::hasRoles()
                             ? ['required', 'string', new Role]
@@ -86,7 +85,7 @@ class InviteOrganizationMember implements InvitesTeamMembers
     {
         return function ($validator) use ($organization, $email) {
             $validator->errors()->addIf(
-                $organization->hasUserWithEmail($email),
+                $organization->hasRealUserWithEmail($email),
                 'email',
                 __('This user already belongs to the team.')
             );

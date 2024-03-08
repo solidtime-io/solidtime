@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Endpoint\Api\V1;
 
 use App\Models\Organization;
+use App\Service\Import\Importers\ReportDto;
 use App\Service\Import\ImportService;
 use Laravel\Passport\Passport;
 use Mockery\MockInterface;
@@ -20,7 +21,7 @@ class ImportEndpointTest extends ApiEndpointTestAbstract
         Passport::actingAs($data->user);
 
         // Act
-        $response = $this->postJson(route('api.v1.import', ['organization' => $data->organization->id]), [
+        $response = $this->postJson(route('api.v1.import.import', ['organization' => $data->organization->id]), [
             'type' => 'toggl_time_entries',
             'data' => 'some data',
             'options' => [],
@@ -41,6 +42,14 @@ class ImportEndpointTest extends ApiEndpointTestAbstract
                 ->withArgs(function (Organization $organization, string $importerType, string $data, array $options) use (&$user): bool {
                     return $organization->is($user->organization) && $importerType === 'toggl_time_entries' && $data === 'some data' && $options === [];
                 })
+                ->andReturn(new ReportDto(
+                    clientsCreated: 1,
+                    projectsCreated: 2,
+                    tasksCreated: 3,
+                    timeEntriesCreated: 4,
+                    tagsCreated: 5,
+                    usersCreated: 6,
+                ))
                 ->once();
         });
         Passport::actingAs($user->user);
@@ -54,5 +63,27 @@ class ImportEndpointTest extends ApiEndpointTestAbstract
 
         // Assert
         $response->assertStatus(200);
+        $response->assertExactJson([
+            'report' => [
+                'clients' => [
+                    'created' => 1,
+                ],
+                'projects' => [
+                    'created' => 2,
+                ],
+                'tasks' => [
+                    'created' => 3,
+                ],
+                'time-entries' => [
+                    'created' => 4,
+                ],
+                'tags' => [
+                    'created' => 5,
+                ],
+                'users' => [
+                    'created' => 6,
+                ],
+            ],
+        ]);
     }
 }

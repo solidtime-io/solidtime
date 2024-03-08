@@ -8,6 +8,7 @@ use Database\Factories\OrganizationFactory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Laravel\Jetstream\Events\TeamCreated;
 use Laravel\Jetstream\Events\TeamDeleted;
@@ -59,4 +60,30 @@ class Organization extends JetstreamTeam
         'updated' => TeamUpdated::class,
         'deleted' => TeamDeleted::class,
     ];
+
+    /**
+     * Get all the non-placeholder users of the organization including its owner.
+     *
+     * @return Collection<User>
+     */
+    public function allRealUsers(): Collection
+    {
+        return $this->realUsers->merge([$this->owner]);
+    }
+
+    public function hasRealUserWithEmail(string $email): bool
+    {
+        return $this->allRealUsers()->contains(function (User $user) use ($email): bool {
+            return $user->email === $email;
+        });
+    }
+
+    /**
+     * @return BelongsToMany<User>
+     */
+    public function realUsers(): BelongsToMany
+    {
+        return $this->users()
+            ->where('is_placeholder', false);
+    }
 }
