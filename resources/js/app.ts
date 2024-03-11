@@ -6,8 +6,10 @@ import { createInertiaApp } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 // @ts-expect-error - ziggy in composer is not typed
 import { ZiggyVue } from '../../vendor/tightenco/ziggy/dist/vue.m';
+import { createPinia } from 'pinia';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+const pinia = createPinia();
 
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,
@@ -19,6 +21,7 @@ createInertiaApp({
     setup({ el, App, props, plugin }) {
         createApp({ render: () => h(App, props) })
             .use(plugin)
+            .use(pinia)
             .use(ZiggyVue)
             .mount(el);
     },

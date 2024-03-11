@@ -53,7 +53,7 @@ const closeModal = () => {
         </template>
 
         <template #content>
-            <div class="max-w-xl text-sm text-gray-600 dark:text-gray-400">
+            <div class="max-w-xl text-sm text-muted">
                 If necessary, you may log out of all of your other browser
                 sessions across all of your devices. Some of your recent
                 sessions are listed below; however, this list may not be
@@ -70,7 +70,7 @@ const closeModal = () => {
                     <div>
                         <svg
                             v-if="session.agent.is_desktop"
-                            class="w-8 h-8 text-gray-500"
+                            class="w-8 h-8 text-white"
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"
                             viewBox="0 0 24 24"
@@ -98,7 +98,7 @@ const closeModal = () => {
                     </div>
 
                     <div class="ms-3">
-                        <div class="text-sm text-gray-600 dark:text-gray-400">
+                        <div class="text-sm text-white font-medium">
                             {{
                                 session.agent.platform
                                     ? session.agent.platform
@@ -113,7 +113,7 @@ const closeModal = () => {
                         </div>
 
                         <div>
-                            <div class="text-xs text-gray-500">
+                            <div class="text-xs text-muted">
                                 {{ session.ip_address }},
 
                                 <span

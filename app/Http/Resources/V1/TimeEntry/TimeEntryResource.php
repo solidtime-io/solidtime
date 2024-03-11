@@ -30,8 +30,8 @@ class TimeEntryResource extends BaseResource
             /**
              * @var string|null $end End of time entry (ISO 8601 format, UTC timezone, example: 2024-02-26T17:17:17Z)
              */
-            'end' => $this->formatDateTime($this->resource->start),
-            /** @var int $duration Duration of time entry in seconds */
+            'end' => $this->formatDateTime($this->resource->end),
+            /** @var int|null $duration Duration of time entry in seconds */
             'duration' => $this->resource->getDuration()?->seconds,
             /** @var string|null $description Description of time entry */
             'description' => $this->resource->description,
@@ -42,7 +42,7 @@ class TimeEntryResource extends BaseResource
             /** @var string $user_id ID of user */
             'user_id' => $this->resource->user_id,
             /** @var array<string> $tags List of tag IDs */
-            'tags' => $this->resource->tags,
+            'tags' => $this->resource->tags ?? [],
         ];
     }
 }

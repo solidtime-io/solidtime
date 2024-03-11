@@ -2,6 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+
+:root{
+    --theme-color-icon-default: #42466C;
+    --theme-color-card-background: #13152B;
+}
+
+
 [x-cloak] {
     display: none;
+}
+
+@font-face {
+    font-family: 'Outfit';
+    src: url('/fonts/Outfit-VariableFont_wght.ttf');
 }

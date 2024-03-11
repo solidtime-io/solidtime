@@ -94,7 +94,7 @@ class JetstreamServiceProvider extends ServiceProvider
             'tags:update',
             'tags:delete',
             'organizations:view',
-        ])->description('Editor users have the ability to read, create, and update.');
+        ])->description('Managers have the ability to read, create, and update their own time entries as well as those of their team.');
 
         Jetstream::role('employee', 'Employee', [
             'projects:view',
@@ -104,6 +104,6 @@ class JetstreamServiceProvider extends ServiceProvider
             'time-entries:update:own',
             'time-entries:delete:own',
             'organizations:view',
-        ])->description('Editor users have the ability to read, create, and update.');
+        ])->description('Employees have the ability to read, create, and update their own time entries.');
     }
 }

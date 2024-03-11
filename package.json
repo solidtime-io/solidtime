@@ -7,7 +7,8 @@
         "lint": "eslint --ext .js,.vue,.ts --ignore-path .gitignore .",
         "lint:fix": "eslint --fix --ext .js,.vue,.ts --ignore-path .gitignore .",
         "type-check": "vue-tsc --noEmit",
-        "test:e2e": "npx playwright test"
+        "test:e2e": "npx playwright test",
+        "generate:zod": "npx openapi-zod-client http://localhost:80/docs/api.json --output openapi.json.client.ts --base-url http://solidtime.test/api"
     },
     "devDependencies": {
         "@inertiajs/vue3": "^1.0.0",
@@ -20,6 +21,7 @@
         "autoprefixer": "^10.4.7",
         "axios": "^1.6.4",
         "laravel-vite-plugin": "^1.0.0",
+        "openapi-zod-client": "^1.16.2",
         "postcss": "^8.4.14",
         "tailwindcss": "^3.1.0",
         "typescript": "^5.3.3",
@@ -30,8 +32,16 @@
         "ziggy-js": "^1.8.1"
     },
     "dependencies": {
+        "@heroicons/vue": "^2.1.1",
         "@rushstack/eslint-patch": "^1.7.0",
         "@vue/eslint-config-prettier": "^9.0.0",
-        "@vue/eslint-config-typescript": "^12.0.0"
+        "@vue/eslint-config-typescript": "^12.0.0",
+        "dayjs": "^1.11.10",
+        "echarts": "^5.5.0",
+        "parse-duration": "^1.1.0",
+        "pinia": "^2.1.7",
+        "radix-vue": "^1.4.9",
+        "tailwind-merge": "^2.2.1",
+        "vue-echarts": "^6.6.9"
     }
 }

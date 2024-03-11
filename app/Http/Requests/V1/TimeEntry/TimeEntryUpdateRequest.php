@@ -42,7 +42,7 @@ class TimeEntryUpdateRequest extends FormRequest
             ],
             // End of time entry (ISO 8601 format, UTC timezone)
             'end' => [
-                'required',
+                'present',
                 'nullable',
                 'date', // TODO
                 'after:start',
