@@ -31,8 +31,15 @@ class ColorService
         '#78909c',
     ];
 
+    private const string VALID_REGEX = '/^#[0-9a-f]{6}$/';
+
     public function getRandomColor(): string
     {
         return self::COLORS[array_rand(self::COLORS)];
+    }
+
+    public function isValid(string $color): bool
+    {
+        return preg_match(self::VALID_REGEX, $color) === 1;
     }
 }

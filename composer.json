@@ -6,6 +6,7 @@
     "license": "AGPL-3.0-or-later",
     "require": {
         "php": "8.3.*",
+        "ext-zip": "*",
         "dedoc/scramble": "^0.8.5",
         "filament/filament": "^3.2",
         "guzzlehttp/guzzle": "^7.2",
@@ -16,6 +17,7 @@
         "laravel/passport": "^11.10.2",
         "laravel/tinker": "^2.8",
         "pxlrbt/filament-environment-indicator": "^2.0",
+        "spatie/temporary-directory": "^2.2",
         "tightenco/ziggy": "^1.0",
         "tpetry/laravel-postgresql-enhanced": "^0.33.0"
     },

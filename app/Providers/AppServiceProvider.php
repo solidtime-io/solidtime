@@ -46,6 +46,7 @@ class AppServiceProvider extends ServiceProvider
 
         Model::preventLazyLoading(! $this->app->isProduction());
         Model::preventSilentlyDiscardingAttributes(! $this->app->isProduction());
+        Model::preventAccessingMissingAttributes(! $this->app->isProduction());
         Relation::enforceMorphMap([
             'membership' => Membership::class,
             'organization' => Organization::class,

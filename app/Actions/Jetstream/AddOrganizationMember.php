@@ -8,6 +8,7 @@ use App\Models\Organization;
 use App\Models\User;
 use Closure;
 use Illuminate\Contracts\Validation\Rule;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
@@ -59,7 +60,7 @@ class AddOrganizationMember implements AddsTeamMembers
     /**
      * Get the validation rules for adding a team member.
      *
-     * @return array<string, array<Rule|string>>
+     * @return array<string, array<ValidationRule|Rule|string>>
      */
     protected function rules(): array
     {

@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Service\Import;
 
+use App\Service\Import\Importers\ImportException;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
 
 /**
  * @template TModel of Model
@@ -23,9 +25,15 @@ class ImportDatabaseHelper
      */
     private array $identifiers;
 
+    /**
+     * @var array<string, string>|null
+     */
     private ?array $mapIdentifierToKey = null;
 
-    private array $mapNewAttach = [];
+    /**
+     * @var array<string, string>
+     */
+    private array $mapExternalIdentifierToInternalIdentifier = [];
 
     private bool $attachToExisting;
 
@@ -57,7 +65,11 @@ class ImportDatabaseHelper
         return (new $this->model)->query();
     }
 
-    private function createEntity(array $identifierData, array $createValues): string
+    /**
+     * @param  array<string, mixed>  $identifierData
+     * @param  array<string, mixed>  $createValues
+     */
+    private function createEntity(array $identifierData, array $createValues, ?string $externalIdentifier): string
     {
         $model = new $this->model();
         foreach ($identifierData as $identifier => $identifierValue) {
@@ -72,32 +84,95 @@ class ImportDatabaseHelper
             ($this->afterCreate)($model);
         }
 
-        $this->mapIdentifierToKey[$this->getHash($identifierData)] = $model->getKey();
+        $hash = $this->getHash($identifierData);
+        $this->mapIdentifierToKey[$hash] = $model->getKey();
         $this->createdCount++;
+
+        if ($externalIdentifier !== null) {
+            $this->mapExternalIdentifierToInternalIdentifier[$externalIdentifier] = $hash;
+        }
 
         return $model->getKey();
     }
 
+    /**
+     * @param  array<string, mixed>  $data
+     */
     private function getHash(array $data): string
     {
-        return md5(json_encode($data));
+        $jsonData = json_encode($data);
+        if ($jsonData === false) {
+            throw new \RuntimeException('Failed to encode data to JSON');
+        }
+
+        return md5($jsonData);
     }
 
-    public function getKey(array $identifierData, array $createValues = []): string
+    /**
+     * @param  array<string, mixed>  $identifierData
+     * @param  array<string, mixed>  $createValues
+     *
+     * @throws ImportException
+     */
+    public function getKey(array $identifierData, array $createValues = [], ?string $externalIdentifier = null): string
     {
         $this->checkMap();
+
+        $this->validateIdentifierData($identifierData);
 
         $hash = $this->getHash($identifierData);
         if ($this->attachToExisting) {
             $key = $this->mapIdentifierToKey[$hash] ?? null;
             if ($key !== null) {
+                if ($externalIdentifier !== null) {
+                    $this->mapExternalIdentifierToInternalIdentifier[$externalIdentifier] = $hash;
+                }
+                Log::debug('HIT', [
+                    'class' => $this->model,
+                ]);
+
                 return $key;
             }
 
-            return $this->createEntity($identifierData, $createValues);
+            Log::debug('MISS', [
+                'class' => $this->model,
+            ]);
+
+            return $this->createEntity($identifierData, $createValues, $externalIdentifier);
         } else {
             throw new \RuntimeException('Not implemented');
         }
+    }
+
+    /**
+     * @param  array<string, mixed>  $identifierData
+     *
+     * @throws ImportException
+     */
+    private function validateIdentifierData(array $identifierData): void
+    {
+        if (array_keys($identifierData) !== $this->identifiers) {
+            throw new ImportException('Invalid identifier data');
+        }
+    }
+
+    public function getKeyByExternalIdentifier(string $externalIdentifier): ?string
+    {
+        $hash = $this->mapExternalIdentifierToInternalIdentifier[$externalIdentifier] ?? null;
+        if ($hash === null) {
+            return null;
+        }
+
+        return $this->mapIdentifierToKey[$hash] ?? null;
+    }
+
+    /**
+     * @return array<string>
+     */
+    public function getExternalIds(): array
+    {
+        // Note: Otherwise the external ids are integers
+        return array_map(fn ($value) => (string) $value, array_keys($this->mapExternalIdentifierToInternalIdentifier));
     }
 
     private function checkMap(): void
