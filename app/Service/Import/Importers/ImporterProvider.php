@@ -11,6 +11,9 @@ class ImporterProvider
      */
     private array $importers = [
         'toggl_time_entries' => TogglTimeEntriesImporter::class,
+        'toggl_data_importer' => TogglDataImporter::class,
+        'clockify_time_entries' => ClockifyTimeEntriesImporter::class,
+        'clockify_projects' => ClockifyProjectsImporter::class,
     ];
 
     /**

@@ -11,6 +11,8 @@ use LogicException;
 
 abstract class ApiException extends Exception
 {
+    public const string KEY = 'api_exception';
+
     /**
      * Render the exception into an HTTP response.
      */
@@ -29,11 +31,13 @@ abstract class ApiException extends Exception
      */
     public function getKey(): string
     {
-        if (defined(static::class.'::KEY')) {
-            return static::KEY;
+        $key = static::KEY;
+
+        if ($key === ApiException::KEY) {
+            throw new LogicException('API exceptions need the KEY constant defined.');
         }
 
-        throw new LogicException('API exceptions need the KEY constant defined.');
+        return $key;
     }
 
     /**

@@ -109,5 +109,8 @@ class JetstreamServiceProvider extends ServiceProvider
             'time-entries:delete:own',
             'organizations:view',
         ])->description('Editor users have the ability to read, create, and update.');
+
+        Jetstream::role('placeholder', 'Placeholder', [
+        ])->description('Placeholders are used for importing data. They cannot log in and have no permissions.');
     }
 }

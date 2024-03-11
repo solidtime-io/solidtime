@@ -26,8 +26,7 @@ class ImportController extends Controller
             $report = $importService->import(
                 $organization,
                 $request->input('type'),
-                $request->input('data'),
-                $request->input('options')
+                $request->input('data')
             );
 
             return new JsonResponse([

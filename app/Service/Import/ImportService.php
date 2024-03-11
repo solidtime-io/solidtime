@@ -16,13 +16,13 @@ class ImportService
     /**
      * @throws ImportException
      */
-    public function import(Organization $organization, string $importerType, string $data, array $options): ReportDto
+    public function import(Organization $organization, string $importerType, string $data): ReportDto
     {
         /** @var ImporterContract $importer */
         $importer = app(ImporterProvider::class)->getImporter($importerType);
         $importer->init($organization);
-        DB::transaction(function () use (&$importer, &$data, &$options, &$organization) {
-            $importer->importData($data, $options);
+        DB::transaction(function () use (&$importer, &$data) {
+            $importer->importData($data);
         });
 
         return $importer->getReport();

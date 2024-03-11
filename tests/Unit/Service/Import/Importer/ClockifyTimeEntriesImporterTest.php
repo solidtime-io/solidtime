@@ -6,17 +6,17 @@ namespace Tests\Unit\Service\Import\Importer;
 
 use App\Models\Organization;
 use App\Models\TimeEntry;
-use App\Service\Import\Importers\TogglTimeEntriesImporter;
+use App\Service\Import\Importers\ClockifyTimeEntriesImporter;
 
-class TogglTimeEntriesImporterTest extends ImporterTestAbstract
+class ClockifyTimeEntriesImporterTest extends ImporterTestAbstract
 {
     public function test_import_of_test_file_succeeds(): void
     {
         // Arrange
         $organization = Organization::factory()->create();
-        $importer = new TogglTimeEntriesImporter();
+        $importer = new ClockifyTimeEntriesImporter();
         $importer->init($organization);
-        $data = file_get_contents(storage_path('tests/toggl_time_entries_import_test_1.csv'));
+        $data = file_get_contents(storage_path('tests/clockify_time_entries_import_test_1.csv'));
 
         // Act
         $importer->importData($data, []);
@@ -45,11 +45,11 @@ class TogglTimeEntriesImporterTest extends ImporterTestAbstract
     {
         // Arrange
         $organization = Organization::factory()->create();
-        $importer = new TogglTimeEntriesImporter();
+        $importer = new ClockifyTimeEntriesImporter();
         $importer->init($organization);
-        $data = file_get_contents(storage_path('tests/toggl_time_entries_import_test_1.csv'));
+        $data = file_get_contents(storage_path('tests/clockify_time_entries_import_test_1.csv'));
         $importer->importData($data, []);
-        $importer = new TogglTimeEntriesImporter();
+        $importer = new ClockifyTimeEntriesImporter();
         $importer->init($organization);
 
         // Act
