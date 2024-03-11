@@ -4,7 +4,10 @@ import { api } from '../../../openapi.json.client';
 import type { ZodiosResponseByAlias } from '@zodios/core';
 import type { SolidTimeApi } from '@/utils/api';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 import { getCurrentOrganizationId, getCurrentUserId } from '@/utils/useUser';
+
+dayjs.extend(utc);
 
 type TimeEntryResponse = ZodiosResponseByAlias<SolidTimeApi, 'getTimeEntries'>;
 export type TimeEntry = TimeEntryResponse['data'][0];
