@@ -97,7 +97,7 @@ async function onToggleButtonPress(newState: boolean) {
     }
 }
 
-const currentProject = ref<Project | null>(null);
+const currentProject = ref<Project>();
 watch(currentProject, () => {
     if (currentProject.value) {
         currentTimeEntry.value.project_id = currentProject.value.id;

@@ -164,7 +164,7 @@ function updateValue(e: string[]) {
             <ComboboxRoot
                 multiple
                 :open="open"
-                @update:modelValue="updateValue"
+                @update:modelValue="updateValue as any"
                 v-model:searchTerm="searchValue"
                 class="relative">
                 <ComboboxAnchor>
