@@ -11,6 +11,20 @@ jobs:
     services:
       mailpit:
         image: 'axllent/mailpit:latest'
+      pgsql:
+        image: postgres:15
+        env:
+          PGPASSWORD: 'root'
+          POSTGRES_DB: 'laravel'
+          POSTGRES_USER: 'root'
+          POSTGRES_PASSWORD: 'root'
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
       - name: "Checkout code"
