@@ -38,14 +38,11 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
-          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv
           coverage: none
 
       - name: Run composer install
         run: composer install -n --prefer-dist
-
-      - name: Create SQLite database
-        run: touch database/database.sqlite
 
       - name: Prepare Laravel Application
         run: |
