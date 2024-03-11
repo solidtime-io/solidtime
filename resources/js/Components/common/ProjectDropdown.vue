@@ -20,8 +20,8 @@ import { getRandomColor } from '@/utils/color';
 
 const searchValue = ref('');
 const searchInput = ref<HTMLElement | null>(null);
-const model = defineModel<Project | null>({
-    default: null,
+const model = defineModel<Project>({
+    default: undefined,
 });
 const open = ref(false);
 const projectsStore = useProjectsStore();
@@ -63,6 +63,7 @@ async function addProjectIfNoneExists() {
 watch(open, (isOpen) => {
     if (isOpen) {
         nextTick(() => {
+            // @ts-expect-error We need to access the actual HTML Element to focus as radix-vue does not support any other way right now
             searchInput.value?.$el?.focus();
         });
 
