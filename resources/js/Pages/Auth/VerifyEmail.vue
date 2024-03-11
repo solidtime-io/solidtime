@@ -28,7 +28,7 @@ const verificationLinkSent = computed(
             <AuthenticationCardLogo />
         </template>
 
-        <div class="mb-4 text-sm text-gray-600 dark:text-gray-400">
+        <div class="mb-4 text-sm text-muted">
             Before continuing, could you verify your email address by clicking
             on the link we just emailed to you? If you didn't receive the email,
             we will gladly send you another.
@@ -52,7 +52,7 @@ const verificationLinkSent = computed(
                 <div>
                     <Link
                         :href="route('profile.show')"
-                        class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800">
+                        class="underline text-sm text-muted hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800">
                         Edit Profile</Link
                     >
 
@@ -60,7 +60,7 @@ const verificationLinkSent = computed(
                         :href="route('logout')"
                         method="post"
                         as="button"
-                        class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800 ms-2">
+                        class="underline text-sm text-muted hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800 ms-2">
                         Log Out
                     </Link>
                 </div>

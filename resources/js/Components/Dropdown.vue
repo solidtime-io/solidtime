@@ -1,22 +1,28 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted } from 'vue';
 
-const props = defineProps({
-    align: {
-        type: String,
-        default: 'right',
-    },
-    width: {
-        type: String,
-        default: '48',
-    },
-    contentClasses: {
-        type: Array,
-        default: () => ['py-1', 'bg-white dark:bg-gray-700'],
-    },
-});
+const props = withDefaults(
+    defineProps<{
+        align: string;
+        width: string;
+        contentClasses?: string[];
+        closeOnContentClick: boolean;
+    }>(),
+    {
+        align: 'right',
+        width: '48',
+        contentClasses: () => [
+            'overflow-none',
+            'bg-card-background',
+            'border',
+            'border-card-border',
+        ],
+        closeOnContentClick: true,
+    }
+);
 
-const open = ref(false);
+const emit = defineEmits(['open']);
+const open = defineModel({ default: false });
 
 const closeOnEscape = (e: KeyboardEvent) => {
     if (open.value && e.key === 'Escape') {
@@ -26,6 +32,12 @@ const closeOnEscape = (e: KeyboardEvent) => {
 
 onMounted(() => document.addEventListener('keydown', closeOnEscape));
 onUnmounted(() => document.removeEventListener('keydown', closeOnEscape));
+
+function onContentClick() {
+    if (props.closeOnContentClick === true) {
+        open.value = false;
+    }
+}
 
 const widthClass = computed(() => {
     return {
@@ -42,13 +54,24 @@ const alignmentClasses = computed(() => {
         return 'ltr:origin-top-right rtl:origin-top-left end-0';
     }
 
+    if (props.align === 'bottom-right') {
+        return 'bottom-[calc(100%+15px)] ltr:origin-top-right rtl:origin-top-left end-0';
+    }
+
     return 'origin-top';
 });
+
+function toggleOpen() {
+    open.value = !open.value;
+    if (open.value === true) {
+        emit('open');
+    }
+}
 </script>
 
 <template>
     <div class="relative">
-        <div @click="open = !open">
+        <div @click="toggleOpen">
             <slot name="trigger" />
         </div>
 
@@ -67,9 +90,9 @@ const alignmentClasses = computed(() => {
                 class="absolute z-50 mt-2 rounded-md shadow-lg"
                 :class="[widthClass, alignmentClasses]"
                 style="display: none"
-                @click="open = false">
+                @click="onContentClick">
                 <div
-                    class="rounded-md ring-1 ring-black ring-opacity-5"
+                    class="rounded-lg ring-1 relative ring-black ring-opacity-5"
                     :class="contentClasses">
                     <slot name="content" />
                 </div>

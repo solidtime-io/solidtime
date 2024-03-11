@@ -32,6 +32,8 @@ class TimeEntryController extends Controller
      * Get time entries
      *
      * @throws AuthorizationException
+     *
+     * @operationId getTimeEntries
      */
     public function index(Organization $organization, TimeEntryIndexRequest $request): JsonResource
     {
@@ -103,6 +105,8 @@ class TimeEntryController extends Controller
      * Create time entry
      *
      * @throws AuthorizationException|TimeEntryStillRunning
+     *
+     * @operationId createTimeEntry
      */
     public function store(Organization $organization, TimeEntryStoreRequest $request): JsonResource
     {
@@ -120,7 +124,7 @@ class TimeEntryController extends Controller
 
         $timeEntry = new TimeEntry();
         $timeEntry->fill($request->validated());
-        $timeEntry->description = $request->get('description', '');
+        $timeEntry->description = $request->get('description') ?? '';
         $timeEntry->organization()->associate($organization);
         $timeEntry->save();
 
@@ -131,6 +135,8 @@ class TimeEntryController extends Controller
      * Update time entry
      *
      * @throws AuthorizationException
+     *
+     * @operationId updateTimeEntry
      */
     public function update(Organization $organization, TimeEntry $timeEntry, TimeEntryUpdateRequest $request): JsonResource
     {
@@ -141,6 +147,7 @@ class TimeEntryController extends Controller
         }
 
         $timeEntry->fill($request->validated());
+        $timeEntry->description = $request->get('description', $timeEntry->description) ?? '';
         $timeEntry->save();
 
         return new TimeEntryResource($timeEntry);
@@ -150,6 +157,8 @@ class TimeEntryController extends Controller
      * Delete time entry
      *
      * @throws AuthorizationException
+     *
+     * @operationId deleteTimeEntry
      */
     public function destroy(Organization $organization, TimeEntry $timeEntry): JsonResponse
     {

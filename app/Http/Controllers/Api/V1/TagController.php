@@ -27,6 +27,8 @@ class TagController extends Controller
      * Get tags
      *
      * @throws AuthorizationException
+     *
+     * @operationId getTags
      */
     public function index(Organization $organization): TagCollection
     {
@@ -44,6 +46,8 @@ class TagController extends Controller
      * Create tag
      *
      * @throws AuthorizationException
+     *
+     * @operationId createTag
      */
     public function store(Organization $organization, TagStoreRequest $request): TagResource
     {
@@ -61,6 +65,8 @@ class TagController extends Controller
      * Update tag
      *
      * @throws AuthorizationException
+     *
+     * @operationId updateTag
      */
     public function update(Organization $organization, Tag $tag, TagUpdateRequest $request): TagResource
     {
@@ -76,6 +82,8 @@ class TagController extends Controller
      * Delete tag
      *
      * @throws AuthorizationException
+     *
+     * @operationId deleteTag
      */
     public function destroy(Organization $organization, Tag $tag): JsonResponse
     {

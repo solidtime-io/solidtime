@@ -138,8 +138,7 @@ const displayableRole = (role: string) => {
 
                 <template #form>
                     <div class="col-span-6">
-                        <div
-                            class="max-w-xl text-sm text-gray-600 dark:text-gray-400">
+                        <div class="max-w-xl text-sm text-muted">
                             Please provide the email address of the person you
                             would like to add to this team.
                         </div>
@@ -191,7 +190,7 @@ const displayableRole = (role: string) => {
                                     <!-- Role Name -->
                                     <div class="flex items-center">
                                         <div
-                                            class="text-sm text-gray-600 dark:text-gray-400"
+                                            class="text-sm text-muted"
                                             :class="{
                                                 'font-semibold':
                                                     addTeamMemberForm.role ==
@@ -220,7 +219,7 @@ const displayableRole = (role: string) => {
 
                                     <!-- Role Description -->
                                     <div
-                                        class="mt-2 text-xs text-gray-600 dark:text-gray-400 text-start">
+                                        class="mt-2 text-xs text-muted text-start">
                                         {{ role.description }}
                                     </div>
                                 </div>
@@ -269,7 +268,7 @@ const displayableRole = (role: string) => {
                             v-for="invitation in team.team_invitations"
                             :key="invitation.id"
                             class="flex items-center justify-between">
-                            <div class="text-gray-600 dark:text-gray-400">
+                            <div class="text-muted">
                                 {{ invitation.email }}
                             </div>
 
@@ -390,7 +389,7 @@ const displayableRole = (role: string) => {
                                 <!-- Role Name -->
                                 <div class="flex items-center">
                                     <div
-                                        class="text-sm text-gray-600 dark:text-gray-400"
+                                        class="text-sm text-muted"
                                         :class="{
                                             'font-semibold':
                                                 updateRoleForm.role ===
@@ -415,8 +414,7 @@ const displayableRole = (role: string) => {
                                 </div>
 
                                 <!-- Role Description -->
-                                <div
-                                    class="mt-2 text-xs text-gray-600 dark:text-gray-400">
+                                <div class="mt-2 text-xs text-muted">
                                     {{ role.description }}
                                 </div>
                             </div>

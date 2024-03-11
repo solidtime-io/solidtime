@@ -48,12 +48,11 @@ const close = () => {
                 </div>
 
                 <div class="mt-3 text-center sm:mt-0 sm:ms-4 sm:text-start">
-                    <h3
-                        class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                    <h3 class="text-lg font-medium text-white">
                         <slot name="title" />
                     </h3>
 
-                    <div class="mt-4 text-sm text-gray-600 dark:text-gray-400">
+                    <div class="mt-4 text-sm text-muted">
                         <slot name="content" />
                     </div>
                 </div>
