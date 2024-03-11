@@ -33,10 +33,7 @@ class TimeEntryStoreRequest extends FormRequest
                 'uuid',
                 new ExistsEloquent(User::class, null, function (Builder $builder): Builder {
                     /** @var Builder<User> $builder */
-                    return $builder->whereHas('organizations', function (Builder $builder) {
-                        /** @var Builder<Organization> $builder */
-                        return $builder->whereKey($this->organization->getKey());
-                    });
+                    return $builder->belongsToOrganization($this->organization);
                 }),
             ],
             // ID of the task that the time entry should belong to

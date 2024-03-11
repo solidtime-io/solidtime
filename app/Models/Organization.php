@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Laravel\Jetstream\Events\TeamCreated;
 use Laravel\Jetstream\Events\TeamDeleted;
 use Laravel\Jetstream\Events\TeamUpdated;
+use Laravel\Jetstream\Jetstream;
 use Laravel\Jetstream\Team as JetstreamTeam;
 
 /**
@@ -21,6 +22,7 @@ use Laravel\Jetstream\Team as JetstreamTeam;
  * @property bool $personal_team
  * @property User $owner
  * @property Collection<User> $users
+ * @property Collection<string, User> $realUsers
  *
  * @method HasMany<OrganizationInvitation> teamInvitations()
  * @method static OrganizationFactory factory()
@@ -64,7 +66,7 @@ class Organization extends JetstreamTeam
     /**
      * Get all the non-placeholder users of the organization including its owner.
      *
-     * @return Collection<User>
+     * @return Collection<string, User>
      */
     public function allRealUsers(): Collection
     {
@@ -76,6 +78,19 @@ class Organization extends JetstreamTeam
         return $this->allRealUsers()->contains(function (User $user) use ($email): bool {
             return $user->email === $email;
         });
+    }
+
+    /**
+     * Get all the users that belong to the team.
+     *
+     * @return BelongsToMany<User>
+     */
+    public function users(): BelongsToMany
+    {
+        return $this->belongsToMany(Jetstream::userModel(), Jetstream::membershipModel())
+            ->withPivot('role')
+            ->withTimestamps()
+            ->as('membership');
     }
 
     /**

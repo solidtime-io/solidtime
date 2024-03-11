@@ -74,7 +74,7 @@ class OrganizationResource extends Resource
                         // TODO: different disk!
                         try {
                             /** @var ReportDto $report */
-                            $report = app(ImportService::class)->import($record, $data['type'], Storage::disk('public')->get($data['file']), []);
+                            $report = app(ImportService::class)->import($record, $data['type'], Storage::disk('public')->get($data['file']));
                             Notification::make()
                                 ->title('Import successful')
                                 ->success()
@@ -98,9 +98,10 @@ class OrganizationResource extends Resource
                                 ->send();
                         }
                     })
-                    ->tooltip(fn (Organization $record): string => "Import into {$record->name}")
+                    ->tooltip(fn (Organization $record): string => 'Import into '.$record->name)
                     ->form([
                         Forms\Components\FileUpload::make('file')
+                            // TODO: disk!
                             ->label('File')
                             ->required(),
                         Select::make('type')

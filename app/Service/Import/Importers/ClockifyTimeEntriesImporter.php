@@ -19,7 +19,7 @@ use Illuminate\Support\Carbon;
 use League\Csv\Exception as CsvException;
 use League\Csv\Reader;
 
-class TogglTimeEntriesImporter implements ImporterContract
+class ClockifyTimeEntriesImporter implements ImporterContract
 {
     private Organization $organization;
 
@@ -160,14 +160,14 @@ class TogglTimeEntriesImporter implements ImporterContract
                 }
                 $timeEntry->billable = $record['Billable'] === 'Yes';
                 $timeEntry->tags = $this->getTags($record['Tags']);
-                $start = Carbon::createFromFormat('Y-m-d H:i:s', $record['Start date'].' '.$record['Start time'], 'UTC');
+                $start = Carbon::createFromFormat('m/d/Y H:i:s A', $record['Start Date'].' '.$record['Start Time'], 'UTC');
                 if ($start === false) {
-                    throw new ImportException('Start date ("'.$record['Start date'].'") or time ("'.$record['Start time'].'") are invalid');
+                    throw new ImportException('Start date ("'.$record['Start Date'].'") or time ("'.$record['Start Time'].'") are invalid');
                 }
                 $timeEntry->start = $start;
-                $end = Carbon::createFromFormat('Y-m-d H:i:s', $record['End date'].' '.$record['End time'], 'UTC');
+                $end = Carbon::createFromFormat('m/d/Y H:i:s A', $record['End Date'].' '.$record['End Time'], 'UTC');
                 if ($end === false) {
-                    throw new ImportException('End date ("'.$record['End date'].'") or time ("'.$record['End time'].'") are invalid');
+                    throw new ImportException('End date ("'.$record['End Date'].'") or time ("'.$record['End Time'].'") are invalid');
                 }
                 $timeEntry->end = $end;
                 $timeEntry->save();
@@ -191,18 +191,19 @@ class TogglTimeEntriesImporter implements ImporterContract
     private function validateHeader(array $header): void
     {
         $requiredFields = [
-            'User',
-            'Email',
-            'Client',
             'Project',
-            'Task',
+            'Client',
             'Description',
-            'Billable',
-            'Start date',
-            'Start time',
-            'End date',
-            'End time',
+            'Task',
+            'User',
+            'Group',
+            'Email',
             'Tags',
+            'Billable',
+            'Start Date',
+            'Start Time',
+            'End Date',
+            'End Time',
         ];
         foreach ($requiredFields as $requiredField) {
             if (! in_array($requiredField, $header, true)) {

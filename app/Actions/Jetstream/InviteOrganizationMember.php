@@ -34,7 +34,7 @@ class InviteOrganizationMember implements InvitesTeamMembers
 
         InvitingTeamMember::dispatch($organization, $email, $role);
 
-        /** @var TeamInvitation $invitation */
+        /** @var OrganizationInvitation $invitation */
         $invitation = $organization->teamInvitations()->create([
             'email' => $email,
             'role' => $role,

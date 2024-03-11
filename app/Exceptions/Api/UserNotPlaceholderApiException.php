@@ -6,5 +6,5 @@ namespace App\Exceptions\Api;
 
 class UserNotPlaceholderApiException extends ApiException
 {
-    const string KEY = 'user_not_placeholder';
+    public const string KEY = 'user_not_placeholder';
 }

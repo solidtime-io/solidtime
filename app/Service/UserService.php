@@ -13,11 +13,11 @@ class UserService
     public function assignOrganizationEntitiesToDifferentUser(Organization $organization, User $fromUser, User $toUser): void
     {
         // Time entries
-        dump(TimeEntry::query()
+        TimeEntry::query()
             ->whereBelongsTo($organization, 'organization')
             ->whereBelongsTo($fromUser, 'user')
             ->update([
                 'user_id' => $toUser->getKey(),
-            ]));
+            ]);
     }
 }

@@ -6,5 +6,5 @@ namespace App\Exceptions\Api;
 
 class TimeEntryStillRunningApiException extends ApiException
 {
-    const string KEY = 'time_entry_still_running';
+    public const string KEY = 'time_entry_still_running';
 }
