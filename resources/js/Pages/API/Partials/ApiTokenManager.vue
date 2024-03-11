@@ -129,10 +129,9 @@ const deleteApiToken = () => {
                                         createApiTokenForm.permissions
                                     "
                                     :value="permission" />
-                                <span
-                                    class="ms-2 text-sm text-gray-600 dark:text-gray-400"
-                                    >{{ permission }}</span
-                                >
+                                <span class="ms-2 text-sm text-muted">{{
+                                    permission
+                                }}</span>
                             </label>
                         </div>
                     </div>
@@ -246,10 +245,9 @@ const deleteApiToken = () => {
                             <Checkbox
                                 v-model:checked="updateApiTokenForm.permissions"
                                 :value="permission" />
-                            <span
-                                class="ms-2 text-sm text-gray-600 dark:text-gray-400"
-                                >{{ permission }}</span
-                            >
+                            <span class="ms-2 text-sm text-muted">{{
+                                permission
+                            }}</span>
                         </label>
                     </div>
                 </div>

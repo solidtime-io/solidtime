@@ -61,17 +61,6 @@ export interface Project {
     tasks: Task[];
 }
 
-export interface Tag {
-    // columns
-    id: string;
-    name: string;
-    organization_id: string;
-    created_at: string | null;
-    updated_at: string | null;
-    // relations
-    organization: Organization;
-}
-
 export interface Task {
     // columns
     id: string;
