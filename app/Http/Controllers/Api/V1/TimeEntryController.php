@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1;
 
-use App\Exceptions\TimeEntryStillRunning;
+use App\Exceptions\Api\TimeEntryStillRunningApiException;
 use App\Http\Requests\V1\TimeEntry\TimeEntryIndexRequest;
 use App\Http\Requests\V1\TimeEntry\TimeEntryStoreRequest;
 use App\Http\Requests\V1\TimeEntry\TimeEntryUpdateRequest;
@@ -104,7 +104,7 @@ class TimeEntryController extends Controller
     /**
      * Create time entry
      *
-     * @throws AuthorizationException|TimeEntryStillRunning
+     * @throws AuthorizationException|TimeEntryStillRunningApiException
      *
      * @operationId createTimeEntry
      */
@@ -118,8 +118,7 @@ class TimeEntryController extends Controller
 
         if ($request->get('end') === null && TimeEntry::query()->where('user_id', $request->get('user_id'))->where('end', null)->exists()) {
             // TODO: API documentation
-            // TODO: Create concept for api exceptions
-            throw new TimeEntryStillRunning('User already has an active time entry');
+            throw new TimeEntryStillRunningApiException();
         }
 
         $timeEntry = new TimeEntry();

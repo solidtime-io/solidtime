@@ -74,6 +74,9 @@ class JetstreamServiceProvider extends ServiceProvider
             'clients:delete',
             'organizations:view',
             'organizations:update',
+            'import',
+            'users:invite-placeholder',
+            'users:view',
         ])->description('Administrator users can perform any action.');
 
         Jetstream::role('manager', 'Manager', [
@@ -94,6 +97,7 @@ class JetstreamServiceProvider extends ServiceProvider
             'tags:update',
             'tags:delete',
             'organizations:view',
+            'users:view',
         ])->description('Managers have the ability to read, create, and update their own time entries as well as those of their team.');
 
         Jetstream::role('employee', 'Employee', [
@@ -105,5 +109,8 @@ class JetstreamServiceProvider extends ServiceProvider
             'time-entries:delete:own',
             'organizations:view',
         ])->description('Employees have the ability to read, create, and update their own time entries.');
+
+        Jetstream::role('placeholder', 'Placeholder', [
+        ])->description('Placeholders are used for importing data. They cannot log in and have no permissions.');
     }
 }

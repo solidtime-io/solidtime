@@ -51,7 +51,7 @@ class TimeEntryUpdateRequest extends FormRequest
             'description' => [
                 'nullable',
                 'string',
-                'max:255',
+                'max:500',
             ],
             // List of tag IDs
             'tags' => [

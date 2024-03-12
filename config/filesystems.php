@@ -58,6 +58,12 @@ return [
             'throw' => false,
         ],
 
+        'testfiles' => [
+            'driver' => 'local',
+            'root' => storage_path('tests'),
+            'throw' => false,
+        ],
+
     ],
 
     /*
