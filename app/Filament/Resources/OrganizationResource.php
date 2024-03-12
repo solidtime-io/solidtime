@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\OrganizationResource\Pages;
+use App\Filament\Resources\OrganizationResource\RelationManagers\UsersRelationManager;
 use App\Models\Organization;
 use App\Service\Import\Importers\ImporterProvider;
 use App\Service\Import\Importers\ImportException;
@@ -71,10 +72,13 @@ class OrganizationResource extends Resource
                 Action::make('Import')
                     ->icon('heroicon-o-inbox-arrow-down')
                     ->action(function (Organization $record, array $data) {
-                        // TODO: different disk!
                         try {
                             /** @var ReportDto $report */
-                            $report = app(ImportService::class)->import($record, $data['type'], Storage::disk('public')->get($data['file']));
+                            $report = app(ImportService::class)->import(
+                                $record,
+                                $data['type'],
+                                Storage::disk(config('filament.default_filesystem_disk'))->get($data['file'])
+                            );
                             Notification::make()
                                 ->title('Import successful')
                                 ->success()
@@ -101,7 +105,6 @@ class OrganizationResource extends Resource
                     ->tooltip(fn (Organization $record): string => 'Import into '.$record->name)
                     ->form([
                         Forms\Components\FileUpload::make('file')
-                            // TODO: disk!
                             ->label('File')
                             ->required(),
                         Select::make('type')
@@ -126,7 +129,7 @@ class OrganizationResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            UsersRelationManager::class,
         ];
     }
 
