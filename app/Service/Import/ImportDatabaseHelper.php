@@ -8,7 +8,7 @@ use App\Service\Import\Importers\ImportException;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
 /**
  * @template TModel of Model
@@ -43,11 +43,13 @@ class ImportDatabaseHelper
 
     private int $createdCount;
 
+    private array $validate;
+
     /**
      * @param  class-string<TModel>  $model
      * @param  array<string>  $identifiers
      */
-    public function __construct(string $model, array $identifiers, bool $attachToExisting = false, ?Closure $queryModifier = null, ?Closure $afterCreate = null)
+    public function __construct(string $model, array $identifiers, bool $attachToExisting = false, ?Closure $queryModifier = null, ?Closure $afterCreate = null, array $validate = [])
     {
         $this->model = $model;
         $this->identifiers = $identifiers;
@@ -55,6 +57,7 @@ class ImportDatabaseHelper
         $this->queryModifier = $queryModifier;
         $this->afterCreate = $afterCreate;
         $this->createdCount = 0;
+        $this->validate = $validate;
     }
 
     /**
@@ -71,11 +74,15 @@ class ImportDatabaseHelper
      */
     private function createEntity(array $identifierData, array $createValues, ?string $externalIdentifier): string
     {
-        $model = new $this->model();
-        foreach ($identifierData as $identifier => $identifierValue) {
-            $model->{$identifier} = $identifierValue;
+        $data = array_merge($identifierData, $createValues);
+
+        $validator = Validator::make($data, $this->validate);
+        if ($validator->fails()) {
+            throw new ImportException('Invalid data: '.implode(', ', $validator->errors()->all()));
         }
-        foreach ($createValues as $key => $value) {
+
+        $model = new $this->model();
+        foreach ($data as $key => $value) {
             $model->{$key} = $value;
         }
         $model->save();
@@ -127,16 +134,9 @@ class ImportDatabaseHelper
                 if ($externalIdentifier !== null) {
                     $this->mapExternalIdentifierToInternalIdentifier[$externalIdentifier] = $hash;
                 }
-                Log::debug('HIT', [
-                    'class' => $this->model,
-                ]);
 
                 return $key;
             }
-
-            Log::debug('MISS', [
-                'class' => $this->model,
-            ]);
 
             return $this->createEntity($identifierData, $createValues, $externalIdentifier);
         } else {

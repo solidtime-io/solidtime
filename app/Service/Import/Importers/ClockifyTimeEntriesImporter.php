@@ -4,79 +4,14 @@ declare(strict_types=1);
 
 namespace App\Service\Import\Importers;
 
-use App\Models\Client;
-use App\Models\Organization;
-use App\Models\Project;
-use App\Models\Tag;
-use App\Models\Task;
 use App\Models\TimeEntry;
-use App\Models\User;
-use App\Service\ColorService;
-use App\Service\Import\ImportDatabaseHelper;
 use Exception;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use League\Csv\Exception as CsvException;
 use League\Csv\Reader;
 
-class ClockifyTimeEntriesImporter implements ImporterContract
+class ClockifyTimeEntriesImporter extends DefaultImporter
 {
-    private Organization $organization;
-
-    /**
-     * @var ImportDatabaseHelper<User>
-     */
-    private ImportDatabaseHelper $userImportHelper;
-
-    /**
-     * @var ImportDatabaseHelper<Project>
-     */
-    private ImportDatabaseHelper $projectImportHelper;
-
-    /**
-     * @var ImportDatabaseHelper<Tag>
-     */
-    private ImportDatabaseHelper $tagImportHelper;
-
-    /**
-     * @var ImportDatabaseHelper<Client>
-     */
-    private ImportDatabaseHelper $clientImportHelper;
-
-    /**
-     * @var ImportDatabaseHelper<Task>
-     */
-    private ImportDatabaseHelper $taskImportHelper;
-
-    private int $timeEntriesCreated;
-
-    #[\Override]
-    public function init(Organization $organization): void
-    {
-        $this->organization = $organization;
-        $this->userImportHelper = new ImportDatabaseHelper(User::class, ['email'], true, function (Builder $builder) {
-            /** @var Builder<User> $builder */
-            return $builder->belongsToOrganization($this->organization);
-        }, function (User $user) {
-            $user->organizations()->attach($this->organization, [
-                'role' => 'placeholder',
-            ]);
-        });
-        $this->projectImportHelper = new ImportDatabaseHelper(Project::class, ['name', 'organization_id'], true, function (Builder $builder) {
-            return $builder->where('organization_id', $this->organization->id);
-        });
-        $this->tagImportHelper = new ImportDatabaseHelper(Tag::class, ['name', 'organization_id'], true, function (Builder $builder) {
-            return $builder->where('organization_id', $this->organization->id);
-        });
-        $this->clientImportHelper = new ImportDatabaseHelper(Client::class, ['name', 'organization_id'], true, function (Builder $builder) {
-            return $builder->where('organization_id', $this->organization->id);
-        });
-        $this->taskImportHelper = new ImportDatabaseHelper(Task::class, ['name', 'project_id', 'organization_id'], true, function (Builder $builder) {
-            return $builder->where('organization_id', $this->organization->id);
-        });
-        $this->timeEntriesCreated = 0;
-    }
-
     /**
      * @return array<string>
      *
@@ -90,9 +25,6 @@ class ClockifyTimeEntriesImporter implements ImporterContract
         $tagsParsed = explode(', ', $tags);
         $tagIds = [];
         foreach ($tagsParsed as $tagParsed) {
-            if (strlen($tagParsed) > 255) {
-                throw new ImportException('Tag is too long');
-            }
             $tagId = $this->tagImportHelper->getKey([
                 'name' => $tagParsed,
                 'organization_id' => $this->organization->id,
@@ -110,7 +42,6 @@ class ClockifyTimeEntriesImporter implements ImporterContract
     public function importData(string $data): void
     {
         try {
-            $colorService = app(ColorService::class);
             $reader = Reader::createFromString($data);
             $reader->setHeaderOffset(0);
             $reader->setDelimiter(',');
@@ -138,7 +69,7 @@ class ClockifyTimeEntriesImporter implements ImporterContract
                         'organization_id' => $this->organization->id,
                     ], [
                         'client_id' => $clientId,
-                        'color' => $colorService->getRandomColor(),
+                        'color' => $this->colorService->getRandomColor(),
                     ]);
                 }
                 $taskId = null;
@@ -154,18 +85,33 @@ class ClockifyTimeEntriesImporter implements ImporterContract
                 $timeEntry->task_id = $taskId;
                 $timeEntry->project_id = $projectId;
                 $timeEntry->organization_id = $this->organization->id;
+                if (strlen($record['Description']) > 500) {
+                    throw new ImportException('Time entry description is too long');
+                }
                 $timeEntry->description = $record['Description'];
                 if (! in_array($record['Billable'], ['Yes', 'No'], true)) {
                     throw new ImportException('Invalid billable value');
                 }
                 $timeEntry->billable = $record['Billable'] === 'Yes';
                 $timeEntry->tags = $this->getTags($record['Tags']);
-                $start = Carbon::createFromFormat('m/d/Y H:i:s A', $record['Start Date'].' '.$record['Start Time'], 'UTC');
+
+                // Start
+                if (preg_match('/^[0-9]{1,2}:[0-9]{1,2} (AM|PM)$/', $record['Start Time']) === 1) {
+                    $start = Carbon::createFromFormat('m/d/Y h:i A', $record['Start Date'].' '.$record['Start Time'], 'UTC');
+                } else {
+                    $start = Carbon::createFromFormat('m/d/Y H:i:s A', $record['Start Date'].' '.$record['Start Time'], 'UTC');
+                }
                 if ($start === false) {
                     throw new ImportException('Start date ("'.$record['Start Date'].'") or time ("'.$record['Start Time'].'") are invalid');
                 }
                 $timeEntry->start = $start;
-                $end = Carbon::createFromFormat('m/d/Y H:i:s A', $record['End Date'].' '.$record['End Time'], 'UTC');
+
+                // End
+                if (preg_match('/^[0-9]{1,2}:[0-9]{1,2} (AM|PM)$/', $record['End Time']) === 1) {
+                    $end = Carbon::createFromFormat('m/d/Y h:i A', $record['End Date'].' '.$record['End Time'], 'UTC');
+                } else {
+                    $end = Carbon::createFromFormat('m/d/Y H:i:s A', $record['End Date'].' '.$record['End Time'], 'UTC');
+                }
                 if ($end === false) {
                     throw new ImportException('End date ("'.$record['End Date'].'") or time ("'.$record['End Time'].'") are invalid');
                 }
@@ -210,18 +156,5 @@ class ClockifyTimeEntriesImporter implements ImporterContract
                 throw new ImportException('Invalid CSV header, missing field: '.$requiredField);
             }
         }
-    }
-
-    #[\Override]
-    public function getReport(): ReportDto
-    {
-        return new ReportDto(
-            clientsCreated: $this->clientImportHelper->getCreatedCount(),
-            projectsCreated: $this->projectImportHelper->getCreatedCount(),
-            tasksCreated: $this->taskImportHelper->getCreatedCount(),
-            timeEntriesCreated: $this->timeEntriesCreated,
-            tagsCreated: $this->tagImportHelper->getCreatedCount(),
-            usersCreated: $this->userImportHelper->getCreatedCount(),
-        );
     }
 }
