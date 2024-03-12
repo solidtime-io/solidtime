@@ -5,12 +5,16 @@ declare(strict_types=1);
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\UserResource\Pages;
+use App\Filament\Resources\UserResource\RelationManagers\OrganizationsRelationManager;
+use App\Filament\Resources\UserResource\RelationManagers\OwnedOrganizationsRelationManager;
 use App\Models\User;
 use Filament\Forms;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Hash;
 
 class UserResource extends Resource
 {
@@ -41,10 +45,11 @@ class UserResource extends Resource
                     ->label('Email')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\TextInput::make('password')
-                    ->label('Password')
-                    ->required()
+                TextInput::make('password')
                     ->password()
+                    ->dehydrateStateUsing(fn ($state) => Hash::make($state))
+                    ->dehydrated(fn ($state) => filled($state))
+                    ->required(fn (string $context): bool => $context === 'create')
                     ->maxLength(255),
             ]);
     }
@@ -77,7 +82,8 @@ class UserResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            OwnedOrganizationsRelationManager::class,
+            OrganizationsRelationManager::class,
         ];
     }
 
