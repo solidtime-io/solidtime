@@ -8,6 +8,7 @@ namespace Database\Seeders;
 use App\Models\Client;
 use App\Models\Organization;
 use App\Models\Project;
+use App\Models\Tag;
 use App\Models\Task;
 use App\Models\TimeEntry;
 use App\Models\User;
@@ -109,6 +110,7 @@ class DatabaseSeeder extends Seeder
     {
         DB::table((new TimeEntry())->getTable())->delete();
         DB::table((new Task())->getTable())->delete();
+        DB::table((new Tag())->getTable())->delete();
         DB::table((new Project())->getTable())->delete();
         DB::table((new Client())->getTable())->delete();
         DB::table((new User())->getTable())->delete();

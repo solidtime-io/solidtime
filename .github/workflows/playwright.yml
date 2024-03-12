@@ -11,7 +11,7 @@ jobs:
     services:
       mailpit:
         image: 'axllent/mailpit:latest'
-      pgsql:
+      pgsql_test:
         image: postgres:15
         env:
           PGPASSWORD: 'root'

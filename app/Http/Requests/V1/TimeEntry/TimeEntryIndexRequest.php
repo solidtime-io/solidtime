@@ -48,7 +48,8 @@ class TimeEntryIndexRequest extends FormRequest
             ],
             // Filter only time entries that are active (have no end date, are still running)
             'active' => [
-                'boolean',
+                'string',
+                'in:true,false',
             ],
             // Limit the number of returned time entries
             'limit' => [
