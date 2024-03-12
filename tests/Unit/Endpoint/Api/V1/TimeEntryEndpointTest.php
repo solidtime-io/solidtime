@@ -143,7 +143,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         // Act
         $response = $this->getJson(route('api.v1.time-entries.index', [
             $data->organization->getKey(),
-            'active' => true,
+            'active' => 'true',
             'user_id' => $data->user->getKey(),
         ]));
 

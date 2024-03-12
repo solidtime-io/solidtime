@@ -10,6 +10,9 @@ const ClientResource = z
     })
     .passthrough();
 const ClientCollection = z.array(ClientResource);
+const v1_import_import_Body = z
+    .object({ type: z.string(), data: z.string() })
+    .passthrough();
 const OrganizationResource = z
     .object({ id: z.string(), name: z.string(), is_personal: z.string() })
     .passthrough();
@@ -72,10 +75,21 @@ const updateTimeEntry_Body = z
         tags: z.union([z.array(z.string()), z.null()]).optional(),
     })
     .passthrough();
+const UserResource = z
+    .object({
+        id: z.string(),
+        name: z.string(),
+        email: z.string(),
+        role: z.string(),
+        is_placeholder: z.boolean(),
+    })
+    .passthrough();
+const UserCollection = z.array(UserResource);
 
 export const schemas = {
     ClientResource,
     ClientCollection,
+    v1_import_import_Body,
     OrganizationResource,
     ProjectResource,
     ProjectCollection,
@@ -87,6 +101,8 @@ export const schemas = {
     TimeEntryCollection,
     createTimeEntry_Body,
     updateTimeEntry_Body,
+    UserResource,
+    UserCollection,
 };
 
 const endpoints = makeApi([
@@ -303,6 +319,76 @@ const endpoints = makeApi([
                 status: 404,
                 description: `Not found`,
                 schema: z.object({ message: z.string() }).passthrough(),
+            },
+        ],
+    },
+    {
+        method: 'post',
+        path: '/v1/organizations/:organization/import',
+        alias: 'v1.import.import',
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'body',
+                type: 'Body',
+                schema: v1_import_import_Body,
+            },
+            {
+                name: 'organization',
+                type: 'Path',
+                schema: z.string().uuid(),
+            },
+        ],
+        response: z
+            .object({
+                report: z
+                    .object({
+                        clients: z
+                            .object({ created: z.number().int() })
+                            .passthrough(),
+                        projects: z
+                            .object({ created: z.number().int() })
+                            .passthrough(),
+                        tasks: z
+                            .object({ created: z.number().int() })
+                            .passthrough(),
+                        'time-entries': z
+                            .object({ created: z.number().int() })
+                            .passthrough(),
+                        tags: z
+                            .object({ created: z.number().int() })
+                            .passthrough(),
+                        users: z
+                            .object({ created: z.number().int() })
+                            .passthrough(),
+                    })
+                    .passthrough(),
+            })
+            .passthrough(),
+        errors: [
+            {
+                status: 400,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 403,
+                description: `Authorization error`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 404,
+                description: `Not found`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 422,
+                description: `Validation error`,
+                schema: z
+                    .object({
+                        message: z.string(),
+                        errors: z.record(z.array(z.string())),
+                    })
+                    .passthrough(),
             },
         ],
     },
@@ -664,7 +750,7 @@ const endpoints = makeApi([
             {
                 name: 'active',
                 type: 'Query',
-                schema: z.string().optional(),
+                schema: z.enum(['true', 'false']).optional(),
             },
             {
                 name: 'limit',
@@ -811,6 +897,78 @@ const endpoints = makeApi([
             },
         ],
         response: z.null(),
+        errors: [
+            {
+                status: 403,
+                description: `Authorization error`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 404,
+                description: `Not found`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+        ],
+    },
+    {
+        method: 'get',
+        path: '/v1/organizations/:organization/users',
+        alias: 'v1.users.index',
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'organization',
+                type: 'Path',
+                schema: z.string().uuid(),
+            },
+        ],
+        response: z.object({ data: UserCollection }).passthrough(),
+        errors: [
+            {
+                status: 403,
+                description: `Authorization error`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 404,
+                description: `Not found`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 422,
+                description: `Validation error`,
+                schema: z
+                    .object({
+                        message: z.string(),
+                        errors: z.record(z.array(z.string())),
+                    })
+                    .passthrough(),
+            },
+        ],
+    },
+    {
+        method: 'post',
+        path: '/v1/organizations/:organization/users/:user/invite-placeholder',
+        alias: 'v1.users.invite-placeholder',
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'body',
+                type: 'Body',
+                schema: z.object({}).partial().passthrough(),
+            },
+            {
+                name: 'organization',
+                type: 'Path',
+                schema: z.string().uuid(),
+            },
+            {
+                name: 'user',
+                type: 'Path',
+                schema: z.string().uuid(),
+            },
+        ],
+        response: z.string(),
         errors: [
             {
                 status: 403,
