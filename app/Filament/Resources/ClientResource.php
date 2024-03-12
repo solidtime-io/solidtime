@@ -6,6 +6,8 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ClientResource\Pages;
 use App\Models\Client;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -26,7 +28,14 @@ class ClientResource extends Resource
     {
         return $form
             ->schema([
-                //
+                TextInput::make('name')
+                    ->label('Name')
+                    ->required(),
+                Select::make('organization_id')
+                    ->relationship(name: 'organization', titleAttribute: 'name')
+                    ->label('Organization')
+                    ->searchable(['name'])
+                    ->required(),
             ]);
     }
 

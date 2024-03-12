@@ -6,9 +6,12 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\TaskResource\Pages;
 use App\Models\Task;
+use Filament\Forms;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class TaskResource extends Resource
@@ -25,7 +28,18 @@ class TaskResource extends Resource
     {
         return $form
             ->schema([
-                //
+                Forms\Components\TextInput::make('name')
+                    ->label('Name')
+                    ->required()
+                    ->maxLength(255),
+                Select::make('project_id')
+                    ->relationship(name: 'project', titleAttribute: 'name')
+                    ->searchable(['name'])
+                    ->required(),
+                Select::make('organization_id')
+                    ->relationship(name: 'organization', titleAttribute: 'name')
+                    ->searchable(['name'])
+                    ->required(),
             ]);
     }
 
@@ -46,7 +60,9 @@ class TaskResource extends Resource
                     ->sortable(),
             ])
             ->filters([
-                //
+                SelectFilter::make('organization')
+                    ->relationship('organization', 'name')
+                    ->searchable(),
             ])
             ->defaultSort('created_at', 'desc')
             ->actions([
