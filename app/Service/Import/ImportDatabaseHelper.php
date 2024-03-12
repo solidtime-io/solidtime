@@ -43,11 +43,15 @@ class ImportDatabaseHelper
 
     private int $createdCount;
 
+    /**
+     * @var array<string, array<int, string>>
+     */
     private array $validate;
 
     /**
      * @param  class-string<TModel>  $model
      * @param  array<string>  $identifiers
+     * @param  array<string, array<int, string>>  $validate
      */
     public function __construct(string $model, array $identifiers, bool $attachToExisting = false, ?Closure $queryModifier = null, ?Closure $afterCreate = null, array $validate = [])
     {
