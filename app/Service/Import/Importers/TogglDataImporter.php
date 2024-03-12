@@ -4,77 +4,12 @@ declare(strict_types=1);
 
 namespace App\Service\Import\Importers;
 
-use App\Models\Client;
-use App\Models\Organization;
-use App\Models\Project;
-use App\Models\Tag;
-use App\Models\Task;
-use App\Models\User;
-use App\Service\ColorService;
-use App\Service\Import\ImportDatabaseHelper;
 use Exception;
-use Illuminate\Database\Eloquent\Builder;
 use Spatie\TemporaryDirectory\TemporaryDirectory;
 use ZipArchive;
 
-class TogglDataImporter implements ImporterContract
+class TogglDataImporter extends DefaultImporter
 {
-    private Organization $organization;
-
-    /**
-     * @var ImportDatabaseHelper<User>
-     */
-    private ImportDatabaseHelper $userImportHelper;
-
-    /**
-     * @var ImportDatabaseHelper<Project>
-     */
-    private ImportDatabaseHelper $projectImportHelper;
-
-    /**
-     * @var ImportDatabaseHelper<Tag>
-     */
-    private ImportDatabaseHelper $tagImportHelper;
-
-    /**
-     * @var ImportDatabaseHelper<Client>
-     */
-    private ImportDatabaseHelper $clientImportHelper;
-
-    /**
-     * @var ImportDatabaseHelper<Task>
-     */
-    private ImportDatabaseHelper $taskImportHelper;
-
-    private ColorService $colorService;
-
-    #[\Override]
-    public function init(Organization $organization): void
-    {
-        $this->organization = $organization;
-        $this->userImportHelper = new ImportDatabaseHelper(User::class, ['email'], true, function (Builder $builder) {
-            /** @var Builder<User> $builder */
-            return $builder->belongsToOrganization($this->organization);
-        }, function (User $user) {
-            $user->organizations()->attach($this->organization, [
-                'role' => 'placeholder',
-            ]);
-        });
-        $this->projectImportHelper = new ImportDatabaseHelper(Project::class, ['name', 'organization_id'], true, function (Builder $builder) {
-            return $builder->where('organization_id', $this->organization->id);
-        });
-        $this->tagImportHelper = new ImportDatabaseHelper(Tag::class, ['name', 'organization_id'], true, function (Builder $builder) {
-            return $builder->where('organization_id', $this->organization->id);
-        });
-        $this->clientImportHelper = new ImportDatabaseHelper(Client::class, ['name', 'organization_id'], true, function (Builder $builder) {
-            return $builder->where('organization_id', $this->organization->id);
-        });
-        $this->taskImportHelper = new ImportDatabaseHelper(Task::class, ['name', 'project_id', 'organization_id'], true, function (Builder $builder) {
-            return $builder->where('organization_id', $this->organization->id);
-        });
-        $this->colorService = app(ColorService::class);
-    }
-
     /**
      * @throws ImportException
      */
@@ -177,18 +112,5 @@ class TogglDataImporter implements ImporterContract
             report($exception);
             throw new ImportException('Unknown error');
         }
-    }
-
-    #[\Override]
-    public function getReport(): ReportDto
-    {
-        return new ReportDto(
-            clientsCreated: $this->clientImportHelper->getCreatedCount(),
-            projectsCreated: $this->projectImportHelper->getCreatedCount(),
-            tasksCreated: $this->taskImportHelper->getCreatedCount(),
-            timeEntriesCreated: 0,
-            tagsCreated: $this->tagImportHelper->getCreatedCount(),
-            usersCreated: $this->userImportHelper->getCreatedCount(),
-        );
     }
 }
