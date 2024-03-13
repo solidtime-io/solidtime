@@ -10,6 +10,7 @@ import type { Organization, User } from '@/types/models';
 import { onMounted } from 'vue';
 import { useProjectsStore } from '@/utils/useProjects';
 import ActivityGraphCard from '@/Components/Dashboard/ActivityGraphCard.vue';
+import MainContainer from "@/Pages/MainContainer.vue";
 
 const page = usePage<{
     auth: {
@@ -67,12 +68,12 @@ const props = defineProps<{
 
 <template>
     <AppLayout title="Dashboard" data-testid="dashboard_view">
-        <div
-            class="py-8 sm:px-6 lg:px-8 mx-auto border-b border-default-background-seperator">
+        <MainContainer
+            class="py-8 border-b border-default-background-seperator">
             <TimeTracker></TimeTracker>
-        </div>
-        <div
-            class="grid gap-x-6 grid-cols-4 sm:px-6 lg:px-8 pt-6 pb-7 border-b border-default-background-seperator">
+        </MainContainer>
+        <MainContainer
+            class="grid gap-x-6 xl:gap-x-8 grid-cols-4 pt-6 pb-7 border-b border-default-background-seperator">
             <RecentlyTrackedTasksCard
                 :latestTasks="props.latestTasks"></RecentlyTrackedTasksCard>
             <LastSevenDaysCard
@@ -85,14 +86,14 @@ const props = defineProps<{
                 :latestTeamActivity="
                     props.latestTeamActivity
                 "></TeamActivityCard>
-        </div>
-        <div class="sm:px-6 lg:px-8 py-6">
+        </MainContainer>
+        <MainContainer class="py-6">
             <ThisWeekOverview
                 :weeklyProjectOverview="props.weeklyProjectOverview"
                 :total-weekly-billable-amount="props.totalWeeklyBillableAmount"
                 :total-weekly-billable-time="props.totalWeeklyBillableTime"
                 :total-weekly-time="props.totalWeeklyTime"
                 :weekly-history="props.weeklyHistory"></ThisWeekOverview>
-        </div>
+        </MainContainer>
     </AppLayout>
 </template>

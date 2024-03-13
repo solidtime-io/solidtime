@@ -130,7 +130,7 @@ const option = ref({
 </script>
 
 <template>
-    <div class="grid gap-x-6 grid-cols-4">
+    <div class="grid gap-x-6 xl:gap-x-8 grid-cols-4">
         <div class="col-span-3">
             <CardTitle
                 title="This Week"
