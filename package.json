@@ -7,7 +7,7 @@
         "lint": "eslint --ext .js,.vue,.ts --ignore-path .gitignore .",
         "lint:fix": "eslint --fix --ext .js,.vue,.ts --ignore-path .gitignore .",
         "type-check": "vue-tsc --noEmit",
-        "test:e2e": "npx playwright test",
+        "test:e2e": "rm -rf test-results/.auth && npx playwright test",
         "generate:zod": "npx openapi-zod-client http://localhost:80/docs/api.json --output openapi.json.client.ts --base-url http://solidtime.test/api"
     },
     "devDependencies": {
