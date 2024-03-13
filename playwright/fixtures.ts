@@ -1,4 +1,4 @@
-import { expect, test as baseTest } from '@playwright/test';
+import { test as baseTest } from '@playwright/test';
 import fs from 'fs';
 import path from 'path';
 import { PLAYWRIGHT_BASE_URL } from './config';
@@ -54,11 +54,6 @@ export const test = baseTest.extend<object, { workerStorageState: string }>({
             // Sometimes login flow sets cookies in the process of several redirects.
             // Wait for the final URL to ensure that the cookies are actually set.
             await page.waitForURL(PLAYWRIGHT_BASE_URL + '/dashboard');
-
-            // Alternatively, you can wait until the page reaches a state where all cookies are set.
-            await expect(
-                page.getByRole('heading', { name: 'Dashboard' })
-            ).toBeVisible();
 
             // End of authentication steps.
 

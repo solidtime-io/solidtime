@@ -7,6 +7,7 @@ namespace Database\Factories;
 use App\Models\Client;
 use App\Models\Organization;
 use App\Models\Project;
+use App\Service\ColorService;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -23,7 +24,7 @@ class ProjectFactory extends Factory
     {
         return [
             'name' => $this->faker->company(),
-            'color' => $this->faker->hexColor(),
+            'color' => app(ColorService::class)->getRandomColor(),
             'organization_id' => Organization::factory(),
             'client_id' => null,
         ];

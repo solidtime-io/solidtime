@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('time_entries', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->string('description', 255);
+            $table->string('description', 500);
             $table->dateTime('start');
             $table->dateTime('end')->nullable();
             $table->boolean('billable')->default(false);

@@ -6,6 +6,7 @@ namespace App\Http\Requests\V1\Project;
 
 use App\Models\Client;
 use App\Models\Organization;
+use App\Rules\ColorRule;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Http\FormRequest;
@@ -25,6 +26,7 @@ class ProjectStoreRequest extends FormRequest
     {
         return [
             'name' => [
+                // TODO: unique
                 'required',
                 'string',
                 'min:1',
@@ -34,6 +36,7 @@ class ProjectStoreRequest extends FormRequest
                 'required',
                 'string',
                 'max:255',
+                new ColorRule(),
             ],
             'client_id' => [
                 'nullable',

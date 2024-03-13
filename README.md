@@ -18,6 +18,8 @@ cp .env.example .env
 
 ./vendor/bin/sail artisan migrate:fresh --seed
 
+./vendor/bin/sail php artisan passport:install
+
 ./vendor/bin/sail npm install
 
 ./vendor/bin/sail npm run build
@@ -36,6 +38,7 @@ Add the following entry to your `/etc/hosts`
 ```
 127.0.0.1 solidtime.test
 127.0.0.1 playwright.solidtime.test
+127.0.0.1 mail.solidtime.test
 ```
 
 ## Running E2E Tests
@@ -51,6 +54,19 @@ To record E2E tests, you need to install and execute playwright locally (outside
 npx playwright install
 npx playwright codegen solidtime.test
 ``` 
+
+## E2E Troubleshooting
+
+If the E2E tests are not working consistently and fail with a timeout during the authentication, you might want to delete the `test-results/.auth` directory to force new test accounts to be created.
+
+## Generate ZOD Client
+
+The Zodius HTTP client is generated using the following command:
+
+```bash
+
+npm run generate:zod
+```
 
 ## Contributing
 
