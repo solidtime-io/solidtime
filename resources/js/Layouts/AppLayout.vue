@@ -25,7 +25,7 @@ defineProps({
 <template>
     <div class="flex flex-wrap bg-default-background text-muted">
         <div
-            class="flex-shrink-0 h-screen fixed w-[250px] px-1.5 py-4 flex flex-col justify-between">
+            class="flex-shrink-0 h-screen fixed w-[250px] xl:w-[300px] px-2.5 xl:px-4 py-4 flex flex-col justify-between">
             <div>
                 <div class="border-b border-default-background-seperator pb-2">
                     <OrganizationSwitcher></OrganizationSwitcher>
@@ -93,7 +93,7 @@ defineProps({
                 <UserSettingsIcon></UserSettingsIcon>
             </ul>
         </div>
-        <div class="flex-1 ml-[250px]">
+        <div class="flex-1 ml-[250px] xl:ml-[300px]">
             <Head :title="title" />
 
             <Banner />

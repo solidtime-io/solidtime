@@ -177,14 +177,14 @@ const page = usePage<{
                         page.props.jetstream.hasEmailVerification &&
                         user.email_verified_at === null
                     ">
-                    <p class="text-sm mt-2 dark:text-white">
+                    <p class="text-sm mt-2 text-white">
                         Your email address is unverified.
 
                         <Link
                             :href="route('verification.send')"
                             method="post"
                             as="button"
-                            class="underline text-sm text-muted hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800"
+                            class="underline text-sm text-muted hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800"
                             @click.prevent="sendEmailVerification">
                             Click here to re-send the verification email.
                         </Link>
@@ -192,7 +192,7 @@ const page = usePage<{
 
                     <div
                         v-show="verificationLinkSent"
-                        class="mt-2 font-medium text-sm text-green-600 dark:text-green-400">
+                        class="mt-2 font-medium text-sm text-green-400">
                         A new verification link has been sent to your email
                         address.
                     </div>
