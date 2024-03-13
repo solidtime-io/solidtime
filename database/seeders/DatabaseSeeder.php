@@ -8,6 +8,7 @@ namespace Database\Seeders;
 use App\Models\Client;
 use App\Models\Organization;
 use App\Models\Project;
+use App\Models\Tag;
 use App\Models\Task;
 use App\Models\TimeEntry;
 use App\Models\User;
@@ -22,31 +23,57 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->deleteAll();
-        $organization1 = Organization::factory()->create([
+        $userAcmeOwner = User::factory()->create([
+            'name' => 'ACME Admin',
+            'email' => 'owner@acme.test',
+        ]);
+        $organizationAcme = Organization::factory()->withOwner($userAcmeOwner)->create([
             'name' => 'ACME Corp',
         ]);
-        $user1 = User::factory()->withPersonalOrganization()->create([
+        $userAcmeManager = User::factory()->withPersonalOrganization()->create([
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
-        $employee1 = User::factory()->withPersonalOrganization()->create([
-            'name' => 'Test User',
-            'email' => 'employee@example.com',
-        ]);
-        $userAcmeAdmin = User::factory()->create([
+        $userAcmeAdmin = User::factory()->withPersonalOrganization()->create([
             'name' => 'ACME Admin',
             'email' => 'admin@acme.test',
         ]);
-        $user1->organizations()->attach($organization1, [
+        $userAcmeEmployee = User::factory()->withPersonalOrganization()->create([
+            'name' => 'Max Mustermann',
+            'email' => 'max.mustermann@acme.test',
+        ]);
+        $userAcmePlaceholder = User::factory()->placeholder()->create([
+            'name' => 'Old Employee',
+            'email' => 'old.employee@acme.test',
+            'password' => null,
+        ]);
+        $userAcmeManager->organizations()->attach($organizationAcme, [
             'role' => 'manager',
         ]);
-        $userAcmeAdmin->organizations()->attach($organization1, [
+        $userAcmeAdmin->organizations()->attach($organizationAcme, [
             'role' => 'admin',
         ]);
-        $timeEntriesEmployees = TimeEntry::factory()
+        $userAcmeEmployee->organizations()->attach($organizationAcme, [
+            'role' => 'employee',
+        ]);
+        $userAcmePlaceholder->organizations()->attach($organizationAcme, [
+            'role' => 'employee',
+        ]);
+
+        $timeEntriesAcmeAdmin = TimeEntry::factory()
             ->count(10)
-            ->forUser($employee1)
-            ->forOrganization($organization1)
+            ->forUser($userAcmeAdmin)
+            ->forOrganization($organizationAcme)
+            ->create();
+        $timeEntriesAcmePlaceholder = TimeEntry::factory()
+            ->count(10)
+            ->forUser($userAcmePlaceholder)
+            ->forOrganization($organizationAcme)
+            ->create();
+        $timeEntriesAcmePlaceholder = TimeEntry::factory()
+            ->count(10)
+            ->forUser($userAcmeEmployee)
+            ->forOrganization($organizationAcme)
             ->create();
         $client = Client::factory()->create([
             'name' => 'Big Company',
@@ -63,11 +90,11 @@ class DatabaseSeeder extends Seeder
         $organization2 = Organization::factory()->create([
             'name' => 'Rival Corp',
         ]);
-        $user1 = User::factory()->withPersonalOrganization()->create([
+        $userAcmeManager = User::factory()->withPersonalOrganization()->create([
             'name' => 'Other User',
             'email' => 'test@rival-company.test',
         ]);
-        $user1->organizations()->attach($organization2, [
+        $userAcmeManager->organizations()->attach($organization2, [
             'role' => 'admin',
         ]);
         $otherCompanyProject = Project::factory()->forClient($client)->create([
@@ -83,6 +110,7 @@ class DatabaseSeeder extends Seeder
     {
         DB::table((new TimeEntry())->getTable())->delete();
         DB::table((new Task())->getTable())->delete();
+        DB::table((new Tag())->getTable())->delete();
         DB::table((new Project())->getTable())->delete();
         DB::table((new Client())->getTable())->delete();
         DB::table((new User())->getTable())->delete();

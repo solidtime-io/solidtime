@@ -6,6 +6,8 @@ namespace App\Models;
 
 use Database\Factories\UserFactory;
 use Filament\Panel;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -21,9 +23,16 @@ use Laravel\Passport\HasApiTokens;
  * @property string $id
  * @property string $name
  * @property string $email
+ * @property string|null $email_verified_at
+ * @property string|null $password
+ * @property bool $is_placeholder
+ * @property Collection<Organization> $organizations
+ * @property Collection<TimeEntry> $timeEntries
  *
  * @method HasMany<Organization> ownedTeams()
  * @method static UserFactory factory()
+ * @method static Builder<User> query()
+ * @method Builder<User> belongsToOrganization(Organization $organization)
  */
 class User extends Authenticatable
 {
@@ -64,8 +73,11 @@ class User extends Authenticatable
      * @var array<string, string>
      */
     protected $casts = [
+        'name' => 'string',
+        'email' => 'string',
         'email_verified_at' => 'datetime',
         'is_admin' => 'boolean',
+        'is_placeholder' => 'boolean',
     ];
 
     /**
@@ -93,5 +105,28 @@ class User extends Authenticatable
             ])
             ->withTimestamps()
             ->as('membership');
+    }
+
+    /**
+     * @return HasMany<TimeEntry>
+     */
+    public function timeEntries(): HasMany
+    {
+        return $this->hasMany(TimeEntry::class);
+    }
+
+    /**
+     * @param  Builder<User>  $builder
+     * @return Builder<User>
+     */
+    public function scopeBelongsToOrganization(Builder $builder, Organization $organization): Builder
+    {
+        return $builder->where(function (Builder $builder) use ($organization): Builder {
+            return $builder->whereHas('organizations', function (Builder $query) use ($organization): void {
+                $query->whereKey($organization->getKey());
+            })->orWhereHas('ownedTeams', function (Builder $query) use ($organization): void {
+                $query->whereKey($organization->getKey());
+            });
+        });
     }
 }

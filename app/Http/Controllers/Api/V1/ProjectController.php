@@ -28,6 +28,8 @@ class ProjectController extends Controller
      * Get projects
      *
      * @throws AuthorizationException
+     *
+     * @operationId getProjects
      */
     public function index(Organization $organization): JsonResource
     {
@@ -43,6 +45,8 @@ class ProjectController extends Controller
      * Get project
      *
      * @throws AuthorizationException
+     *
+     * @operationId getProject
      */
     public function show(Organization $organization, Project $project): JsonResource
     {
@@ -57,6 +61,8 @@ class ProjectController extends Controller
      * Create project
      *
      * @throws AuthorizationException
+     *
+     * @operationId createProject
      */
     public function store(Organization $organization, ProjectStoreRequest $request): JsonResource
     {
@@ -75,6 +81,8 @@ class ProjectController extends Controller
      * Update project
      *
      * @throws AuthorizationException
+     *
+     * @operationId updateProject
      */
     public function update(Organization $organization, Project $project, ProjectUpdateRequest $request): JsonResource
     {
@@ -90,6 +98,8 @@ class ProjectController extends Controller
      * Delete project
      *
      * @throws AuthorizationException
+     *
+     * @operationId deleteProject
      */
     public function destroy(Organization $organization, Project $project): JsonResponse
     {
