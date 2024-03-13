@@ -49,6 +49,7 @@ jobs:
           cp .env.ci .env
           php artisan key:generate
           php artisan migrate --seed
+          php artisan passport:keys
 
       - name: Install dependencies
         run: npm ci
