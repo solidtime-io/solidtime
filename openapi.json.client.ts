@@ -984,7 +984,7 @@ const endpoints = makeApi([
     },
 ]);
 
-export const api = new Zodios('http://solidtime.test/api', endpoints);
+export const api = new Zodios('/api', endpoints);
 
 export function createApiClient(baseUrl: string, options?: ZodiosOptions) {
     return new Zodios(baseUrl, endpoints, options);
