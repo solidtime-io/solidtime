@@ -364,9 +364,7 @@ test('test that adding a new tag works', async ({ page }) => {
         );
     });
     await expect(page.getByTestId('tag_dropdown_search')).toHaveValue('');
-    await expect(page.getByTestId('tag_dropdown_entries')).toHaveText(
-        newTagName
-    );
+    await expect(page.getByRole('option', { name: newTagName })).toBeVisible();
 });
 
 test('test that adding a new tag when the timer is running', async ({
@@ -389,9 +387,8 @@ test('test that adding a new tag when the timer is running', async ({
         );
     });
     await expect(page.getByTestId('tag_dropdown_search')).toHaveValue('');
-    await expect(page.getByTestId('tag_dropdown_entries')).toHaveText(
-        newTagName
-    );
+
+    await expect(page.getByRole('option', { name: newTagName })).toBeVisible();
 
     await page.waitForResponse(async (response) => {
         return (
