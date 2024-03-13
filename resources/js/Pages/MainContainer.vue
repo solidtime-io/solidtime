@@ -1,6 +1,4 @@
-<script setup lang="ts">
-
-</script>
+<script setup lang="ts"></script>
 
 <template>
     <div class="sm:px-6 lg:px-8 xl:px-12 mx-auto">
@@ -8,6 +6,4 @@
     </div>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>

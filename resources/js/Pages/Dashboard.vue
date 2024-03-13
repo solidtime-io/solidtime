@@ -10,7 +10,7 @@ import type { Organization, User } from '@/types/models';
 import { onMounted } from 'vue';
 import { useProjectsStore } from '@/utils/useProjects';
 import ActivityGraphCard from '@/Components/Dashboard/ActivityGraphCard.vue';
-import MainContainer from "@/Pages/MainContainer.vue";
+import MainContainer from '@/Pages/MainContainer.vue';
 
 const page = usePage<{
     auth: {

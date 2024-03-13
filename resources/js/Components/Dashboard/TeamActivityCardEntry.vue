@@ -9,7 +9,7 @@ defineProps<{
 <template>
     <div class="px-4 py-3 grid grid-cols-3">
         <div class="col-span-2">
-            <p class="font-semibold text-white ">
+            <p class="font-semibold text-white">
                 {{ name }}
             </p>
             <div class="text-muted font-medium">
