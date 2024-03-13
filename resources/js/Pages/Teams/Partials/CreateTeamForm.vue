@@ -43,10 +43,10 @@ const page = usePage<{
                         :alt="page.props.auth.user.name" />
 
                     <div class="ms-4 leading-tight">
-                        <div class="text-gray-900 dark:text-white">
+                        <div class="text-white">
                             {{ page.props.auth.user.name }}
                         </div>
-                        <div class="text-sm text-gray-700 dark:text-gray-300">
+                        <div class="text-sm text-muted">
                             {{ page.props.auth.user.email }}
                         </div>
                     </div>
