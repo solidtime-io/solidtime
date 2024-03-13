@@ -88,7 +88,7 @@ defineProps({
                     class="flex-1"
                     title="Settings"
                     :icon="Cog6ToothIcon"
-                    :href="route('dashboard')"></NavigationSidebarItem>
+                    :href="route('profile.show')"></NavigationSidebarItem>
 
                 <UserSettingsIcon></UserSettingsIcon>
             </ul>
