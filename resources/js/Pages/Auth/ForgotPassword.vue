@@ -36,7 +36,7 @@ const submit = () => {
 
         <div
             v-if="status"
-            class="mb-4 font-medium text-sm text-green-600 dark:text-green-400">
+            class="mb-4 font-medium text-sm text-green-400">
             {{ status }}
         </div>
 
