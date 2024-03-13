@@ -80,6 +80,21 @@ return [
             'sslmode' => 'prefer',
         ],
 
+        'pgsql_test' => [
+            'driver' => 'pgsql',
+            'url' => env('DATABASE_URL'),
+            'host' => env('DB_TEST_HOST', '127.0.0.1'),
+            'port' => env('DB_TEST_PORT', '5432'),
+            'database' => env('DB_TEST_DATABASE', 'forge'),
+            'username' => env('DB_TEST_USERNAME', 'forge'),
+            'password' => env('DB_TEST_PASSWORD', ''),
+            'charset' => 'utf8',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'search_path' => 'public',
+            'sslmode' => 'prefer',
+        ],
+
         'sqlsrv' => [
             'driver' => 'sqlsrv',
             'url' => env('DATABASE_URL'),

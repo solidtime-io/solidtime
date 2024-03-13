@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('tasks', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->string('name', 255);
+            $table->string('name', 500);
             $table->uuid('project_id');
             $table->foreign('project_id')
                 ->references('id')

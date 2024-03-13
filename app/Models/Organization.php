@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace App\Models;
 
 use Database\Factories\OrganizationFactory;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Laravel\Jetstream\Events\TeamCreated;
 use Laravel\Jetstream\Events\TeamDeleted;
 use Laravel\Jetstream\Events\TeamUpdated;
+use Laravel\Jetstream\Jetstream;
 use Laravel\Jetstream\Team as JetstreamTeam;
 
 /**
@@ -18,6 +21,8 @@ use Laravel\Jetstream\Team as JetstreamTeam;
  * @property string $name
  * @property bool $personal_team
  * @property User $owner
+ * @property Collection<User> $users
+ * @property Collection<string, User> $realUsers
  *
  * @method HasMany<OrganizationInvitation> teamInvitations()
  * @method static OrganizationFactory factory()
@@ -57,4 +62,43 @@ class Organization extends JetstreamTeam
         'updated' => TeamUpdated::class,
         'deleted' => TeamDeleted::class,
     ];
+
+    /**
+     * Get all the non-placeholder users of the organization including its owner.
+     *
+     * @return Collection<string, User>
+     */
+    public function allRealUsers(): Collection
+    {
+        return $this->realUsers->merge([$this->owner]);
+    }
+
+    public function hasRealUserWithEmail(string $email): bool
+    {
+        return $this->allRealUsers()->contains(function (User $user) use ($email): bool {
+            return $user->email === $email;
+        });
+    }
+
+    /**
+     * Get all the users that belong to the team.
+     *
+     * @return BelongsToMany<User>
+     */
+    public function users(): BelongsToMany
+    {
+        return $this->belongsToMany(Jetstream::userModel(), Jetstream::membershipModel())
+            ->withPivot('role')
+            ->withTimestamps()
+            ->as('membership');
+    }
+
+    /**
+     * @return BelongsToMany<User>
+     */
+    public function realUsers(): BelongsToMany
+    {
+        return $this->users()
+            ->where('is_placeholder', false);
+    }
 }

@@ -18,6 +18,7 @@ class TagUpdateRequest extends FormRequest
     {
         return [
             'name' => [
+                // TODO: unique
                 'required',
                 'string',
                 'min:1',

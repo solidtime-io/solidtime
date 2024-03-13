@@ -98,7 +98,6 @@ return [
     ],
 
     'ignore_paths' => [
-        'livewire*',
         'nova-api*',
         'pulse*',
     ],
@@ -156,7 +155,7 @@ return [
 
         Watchers\LogWatcher::class => [
             'enabled' => env('TELESCOPE_LOG_WATCHER', true),
-            'level' => 'error',
+            'level' => 'debug',
         ],
 
         Watchers\MailWatcher::class => env('TELESCOPE_MAIL_WATCHER', true),

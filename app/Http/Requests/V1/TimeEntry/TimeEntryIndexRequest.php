@@ -30,10 +30,7 @@ class TimeEntryIndexRequest extends FormRequest
                 'uuid',
                 new ExistsEloquent(User::class, null, function (Builder $builder): Builder {
                     /** @var Builder<User> $builder */
-                    return $builder->whereHas('organizations', function (Builder $builder) {
-                        /** @var Builder<Organization> $builder */
-                        return $builder->whereKey($this->organization->getKey());
-                    });
+                    return $builder->belongsToOrganization($this->organization);
                 }),
             ],
             // Filter only time entries that have a start date before (not including) the given date (example: 2021-12-31)
@@ -51,7 +48,8 @@ class TimeEntryIndexRequest extends FormRequest
             ],
             // Filter only time entries that are active (have no end date, are still running)
             'active' => [
-                'boolean',
+                'string',
+                'in:true,false',
             ],
             // Limit the number of returned time entries
             'limit' => [

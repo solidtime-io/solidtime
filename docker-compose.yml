@@ -57,14 +57,49 @@ services:
                 - '${DB_USERNAME}'
             retries: 3
             timeout: 5s
-    mailpit:
-        image: 'axllent/mailpit:latest'
+    pgsql_test:
+        image: 'postgres:15'
+        environment:
+            PGPASSWORD: '${DB_PASSWORD:-secret}'
+            POSTGRES_DB: '${DB_DATABASE}'
+            POSTGRES_USER: '${DB_USERNAME}'
+            POSTGRES_PASSWORD: '${DB_PASSWORD:-secret}'
+        volumes:
+            - 'sail-pgsql-test:/var/lib/postgresql/data'
+            - './vendor/laravel/sail/database/pgsql/create-testing-database.sql:/docker-entrypoint-initdb.d/10-create-testing-database.sql'
         networks:
             - sail
+        healthcheck:
+            test:
+                - CMD
+                - pg_isready
+                - '-q'
+                - '-d'
+                - '${DB_DATABASE}'
+                - '-U'
+                - '${DB_USERNAME}'
+            retries: 3
+            timeout: 5s
+    mailpit:
+        image: 'axllent/mailpit:latest'
+        labels:
+            - "traefik.enable=true"
+            - "traefik.docker.network=${NETWORK_NAME}"
+            - "traefik.http.routers.solidtime-mailpit.rule=Host(`mail.${NGINX_HOST_NAME}`)"
+            - "traefik.http.routers.solidtime-mailpit.entrypoints=web"
+            - "traefik.http.services.solidtime-mailpit.loadbalancer.server.port=8025"
+            - "traefik.http.routers.solidtime-mailpit-https.rule=Host(`mail.${NGINX_HOST_NAME}`)"
+            - "traefik.http.routers.solidtime-mailpit-https.entrypoints=websecure"
+            - "traefik.http.routers.solidtime-mailpit-https.tls=true"
+        networks:
+            - sail
+            - reverse-proxy
     playwright:
         image: mcr.microsoft.com/playwright:v1.41.1-jammy
         command: ['npx', 'playwright', 'test', '--ui-port=8080', '--ui-host=0.0.0.0']
         working_dir: /src
+        extra_hosts:
+            - "solidtime.test:${REVERSE_PROXY_IP:-10.100.100.10}"
         labels:
             - "traefik.enable=true"
             - "traefik.docker.network=${NETWORK_NAME}"
@@ -87,4 +122,6 @@ networks:
         driver: bridge
 volumes:
     sail-pgsql:
+        driver: local
+    sail-pgsql-test:
         driver: local

@@ -14,6 +14,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class TimeEntryResource extends Resource
@@ -67,6 +68,7 @@ class TimeEntryResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('description')
+                    ->searchable()
                     ->label('Description'),
                 TextColumn::make('user.email')
                     ->label('User'),
@@ -89,7 +91,9 @@ class TimeEntryResource extends Resource
                     ->sortable(),
             ])
             ->filters([
-                //
+                SelectFilter::make('organization')
+                    ->relationship('organization', 'name')
+                    ->searchable(),
             ])
             ->defaultSort('created_at', 'desc')
             ->actions([
