@@ -8,7 +8,7 @@
         "lint:fix": "eslint --fix --ext .js,.vue,.ts --ignore-path .gitignore .",
         "type-check": "vue-tsc --noEmit",
         "test:e2e": "rm -rf test-results/.auth && npx playwright test",
-        "generate:zod": "npx openapi-zod-client http://localhost:80/docs/api.json --output openapi.json.client.ts --base-url http://solidtime.test/api"
+        "generate:zod": "npx openapi-zod-client http://localhost:80/docs/api.json --output openapi.json.client.ts --base-url /api"
     },
     "devDependencies": {
         "@inertiajs/vue3": "^1.0.0",
