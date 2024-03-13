@@ -26,13 +26,13 @@ function dayFormat(date: string) {
 <template>
     <div class="px-4 py-2 grid grid-cols-3">
         <div class="flex items-center">
-            <p class="font-semibold text-white pb-1">
+            <p class="font-medium text-base text-white">
                 {{ dayFormat(date) }}
             </p>
         </div>
-        <div class="flex items-center">
+        <div class="flex items-center justify-center">
             <svg
-                class="w-20"
+                class="w-20 opacity-70 transition hover:opacity-100"
                 viewBox="0 0 42 10"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg">
