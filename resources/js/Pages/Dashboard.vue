@@ -69,11 +69,11 @@ const props = defineProps<{
 <template>
     <AppLayout title="Dashboard" data-testid="dashboard_view">
         <MainContainer
-            class="py-8 border-b border-default-background-seperator">
+            class="pt-8 pb-6 border-b border-default-background-seperator">
             <TimeTracker></TimeTracker>
         </MainContainer>
         <MainContainer
-            class="grid gap-x-6 xl:gap-x-8 grid-cols-4 pt-6 pb-7 border-b border-default-background-seperator">
+            class="grid gap-x-6 xl:gap-x-8 grid-cols-4 pt-5 pb-6 border-b border-default-background-seperator items-stretch">
             <RecentlyTrackedTasksCard
                 :latestTasks="props.latestTasks"></RecentlyTrackedTasksCard>
             <LastSevenDaysCard
@@ -87,7 +87,7 @@ const props = defineProps<{
                     props.latestTeamActivity
                 "></TeamActivityCard>
         </MainContainer>
-        <MainContainer class="py-6">
+        <MainContainer class="py-5">
             <ThisWeekOverview
                 :weeklyProjectOverview="props.weeklyProjectOverview"
                 :total-weekly-billable-amount="props.totalWeeklyBillableAmount"

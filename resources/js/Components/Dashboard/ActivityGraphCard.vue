@@ -79,7 +79,7 @@ const option = ref({
 <template>
     <DashboardCard title="Activity Graph" :icon="BoltIcon">
         <div class="px-2">
-            <v-chart class="chart" :option="option" style="height: 290px" />
+            <v-chart class="chart" :option="option" style="height: 260px" />
         </div>
     </DashboardCard>
 </template>

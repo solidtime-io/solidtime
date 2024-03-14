@@ -71,7 +71,7 @@ defineProps({
                             :icon="UserCircleIcon"
                             :href="route('dashboard')"></NavigationSidebarItem>
                         <NavigationSidebarItem
-                            title="Team"
+                            title="Members"
                             :icon="UserGroupIcon"
                             :href="route('dashboard')"></NavigationSidebarItem>
                         <NavigationSidebarItem

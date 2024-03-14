@@ -165,7 +165,7 @@ const option = ref({
 
 <style scoped>
 .chart {
-    height: 300px;
+    height: 280px;
     background: transparent;
 }
 </style>
