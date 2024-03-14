@@ -7,9 +7,9 @@ defineProps<{
 
 <template>
     <div
-        class="rounded-lg bg-card-background border-card-border border px-4 py-3">
-        <dt class="font-bold text-muted">{{ title }}</dt>
-        <dd class="text-3xl text-white pt-1 font-bold">
+        class="rounded-lg bg-card-background border-card-border border px-3.5 py-2.5">
+        <dt class="font-bold text-sm text-muted">{{ title }}</dt>
+        <dd class="text-2xl text-white pt-1 font-bold">
             {{ value }}
         </dd>
     </div>

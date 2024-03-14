@@ -9,10 +9,10 @@ defineProps<{
 <template>
     <div class="px-4 py-3 grid grid-cols-3">
         <div class="col-span-2">
-            <p class="font-semibold text-white">
+            <p class="font-semibold text-sm text-white">
                 {{ name }}
             </p>
-            <div class="text-muted font-medium">
+            <div class="text-muted text-sm font-medium">
                 {{ description }}
             </div>
         </div>
@@ -23,7 +23,7 @@ defineProps<{
                 <span
                     class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
             </span>
-            <span class="text-green-500 font-medium block pb-0.5">
+            <span class="text-green-500 font-medium text-sm block pb-0.5">
                 working
             </span>
         </div>

@@ -144,7 +144,7 @@ function updateTimerAndStartLiveTimerUpdate() {
                     data-testid="time_entry_description"
                     v-model="currentTimeEntry.description"
                     @blur="updateTimeEntry"
-                    class="w-full rounded-l-lg py-4 px-6 text-xl text-white focus:bg-card-background-active font-medium bg-transparent border-none placeholder-muted focus:ring-0 transition"
+                    class="w-full rounded-l-lg py-3 px-5 text-lg text-white focus:bg-card-background-active font-medium bg-transparent border-none placeholder-muted focus:ring-0 transition"
                     type="text" />
             </div>
             <div class="flex items-center">
@@ -164,7 +164,7 @@ function updateTimerAndStartLiveTimerUpdate() {
                     @blur="updateTimerAndStartLiveTimerUpdate"
                     @keydown.enter="updateTimerAndStartLiveTimerUpdate"
                     v-model="currentTime"
-                    class="w-40 h-full text-white py-4 rounded-r-lg text-center px-4 text-xl font-bold bg-card-background border-none placeholder-muted focus:ring-0 transition focus:bg-card-background-active"
+                    class="w-40 h-full text-white py-4 rounded-r-lg text-center px-4 text-lg font-bold bg-card-background border-none placeholder-muted focus:ring-0 transition focus:bg-card-background-active"
                     type="text" />
             </div>
         </div>

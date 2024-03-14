@@ -22,8 +22,8 @@ const indicatorClasses = {
 };
 
 const badgeClasses = {
-    base: 'py-1 px-2 space-x-1.5 text-sm',
-    large: 'py-1.5 px-3 space-x-2 text-base text-muted',
+    base: 'py-1 px-2 space-x-1.5 text-xs',
+    large: 'py-1.5 px-3 space-x-2 text-sm text-muted',
 };
 </script>
 

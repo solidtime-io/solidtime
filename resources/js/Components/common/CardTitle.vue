@@ -8,7 +8,8 @@ defineProps<{
 </script>
 
 <template>
-    <h3 class="text-white font-bold pb-4 text-lg flex items-center space-x-2.5">
+    <h3
+        class="text-white font-bold pb-4 text-base flex items-center space-x-2.5">
         <component
             v-if="icon"
             :is="icon"
