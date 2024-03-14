@@ -8,7 +8,7 @@ import ProjectDropdown from '@/Components/common/ProjectDropdown.vue';
 import { usePage } from '@inertiajs/vue3';
 import { type User } from '@/types/models';
 import { computed, onMounted, ref, watch } from 'vue';
-import dayjs, { Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import duration from 'dayjs/plugin/duration';
 
@@ -27,24 +27,9 @@ dayjs.extend(duration);
 dayjs.extend(utc);
 
 const currentTimeEntryStore = useCurrentTimeEntryStore();
-const { currentTimeEntry, isActive } = storeToRefs(currentTimeEntryStore);
-
-const now = ref<null | Dayjs>(null);
-const interval = ref<ReturnType<typeof setInterval> | null>(null);
-
-function startLiveTimer() {
-    stopLiveTimer();
-    now.value = dayjs().utc();
-    interval.value = setInterval(() => {
-        now.value = dayjs().utc();
-    }, 1000);
-}
-
-function stopLiveTimer() {
-    if (interval.value !== null) {
-        clearInterval(interval.value);
-    }
-}
+const { currentTimeEntry, isActive, now } = storeToRefs(currentTimeEntryStore);
+const { startLiveTimer, stopLiveTimer, onToggleButtonPress } =
+    currentTimeEntryStore;
 
 watch(isActive, () => {
     if (isActive.value) {
@@ -85,18 +70,6 @@ onMounted(async () => {
     }
 });
 
-async function onToggleButtonPress(newState: boolean) {
-    if (page.props.auth.user.current_team_id) {
-        if (newState) {
-            startLiveTimer();
-            await useCurrentTimeEntryStore().startTimer();
-        } else {
-            stopLiveTimer();
-            await useCurrentTimeEntryStore().stopTimer();
-        }
-    }
-}
-
 const currentProject = ref<Project>();
 watch(currentProject, () => {
     if (currentProject.value) {
@@ -112,6 +85,7 @@ function updateTimeEntry() {
         useCurrentTimeEntryStore().updateTimer();
     }
 }
+
 function pauseLiveTimerUpdate() {
     stopLiveTimer();
 }
