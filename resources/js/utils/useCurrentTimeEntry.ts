@@ -3,7 +3,7 @@ import { computed, reactive, ref } from 'vue';
 import { api } from '../../../openapi.json.client';
 import type { ZodiosResponseByAlias } from '@zodios/core';
 import type { SolidTimeApi } from '@/utils/api';
-import dayjs from 'dayjs';
+import dayjs, { Dayjs } from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { getCurrentOrganizationId, getCurrentUserId } from '@/utils/useUser';
 
@@ -28,6 +28,23 @@ export const useCurrentTimeEntryStore = defineStore('currentTimeEntry', () => {
 
     function $reset() {
         currentTimeEntry.value = { ...emptyTimeEntry };
+    }
+
+    const now = ref<null | Dayjs>(null);
+    const interval = ref<ReturnType<typeof setInterval> | null>(null);
+
+    function startLiveTimer() {
+        stopLiveTimer();
+        now.value = dayjs().utc();
+        interval.value = setInterval(() => {
+            now.value = dayjs().utc();
+        }, 1000);
+    }
+
+    function stopLiveTimer() {
+        if (interval.value !== null) {
+            clearInterval(interval.value);
+        }
     }
 
     async function fetchCurrentTimeEntry() {
@@ -143,6 +160,18 @@ export const useCurrentTimeEntryStore = defineStore('currentTimeEntry', () => {
         return false;
     });
 
+    async function onToggleButtonPress(newState: boolean) {
+        if (newState) {
+            startLiveTimer();
+            await startTimer();
+        } else {
+            stopLiveTimer();
+            await stopTimer();
+        }
+    }
+
+    startLiveTimer();
+
     return {
         currentTimeEntry,
         fetchCurrentTimeEntry,
@@ -150,5 +179,9 @@ export const useCurrentTimeEntryStore = defineStore('currentTimeEntry', () => {
         stopTimer,
         updateTimer,
         isActive,
+        startLiveTimer,
+        stopLiveTimer,
+        now,
+        onToggleButtonPress,
     };
 });

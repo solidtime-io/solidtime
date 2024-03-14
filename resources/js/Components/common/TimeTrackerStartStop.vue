@@ -15,7 +15,7 @@ const props = withDefaults(
     }
 );
 const buttonSizeClasses = {
-    base: 'w-8 h-8 !bg-accent-200/30 ',
+    base: 'w-8 h-8 bg-accent-200/40 hover:scale-110 hover:bg-accent-300/70 ring-accent-200/10 focus:ring-accent-200/10 hover:ring-4',
     large: 'w-11 h-11 ring-accent-200/10 focus:ring-accent-200/20 ring-8 hover:scale-110',
 };
 const iconClass = {
@@ -27,7 +27,7 @@ const buttonColorClasses = computed(() => {
     if (props.active) {
         return 'bg-red-400/80 hover:bg-red-500/80 focus:bg-red-500/80';
     } else {
-        return 'bg-accent-300/70 hover:bg-accent-400/80 focus:bg-accent-400/80';
+        return 'bg-accent-300/50 hover:bg-accent-400/70 focus:bg-accent-400/70';
     }
 });
 
