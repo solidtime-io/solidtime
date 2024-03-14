@@ -1,7 +1,7 @@
 <template>
-    <section class="">
+    <section class="flex flex-col">
         <h3
-            class="text-white font-bold pb-4 text-lg flex items-center space-x-2.5">
+            class="text-white font-bold pb-4 textbase flex items-center space-x-2.5">
             <component
                 v-if="icon"
                 :is="icon"
@@ -9,8 +9,10 @@
             <span>{{ title }}</span>
         </h3>
         <div
-            class="rounded-lg bg-card-background border border-card-border divide-y divide-card-background-seperator">
-            <slot></slot>
+            class="rounded-lg bg-card-background border border-card-border flex-1 flex items-center">
+            <div class="divide-y divide-card-background-seperator w-full">
+                <slot></slot>
+            </div>
         </div>
     </section>
 </template>

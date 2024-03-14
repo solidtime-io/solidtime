@@ -24,9 +24,9 @@ function dayFormat(date: string) {
 </script>
 
 <template>
-    <div class="px-4 py-2 grid grid-cols-3">
+    <div class="px-4 py-1.5 grid grid-cols-3">
         <div class="flex items-center">
-            <p class="font-medium text-base text-white">
+            <p class="font-semibold text-sm text-white">
                 {{ dayFormat(date) }}
             </p>
         </div>

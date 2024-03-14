@@ -108,7 +108,7 @@ const selectedProjectColor = computed(() => {
                     <ComboboxInput
                         @keydown.enter="addProjectIfNoneExists"
                         ref="searchInput"
-                        class="bg-card-background border-0 placeholder-muted text-white py-2.5 focus:ring-0 border-b border-card-background-seperator focus:border-card-background-seperator w-full"
+                        class="bg-card-background border-0 placeholder-muted text-sm text-white py-2.5 focus:ring-0 border-b border-card-background-seperator focus:border-card-background-seperator w-full"
                         placeholder="Search for a project..." />
                 </ComboboxAnchor>
                 <ComboboxContent>
@@ -144,7 +144,7 @@ const selectedProjectColor = computed(() => {
                             "
                             class="bg-card-background-active">
                             <div
-                                class="flex space-x-3 items-center px-4 py-3 text-sm font-medium border-t rounded-b-lg border-card-background-seperator">
+                                class="flex space-x-3 items-center px-4 py-3 text-xs font-medium border-t rounded-b-lg border-card-background-seperator">
                                 <PlusCircleIcon
                                     class="w-5 flex-shrink-0"></PlusCircleIcon>
                                 <span

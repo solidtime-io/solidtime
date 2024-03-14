@@ -9,9 +9,9 @@ defineProps<{
 </script>
 
 <template>
-    <div class="px-4 py-1.5 grid grid-cols-5">
+    <div class="px-4 py-2 grid grid-cols-5">
         <div class="col-span-4">
-            <p class="font-semibold text-white pb-1">
+            <p class="font-semibold text-white text-sm pb-1">
                 {{ title }}
             </p>
             <ProjectBadge :name="project"></ProjectBadge>
