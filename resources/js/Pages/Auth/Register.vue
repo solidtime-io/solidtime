@@ -15,6 +15,7 @@ const form = useForm({
     password: '',
     password_confirmation: '',
     terms: false,
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone ?? null,
 });
 
 const submit = () => {

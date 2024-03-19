@@ -23,7 +23,7 @@ return new class extends Migration
             $table->boolean('is_placeholder')->default(false);
             $table->foreignUuid('current_team_id')->nullable();
             $table->string('profile_photo_path', 2048)->nullable();
-            $table->string('timezone')->nullable();
+            $table->string('timezone');
             $table->timestamps();
 
             $table->uniqueIndex('email')
