@@ -34,8 +34,23 @@ class TimeEntryFactory extends Factory
             'billable' => $this->faker->boolean(),
             'tags' => [],
             'user_id' => User::factory(),
+            'task_id' => null,
+            'project_id' => null,
             'organization_id' => Organization::factory(),
         ];
+    }
+
+    public function withTask(Organization $organization): self
+    {
+        return $this->state(function (array $attributes) use (&$organization): array {
+            $project = Project::factory()->forOrganization($organization)->create();
+            $task = Task::factory()->forProject($project)->forOrganization($organization)->create();
+
+            return [
+                'task_id' => $task->getKey(),
+                'project_id' => $task->project->getKey(),
+            ];
+        });
     }
 
     public function withTags(Organization $organization): self

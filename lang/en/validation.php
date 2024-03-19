@@ -188,12 +188,17 @@ return [
     |
     */
 
-    'attributes' => [],
+    'attributes' => [
+        'task_id' => 'task',
+        'project_id' => 'project',
+        'organization_id' => 'organization',
+    ],
 
     /*
      * Custom validation rules
      */
 
     'color' => 'The :attribute field must be a valid color.',
-
+    'organization' => 'The :attribute does not exist.',
+    'task_belongs_to_project' => 'The :attribute is not part of the given project.',
 ];
