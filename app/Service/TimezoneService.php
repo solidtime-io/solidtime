@@ -32,4 +32,9 @@ class TimezoneService
 
         return $options;
     }
+
+    public function isValid(string $timezone): bool
+    {
+        return in_array($timezone, $this->getTimezones(), true);
+    }
 }

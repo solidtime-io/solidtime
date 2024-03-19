@@ -12,6 +12,7 @@ use App\Models\Task;
 use App\Models\User;
 use App\Service\ColorService;
 use App\Service\Import\ImportDatabaseHelper;
+use App\Service\TimezoneService;
 use Illuminate\Database\Eloquent\Builder;
 
 abstract class DefaultImporter implements ImporterContract
@@ -47,6 +48,8 @@ abstract class DefaultImporter implements ImporterContract
 
     protected ColorService $colorService;
 
+    protected TimezoneService $timezoneService;
+
     public function init(Organization $organization): void
     {
         $this->organization = $organization;
@@ -61,6 +64,10 @@ abstract class DefaultImporter implements ImporterContract
             'name' => [
                 'required',
                 'max:255',
+            ],
+            'timezone' => [
+                'required',
+                'timezone:all',
             ],
         ]);
         $this->projectImportHelper = new ImportDatabaseHelper(Project::class, ['name', 'organization_id'], true, function (Builder $builder) {
@@ -97,6 +104,7 @@ abstract class DefaultImporter implements ImporterContract
         ]);
         $this->timeEntriesCreated = 0;
         $this->colorService = app(ColorService::class);
+        $this->timezoneService = app(TimezoneService::class);
     }
 
     #[\Override]

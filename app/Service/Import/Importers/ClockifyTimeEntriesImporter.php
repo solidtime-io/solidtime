@@ -53,6 +53,7 @@ class ClockifyTimeEntriesImporter extends DefaultImporter
                     'email' => $record['Email'],
                 ], [
                     'name' => $record['User'],
+                    'timezone' => 'UTC',
                     'is_placeholder' => true,
                 ]);
                 $clientId = null;

@@ -203,8 +203,17 @@ const page = usePage<{
             <!-- Timezone -->
             <div class="col-span-6 sm:col-span-4">
                 <InputLabel for="timezone" value="Timezone" />
-                <select name="timezone" id="timezone" v-model="form.timezone" class="mt-1 block w-full border-input-border bg-input-background text-white focus:border-input-border-active rounded-md shadow-sm">
-                    <option v-for="timezone in $page.props.timezones" :value="timezone">
+                <select
+                    name="timezone"
+                    id="timezone"
+                    v-model="form.timezone"
+                    required
+                    class="mt-1 block w-full border-input-border bg-input-background text-white focus:border-input-border-active rounded-md shadow-sm">
+                    <option value="" disabled>Select a Timezone</option>
+                    <option
+                        v-for="timezone in $page.props.timezones"
+                        :key="timezone"
+                        :value="timezone">
                         {{ timezone }}
                     </option>
                 </select>
