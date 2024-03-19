@@ -25,6 +25,7 @@ use Laravel\Passport\HasApiTokens;
  * @property string $email
  * @property string|null $email_verified_at
  * @property string|null $password
+ * @property string $timezone
  * @property bool $is_placeholder
  * @property Collection<Organization> $organizations
  * @property Collection<TimeEntry> $timeEntries

@@ -13,6 +13,8 @@ use App\Actions\Jetstream\RemoveOrganizationMember;
 use App\Actions\Jetstream\UpdateOrganization;
 use App\Models\Organization;
 use App\Models\OrganizationInvitation;
+use App\Service\TimezoneService;
+use Illuminate\Http\Request;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Jetstream\Jetstream;
 
@@ -112,5 +114,14 @@ class JetstreamServiceProvider extends ServiceProvider
 
         Jetstream::role('placeholder', 'Placeholder', [
         ])->description('Placeholders are used for importing data. They cannot log in and have no permissions.');
+
+        Jetstream::inertia()->whenRendering(
+            'Profile/Show',
+            function (Request $request, array $data) {
+                return array_merge($data, [
+                    'timezones' => $this->app->get(TimezoneService::class)->getSelectOptions(),
+                ]);
+            }
+        );
     }
 }
