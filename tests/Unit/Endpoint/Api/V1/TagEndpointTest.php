@@ -43,6 +43,8 @@ class TagEndpointTest extends ApiEndpointTestAbstract
         $response->assertJsonCount(4, 'data');
         $response->assertJson(fn (AssertableJson $json) => $json
             ->has('data')
+            ->has('links')
+            ->has('meta')
             ->count('data', 4)
             ->where('data.0.id', $tags->sortByDesc('created_at')->get(0)->getKey())
             ->where('data.1.id', $tags->sortByDesc('created_at')->get(1)->getKey())

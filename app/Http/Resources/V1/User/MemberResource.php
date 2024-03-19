@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 /**
  * @property User $resource
  */
-class UserResource extends BaseResource
+class MemberResource extends BaseResource
 {
     /**
      * Transform the resource into an array.

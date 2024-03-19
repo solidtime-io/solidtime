@@ -26,9 +26,11 @@ class TagController extends Controller
     /**
      * Get tags
      *
-     * @throws AuthorizationException
+     * @return TagCollection<TagResource>
      *
      * @operationId getTags
+     *
+     * @throws AuthorizationException
      */
     public function index(Organization $organization): TagCollection
     {
@@ -37,7 +39,7 @@ class TagController extends Controller
         $tags = Tag::query()
             ->whereBelongsTo($organization, 'organization')
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->paginate();
 
         return new TagCollection($tags);
     }

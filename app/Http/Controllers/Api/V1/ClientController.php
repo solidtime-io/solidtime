@@ -26,6 +26,8 @@ class ClientController extends Controller
     /**
      * Get clients
      *
+     * @return ClientCollection<ClientResource>
+     *
      * @throws AuthorizationException
      */
     public function index(Organization $organization): ClientCollection
@@ -35,7 +37,7 @@ class ClientController extends Controller
         $clients = Client::query()
             ->whereBelongsTo($organization, 'organization')
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->paginate();
 
         return new ClientCollection($clients);
     }
