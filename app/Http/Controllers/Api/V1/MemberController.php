@@ -6,7 +6,8 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Exceptions\Api\UserNotPlaceholderApiException;
 use App\Http\Requests\V1\User\UserIndexRequest;
-use App\Http\Resources\V1\User\UserCollection;
+use App\Http\Resources\V1\User\MemberCollection;
+use App\Http\Resources\V1\User\MemberResource;
 use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -14,25 +15,27 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Laravel\Jetstream\Contracts\InvitesTeamMembers;
 
-class UserController extends Controller
+class MemberController extends Controller
 {
     /**
-     * List all users in an organization
+     * List all members of an organization
+     *
+     * @return MemberCollection<MemberResource>>
      *
      * @throws AuthorizationException
      */
-    public function index(Organization $organization, UserIndexRequest $request): UserCollection
+    public function index(Organization $organization, UserIndexRequest $request): MemberCollection
     {
         $this->checkPermission($organization, 'users:view');
 
         $users = $organization->users()
             ->paginate();
 
-        return UserCollection::make($users);
+        return MemberCollection::make($users);
     }
 
     /**
-     * Invite a placeholder user to become a real user in the organization
+     * Invite a placeholder user to become a member of the organization
      *
      * @throws AuthorizationException|UserNotPlaceholderApiException
      */
@@ -51,6 +54,6 @@ class UserController extends Controller
             'employee'
         );
 
-        return response()->json($user);
+        return response()->json(null, 204);
     }
 }

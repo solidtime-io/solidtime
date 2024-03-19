@@ -104,7 +104,8 @@ class TimeEntryController extends Controller
     /**
      * Create time entry
      *
-     * @throws AuthorizationException|TimeEntryStillRunningApiException
+     * @throws AuthorizationException
+     * @throws TimeEntryStillRunningApiException
      *
      * @operationId createTimeEntry
      */
@@ -117,7 +118,6 @@ class TimeEntryController extends Controller
         }
 
         if ($request->get('end') === null && TimeEntry::query()->where('user_id', $request->get('user_id'))->where('end', null)->exists()) {
-            // TODO: API documentation
             throw new TimeEntryStillRunningApiException();
         }
 
@@ -144,6 +144,8 @@ class TimeEntryController extends Controller
         } else {
             $this->checkPermission($organization, 'time-entries:update:all', $timeEntry);
         }
+
+        // TODO: TimeEntryStillRunningApiException
 
         $timeEntry->fill($request->validated());
         $timeEntry->description = $request->get('description', $timeEntry->description) ?? '';

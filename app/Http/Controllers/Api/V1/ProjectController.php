@@ -27,16 +27,18 @@ class ProjectController extends Controller
     /**
      * Get projects
      *
+     * @return ProjectCollection<ProjectResource>
+     *
      * @throws AuthorizationException
      *
      * @operationId getProjects
      */
-    public function index(Organization $organization): JsonResource
+    public function index(Organization $organization): ProjectCollection
     {
         $this->checkPermission($organization, 'projects:view');
         $projects = Project::query()
             ->whereBelongsTo($organization, 'organization')
-            ->get();
+            ->paginate();
 
         return new ProjectCollection($projects);
     }
