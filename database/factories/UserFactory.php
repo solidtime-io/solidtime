@@ -32,7 +32,17 @@ class UserFactory extends Factory
             'profile_photo_path' => null,
             'current_team_id' => null,
             'is_placeholder' => false,
+            'timezone' => 'Europe/Vienna',
         ];
+    }
+
+    public function randomTimeZone(): static
+    {
+        return $this->state(function (array $attributes) {
+            return [
+                'timezone' => $this->faker->timezone(),
+            ];
+        });
     }
 
     public function placeholder(bool $placeholder = true): static
