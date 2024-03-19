@@ -42,6 +42,7 @@ class ImportDatabaseHelperTest extends TestCase
             'email' => 'test@mail.test',
         ], [
             'name' => 'Test',
+            'timezone' => 'UTC',
         ]);
 
         // Assert

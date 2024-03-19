@@ -49,6 +49,42 @@ class RegistrationTest extends TestCase
 
         $this->assertAuthenticated();
         $response->assertRedirect(RouteServiceProvider::HOME);
+        $user = User::where('email', 'test@example.com')->firstOrFail();
+        $this->assertSame('UTC', $user->timezone);
+    }
+
+    public function test_new_users_can_register_and_frontend_can_send_timezone_for_user(): void
+    {
+        $response = $this->post('/register', [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+            'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature(),
+            'timezone' => 'Europe/Berlin',
+        ]);
+
+        $this->assertAuthenticated();
+        $response->assertRedirect(RouteServiceProvider::HOME);
+        $user = User::where('email', 'test@example.com')->firstOrFail();
+        $this->assertSame('Europe/Berlin', $user->timezone);
+    }
+
+    public function test_new_users_can_register_and_ignores_invalid_timezones_from_frontend(): void
+    {
+        $response = $this->post('/register', [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+            'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature(),
+            'timezone' => 'Unknown timezone',
+        ]);
+
+        $this->assertAuthenticated();
+        $response->assertRedirect(RouteServiceProvider::HOME);
+        $user = User::where('email', 'test@example.com')->firstOrFail();
+        $this->assertSame('UTC', $user->timezone);
     }
 
     public function test_new_users_can_not_register_if_user_with_email_already_exists(): void

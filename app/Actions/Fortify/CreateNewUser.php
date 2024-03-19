@@ -6,6 +6,7 @@ namespace App\Actions\Fortify;
 
 use App\Models\Organization;
 use App\Models\User;
+use App\Service\TimezoneService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -48,11 +49,17 @@ class CreateNewUser implements CreatesNewUsers
             'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature() ? ['accepted', 'required'] : '',
         ])->validate();
 
-        return DB::transaction(function () use ($input) {
+        $timezone = 'UTC';
+        if (array_key_exists('timezone', $input) && is_string($input['timezone']) && app(TimezoneService::class)->isValid($input['timezone'])) {
+            $timezone = $input['timezone'];
+        }
+
+        return DB::transaction(function () use ($input, $timezone) {
             return tap(User::create([
                 'name' => $input['name'],
                 'email' => $input['email'],
                 'password' => Hash::make($input['password']),
+                'timezone' => $timezone,
             ]), function (User $user) {
                 $this->createTeam($user);
             });

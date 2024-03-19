@@ -83,6 +83,7 @@ class TogglDataImporter extends DefaultImporter
                     'email' => $workspaceUser->email,
                 ], [
                     'name' => $workspaceUser->name,
+                    'timezone' => $workspaceUser->timezone ?? 'UTC',
                     'is_placeholder' => true,
                 ], (string) $workspaceUser->id);
             }
