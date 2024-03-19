@@ -20,6 +20,7 @@ const form = useForm({
     name: props.user.name,
     email: props.user.email,
     photo: null as File | null,
+    timezone: props.user.timezone,
 });
 
 const verificationLinkSent = ref<boolean | null>(null);
@@ -197,6 +198,17 @@ const page = usePage<{
                         address.
                     </div>
                 </div>
+            </div>
+
+            <!-- Timezone -->
+            <div class="col-span-6 sm:col-span-4">
+                <InputLabel for="timezone" value="Timezone" />
+                <select name="timezone" id="timezone" v-model="form.timezone" class="mt-1 block w-full border-input-border bg-input-background text-white focus:border-input-border-active rounded-md shadow-sm">
+                    <option v-for="timezone in $page.props.timezones" :value="timezone">
+                        {{ timezone }}
+                    </option>
+                </select>
+                <InputError :message="form.errors.timezone" class="mt-2" />
             </div>
         </template>
 

@@ -110,6 +110,7 @@ export interface User {
     two_factor_secret?: string | null;
     two_factor_recovery_codes?: string | null;
     two_factor_confirmed_at: string | null;
+    timezone: string;
     // mutators
     profile_photo_url: string;
     // relations
