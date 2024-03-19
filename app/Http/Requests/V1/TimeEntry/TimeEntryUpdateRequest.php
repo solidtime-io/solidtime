@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\V1\TimeEntry;
 
 use App\Models\Organization;
+use App\Models\Project;
 use App\Models\Tag;
 use App\Models\Task;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -25,6 +26,16 @@ class TimeEntryUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'project_id' => [
+                'nullable',
+                'string',
+                'uuid',
+                'required_with:task_id',
+                new ExistsEloquent(Project::class, null, function (Builder $builder): Builder {
+                    /** @var Builder<Project> $builder */
+                    return $builder->whereBelongsTo($this->organization, 'organization');
+                }),
+            ],
             // ID of the task that the time entry should belong to
             'task_id' => [
                 'nullable',
@@ -34,18 +45,27 @@ class TimeEntryUpdateRequest extends FormRequest
                     /** @var Builder<Task> $builder */
                     return $builder->whereBelongsTo($this->organization, 'organization');
                 }),
+                (new ExistsEloquent(Task::class, null, function (Builder $builder): Builder {
+                    /** @var Builder<Task> $builder */
+                    return $builder->whereBelongsTo($this->organization, 'organization')
+                        ->where('project_id', $this->input('project_id'));
+                }))->withMessage(__('validation.task_belongs_to_project')),
             ],
             // Start of time entry (ISO 8601 format, UTC timezone)
             'start' => [
                 'required',
-                'date', // TODO
+                'date_format:Y-m-d\TH:i:s\Z',
             ],
             // End of time entry (ISO 8601 format, UTC timezone)
             'end' => [
                 'present',
                 'nullable',
-                'date', // TODO
+                'date_format:Y-m-d\TH:i:s\Z',
                 'after:start',
+            ],
+            // Whether time entry is billable
+            'billable' => [
+                'boolean',
             ],
             // Description of time entry
             'description' => [

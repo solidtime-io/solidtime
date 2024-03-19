@@ -43,6 +43,8 @@ class TimeEntryResource extends BaseResource
             'user_id' => $this->resource->user_id,
             /** @var array<string> $tags List of tag IDs */
             'tags' => $this->resource->tags ?? [],
+            /** @var bool $billable Whether time entry is billable */
+            'billable' => $this->resource->billable,
         ];
     }
 }

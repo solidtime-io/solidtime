@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Api\V1\ClientController;
 use App\Http\Controllers\Api\V1\ImportController;
+use App\Http\Controllers\Api\V1\MemberController;
 use App\Http\Controllers\Api\V1\OrganizationController;
 use App\Http\Controllers\Api\V1\ProjectController;
 use App\Http\Controllers\Api\V1\TagController;
 use App\Http\Controllers\Api\V1\TimeEntryController;
-use App\Http\Controllers\Api\V1\UserController;
 use Illuminate\Support\Facades\Route;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -32,8 +32,8 @@ Route::middleware('auth:api')->prefix('v1')->name('v1.')->group(static function 
 
     // User routes
     Route::name('users.')->group(static function () {
-        Route::get('/organizations/{organization}/users', [UserController::class, 'index'])->name('index');
-        Route::post('/organizations/{organization}/users/{user}/invite-placeholder', [UserController::class, 'invitePlaceholder'])->name('invite-placeholder');
+        Route::get('/organizations/{organization}/members', [MemberController::class, 'index'])->name('index');
+        Route::post('/organizations/{organization}/members/{user}/invite-placeholder', [MemberController::class, 'invitePlaceholder'])->name('invite-placeholder');
     });
 
     // Project routes
