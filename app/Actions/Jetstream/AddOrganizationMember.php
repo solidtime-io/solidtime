@@ -26,7 +26,7 @@ class AddOrganizationMember implements AddsTeamMembers
      */
     public function add(User $owner, Organization $organization, string $email, ?string $role = null): void
     {
-        Gate::forUser($owner)->authorize('addTeamMember', $organization);
+        Gate::forUser($owner)->authorize('addTeamMember', $organization); // TODO: refactor after owner refactoring
 
         $this->validate($organization, $email, $role);
 
