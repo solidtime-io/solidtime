@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\Weekday;
 use Database\Factories\UserFactory;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Builder;
@@ -27,6 +28,7 @@ use Laravel\Passport\HasApiTokens;
  * @property string|null $password
  * @property string $timezone
  * @property bool $is_placeholder
+ * @property Weekday $week_start
  * @property Collection<Organization> $organizations
  * @property Collection<TimeEntry> $timeEntries
  *
@@ -79,6 +81,16 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'is_admin' => 'boolean',
         'is_placeholder' => 'boolean',
+        'week_start' => Weekday::class,
+    ];
+
+    /**
+     * The model's default values for attributes.
+     *
+     * @var array<string, mixed>
+     */
+    protected $attributes = [
+        'week_start' => Weekday::Monday,
     ];
 
     /**

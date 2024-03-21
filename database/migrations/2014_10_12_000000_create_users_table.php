@@ -24,6 +24,15 @@ return new class extends Migration
             $table->foreignUuid('current_team_id')->nullable();
             $table->string('profile_photo_path', 2048)->nullable();
             $table->string('timezone');
+            $table->enum('week_start', [
+                'monday',
+                'tuesday',
+                'wednesday',
+                'thursday',
+                'friday',
+                'saturday',
+                'sunday',
+            ]);
             $table->timestamps();
 
             $table->uniqueIndex('email')
