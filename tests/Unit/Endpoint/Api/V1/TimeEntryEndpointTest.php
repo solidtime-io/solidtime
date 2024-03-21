@@ -26,7 +26,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         $response = $this->getJson(route('api.v1.time-entries.index', [$data->organization->getKey()]));
 
         // Assert
-        $response->assertStatus(403);
+        $response->assertForbidden();
     }
 
     public function test_index_endpoint_fails_if_user_has_no_permission_to_view_time_entries_for_others_but_wants_all_entries(): void
@@ -41,7 +41,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         $response = $this->getJson(route('api.v1.time-entries.index', [$data->organization->getKey()]));
 
         // Assert
-        $response->assertStatus(403);
+        $response->assertForbidden();
     }
 
     public function test_index_endpoint_returns_time_entries_for_current_user(): void
@@ -323,7 +323,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         ]);
 
         // Assert
-        $response->assertStatus(403);
+        $response->assertForbidden();
     }
 
     public function test_store_endpoint_fails_if_user_already_has_active_time_entry_and_tries_to_start_new_one(): void
@@ -463,7 +463,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         ]);
 
         // Assert
-        $response->assertStatus(403);
+        $response->assertForbidden();
     }
 
     public function test_store_endpoint_creates_new_time_entry_for_other_user_in_organization(): void
@@ -520,7 +520,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         ]);
 
         // Assert
-        $response->assertStatus(403);
+        $response->assertForbidden();
     }
 
     public function test_update_endpoint_fails_if_user_is_not_part_of_time_entry_organization(): void
@@ -547,7 +547,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         ]);
 
         // Assert
-        $response->assertStatus(403);
+        $response->assertForbidden();
     }
 
     public function test_update_endpoint_fails_if_user_has_no_permission_to_update_time_entries_for_other_users_in_organization(): void
@@ -575,7 +575,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         ]);
 
         // Assert
-        $response->assertStatus(403);
+        $response->assertForbidden();
     }
 
     public function test_update_endpoint_updates_time_entry_for_current_user(): void
@@ -656,7 +656,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         $response = $this->deleteJson(route('api.v1.time-entries.destroy', [$data->organization->getKey(), $timeEntry->getKey()]));
 
         // Assert
-        $response->assertStatus(403);
+        $response->assertForbidden();
     }
 
     public function test_destroy_endpoint_fails_if_user_tries_to_delete_non_existing_time_entry(): void
@@ -686,7 +686,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         $response = $this->deleteJson(route('api.v1.time-entries.destroy', [$data->organization->getKey(), $timeEntry->getKey()]));
 
         // Assert
-        $response->assertStatus(403);
+        $response->assertForbidden();
     }
 
     public function test_destroy_endpoint_fails_if_user_has_no_permission_to_delete_time_entries_for_other_users_in_organization(): void
@@ -706,7 +706,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         $response = $this->deleteJson(route('api.v1.time-entries.destroy', [$data->organization->getKey(), $timeEntry->getKey()]));
 
         // Assert
-        $response->assertStatus(403);
+        $response->assertForbidden();
     }
 
     public function test_destroy_endpoint_deletes_own_time_entry(): void

@@ -23,7 +23,7 @@ class TagEndpointTest extends ApiEndpointTestAbstract
         $response = $this->getJson(route('api.v1.tags.index', [$data->organization->getKey()]));
 
         // Assert
-        $response->assertStatus(403);
+        $response->assertForbidden();
     }
 
     public function test_index_endpoint_returns_list_of_all_tags_of_organization_ordered_by_created_at_desc_per_default(): void
@@ -66,7 +66,7 @@ class TagEndpointTest extends ApiEndpointTestAbstract
         ]);
 
         // Assert
-        $response->assertStatus(403);
+        $response->assertForbidden();
     }
 
     public function test_store_endpoint_creates_new_tag(): void
@@ -106,7 +106,7 @@ class TagEndpointTest extends ApiEndpointTestAbstract
         ]);
 
         // Assert
-        $response->assertStatus(403);
+        $response->assertForbidden();
     }
 
     public function test_update_endpoint_fails_if_user_is_not_part_of_tag_organization(): void
@@ -126,7 +126,7 @@ class TagEndpointTest extends ApiEndpointTestAbstract
         ]);
 
         // Assert
-        $response->assertStatus(403);
+        $response->assertForbidden();
         $this->assertDatabaseHas(Tag::class, [
             'id' => $tag->getKey(),
             'name' => $tag->name,
@@ -173,7 +173,7 @@ class TagEndpointTest extends ApiEndpointTestAbstract
         $response = $this->deleteJson(route('api.v1.tags.destroy', [$data->organization->getKey(), $tag->getKey()]));
 
         // Assert
-        $response->assertStatus(403);
+        $response->assertForbidden();
     }
 
     public function test_destroy_endpoint_fails_if_user_is_not_part_of_tag_organization(): void
@@ -190,7 +190,7 @@ class TagEndpointTest extends ApiEndpointTestAbstract
         $response = $this->deleteJson(route('api.v1.tags.destroy', [$data->organization->getKey(), $tag->getKey()]));
 
         // Assert
-        $response->assertStatus(403);
+        $response->assertForbidden();
         $this->assertDatabaseHas(Tag::class, [
             'id' => $tag->getKey(),
             'name' => $tag->name,
