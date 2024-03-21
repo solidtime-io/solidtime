@@ -12,19 +12,25 @@ services:
             - "traefik.http.routers.solidtime.rule=Host(`${NGINX_HOST_NAME}`)"
             - "traefik.http.routers.solidtime.entrypoints=web"
             - "traefik.http.services.solidtime.loadbalancer.server.port=80"
+            - "traefik.http.routers.solidtime.service=solidtime"
             - "traefik.http.routers.solidtime-https.rule=Host(`${NGINX_HOST_NAME}`)"
             - "traefik.http.routers.solidtime-https.entrypoints=websecure"
             - "traefik.http.routers.solidtime-https.tls=true"
+            # vite
+            - "traefik.http.services.solidtime-vite.loadbalancer.server.port=5173"
+            # http
+            - "traefik.http.routers.solidtime-vite.rule=Host(`${VITE_HOST_NAME}`)"
+            - "traefik.http.routers.solidtime-vite.service=solidtime-vite"
+            - "traefik.http.routers.solidtime-vite.entrypoints=web"
         extra_hosts:
             - 'host.docker.internal:host-gateway'
-        ports:
-            - '${VITE_PORT:-5173}:${VITE_PORT:-5173}'
         environment:
             WWWUSER: '${WWWUSER}'
             LARAVEL_SAIL: 1
             XDEBUG_MODE: '${SAIL_XDEBUG_MODE:-off}'
             XDEBUG_CONFIG: '${SAIL_XDEBUG_CONFIG:-client_host=host.docker.internal}'
             IGNITION_LOCAL_SITES_PATH: '${PWD}'
+            VITE_HOST_NAME: '${VITE_HOST_NAME}'
         volumes:
             - '.:/var/www/html'
         networks:
@@ -99,7 +105,8 @@ services:
         command: ['npx', 'playwright', 'test', '--ui-port=8080', '--ui-host=0.0.0.0']
         working_dir: /src
         extra_hosts:
-            - "solidtime.test:${REVERSE_PROXY_IP:-10.100.100.10}"
+            - "${NGINX_HOST_NAME}:${REVERSE_PROXY_IP:-10.100.100.10}"
+            - "${VITE_HOST_NAME}:${REVERSE_PROXY_IP:-10.100.100.10}"
         labels:
             - "traefik.enable=true"
             - "traefik.docker.network=${NETWORK_NAME}"
