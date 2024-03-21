@@ -24,4 +24,11 @@ export default defineConfig({
             lintCommand: 'eslint "./**/*.{ts,vue}"',
         }),
     ],
+    server: {
+        host: true,
+        hmr: {
+            host: process.env.VITE_HOST_NAME,
+            clientPort: 80,
+        },
+    },
 });
