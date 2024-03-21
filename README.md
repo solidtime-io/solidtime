@@ -38,6 +38,7 @@ Add the following entry to your `/etc/hosts`
 ```
 127.0.0.1 solidtime.test
 127.0.0.1 playwright.solidtime.test
+127.0.0.1 vite.solidtime.test
 127.0.0.1 mail.solidtime.test
 ```
 
@@ -57,6 +58,7 @@ npx playwright codegen solidtime.test
 
 ## E2E Troubleshooting
 
+If E2E tests are not working at all, make sure you do not have the Vite server running and just run `npm run build` to update the version.
 If the E2E tests are not working consistently and fail with a timeout during the authentication, you might want to delete the `test-results/.auth` directory to force new test accounts to be created.
 
 ## Generate ZOD Client
