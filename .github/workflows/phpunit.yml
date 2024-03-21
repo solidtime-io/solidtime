@@ -50,5 +50,5 @@ jobs:
           php artisan key:generate
           php artisan passport:keys
 
-      - name: "Run PHPUnit"
-        run: composer test
+      - name: "Run PHPUnit in parallel"
+        run: composer ptest
