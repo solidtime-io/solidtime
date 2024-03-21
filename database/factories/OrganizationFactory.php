@@ -30,7 +30,7 @@ class OrganizationFactory extends Factory
     public function withOwner(?User $owner = null): self
     {
         return $this->state(fn (array $attributes) => [
-            'user_id' => $owner === null ? User::factory() : $owner,
+            'user_id' => $owner === null ? User::factory() : $owner->getKey(),
         ]);
     }
 }

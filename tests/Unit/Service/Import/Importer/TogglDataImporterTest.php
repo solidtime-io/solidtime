@@ -38,9 +38,17 @@ class TogglDataImporterTest extends ImporterTestAbstract
 
         // Act
         $importer->importData($data);
+        $report = $importer->getReport();
 
         // Assert
         $this->checkTestScenarioAfterImportExcludingTimeEntries();
+        $this->assertSame(0, $report->timeEntriesCreated);
+        $this->assertSame(2, $report->tagsCreated);
+        $this->assertSame(1, $report->tasksCreated);
+        $this->assertSame(1, $report->usersCreated);
+        $this->assertSame(2, $report->projectsCreated);
+        $this->assertSame(1, $report->clientsCreated);
+
     }
 
     public function test_import_of_test_file_twice_succeeds(): void
@@ -57,8 +65,15 @@ class TogglDataImporterTest extends ImporterTestAbstract
 
         // Act
         $importer->importData($data);
+        $report = $importer->getReport();
 
         // Assert
         $this->checkTestScenarioAfterImportExcludingTimeEntries();
+        $this->assertSame(0, $report->timeEntriesCreated);
+        $this->assertSame(0, $report->tagsCreated);
+        $this->assertSame(0, $report->tasksCreated);
+        $this->assertSame(0, $report->usersCreated);
+        $this->assertSame(0, $report->projectsCreated);
+        $this->assertSame(0, $report->clientsCreated);
     }
 }

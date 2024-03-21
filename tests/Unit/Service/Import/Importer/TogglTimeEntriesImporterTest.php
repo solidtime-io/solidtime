@@ -19,7 +19,8 @@ class TogglTimeEntriesImporterTest extends ImporterTestAbstract
         $data = file_get_contents(storage_path('tests/toggl_time_entries_import_test_1.csv'));
 
         // Act
-        $importer->importData($data, []);
+        $importer->importData($data);
+        $report = $importer->getReport();
 
         // Assert
         $testScenario = $this->checkTestScenarioAfterImportExcludingTimeEntries();
@@ -39,6 +40,12 @@ class TogglTimeEntriesImporterTest extends ImporterTestAbstract
         $this->assertSame('2024-03-04 11:23:01', $timeEntry2->end->toDateTimeString());
         $this->assertTrue($timeEntry2->billable);
         $this->assertSame([], $timeEntry2->tags);
+        $this->assertSame(2, $report->timeEntriesCreated);
+        $this->assertSame(2, $report->tagsCreated);
+        $this->assertSame(1, $report->tasksCreated);
+        $this->assertSame(1, $report->usersCreated);
+        $this->assertSame(2, $report->projectsCreated);
+        $this->assertSame(1, $report->clientsCreated);
     }
 
     public function test_import_of_test_file_twice_succeeds(): void
@@ -53,7 +60,8 @@ class TogglTimeEntriesImporterTest extends ImporterTestAbstract
         $importer->init($organization);
 
         // Act
-        $importer->importData($data, []);
+        $importer->importData($data);
+        $report = $importer->getReport();
 
         // Assert
         $testScenario = $this->checkTestScenarioAfterImportExcludingTimeEntries();
@@ -73,5 +81,11 @@ class TogglTimeEntriesImporterTest extends ImporterTestAbstract
         $this->assertSame('2024-03-04 11:23:01', $timeEntry2->end->toDateTimeString());
         $this->assertTrue($timeEntry2->billable);
         $this->assertSame([], $timeEntry2->tags);
+        $this->assertSame(2, $report->timeEntriesCreated);
+        $this->assertSame(0, $report->tagsCreated);
+        $this->assertSame(0, $report->tasksCreated);
+        $this->assertSame(0, $report->usersCreated);
+        $this->assertSame(0, $report->projectsCreated);
+        $this->assertSame(0, $report->clientsCreated);
     }
 }

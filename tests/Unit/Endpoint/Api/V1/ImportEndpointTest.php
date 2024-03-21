@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Endpoint\Api\V1;
 
 use App\Models\Organization;
+use App\Service\Import\Importers\ImportException;
 use App\Service\Import\Importers\ReportDto;
 use App\Service\Import\ImportService;
 use Laravel\Passport\Passport;
@@ -28,7 +29,35 @@ class ImportEndpointTest extends ApiEndpointTestAbstract
         ]);
 
         // Assert
-        $response->assertStatus(403);
+        $response->assertForbidden();
+    }
+
+    public function test_import_return_error_message_if_import_fails(): void
+    {
+        $user = $this->createUserWithPermission([
+            'import',
+        ]);
+        $this->mock(ImportService::class, function (MockInterface $mock) use (&$user): void {
+            $mock->shouldReceive('import')
+                ->withArgs(function (Organization $organization, string $importerType, string $data) use (&$user): bool {
+                    return $organization->is($user->organization) && $importerType === 'toggl_time_entries' && $data === 'some data';
+                })
+                ->andThrow(new ImportException('This is a test error!'))
+                ->once();
+        });
+        Passport::actingAs($user->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.import.import', ['organization' => $user->organization->id]), [
+            'type' => 'toggl_time_entries',
+            'data' => 'some data',
+        ]);
+
+        // Assert
+        $response->assertStatus(400);
+        $response->assertExactJson([
+            'message' => 'This is a test error!',
+        ]);
     }
 
     public function test_import_calls_import_service_if_user_has_permission(): void

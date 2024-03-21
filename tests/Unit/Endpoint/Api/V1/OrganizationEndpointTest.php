@@ -20,7 +20,7 @@ class OrganizationEndpointTest extends ApiEndpointTestAbstract
         $response = $this->getJson(route('api.v1.organizations.show', [$data->organization->getKey()]));
 
         // Assert
-        $response->assertStatus(403);
+        $response->assertForbidden();
     }
 
     public function test_show_endpoint_returns_organization(): void
@@ -53,7 +53,7 @@ class OrganizationEndpointTest extends ApiEndpointTestAbstract
         ]);
 
         // Assert
-        $response->assertStatus(403);
+        $response->assertForbidden();
     }
 
     public function test_update_endpoint_updates_project(): void

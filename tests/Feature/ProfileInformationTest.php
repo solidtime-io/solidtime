@@ -14,6 +14,19 @@ class ProfileInformationTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_show_profile_information_succeeds(): void
+    {
+        // Arrange
+        $user = User::factory()->withPersonalOrganization()->create();
+        $this->actingAs($user);
+
+        // Act
+        $response = $this->get('/user/profile');
+
+        // Assert
+        $response->assertSuccessful();
+    }
+
     public function test_profile_information_can_be_updated(): void
     {
         // Arrange
