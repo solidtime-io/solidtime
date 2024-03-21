@@ -6,12 +6,15 @@ namespace Tests\Unit\Service;
 
 use App\Models\User;
 use App\Service\TimezoneService;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Log;
 use Tests\TestCase;
 use TiMacDonald\Log\LogEntry;
 
 class TimezoneServiceTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_get_timezones_returns_all_available_timezones(): void
     {
         // Arrange
