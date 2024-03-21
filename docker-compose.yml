@@ -13,9 +13,11 @@ services:
             - "traefik.http.routers.solidtime.entrypoints=web"
             - "traefik.http.services.solidtime.loadbalancer.server.port=80"
             - "traefik.http.routers.solidtime.service=solidtime"
+            - "traefik.http.services.solidtime-https.loadbalancer.server.port=80"
             - "traefik.http.routers.solidtime-https.rule=Host(`${NGINX_HOST_NAME}`)"
             - "traefik.http.routers.solidtime-https.entrypoints=websecure"
             - "traefik.http.routers.solidtime-https.tls=true"
+            - "traefik.http.routers.solidtime-https.service=solidtime-https"
             # vite
             - "traefik.http.services.solidtime-vite.loadbalancer.server.port=5173"
             # http
