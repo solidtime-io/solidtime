@@ -21,6 +21,7 @@ const form = useForm({
     email: props.user.email,
     photo: null as File | null,
     timezone: props.user.timezone,
+    week_start: props.user.week_start,
 });
 
 const verificationLinkSent = ref<boolean | null>(null);
@@ -211,13 +212,35 @@ const page = usePage<{
                     class="mt-1 block w-full border-input-border bg-input-background text-white focus:border-input-border-active rounded-md shadow-sm">
                     <option value="" disabled>Select a Timezone</option>
                     <option
-                        v-for="timezone in $page.props.timezones"
-                        :key="timezone"
-                        :value="timezone">
-                        {{ timezone }}
+                        v-for="(timezoneTranslated, timezoneKey) in $page.props
+                            .timezones"
+                        :key="timezoneKey"
+                        :value="timezoneKey">
+                        {{ timezoneTranslated }}
                     </option>
                 </select>
                 <InputError :message="form.errors.timezone" class="mt-2" />
+            </div>
+
+            <!-- Week start -->
+            <div class="col-span-6 sm:col-span-4">
+                <InputLabel for="week_start" value="Start of the week" />
+                <select
+                    name="week_start"
+                    id="week_start"
+                    v-model="form.week_start"
+                    required
+                    class="mt-1 block w-full border-input-border bg-input-background text-white focus:border-input-border-active rounded-md shadow-sm">
+                    <option value="" disabled>Select a week day</option>
+                    <option
+                        v-for="(weekdayTranslated, weekdayKey) in $page.props
+                            .weekdays"
+                        :key="weekdayKey"
+                        :value="weekdayKey">
+                        {{ weekdayTranslated }}
+                    </option>
+                </select>
+                <InputError :message="form.errors.week_start" class="mt-2" />
             </div>
         </template>
 

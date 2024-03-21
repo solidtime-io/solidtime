@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Enums\Weekday;
 use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -33,6 +34,7 @@ class UserFactory extends Factory
             'current_team_id' => null,
             'is_placeholder' => false,
             'timezone' => 'Europe/Vienna',
+            'week_start' => Weekday::Monday,
         ];
     }
 
