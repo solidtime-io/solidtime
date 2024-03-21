@@ -37,6 +37,6 @@ class RemoveTeamMemberTest extends TestCase
 
         $response = $this->delete('/teams/'.$user->currentTeam->id.'/members/'.$user->id);
 
-        $response->assertStatus(403);
+        $response->assertForbidden();
     }
 }

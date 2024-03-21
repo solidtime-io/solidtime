@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\MemberController;
 use App\Http\Controllers\Api\V1\OrganizationController;
 use App\Http\Controllers\Api\V1\ProjectController;
 use App\Http\Controllers\Api\V1\TagController;
+use App\Http\Controllers\Api\V1\TaskController;
 use App\Http\Controllers\Api\V1\TimeEntryController;
 use Illuminate\Support\Facades\Route;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -67,6 +68,14 @@ Route::middleware('auth:api')->prefix('v1')->name('v1.')->group(static function 
         Route::post('/organizations/{organization}/clients', [ClientController::class, 'store'])->name('store');
         Route::put('/organizations/{organization}/clients/{client}', [ClientController::class, 'update'])->name('update');
         Route::delete('/organizations/{organization}/clients/{client}', [ClientController::class, 'destroy'])->name('destroy');
+    });
+
+    // Task routes
+    Route::name('tasks.')->group(static function () {
+        Route::get('/organizations/{organization}/tasks', [TaskController::class, 'index'])->name('index');
+        Route::post('/organizations/{organization}/tasks', [TaskController::class, 'store'])->name('store');
+        Route::put('/organizations/{organization}/tasks/{task}', [TaskController::class, 'update'])->name('update');
+        Route::delete('/organizations/{organization}/tasks/{task}', [TaskController::class, 'destroy'])->name('destroy');
     });
 
     // Import routes
