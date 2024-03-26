@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import TimeTrackerStartStop from '@/Components/common/TimeTrackerStartStop.vue';
 import { useCurrentTimeEntryStore } from '@/utils/useCurrentTimeEntry';
 import { storeToRefs } from 'pinia';
 import { computed } from 'vue';
 import dayjs from 'dayjs';
 import { formatHumanReadableDuration } from '@/utils/time';
+import TimeTrackerStartStop from '@/Components/Common/TimeTrackerStartStop.vue';
 const store = useCurrentTimeEntryStore();
 const { currentTimeEntry, now, isActive } = storeToRefs(store);
 const { onToggleButtonPress } = store;
