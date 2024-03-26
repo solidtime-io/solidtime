@@ -91,6 +91,7 @@ class ProjectController extends Controller
         $this->checkPermission($organization, 'projects:update', $project);
         $project->name = $request->input('name');
         $project->color = $request->input('color');
+        $project->client_id = $request->input('project_id');
         $project->save();
 
         return new ProjectResource($project);

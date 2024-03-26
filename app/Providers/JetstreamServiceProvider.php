@@ -11,6 +11,7 @@ use App\Actions\Jetstream\DeleteUser;
 use App\Actions\Jetstream\InviteOrganizationMember;
 use App\Actions\Jetstream\RemoveOrganizationMember;
 use App\Actions\Jetstream\UpdateOrganization;
+use App\Enums\Weekday;
 use App\Models\Organization;
 use App\Models\OrganizationInvitation;
 use App\Service\TimezoneService;
@@ -58,6 +59,10 @@ class JetstreamServiceProvider extends ServiceProvider
             'projects:create',
             'projects:update',
             'projects:delete',
+            'tasks:view',
+            'tasks:create',
+            'tasks:update',
+            'tasks:delete',
             'time-entries:view:all',
             'time-entries:create:all',
             'time-entries:update:all',
@@ -86,6 +91,10 @@ class JetstreamServiceProvider extends ServiceProvider
             'projects:create',
             'projects:update',
             'projects:delete',
+            'tasks:view',
+            'tasks:create',
+            'tasks:update',
+            'tasks:delete',
             'time-entries:view:all',
             'time-entries:create:all',
             'time-entries:update:all',
@@ -105,6 +114,7 @@ class JetstreamServiceProvider extends ServiceProvider
         Jetstream::role('employee', 'Employee', [
             'projects:view',
             'tags:view',
+            'tasks:view',
             'time-entries:view:own',
             'time-entries:create:own',
             'time-entries:update:own',
@@ -120,6 +130,7 @@ class JetstreamServiceProvider extends ServiceProvider
             function (Request $request, array $data) {
                 return array_merge($data, [
                     'timezones' => $this->app->get(TimezoneService::class)->getSelectOptions(),
+                    'weekdays' => Weekday::toSelectArray(),
                 ]);
             }
         );

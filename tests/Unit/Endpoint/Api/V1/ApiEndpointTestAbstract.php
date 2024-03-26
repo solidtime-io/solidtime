@@ -18,11 +18,16 @@ class ApiEndpointTestAbstract extends TestCase
      * @param  array<string>  $permissions
      * @return object{user: User, organization: Organization}
      */
-    protected function createUserWithPermission(array $permissions): object
+    protected function createUserWithPermission(array $permissions, bool $isOwner = false): object
     {
-        Jetstream::role('custom-test', 'Custom Test', $permissions)->description('Role custom for testing');
-        $organization = Organization::factory()->create();
+        Jetstream::role('custom-test', 'Custom Test', $permissions)
+            ->description('Role custom for testing');
         $user = User::factory()->create();
+        if ($isOwner) {
+            $organization = Organization::factory()->withOwner($user)->create();
+        } else {
+            $organization = Organization::factory()->create();
+        }
         $organization->users()->attach($user, [
             'role' => 'custom-test',
         ]);

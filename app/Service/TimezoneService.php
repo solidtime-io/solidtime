@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\Models\User;
 use Carbon\CarbonTimeZone;
+use DateTime;
 use DateTimeZone;
+use Illuminate\Support\Facades\Log;
 
 class TimezoneService
 {
@@ -17,6 +20,20 @@ class TimezoneService
         $tzlist = CarbonTimeZone::listIdentifiers(DateTimeZone::ALL);
 
         return $tzlist;
+    }
+
+    public function getTimezoneFromUser(User $user): CarbonTimeZone
+    {
+        try {
+            return new CarbonTimeZone($user->timezone);
+        } catch (\Exception $e) {
+            Log::error('User has a invalid timezone', [
+                'user_id' => $user->getKey(),
+                'timezone' => $user->timezone,
+            ]);
+
+            return new CarbonTimeZone('UTC');
+        }
     }
 
     /**
@@ -36,5 +53,12 @@ class TimezoneService
     public function isValid(string $timezone): bool
     {
         return in_array($timezone, $this->getTimezones(), true);
+    }
+
+    public function getShiftFromUtc(CarbonTimeZone $timeZone): int
+    {
+        $timezoneShift = $timeZone->getOffset(new DateTime('now', new DateTimeZone('UTC')));
+
+        return $timezoneShift;
     }
 }
