@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { ClockIcon } from '@heroicons/vue/20/solid';
-import CardTitle from '@/Components/common/CardTitle.vue';
-import BillableToggleButton from '@/Components/common/BillableToggleButton.vue';
-import TimeTrackerStartStop from '@/Components/common/TimeTrackerStartStop.vue';
-import TagDropdown from '@/Components/common/TagDropdown.vue';
-import ProjectDropdown from '@/Components/common/ProjectDropdown.vue';
+import CardTitle from '@/Components/Common/CardTitle.vue';
+import BillableToggleButton from '@/Components/Common/BillableToggleButton.vue';
+import TimeTrackerStartStop from '@/Components/Common/TimeTrackerStartStop.vue';
+import ProjectDropdown from '@/Components/Common/Project/ProjectDropdown.vue';
 import { usePage } from '@inertiajs/vue3';
 import { type User } from '@/types/models';
 import { computed, onMounted, ref, watch } from 'vue';
@@ -14,8 +13,8 @@ import duration from 'dayjs/plugin/duration';
 
 import { useCurrentTimeEntryStore } from '@/utils/useCurrentTimeEntry';
 import { storeToRefs } from 'pinia';
-import type { Project } from '@/utils/useProjects';
 import parse from 'parse-duration';
+import TimeTrackerTagDropdown from '@/Components/Common/TimeTracker/TimeTrackerTagDropdown.vue';
 
 const page = usePage<{
     auth: {
@@ -70,16 +69,6 @@ onMounted(async () => {
     }
 });
 
-const currentProject = ref<Project>();
-watch(currentProject, () => {
-    if (currentProject.value) {
-        currentTimeEntry.value.project_id = currentProject.value.id;
-        if (isActive.value) {
-            useCurrentTimeEntryStore().updateTimer();
-        }
-    }
-});
-
 function updateTimeEntry() {
     if (currentTimeEntry.value.id) {
         useCurrentTimeEntryStore().updateTimer();
@@ -122,12 +111,14 @@ function updateTimerAndStartLiveTimerUpdate() {
                     type="text" />
             </div>
             <div class="flex items-center">
-                <ProjectDropdown v-model="currentProject"></ProjectDropdown>
+                <ProjectDropdown
+                    @changed="updateTimeEntry"
+                    v-model="currentTimeEntry.project_id"></ProjectDropdown>
             </div>
             <div class="flex items-center space-x-2 px-4">
-                <TagDropdown
+                <TimeTrackerTagDropdown
                     @changed="updateTimeEntry"
-                    v-model="currentTimeEntry.tags"></TagDropdown>
+                    v-model="currentTimeEntry.tags"></TimeTrackerTagDropdown>
                 <BillableToggleButton></BillableToggleButton>
             </div>
             <div class="border-l border-card-border">

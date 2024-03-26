@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { twMerge } from 'tailwind-merge';
+import Badge from '@/Components/Common/Badge.vue';
 
 const props = withDefaults(
     defineProps<{
@@ -8,11 +9,13 @@ const props = withDefaults(
         tag: string;
         class?: string;
         color: string;
+        border: boolean;
     }>(),
     {
         size: 'base',
         tag: 'div',
         color: 'var(--theme-color-icon-default)',
+        border: true,
     }
 );
 
@@ -20,32 +23,19 @@ const indicatorClasses = {
     base: 'w-2.5 h-2.5',
     large: 'w-3 h-3',
 };
-
-const badgeClasses = {
-    base: 'py-1 px-2 space-x-1.5 text-xs',
-    large: 'py-1.5 px-3 space-x-2 text-sm text-muted',
-};
 </script>
 
 <template>
-    <component
-        :is="tag"
-        :class="
-            twMerge(
-                props.class,
-                badgeClasses[size],
-                'border-input-border border rounded inline-flex items-center font-semibold text-white'
-            )
-        ">
+    <Badge :name :size :tag :class="props.class" :color :border>
         <div
-            :style="{ backgroundColor: color }"
+            :style="{ backgroundColor: props.color }"
             :class="
                 twMerge(indicatorClasses[size], 'inline-block rounded-full')
             "></div>
         <span>
             {{ name }}
         </span>
-    </component>
+    </Badge>
 </template>
 
 <style scoped></style>

@@ -10,9 +10,9 @@ import {
 } from 'echarts/components';
 import VChart, { THEME_KEY } from 'vue-echarts';
 import { provide, ref } from 'vue';
-import StatCard from '@/Components/common/StatCard.vue';
+import StatCard from '@/Components/Common/StatCard.vue';
 import { ClockIcon } from '@heroicons/vue/20/solid';
-import CardTitle from '@/Components/common/CardTitle.vue';
+import CardTitle from '@/Components/Common/CardTitle.vue';
 import LinearGradient from 'zrender/lib/graphic/LinearGradient';
 import ProjectsChartCard from '@/Components/Dashboard/ProjectsChartCard.vue';
 import { formatHumanReadableDuration } from '@/utils/time';
@@ -130,7 +130,7 @@ const option = ref({
 </script>
 
 <template>
-    <div class="grid gap-x-6 xl:gap-x-8 grid-cols-4">
+    <div class="grid gap-x-6 xl:gap-x-6 grid-cols-4">
         <div class="col-span-3">
             <CardTitle
                 title="This Week"

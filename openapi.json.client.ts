@@ -13,6 +13,16 @@ const ClientCollection = z.array(ClientResource);
 const v1_import_import_Body = z
     .object({ type: z.string(), data: z.string() })
     .passthrough();
+const MemberResource = z
+    .object({
+        id: z.string(),
+        name: z.string(),
+        email: z.string(),
+        role: z.string(),
+        is_placeholder: z.boolean(),
+    })
+    .passthrough();
+const MemberCollection = z.array(MemberResource);
 const OrganizationResource = z
     .object({ id: z.string(), name: z.string(), is_personal: z.string() })
     .passthrough();
@@ -53,43 +63,40 @@ const TimeEntryResource = z
         project_id: z.union([z.string(), z.null()]),
         user_id: z.string(),
         tags: z.array(z.string()),
+        billable: z.boolean(),
     })
     .passthrough();
 const TimeEntryCollection = z.array(TimeEntryResource);
 const createTimeEntry_Body = z
     .object({
         user_id: z.string().uuid(),
+        project_id: z.union([z.string(), z.null()]).optional(),
         task_id: z.union([z.string(), z.null()]).optional(),
         start: z.string(),
         end: z.union([z.string(), z.null()]).optional(),
+        billable: z.boolean(),
         description: z.union([z.string(), z.null()]).optional(),
         tags: z.union([z.array(z.string()), z.null()]).optional(),
     })
     .passthrough();
 const updateTimeEntry_Body = z
     .object({
+        project_id: z.union([z.string(), z.null()]).optional(),
         task_id: z.union([z.string(), z.null()]).optional(),
         start: z.string(),
         end: z.union([z.string(), z.null()]).optional(),
+        billable: z.boolean().optional(),
         description: z.union([z.string(), z.null()]).optional(),
         tags: z.union([z.array(z.string()), z.null()]).optional(),
     })
     .passthrough();
-const UserResource = z
-    .object({
-        id: z.string(),
-        name: z.string(),
-        email: z.string(),
-        role: z.string(),
-        is_placeholder: z.boolean(),
-    })
-    .passthrough();
-const UserCollection = z.array(UserResource);
 
 export const schemas = {
     ClientResource,
     ClientCollection,
     v1_import_import_Body,
+    MemberResource,
+    MemberCollection,
     OrganizationResource,
     ProjectResource,
     ProjectCollection,
@@ -101,8 +108,6 @@ export const schemas = {
     TimeEntryCollection,
     createTimeEntry_Body,
     updateTimeEntry_Body,
-    UserResource,
-    UserCollection,
 };
 
 const endpoints = makeApi([
@@ -389,6 +394,89 @@ const endpoints = makeApi([
                         errors: z.record(z.array(z.string())),
                     })
                     .passthrough(),
+            },
+        ],
+    },
+    {
+        method: 'get',
+        path: '/v1/organizations/:organization/members',
+        alias: 'v1.users.index',
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'organization',
+                type: 'Path',
+                schema: z.string().uuid(),
+            },
+        ],
+        response: z.object({ data: MemberCollection }).passthrough(),
+        errors: [
+            {
+                status: 403,
+                description: `Authorization error`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 404,
+                description: `Not found`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 422,
+                description: `Validation error`,
+                schema: z
+                    .object({
+                        message: z.string(),
+                        errors: z.record(z.array(z.string())),
+                    })
+                    .passthrough(),
+            },
+        ],
+    },
+    {
+        method: 'post',
+        path: '/v1/organizations/:organization/members/:user/invite-placeholder',
+        alias: 'v1.users.invite-placeholder',
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'body',
+                type: 'Body',
+                schema: z.object({}).partial().passthrough(),
+            },
+            {
+                name: 'organization',
+                type: 'Path',
+                schema: z.string().uuid(),
+            },
+            {
+                name: 'user',
+                type: 'Path',
+                schema: z.string().uuid(),
+            },
+        ],
+        response: z.null(),
+        errors: [
+            {
+                status: 400,
+                description: `API exception`,
+                schema: z
+                    .object({
+                        error: z.boolean(),
+                        key: z.string(),
+                        message: z.string(),
+                    })
+                    .passthrough(),
+            },
+            {
+                status: 403,
+                description: `Authorization error`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 404,
+                description: `Not found`,
+                schema: z.object({ message: z.string() }).passthrough(),
             },
         ],
     },
@@ -807,6 +895,17 @@ const endpoints = makeApi([
         response: z.object({ data: TimeEntryResource }).passthrough(),
         errors: [
             {
+                status: 400,
+                description: `API exception`,
+                schema: z
+                    .object({
+                        error: z.boolean(),
+                        key: z.string(),
+                        message: z.string(),
+                    })
+                    .passthrough(),
+            },
+            {
                 status: 403,
                 description: `Authorization error`,
                 schema: z.object({ message: z.string() }).passthrough(),
@@ -897,78 +996,6 @@ const endpoints = makeApi([
             },
         ],
         response: z.null(),
-        errors: [
-            {
-                status: 403,
-                description: `Authorization error`,
-                schema: z.object({ message: z.string() }).passthrough(),
-            },
-            {
-                status: 404,
-                description: `Not found`,
-                schema: z.object({ message: z.string() }).passthrough(),
-            },
-        ],
-    },
-    {
-        method: 'get',
-        path: '/v1/organizations/:organization/users',
-        alias: 'v1.users.index',
-        requestFormat: 'json',
-        parameters: [
-            {
-                name: 'organization',
-                type: 'Path',
-                schema: z.string().uuid(),
-            },
-        ],
-        response: z.object({ data: UserCollection }).passthrough(),
-        errors: [
-            {
-                status: 403,
-                description: `Authorization error`,
-                schema: z.object({ message: z.string() }).passthrough(),
-            },
-            {
-                status: 404,
-                description: `Not found`,
-                schema: z.object({ message: z.string() }).passthrough(),
-            },
-            {
-                status: 422,
-                description: `Validation error`,
-                schema: z
-                    .object({
-                        message: z.string(),
-                        errors: z.record(z.array(z.string())),
-                    })
-                    .passthrough(),
-            },
-        ],
-    },
-    {
-        method: 'post',
-        path: '/v1/organizations/:organization/users/:user/invite-placeholder',
-        alias: 'v1.users.invite-placeholder',
-        requestFormat: 'json',
-        parameters: [
-            {
-                name: 'body',
-                type: 'Body',
-                schema: z.object({}).partial().passthrough(),
-            },
-            {
-                name: 'organization',
-                type: 'Path',
-                schema: z.string().uuid(),
-            },
-            {
-                name: 'user',
-                type: 'Path',
-                schema: z.string().uuid(),
-            },
-        ],
-        response: z.string(),
         errors: [
             {
                 status: 403,
