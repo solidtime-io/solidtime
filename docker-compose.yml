@@ -1,7 +1,7 @@
 services:
     laravel.test:
         build:
-            context: ./vendor/laravel/sail/runtimes/8.3
+            context: ./docker/8.3
             dockerfile: Dockerfile
             args:
                 WWWGROUP: '${WWWGROUP}'
@@ -13,9 +13,11 @@ services:
             - "traefik.http.routers.solidtime.entrypoints=web"
             - "traefik.http.services.solidtime.loadbalancer.server.port=80"
             - "traefik.http.routers.solidtime.service=solidtime"
+            - "traefik.http.services.solidtime-https.loadbalancer.server.port=80"
             - "traefik.http.routers.solidtime-https.rule=Host(`${NGINX_HOST_NAME}`)"
             - "traefik.http.routers.solidtime-https.entrypoints=websecure"
             - "traefik.http.routers.solidtime-https.tls=true"
+            - "traefik.http.routers.solidtime-https.service=solidtime-https"
             # vite
             - "traefik.http.services.solidtime-vite.loadbalancer.server.port=5173"
             # http
@@ -49,7 +51,7 @@ services:
             POSTGRES_PASSWORD: '${DB_PASSWORD:-secret}'
         volumes:
             - 'sail-pgsql:/var/lib/postgresql/data'
-            - './vendor/laravel/sail/database/pgsql/create-testing-database.sql:/docker-entrypoint-initdb.d/10-create-testing-database.sql'
+            - './docker/pgsql/create-testing-database.sql:/docker-entrypoint-initdb.d/10-create-testing-database.sql'
         networks:
             - sail
         healthcheck:
@@ -72,7 +74,7 @@ services:
             POSTGRES_PASSWORD: '${DB_PASSWORD:-secret}'
         volumes:
             - 'sail-pgsql-test:/var/lib/postgresql/data'
-            - './vendor/laravel/sail/database/pgsql/create-testing-database.sql:/docker-entrypoint-initdb.d/10-create-testing-database.sql'
+            - './docker/pgsql/create-testing-database.sql:/docker-entrypoint-initdb.d/10-create-testing-database.sql'
         networks:
             - sail
         healthcheck:

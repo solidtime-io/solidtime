@@ -24,7 +24,7 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
         $response = $this->getJson(route('api.v1.projects.index', [$data->organization->getKey()]));
 
         // Assert
-        $response->assertStatus(403);
+        $response->assertForbidden();
     }
 
     public function test_index_endpoint_returns_list_of_all_projects_of_organization(): void
@@ -58,7 +58,7 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
         $response = $this->getJson(route('api.v1.projects.show', [$data->organization->getKey(), $project->getKey()]));
 
         // Assert
-        $response->assertStatus(403);
+        $response->assertForbidden();
     }
 
     public function test_show_endpoint_fails_if_user_has_no_permission_to_view_projects(): void
@@ -73,7 +73,7 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
         $response = $this->getJson(route('api.v1.projects.show', [$data->organization->getKey(), $project->getKey()]));
 
         // Assert
-        $response->assertStatus(403);
+        $response->assertForbidden();
     }
 
     public function test_show_endpoint_returns_project(): void
@@ -108,7 +108,7 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
         ]);
 
         // Assert
-        $response->assertStatus(403);
+        $response->assertForbidden();
     }
 
     public function test_store_endpoint_creates_new_project(): void
@@ -180,7 +180,7 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
         ]);
 
         // Assert
-        $response->assertStatus(403);
+        $response->assertForbidden();
     }
 
     public function test_update_endpoint_fails_if_user_has_no_permission_to_update_projects(): void
@@ -199,7 +199,7 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
         ]);
 
         // Assert
-        $response->assertStatus(403);
+        $response->assertForbidden();
     }
 
     public function test_update_endpoint_updates_project(): void
@@ -240,7 +240,7 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
         $response = $this->deleteJson(route('api.v1.projects.destroy', [$data->organization->getKey(), $project->getKey()]));
 
         // Assert
-        $response->assertStatus(403);
+        $response->assertForbidden();
     }
 
     public function test_destroy_endpoint_fails_if_user_has_no_permission_to_delete_projects(): void
@@ -255,7 +255,7 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
         $response = $this->deleteJson(route('api.v1.projects.destroy', [$data->organization->getKey(), $project->getKey()]));
 
         // Assert
-        $response->assertStatus(403);
+        $response->assertForbidden();
     }
 
     public function test_destroy_endpoint_deletes_project(): void
