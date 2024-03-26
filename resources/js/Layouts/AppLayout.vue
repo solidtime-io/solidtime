@@ -16,16 +16,25 @@ import {
 } from '@heroicons/vue/20/solid';
 import NavigationSidebarItem from '@/Components/NavigationSidebarItem.vue';
 import UserSettingsIcon from '@/Components/UserSettingsIcon.vue';
+import MainContainer from '@/Pages/MainContainer.vue';
+import { onMounted } from 'vue';
+import { useProjectsStore } from '@/utils/useProjects';
+import { useTagsStore } from '@/utils/useTags';
 
 defineProps({
     title: String,
+});
+
+onMounted(async () => {
+    await useProjectsStore().fetchProjects();
+    await useTagsStore().fetchTags();
 });
 </script>
 
 <template>
     <div class="flex flex-wrap bg-default-background text-muted">
         <div
-            class="flex-shrink-0 h-screen fixed w-[250px] xl:w-[300px] px-2.5 xl:px-4 py-4 flex flex-col justify-between">
+            class="flex-shrink-0 h-screen fixed w-[230px] 2xl:w-[270px] px-2.5 2xl:px-4 py-4 flex flex-col justify-between">
             <div>
                 <div class="border-b border-default-background-seperator pb-2">
                     <OrganizationSwitcher></OrganizationSwitcher>
@@ -45,7 +54,8 @@ defineProps({
                         <NavigationSidebarItem
                             title="Time"
                             :icon="ClockIcon"
-                            :href="route('dashboard')"></NavigationSidebarItem>
+                            :current="route().current('time')"
+                            :href="route('time')"></NavigationSidebarItem>
                         <NavigationSidebarItem
                             title="Reporting"
                             :icon="ChartBarIcon"
@@ -53,9 +63,7 @@ defineProps({
                     </ul>
                 </nav>
 
-                <div class="text-muted font-semibold text-sm pt-6 pb-4">
-                    Manage
-                </div>
+                <div class="text-muted text-sm font-bold pt-6 pb-4">Manage</div>
 
                 <nav>
                     <ul class="space-y-1">
@@ -93,7 +101,7 @@ defineProps({
                 <UserSettingsIcon></UserSettingsIcon>
             </ul>
         </div>
-        <div class="flex-1 ml-[250px] xl:ml-[300px]">
+        <div class="flex-1 ml-[230px] 2xl:ml-[270px]">
             <Head :title="title" />
 
             <Banner />
@@ -104,8 +112,10 @@ defineProps({
                 <header
                     v-if="$slots.header"
                     class="bg-default-background border-b border-default-background-seperator shadow">
-                    <div class="py-6 px-4 sm:px-6 lg:px-8">
-                        <slot name="header" />
+                    <div class="pt-8 pb-3">
+                        <MainContainer>
+                            <slot name="header" />
+                        </MainContainer>
                     </div>
                 </header>
 

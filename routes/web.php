@@ -33,4 +33,9 @@ Route::middleware([
     'verified',
 ])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'dashboard'])->name('dashboard');
+
+
+    Route::get('/time', function () {
+        return Inertia::render('Time');
+    })->name('time');
 });
