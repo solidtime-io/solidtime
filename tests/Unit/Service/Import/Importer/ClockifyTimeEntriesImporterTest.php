@@ -19,7 +19,7 @@ class ClockifyTimeEntriesImporterTest extends ImporterTestAbstract
         $data = file_get_contents(storage_path('tests/clockify_time_entries_import_test_1.csv'));
 
         // Act
-        $importer->importData($data, []);
+        $importer->importData($data);
 
         // Assert
         $testScenario = $this->checkTestScenarioAfterImportExcludingTimeEntries();
@@ -48,12 +48,12 @@ class ClockifyTimeEntriesImporterTest extends ImporterTestAbstract
         $importer = new ClockifyTimeEntriesImporter();
         $importer->init($organization);
         $data = file_get_contents(storage_path('tests/clockify_time_entries_import_test_1.csv'));
-        $importer->importData($data, []);
+        $importer->importData($data);
         $importer = new ClockifyTimeEntriesImporter();
         $importer->init($organization);
 
         // Act
-        $importer->importData($data, []);
+        $importer->importData($data);
 
         // Assert
         $testScenario = $this->checkTestScenarioAfterImportExcludingTimeEntries();

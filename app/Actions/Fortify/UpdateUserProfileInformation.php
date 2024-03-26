@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Fortify;
 
+use App\Enums\Weekday;
 use App\Models\User;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Support\Facades\Validator;
@@ -24,6 +25,7 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
             'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'photo' => ['nullable', 'mimes:jpg,jpeg,png', 'max:1024'],
             'timezone' => ['required', 'timezone:all'],
+            'week_start' => ['required', Rule::enum(Weekday::class)],
         ])->validateWithBag('updateProfileInformation');
 
         if (isset($input['photo'])) {
@@ -38,6 +40,7 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
                 'name' => $input['name'],
                 'email' => $input['email'],
                 'timezone' => $input['timezone'],
+                'week_start' => $input['week_start'],
             ])->save();
         }
     }

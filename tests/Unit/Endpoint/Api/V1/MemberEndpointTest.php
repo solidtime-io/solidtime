@@ -8,7 +8,7 @@ use App\Models\Organization;
 use App\Models\User;
 use Laravel\Passport\Passport;
 
-class UserEndpointTest extends ApiEndpointTestAbstract
+class MemberEndpointTest extends ApiEndpointTestAbstract
 {
     public function test_index_returns_members_of_organization(): void
     {
@@ -23,6 +23,29 @@ class UserEndpointTest extends ApiEndpointTestAbstract
 
         // Assert
         $response->assertStatus(200);
+    }
+
+    public function test_invite_placeholder_succeeds_if_data_is_valid(): void
+    {
+        $data = $this->createUserWithPermission([
+            'users:invite-placeholder',
+        ], true);
+        $user = User::factory()->create([
+            'is_placeholder' => true,
+        ]);
+        $data->organization->users()->attach($user, [
+            'role' => 'placeholder',
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.users.invite-placeholder', [
+            'organization' => $data->organization->id,
+            'user' => $user->id,
+        ]));
+
+        // Assert
+        $response->assertStatus(204);
     }
 
     public function test_invite_placeholder_fails_if_user_does_not_have_permission(): void
@@ -40,7 +63,7 @@ class UserEndpointTest extends ApiEndpointTestAbstract
         $response = $this->postJson(route('api.v1.users.invite-placeholder', ['organization' => $data->organization->id, 'user' => $user->id]));
 
         // Assert
-        $response->assertStatus(403);
+        $response->assertForbidden();
     }
 
     public function test_invite_placeholder_fails_if_user_is_not_part_of_organization(): void
@@ -60,7 +83,7 @@ class UserEndpointTest extends ApiEndpointTestAbstract
         $response = $this->postJson(route('api.v1.users.invite-placeholder', ['organization' => $data->organization->id, 'user' => $user->id]));
 
         // Assert
-        $response->assertStatus(403);
+        $response->assertForbidden();
     }
 
     public function test_invite_placeholder_returns_400_if_user_is_not_placeholder(): void
