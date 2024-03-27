@@ -93,12 +93,12 @@ class TogglTimeEntriesImporter extends DefaultImporter
                 $timeEntry->billable = $record['Billable'] === 'Yes';
                 $timeEntry->tags = $this->getTags($record['Tags']);
                 $start = Carbon::createFromFormat('Y-m-d H:i:s', $record['Start date'].' '.$record['Start time'], 'UTC');
-                if ($start === false) {
+                if ($start === null) {
                     throw new ImportException('Start date ("'.$record['Start date'].'") or time ("'.$record['Start time'].'") are invalid');
                 }
                 $timeEntry->start = $start;
                 $end = Carbon::createFromFormat('Y-m-d H:i:s', $record['End date'].' '.$record['End time'], 'UTC');
-                if ($end === false) {
+                if ($end === null) {
                     throw new ImportException('End date ("'.$record['End date'].'") or time ("'.$record['End time'].'") are invalid');
                 }
                 $timeEntry->end = $end;
