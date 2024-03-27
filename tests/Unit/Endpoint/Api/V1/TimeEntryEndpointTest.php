@@ -182,10 +182,10 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
             'time-entries:view:own',
         ]);
         $timeEntriesDay1 = TimeEntry::factory()->forOrganization($data->organization)->forUser($data->user)
-            ->startBetween(Carbon::now()->subDay()->startOfDay(), Carbon::now()->subDay()->endOfDay())
+            ->startBetween(Carbon::now($data->user->timezone)->subDay()->startOfDay(), Carbon::now($data->user->timezone)->subDay()->endOfDay())
             ->createMany(3);
         $timeEntriesDay2 = TimeEntry::factory()->forOrganization($data->organization)->forUser($data->user)
-            ->startBetween(Carbon::now()->subDays(2)->startOfDay(), Carbon::now()->subDays(2)->endOfDay())
+            ->startBetween(Carbon::now($data->user->timezone)->subDays(2)->startOfDay(), Carbon::now($data->user->timezone)->subDays(2)->endOfDay())
             ->createMany(3);
         Passport::actingAs($data->user);
 

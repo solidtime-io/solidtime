@@ -102,7 +102,7 @@ class ClockifyTimeEntriesImporter extends DefaultImporter
                 } else {
                     $start = Carbon::createFromFormat('m/d/Y H:i:s A', $record['Start Date'].' '.$record['Start Time'], 'UTC');
                 }
-                if ($start === false) {
+                if ($start === null) {
                     throw new ImportException('Start date ("'.$record['Start Date'].'") or time ("'.$record['Start Time'].'") are invalid');
                 }
                 $timeEntry->start = $start;
@@ -113,7 +113,7 @@ class ClockifyTimeEntriesImporter extends DefaultImporter
                 } else {
                     $end = Carbon::createFromFormat('m/d/Y H:i:s A', $record['End Date'].' '.$record['End Time'], 'UTC');
                 }
-                if ($end === false) {
+                if ($end === null) {
                     throw new ImportException('End date ("'.$record['End Date'].'") or time ("'.$record['End Time'].'") are invalid');
                 }
                 $timeEntry->end = $end;

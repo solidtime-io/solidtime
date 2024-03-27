@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import route from 'ziggy-js';
 import { router, usePage } from '@inertiajs/vue3';
 import type { Organization, User } from '@/types/models';
 import DropdownLink from '@/Components/DropdownLink.vue';
