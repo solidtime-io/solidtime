@@ -5,28 +5,9 @@ import RecentlyTrackedTasksCard from '@/Components/Dashboard/RecentlyTrackedTask
 import LastSevenDaysCard from '@/Components/Dashboard/LastSevenDaysCard.vue';
 import TeamActivityCard from '@/Components/Dashboard/TeamActivityCard.vue';
 import ThisWeekOverview from '@/Components/Dashboard/ThisWeekOverview.vue';
-import { usePage } from '@inertiajs/vue3';
-import type { Organization, User } from '@/types/models';
-import { onMounted } from 'vue';
-import { useProjectsStore } from '@/utils/useProjects';
 import ActivityGraphCard from '@/Components/Dashboard/ActivityGraphCard.vue';
 import MainContainer from '@/Pages/MainContainer.vue';
 
-const page = usePage<{
-    auth: {
-        user: User & {
-            all_teams: Organization[];
-        };
-    };
-}>();
-
-onMounted(async () => {
-    if (page.props.auth.user.current_team_id) {
-        await useProjectsStore().fetchProjects(
-            page.props.auth.user.current_team_id
-        );
-    }
-});
 const props = defineProps<{
     latestTasks: {
         id: string;
@@ -73,7 +54,7 @@ const props = defineProps<{
             <TimeTracker></TimeTracker>
         </MainContainer>
         <MainContainer
-            class="grid gap-x-6 xl:gap-x-8 grid-cols-4 pt-5 pb-6 border-b border-default-background-seperator items-stretch">
+            class="grid gap-x-6 grid-cols-2 xl:grid-cols-4 pt-5 pb-6 border-b border-default-background-seperator items-stretch">
             <RecentlyTrackedTasksCard
                 :latestTasks="props.latestTasks"></RecentlyTrackedTasksCard>
             <LastSevenDaysCard

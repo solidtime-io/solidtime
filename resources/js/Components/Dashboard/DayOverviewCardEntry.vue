@@ -1,36 +1,22 @@
 <script setup lang="ts">
-import dayjs from 'dayjs';
-
 defineProps<{
     date: string;
     duration: number;
 }>();
-import relativeTime from 'dayjs/plugin/relativeTime';
-import isToday from 'dayjs/plugin/isToday';
-import isYesterday from 'dayjs/plugin/isYesterday';
-import { formatHumanReadableDuration } from '@/utils/time';
-
-dayjs.extend(relativeTime);
-dayjs.extend(isToday);
-dayjs.extend(isYesterday);
-function dayFormat(date: string) {
-    if (dayjs(date).isToday()) {
-        return 'Today';
-    } else if (dayjs(date).isYesterday()) {
-        return 'Yesterday';
-    }
-    return dayjs(date).fromNow();
-}
+import {
+    formatHumanReadableDate,
+    formatHumanReadableDuration,
+} from '@/utils/time';
 </script>
 
 <template>
-    <div class="px-4 py-1.5 grid grid-cols-3">
+    <div class="px-3.5 py-2 flex @container">
         <div class="flex items-center">
             <p class="font-semibold text-sm text-white">
-                {{ dayFormat(date) }}
+                {{ formatHumanReadableDate(date) }}
             </p>
         </div>
-        <div class="flex items-center justify-center">
+        <div class="items-center justify-center flex-1 flex">
             <svg
                 class="w-20 opacity-70 transition hover:opacity-100"
                 viewBox="0 0 42 10"
@@ -96,7 +82,8 @@ function dayFormat(date: string) {
                     fill-opacity="0.9" />
             </svg>
         </div>
-        <div class="flex items-center justify-center text-muted font-semibold">
+        <div
+            class="flex text-sm items-center justify-center text-muted font-semibold">
             {{ formatHumanReadableDuration(duration) }}
         </div>
     </div>

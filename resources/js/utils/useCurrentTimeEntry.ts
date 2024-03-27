@@ -1,16 +1,15 @@
 import { defineStore } from 'pinia';
 import { computed, reactive, ref } from 'vue';
 import { api } from '../../../openapi.json.client';
-import type { ZodiosResponseByAlias } from '@zodios/core';
-import type { SolidTimeApi } from '@/utils/api';
+import type { TimeEntry } from '@/utils/api';
 import dayjs, { Dayjs } from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { getCurrentOrganizationId, getCurrentUserId } from '@/utils/useUser';
+import { useLocalStorage } from '@vueuse/core';
+import { useTimeEntriesStore } from '@/utils/useTimeEntries';
 
 dayjs.extend(utc);
 
-type TimeEntryResponse = ZodiosResponseByAlias<SolidTimeApi, 'getTimeEntries'>;
-export type TimeEntry = TimeEntryResponse['data'][0];
 const emptyTimeEntry = {
     id: '',
     description: null,
@@ -21,10 +20,15 @@ const emptyTimeEntry = {
     task_id: null,
     project_id: null,
     tags: [],
+    billable: false,
 } as TimeEntry;
 
 export const useCurrentTimeEntryStore = defineStore('currentTimeEntry', () => {
     const currentTimeEntry = ref<TimeEntry>(reactive(emptyTimeEntry));
+
+    useLocalStorage('solidtime/current-time-entry', currentTimeEntry, {
+        deep: true,
+    });
 
     function $reset() {
         currentTimeEntry.value = { ...emptyTimeEntry };
@@ -84,6 +88,9 @@ export const useCurrentTimeEntryStore = defineStore('currentTimeEntry', () => {
                     user_id: user,
                     start: startTime,
                     description: currentTimeEntry.value?.description,
+                    project_id: currentTimeEntry.value?.project_id,
+                    billable: currentTimeEntry.value.billable,
+                    tags: currentTimeEntry.value?.tags,
                 },
                 { params: { organization: organization } }
             );
@@ -131,6 +138,7 @@ export const useCurrentTimeEntryStore = defineStore('currentTimeEntry', () => {
                     user_id: user,
                     project_id: currentTimeEntry.value.project_id,
                     start: currentTimeEntry.value.start,
+                    billable: currentTimeEntry.value.billable,
                     end: null,
                     tags: currentTimeEntry.value.tags,
                 },
@@ -168,6 +176,7 @@ export const useCurrentTimeEntryStore = defineStore('currentTimeEntry', () => {
             stopLiveTimer();
             await stopTimer();
         }
+        useTimeEntriesStore().fetchTimeEntries();
     }
 
     startLiveTimer();
