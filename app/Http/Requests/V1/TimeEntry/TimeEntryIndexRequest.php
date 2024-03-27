@@ -51,7 +51,7 @@ class TimeEntryIndexRequest extends FormRequest
                 'string',
                 'in:true,false',
             ],
-            // Limit the number of returned time entries
+            // Limit the number of returned time entries (default: 150)
             'limit' => [
                 'integer',
                 'min:1',
@@ -59,7 +59,8 @@ class TimeEntryIndexRequest extends FormRequest
             ],
             // Filter makes sure that only time entries of a whole date are returned
             'only_full_dates' => [
-                'boolean',
+                'string',
+                'in:true,false',
             ],
         ];
     }
