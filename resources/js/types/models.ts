@@ -74,27 +74,6 @@ export interface Task {
     organization: Organization;
 }
 
-export interface TimeEntry {
-    // columns
-    id: string;
-    description: string;
-    start: string;
-    end: string | null;
-    billable: boolean;
-    user_id: string;
-    organization_id: string;
-    project_id: string | null;
-    task_id: string | null;
-    tags: string[] | null;
-    created_at: string | null;
-    updated_at: string | null;
-    // relations
-    user: User;
-    organization: Organization;
-    project: Project;
-    task: Task;
-}
-
 export interface User {
     // columns
     id: string;

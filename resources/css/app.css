@@ -8,6 +8,11 @@
     --theme-color-card-background: #13152B;
 }
 
+*{
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
 
 [x-cloak] {
     display: none;
