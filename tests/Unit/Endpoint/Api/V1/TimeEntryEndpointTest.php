@@ -165,7 +165,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         // Act
         $response = $this->getJson(route('api.v1.time-entries.index', [
             $data->organization->getKey(),
-            'only_full_dates' => true,
+            'only_full_dates' => 'true',
             'limit' => 5,
             'user_id' => $data->user->getKey(),
         ]));
@@ -192,7 +192,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         // Act
         $response = $this->getJson(route('api.v1.time-entries.index', [
             $data->organization->getKey(),
-            'only_full_dates' => true,
+            'only_full_dates' => 'true',
             'limit' => 5,
             'user_id' => $data->user->getKey(),
         ]));
@@ -216,7 +216,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         // Act
         $response = $this->getJson(route('api.v1.time-entries.index', [
             $data->organization->getKey(),
-            'only_full_dates' => true,
+            'only_full_dates' => 'true',
             'limit' => 5,
             'user_id' => $data->user->getKey(),
         ]));
