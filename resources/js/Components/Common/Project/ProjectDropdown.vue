@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import ProjectBadge from '@/Components/common/ProjectBadge.vue';
+import ProjectBadge from '@/Components/Common/Project/ProjectBadge.vue';
 import { computed, nextTick, ref, watch } from 'vue';
-import { type Project, useProjectsStore } from '@/utils/useProjects';
+import { useProjectsStore } from '@/utils/useProjects';
 import Dropdown from '@/Components/Dropdown.vue';
 import {
     ComboboxAnchor,
@@ -12,19 +12,21 @@ import {
     ComboboxViewport,
 } from 'radix-vue';
 import { PlusCircleIcon } from '@heroicons/vue/20/solid';
-import ProjectDropdownItem from '@/Components/common/ProjectDropdownItem.vue';
+import ProjectDropdownItem from '@/Components/Common/Project/ProjectDropdownItem.vue';
 import { storeToRefs } from 'pinia';
-import { api } from '../../../../openapi.json.client';
+import { api } from '../../../../../openapi.json.client';
 import { usePage } from '@inertiajs/vue3';
 import { getRandomColor } from '@/utils/color';
+import type { Project } from '@/utils/api';
 
 const searchValue = ref('');
 const searchInput = ref<HTMLElement | null>(null);
-const model = defineModel<Project>({
-    default: undefined,
+const model = defineModel<string | null>({
+    default: null,
 });
 const open = ref(false);
 const projectsStore = useProjectsStore();
+const emit = defineEmits(['update:modelValue', 'changed']);
 
 const { projects } = storeToRefs(projectsStore);
 const projectDropdownTrigger = ref<HTMLElement | null>(null);
@@ -35,6 +37,15 @@ const shownProjects = computed(() => {
             .includes(searchValue.value?.toLowerCase()?.trim() || '');
     });
 });
+
+withDefaults(
+    defineProps<{
+        border: boolean;
+    }>(),
+    {
+        border: true,
+    }
+);
 
 const page = usePage<{
     auth: {
@@ -54,7 +65,7 @@ async function addProjectIfNoneExists() {
             { params: { organization: page.props.auth.user.current_team_id } }
         );
         projects.value.unshift(response.data);
-        model.value = response.data;
+        model.value = response.data.id;
         searchValue.value = '';
         open.value = false;
     }
@@ -67,23 +78,32 @@ watch(open, (isOpen) => {
             searchInput.value?.$el?.focus();
         });
 
-        projects.value.sort((a) => {
-            return model.value === a ? -1 : 1;
+        projects.value.sort((iteratingProject) => {
+            return model.value === iteratingProject.id ? -1 : 1;
         });
     }
 });
 
+const currentProject = computed(() => {
+    return projects.value.find((project) => project.id === model.value);
+});
+
 function isProjectSelected(project: Project) {
-    return model.value?.id === project.id;
+    return model.value === project.id;
 }
 
 const selectedProjectName = computed(() => {
-    return model.value?.name || 'No Project';
+    return currentProject.value?.name || 'No Project';
 });
 
 const selectedProjectColor = computed(() => {
-    return model.value?.color || 'var(--theme-color-icon-default)';
+    return currentProject.value?.color || 'var(--theme-color-icon-default)';
 });
+
+function updateValue(project: Project) {
+    model.value = project.id;
+    emit('changed');
+}
 </script>
 
 <template>
@@ -93,6 +113,7 @@ const selectedProjectColor = computed(() => {
                 ref="projectDropdownTrigger"
                 :color="selectedProjectColor"
                 size="large"
+                :border
                 tag="button"
                 :name="selectedProjectName"
                 class="focus:border-input-border-active focus:outline-0 focus:bg-card-background-seperator hover:bg-card-background-seperator"></ProjectBadge>
@@ -101,8 +122,10 @@ const selectedProjectColor = computed(() => {
         <template #content>
             <ComboboxRoot
                 :open="open"
-                v-model="model"
-                v-model:searchTerm="searchValue"
+                :modelValue="currentProject"
+                @update:modelValue="updateValue"
+                @update:searchTerm="(e) => console.log(e)"
+                :searchTerm="searchValue"
                 class="relative">
                 <ComboboxAnchor>
                     <ComboboxInput
@@ -119,7 +142,8 @@ const selectedProjectColor = computed(() => {
                             :data-project-id="null"
                             :value="{
                                 id: null,
-                                name: '',
+                                name: 'No Project',
+                                color: 'var(--theme-color-icon-default)',
                             }">
                             <ProjectDropdownItem
                                 name="No Project"

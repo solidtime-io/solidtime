@@ -21,12 +21,16 @@ const props = withDefaults(
     }
 );
 
-const emit = defineEmits(['open']);
+const emit = defineEmits(['open', 'submit']);
 const open = defineModel({ default: false });
 
 const closeOnEscape = (e: KeyboardEvent) => {
     if (open.value && e.key === 'Escape') {
         open.value = false;
+    }
+    if (open.value && e.key === 'Enter') {
+        emit('submit');
+        if (props.closeOnContentClick) open.value = false;
     }
 };
 
@@ -67,6 +71,11 @@ function toggleOpen() {
         emit('open');
     }
 }
+
+function onBackgroundClick() {
+    emit('submit');
+    open.value = false;
+}
 </script>
 
 <template>
@@ -76,7 +85,10 @@ function toggleOpen() {
         </div>
 
         <!-- Full Screen Dropdown Overlay -->
-        <div v-show="open" class="fixed inset-0 z-40" @click="open = false" />
+        <div
+            v-show="open"
+            class="fixed inset-0 z-40"
+            @click="onBackgroundClick" />
 
         <transition
             enter-active-class="transition ease-out duration-200"
