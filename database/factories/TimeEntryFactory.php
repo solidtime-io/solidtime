@@ -67,11 +67,11 @@ class TimeEntryFactory extends Factory
 
     public function startBetween(Carbon $rangeStart, Carbon $rangeEnd): self
     {
-        $start = $this->faker->dateTimeBetween($rangeStart, $rangeEnd);
+        $start = Carbon::instance($this->faker->dateTimeBetween($rangeStart, $rangeEnd));
 
         return $this->state(function (array $attributes) use ($start): array {
             return [
-                'start' => $start,
+                'start' => $start->utc(),
                 'end' => $this->faker->dateTimeBetween($start, 'now'),
             ];
         });
