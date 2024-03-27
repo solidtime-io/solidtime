@@ -30,7 +30,7 @@
         "vite-plugin-checker": "^0.6.2",
         "vue": "^3.4.0",
         "vue-tsc": "^1.8.27",
-        "ziggy-js": "^1.8.1"
+        "ziggy-js": "^2.1.0"
     },
     "dependencies": {
         "@heroicons/vue": "^2.1.1",

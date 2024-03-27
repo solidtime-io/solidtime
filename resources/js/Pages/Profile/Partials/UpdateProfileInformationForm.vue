@@ -9,7 +9,6 @@ import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import type { User } from '@/types/models';
-import route from 'ziggy-js';
 
 const props = defineProps<{
     user: User;

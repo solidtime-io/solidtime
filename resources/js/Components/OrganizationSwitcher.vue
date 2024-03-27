@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ChevronDownIcon } from '@heroicons/vue/20/solid';
-import route from 'ziggy-js';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
 import { router, usePage } from '@inertiajs/vue3';

@@ -8,7 +8,6 @@ import PrimaryButton from '@/Components/PrimaryButton.vue';
 const props = defineProps({
     status: String,
 });
-import route from 'ziggy-js';
 const form = useForm({});
 
 const submit = () => {
