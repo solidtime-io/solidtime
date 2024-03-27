@@ -43,6 +43,7 @@ test('test that starting and stopping an empty time entry shows a new time entry
                 response.status() === 200
         ),
     ]);
+    await page.waitForTimeout(100);
 
     // check that there are not testid time_entry_row elements on the page
     const timeEntryRows = page.locator('[data-testid="time_entry_row"]');
@@ -168,12 +169,12 @@ test('test that adding a new tag to an existing time entry works', async ({
         return (
             response.status() === 200 &&
             (await response.headerValue('Content-Type')) ===
-            'application/json' &&
+                'application/json' &&
             (await response.json()).data.id !== null &&
             (await response.json()).data.start !== null &&
             (await response.json()).data.end !== null &&
             JSON.stringify((await response.json()).data.tags) ===
-            JSON.stringify([(await tagReponse.json()).data.id])
+                JSON.stringify([(await tagReponse.json()).data.id])
         );
     });
 
@@ -422,6 +423,36 @@ test('test that deleting a time entry from the overview works', async ({
     const deleteButton = newTimeEntry.getByTestId('time_entry_delete');
     await deleteButton.click();
     await expect(timeEntryRows).toHaveCount(timeEntryCount - 1);
+});
+
+test('test that load more works when the end of page is reached', async ({
+    page,
+}) => {
+    await goToTimeOverview(page);
+    await page.waitForResponse(
+        (response) =>
+            response.url().includes('/time-entries') &&
+            response.status() === 200
+    );
+    await page.waitForTimeout(200);
+    await Promise.all([
+        page.evaluate(() => window.scrollTo(0, document.body.scrollHeight)),
+        page.waitForResponse(async (response) => {
+            return (
+                response.status() === 200 &&
+                response.url().includes('before') &&
+                (await response.headerValue('Content-Type')) ===
+                    'application/json' &&
+                JSON.stringify((await response.json()).data) ===
+                    JSON.stringify([])
+            );
+        }),
+    ]);
+
+    // assert that "All time entries are loaded!" is visible on page
+    await expect(page.locator('body')).toHaveText(
+        /All time entries are loaded!/
+    );
 });
 
 // TODO: Test that updating the time entry start / end times works while it is running
