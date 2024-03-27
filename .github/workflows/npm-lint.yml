@@ -11,9 +11,13 @@ jobs:
       - name: "Checkout code"
         uses: actions/checkout@v4
 
-      - name: Use Node.js
+      - name: "Use Node.js"
         uses: actions/setup-node@v4
         with:
           node-version: '20.x'
-      - run: npm ci
-      - run: npm run lint
+
+      - name: "Install npm dependencies"
+        run: npm ci
+
+      - name: "Run linter"
+        run: npm run lint
