@@ -74,7 +74,7 @@ class TimeEntryController extends Controller
             $lastDate = null;
             /** @var TimeEntry $timeEntry */
             foreach ($timeEntries as $timeEntry) {
-                if ($lastDate === null || $lastDate->diffInDays($timeEntry->start->startOfDay()) > 0) {
+                if ($lastDate === null || abs($lastDate->diffInDays($timeEntry->start->startOfDay())) > 0) {
                     $lastDate = $timeEntry->start->startOfDay();
                 }
             }
