@@ -1,6 +1,6 @@
 import { PLAYWRIGHT_BASE_URL } from '../playwright/config';
 import { test } from '../playwright/fixtures';
-import { expect, Page } from '@playwright/test';
+import { expect, Locator, Page } from '@playwright/test';
 import {
     assertThatTimerHasStarted,
     assertThatTimerIsStopped,
@@ -23,8 +23,13 @@ async function createEmptyTimeEntry(page: Page) {
     await Promise.all([
         stoppedTimeEntryResponse(page),
         startOrStopTimerWithButton(page),
+        assertThatTimerIsStopped(page),
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/time-entries') &&
+                response.status() === 200
+        ),
     ]);
-    await assertThatTimerIsStopped(page);
 }
 
 test('test that starting and stopping an empty time entry shows a new time entry in the overview', async ({
@@ -49,20 +54,27 @@ test('test that starting and stopping an empty time entry shows a new time entry
 
 // Test that description update works
 
+async function assertThatTimeEntryRowIsStopped(newTimeEntry: Locator) {
+    await expect(newTimeEntry.getByTestId('timer_button')).toHaveClass(
+        /bg-accent-300\/50/
+    );
+}
+
+async function assertThatTimeEntryRowIsStarted(newTimeEntry: Locator) {
+    await expect(newTimeEntry.getByTestId('timer_button')).toHaveClass(
+        /bg-red-400\/80/
+    );
+}
+
 test('test that updating a description of a time entry in the overview works on blur', async ({
     page,
 }) => {
     await goToTimeOverview(page);
     const timeEntryRows = page.locator('[data-testid="time_entry_row"]');
     await createEmptyTimeEntry(page);
-    await page.waitForResponse(
-        (response) =>
-            response.url().includes('/time-entries') &&
-            response.status() === 200
-    );
-
     const newTimeEntry = timeEntryRows.first();
-    await newTimeEntry.locator('[data-testid="timer_button"].bg-accent-300/70');
+    await assertThatTimeEntryRowIsStopped(newTimeEntry);
+
     const newDescription = Math.floor(Math.random() * 1000000).toString();
     const descriptionElement = newTimeEntry.getByTestId(
         'time_entry_description'
@@ -96,14 +108,9 @@ test('test that updating a description of a time entry in the overview works on 
     await goToTimeOverview(page);
     const timeEntryRows = page.locator('[data-testid="time_entry_row"]');
     await createEmptyTimeEntry(page);
-    await page.waitForResponse(
-        (response) =>
-            response.url().includes('/time-entries') &&
-            response.status() === 200
-    );
 
     const newTimeEntry = timeEntryRows.first();
-    await newTimeEntry.locator('[data-testid="timer_button"].bg-accent-300/70');
+    await assertThatTimeEntryRowIsStopped(newTimeEntry);
     const newDescription = Math.floor(Math.random() * 1000000).toString();
     const descriptionElement = newTimeEntry.getByTestId(
         'time_entry_description'
@@ -137,20 +144,15 @@ test('test that adding a new tag to an existing time entry works', async ({
     await goToTimeOverview(page);
     const timeEntryRows = page.locator('[data-testid="time_entry_row"]');
     await createEmptyTimeEntry(page);
-    await page.waitForResponse(
-        (response) =>
-            response.url().includes('/time-entries') &&
-            response.status() === 200
-    );
 
     const newTimeEntry = timeEntryRows.first();
-    await newTimeEntry.locator('[data-testid="timer_button"].bg-accent-300/70');
+    await assertThatTimeEntryRowIsStopped(newTimeEntry);
     const newTagName = Math.floor(Math.random() * 1000000).toString();
 
     await newTimeEntry.getByTestId('time_entry_tag_dropdown').click();
     await newTimeEntry.getByTestId('tag_dropdown_search').fill(newTagName);
 
-    await Promise.all([
+    const [tagReponse] = await Promise.all([
         page.waitForResponse(async (response) => {
             return (
                 response.status() === 201 &&
@@ -161,6 +163,19 @@ test('test that adding a new tag to an existing time entry works', async ({
         }),
         newTimeEntry.getByTestId('tag_dropdown_search').press('Enter'),
     ]);
+
+    await page.waitForResponse(async (response) => {
+        return (
+            response.status() === 200 &&
+            (await response.headerValue('Content-Type')) ===
+            'application/json' &&
+            (await response.json()).data.id !== null &&
+            (await response.json()).data.start !== null &&
+            (await response.json()).data.end !== null &&
+            JSON.stringify((await response.json()).data.tags) ===
+            JSON.stringify([(await tagReponse.json()).data.id])
+        );
+    });
 
     await expect(newTimeEntry.getByTestId('tag_dropdown_search')).toHaveValue(
         ''
@@ -177,14 +192,9 @@ test('test that updating a the start of an existing time entry in the overview w
     await goToTimeOverview(page);
     const timeEntryRows = page.locator('[data-testid="time_entry_row"]');
     await createEmptyTimeEntry(page);
-    await page.waitForResponse(
-        (response) =>
-            response.url().includes('/time-entries') &&
-            response.status() === 200
-    );
 
     const newTimeEntry = timeEntryRows.first();
-    await newTimeEntry.locator('[data-testid="timer_button"].bg-accent-300/70');
+    await assertThatTimeEntryRowIsStopped(newTimeEntry);
     await page.waitForTimeout(1500);
     const timeEntryRangeElement = newTimeEntry.getByTestId(
         'time_entry_range_selector'
@@ -223,14 +233,9 @@ test('test that updating a the duration in the overview works on blur', async ({
     await goToTimeOverview(page);
     const timeEntryRows = page.locator('[data-testid="time_entry_row"]');
     await createEmptyTimeEntry(page);
-    await page.waitForResponse(
-        (response) =>
-            response.url().includes('/time-entries') &&
-            response.status() === 200
-    );
 
     const newTimeEntry = timeEntryRows.first();
-    await newTimeEntry.locator('[data-testid="timer_button"].bg-accent-300/70');
+    await assertThatTimeEntryRowIsStopped(newTimeEntry);
     await page.waitForTimeout(1500);
     const timeEntryDurationInput = newTimeEntry.getByTestId(
         'time_entry_duration_input'
@@ -278,7 +283,7 @@ test('test that stopping a time entry from the overview works', async ({
 
     const newTimeEntry = timeEntryRows.first();
     const stopButton = newTimeEntry.getByTestId('timer_button');
-    await newTimeEntry.locator('[data-testid="timer_button"].bg-red-400/80');
+    await assertThatTimeEntryRowIsStarted(newTimeEntry);
 
     await Promise.all([
         page.waitForResponse(async (response) => {
@@ -306,11 +311,6 @@ test('test that starting a time entry from the overview works', async ({
     await goToTimeOverview(page);
     const timeEntryRows = page.locator('[data-testid="time_entry_row"]');
     await createEmptyTimeEntry(page);
-    await page.waitForResponse(
-        (response) =>
-            response.url().includes('/time-entries') &&
-            response.status() === 200
-    );
 
     const newTimeEntry = timeEntryRows.first();
     const startButton = newTimeEntry.getByTestId('timer_button');
@@ -414,11 +414,6 @@ test('test that deleting a time entry from the overview works', async ({
     await goToTimeOverview(page);
     const timeEntryRows = page.locator('[data-testid="time_entry_row"]');
     await createEmptyTimeEntry(page);
-    await page.waitForResponse(
-        (response) =>
-            response.url().includes('/time-entries') &&
-            response.status() === 200
-    );
     const timeEntryCount = await timeEntryRows.count();
 
     const newTimeEntry = timeEntryRows.first();

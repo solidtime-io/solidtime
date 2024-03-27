@@ -1,4 +1,4 @@
-import { Page } from '@playwright/test';
+import { expect, Page } from '@playwright/test';
 
 export async function startOrStopTimerWithButton(page: Page) {
     await page
@@ -33,9 +33,11 @@ export function newTimeEntryResponse(page: Page) {
 }
 
 export async function assertThatTimerIsStopped(page: Page) {
-    await page.locator(
-        '[data-testid="dashboard_timer"] [data-testid="timer_button"].bg-accent-300/70'
-    );
+    await expect(
+        page.locator(
+            '[data-testid="dashboard_timer"] [data-testid="timer_button"]'
+        )
+    ).toHaveClass(/bg-accent-300\/50/);
 }
 
 export async function stoppedTimeEntryResponse(page: Page) {
