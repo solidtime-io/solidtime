@@ -6,6 +6,7 @@ namespace App\Actions\Jetstream;
 
 use App\Models\Organization;
 use App\Models\User;
+use App\Rules\CurrencyRule;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
@@ -27,11 +28,21 @@ class UpdateOrganization implements UpdatesTeamNames
         Gate::forUser($user)->authorize('update', $organization);
 
         Validator::make($input, [
-            'name' => ['required', 'string', 'max:255'],
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+            ],
+            'currency' => [
+                'required',
+                'string',
+                new CurrencyRule(),
+            ],
         ])->validateWithBag('updateTeamName');
 
         $organization->forceFill([
             'name' => $input['name'],
+            'currency' => $input['currency'],
         ])->save();
     }
 }

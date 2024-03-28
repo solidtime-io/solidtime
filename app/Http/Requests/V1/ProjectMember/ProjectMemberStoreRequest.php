@@ -2,16 +2,19 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Requests\V1\Organization;
+namespace App\Http\Requests\V1\ProjectMember;
 
 use App\Models\Organization;
+use App\Models\User;
 use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Http\FormRequest;
+use Korridor\LaravelModelValidationRules\Rules\ExistsEloquent;
 
 /**
  * @property Organization $organization Organization from model binding
  */
-class OrganizationUpdateRequest extends FormRequest
+class ProjectMemberStoreRequest extends FormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -21,10 +24,13 @@ class OrganizationUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => [
+            'user_id' => [
                 'required',
-                'string',
-                'max:255',
+                'uuid',
+                new ExistsEloquent(User::class, null, function (Builder $builder): Builder {
+                    /** @var Builder<User> $builder */
+                    return $builder->belongsToOrganization($this->organization);
+                }),
             ],
             'billable_rate' => [
                 'nullable',

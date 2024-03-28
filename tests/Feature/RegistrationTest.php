@@ -39,6 +39,7 @@ class RegistrationTest extends TestCase
 
     public function test_new_users_can_register(): void
     {
+        // Act
         $response = $this->post('/register', [
             'name' => 'Test User',
             'email' => 'test@example.com',
@@ -47,6 +48,7 @@ class RegistrationTest extends TestCase
             'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature(),
         ]);
 
+        // Assert
         $this->assertAuthenticated();
         $response->assertRedirect(RouteServiceProvider::HOME);
         $user = User::where('email', 'test@example.com')->firstOrFail();

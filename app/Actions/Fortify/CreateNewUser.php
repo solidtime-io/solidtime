@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Fortify;
 
+use App\Enums\Weekday;
 use App\Models\Organization;
 use App\Models\User;
 use App\Service\TimezoneService;
@@ -60,6 +61,7 @@ class CreateNewUser implements CreatesNewUsers
                 'email' => $input['email'],
                 'password' => Hash::make($input['password']),
                 'timezone' => $timezone,
+                'week_start' => Weekday::Monday,
             ]), function (User $user) {
                 $this->createTeam($user);
             });

@@ -34,4 +34,13 @@ class ClientFactory extends Factory
             ];
         });
     }
+
+    public function randomCreatedAt(): self
+    {
+        return $this->state(function (array $attributes): array {
+            return [
+                'created_at' => $this->faker->dateTimeBetween('-1 day', 'now'),
+            ];
+        });
+    }
 }

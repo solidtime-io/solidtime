@@ -15,6 +15,8 @@ use App\Enums\Weekday;
 use App\Models\Organization;
 use App\Models\OrganizationInvitation;
 use App\Service\TimezoneService;
+use Brick\Money\Currency;
+use Brick\Money\ISOCurrencyProvider;
 use Illuminate\Http\Request;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Jetstream\Jetstream;
@@ -56,9 +58,14 @@ class JetstreamServiceProvider extends ServiceProvider
 
         Jetstream::role('admin', 'Administrator', [
             'projects:view',
+            'projects:view:all',
             'projects:create',
             'projects:update',
             'projects:delete',
+            'project-members:view',
+            'project-members:create',
+            'project-members:update',
+            'project-members:delete',
             'tasks:view',
             'tasks:create',
             'tasks:update',
@@ -82,15 +89,20 @@ class JetstreamServiceProvider extends ServiceProvider
             'organizations:view',
             'organizations:update',
             'import',
-            'users:invite-placeholder',
-            'users:view',
+            'members:view',
+            'members:invite-placeholder',
         ])->description('Administrator users can perform any action.');
 
         Jetstream::role('manager', 'Manager', [
             'projects:view',
+            'projects:view:all',
             'projects:create',
             'projects:update',
             'projects:delete',
+            'project-members:view',
+            'project-members:create',
+            'project-members:update',
+            'project-members:delete',
             'tasks:view',
             'tasks:create',
             'tasks:update',
@@ -108,7 +120,7 @@ class JetstreamServiceProvider extends ServiceProvider
             'tags:update',
             'tags:delete',
             'organizations:view',
-            'users:view',
+            'members:view',
         ])->description('Managers have the ability to read, create, and update their own time entries as well as those of their team.');
 
         Jetstream::role('employee', 'Employee', [
@@ -125,14 +137,25 @@ class JetstreamServiceProvider extends ServiceProvider
         Jetstream::role('placeholder', 'Placeholder', [
         ])->description('Placeholders are used for importing data. They cannot log in and have no permissions.');
 
-        Jetstream::inertia()->whenRendering(
-            'Profile/Show',
-            function (Request $request, array $data) {
-                return array_merge($data, [
-                    'timezones' => $this->app->get(TimezoneService::class)->getSelectOptions(),
-                    'weekdays' => Weekday::toSelectArray(),
-                ]);
-            }
-        );
+        Jetstream::inertia()
+            ->whenRendering(
+                'Profile/Show',
+                function (Request $request, array $data): array {
+                    return array_merge($data, [
+                        'timezones' => $this->app->get(TimezoneService::class)->getSelectOptions(),
+                        'weekdays' => Weekday::toSelectArray(),
+                    ]);
+                }
+            )
+            ->whenRendering(
+                'Teams/Show',
+                function (Request $request, array $data): array {
+                    return array_merge($data, [
+                        'currencies' => array_map(function (Currency $currency): string {
+                            return $currency->getName();
+                        }, ISOCurrencyProvider::getInstance()->getAvailableCurrencies()),
+                    ]);
+                }
+            );
     }
 }

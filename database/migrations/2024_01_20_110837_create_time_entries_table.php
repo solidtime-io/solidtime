@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('description', 500);
             $table->dateTime('start');
             $table->dateTime('end')->nullable();
+            $table->integer('billable_rate')->unsigned()->nullable();
             $table->boolean('billable')->default(false);
             $table->uuid('user_id');
             $table->foreign('user_id')

@@ -382,6 +382,35 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         ]);
     }
 
+    public function test_store_endpoint_validation_fails_if_project_id_is_missing_but_request_has_task_id(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:create:own',
+        ]);
+        $timeEntryFake = TimeEntry::factory()->forOrganization($data->organization)->withTask($data->organization)->make();
+        $timeEntryFake2 = TimeEntry::factory()->forOrganization($data->organization)->withTask($data->organization)->make();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.time-entries.store', [$data->organization->getKey()]), [
+            'description' => $timeEntryFake->description,
+            'billable' => $timeEntryFake->billable,
+            'start' => $timeEntryFake->start->toIso8601ZuluString(),
+            'end' => $timeEntryFake->end->toIso8601ZuluString(),
+            'tags' => $timeEntryFake->tags,
+            'user_id' => $data->user->getKey(),
+            'task_id' => $timeEntryFake2->task_id,
+        ]);
+
+        // Assert
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors([
+            'project_id' => 'The project field is required when task is present.',
+            'task_id' => 'The task is not part of the given project.',
+        ]);
+    }
+
     public function test_store_endpoint_creates_new_time_entry_for_current_user(): void
     {
         // Arrange
@@ -578,6 +607,66 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         $response->assertForbidden();
     }
 
+    public function test_update_endpoint_validation_fails_if_task_id_does_not_belong_to_project_id(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:update:own',
+        ]);
+        $timeEntry = TimeEntry::factory()->forOrganization($data->organization)->forUser($data->user)->create();
+        $timeEntryFake = TimeEntry::factory()->forOrganization($data->organization)->withTask($data->organization)->make();
+        $timeEntryFake2 = TimeEntry::factory()->forOrganization($data->organization)->withTask($data->organization)->make();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.time-entries.update', [$data->organization->getKey(), $timeEntry->getKey()]), [
+            'description' => $timeEntryFake->description,
+            'billable' => $timeEntryFake->billable,
+            'start' => $timeEntryFake->start->toIso8601ZuluString(),
+            'end' => $timeEntryFake->end->toIso8601ZuluString(),
+            'tags' => $timeEntryFake->tags,
+            'user_id' => $data->user->getKey(),
+            'project_id' => $timeEntryFake->project_id,
+            'task_id' => $timeEntryFake2->task_id,
+        ]);
+
+        // Assert
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors([
+            'task_id' => 'The task is not part of the given project.',
+        ]);
+    }
+
+    public function test_update_endpoint_validation_fails_if_project_id_is_missing_but_request_has_task_id(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:update:own',
+        ]);
+        $timeEntry = TimeEntry::factory()->forOrganization($data->organization)->forUser($data->user)->create();
+        $timeEntryFake = TimeEntry::factory()->forOrganization($data->organization)->withTask($data->organization)->make();
+        $timeEntryFake2 = TimeEntry::factory()->forOrganization($data->organization)->withTask($data->organization)->make();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.time-entries.update', [$data->organization->getKey(), $timeEntry->getKey()]), [
+            'description' => $timeEntryFake->description,
+            'billable' => $timeEntryFake->billable,
+            'start' => $timeEntryFake->start->toIso8601ZuluString(),
+            'end' => $timeEntryFake->end->toIso8601ZuluString(),
+            'tags' => $timeEntryFake->tags,
+            'user_id' => $data->user->getKey(),
+            'task_id' => $timeEntryFake2->task_id,
+        ]);
+
+        // Assert
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors([
+            'project_id' => 'The project field is required when task is present.',
+            'task_id' => 'The task is not part of the given project.',
+        ]);
+    }
+
     public function test_update_endpoint_updates_time_entry_for_current_user(): void
     {
         // Arrange
@@ -585,7 +674,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
             'time-entries:update:own',
         ]);
         $timeEntry = TimeEntry::factory()->forOrganization($data->organization)->forUser($data->user)->create();
-        $timeEntryFake = TimeEntry::factory()->forOrganization($data->organization)->make();
+        $timeEntryFake = TimeEntry::factory()->withTags($data->organization)->forOrganization($data->organization)->make();
         Passport::actingAs($data->user);
 
         // Act
@@ -595,7 +684,6 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
             'end' => $timeEntryFake->end->toIso8601ZuluString(),
             'tags' => $timeEntryFake->tags,
             'user_id' => $data->user->getKey(),
-            'task_id' => $timeEntryFake->task_id,
         ]);
 
         // Assert

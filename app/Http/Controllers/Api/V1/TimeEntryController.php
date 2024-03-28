@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Exceptions\Api\TimeEntryCanNotBeRestartedApiException;
 use App\Exceptions\Api\TimeEntryStillRunningApiException;
 use App\Http\Requests\V1\TimeEntry\TimeEntryIndexRequest;
 use App\Http\Requests\V1\TimeEntry\TimeEntryStoreRequest;
@@ -71,6 +72,7 @@ class TimeEntryController extends Controller
         $timeEntries = $timeEntriesQuery->get();
 
         if ($timeEntries->count() === $limit && $request->has('only_full_dates') && (bool) $request->get('only_full_dates') === true) {
+            // TODO: handle user timezone!
             $lastDate = null;
             /** @var TimeEntry $timeEntry */
             foreach ($timeEntries as $timeEntry) {
@@ -125,6 +127,7 @@ class TimeEntryController extends Controller
         $timeEntry->fill($request->validated());
         $timeEntry->description = $request->get('description') ?? '';
         $timeEntry->organization()->associate($organization);
+        $timeEntry->setComputedAttributeValue('billable_rate');
         $timeEntry->save();
 
         return new TimeEntryResource($timeEntry);
@@ -133,7 +136,7 @@ class TimeEntryController extends Controller
     /**
      * Update time entry
      *
-     * @throws AuthorizationException
+     * @throws AuthorizationException|TimeEntryCanNotBeRestartedApiException
      *
      * @operationId updateTimeEntry
      */
@@ -145,7 +148,9 @@ class TimeEntryController extends Controller
             $this->checkPermission($organization, 'time-entries:update:all', $timeEntry);
         }
 
-        // TODO: TimeEntryStillRunningApiException
+        if ($timeEntry->end !== null && $request->has('end') && $request->get('end') === null) {
+            throw new TimeEntryCanNotBeRestartedApiException();
+        }
 
         $timeEntry->fill($request->validated());
         $timeEntry->description = $request->get('description', $timeEntry->description) ?? '';

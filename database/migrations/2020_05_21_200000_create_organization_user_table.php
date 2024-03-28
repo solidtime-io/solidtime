@@ -18,6 +18,7 @@ return new class extends Migration
             $table->foreignUuid('organization_id');
             $table->foreignUuid('user_id');
             $table->string('role')->nullable();
+            $table->integer('billable_rate')->unsigned()->nullable();
             $table->timestamps();
 
             $table->unique(['organization_id', 'user_id']);
