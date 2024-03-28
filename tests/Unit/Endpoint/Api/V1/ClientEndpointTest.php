@@ -32,7 +32,7 @@ class ClientEndpointTest extends ApiEndpointTestAbstract
         $data = $this->createUserWithPermission([
             'clients:view',
         ]);
-        $clients = Client::factory()->forOrganization($data->organization)->createMany(4);
+        $clients = Client::factory()->forOrganization($data->organization)->randomCreatedAt()->createMany(4);
         Passport::actingAs($data->user);
 
         // Act
@@ -41,15 +41,16 @@ class ClientEndpointTest extends ApiEndpointTestAbstract
         // Assert
         $response->assertStatus(200);
         $response->assertJsonCount(4, 'data');
+        $clients = Client::query()->orderBy('created_at', 'desc')->get();
         $response->assertJson(fn (AssertableJson $json) => $json
             ->has('data')
             ->has('links')
             ->has('meta')
             ->count('data', 4)
-            ->where('data.0.id', $clients->sortByDesc('created_at')->get(0)->getKey())
-            ->where('data.1.id', $clients->sortByDesc('created_at')->get(1)->getKey())
-            ->where('data.2.id', $clients->sortByDesc('created_at')->get(2)->getKey())
-            ->where('data.3.id', $clients->sortByDesc('created_at')->get(3)->getKey())
+            ->where('data.0.id', $clients->get(0)->getKey())
+            ->where('data.1.id', $clients->get(1)->getKey())
+            ->where('data.2.id', $clients->get(2)->getKey())
+            ->where('data.3.id', $clients->get(3)->getKey())
         );
     }
 

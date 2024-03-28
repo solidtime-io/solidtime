@@ -17,6 +17,8 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->string('name', 255);
             $table->string('color', 16);
+            $table->integer('billable_rate')->unsigned()->nullable();
+            $table->boolean('is_public')->default(false);
             $table->uuid('client_id')->nullable();
             $table->foreign('client_id')
                 ->references('id')

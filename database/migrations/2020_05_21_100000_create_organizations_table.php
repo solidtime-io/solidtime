@@ -18,6 +18,8 @@ return new class extends Migration
             $table->foreignUuid('user_id')->index();
             $table->string('name');
             $table->boolean('personal_team');
+            $table->integer('billable_rate')->unsigned()->nullable();
+            $table->string('currency', 3);
             $table->timestamps();
         });
     }

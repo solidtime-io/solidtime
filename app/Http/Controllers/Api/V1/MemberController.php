@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1;
 
 use App\Exceptions\Api\UserNotPlaceholderApiException;
-use App\Http\Requests\V1\User\UserIndexRequest;
+use App\Http\Requests\V1\Member\MemberIndexRequest;
 use App\Http\Resources\V1\User\MemberCollection;
 use App\Http\Resources\V1\User\MemberResource;
 use App\Models\Organization;
@@ -24,14 +24,14 @@ class MemberController extends Controller
      *
      * @throws AuthorizationException
      */
-    public function index(Organization $organization, UserIndexRequest $request): MemberCollection
+    public function index(Organization $organization, MemberIndexRequest $request): MemberCollection
     {
-        $this->checkPermission($organization, 'users:view');
+        $this->checkPermission($organization, 'members:view');
 
-        $users = $organization->users()
+        $members = $organization->users()
             ->paginate();
 
-        return MemberCollection::make($users);
+        return MemberCollection::make($members);
     }
 
     /**
@@ -41,7 +41,7 @@ class MemberController extends Controller
      */
     public function invitePlaceholder(Organization $organization, User $user, Request $request): JsonResponse
     {
-        $this->checkPermission($organization, 'users:invite-placeholder');
+        $this->checkPermission($organization, 'members:invite-placeholder');
 
         if (! $user->is_placeholder) {
             throw new UserNotPlaceholderApiException();

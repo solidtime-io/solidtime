@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Web;
 
+use App\Models\Organization;
 use App\Models\User;
 use App\Service\DashboardService;
 use Illuminate\Support\Str;
@@ -16,27 +17,17 @@ class DashboardController extends Controller
     {
         /** @var User $user */
         $user = auth()->user();
-        $dailyTrackedHours = $dashboardService->getDailyTrackedHours($user, 60);
-        $weeklyHistory = $dashboardService->getWeeklyHistory($user);
+        /** @var Organization $organization */
+        $organization = $user->currentTeam;
+        $dailyTrackedHours = $dashboardService->getDailyTrackedHours($user, $organization, 60);
+        $weeklyHistory = $dashboardService->getWeeklyHistory($user, $organization);
+        $totalWeeklyTime = $dashboardService->totalWeeklyTime($user, $organization);
+        $totalWeeklyBillableTime = $dashboardService->totalWeeklyBillableTime($user, $organization);
+        $totalWeeklyBillableAmount = $dashboardService->totalWeeklyBillableAmount($user, $organization);
+        $weeklyProjectOverview = $dashboardService->weeklyProjectOverview($user, $organization);
 
         return Inertia::render('Dashboard', [
-            'weeklyProjectOverview' => [
-                [
-                    'value' => 120,
-                    'name' => 'Project 11',
-                    'color' => '#26a69a',
-                ],
-                [
-                    'value' => 200,
-                    'name' => 'Project 2',
-                    'color' => '#d4e157',
-                ],
-                [
-                    'value' => 150,
-                    'name' => 'Project 3',
-                    'color' => '#ff7043',
-                ],
-            ],
+            'weeklyProjectOverview' => $weeklyProjectOverview,
             'latestTasks' => [
                 // the 4 tasks with the most recent time entries
                 [
@@ -210,12 +201,9 @@ class DashboardController extends Controller
                 ],
             ],
             'dailyTrackedHours' => $dailyTrackedHours,
-            'totalWeeklyTime' => 400,
-            'totalWeeklyBillableTime' => 300,
-            'totalWeeklyBillableAmount' => [
-                'value' => 300.5,
-                'currency' => 'USD',
-            ],
+            'totalWeeklyTime' => $totalWeeklyTime,
+            'totalWeeklyBillableTime' => $totalWeeklyBillableTime,
+            'totalWeeklyBillableAmount' => $totalWeeklyBillableAmount,
             'weeklyHistory' => $weeklyHistory,
         ]);
     }

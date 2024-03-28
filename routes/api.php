@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\V1\ImportController;
 use App\Http\Controllers\Api\V1\MemberController;
 use App\Http\Controllers\Api\V1\OrganizationController;
 use App\Http\Controllers\Api\V1\ProjectController;
+use App\Http\Controllers\Api\V1\ProjectMemberController;
 use App\Http\Controllers\Api\V1\TagController;
 use App\Http\Controllers\Api\V1\TaskController;
 use App\Http\Controllers\Api\V1\TimeEntryController;
@@ -31,8 +32,8 @@ Route::middleware('auth:api')->prefix('v1')->name('v1.')->group(static function 
         Route::put('/organizations/{organization}', [OrganizationController::class, 'update'])->name('update');
     });
 
-    // User routes
-    Route::name('users.')->group(static function () {
+    // Member routes
+    Route::name('members.')->group(static function () {
         Route::get('/organizations/{organization}/members', [MemberController::class, 'index'])->name('index');
         Route::post('/organizations/{organization}/members/{user}/invite-placeholder', [MemberController::class, 'invitePlaceholder'])->name('invite-placeholder');
     });
@@ -44,6 +45,14 @@ Route::middleware('auth:api')->prefix('v1')->name('v1.')->group(static function 
         Route::post('/organizations/{organization}/projects', [ProjectController::class, 'store'])->name('store');
         Route::put('/organizations/{organization}/projects/{project}', [ProjectController::class, 'update'])->name('update');
         Route::delete('/organizations/{organization}/projects/{project}', [ProjectController::class, 'destroy'])->name('destroy');
+    });
+
+    // Project member routes
+    Route::name('project-members.')->group(static function () {
+        Route::get('/organizations/{organization}/projects/{project}/project-members', [ProjectMemberController::class, 'index'])->name('index');
+        Route::post('/organizations/{organization}/projects/{project}/project-members', [ProjectMemberController::class, 'store'])->name('store');
+        Route::put('/organizations/{organization}/project-members/{projectMember}', [ProjectMemberController::class, 'update'])->name('update');
+        Route::delete('/organizations/{organization}/project-members/{projectMember}', [ProjectMemberController::class, 'destroy'])->name('destroy');
     });
 
     // Time entry routes

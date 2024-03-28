@@ -7,6 +7,8 @@ namespace Database\Factories;
 use App\Models\Client;
 use App\Models\Organization;
 use App\Models\Project;
+use App\Models\ProjectMember;
+use App\Models\User;
 use App\Service\ColorService;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -25,8 +27,10 @@ class ProjectFactory extends Factory
         return [
             'name' => $this->faker->company(),
             'color' => app(ColorService::class)->getRandomColor(),
-            'organization_id' => Organization::factory(),
+            'billable_rate' => $this->faker->numberBetween(50, 1000) * 100,
+            'is_public' => false,
             'client_id' => null,
+            'organization_id' => Organization::factory(),
         ];
     }
 
@@ -36,6 +40,34 @@ class ProjectFactory extends Factory
             return [
                 'organization_id' => $organization->getKey(),
             ];
+        });
+    }
+
+    public function isPublic(): self
+    {
+        return $this->state(function (array $attributes): array {
+            return [
+                'is_public' => true,
+            ];
+        });
+    }
+
+    public function isPrivate(): self
+    {
+        return $this->state(function (array $attributes): array {
+            return [
+                'is_public' => false,
+            ];
+        });
+    }
+
+    public function addMember(User $user, array $attributes = []): self
+    {
+        return $this->afterCreating(function (Project $project) use ($user, $attributes): void {
+            ProjectMember::factory()
+                ->forProject($project)
+                ->forUser($user)
+                ->create($attributes);
         });
     }
 

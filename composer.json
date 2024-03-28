@@ -8,10 +8,12 @@
     "require": {
         "php": "8.3.*",
         "ext-zip": "*",
+        "brick/money": "^0.8.1",
         "dedoc/scramble": "dev-main",
         "filament/filament": "^3.2",
         "guzzlehttp/guzzle": "^7.2",
         "inertiajs/inertia-laravel": "^1.0",
+        "korridor/laravel-computed-attributes": "^3.1",
         "korridor/laravel-model-validation-rules": "^3.0",
         "laravel/framework": "^11.0",
         "laravel/jetstream": "^5.0",

@@ -69,6 +69,13 @@ class UserFactory extends Factory
         });
     }
 
+    public function attachToOrganization(Organization $organization, array $pivot = []): static
+    {
+        return $this->afterCreating(function (User $user) use ($organization, $pivot) {
+            $user->organizations()->attach($organization, $pivot);
+        });
+    }
+
     /**
      * Indicate that the user should have a personal team.
      */

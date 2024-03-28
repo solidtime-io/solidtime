@@ -10,9 +10,12 @@ use App\Http\Resources\V1\Project\ProjectCollection;
 use App\Http\Resources\V1\Project\ProjectResource;
 use App\Models\Organization;
 use App\Models\Project;
+use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Auth;
 
 class ProjectController extends Controller
 {
@@ -36,9 +39,23 @@ class ProjectController extends Controller
     public function index(Organization $organization): ProjectCollection
     {
         $this->checkPermission($organization, 'projects:view');
-        $projects = Project::query()
-            ->whereBelongsTo($organization, 'organization')
-            ->paginate();
+        $canViewAllProjects = $this->hasPermission($organization, 'projects:view:all');
+        /** @var User $user */
+        $user = Auth::user();
+
+        $projectsQuery = Project::query()
+            ->whereBelongsTo($organization, 'organization');
+
+        if (! $canViewAllProjects) {
+            $projectsQuery->where(function (Builder $builder) use ($user): Builder {
+                return $builder->where('is_public', '=', true)
+                    ->orWhereHas('members', function (Builder $builder) use ($user): Builder {
+                        return $builder->whereBelongsTo($user, 'user');
+                    });
+            });
+        }
+
+        $projects = $projectsQuery->paginate();
 
         return new ProjectCollection($projects);
     }
@@ -72,6 +89,7 @@ class ProjectController extends Controller
         $project = new Project();
         $project->name = $request->input('name');
         $project->color = $request->input('color');
+        $project->billable_rate = $request->input('billable_rate');
         $project->client_id = $request->input('client_id');
         $project->organization()->associate($organization);
         $project->save();
@@ -91,7 +109,8 @@ class ProjectController extends Controller
         $this->checkPermission($organization, 'projects:update', $project);
         $project->name = $request->input('name');
         $project->color = $request->input('color');
-        $project->client_id = $request->input('project_id');
+        $project->billable_rate = $request->input('billable_rate');
+        $project->client_id = $request->input('client_id');
         $project->save();
 
         return new ProjectResource($project);
