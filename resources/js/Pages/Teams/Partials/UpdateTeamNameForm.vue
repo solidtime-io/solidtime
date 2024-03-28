@@ -16,6 +16,7 @@ const props = defineProps<{
 
 const form = useForm({
     name: props.team.name,
+    currency: props.team.currency,
 });
 
 const updateTeamName = () => {
@@ -68,6 +69,26 @@ const updateTeamName = () => {
                     :disabled="!permissions.canUpdateTeam" />
 
                 <InputError :message="form.errors.name" class="mt-2" />
+            </div>
+
+            <!-- Currency -->
+            <div class="col-span-6 sm:col-span-4">
+                <InputLabel for="currency" value="Currency" />
+                <select
+                    name="currency"
+                    id="currency"
+                    v-model="form.currency"
+                    :disabled="!permissions.canUpdateTeam"
+                    class="mt-1 block w-full border-input-border bg-input-background text-white focus:border-input-border-active rounded-md shadow-sm">
+                    <option value="" disabled>Select a currency</option>
+                    <option
+                        v-for="(currencyTranslated, currencyKey) in $page.props.currencies"
+                        :key="currencyKey"
+                        :value="currencyKey">
+                        {{ currencyKey }} - {{ currencyTranslated }}
+                    </option>
+                </select>
+                <InputError :message="form.errors.currency" class="mt-2" />
             </div>
         </template>
 

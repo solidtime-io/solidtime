@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $color
  * @property string $organization_id
  * @property string $client_id
+ * @property int|null $billable_rate
  * @property-read Organization $organization
  * @property-read Client|null $client
  * @property-read Collection<Task> $tasks
@@ -53,6 +54,14 @@ class Project extends Model
     public function client(): BelongsTo
     {
         return $this->belongsTo(Client::class, 'client_id');
+    }
+
+    /**
+     * @return HasMany<ProjectMember>
+     */
+    public function members(): HasMany
+    {
+        return $this->hasMany(ProjectMember::class);
     }
 
     /**

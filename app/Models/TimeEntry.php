@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Service\BillableRateService;
 use Carbon\CarbonInterval;
 use Database\Factories\TimeEntryFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -11,12 +12,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
+use Korridor\LaravelComputedAttributes\ComputedAttributes;
 
 /**
  * @property string $id
  * @property string $description
  * @property Carbon $start
  * @property Carbon|null $end
+ * @property int $billable_rate Billable rate per hour in cents
  * @property bool $billable
  * @property array $tags
  * @property string $user_id
@@ -32,6 +35,7 @@ use Illuminate\Support\Carbon;
  */
 class TimeEntry extends Model
 {
+    use ComputedAttributes;
     use HasFactory;
     use HasUuids;
 
@@ -46,7 +50,23 @@ class TimeEntry extends Model
         'end' => 'datetime',
         'billable' => 'bool',
         'tags' => 'array',
+        'billable_rate' => 'int',
     ];
+
+    /**
+     * The attributes that are computed. (f.e. for performance reasons)
+     * These attributes can be regenerated at any time.
+     *
+     * @var string[]
+     */
+    protected array $computed = [
+        'billable_rate',
+    ];
+
+    public function getBillableRateComputed(): ?int
+    {
+        return app(BillableRateService::class)->getBillableRateForTimeEntry($this);
+    }
 
     public function getDuration(): ?CarbonInterval
     {

@@ -199,6 +199,7 @@ return [
      */
 
     'color' => 'The :attribute field must be a valid color.',
+    'currency' => 'The :attribute field must be a valid currency code (ISO 4217).',
     'organization' => 'The :attribute does not exist.',
     'task_belongs_to_project' => 'The :attribute is not part of the given project.',
 ];

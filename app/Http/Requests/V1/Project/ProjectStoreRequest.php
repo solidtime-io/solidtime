@@ -38,6 +38,11 @@ class ProjectStoreRequest extends FormRequest
                 'max:255',
                 new ColorRule(),
             ],
+            'billable_rate' => [
+                'nullable',
+                'integer',
+                'min:0',
+            ],
             'client_id' => [
                 'nullable',
                 new ExistsEloquent(Client::class, null, function (Builder $builder): Builder {

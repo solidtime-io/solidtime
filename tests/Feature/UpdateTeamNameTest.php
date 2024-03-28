@@ -14,13 +14,21 @@ class UpdateTeamNameTest extends TestCase
 
     public function test_team_names_can_be_updated(): void
     {
-        $this->actingAs($user = User::factory()->withPersonalOrganization()->create());
+        // Arrange
+        $user = User::factory()->withPersonalOrganization()->create();
+        $this->actingAs($user);
 
+        // Act
         $response = $this->put('/teams/'.$user->currentTeam->id, [
             'name' => 'Test Organization',
+            'currency' => 'USD',
         ]);
 
+        // Assert
+        $response->assertValid(errorBag: 'updateTeamName');
         $this->assertCount(1, $user->fresh()->ownedTeams);
-        $this->assertEquals('Test Organization', $user->currentTeam->fresh()->name);
+        $organization = $user->currentTeam->fresh();
+        $this->assertEquals('Test Organization', $organization->name);
+        $this->assertEquals('USD', $organization->currency);
     }
 }

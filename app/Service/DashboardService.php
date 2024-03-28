@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Enums\Weekday;
+use App\Models\Organization;
 use App\Models\TimeEntry;
 use App\Models\User;
 use Carbon\Carbon;
@@ -86,7 +87,7 @@ class DashboardService
      *
      * @return array<int, array{date: string, duration: int}>
      */
-    public function getDailyTrackedHours(User $user, int $days): array
+    public function getDailyTrackedHours(User $user, Organization $organization, int $days): array
     {
         $timezone = $this->timezoneService->getTimezoneFromUser($user);
         $timezoneShift = $this->timezoneService->getShiftFromUtc($timezone);
@@ -103,7 +104,8 @@ class DashboardService
 
         $query = TimeEntry::query()
             ->select(DB::raw('DATE('.$dateWithTimeZone.') as date, round(sum(extract(epoch from (coalesce("end", now()) - start)))) as aggregate'))
-            ->where('user_id', '=', $user->id)
+            ->where('user_id', '=', $user->getKey())
+            ->where('organization_id', '=', $organization->getKey())
             ->groupBy(DB::raw('DATE('.$dateWithTimeZone.')'))
             ->orderBy('date');
 
@@ -128,7 +130,7 @@ class DashboardService
      *
      * @return array<int, array{date: string, duration: int}>
      */
-    public function getWeeklyHistory(User $user): array
+    public function getWeeklyHistory(User $user, Organization $organization): array
     {
         $timezone = $this->timezoneService->getTimezoneFromUser($user);
         $timezoneShift = $this->timezoneService->getShiftFromUtc($timezone);
@@ -143,7 +145,8 @@ class DashboardService
 
         $query = TimeEntry::query()
             ->select(DB::raw('DATE('.$dateWithTimeZone.') as date, round(sum(extract(epoch from (coalesce("end", now()) - start)))) as aggregate'))
-            ->where('user_id', '=', $user->id)
+            ->where('user_id', '=', $user->getKey())
+            ->where('organization_id', '=', $organization->getKey())
             ->groupBy(DB::raw('DATE('.$dateWithTimeZone.')'))
             ->orderBy('date');
 
@@ -161,5 +164,93 @@ class DashboardService
         }
 
         return $result;
+    }
+
+    public function totalWeeklyTime(User $user, Organization $organization): int
+    {
+        $timezone = $this->timezoneService->getTimezoneFromUser($user);
+        $possibleDays = $this->daysOfThisWeek($timezone, $user->week_start);
+
+        $query = TimeEntry::query()
+            ->select(DB::raw('round(sum(extract(epoch from (coalesce("end", now()) - start)))) as aggregate'))
+            ->where('user_id', '=', $user->getKey())
+            ->where('organization_id', '=', $organization->getKey());
+
+        $query = $this->constrainDateByPossibleDates($query, $possibleDays, $timezone);
+        /** @var Collection<int, object{aggregate: int}> $resultDb */
+        $resultDb = $query->get();
+
+        return (int) $resultDb->get(0)->aggregate;
+    }
+
+    public function totalWeeklyBillableTime(User $user, Organization $organization): int
+    {
+        $timezone = $this->timezoneService->getTimezoneFromUser($user);
+        $possibleDays = $this->daysOfThisWeek($timezone, $user->week_start);
+
+        $query = TimeEntry::query()
+            ->select(DB::raw('round(sum(extract(epoch from (coalesce("end", now()) - start)))) as aggregate'))
+            ->where('billable', '=', true)
+            ->where('user_id', '=', $user->getKey())
+            ->where('organization_id', '=', $organization->getKey());
+
+        $query = $this->constrainDateByPossibleDates($query, $possibleDays, $timezone);
+        /** @var Collection<int, object{aggregate: int}> $resultDb */
+        $resultDb = $query->get();
+
+        return (int) $resultDb->get(0)->aggregate;
+    }
+
+    /**
+     * @return array{value: int, currency: string}
+     */
+    public function totalWeeklyBillableAmount(User $user, Organization $organization): array
+    {
+        $timezone = $this->timezoneService->getTimezoneFromUser($user);
+        $possibleDays = $this->daysOfThisWeek($timezone, $user->week_start);
+
+        $query = TimeEntry::query()
+            ->select(DB::raw('
+               round(
+                    sum(
+                        extract(epoch from (coalesce("end", now()) - start)) * (billable_rate::float/60/60)
+                    )
+               ) as aggregate'))
+            ->where('billable', '=', true)
+            ->whereNotNull('billable_rate')
+            ->where('user_id', '=', $user->id);
+
+        $query = $this->constrainDateByPossibleDates($query, $possibleDays, $timezone);
+        /** @var Collection<int, object{aggregate: int}> $resultDb */
+        $resultDb = $query->get();
+
+        return [
+            'value' => (int) $resultDb->get(0)->aggregate,
+            'currency' => $organization->currency,
+        ];
+    }
+
+    /**
+     * @return array<int, array{value: int, name: string, color: string}>
+     */
+    public function weeklyProjectOverview(User $user, Organization $organization): array
+    {
+        return [
+            [
+                'value' => 120,
+                'name' => 'Project 11',
+                'color' => '#26a69a',
+            ],
+            [
+                'value' => 200,
+                'name' => 'Project 2',
+                'color' => '#d4e157',
+            ],
+            [
+                'value' => 150,
+                'name' => 'Project 3',
+                'color' => '#ff7043',
+            ],
+        ];
     }
 }

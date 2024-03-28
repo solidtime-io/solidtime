@@ -14,12 +14,12 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
     {
         // Arrange
         $data = $this->createUserWithPermission([
-            'users:view',
+            'members:view',
         ]);
         Passport::actingAs($data->user);
 
         // Act
-        $response = $this->getJson(route('api.v1.users.index', $data->organization->id));
+        $response = $this->getJson(route('api.v1.members.index', $data->organization->id));
 
         // Assert
         $response->assertStatus(200);
@@ -28,7 +28,7 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
     public function test_invite_placeholder_succeeds_if_data_is_valid(): void
     {
         $data = $this->createUserWithPermission([
-            'users:invite-placeholder',
+            'members:invite-placeholder',
         ], true);
         $user = User::factory()->create([
             'is_placeholder' => true,
@@ -39,7 +39,7 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
         Passport::actingAs($data->user);
 
         // Act
-        $response = $this->postJson(route('api.v1.users.invite-placeholder', [
+        $response = $this->postJson(route('api.v1.members.invite-placeholder', [
             'organization' => $data->organization->id,
             'user' => $user->id,
         ]));
@@ -61,7 +61,7 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
         Passport::actingAs($data->user);
 
         // Act
-        $response = $this->postJson(route('api.v1.users.invite-placeholder', ['organization' => $data->organization->id, 'user' => $user->id]));
+        $response = $this->postJson(route('api.v1.members.invite-placeholder', ['organization' => $data->organization->id, 'user' => $user->id]));
 
         // Assert
         $response->assertForbidden();
@@ -71,7 +71,7 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
     {
         // Arrange
         $data = $this->createUserWithPermission([
-            'users:invite-placeholder',
+            'members:invite-placeholder',
         ]);
         $otherOrganization = Organization::factory()->create();
         $user = User::factory()->create([
@@ -81,7 +81,7 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
         Passport::actingAs($data->user);
 
         // Act
-        $response = $this->postJson(route('api.v1.users.invite-placeholder', ['organization' => $data->organization->id, 'user' => $user->id]));
+        $response = $this->postJson(route('api.v1.members.invite-placeholder', ['organization' => $data->organization->id, 'user' => $user->id]));
 
         // Assert
         $response->assertForbidden();
@@ -91,12 +91,12 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
     {
         // Arrange
         $data = $this->createUserWithPermission([
-            'users:invite-placeholder',
+            'members:invite-placeholder',
         ]);
         Passport::actingAs($data->user);
 
         // Act
-        $response = $this->postJson(route('api.v1.users.invite-placeholder', ['organization' => $data->organization->id, 'user' => $data->user->id]));
+        $response = $this->postJson(route('api.v1.members.invite-placeholder', ['organization' => $data->organization->id, 'user' => $data->user->id]));
 
         // Assert
         $response->assertStatus(400);

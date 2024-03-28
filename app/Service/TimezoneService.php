@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Models\User;
+use Carbon\Carbon;
 use Carbon\CarbonTimeZone;
-use DateTime;
-use DateTimeZone;
 use Illuminate\Support\Facades\Log;
 
 class TimezoneService
@@ -17,9 +16,7 @@ class TimezoneService
      */
     public function getTimezones(): array
     {
-        $tzlist = CarbonTimeZone::listIdentifiers(DateTimeZone::ALL);
-
-        return $tzlist;
+        return CarbonTimeZone::listIdentifiers();
     }
 
     public function getTimezoneFromUser(User $user): CarbonTimeZone
@@ -57,8 +54,6 @@ class TimezoneService
 
     public function getShiftFromUtc(CarbonTimeZone $timeZone): int
     {
-        $timezoneShift = $timeZone->getOffset(new DateTime('now', new DateTimeZone('UTC')));
-
-        return $timezoneShift;
+        return $timeZone->getOffset(Carbon::now());
     }
 }

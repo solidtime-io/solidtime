@@ -35,6 +35,8 @@ class MemberResource extends BaseResource
             'role' => $membership->role,
             /** @var bool $is_placeholder Placeholder user for imports, user might not really exist and does not know about this placeholder membership */
             'is_placeholder' => $this->resource->is_placeholder,
+            /** @var int|null $billable_rate Billable rate in cents per hour */
+            'billable_rate' => $membership->billable_rate,
         ];
     }
 }
