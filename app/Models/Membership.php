@@ -10,6 +10,7 @@ use Laravel\Jetstream\Membership as JetstreamMembership;
 /**
  * @property string $id
  * @property string $role
+ * @property int|null $billable_rate
  * @property string $organization_id
  * @property string $user_id
  * @property string $created_at

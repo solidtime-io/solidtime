@@ -32,7 +32,7 @@ class TagEndpointTest extends ApiEndpointTestAbstract
         $data = $this->createUserWithPermission([
             'tags:view',
         ]);
-        $tags = Tag::factory()->forOrganization($data->organization)->createMany(4);
+        $tags = Tag::factory()->forOrganization($data->organization)->randomCreatedAt()->createMany(4);
         Passport::actingAs($data->user);
 
         // Act
@@ -41,15 +41,16 @@ class TagEndpointTest extends ApiEndpointTestAbstract
         // Assert
         $response->assertStatus(200);
         $response->assertJsonCount(4, 'data');
+        $tags = Tag::query()->orderBy('created_at', 'desc')->get();
         $response->assertJson(fn (AssertableJson $json) => $json
             ->has('data')
             ->has('links')
             ->has('meta')
             ->count('data', 4)
-            ->where('data.0.id', $tags->sortByDesc('created_at')->get(0)->getKey())
-            ->where('data.1.id', $tags->sortByDesc('created_at')->get(1)->getKey())
-            ->where('data.2.id', $tags->sortByDesc('created_at')->get(2)->getKey())
-            ->where('data.3.id', $tags->sortByDesc('created_at')->get(3)->getKey())
+            ->where('data.0.id', $tags->get(0)->getKey())
+            ->where('data.1.id', $tags->get(1)->getKey())
+            ->where('data.2.id', $tags->get(2)->getKey())
+            ->where('data.3.id', $tags->get(3)->getKey())
         );
     }
 

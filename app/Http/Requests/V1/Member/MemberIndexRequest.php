@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Requests\V1\Task;
+namespace App\Http\Requests\V1\Member;
 
 use App\Models\Organization;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * @property Organization $organization Organization from model binding
+ * @property Organization $organization
  */
-class TaskUpdateRequest extends FormRequest
+class MemberIndexRequest extends FormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -21,13 +21,6 @@ class TaskUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => [
-                // TODO: unique
-                'required',
-                'string',
-                'min:1',
-                'max:255',
-            ],
         ];
     }
 }

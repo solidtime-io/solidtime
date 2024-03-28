@@ -20,6 +20,8 @@ use Laravel\Jetstream\Team as JetstreamTeam;
  * @property string $id
  * @property string $name
  * @property bool $personal_team
+ * @property string $currency
+ * @property int|null $billable_rate
  * @property User $owner
  * @property Collection<User> $users
  * @property Collection<string, User> $realUsers
@@ -40,6 +42,7 @@ class Organization extends JetstreamTeam
     protected $casts = [
         'name' => 'string',
         'personal_team' => 'boolean',
+        'currency' => 'string',
     ];
 
     /**
@@ -61,6 +64,15 @@ class Organization extends JetstreamTeam
         'created' => TeamCreated::class,
         'updated' => TeamUpdated::class,
         'deleted' => TeamDeleted::class,
+    ];
+
+    /**
+     * The model's default values for attributes.
+     *
+     * @var array<string, mixed>
+     */
+    protected $attributes = [
+        'currency' => 'EUR',
     ];
 
     /**
@@ -88,7 +100,10 @@ class Organization extends JetstreamTeam
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(Jetstream::userModel(), Jetstream::membershipModel())
-            ->withPivot('role')
+            ->withPivot([
+                'role',
+                'billable_rate',
+            ])
             ->withTimestamps()
             ->as('membership');
     }

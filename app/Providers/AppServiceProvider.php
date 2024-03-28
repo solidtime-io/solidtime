@@ -13,6 +13,7 @@ use App\Models\Tag;
 use App\Models\Task;
 use App\Models\TimeEntry;
 use App\Models\User;
+use App\Service\PermissionStore;
 use Dedoc\Scramble\Scramble;
 use Dedoc\Scramble\Support\Generator\OpenApi;
 use Dedoc\Scramble\Support\Generator\SecurityScheme;
@@ -20,6 +21,7 @@ use Dedoc\Scramble\Support\Generator\SecuritySchemes\OAuthFlow;
 use Filament\Forms\Components\Section;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
@@ -77,5 +79,9 @@ class AppServiceProvider extends ServiceProvider
             URL::forceScheme('https');
             request()->server->set('HTTPS', request()->header('X-Forwarded-Proto', 'https') === 'https' ? 'on' : 'off');
         }
+
+        $this->app->scoped(PermissionStore::class, function (Application $app): PermissionStore {
+            return new PermissionStore();
+        });
     }
 }

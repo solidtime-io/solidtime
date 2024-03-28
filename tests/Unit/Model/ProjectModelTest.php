@@ -7,6 +7,7 @@ namespace Tests\Unit\Model;
 use App\Models\Client;
 use App\Models\Organization;
 use App\Models\Project;
+use App\Models\ProjectMember;
 use App\Models\Task;
 
 class ProjectModelTest extends ModelTestAbstract
@@ -68,5 +69,21 @@ class ProjectModelTest extends ModelTestAbstract
         $this->assertNotNull($tasksRel);
         $this->assertCount(3, $tasksRel);
         $this->assertTrue($tasksRel->first()->is($tasks->first()));
+    }
+
+    public function test_it_has_many_members(): void
+    {
+        // Arrange
+        $project = Project::factory()->create();
+        $members = ProjectMember::factory()->forProject($project)->createMany(3);
+
+        // Act
+        $project->refresh();
+        $membersRel = $project->members;
+
+        // Assert
+        $this->assertNotNull($membersRel);
+        $this->assertCount(3, $membersRel);
+        $this->assertTrue($membersRel->first()->is($members->first()));
     }
 }

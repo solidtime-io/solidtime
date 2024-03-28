@@ -68,12 +68,37 @@ class OrganizationEndpointTest extends ApiEndpointTestAbstract
         // Act
         $response = $this->putJson(route('api.v1.organizations.update', [$data->organization->getKey()]), [
             'name' => $organizationFake->name,
+            'billable_rate' => $organizationFake->billable_rate,
         ]);
 
         // Assert
         $response->assertStatus(200);
         $this->assertDatabaseHas(Organization::class, [
             'name' => $organizationFake->name,
+            'billable_rate' => $organizationFake->billable_rate,
+        ]);
+    }
+
+    public function test_update_endpoint_can_update_billable_rate_of_organization(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'organizations:update',
+        ]);
+        $organizationFake = Organization::factory()->make();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.organizations.update', [$data->organization->getKey()]), [
+            'name' => $organizationFake->name,
+            'billable_rate' => $organizationFake->billable_rate,
+        ]);
+
+        // Assert
+        $response->assertStatus(200);
+        $this->assertDatabaseHas(Organization::class, [
+            'name' => $organizationFake->name,
+            'billable_rate' => $organizationFake->billable_rate,
         ]);
     }
 }
