@@ -7,7 +7,6 @@ namespace App\Http\Controllers\Api\V1;
 use App\Models\Organization;
 use App\Service\PermissionStore;
 use Illuminate\Auth\Access\AuthorizationException;
-use Illuminate\Support\Facades\Auth;
 
 class Controller extends \App\Http\Controllers\Controller
 {

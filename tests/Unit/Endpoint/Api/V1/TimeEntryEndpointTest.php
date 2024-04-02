@@ -156,6 +156,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
     public function test_index_endpoint_filter_only_full_dates_returns_time_entries_for_the_whole_day_case_less_time_entries_than_limit(): void
     {
         // Arrange
+
         $data = $this->createUserWithPermission([
             'time-entries:view:own',
         ]);
