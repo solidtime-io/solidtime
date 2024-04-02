@@ -4,9 +4,45 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-    target-branch: "develop"
+    target-branch: "main"
   - package-ecosystem: "docker"
     directory: "/"
     schedule:
       interval: "daily"
-    target-branch: "develop"
+    target-branch: "main"
+  - package-ecosystem: "composer"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    target-branch: "main"
+    groups:
+      major-updates:
+        update-types:
+          - "major"
+      minor-updates:
+        update-types:
+          - "minor"
+          - "patch"
+      security-updates:
+        applies-to: version-updates
+        update-types:
+          - "minor"
+          - "patch"
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    target-branch: "main"
+    groups:
+      major-updates:
+        update-types:
+          - "major"
+      minor-updates:
+        update-types:
+          - "minor"
+          - "patch"
+      security-updates:
+        applies-to: version-updates
+        update-types:
+          - "minor"
+          - "patch"
