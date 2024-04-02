@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\V1\ProjectMemberController;
 use App\Http\Controllers\Api\V1\TagController;
 use App\Http\Controllers\Api\V1\TaskController;
 use App\Http\Controllers\Api\V1\TimeEntryController;
+use App\Http\Controllers\Api\V1\UserTimeEntryController;
 use Illuminate\Support\Facades\Route;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -61,6 +62,10 @@ Route::middleware('auth:api')->prefix('v1')->name('v1.')->group(static function 
         Route::post('/organizations/{organization}/time-entries', [TimeEntryController::class, 'store'])->name('store');
         Route::put('/organizations/{organization}/time-entries/{timeEntry}', [TimeEntryController::class, 'update'])->name('update');
         Route::delete('/organizations/{organization}/time-entries/{timeEntry}', [TimeEntryController::class, 'destroy'])->name('destroy');
+    });
+
+    Route::name('users.time-entries.')->group(static function () {
+        Route::get('/users/me/time-entries/active', [UserTimeEntryController::class, 'myActive'])->name('my-active');
     });
 
     // Tag routes
