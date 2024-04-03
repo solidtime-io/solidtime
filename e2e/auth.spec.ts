@@ -2,7 +2,6 @@ import { expect, test } from '@playwright/test';
 import { PLAYWRIGHT_BASE_URL } from '../playwright/config';
 
 async function registerNewUser(page, email, password) {
-    //await page.getByRole('link', { name: 'Register' }).click();
     await page.goto(PLAYWRIGHT_BASE_URL + '/register');
     await page.getByLabel('Name').fill('John Doe');
     await page.getByLabel('Email').fill(email);

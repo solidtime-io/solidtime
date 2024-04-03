@@ -23,6 +23,8 @@ class MemberController extends Controller
      * @return MemberCollection<MemberResource>>
      *
      * @throws AuthorizationException
+     *
+     * @operationId getMembers
      */
     public function index(Organization $organization, MemberIndexRequest $request): MemberCollection
     {
@@ -38,6 +40,8 @@ class MemberController extends Controller
      * Invite a placeholder user to become a member of the organization
      *
      * @throws AuthorizationException|UserNotPlaceholderApiException
+     *
+     * @operationId invitePlaceholder
      */
     public function invitePlaceholder(Organization $organization, User $user, Request $request): JsonResponse
     {

@@ -4,7 +4,6 @@ import { computed } from 'vue';
 
 const props = withDefaults(
     defineProps<{
-        name: string;
         size: 'base' | 'large';
         tag: string;
         class?: string;

@@ -82,7 +82,8 @@ const updateTeamName = () => {
                     class="mt-1 block w-full border-input-border bg-input-background text-white focus:border-input-border-active rounded-md shadow-sm">
                     <option value="" disabled>Select a currency</option>
                     <option
-                        v-for="(currencyTranslated, currencyKey) in $page.props.currencies"
+                        v-for="(currencyTranslated, currencyKey) in $page.props
+                            .currencies"
                         :key="currencyKey"
                         :value="currencyKey">
                         {{ currencyKey }} - {{ currencyTranslated }}

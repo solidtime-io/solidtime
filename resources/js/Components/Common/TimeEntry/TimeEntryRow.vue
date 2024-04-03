@@ -74,6 +74,11 @@ function deleteTimeEntry() {
 function updateTimeEntryDescription(description: string) {
     updateTimeEntry({ ...props.timeEntry, description });
 }
+
+function updateTimeEntryTags(tags: string[]) {
+    console.log(tags);
+    updateTimeEntry({ ...props.timeEntry, tags });
+}
 </script>
 
 <template>
@@ -97,7 +102,7 @@ function updateTimeEntryDescription(description: string) {
                 </div>
                 <div class="flex items-center font-medium space-x-2">
                     <TimeEntryRowTagDropdown
-                        @changed="updateTimeEntry(timeEntry)"
+                        @changed="updateTimeEntryTags"
                         :modelValue="timeEntry.tags"></TimeEntryRowTagDropdown>
                     <div>
                         <TimeEntryRangeSelector

@@ -90,7 +90,7 @@ const switchToTeam = (team: Organization) => {
 
                 <!-- Organization Switcher -->
                 <template v-if="page.props.auth.user.all_teams.length > 1">
-                    <div class="border-t border-card-background-seperator" />
+                    <div class="border-t border-card-background-separator" />
 
                     <div class="block px-4 py-2 text-xs text-muted">
                         Switch Teams
