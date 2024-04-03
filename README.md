@@ -4,7 +4,7 @@
 
 System Requirements:
 * Docker
-* PHP 8.2
+* PHP 8.3
 * Composer
 
 ```bash
