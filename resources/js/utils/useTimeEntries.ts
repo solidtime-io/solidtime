@@ -18,7 +18,7 @@ export const useTimeEntriesStore = defineStore('timeEntries', () => {
                     organization: organizationId,
                 },
                 queries: {
-                    only_full_dates: true,
+                    only_full_dates: 'true',
                 },
             });
             timeEntries.value = timeEntriesResponse.data;
@@ -37,7 +37,7 @@ export const useTimeEntriesStore = defineStore('timeEntries', () => {
                     organization: organizationId,
                 },
                 queries: {
-                    only_full_dates: true,
+                    only_full_dates: 'true',
                     before: dayjs(latestTimeEntry.start).utc().format(),
                 },
             });

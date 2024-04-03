@@ -12,22 +12,25 @@ export async function assertThatTimerHasStarted(page: Page) {
     );
 }
 
-export function newTimeEntryResponse(page: Page) {
+export function newTimeEntryResponse(
+    page: Page,
+    { description = '', status = 201, tags = [] } = {}
+) {
     return page.waitForResponse(async (response) => {
         return (
-            response.status() === 201 &&
+            response.status() === status &&
             (await response.headerValue('Content-Type')) ===
                 'application/json' &&
             (await response.json()).data.id !== null &&
             (await response.json()).data.start !== null &&
             (await response.json()).data.end === null &&
             (await response.json()).data.project_id === null &&
-            (await response.json()).data.description === '' &&
+            (await response.json()).data.description === description &&
             (await response.json()).data.task_id === null &&
             (await response.json()).data.duration === null &&
             (await response.json()).data.user_id !== null &&
             JSON.stringify((await response.json()).data.tags) ===
-                JSON.stringify([])
+                JSON.stringify(tags)
         );
     });
 }
@@ -40,7 +43,10 @@ export async function assertThatTimerIsStopped(page: Page) {
     ).toHaveClass(/bg-accent-300\/50/);
 }
 
-export async function stoppedTimeEntryResponse(page: Page) {
+export async function stoppedTimeEntryResponse(
+    page: Page,
+    { description = '', tags = [] } = {}
+) {
     return page.waitForResponse(async (response) => {
         return (
             response.status() === 200 &&
@@ -50,12 +56,12 @@ export async function stoppedTimeEntryResponse(page: Page) {
             (await response.json()).data.start !== null &&
             (await response.json()).data.end !== null &&
             (await response.json()).data.project_id === null &&
-            (await response.json()).data.description === '' &&
+            (await response.json()).data.description === description &&
             (await response.json()).data.task_id === null &&
             (await response.json()).data.duration !== null &&
             (await response.json()).data.user_id !== null &&
             JSON.stringify((await response.json()).data.tags) ===
-                JSON.stringify([])
+                JSON.stringify(tags)
         );
     });
 }

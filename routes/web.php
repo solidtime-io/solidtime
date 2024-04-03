@@ -6,6 +6,7 @@ use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\Web\HomeController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use Laravel\Jetstream\Jetstream;
 
 /*
 |--------------------------------------------------------------------------
@@ -30,4 +31,27 @@ Route::middleware([
     Route::get('/time', function () {
         return Inertia::render('Time');
     })->name('time');
+
+    Route::get('/reporting', function () {
+        return Inertia::render('Reporting');
+    })->name('reporting');
+
+    Route::get('/projects', function () {
+        return Inertia::render('Projects');
+    })->name('projects');
+
+    Route::get('/clients', function () {
+        return Inertia::render('Clients');
+    })->name('clients');
+
+    Route::get('/members', function () {
+        return Inertia::render('Members', [
+            'availableRoles' => array_values(Jetstream::$roles),
+        ]);
+    })->name('members');
+
+    Route::get('/tags', function () {
+        return Inertia::render('Tags');
+    })->name('tags');
+
 });

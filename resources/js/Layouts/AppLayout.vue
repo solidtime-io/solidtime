@@ -6,12 +6,12 @@ import CurrentSidebarTimer from '@/Components/CurrentSidebarTimer.vue';
 import {
     ChartBarIcon,
     ClockIcon,
+    Cog6ToothIcon,
     FolderIcon,
     HomeIcon,
+    TagIcon,
     UserCircleIcon,
     UserGroupIcon,
-    TagIcon,
-    Cog6ToothIcon,
 } from '@heroicons/vue/20/solid';
 import NavigationSidebarItem from '@/Components/NavigationSidebarItem.vue';
 import UserSettingsIcon from '@/Components/UserSettingsIcon.vue';
@@ -19,14 +19,22 @@ import MainContainer from '@/Pages/MainContainer.vue';
 import { onMounted } from 'vue';
 import { useProjectsStore } from '@/utils/useProjects';
 import { useTagsStore } from '@/utils/useTags';
+import { useTasksStore } from '@/utils/useTasks';
+import { useCurrentTimeEntryStore } from '@/utils/useCurrentTimeEntry';
+import { useClientsStore } from '@/utils/useClients';
+import { useMembersStore } from '@/utils/useMembers';
 
 defineProps({
     title: String,
 });
 
 onMounted(async () => {
-    await useProjectsStore().fetchProjects();
-    await useTagsStore().fetchTags();
+    useProjectsStore().fetchProjects();
+    useTasksStore().fetchTasks();
+    useTagsStore().fetchTags();
+    useCurrentTimeEntryStore().fetchCurrentTimeEntry();
+    useClientsStore().fetchClients();
+    useMembersStore().fetchMembers();
 });
 </script>
 
@@ -35,10 +43,10 @@ onMounted(async () => {
         <div
             class="flex-shrink-0 h-screen fixed w-[230px] 2xl:w-[270px] px-2.5 2xl:px-4 py-4 flex flex-col justify-between">
             <div>
-                <div class="border-b border-default-background-seperator pb-2">
+                <div class="border-b border-default-background-separator pb-2">
                     <OrganizationSwitcher></OrganizationSwitcher>
                 </div>
-                <div class="border-b border-default-background-seperator">
+                <div class="border-b border-default-background-separator">
                     <CurrentSidebarTimer></CurrentSidebarTimer>
                 </div>
                 <nav>
@@ -58,7 +66,8 @@ onMounted(async () => {
                         <NavigationSidebarItem
                             title="Reporting"
                             :icon="ChartBarIcon"
-                            :href="route('dashboard')"></NavigationSidebarItem>
+                            :current="route().current('reporting')"
+                            :href="route('reporting')"></NavigationSidebarItem>
                     </ul>
                 </nav>
 
@@ -69,28 +78,31 @@ onMounted(async () => {
                         <NavigationSidebarItem
                             title="Projects"
                             :icon="FolderIcon"
-                            :href="route('dashboard')"
+                            :href="route('projects')"
                             :current="
-                                route().current('dashboard')
+                                route().current('projects')
                             "></NavigationSidebarItem>
                         <NavigationSidebarItem
                             title="Clients"
                             :icon="UserCircleIcon"
-                            :href="route('dashboard')"></NavigationSidebarItem>
+                            :current="route().current('clients')"
+                            :href="route('clients')"></NavigationSidebarItem>
                         <NavigationSidebarItem
                             title="Members"
                             :icon="UserGroupIcon"
-                            :href="route('dashboard')"></NavigationSidebarItem>
+                            :current="route().current('members')"
+                            :href="route('members')"></NavigationSidebarItem>
                         <NavigationSidebarItem
                             title="Tags"
                             :icon="TagIcon"
-                            :href="route('dashboard')"></NavigationSidebarItem>
+                            :current="route().current('tags')"
+                            :href="route('tags')"></NavigationSidebarItem>
                     </ul>
                 </nav>
             </div>
 
             <ul
-                class="border-t border-default-background-seperator pt-3 flex justify-between pr-4 items-center">
+                class="border-t border-default-background-separator pt-3 flex justify-between pr-4 items-center">
                 <NavigationSidebarItem
                     class="flex-1"
                     title="Settings"
@@ -106,11 +118,11 @@ onMounted(async () => {
             <Banner />
 
             <div
-                class="min-h-screen bg-default-background border-l border-default-background-seperator">
+                class="min-h-screen bg-default-background border-l border-default-background-separator">
                 <!-- Page Heading -->
                 <header
                     v-if="$slots.header"
-                    class="bg-default-background border-b border-default-background-seperator shadow">
+                    class="bg-default-background border-b border-default-background-separator shadow">
                     <div class="pt-8 pb-3">
                         <MainContainer>
                             <slot name="header" />

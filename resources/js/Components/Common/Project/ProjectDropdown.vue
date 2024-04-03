@@ -116,7 +116,7 @@ function updateValue(project: Project) {
                 :border
                 tag="button"
                 :name="selectedProjectName"
-                class="focus:border-input-border-active focus:outline-0 focus:bg-card-background-seperator hover:bg-card-background-seperator"></ProjectBadge>
+                class="focus:border-input-border-active focus:outline-0 focus:bg-card-background-separator hover:bg-card-background-separator"></ProjectBadge>
         </template>
 
         <template #content>
@@ -131,7 +131,7 @@ function updateValue(project: Project) {
                     <ComboboxInput
                         @keydown.enter="addProjectIfNoneExists"
                         ref="searchInput"
-                        class="bg-card-background border-0 placeholder-muted text-sm text-white py-2.5 focus:ring-0 border-b border-card-background-seperator focus:border-card-background-seperator w-full"
+                        class="bg-card-background border-0 placeholder-muted text-sm text-white py-2.5 focus:ring-0 border-b border-card-background-separator focus:border-card-background-separator w-full"
                         placeholder="Search for a project..." />
                 </ComboboxAnchor>
                 <ComboboxContent>
@@ -168,7 +168,7 @@ function updateValue(project: Project) {
                             "
                             class="bg-card-background-active">
                             <div
-                                class="flex space-x-3 items-center px-4 py-3 text-xs font-medium border-t rounded-b-lg border-card-background-seperator">
+                                class="flex space-x-3 items-center px-4 py-3 text-xs font-medium border-t rounded-b-lg border-card-background-separator">
                                 <PlusCircleIcon
                                     class="w-5 flex-shrink-0"></PlusCircleIcon>
                                 <span

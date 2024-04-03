@@ -56,7 +56,7 @@ watch(focused, (newValue, oldValue) => {
             <template #content>
                 <div
                     ref="dropdownContent"
-                    class="grid grid-cols-2 divide-x divide-card-background-seperator text-center py-1">
+                    class="grid grid-cols-2 divide-x divide-card-background-separator text-center py-1">
                     <div>
                         <div class="font-bold text-white text-sm pb-1">
                             Start

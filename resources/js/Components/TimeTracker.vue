@@ -81,7 +81,34 @@ function pauseLiveTimerUpdate() {
 
 function updateTimerAndStartLiveTimerUpdate() {
     const time = parse(temporaryCustomTimerEntry.value, 's');
-    if (time && time > 0) {
+
+    if (isNumeric(temporaryCustomTimerEntry.value)) {
+        const newStartDate = dayjs().subtract(
+            parseInt(temporaryCustomTimerEntry.value),
+            'm'
+        );
+        currentTimeEntry.value.start = newStartDate.utc().format();
+        if (currentTimeEntry.value.id !== '') {
+            currentTimeEntryStore.updateTimer();
+        } else {
+            currentTimeEntryStore.startTimer();
+        }
+    } else if (isHHMM(temporaryCustomTimerEntry.value)) {
+        const results = parseHHMM(temporaryCustomTimerEntry.value);
+        if (results) {
+            const newStartDate = dayjs()
+                .subtract(parseInt(results[1]), 'h')
+                .subtract(parseInt(results[2]), 'm');
+            currentTimeEntry.value.start = newStartDate.utc().format();
+            if (currentTimeEntry.value.id !== '') {
+                currentTimeEntryStore.updateTimer();
+            } else {
+                currentTimeEntryStore.startTimer();
+            }
+        }
+    }
+    // try to parse natural language like "1h 30m"
+    else if (time && time > 1) {
         const newStartDate = dayjs().subtract(time, 's');
         currentTimeEntry.value.start = newStartDate.utc().format();
         if (currentTimeEntry.value.id !== '') {
@@ -90,9 +117,36 @@ function updateTimerAndStartLiveTimerUpdate() {
             currentTimeEntryStore.startTimer();
         }
     }
+    // fallback to minutes if just a number is given
     now.value = dayjs().utc();
     temporaryCustomTimerEntry.value = '';
     startLiveTimer();
+}
+
+function isNumeric(value: string) {
+    return /^-?\d+$/.test(value);
+}
+
+const HHMMtimeRegex = /^([0-9]{1,2}):([0-5]?[0-9])$/;
+
+function isHHMM(value: string): boolean {
+    return HHMMtimeRegex.test(value);
+}
+
+function parseHHMM(value: string): string[] | null {
+    return value.match(HHMMtimeRegex);
+}
+
+function startTimerIfNotActive() {
+    if (!isActive.value) {
+        onToggleButtonPress(true);
+    }
+}
+
+function onTimeEntryEnterPress() {
+    updateTimerAndStartLiveTimerUpdate();
+    const activeElement = document.activeElement as HTMLElement;
+    activeElement?.blur();
 }
 </script>
 
@@ -106,6 +160,7 @@ function updateTimerAndStartLiveTimerUpdate() {
                     placeholder="What are you working on?"
                     data-testid="time_entry_description"
                     v-model="currentTimeEntry.description"
+                    @keydown.enter="startTimerIfNotActive"
                     @blur="updateTimeEntry"
                     class="w-full rounded-l-lg py-3 px-5 text-lg text-white focus:bg-card-background-active font-medium bg-transparent border-none placeholder-muted focus:ring-0 transition"
                     type="text" />
@@ -127,7 +182,7 @@ function updateTimerAndStartLiveTimerUpdate() {
                     @focus="pauseLiveTimerUpdate"
                     data-testid="time_entry_time"
                     @blur="updateTimerAndStartLiveTimerUpdate"
-                    @keydown.enter="updateTimerAndStartLiveTimerUpdate"
+                    @keydown.enter="onTimeEntryEnterPress"
                     v-model="currentTime"
                     class="w-40 h-full text-white py-4 rounded-r-lg text-center px-4 text-lg font-bold bg-card-background border-none placeholder-muted focus:ring-0 transition focus:bg-card-background-active"
                     type="text" />

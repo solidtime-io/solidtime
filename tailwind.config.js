@@ -20,23 +20,34 @@ export default {
             colors: {
                 'white': '#D9DCFB',
                 'default-background': '#040618',
-                'default-background-seperator': '#13152B',
+                'default-background-separator': '#13152B',
                 'card-background': 'var(--theme-color-card-background)',
-                'card-background-active': '#1C1E34',
-                'card-background-seperator': '#262A51',
-                'card-border': '#242940',
-                'card-border-active': '#2A3461',
+                'card-background-active':
+                    'var(--theme-color-card-background-active)',
+                'card-background-separator': '#262A51',
+                'card-border': 'var(--theme-color-card-border)',
+                'card-border-active': 'var(--theme-color-card-border-active)',
                 'muted': '#8F93B7',
                 'icon-default': 'var(--theme-color-icon-default)',
+                'tab-background': 'var(--theme-color-tab-background)',
+                'tab-background-active':
+                    'var(--theme-color-tab-background-active)',
+                'tab-border': 'var(--theme-color-tab-border)',
                 'icon-active': '#787DA8',
                 'menu-active': '#13152B',
                 'input-placeholder': '#42466C',
                 'input-border': '#242740',
                 'input-border-active': '#797EA8',
                 'input-background': '#030513',
-                'button-secondary-background': '#22243E',
-                'button-secondary-background-hover': '#292C4D',
-                'button-secondary-border': '#353961',
+                'button-secondary-background':
+                    'var(--theme-color-card-background)',
+                'button-secondary-background-hover':
+                    'var(--theme-color-card-background-active)',
+                'button-secondary-border': 'var(--theme-color-card-border)',
+                'row-separator': 'var(--theme-color-row-separator-background)',
+                'row-heading-background':
+                    'var(--theme-color-row-heading-background)',
+                'row-heading-border': 'var(--theme-color-row-heading-border)',
                 'accent': {
                     '50': '#eff7ff',
                     '100': '#daecff',

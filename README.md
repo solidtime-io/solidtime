@@ -67,7 +67,7 @@ The Zodius HTTP client is generated using the following command:
 
 ```bash
 
-npm run generate:zod
+npm run zod:generate
 ```
 
 ## Contributing
