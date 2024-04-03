@@ -23,6 +23,22 @@ export const useTagsStore = defineStore('tags', () => {
         }
     }
 
+    async function deleteTag(tagId: string) {
+        const organizationId = getCurrentOrganizationId();
+        if (organizationId) {
+            await api.deleteTag(
+                {},
+                {
+                    params: {
+                        organization: organizationId,
+                        tag: tagId,
+                    },
+                }
+            );
+            await fetchTags();
+        }
+    }
+
     async function createTag(name: string) {
         const organizationId = getCurrentOrganizationId();
         if (organizationId) {
@@ -45,5 +61,5 @@ export const useTagsStore = defineStore('tags', () => {
         }
     }
 
-    return { tags, fetchTags, createTag };
+    return { tags, fetchTags, createTag, deleteTag };
 });

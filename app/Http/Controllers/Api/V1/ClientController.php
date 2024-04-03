@@ -29,6 +29,8 @@ class ClientController extends Controller
      * @return ClientCollection<ClientResource>
      *
      * @throws AuthorizationException
+     *
+     * @operationId getClients
      */
     public function index(Organization $organization): ClientCollection
     {
@@ -46,6 +48,8 @@ class ClientController extends Controller
      * Create client
      *
      * @throws AuthorizationException
+     *
+     * @operationId createClient
      */
     public function store(Organization $organization, TagStoreRequest $request): ClientResource
     {
@@ -63,6 +67,8 @@ class ClientController extends Controller
      * Update client
      *
      * @throws AuthorizationException
+     *
+     * @operationId updateClient
      */
     public function update(Organization $organization, Client $client, TagUpdateRequest $request): ClientResource
     {
@@ -78,6 +84,8 @@ class ClientController extends Controller
      * Delete client
      *
      * @throws AuthorizationException
+     *
+     * @operationId deleteClient
      */
     public function destroy(Organization $organization, Client $client): JsonResponse
     {

@@ -49,7 +49,7 @@ const groupedTimeEntries = computed(() => {
 <template>
     <AppLayout title="Dashboard" data-testid="dashboard_view">
         <MainContainer
-            class="py-8 border-b border-default-background-seperator">
+            class="py-8 border-b border-default-background-separator">
             <TimeTracker></TimeTracker>
         </MainContainer>
         <div v-for="(value, key) in groupedTimeEntries" :key="key">

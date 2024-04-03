@@ -21,7 +21,7 @@ const iconColorClasses = computed(() => {
         :class="
             twMerge(
                 iconColorClasses,
-                'flex-shrink-0 ring-0 focus:outline-none focus:ring-0 transition focus:bg-card-background-seperator hover:bg-card-background-seperator rounded-full w-11 h-11 flex items-center justify-center'
+                'flex-shrink-0 ring-0 focus:outline-none focus:ring-0 transition focus:bg-card-background-separator hover:bg-card-background-separator rounded-full w-11 h-11 flex items-center justify-center'
             )
         ">
         <svg

@@ -428,12 +428,15 @@ test('test that deleting a time entry from the overview works', async ({
 test('test that load more works when the end of page is reached', async ({
     page,
 }) => {
-    await goToTimeOverview(page);
-    await page.waitForResponse(
-        (response) =>
-            response.url().includes('/time-entries') &&
-            response.status() === 200
-    );
+    await Promise.all([
+        goToTimeOverview(page),
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/time-entries') &&
+                response.status() === 200
+        ),
+    ]);
+
     await page.waitForTimeout(200);
     await Promise.all([
         page.evaluate(() => window.scrollTo(0, document.body.scrollHeight)),

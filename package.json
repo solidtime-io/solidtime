@@ -8,7 +8,7 @@
         "lint:fix": "eslint --fix --ext .js,.vue,.ts --ignore-path .gitignore .",
         "type-check": "vue-tsc --noEmit",
         "test:e2e": "rm -rf test-results/.auth && npx playwright test",
-        "generate:zod": "npx openapi-zod-client http://localhost:80/docs/api.json --output openapi.json.client.ts --base-url /api"
+        "zod:generate": "npx openapi-zod-client http://localhost:80/docs/api.json --output openapi.json.client.ts --base-url /api"
     },
     "devDependencies": {
         "@inertiajs/vue3": "^1.0.0",
@@ -32,6 +32,8 @@
         "vue-tsc": "^1.8.27"
     },
     "dependencies": {
+        "@floating-ui/core": "^1.6.0",
+        "@floating-ui/vue": "^1.0.6",
         "@heroicons/vue": "^2.1.1",
         "@rushstack/eslint-patch": "^1.7.0",
         "@tailwindcss/container-queries": "^0.1.1",

@@ -20,11 +20,23 @@ const MemberResource = z
         email: z.string(),
         role: z.string(),
         is_placeholder: z.boolean(),
+        billable_rate: z.union([z.number(), z.null()]),
     })
     .passthrough();
 const MemberCollection = z.array(MemberResource);
 const OrganizationResource = z
-    .object({ id: z.string(), name: z.string(), is_personal: z.string() })
+    .object({
+        id: z.string(),
+        name: z.string(),
+        is_personal: z.string(),
+        billable_rate: z.union([z.number(), z.null()]),
+    })
+    .passthrough();
+const v1_organizations_update_Body = z
+    .object({
+        name: z.string(),
+        billable_rate: z.union([z.number(), z.null()]).optional(),
+    })
     .passthrough();
 const ProjectResource = z
     .object({
@@ -32,15 +44,34 @@ const ProjectResource = z
         name: z.string(),
         color: z.string(),
         client_id: z.union([z.string(), z.null()]),
+        billable_rate: z.union([z.number(), z.null()]),
     })
     .passthrough();
-const ProjectCollection = z.array(ProjectResource);
 const createProject_Body = z
     .object({
         name: z.string(),
         color: z.string(),
+        billable_rate: z.union([z.number(), z.null()]).optional(),
         client_id: z.union([z.string(), z.null()]).optional(),
     })
+    .passthrough();
+const ProjectMemberResource = z
+    .object({
+        id: z.string(),
+        billable_rate: z.union([z.number(), z.null()]),
+        user_id: z.string(),
+        project_id: z.string(),
+    })
+    .passthrough();
+const createProjectMember_Body = z
+    .object({
+        user_id: z.string().uuid(),
+        billable_rate: z.union([z.number(), z.null()]).optional(),
+    })
+    .passthrough();
+const updateProjectMember_Body = z
+    .object({ billable_rate: z.union([z.number(), z.null()]) })
+    .partial()
     .passthrough();
 const TagResource = z
     .object({
@@ -51,6 +82,18 @@ const TagResource = z
     })
     .passthrough();
 const TagCollection = z.array(TagResource);
+const TaskResource = z
+    .object({
+        id: z.string(),
+        name: z.string(),
+        project_id: z.string(),
+        created_at: z.string(),
+        updated_at: z.string(),
+    })
+    .passthrough();
+const createTask_Body = z
+    .object({ name: z.string(), project_id: z.string() })
+    .passthrough();
 const before = z.union([z.string(), z.null()]).optional();
 const TimeEntryResource = z
     .object({
@@ -98,11 +141,16 @@ export const schemas = {
     MemberResource,
     MemberCollection,
     OrganizationResource,
+    v1_organizations_update_Body,
     ProjectResource,
-    ProjectCollection,
     createProject_Body,
+    ProjectMemberResource,
+    createProjectMember_Body,
+    updateProjectMember_Body,
     TagResource,
     TagCollection,
+    TaskResource,
+    createTask_Body,
     before,
     TimeEntryResource,
     TimeEntryCollection,
@@ -146,7 +194,7 @@ const endpoints = makeApi([
             {
                 name: 'body',
                 type: 'Body',
-                schema: z.object({ name: z.string() }).passthrough(),
+                schema: v1_organizations_update_Body,
             },
             {
                 name: 'organization',
@@ -181,7 +229,7 @@ const endpoints = makeApi([
     {
         method: 'get',
         path: '/v1/organizations/:organization/clients',
-        alias: 'v1.clients.index',
+        alias: 'getClients',
         requestFormat: 'json',
         parameters: [
             {
@@ -207,7 +255,7 @@ const endpoints = makeApi([
     {
         method: 'post',
         path: '/v1/organizations/:organization/clients',
-        alias: 'v1.clients.store',
+        alias: 'createClient',
         requestFormat: 'json',
         parameters: [
             {
@@ -248,7 +296,7 @@ const endpoints = makeApi([
     {
         method: 'put',
         path: '/v1/organizations/:organization/clients/:client',
-        alias: 'v1.clients.update',
+        alias: 'updateClient',
         requestFormat: 'json',
         parameters: [
             {
@@ -294,7 +342,7 @@ const endpoints = makeApi([
     {
         method: 'delete',
         path: '/v1/organizations/:organization/clients/:client',
-        alias: 'v1.clients.destroy',
+        alias: 'deleteClient',
         requestFormat: 'json',
         parameters: [
             {
@@ -400,7 +448,7 @@ const endpoints = makeApi([
     {
         method: 'get',
         path: '/v1/organizations/:organization/members',
-        alias: 'v1.users.index',
+        alias: 'getMembers',
         requestFormat: 'json',
         parameters: [
             {
@@ -436,7 +484,7 @@ const endpoints = makeApi([
     {
         method: 'post',
         path: '/v1/organizations/:organization/members/:user/invite-placeholder',
-        alias: 'v1.users.invite-placeholder',
+        alias: 'invitePlaceholder',
         requestFormat: 'json',
         parameters: [
             {
@@ -481,6 +529,88 @@ const endpoints = makeApi([
         ],
     },
     {
+        method: 'put',
+        path: '/v1/organizations/:organization/project-members/:projectMember',
+        alias: 'updateProjectMember',
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'body',
+                type: 'Body',
+                schema: updateProjectMember_Body,
+            },
+            {
+                name: 'organization',
+                type: 'Path',
+                schema: z.string().uuid(),
+            },
+            {
+                name: 'projectMember',
+                type: 'Path',
+                schema: z.string().uuid(),
+            },
+        ],
+        response: z.object({ data: ProjectMemberResource }).passthrough(),
+        errors: [
+            {
+                status: 403,
+                description: `Authorization error`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 404,
+                description: `Not found`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 422,
+                description: `Validation error`,
+                schema: z
+                    .object({
+                        message: z.string(),
+                        errors: z.record(z.array(z.string())),
+                    })
+                    .passthrough(),
+            },
+        ],
+    },
+    {
+        method: 'delete',
+        path: '/v1/organizations/:organization/project-members/:projectMember',
+        alias: 'deleteProjectMember',
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'body',
+                type: 'Body',
+                schema: z.object({}).partial().passthrough(),
+            },
+            {
+                name: 'organization',
+                type: 'Path',
+                schema: z.string().uuid(),
+            },
+            {
+                name: 'projectMember',
+                type: 'Path',
+                schema: z.string().uuid(),
+            },
+        ],
+        response: z.null(),
+        errors: [
+            {
+                status: 403,
+                description: `Authorization error`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 404,
+                description: `Not found`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+        ],
+    },
+    {
         method: 'get',
         path: '/v1/organizations/:organization/projects',
         alias: 'getProjects',
@@ -492,7 +622,39 @@ const endpoints = makeApi([
                 schema: z.string().uuid(),
             },
         ],
-        response: z.object({ data: ProjectCollection }).passthrough(),
+        response: z
+            .object({
+                data: z.array(ProjectResource),
+                links: z
+                    .object({
+                        first: z.union([z.string(), z.null()]),
+                        last: z.union([z.string(), z.null()]),
+                        prev: z.union([z.string(), z.null()]),
+                        next: z.union([z.string(), z.null()]),
+                    })
+                    .passthrough(),
+                meta: z
+                    .object({
+                        current_page: z.number().int(),
+                        from: z.union([z.number(), z.null()]),
+                        last_page: z.number().int(),
+                        links: z.array(
+                            z
+                                .object({
+                                    url: z.union([z.string(), z.null()]),
+                                    label: z.string(),
+                                    active: z.boolean(),
+                                })
+                                .passthrough()
+                        ),
+                        path: z.union([z.string(), z.null()]),
+                        per_page: z.number().int(),
+                        to: z.union([z.number(), z.null()]),
+                        total: z.number().int(),
+                    })
+                    .passthrough(),
+            })
+            .passthrough(),
         errors: [
             {
                 status: 403,
@@ -662,6 +824,115 @@ const endpoints = makeApi([
     },
     {
         method: 'get',
+        path: '/v1/organizations/:organization/projects/:project/project-members',
+        alias: 'getProjectMembers',
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'organization',
+                type: 'Path',
+                schema: z.string().uuid(),
+            },
+            {
+                name: 'project',
+                type: 'Path',
+                schema: z.string().uuid(),
+            },
+        ],
+        response: z
+            .object({
+                data: z.array(ProjectMemberResource),
+                links: z
+                    .object({
+                        first: z.union([z.string(), z.null()]),
+                        last: z.union([z.string(), z.null()]),
+                        prev: z.union([z.string(), z.null()]),
+                        next: z.union([z.string(), z.null()]),
+                    })
+                    .passthrough(),
+                meta: z
+                    .object({
+                        current_page: z.number().int(),
+                        from: z.union([z.number(), z.null()]),
+                        last_page: z.number().int(),
+                        links: z.array(
+                            z
+                                .object({
+                                    url: z.union([z.string(), z.null()]),
+                                    label: z.string(),
+                                    active: z.boolean(),
+                                })
+                                .passthrough()
+                        ),
+                        path: z.union([z.string(), z.null()]),
+                        per_page: z.number().int(),
+                        to: z.union([z.number(), z.null()]),
+                        total: z.number().int(),
+                    })
+                    .passthrough(),
+            })
+            .passthrough(),
+        errors: [
+            {
+                status: 403,
+                description: `Authorization error`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 404,
+                description: `Not found`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+        ],
+    },
+    {
+        method: 'post',
+        path: '/v1/organizations/:organization/projects/:project/project-members',
+        alias: 'createProjectMember',
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'body',
+                type: 'Body',
+                schema: createProjectMember_Body,
+            },
+            {
+                name: 'organization',
+                type: 'Path',
+                schema: z.string().uuid(),
+            },
+            {
+                name: 'project',
+                type: 'Path',
+                schema: z.string().uuid(),
+            },
+        ],
+        response: z.object({ data: ProjectMemberResource }).passthrough(),
+        errors: [
+            {
+                status: 403,
+                description: `Authorization error`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 404,
+                description: `Not found`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 422,
+                description: `Validation error`,
+                schema: z
+                    .object({
+                        message: z.string(),
+                        errors: z.record(z.array(z.string())),
+                    })
+                    .passthrough(),
+            },
+        ],
+    },
+    {
+        method: 'get',
         path: '/v1/organizations/:organization/tags',
         alias: 'getTags',
         requestFormat: 'json',
@@ -811,6 +1082,202 @@ const endpoints = makeApi([
     },
     {
         method: 'get',
+        path: '/v1/organizations/:organization/tasks',
+        alias: 'getTasks',
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'organization',
+                type: 'Path',
+                schema: z.string().uuid(),
+            },
+            {
+                name: 'project_id',
+                type: 'Query',
+                schema: z.string().uuid().optional(),
+            },
+        ],
+        response: z
+            .object({
+                data: z.array(TaskResource),
+                links: z
+                    .object({
+                        first: z.union([z.string(), z.null()]),
+                        last: z.union([z.string(), z.null()]),
+                        prev: z.union([z.string(), z.null()]),
+                        next: z.union([z.string(), z.null()]),
+                    })
+                    .passthrough(),
+                meta: z
+                    .object({
+                        current_page: z.number().int(),
+                        from: z.union([z.number(), z.null()]),
+                        last_page: z.number().int(),
+                        links: z.array(
+                            z
+                                .object({
+                                    url: z.union([z.string(), z.null()]),
+                                    label: z.string(),
+                                    active: z.boolean(),
+                                })
+                                .passthrough()
+                        ),
+                        path: z.union([z.string(), z.null()]),
+                        per_page: z.number().int(),
+                        to: z.union([z.number(), z.null()]),
+                        total: z.number().int(),
+                    })
+                    .passthrough(),
+            })
+            .passthrough(),
+        errors: [
+            {
+                status: 403,
+                description: `Authorization error`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 404,
+                description: `Not found`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 422,
+                description: `Validation error`,
+                schema: z
+                    .object({
+                        message: z.string(),
+                        errors: z.record(z.array(z.string())),
+                    })
+                    .passthrough(),
+            },
+        ],
+    },
+    {
+        method: 'post',
+        path: '/v1/organizations/:organization/tasks',
+        alias: 'createTask',
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'body',
+                type: 'Body',
+                schema: createTask_Body,
+            },
+            {
+                name: 'organization',
+                type: 'Path',
+                schema: z.string().uuid(),
+            },
+        ],
+        response: z.object({ data: TaskResource }).passthrough(),
+        errors: [
+            {
+                status: 403,
+                description: `Authorization error`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 404,
+                description: `Not found`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 422,
+                description: `Validation error`,
+                schema: z
+                    .object({
+                        message: z.string(),
+                        errors: z.record(z.array(z.string())),
+                    })
+                    .passthrough(),
+            },
+        ],
+    },
+    {
+        method: 'put',
+        path: '/v1/organizations/:organization/tasks/:task',
+        alias: 'updateTask',
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'body',
+                type: 'Body',
+                schema: z.object({ name: z.string() }).passthrough(),
+            },
+            {
+                name: 'organization',
+                type: 'Path',
+                schema: z.string().uuid(),
+            },
+            {
+                name: 'task',
+                type: 'Path',
+                schema: z.string().uuid(),
+            },
+        ],
+        response: z.object({ data: TaskResource }).passthrough(),
+        errors: [
+            {
+                status: 403,
+                description: `Authorization error`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 404,
+                description: `Not found`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 422,
+                description: `Validation error`,
+                schema: z
+                    .object({
+                        message: z.string(),
+                        errors: z.record(z.array(z.string())),
+                    })
+                    .passthrough(),
+            },
+        ],
+    },
+    {
+        method: 'delete',
+        path: '/v1/organizations/:organization/tasks/:task',
+        alias: 'deleteTask',
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'body',
+                type: 'Body',
+                schema: z.object({}).partial().passthrough(),
+            },
+            {
+                name: 'organization',
+                type: 'Path',
+                schema: z.string().uuid(),
+            },
+            {
+                name: 'task',
+                type: 'Path',
+                schema: z.string().uuid(),
+            },
+        ],
+        response: z.null(),
+        errors: [
+            {
+                status: 403,
+                description: `Authorization error`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 404,
+                description: `Not found`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+        ],
+    },
+    {
+        method: 'get',
         path: '/v1/organizations/:organization/time-entries',
         alias: 'getTimeEntries',
         requestFormat: 'json',
@@ -848,7 +1315,7 @@ const endpoints = makeApi([
             {
                 name: 'only_full_dates',
                 type: 'Query',
-                schema: z.boolean().optional(),
+                schema: z.enum(['true', 'false']).optional(),
             },
         ],
         response: z.object({ data: TimeEntryCollection }).passthrough(),
@@ -951,6 +1418,17 @@ const endpoints = makeApi([
         ],
         response: z.object({ data: TimeEntryResource }).passthrough(),
         errors: [
+            {
+                status: 400,
+                description: `API exception`,
+                schema: z
+                    .object({
+                        error: z.boolean(),
+                        key: z.string(),
+                        message: z.string(),
+                    })
+                    .passthrough(),
+            },
             {
                 status: 403,
                 description: `Authorization error`,
