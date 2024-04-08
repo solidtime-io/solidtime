@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import { api } from '../../../openapi.json.client';
 import { reactive, ref } from 'vue';
-import type { Task } from '@/utils/api';
+import type { CreateTaskBody, Task } from '@/utils/api';
 
 export const useTasksStore = defineStore('tasks', () => {
     const tasks = ref<Task[]>(reactive([]));
@@ -31,7 +31,7 @@ export const useTasksStore = defineStore('tasks', () => {
         }
     }
 
-    async function createTask(task: Task) {
+    async function createTask(task: CreateTaskBody) {
         const organizationId = getCurrentOrganizationId();
         if (organizationId) {
             await api.createTask(task, {

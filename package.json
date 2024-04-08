@@ -20,6 +20,7 @@
         "@vue/tsconfig": "^0.5.1",
         "autoprefixer": "^10.4.7",
         "axios": "^1.6.4",
+        "eslint-plugin-unused-imports": "^3.1.0",
         "laravel-vite-plugin": "^1.0.0",
         "openapi-zod-client": "^1.16.2",
         "postcss": "^8.4.14",
