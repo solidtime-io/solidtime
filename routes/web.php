@@ -40,6 +40,10 @@ Route::middleware([
         return Inertia::render('Projects');
     })->name('projects');
 
+    Route::get('/projects/{project}', function () {
+        return Inertia::render('ProjectShow');
+    })->name('projects.show');
+
     Route::get('/clients', function () {
         return Inertia::render('Clients');
     })->name('clients');

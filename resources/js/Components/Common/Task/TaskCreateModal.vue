@@ -5,58 +5,67 @@ import DialogModal from '@/Components/DialogModal.vue';
 import { ref } from 'vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import { useFocus } from '@vueuse/core';
-import type { CreateTagBody } from '@/utils/api';
-import { useTagsStore } from '@/utils/useTags';
+import { useTasksStore } from '@/utils/useTasks';
+import ProjectDropdown from '@/Components/Common/Project/ProjectDropdown.vue';
+
+const { createTask } = useTasksStore();
 const show = defineModel('show', { default: false });
 const saving = ref(false);
 
-const { createTag } = useTagsStore();
+const taskName = ref('');
 
-const tag = ref<CreateTagBody>({
-    name: '',
-});
+const props = defineProps<{
+    projectId: string;
+}>();
 
 async function submit() {
-    await createTag(tag.value.name);
+    await createTask({
+        name: taskName.value,
+        project_id: props.projectId,
+    });
     show.value = false;
 }
 
-const tagNameInput = ref<HTMLInputElement | null>(null);
-useFocus(tagNameInput, { initialValue: true });
+const taskNameInput = ref<HTMLInputElement | null>(null);
+
+useFocus(taskNameInput, { initialValue: true });
 </script>
 
 <template>
     <DialogModal closeable :show="show" @close="show = false">
         <template #title>
             <div class="flex space-x-2">
-                <span> Create Tags </span>
+                <span> Create Task </span>
             </div>
         </template>
+
         <template #content>
             <div class="flex items-center space-x-4">
                 <div class="col-span-6 sm:col-span-4 flex-1">
                     <TextInput
-                        id="tagName"
-                        ref="tagNameInput"
-                        v-model="tag.name"
-                        @keydown.enter="submit"
+                        id="taskName"
+                        ref="taskNameInput"
+                        v-model="taskName"
                         type="text"
-                        placeholder="Tag Name"
+                        placeholder="Task Name"
+                        @keydown.enter="submit()"
                         class="mt-1 block w-full"
                         required
-                        autocomplete="tagName" />
+                        autocomplete="taskName" />
+                </div>
+                <div class="col-span-6 sm:col-span-4">
+                    <ProjectDropdown :modelValue="projectId"></ProjectDropdown>
                 </div>
             </div>
         </template>
         <template #footer>
             <SecondaryButton @click="show = false"> Cancel </SecondaryButton>
-
             <PrimaryButton
                 class="ms-3"
                 :class="{ 'opacity-25': saving }"
                 :disabled="saving"
                 @click="submit">
-                Create Tag
+                Create Task
             </PrimaryButton>
         </template>
     </DialogModal>

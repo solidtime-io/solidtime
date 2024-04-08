@@ -69,6 +69,7 @@ const currentClientName = computed(() => {
                         v-model="project.name"
                         type="text"
                         placeholder="Project Name"
+                        @keydown.enter="submit()"
                         class="mt-1 block w-full"
                         required
                         autocomplete="projectName" />

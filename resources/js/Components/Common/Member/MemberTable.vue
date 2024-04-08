@@ -16,7 +16,7 @@ const createClient = ref(false);
         <div class="inline-block min-w-full align-middle">
             <div
                 data-testid="client_table"
-                class="grid min-w-full divide-y divide-row-separator border-b border-row-separator"
+                class="grid min-w-full"
                 style="grid-template-columns: 1fr 1fr 180px 180px 150px 80px">
                 <MemberTableHeading></MemberTableHeading>
                 <template v-for="member in members" :key="member.id">
