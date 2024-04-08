@@ -80,7 +80,7 @@ function onBackgroundClick() {
 
 <template>
     <div class="relative">
-        <div @click="toggleOpen">
+        <div @click.prevent="toggleOpen">
             <slot name="trigger" />
         </div>
 
@@ -88,7 +88,7 @@ function onBackgroundClick() {
         <div
             v-show="open"
             class="fixed inset-0 z-40"
-            @click="onBackgroundClick" />
+            @click.prevent="onBackgroundClick" />
 
         <transition
             enter-active-class="transition ease-out duration-200"

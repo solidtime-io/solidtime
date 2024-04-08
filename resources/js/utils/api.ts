@@ -24,6 +24,8 @@ export type CreateProjectBody = ZodiosBodyByAlias<
     'createProject'
 >;
 
+export type CreateTaskBody = ZodiosBodyByAlias<SolidTimeApi, 'createTask'>;
+
 export type CreateClientBody = ZodiosBodyByAlias<SolidTimeApi, 'createClient'>;
 
 export type TagIndexResponse = ZodiosResponseByAlias<SolidTimeApi, 'getTags'>;

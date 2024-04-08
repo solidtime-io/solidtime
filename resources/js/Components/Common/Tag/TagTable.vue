@@ -19,7 +19,7 @@ const createTag = ref(false);
         <div class="inline-block min-w-full align-middle">
             <div
                 data-testid="tag_table"
-                class="grid min-w-full divide-y divide-row-separator border-b border-row-separator"
+                class="grid min-w-full"
                 style="grid-template-columns: 1fr 80px">
                 <TagTableHeading></TagTableHeading>
                 <div
