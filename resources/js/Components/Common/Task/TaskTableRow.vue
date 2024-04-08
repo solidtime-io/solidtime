@@ -1,28 +1,17 @@
 <script setup lang="ts">
-import type { Client } from '@/utils/api';
-import { computed } from 'vue';
+import type { Task } from '@/utils/api';
 import { CheckCircleIcon } from '@heroicons/vue/20/solid';
-import { useClientsStore } from '@/utils/useClients';
-import { storeToRefs } from 'pinia';
-import ClientMoreOptionsDropdown from '@/Components/Common/Client/ClientMoreOptionsDropdown.vue';
-import { useProjectsStore } from '@/utils/useProjects';
+import { useTasksStore } from '@/utils/useTasks';
+import TaskMoreOptionsDropdown from '@/Components/Common/Task/TaskMoreOptionsDropdown.vue';
 import TableRow from '@/Components/TableRow.vue';
 
-const { projects } = storeToRefs(useProjectsStore());
-
 const props = defineProps<{
-    client: Client;
+    task: Task;
 }>();
 
-function deleteClient() {
-    useClientsStore().deleteClient(props.client.id);
+function deleteTask() {
+    useTasksStore().deleteTask(props.task.id);
 }
-
-const projectCount = computed(() => {
-    return projects.value.filter(
-        (projects) => projects.client_id === props.client.id
-    ).length;
-});
 </script>
 
 <template>
@@ -30,9 +19,8 @@ const projectCount = computed(() => {
         <div
             class="whitespace-nowrap flex items-center space-x-5 3xl:pl-12 py-4 pr-3 text-sm font-medium text-white pl-4 sm:pl-6 lg:pl-8 3xl:pl-12">
             <span>
-                {{ client.name }}
+                {{ task.name }}
             </span>
-            <span class="text-muted"> {{ projectCount }} Projects </span>
         </div>
         <div
             class="whitespace-nowrap px-3 py-4 text-sm text-muted flex space-x-1 items-center font-medium">
@@ -41,9 +29,9 @@ const projectCount = computed(() => {
         </div>
         <div
             class="relative whitespace-nowrap flex items-center pl-3 text-right text-sm font-medium sm:pr-0 pr-4 sm:pr-6 lg:pr-8 3xl:pr-12">
-            <ClientMoreOptionsDropdown
-                :client="client"
-                @delete="deleteClient"></ClientMoreOptionsDropdown>
+            <TaskMoreOptionsDropdown
+                :task="task"
+                @delete="deleteTask"></TaskMoreOptionsDropdown>
         </div>
     </TableRow>
 </template>
