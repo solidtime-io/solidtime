@@ -10,10 +10,14 @@ use App\Http\Requests\V1\Task\TaskUpdateRequest;
 use App\Http\Resources\V1\Task\TaskCollection;
 use App\Http\Resources\V1\Task\TaskResource;
 use App\Models\Organization;
+use App\Models\Project;
 use App\Models\Task;
+use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Auth;
 
 class TaskController extends Controller
 {
@@ -37,6 +41,9 @@ class TaskController extends Controller
     public function index(Organization $organization, TaskIndexRequest $request): TaskCollection
     {
         $this->checkPermission($organization, 'tasks:view');
+        $canViewAllTasks = $this->hasPermission($organization, 'tasks:view:all');
+        /** @var User $user */
+        $user = Auth::user();
 
         $projectId = $request->input('project_id');
 
@@ -45,6 +52,13 @@ class TaskController extends Controller
 
         if ($projectId !== null) {
             $query->where('project_id', '=', $projectId);
+        }
+
+        if (! $canViewAllTasks) {
+            $query->whereHas('project', function (Builder $builder) use ($user): void {
+                /** @var Builder<Project> $builder */
+                $builder->visibleByUser($user);
+            });
         }
 
         $tasks = $query->paginate();
