@@ -119,6 +119,10 @@ class JetstreamServiceProvider extends ServiceProvider
             'tags:create',
             'tags:update',
             'tags:delete',
+            'clients:view',
+            'clients:create',
+            'clients:update',
+            'clients:delete',
             'organizations:view',
             'members:view',
         ])->description('Managers have the ability to read, create, and update their own time entries as well as those of their team.');

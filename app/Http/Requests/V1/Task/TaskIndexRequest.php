@@ -6,9 +6,11 @@ namespace App\Http\Requests\V1\Task;
 
 use App\Models\Organization;
 use App\Models\Project;
+use App\Service\PermissionStore;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
 use Korridor\LaravelModelValidationRules\Rules\ExistsEloquent;
 
 /**
@@ -28,7 +30,13 @@ class TaskIndexRequest extends FormRequest
                 'uuid',
                 new ExistsEloquent(Project::class, null, function (Builder $builder): Builder {
                     /** @var Builder<Project> $builder */
-                    return $builder->whereBelongsTo($this->organization, 'organization');
+                    $builder = $builder->whereBelongsTo($this->organization, 'organization');
+
+                    if (! app(PermissionStore::class)->has($this->organization, 'tasks:view:all')) {
+                        $builder = $builder->visibleByUser(Auth::user());
+                    }
+
+                    return $builder;
                 }),
             ],
         ];

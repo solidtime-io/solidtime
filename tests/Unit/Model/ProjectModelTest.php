@@ -9,6 +9,7 @@ use App\Models\Organization;
 use App\Models\Project;
 use App\Models\ProjectMember;
 use App\Models\Task;
+use App\Models\User;
 
 class ProjectModelTest extends ModelTestAbstract
 {
@@ -85,5 +86,30 @@ class ProjectModelTest extends ModelTestAbstract
         $this->assertNotNull($membersRel);
         $this->assertCount(3, $membersRel);
         $this->assertTrue($membersRel->first()->is($members->first()));
+    }
+
+    public function test_scope_visible_by_user_filters_so_that_only_public_projects_or_projects_where_the_user_is_member_are_shown(): void
+    {
+        // Arrange
+        $user = User::factory()->create();
+        $projectPrivate = Project::factory()->isPrivate()->create();
+        $projectPublic = Project::factory()->isPublic()->create();
+        $projectPrivateButMember = Project::factory()->isPrivate()->create();
+        ProjectMember::factory()->forProject($projectPrivateButMember)->forUser($user)->create();
+
+        // Act
+        $projectsVisible = Project::query()->visibleByUser($user)->get();
+        $allProjects = Project::query()->get();
+
+        // Assert
+        $this->assertEqualsIdsOfEloquentCollection([
+            $projectPublic->getKey(),
+            $projectPrivateButMember->getKey(),
+        ], $projectsVisible);
+        $this->assertEqualsIdsOfEloquentCollection([
+            $projectPrivate->getKey(),
+            $projectPublic->getKey(),
+            $projectPrivateButMember->getKey(),
+        ], $allProjects);
     }
 }
