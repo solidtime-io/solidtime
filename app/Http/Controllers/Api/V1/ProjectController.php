@@ -12,7 +12,6 @@ use App\Models\Organization;
 use App\Models\Project;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
@@ -47,12 +46,7 @@ class ProjectController extends Controller
             ->whereBelongsTo($organization, 'organization');
 
         if (! $canViewAllProjects) {
-            $projectsQuery->where(function (Builder $builder) use ($user): Builder {
-                return $builder->where('is_public', '=', true)
-                    ->orWhereHas('members', function (Builder $builder) use ($user): Builder {
-                        return $builder->whereBelongsTo($user, 'user');
-                    });
-            });
+            $projectsQuery->visibleByUser($user);
         }
 
         $projects = $projectsQuery->paginate();
