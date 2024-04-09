@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use Database\Factories\ProjectFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -23,6 +24,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property-read Client|null $client
  * @property-read Collection<Task> $tasks
  *
+ * @method Builder<Project> visibleByUser(User $user)
  * @method static ProjectFactory factory()
  */
 class Project extends Model
@@ -70,5 +72,18 @@ class Project extends Model
     public function tasks(): HasMany
     {
         return $this->hasMany(Task::class);
+    }
+
+    /**
+     * @param  Builder<Project>  $builder
+     */
+    public function scopeVisibleByUser(Builder $builder, User $user): void
+    {
+        $builder->where(function (Builder $builder) use ($user): Builder {
+            return $builder->where('is_public', '=', true)
+                ->orWhereHas('members', function (Builder $builder) use ($user): Builder {
+                    return $builder->whereBelongsTo($user, 'user');
+                });
+        });
     }
 }
