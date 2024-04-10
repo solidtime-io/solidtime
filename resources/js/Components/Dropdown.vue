@@ -1,15 +1,18 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { flip, type Placement, useFloating } from '@floating-ui/vue';
+import { offset } from '@floating-ui/vue';
+import { autoUpdate } from '@floating-ui/vue';
 
 const props = withDefaults(
     defineProps<{
-        align: string;
+        align: Placement;
         width: string;
         contentClasses?: string[];
         closeOnContentClick: boolean;
     }>(),
     {
-        align: 'right',
+        align: 'bottom-start',
         width: '48',
         contentClasses: () => [
             'overflow-none',
@@ -49,22 +52,6 @@ const widthClass = computed(() => {
     }[props.width.toString()];
 });
 
-const alignmentClasses = computed(() => {
-    if (props.align === 'left') {
-        return 'ltr:origin-top-left rtl:origin-top-right start-0';
-    }
-
-    if (props.align === 'right') {
-        return 'ltr:origin-top-right rtl:origin-top-left end-0';
-    }
-
-    if (props.align === 'bottom-right') {
-        return 'bottom-[calc(100%+15px)] ltr:origin-top-right rtl:origin-top-left end-0';
-    }
-
-    return 'origin-top';
-});
-
 function toggleOpen() {
     open.value = !open.value;
     if (open.value === true) {
@@ -76,11 +63,19 @@ function onBackgroundClick() {
     emit('submit');
     open.value = false;
 }
+
+const reference = ref(null);
+const floating = ref(null);
+const { floatingStyles } = useFloating(reference, floating, {
+    placement: props.align,
+    whileElementsMounted: autoUpdate,
+    middleware: [flip(), offset(10)],
+});
 </script>
 
 <template>
-    <div class="relative">
-        <div @click.prevent="toggleOpen">
+    <div>
+        <div @click.prevent="toggleOpen" ref="reference">
             <slot name="trigger" />
         </div>
 
@@ -89,26 +84,29 @@ function onBackgroundClick() {
             v-show="open"
             class="fixed inset-0 z-40"
             @click.prevent="onBackgroundClick" />
-
-        <transition
-            enter-active-class="transition ease-out duration-200"
-            enter-from-class="transform opacity-0 scale-95"
-            enter-to-class="transform opacity-100 scale-100"
-            leave-active-class="transition ease-in duration-75"
-            leave-from-class="transform opacity-100 scale-100"
-            leave-to-class="transform opacity-0 scale-95">
+        <Teleport to="body">
             <div
                 v-show="open"
-                class="absolute z-50 mt-2 rounded-md shadow-lg"
-                :class="[widthClass, alignmentClasses]"
-                style="display: none"
+                ref="floating"
+                class="z-50"
+                :class="[widthClass]"
+                :style="floatingStyles"
                 @click="onContentClick">
-                <div
-                    class="rounded-lg ring-1 relative ring-black ring-opacity-5"
-                    :class="contentClasses">
-                    <slot name="content" />
-                </div>
+                <transition
+                    enter-active-class="transition ease-out duration-200"
+                    enter-from-class="transform opacity-0 scale-95"
+                    enter-to-class="transform opacity-100 scale-100"
+                    leave-active-class="transition ease-in duration-75"
+                    leave-from-class="transform opacity-100 scale-100"
+                    leave-to-class="transform opacity-0 scale-95">
+                    <div
+                        v-if="open"
+                        class="rounded-lg ring-1 relative ring-black ring-opacity-5"
+                        :class="contentClasses">
+                        <slot name="content" />
+                    </div>
+                </transition>
             </div>
-        </transition>
+        </Teleport>
     </div>
 </template>

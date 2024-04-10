@@ -151,7 +151,7 @@ test('test that adding a new tag to an existing time entry works', async ({
     const newTagName = Math.floor(Math.random() * 1000000).toString();
 
     await newTimeEntry.getByTestId('time_entry_tag_dropdown').click();
-    await newTimeEntry.getByTestId('tag_dropdown_search').fill(newTagName);
+    await page.getByTestId('tag_dropdown_search').fill(newTagName);
 
     const [tagReponse] = await Promise.all([
         page.waitForResponse(async (response) => {
@@ -162,7 +162,7 @@ test('test that adding a new tag to an existing time entry works', async ({
                 (await response.json()).data.name === newTagName
             );
         }),
-        newTimeEntry.getByTestId('tag_dropdown_search').press('Enter'),
+        page.getByTestId('tag_dropdown_search').press('Enter'),
     ]);
 
     await page.waitForResponse(async (response) => {
@@ -178,12 +178,8 @@ test('test that adding a new tag to an existing time entry works', async ({
         );
     });
 
-    await expect(newTimeEntry.getByTestId('tag_dropdown_search')).toHaveValue(
-        ''
-    );
-    await expect(
-        newTimeEntry.getByRole('option', { name: newTagName })
-    ).toBeVisible();
+    await expect(page.getByTestId('tag_dropdown_search')).toHaveValue('');
+    await expect(page.getByRole('option', { name: newTagName })).toBeVisible();
 });
 
 // Test that Start / End Time Update Works
@@ -201,11 +197,11 @@ test('test that updating a the start of an existing time entry in the overview w
         'time_entry_range_selector'
     );
     await timeEntryRangeElement.click();
-    await newTimeEntry
+    await page
         .getByTestId('time_entry_range_start')
         .getByTestId('time_picker_hour')
         .fill('1');
-    await newTimeEntry
+    await page
         .getByTestId('time_entry_range_start')
         .getByTestId('time_picker_minute')
         .fill('1');
@@ -221,7 +217,7 @@ test('test that updating a the start of an existing time entry in the overview w
                 (await response.json()).data.end !== null
             );
         }),
-        newTimeEntry
+        page
             .getByTestId('time_entry_range_end')
             .getByTestId('time_picker_minute')
             .press('Tab'),
@@ -420,7 +416,7 @@ test('test that deleting a time entry from the overview works', async ({
     const newTimeEntry = timeEntryRows.first();
     const actionsDropdown = newTimeEntry.getByTestId('time_entry_actions');
     await actionsDropdown.click();
-    const deleteButton = newTimeEntry.getByTestId('time_entry_delete');
+    const deleteButton = page.getByTestId('time_entry_delete');
     await deleteButton.click();
     await expect(timeEntryRows).toHaveCount(timeEntryCount - 1);
 });

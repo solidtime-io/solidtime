@@ -3,7 +3,6 @@ import { ClockIcon } from '@heroicons/vue/20/solid';
 import CardTitle from '@/Components/Common/CardTitle.vue';
 import BillableToggleButton from '@/Components/Common/BillableToggleButton.vue';
 import TimeTrackerStartStop from '@/Components/Common/TimeTrackerStartStop.vue';
-import ProjectDropdown from '@/Components/Common/Project/ProjectDropdown.vue';
 import { usePage } from '@inertiajs/vue3';
 import { type User } from '@/types/models';
 import { computed, onMounted, ref, watch } from 'vue';
@@ -15,6 +14,7 @@ import { useCurrentTimeEntryStore } from '@/utils/useCurrentTimeEntry';
 import { storeToRefs } from 'pinia';
 import parse from 'parse-duration';
 import TimeTrackerTagDropdown from '@/Components/Common/TimeTracker/TimeTrackerTagDropdown.vue';
+import TimeTrackerProjectTaskDropdown from '@/Components/Common/TimeTracker/TimeTrackerProjectTaskDropdown.vue';
 
 const page = usePage<{
     auth: {
@@ -166,9 +166,12 @@ function onTimeEntryEnterPress() {
                     type="text" />
             </div>
             <div class="flex items-center">
-                <ProjectDropdown
+                <TimeTrackerProjectTaskDropdown
                     @changed="updateTimeEntry"
-                    v-model="currentTimeEntry.project_id"></ProjectDropdown>
+                    v-model:project="currentTimeEntry.project_id"
+                    v-model:task="
+                        currentTimeEntry.task_id
+                    "></TimeTrackerProjectTaskDropdown>
             </div>
             <div class="flex items-center space-x-2 px-4">
                 <TimeTrackerTagDropdown

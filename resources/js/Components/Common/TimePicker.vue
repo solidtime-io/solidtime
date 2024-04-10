@@ -38,7 +38,7 @@ function updateHours(event: Event) {
 </script>
 
 <template>
-    <div class="flex items-center justify-center">
+    <div class="flex items-center justify-center text-muted">
         <input
             :value="hours"
             @input="updateHours"
