@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Database\Factories\MembershipFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Laravel\Jetstream\Membership as JetstreamMembership;
 
 /**
@@ -17,9 +20,12 @@ use Laravel\Jetstream\Membership as JetstreamMembership;
  * @property string $updated_at
  * @property-read Organization $organization
  * @property-read User $user
+ *
+ * @method static MembershipFactory factory()
  */
 class Membership extends JetstreamMembership
 {
+    use HasFactory;
     use HasUuids;
 
     /**
@@ -28,4 +34,20 @@ class Membership extends JetstreamMembership
      * @var string
      */
     protected $table = 'organization_user';
+
+    /**
+     * @return BelongsTo<User, Membership>
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    /**
+     * @return BelongsTo<Organization, Membership>
+     */
+    public function organization(): BelongsTo
+    {
+        return $this->belongsTo(Organization::class, 'organization_id');
+    }
 }
