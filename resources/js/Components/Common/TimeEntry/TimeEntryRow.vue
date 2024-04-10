@@ -2,11 +2,8 @@
 import MainContainer from '@/Pages/MainContainer.vue';
 import TimeTrackerStartStop from '@/Components/Common/TimeTrackerStartStop.vue';
 import TimeEntryRangeSelector from '@/Components/Common/TimeEntry/TimeEntryRangeSelector.vue';
-import type { Project, TimeEntry } from '@/utils/api';
-import { computed } from 'vue';
-import { useProjectsStore } from '@/utils/useProjects';
+import type { TimeEntry } from '@/utils/api';
 import { storeToRefs } from 'pinia';
-import ProjectDropdown from '@/Components/Common/Project/ProjectDropdown.vue';
 import TimeEntryDescriptionInput from '@/Components/Common/TimeEntry/TimeEntryDescriptionInput.vue';
 import { useTimeEntriesStore } from '@/utils/useTimeEntries';
 import TimeEntryRowTagDropdown from '@/Components/Common/TimeEntry/TimeEntryRowTagDropdown.vue';
@@ -14,9 +11,7 @@ import TimeEntryRowDurationInput from '@/Components/Common/TimeEntry/TimeEntryRo
 import dayjs from 'dayjs';
 import { useCurrentTimeEntryStore } from '@/utils/useCurrentTimeEntry';
 import TimeEntryMoreOptionsDropdown from '@/Components/Common/TimeEntry/TimeEntryMoreOptionsDropdown.vue';
-
-const projectsStore = useProjectsStore();
-const { projects } = storeToRefs(projectsStore);
+import TimeTrackerProjectTaskDropdown from '@/Components/Common/TimeTracker/TimeTrackerProjectTaskDropdown.vue';
 
 const currentTimeEntryStore = useCurrentTimeEntryStore();
 const { stopTimer, updateTimer } = currentTimeEntryStore;
@@ -28,12 +23,6 @@ const props = defineProps<{
 
 const { updateTimeEntry, createTimeEntry, fetchTimeEntries } =
     useTimeEntriesStore();
-
-const timeEntryProject = computed<Project | undefined>(() => {
-    return projects.value.find(
-        (project) => project.id === props.timeEntry.project_id
-    );
-});
 
 async function updateStartEndTime(start: string, end: string | null) {
     if (currentTimeEntry.value.id === props.timeEntry.id) {
@@ -76,8 +65,15 @@ function updateTimeEntryDescription(description: string) {
 }
 
 function updateTimeEntryTags(tags: string[]) {
-    console.log(tags);
     updateTimeEntry({ ...props.timeEntry, tags });
+}
+
+function updateProjectAndTask(projectId: string, taskId: string) {
+    updateTimeEntry({
+        ...props.timeEntry,
+        project_id: projectId,
+        task_id: taskId,
+    });
 }
 </script>
 
@@ -96,9 +92,14 @@ function updateTimeEntryTags(tags: string[]) {
                         :modelValue="
                             timeEntry.description
                         "></TimeEntryDescriptionInput>
-                    <ProjectDropdown
-                        :border="false"
-                        :value="timeEntryProject"></ProjectDropdown>
+
+                    <TimeTrackerProjectTaskDropdown
+                        :showBadgeBorder="false"
+                        @changed="updateProjectAndTask"
+                        :project="timeEntry.project_id"
+                        :task="
+                            timeEntry.task_id
+                        "></TimeTrackerProjectTaskDropdown>
                 </div>
                 <div class="flex items-center font-medium space-x-2">
                     <TimeEntryRowTagDropdown

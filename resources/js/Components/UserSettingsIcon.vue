@@ -24,7 +24,7 @@ const logout = () => {
 </script>
 <template>
     <div class="ms-3 relative">
-        <Dropdown align="bottom-right" width="48">
+        <Dropdown align="top" width="48">
             <template #trigger>
                 <button
                     v-if="page.props.jetstream.managesProfilePhotos"
@@ -78,9 +78,7 @@ const logout = () => {
 
                 <!-- Authentication -->
                 <form @submit.prevent="logout">
-                    <DropdownLink
-                        as="button"
-                        data-testid="logout_button">
+                    <DropdownLink as="button" data-testid="logout_button">
                         Log Out
                     </DropdownLink>
                 </form>

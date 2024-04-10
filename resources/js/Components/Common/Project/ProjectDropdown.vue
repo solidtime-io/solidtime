@@ -107,7 +107,7 @@ function updateValue(project: Project) {
 </script>
 
 <template>
-    <Dropdown v-model="open" align="right" width="60">
+    <Dropdown v-model="open" align="bottom-start" width="60">
         <template #trigger>
             <ProjectBadge
                 ref="projectDropdownTrigger"

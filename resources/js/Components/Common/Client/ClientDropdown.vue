@@ -148,7 +148,7 @@ const highlightedItem = computed(() => {
                     "
                     class="bg-card-background-active">
                     <div
-                        class="flex space-x-3 items-center px-4 py-3 text-xs font-medium border-t rounded-b-lg border-card-background-separator">
+                        class="flex space-x-3 items-center px-4 py-3 text-xs text-white font-medium border-t rounded-b-lg border-card-background-separator">
                         <PlusCircleIcon
                             class="w-5 flex-shrink-0"></PlusCircleIcon>
                         <span>Add "{{ searchValue }}" as a new Client</span>

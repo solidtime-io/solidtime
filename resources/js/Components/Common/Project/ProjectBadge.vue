@@ -32,9 +32,11 @@ const indicatorClasses = {
             :class="
                 twMerge(indicatorClasses[size], 'inline-block rounded-full')
             "></div>
-        <span>
-            {{ name }}
-        </span>
+        <div>
+            <slot>
+                {{ name }}
+            </slot>
+        </div>
     </Badge>
 </template>
 
