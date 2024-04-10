@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use Database\Factories\ProjectMemberFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -18,6 +19,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property-read Project $project
  * @property-read User $user
  *
+ * @method static Builder<ProjectMember> whereBelongsToOrganization(Organization $organization)
  * @method static ProjectMemberFactory factory()
  */
 class ProjectMember extends Model
@@ -48,5 +50,15 @@ class ProjectMember extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    /**
+     * @param  Builder<ProjectMember>  $builder
+     */
+    public function scopeWhereBelongsToOrganization(Builder $builder, Organization $organization): void
+    {
+        $builder->whereHas('project', static function (Builder $query) use ($organization): void {
+            $query->whereBelongsTo($organization, 'organization');
+        });
     }
 }

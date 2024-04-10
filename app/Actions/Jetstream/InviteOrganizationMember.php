@@ -4,31 +4,36 @@ declare(strict_types=1);
 
 namespace App\Actions\Jetstream;
 
+use App\Enums\Role;
 use App\Models\Organization;
 use App\Models\OrganizationInvitation;
 use App\Models\User;
+use App\Service\PermissionStore;
 use Closure;
-use Illuminate\Contracts\Validation\Rule;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\In;
 use Korridor\LaravelModelValidationRules\Rules\UniqueEloquent;
 use Laravel\Jetstream\Contracts\InvitesTeamMembers;
 use Laravel\Jetstream\Events\InvitingTeamMember;
-use Laravel\Jetstream\Jetstream;
 use Laravel\Jetstream\Mail\TeamInvitation;
-use Laravel\Jetstream\Rules\Role;
 
 class InviteOrganizationMember implements InvitesTeamMembers
 {
     /**
      * Invite a new team member to the given team.
+     *
+     * @throws AuthorizationException
      */
     public function invite(User $user, Organization $organization, string $email, ?string $role = null): void
     {
-        Gate::forUser($user)->authorize('addTeamMember', $organization);
+        if (! app(PermissionStore::class)->has($organization, 'invitations:create')) {
+            throw new AuthorizationException();
+        }
 
         $this->validate($organization, $email, $role);
 
@@ -59,7 +64,7 @@ class InviteOrganizationMember implements InvitesTeamMembers
     /**
      * Get the validation rules for inviting a team member.
      *
-     * @return array<string, array<ValidationRule|Rule|string>>
+     * @return array<string, array<ValidationRule|Rule|string|In>>
      */
     protected function rules(Organization $organization): array
     {
@@ -72,9 +77,16 @@ class InviteOrganizationMember implements InvitesTeamMembers
                     return $builder->whereBelongsTo($organization, 'organization');
                 }))->withMessage(__('This user has already been invited to the team.')),
             ],
-            'role' => Jetstream::hasRoles()
-                            ? ['required', 'string', new Role]
-                            : null,
+            'role' => [
+                'required',
+                'string',
+                Rule::in([
+                    Role::Owner->value,
+                    Role::Admin->value,
+                    Role::Manager->value,
+                    Role::Employee->value,
+                ]),
+            ],
         ]);
     }
 

@@ -118,7 +118,7 @@ class InviteTeamMemberTest extends TestCase
         // Assert
         $this->assertCount(0, $owner->currentTeam->fresh()->teamInvitations);
         $user->refresh();
-        $this->assertCount(1, $user->organizations);
+        $this->assertCount(2, $user->organizations);
         $this->assertContains($owner->currentTeam->getKey(), $user->organizations->pluck('id'));
     }
 
@@ -126,9 +126,7 @@ class InviteTeamMemberTest extends TestCase
     {
         // Arrange
         Mail::fake();
-        $placeholder = User::factory()->withPersonalOrganization()->create([
-            'is_placeholder' => true,
-        ]);
+        $placeholder = User::factory()->withPersonalOrganization()->placeholder()->create();
 
         $owner = User::factory()->withPersonalOrganization()->create();
         $owner->currentTeam->users()->attach($placeholder, ['role' => 'employee']);
@@ -154,12 +152,11 @@ class InviteTeamMemberTest extends TestCase
 
         // Assert
         $user->refresh();
-        $placeholder->refresh();
+        $this->assertDatabaseMissing(User::class, ['id' => $placeholder->id]);
         $this->assertCount(0, $owner->currentTeam->fresh()->teamInvitations);
-        $this->assertCount(1, $user->organizations);
+        $this->assertCount(2, $user->organizations);
         $this->assertContains($owner->currentTeam->getKey(), $user->organizations->pluck('id'));
         $this->assertCount(5, $user->timeEntries);
-        $this->assertCount(0, $placeholder->timeEntries);
     }
 
     public function test_team_member_accept_fails_if_user_with_that_email_does_not_exist(): void
@@ -185,6 +182,6 @@ class InviteTeamMemberTest extends TestCase
         // Assert
         $this->assertCount(1, $owner->currentTeam->fresh()->teamInvitations);
         $user->refresh();
-        $this->assertCount(0, $user->organizations);
+        $this->assertCount(1, $user->organizations);
     }
 }

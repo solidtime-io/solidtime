@@ -114,6 +114,7 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Organization::class, Membership::class)
             ->withPivot([
+                'id',
                 'role',
                 'billable_rate',
             ])

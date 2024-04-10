@@ -29,6 +29,7 @@ return new class extends Migration
                 ->onDelete('restrict')
                 ->onUpdate('cascade');
             $table->timestamps();
+            $table->unique(['project_id', 'user_id']);
         });
     }
 

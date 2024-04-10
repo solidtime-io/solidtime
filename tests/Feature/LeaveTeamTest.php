@@ -24,7 +24,7 @@ class LeaveTeamTest extends TestCase
 
         $response = $this->delete('/teams/'.$user->currentTeam->id.'/members/'.$otherUser->id);
 
-        $this->assertCount(0, $user->currentTeam->fresh()->users);
+        $this->assertCount(1, $user->currentTeam->fresh()->users);
     }
 
     public function test_team_owners_cant_leave_their_own_team(): void
