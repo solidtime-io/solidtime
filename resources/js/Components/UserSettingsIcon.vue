@@ -78,7 +78,9 @@ const logout = () => {
 
                 <!-- Authentication -->
                 <form @submit.prevent="logout">
-                    <DropdownLink as="button" data-testid="logout_button">
+                    <DropdownLink
+                        as="button"
+                        data-testid="logout_button">
                         Log Out
                     </DropdownLink>
                 </form>
