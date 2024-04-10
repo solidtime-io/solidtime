@@ -102,7 +102,7 @@ function onBackgroundClick() {
                 class="absolute z-50 mt-2 rounded-md shadow-lg"
                 :class="[widthClass, alignmentClasses]"
                 style="display: none"
-                @click="onContentClick">
+                @click.prevent="onContentClick">
                 <div
                     class="rounded-lg ring-1 relative ring-black ring-opacity-5"
                     :class="contentClasses">
