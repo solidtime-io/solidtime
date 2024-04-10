@@ -1487,6 +1487,21 @@ const endpoints = makeApi([
             },
         ],
     },
+    {
+        method: 'get',
+        path: '/v1/users/me/time-entries/active',
+        alias: 'getMyActiveTimeEntry',
+        description: `This endpoint is independent of organization.`,
+        requestFormat: 'json',
+        response: z.object({ data: TimeEntryResource }).passthrough(),
+        errors: [
+            {
+                status: 404,
+                description: `Not found`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+        ],
+    },
 ]);
 
 export const api = new Zodios('/api', endpoints);

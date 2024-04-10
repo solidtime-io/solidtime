@@ -4,6 +4,7 @@ import { CheckCircleIcon, UserCircleIcon } from '@heroicons/vue/20/solid';
 import { useClientsStore } from '@/utils/useClients';
 import MemberMoreOptionsDropdown from '@/Components/Common/Member/MemberMoreOptionsDropdown.vue';
 import TableRow from '@/Components/TableRow.vue';
+import { capitalizeFirstLetter } from '../../../utils/format';
 
 const props = defineProps<{
     member: Member;
@@ -11,10 +12,6 @@ const props = defineProps<{
 
 function removeMember() {
     useClientsStore().deleteClient(props.member.id);
-}
-
-function capitalizeFirstLetter(string: string) {
-    return string.charAt(0).toUpperCase() + string.slice(1);
 }
 </script>
 
