@@ -4,20 +4,22 @@ declare(strict_types=1);
 
 namespace App\Actions\Jetstream;
 
+use App\Enums\Role;
 use App\Models\Organization;
 use App\Models\User;
+use App\Service\UserService;
 use Closure;
-use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\In;
 use Korridor\LaravelModelValidationRules\Rules\ExistsEloquent;
 use Laravel\Jetstream\Contracts\AddsTeamMembers;
 use Laravel\Jetstream\Events\AddingTeamMember;
 use Laravel\Jetstream\Events\TeamMemberAdded;
-use Laravel\Jetstream\Jetstream;
-use Laravel\Jetstream\Rules\Role;
 
 class AddOrganizationMember implements AddsTeamMembers
 {
@@ -37,9 +39,15 @@ class AddOrganizationMember implements AddsTeamMembers
 
         AddingTeamMember::dispatch($organization, $newOrganizationMember);
 
-        $organization->users()->attach(
-            $newOrganizationMember, ['role' => $role]
-        );
+        DB::transaction(function () use ($organization, $newOrganizationMember, $role) {
+            $organization->users()->attach(
+                $newOrganizationMember, ['role' => $role]
+            );
+
+            if ($role === Role::Owner->value) {
+                app(UserService::class)->changeOwnership($organization, $newOrganizationMember);
+            }
+        });
 
         TeamMemberAdded::dispatch($organization, $newOrganizationMember);
     }
@@ -60,7 +68,7 @@ class AddOrganizationMember implements AddsTeamMembers
     /**
      * Get the validation rules for adding a team member.
      *
-     * @return array<string, array<ValidationRule|Rule|string>>
+     * @return array<string, array<ValidationRule|Rule|string|In>>
      */
     protected function rules(): array
     {
@@ -72,9 +80,16 @@ class AddOrganizationMember implements AddsTeamMembers
                     return $builder->where('is_placeholder', '=', false);
                 }))->withMessage(__('We were unable to find a registered user with this email address.')),
             ],
-            'role' => Jetstream::hasRoles()
-                            ? ['required', 'string', new Role]
-                            : null,
+            'role' => [
+                'required',
+                'string',
+                Rule::in([
+                    Role::Owner->value,
+                    Role::Admin->value,
+                    Role::Manager->value,
+                    Role::Employee->value,
+                ]),
+            ],
         ]);
     }
 

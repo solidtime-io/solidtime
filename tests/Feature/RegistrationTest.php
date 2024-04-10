@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Models\Membership;
 use App\Models\User;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -52,7 +53,12 @@ class RegistrationTest extends TestCase
         $this->assertAuthenticated();
         $response->assertRedirect(RouteServiceProvider::HOME);
         $user = User::where('email', 'test@example.com')->firstOrFail();
+        $this->assertSame('Test User', $user->name);
         $this->assertSame('UTC', $user->timezone);
+        $organization = $user->organizations()->firstOrFail();
+        $this->assertSame(true, $organization->personal_team);
+        $member = Membership::query()->whereBelongsTo($user, 'user')->whereBelongsTo($organization, 'organization')->firstOrFail();
+        $this->assertSame('owner', $member->role);
     }
 
     public function test_new_users_can_register_and_frontend_can_send_timezone_for_user(): void

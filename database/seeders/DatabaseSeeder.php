@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Enums\Role;
 use App\Models\Client;
 use App\Models\Organization;
 use App\Models\Project;
@@ -24,40 +25,43 @@ class DatabaseSeeder extends Seeder
     {
         $this->deleteAll();
         $userAcmeOwner = User::factory()->create([
-            'name' => 'ACME Admin',
+            'name' => 'Acme Owner',
             'email' => 'owner@acme.test',
         ]);
         $organizationAcme = Organization::factory()->withOwner($userAcmeOwner)->create([
             'name' => 'ACME Corp',
         ]);
         $userAcmeManager = User::factory()->withPersonalOrganization()->create([
-            'name' => 'Test User',
+            'name' => 'Acme Manager',
             'email' => 'test@example.com',
         ]);
         $userAcmeAdmin = User::factory()->withPersonalOrganization()->create([
-            'name' => 'ACME Admin',
+            'name' => 'Acme Admin',
             'email' => 'admin@acme.test',
         ]);
         $userAcmeEmployee = User::factory()->withPersonalOrganization()->create([
-            'name' => 'Max Mustermann',
+            'name' => 'Acme Employee',
             'email' => 'max.mustermann@acme.test',
         ]);
         $userAcmePlaceholder = User::factory()->placeholder()->create([
-            'name' => 'Old Employee',
+            'name' => 'Acme Placeholder',
             'email' => 'old.employee@acme.test',
             'password' => null,
         ]);
+        $userAcmeOwner->organizations()->attach($organizationAcme, [
+            'role' => Role::Owner->value,
+        ]);
         $userAcmeManager->organizations()->attach($organizationAcme, [
-            'role' => 'manager',
+            'role' => Role::Manager->value,
         ]);
         $userAcmeAdmin->organizations()->attach($organizationAcme, [
-            'role' => 'admin',
+            'role' => Role::Admin->value,
         ]);
         $userAcmeEmployee->organizations()->attach($organizationAcme, [
-            'role' => 'employee',
+            'role' => Role::Employee->value,
         ]);
         $userAcmePlaceholder->organizations()->attach($organizationAcme, [
-            'role' => 'employee',
+            'role' => Role::Placeholder->value,
         ]);
 
         $timeEntriesAcmeAdmin = TimeEntry::factory()

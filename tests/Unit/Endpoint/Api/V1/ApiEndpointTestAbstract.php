@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Endpoint\Api\V1;
 
+use App\Models\Membership;
 use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -16,7 +17,7 @@ class ApiEndpointTestAbstract extends TestCase
 
     /**
      * @param  array<string>  $permissions
-     * @return object{user: User, organization: Organization}
+     * @return object{user: User, organization: Organization, member: Membership}
      */
     protected function createUserWithPermission(array $permissions, bool $isOwner = false): object
     {
@@ -28,13 +29,14 @@ class ApiEndpointTestAbstract extends TestCase
         } else {
             $organization = Organization::factory()->create();
         }
-        $organization->users()->attach($user, [
+        $membership = Membership::factory()->forUser($user)->forOrganization($organization)->create([
             'role' => 'custom-test',
         ]);
 
         return (object) [
             'user' => $user,
             'organization' => $organization,
+            'member' => $membership,
         ];
     }
 }

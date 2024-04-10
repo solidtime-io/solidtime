@@ -12,6 +12,9 @@ use Laravel\Jetstream\TeamInvitation as JetstreamTeamInvitation;
 /**
  * @property string $id
  * @property string $email
+ * @property string $role
+ * @property string $organization_id
+ * @property-read Organization $organization
  */
 class OrganizationInvitation extends JetstreamTeamInvitation
 {

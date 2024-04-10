@@ -25,6 +25,7 @@ class RemovePlaceholder
 
         foreach ($placeholders as $placeholder) {
             $userService->assignOrganizationEntitiesToDifferentUser($event->team, $placeholder, $event->user);
+            $placeholder->delete();
         }
     }
 }
