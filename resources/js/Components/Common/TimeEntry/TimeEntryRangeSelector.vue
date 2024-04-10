@@ -34,7 +34,6 @@ const { focused } = useFocusWithin(dropdownContent);
 
 watch(focused, (newValue, oldValue) => {
     if (oldValue === true && newValue === false) {
-        console.log(newValue, oldValue);
         updateTimeEntry();
     }
 });
@@ -43,7 +42,7 @@ watch(focused, (newValue, oldValue) => {
 <template>
     <div class="relative">
         <Dropdown
-            align="right"
+            align="bottom"
             :close-on-content-click="false"
             @submit="updateTimeEntry">
             <template #trigger>
