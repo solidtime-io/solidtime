@@ -81,15 +81,17 @@ class UserFactory extends Factory
      */
     public function withPersonalOrganization(?callable $callback = null): static
     {
-        return $this->has(
-            Organization::factory()
-                ->state(fn (array $attributes, User $user) => [
+        return $this->afterCreating(function (User $user) use ($callback): void {
+            $organization = Organization::factory()
+                ->state(fn (array $attributes) => [
                     'name' => $user->name.'\'s Organization',
                     'user_id' => $user->id,
                     'personal_team' => true,
                 ])
-                ->when(is_callable($callback), $callback),
-            'ownedTeams'
-        );
+                ->when(is_callable($callback), $callback)
+                ->create();
+
+            $organization->users()->attach($user, ['role' => 'owner']);
+        });
     }
 }

@@ -142,6 +142,69 @@ class ProjectMemberEndpointTest extends ApiEndpointTestAbstract
         $response->assertInvalid(['user_id']);
     }
 
+    public function test_store_endpoint_fails_if_user_is_a_placeholder(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'project-members:create',
+        ]);
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        $projectMemberFake = ProjectMember::factory()->make();
+        $user = User::factory()->attachToOrganization($data->organization)->placeholder()->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.project-members.store', [$data->organization->getKey(), $project->getKey()]), [
+            'billable_rate' => $projectMemberFake->billable_rate,
+            'user_id' => $user->getKey(),
+        ]);
+
+        // Assert
+        $response->assertStatus(400);
+        $response->assertExactJson([
+            'error' => true,
+            'key' => 'inactive_user_can_not_be_used',
+            'message' => 'Inactive user can not be used',
+        ]);
+        $this->assertDatabaseMissing(ProjectMember::class, [
+            'billable_rate' => $projectMemberFake->billable_rate,
+            'user_id' => $user->getKey(),
+            'project_id' => $project->getKey(),
+        ]);
+    }
+
+    public function test_store_endpoint_fails_if_user_is_already_member_of_project(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'project-members:create',
+        ]);
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        $projectMemberFake = ProjectMember::factory()->make();
+        $user = User::factory()->attachToOrganization($data->organization)->create();
+        ProjectMember::factory()->forProject($project)->forUser($user)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.project-members.store', [$data->organization->getKey(), $project->getKey()]), [
+            'billable_rate' => $projectMemberFake->billable_rate,
+            'user_id' => $user->getKey(),
+        ]);
+
+        // Assert
+        $response->assertStatus(400);
+        $response->assertExactJson([
+            'error' => true,
+            'key' => 'user_is_already_member_of_project',
+            'message' => 'User is already a member of the project',
+        ]);
+        $this->assertDatabaseMissing(ProjectMember::class, [
+            'billable_rate' => $projectMemberFake->billable_rate,
+            'user_id' => $user->getKey(),
+            'project_id' => $project->getKey(),
+        ]);
+    }
+
     public function test_store_endpoint_creates_new_project_member(): void
     {
         // Arrange

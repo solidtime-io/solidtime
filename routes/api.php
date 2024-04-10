@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Api\V1\ClientController;
 use App\Http\Controllers\Api\V1\ImportController;
+use App\Http\Controllers\Api\V1\InvitationController;
 use App\Http\Controllers\Api\V1\MemberController;
 use App\Http\Controllers\Api\V1\OrganizationController;
 use App\Http\Controllers\Api\V1\ProjectController;
@@ -36,7 +37,15 @@ Route::middleware('auth:api')->prefix('v1')->name('v1.')->group(static function 
     // Member routes
     Route::name('members.')->group(static function () {
         Route::get('/organizations/{organization}/members', [MemberController::class, 'index'])->name('index');
-        Route::post('/organizations/{organization}/members/{user}/invite-placeholder', [MemberController::class, 'invitePlaceholder'])->name('invite-placeholder');
+        Route::put('/organizations/{organization}/members/{member}', [MemberController::class, 'update'])->name('update');
+        Route::delete('/organizations/{organization}/members/{member}', [MemberController::class, 'destroy'])->name('destroy');
+        Route::post('/organizations/{organization}/members/{member}/invite-placeholder', [MemberController::class, 'invitePlaceholder'])->name('invite-placeholder');
+    });
+
+    // Invitation routes
+    Route::name('invitations.')->group(static function () {
+        Route::get('/organizations/{organization}/invitations', [InvitationController::class, 'index'])->name('index');
+        Route::post('/organizations/{organization}/invitations', [InvitationController::class, 'store'])->name('store');
     });
 
     // Project routes

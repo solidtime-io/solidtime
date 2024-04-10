@@ -23,6 +23,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
@@ -83,5 +84,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->scoped(PermissionStore::class, function (Application $app): PermissionStore {
             return new PermissionStore();
         });
+
+        Route::model('member', Membership::class);
     }
 }

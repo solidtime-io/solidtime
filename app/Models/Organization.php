@@ -22,6 +22,7 @@ use Laravel\Jetstream\Team as JetstreamTeam;
  * @property bool $personal_team
  * @property string $currency
  * @property int|null $billable_rate
+ * @property string $user_id
  * @property User $owner
  * @property Collection<User> $users
  * @property Collection<string, User> $realUsers
@@ -101,6 +102,7 @@ class Organization extends JetstreamTeam
     {
         return $this->belongsToMany(Jetstream::userModel(), Jetstream::membershipModel())
             ->withPivot([
+                'id',
                 'role',
                 'billable_rate',
             ])

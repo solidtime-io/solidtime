@@ -11,6 +11,21 @@ use Laravel\Passport\Passport;
 
 class TaskEndpointTest extends ApiEndpointTestAbstract
 {
+    public function test_non_valid_uuid_for_organization_id_fails(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'tasks:view',
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.tasks.index', ['invalid-uuid']));
+
+        // Assert
+        $response->assertStatus(404);
+    }
+
     public function test_index_endpoint_fails_if_user_has_no_permission_to_view_tasks(): void
     {
         // Arrange

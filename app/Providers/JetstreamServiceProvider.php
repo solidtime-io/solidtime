@@ -10,7 +10,9 @@ use App\Actions\Jetstream\DeleteOrganization;
 use App\Actions\Jetstream\DeleteUser;
 use App\Actions\Jetstream\InviteOrganizationMember;
 use App\Actions\Jetstream\RemoveOrganizationMember;
+use App\Actions\Jetstream\UpdateMemberRole;
 use App\Actions\Jetstream\UpdateOrganization;
+use App\Enums\Role;
 use App\Enums\Weekday;
 use App\Models\Organization;
 use App\Models\OrganizationInvitation;
@@ -19,6 +21,7 @@ use Brick\Money\Currency;
 use Brick\Money\ISOCurrencyProvider;
 use Illuminate\Http\Request;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Jetstream\Actions\UpdateTeamMemberRole;
 use Laravel\Jetstream\Jetstream;
 
 class JetstreamServiceProvider extends ServiceProvider
@@ -47,6 +50,7 @@ class JetstreamServiceProvider extends ServiceProvider
         Jetstream::deleteUsersUsing(DeleteUser::class);
         Jetstream::useTeamModel(Organization::class);
         Jetstream::useTeamInvitationModel(OrganizationInvitation::class);
+        app()->singleton(UpdateTeamMemberRole::class, UpdateMemberRole::class);
     }
 
     /**
@@ -56,7 +60,47 @@ class JetstreamServiceProvider extends ServiceProvider
     {
         Jetstream::defaultApiTokenPermissions([]);
 
-        Jetstream::role('admin', 'Administrator', [
+        Jetstream::role(Role::Owner->value, 'Owner', [
+            'projects:view',
+            'projects:view:all',
+            'projects:create',
+            'projects:update',
+            'projects:delete',
+            'project-members:view',
+            'project-members:create',
+            'project-members:update',
+            'project-members:delete',
+            'tasks:view',
+            'tasks:create',
+            'tasks:update',
+            'tasks:delete',
+            'time-entries:view:all',
+            'time-entries:create:all',
+            'time-entries:update:all',
+            'time-entries:delete:all',
+            'time-entries:view:own',
+            'time-entries:create:own',
+            'time-entries:update:own',
+            'time-entries:delete:own',
+            'tags:view',
+            'tags:create',
+            'tags:update',
+            'tags:delete',
+            'clients:view',
+            'clients:create',
+            'clients:update',
+            'clients:delete',
+            'organizations:view',
+            'organizations:update',
+            'import',
+            'members:view',
+            'members:invite-placeholder',
+            'members:change-role',
+            'members:update',
+            'members:delete',
+        ])->description('Owner users can perform any action.');
+
+        Jetstream::role(Role::Admin->value, 'Administrator', [
             'projects:view',
             'projects:view:all',
             'projects:create',
@@ -93,7 +137,7 @@ class JetstreamServiceProvider extends ServiceProvider
             'members:invite-placeholder',
         ])->description('Administrator users can perform any action.');
 
-        Jetstream::role('manager', 'Manager', [
+        Jetstream::role(Role::Manager->value, 'Manager', [
             'projects:view',
             'projects:view:all',
             'projects:create',
@@ -127,7 +171,7 @@ class JetstreamServiceProvider extends ServiceProvider
             'members:view',
         ])->description('Managers have the ability to read, create, and update their own time entries as well as those of their team.');
 
-        Jetstream::role('employee', 'Employee', [
+        Jetstream::role(Role::Employee->value, 'Employee', [
             'projects:view',
             'tags:view',
             'tasks:view',
@@ -138,7 +182,7 @@ class JetstreamServiceProvider extends ServiceProvider
             'organizations:view',
         ])->description('Employees have the ability to read, create, and update their own time entries.');
 
-        Jetstream::role('placeholder', 'Placeholder', [
+        Jetstream::role(Role::Placeholder->value, 'Placeholder', [
         ])->description('Placeholders are used for importing data. They cannot log in and have no permissions.');
 
         Jetstream::inertia()
