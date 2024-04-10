@@ -3,13 +3,23 @@ import MainContainer from '@/Pages/MainContainer.vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { FolderIcon, PlusIcon } from '@heroicons/vue/16/solid';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useProjectsStore } from '@/utils/useProjects';
 import { storeToRefs } from 'pinia';
-import { ChevronRightIcon } from '@heroicons/vue/20/solid';
+import {
+    ChevronRightIcon,
+    CheckCircleIcon,
+    UserGroupIcon,
+} from '@heroicons/vue/20/solid';
 import { Link } from '@inertiajs/vue3';
 import TaskCreateModal from '@/Components/Common/Task/TaskCreateModal.vue';
 import TaskTable from '@/Components/Common/Task/TaskTable.vue';
+import CardTitle from '@/Components/Common/CardTitle.vue';
+import Card from '@/Components/Common/Card.vue';
+import ProjectMemberTable from '@/Components/Common/ProjectMember/ProjectMemberTable.vue';
+import ProjectMemberCreateModal from '@/Components/Common/ProjectMember/ProjectMemberCreateModal.vue';
+import { useProjectMembersStore } from '@/utils/useProjectMembers';
+
 const { projects } = storeToRefs(useProjectsStore());
 
 const project = computed(() => {
@@ -20,8 +30,14 @@ const project = computed(() => {
     );
 });
 const createTask = ref(false);
+const createProjectMember = ref(false);
+const projectId = route()?.params?.project as string;
 
-const projectId: string = route().params.project;
+const { projectMembers } = storeToRefs(useProjectMembersStore());
+
+onMounted(() => {
+    useProjectMembersStore().fetchProjectMembers(projectId);
+});
 </script>
 
 <template>
@@ -37,7 +53,7 @@ const projectId: string = route().params.project;
                                 class="flex items-center space-x-2.5">
                                 <FolderIcon
                                     class="w-6 text-icon-default"></FolderIcon>
-                                <span> Projects </span>
+                                <span class="font-medium">Projects</span>
                             </Link>
                         </div>
                     </li>
@@ -60,13 +76,49 @@ const projectId: string = route().params.project;
                     </li>
                 </ol>
             </nav>
-            <SecondaryButton :icon="PlusIcon" @click="createTask = true"
-                >Create Task
-            </SecondaryButton>
-            <TaskCreateModal
-                :project-id="projectId"
-                v-model:show="createTask"></TaskCreateModal>
         </MainContainer>
-        <TaskTable :project-id="projectId"></TaskTable>
+        <MainContainer>
+            <div class="grid grid-cols-2 gap-x-6 pt-6">
+                <div>
+                    <CardTitle title="Tasks" :icon="CheckCircleIcon">
+                        <template #actions>
+                            <SecondaryButton
+                                :icon="PlusIcon"
+                                @click="createTask = true"
+                                >Create Task
+                            </SecondaryButton>
+                            <TaskCreateModal
+                                :project-id="projectId"
+                                v-model:show="createTask"></TaskCreateModal>
+                        </template>
+                    </CardTitle>
+                    <Card>
+                        <TaskTable :project-id="projectId"></TaskTable>
+                    </Card>
+                </div>
+                <div>
+                    <CardTitle title="Project Members" :icon="UserGroupIcon">
+                        <template #actions>
+                            <SecondaryButton
+                                :icon="PlusIcon"
+                                @click="createProjectMember = true">
+                                Add Member
+                            </SecondaryButton>
+                            <ProjectMemberCreateModal
+                                :project-id="projectId"
+                                :existing-members="projectMembers"
+                                v-model:show="
+                                    createProjectMember
+                                "></ProjectMemberCreateModal>
+                        </template>
+                    </CardTitle>
+                    <Card>
+                        <ProjectMemberTable
+                            :project-members="projectMembers"
+                            :project-id="projectId"></ProjectMemberTable>
+                    </Card>
+                </div>
+            </div>
+        </MainContainer>
     </AppLayout>
 </template>
