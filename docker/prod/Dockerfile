@@ -108,6 +108,8 @@ COPY --chown=${USER}:${USER} docker/prod/deployment/supervisord.*.conf /etc/supe
 COPY --chown=${USER}:${USER} docker/prod/deployment/php.ini ${PHP_INI_DIR}/conf.d/99-octane.ini
 COPY --chown=${USER}:${USER} docker/prod/deployment/start-container /usr/local/bin/start-container
 
+RUN cat .env
+RUN php artisan env
 RUN php artisan storage:link
 
 RUN chmod +x /usr/local/bin/start-container
