@@ -13,6 +13,7 @@ use App\Http\Resources\V1\TimeEntry\TimeEntryCollection;
 use App\Http\Resources\V1\TimeEntry\TimeEntryResource;
 use App\Models\Organization;
 use App\Models\TimeEntry;
+use App\Service\TimezoneService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -56,8 +57,13 @@ class TimeEntryController extends Controller
             $timeEntriesQuery->whereDate('start', '>', $request->input('after'));
         }
 
-        if ($request->has('active') && (bool) $request->get('active') === true) {
-            $timeEntriesQuery->whereNull('end');
+        if ($request->has('active')) {
+            if ($request->get('active') === 'true') {
+                $timeEntriesQuery->whereNull('end');
+            }
+            if ($request->get('active') === 'false') {
+                $timeEntriesQuery->whereNotNull('end');
+            }
         }
 
         if ($request->has('user_id')) {
@@ -72,19 +78,19 @@ class TimeEntryController extends Controller
         $timeEntries = $timeEntriesQuery->get();
 
         if ($timeEntries->count() === $limit && $request->has('only_full_dates') && (bool) $request->get('only_full_dates') === true) {
-            // TODO: handle user timezone!
+            $user = Auth::user();
+            $timezone = app(TimezoneService::class)->getTimezoneFromUser($user);
             $lastDate = null;
             /** @var TimeEntry $timeEntry */
             foreach ($timeEntries as $timeEntry) {
-                if ($lastDate === null || abs($lastDate->diffInDays($timeEntry->start->startOfDay())) > 0) {
-                    $lastDate = $timeEntry->start->startOfDay();
+                if ($lastDate === null || abs($lastDate->diffInDays($timeEntry->start->toImmutable()->timezone($timezone)->startOfDay())) > 0) {
+                    $lastDate = $timeEntry->start->toImmutable()->timezone($timezone)->startOfDay();
                 }
             }
 
-            $timeEntries = $timeEntries->filter(function (TimeEntry $timeEntry) use ($lastDate): bool {
-                return $timeEntry->end === null || $timeEntry->start->toDateString() !== $lastDate->toDateString();
+            $timeEntries = $timeEntries->filter(function (TimeEntry $timeEntry) use ($lastDate, $timezone): bool {
+                return $timeEntry->start->toImmutable()->timezone($timezone)->toDateString() !== $lastDate->toDateString();
             });
-            // TODO: fix edge case with current time entry that is more than one day running
 
             if ($timeEntries->count() === 0) {
                 Log::warning('User has has more than '.$limit.' time entries on one date', [

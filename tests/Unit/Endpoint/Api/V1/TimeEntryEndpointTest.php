@@ -153,6 +153,29 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         $response->assertJsonPath('data.0.id', $activeTimeEntry->getKey());
     }
 
+    public function test_index_endpoint_returns_only_non_active_time_entries(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:view:own',
+        ]);
+        $activeTimeEntry = TimeEntry::factory()->forOrganization($data->organization)->forUser($data->user)->active()->createMany(3);
+        $nonActiveTimeEntries = TimeEntry::factory()->forOrganization($data->organization)->forUser($data->user)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.time-entries.index', [
+            $data->organization->getKey(),
+            'active' => 'false',
+            'user_id' => $data->user->getKey(),
+        ]));
+
+        // Assert
+        $response->assertStatus(200);
+        $response->assertJsonCount(1, 'data');
+        $response->assertJsonPath('data.0.id', $nonActiveTimeEntries->getKey());
+    }
+
     public function test_index_endpoint_filter_only_full_dates_returns_time_entries_for_the_whole_day_case_less_time_entries_than_limit(): void
     {
         // Arrange
@@ -201,6 +224,57 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         // Assert
         $response->assertStatus(200);
         $response->assertJsonCount(3, 'data');
+    }
+
+    public function test_index_endpoint_filter_only_full_dates_returns_time_entries_for_the_whole_day_case_more_time_entries_than_limit_with_a_timezone_edge_case(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:view:own',
+        ]);
+        $data->user->timezone = 'America/New_York';
+        $data->user->save();
+        /**
+         * We create in the eyes of the users timezone 2 time entries yesterday, 5 time entries two days ago, and 3 time entries three days ago
+         * The time entries are created in a way that they jump to the next day if the endpoint ignores the users timezone and just uses UTC
+         */
+
+        // Note: This entry is yesterday in user timezone and yesterday in UTC
+        $timeEntriesDay1InUserTimeZone = TimeEntry::factory()->forOrganization($data->organization)->forUser($data->user)
+            ->state([
+                'start' => Carbon::now($data->user->timezone)->subDay()->startOfDay()->utc(),
+            ])
+            ->createMany(2);
+        //dump($timeEntriesDay1InUserTimeZone->first()->refresh()->start->toImmutable()->timezone('UTC')->toDateString());
+        //dump($timeEntriesDay1InUserTimeZone->first()->refresh()->start->toImmutable()->timezone($data->user->timezone)->toDateString());
+        // Note: This entry is yesterday in UTC timezone, but two days ago in user timezone
+        $timeEntriesDay1InUTC = TimeEntry::factory()->forOrganization($data->organization)->forUser($data->user)
+            ->state([
+                'start' => Carbon::now('UTC')->subDay()->startOfDay()->utc(),
+            ])
+            ->createMany(2);
+        //dump($timeEntriesDay1InUTC->first()->refresh()->start->toImmutable()->timezone('UTC')->toDateString());
+        //dump($timeEntriesDay1InUTC->first()->refresh()->start->toImmutable()->timezone($data->user->timezone)->toDateString());
+        // Note: This entry is two days ago in user timezone
+        $timeEntriesDay2InUserTimeZone = TimeEntry::factory()->forOrganization($data->organization)->forUser($data->user)
+            ->state([
+                'start' => Carbon::now($data->user->timezone)->subDays(2)->startOfDay()->utc(),
+            ])
+            ->createMany(3);
+
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.time-entries.index', [
+            $data->organization->getKey(),
+            'only_full_dates' => 'true',
+            'limit' => 5,
+            'user_id' => $data->user->getKey(),
+        ]));
+
+        // Assert
+        $response->assertStatus(200);
+        $response->assertJsonCount(2, 'data');
     }
 
     public function test_index_endpoint_filter_only_full_dates_returns_time_entries_for_the_whole_day_case_more_time_entries_in_latest_day_than_limit(): void
