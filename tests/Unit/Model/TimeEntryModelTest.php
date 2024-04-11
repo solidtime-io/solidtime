@@ -9,6 +9,7 @@ use App\Models\Project;
 use App\Models\Task;
 use App\Models\TimeEntry;
 use App\Models\User;
+use Carbon\Carbon;
 
 class TimeEntryModelTest extends ModelTestAbstract
 {
@@ -96,5 +97,24 @@ class TimeEntryModelTest extends ModelTestAbstract
 
         // Assert
         $this->assertNull($taskRel);
+    }
+
+    public function test_eloquent_datetime_columns_remove_timezone_information_during_save(): void
+    {
+        // Arrange
+        $timeEntry = TimeEntry::factory()->forTask(null)->create();
+
+        // Act
+        $timeEntry->start = Carbon::create(2021, 1, 1, 12, 0, 0, 'UTC')->timezone('+1');
+        $timeEntry->save();
+
+        // Assert
+        $timeEntry->refresh();
+        $this->assertSame('UTC', $timeEntry->start->getTimezone()->toRegionName());
+        $this->assertSame('2021-01-01 13:00:00', $timeEntry->start->toDateTimeString());
+        $this->assertDatabaseHas(TimeEntry::class, [
+            'id' => $timeEntry->id,
+            'start' => '2021-01-01 13:00:00',
+        ]);
     }
 }
