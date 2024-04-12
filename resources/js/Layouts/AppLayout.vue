@@ -23,6 +23,7 @@ import { useTasksStore } from '@/utils/useTasks';
 import { useCurrentTimeEntryStore } from '@/utils/useCurrentTimeEntry';
 import { useClientsStore } from '@/utils/useClients';
 import { useMembersStore } from '@/utils/useMembers';
+import NotificationContainer from '@/Components/NotificationContainer.vue';
 
 defineProps({
     title: String,
@@ -39,7 +40,9 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div class="flex flex-wrap bg-default-background text-muted">
+    <div
+        v-bind="$attrs"
+        class="flex flex-wrap bg-default-background text-muted">
         <div
             class="flex-shrink-0 h-screen fixed w-[230px] 2xl:w-[270px] px-2.5 2xl:px-4 py-4 flex flex-col justify-between">
             <div>
@@ -137,4 +140,5 @@ onMounted(async () => {
             </div>
         </div>
     </div>
+    <NotificationContainer></NotificationContainer>
 </template>
