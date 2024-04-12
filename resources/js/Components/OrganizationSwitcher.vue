@@ -35,7 +35,7 @@ const switchToTeam = (team: Organization) => {
 <template>
     <Dropdown
         v-if="page.props.jetstream.hasTeamFeatures"
-        align="right"
+        align="bottom"
         width="60">
         <template #trigger>
             <div
