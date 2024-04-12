@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Web\DashboardController;
+use App\Http\Controllers\Web\HealthCheckController;
 use App\Http\Controllers\Web\HomeController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -59,3 +60,6 @@ Route::middleware([
     })->name('tags');
 
 });
+
+Route::get('health-check/up', [HealthCheckController::class, 'up']);
+Route::get('health-check/debug', [HealthCheckController::class, 'debug']);
