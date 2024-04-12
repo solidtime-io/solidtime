@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Enums\Weekday;
 use Database\Factories\UserFactory;
+use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -37,7 +38,7 @@ use Laravel\Passport\HasApiTokens;
  * @method static Builder<User> query()
  * @method Builder<User> belongsToOrganization(Organization $organization)
  */
-class User extends Authenticatable
+class User extends Authenticatable implements FilamentUser
 {
     use HasApiTokens;
     use HasFactory;
@@ -104,7 +105,7 @@ class User extends Authenticatable
 
     public function canAccessPanel(Panel $panel): bool
     {
-        return in_array($this->email, config('auth.super_admins', []), true);
+        return in_array($this->email, config('auth.super_admins', []), true) && $this->hasVerifiedEmail();
     }
 
     /**
