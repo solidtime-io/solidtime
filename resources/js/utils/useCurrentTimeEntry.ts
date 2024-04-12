@@ -7,6 +7,7 @@ import utc from 'dayjs/plugin/utc';
 import { getCurrentOrganizationId, getCurrentUserId } from '@/utils/useUser';
 import { useLocalStorage } from '@vueuse/core';
 import { useTimeEntriesStore } from '@/utils/useTimeEntries';
+import { useNotificationsStore } from '@/utils/notification';
 
 dayjs.extend(utc);
 
@@ -25,6 +26,7 @@ const emptyTimeEntry = {
 
 export const useCurrentTimeEntryStore = defineStore('currentTimeEntry', () => {
     const currentTimeEntry = ref<TimeEntry>(reactive(emptyTimeEntry));
+    const { handleApiRequestNotifications } = useNotificationsStore();
 
     useLocalStorage('solidtime/current-time-entry', currentTimeEntry, {
         deep: true,
@@ -54,19 +56,22 @@ export const useCurrentTimeEntryStore = defineStore('currentTimeEntry', () => {
     async function fetchCurrentTimeEntry() {
         const organizationId = getCurrentOrganizationId();
         if (organizationId) {
-            const timeEntriesResponse = await api.getTimeEntries({
-                queries: {
-                    active: 'true',
-                },
-                params: {
-                    organization: organizationId,
-                },
-            });
-
-            if (timeEntriesResponse.data.length === 1) {
-                currentTimeEntry.value = timeEntriesResponse.data[0];
-            } else {
-                currentTimeEntry.value = { ...emptyTimeEntry };
+            const timeEntriesResponse = await handleApiRequestNotifications(
+                api.getTimeEntries({
+                    queries: {
+                        active: 'true',
+                    },
+                    params: {
+                        organization: organizationId,
+                    },
+                })
+            );
+            if (timeEntriesResponse?.data) {
+                if (timeEntriesResponse.data.length === 1) {
+                    currentTimeEntry.value = timeEntriesResponse.data[0];
+                } else {
+                    currentTimeEntry.value = { ...emptyTimeEntry };
+                }
             }
         } else {
             throw new Error(
@@ -83,19 +88,24 @@ export const useCurrentTimeEntryStore = defineStore('currentTimeEntry', () => {
                 currentTimeEntry.value.start !== ''
                     ? currentTimeEntry.value.start
                     : dayjs().utc().format();
-            const response = await api.createTimeEntry(
-                {
-                    user_id: user,
-                    start: startTime,
-                    description: currentTimeEntry.value?.description,
-                    project_id: currentTimeEntry.value?.project_id,
-                    task_id: currentTimeEntry.value?.task_id,
-                    billable: currentTimeEntry.value.billable,
-                    tags: currentTimeEntry.value?.tags,
-                },
-                { params: { organization: organization } }
+            const response = await handleApiRequestNotifications(
+                api.createTimeEntry(
+                    {
+                        user_id: user,
+                        start: startTime,
+                        description: currentTimeEntry.value?.description,
+                        project_id: currentTimeEntry.value?.project_id,
+                        task_id: currentTimeEntry.value?.task_id,
+                        billable: currentTimeEntry.value.billable,
+                        tags: currentTimeEntry.value?.tags,
+                    },
+                    { params: { organization: organization } }
+                ),
+                'Timer started!'
             );
-            currentTimeEntry.value = response.data;
+            if (response?.data) {
+                currentTimeEntry.value = response.data;
+            }
         } else {
             throw new Error(
                 'Failed to fetch current time entry because organization ID is missing.'
@@ -108,18 +118,21 @@ export const useCurrentTimeEntryStore = defineStore('currentTimeEntry', () => {
         const organization = getCurrentOrganizationId();
         if (organization) {
             const currentDateTime = dayjs().utc().format();
-            await api.updateTimeEntry(
-                {
-                    user_id: user,
-                    start: currentTimeEntry.value.start,
-                    end: currentDateTime,
-                },
-                {
-                    params: {
-                        organization: organization,
-                        timeEntry: currentTimeEntry.value.id,
+            await handleApiRequestNotifications(
+                api.updateTimeEntry(
+                    {
+                        user_id: user,
+                        start: currentTimeEntry.value.start,
+                        end: currentDateTime,
                     },
-                }
+                    {
+                        params: {
+                            organization: organization,
+                            timeEntry: currentTimeEntry.value.id,
+                        },
+                    }
+                ),
+                'Timer stopped!'
             );
             $reset();
         } else {
@@ -133,25 +146,30 @@ export const useCurrentTimeEntryStore = defineStore('currentTimeEntry', () => {
         const user = getCurrentUserId();
         const organization = getCurrentOrganizationId();
         if (organization) {
-            await api.updateTimeEntry(
-                {
-                    description: currentTimeEntry.value.description,
-                    user_id: user,
-                    project_id: currentTimeEntry.value.project_id,
-                    task_id: currentTimeEntry.value.task_id,
-                    start: currentTimeEntry.value.start,
-                    billable: currentTimeEntry.value.billable,
-                    end: null,
-                    tags: currentTimeEntry.value.tags,
-                },
-                {
-                    params: {
-                        organization: organization,
-                        timeEntry: currentTimeEntry.value.id,
+            const response = await handleApiRequestNotifications(
+                api.updateTimeEntry(
+                    {
+                        description: currentTimeEntry.value.description,
+                        user_id: user,
+                        project_id: currentTimeEntry.value.project_id,
+                        task_id: currentTimeEntry.value.task_id,
+                        start: currentTimeEntry.value.start,
+                        billable: currentTimeEntry.value.billable,
+                        end: null,
+                        tags: currentTimeEntry.value.tags,
                     },
-                }
+                    {
+                        params: {
+                            organization: organization,
+                            timeEntry: currentTimeEntry.value.id,
+                        },
+                    }
+                ),
+                'Time entry updated!'
             );
-            //            currentTimeEntry.value = response.data;
+            if (response?.data) {
+                currentTimeEntry.value = response.data;
+            }
         } else {
             throw new Error(
                 'Failed to fetch current time entry because organization ID is missing.'

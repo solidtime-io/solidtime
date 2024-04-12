@@ -61,7 +61,9 @@ const filteredTags = computed(() => {
 async function addTagIfNoneExists() {
     if (searchValue.value.length > 0 && filteredTags.value.length === 0) {
         const newTag = await tagsStore.createTag(searchValue.value);
-        addOrRemoveTagFromSelection(newTag.id);
+        if (newTag) {
+            addOrRemoveTagFromSelection(newTag.id);
+        }
         searchValue.value = '';
     } else {
         if (highlightedItemId.value) {
