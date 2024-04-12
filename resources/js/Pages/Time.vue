@@ -47,7 +47,7 @@ const groupedTimeEntries = computed(() => {
 </script>
 
 <template>
-    <AppLayout title="Dashboard" data-testid="dashboard_view">
+    <AppLayout title="Dashboard" data-testid="time_view">
         <MainContainer
             class="py-8 border-b border-default-background-separator">
             <TimeTracker></TimeTracker>

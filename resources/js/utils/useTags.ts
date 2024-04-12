@@ -3,19 +3,26 @@ import { ref } from 'vue';
 import type { Tag } from '@/utils/api';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import { api } from '../../../openapi.json.client';
+import { useNotificationsStore } from '@/utils/notification';
 
 export const useTagsStore = defineStore('tags', () => {
     const tags = ref<Tag[]>([]);
-
+    const { handleApiRequestNotifications } = useNotificationsStore();
     async function fetchTags() {
         const organizationId = getCurrentOrganizationId();
         if (organizationId) {
-            const response = await api.getTags({
-                params: {
-                    organization: organizationId,
-                },
-            });
-            tags.value = response.data;
+            const response = await handleApiRequestNotifications(
+                api.getTags({
+                    params: {
+                        organization: organizationId,
+                    },
+                }),
+                undefined,
+                'Failed to fetch tags'
+            );
+            if (response?.data) {
+                tags.value = response.data;
+            }
         } else {
             throw new Error(
                 'Failed to fetch current tags because organization ID is missing.'
@@ -26,14 +33,18 @@ export const useTagsStore = defineStore('tags', () => {
     async function deleteTag(tagId: string) {
         const organizationId = getCurrentOrganizationId();
         if (organizationId) {
-            await api.deleteTag(
-                {},
-                {
-                    params: {
-                        organization: organizationId,
-                        tag: tagId,
-                    },
-                }
+            await handleApiRequestNotifications(
+                api.deleteTag(
+                    {},
+                    {
+                        params: {
+                            organization: organizationId,
+                            tag: tagId,
+                        },
+                    }
+                ),
+                'Tag deleted successfully',
+                'Failed to delete tag'
             );
             await fetchTags();
         }
@@ -42,18 +53,24 @@ export const useTagsStore = defineStore('tags', () => {
     async function createTag(name: string) {
         const organizationId = getCurrentOrganizationId();
         if (organizationId) {
-            const response = await api.createTag(
-                {
-                    name: name,
-                },
-                {
-                    params: {
-                        organization: organizationId,
+            const response = await handleApiRequestNotifications(
+                api.createTag(
+                    {
+                        name: name,
                     },
-                }
+                    {
+                        params: {
+                            organization: organizationId,
+                        },
+                    }
+                ),
+                'Tag created successfully',
+                'Failed to create tag'
             );
-            tags.value.unshift(response.data);
-            return response.data;
+            if (response?.data) {
+                tags.value.unshift(response.data);
+                return response.data;
+            }
         } else {
             throw new Error(
                 'Failed to create tag because organization ID is missing.'
