@@ -12,9 +12,9 @@ test('test that organization name can be updated', async ({ page }) => {
     await page.getByLabel('Team Name').fill('NEW ORG NAME');
     await page.getByLabel('Team Name').press('Enter');
     await page.getByLabel('Team Name').press('Meta+r');
-    await expect(page.locator('[data-testid="organization_switcher"]:visible')).toContainText(
-        'NEW ORG NAME'
-    );
+    await expect(
+        page.locator('[data-testid="organization_switcher"]:visible')
+    ).toContainText('NEW ORG NAME');
 });
 
 test('test that new manager can be invited', async ({ page }) => {
