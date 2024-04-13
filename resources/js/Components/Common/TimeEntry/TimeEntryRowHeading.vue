@@ -8,7 +8,7 @@ defineProps<{
 
 <template>
     <div
-        class="bg-card-background border-t border-b border-card-border py-1.5 text-sm">
+        class="bg-card-background border-t border-b border-card-border py-1.5 text-xs sm:text-sm">
         <MainContainer>
             <DaySectionHeader :date></DaySectionHeader>
         </MainContainer>

@@ -8,7 +8,7 @@ defineProps<{
 </script>
 
 <template>
-    <div class="flex w-full items-center justify-between pb-4">
+    <div class="flex w-full items-center justify-between pb-2.5 sm:pb-4">
         <h3
             class="text-white font-bold text-base flex items-center space-x-2.5">
             <component

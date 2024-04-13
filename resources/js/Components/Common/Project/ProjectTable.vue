@@ -16,7 +16,7 @@ const createProject = ref(false);
 
 <template>
     <ProjectCreateModal v-model:show="createProject"></ProjectCreateModal>
-    <div class="flow-root">
+    <div class="flow-root max-w-[100vw] overflow-x-auto">
         <div class="inline-block min-w-full align-middle">
             <div
                 data-testid="project_table"
