@@ -82,13 +82,14 @@ function updateProjectAndTask(projectId: string, taskId: string) {
         class="border-b border-card-border transition"
         data-testid="time_entry_row">
         <MainContainer>
-            <div class="flex py-1.5 items-center justify-between group">
+            <div class="sm:flex py-1.5 items-center justify-between group">
                 <div class="flex space-x-1 items-center">
                     <input
                         type="checkbox"
                         class="h-4 w-4 rounded bg-card-background border-input-border text-accent-500/80 focus:ring-accent-500/80" />
                     <TimeEntryDescriptionInput
                         @changed="updateTimeEntryDescription"
+                        class="flex-1"
                         :modelValue="
                             timeEntry.description
                         "></TimeEntryDescriptionInput>
@@ -105,7 +106,7 @@ function updateProjectAndTask(projectId: string, taskId: string) {
                     <TimeEntryRowTagDropdown
                         @changed="updateTimeEntryTags"
                         :modelValue="timeEntry.tags"></TimeEntryRowTagDropdown>
-                    <div>
+                    <div class="flex-1">
                         <TimeEntryRangeSelector
                             :start="timeEntry.start"
                             :end="timeEntry.end"
@@ -122,7 +123,7 @@ function updateProjectAndTask(projectId: string, taskId: string) {
                     <TimeTrackerStartStop
                         @changed="onStartStopClick"
                         :active="!!(timeEntry.start && !timeEntry.end)"
-                        class="opacity-20 group-hover:opacity-100"></TimeTrackerStartStop>
+                        class="opacity-20 hidden sm:flex group-hover:opacity-100"></TimeTrackerStartStop>
                     <TimeEntryMoreOptionsDropdown
                         @delete="
                             deleteTimeEntry

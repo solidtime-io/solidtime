@@ -50,11 +50,11 @@ const props = defineProps<{
 <template>
     <AppLayout title="Dashboard" data-testid="dashboard_view">
         <MainContainer
-            class="pt-8 pb-6 border-b border-default-background-separator">
+            class="pt-5 sm:pt-8 pb-4 sm:pb-6 border-b border-default-background-separator">
             <TimeTracker></TimeTracker>
         </MainContainer>
         <MainContainer
-            class="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 pt-5 pb-6 border-b border-default-background-separator items-stretch">
+            class="grid gap-5 sm:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 pt-3 sm:pt-5 pb-4 sm:pb-6 border-b border-default-background-separator items-stretch">
             <RecentlyTrackedTasksCard
                 :latestTasks="props.latestTasks"></RecentlyTrackedTasksCard>
             <LastSevenDaysCard

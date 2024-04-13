@@ -128,10 +128,10 @@ onMounted(async () => {
         </div>
         <div class="flex-1 sm:ml-[230px] 2xl:ml-[270px]">
             <div
-                class="sm:hidden w-full px-3 py-3 border-b border-b-default-background-separator text-muted flex justify-between items-center">
+                class="sm:hidden w-full px-3 py-1 border-b border-b-default-background-separator text-muted flex justify-between items-center">
                 <Bars3Icon
                     @click="showSidebarMenu = !showSidebarMenu"
-                    class="w-8 text-muted"></Bars3Icon>
+                    class="w-7 text-muted"></Bars3Icon>
                 <OrganizationSwitcher></OrganizationSwitcher>
             </div>
 

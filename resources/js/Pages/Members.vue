@@ -10,6 +10,7 @@ import { ref } from 'vue';
 import MemberTable from '@/Components/Common/Member/MemberTable.vue';
 import MemberInviteModal from '@/Components/Common/Member/MemberInviteModal.vue';
 import type { Role } from '@/types/jetstream';
+import PageTitle from '@/Components/Common/PageTitle.vue';
 
 const inviteMember = ref(false);
 
@@ -22,13 +23,8 @@ defineProps<{
     <AppLayout title="Members" data-testid="members_view">
         <MainContainer
             class="py-5 border-b border-default-background-separator flex justify-between items-center">
-            <div class="flex items-center space-x-6">
-                <h3
-                    class="text-white font-bold text-base flex items-center space-x-2.5">
-                    <UserGroupIcon
-                        class="w-6 text-icon-default"></UserGroupIcon>
-                    <span> Members </span>
-                </h3>
+            <div class="flex items-center space-x-4 sm:space-x-6">
+                <PageTitle :icon="UserGroupIcon" title="Members"> </PageTitle>
                 <TabBar>
                     <TabBarItem active>All</TabBarItem>
                     <TabBarItem>Active</TabBarItem>

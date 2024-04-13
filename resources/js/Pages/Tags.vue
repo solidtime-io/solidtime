@@ -6,6 +6,7 @@ import SecondaryButton from '@/Components/SecondaryButton.vue';
 import { ref } from 'vue';
 import TagTable from '@/Components/Common/Tag/TagTable.vue';
 import TagCreateModal from '@/Components/Common/Tag/TagCreateModal.vue';
+import PageTitle from '@/Components/Common/PageTitle.vue';
 
 const createTag = ref(false);
 </script>
@@ -15,11 +16,7 @@ const createTag = ref(false);
         <MainContainer
             class="py-5 border-b border-default-background-separator flex justify-between items-center">
             <div class="flex items-center space-x-6">
-                <h3
-                    class="text-white font-bold text-base flex items-center space-x-2.5">
-                    <FolderIcon class="w-6 text-icon-default"></FolderIcon>
-                    <span> Tags </span>
-                </h3>
+                <PageTitle :icon="FolderIcon" title="Tags"> </PageTitle>
             </div>
             <SecondaryButton :icon="PlusIcon" @click="createTag = true"
                 >Create Tag</SecondaryButton
