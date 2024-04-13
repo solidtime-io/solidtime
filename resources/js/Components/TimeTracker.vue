@@ -166,7 +166,7 @@ function onTimeEntryEnterPress() {
                     type="text" />
             </div>
             <div class="flex items-center justify-between pl-2">
-                <div class="flex items-center w-[130px]">
+                <div class="flex items-center w-[130px] sm:w-auto">
                     <TimeTrackerProjectTaskDropdown
                         @changed="updateTimeEntry"
                         v-model:project="currentTimeEntry.project_id"
@@ -190,12 +190,12 @@ function onTimeEntryEnterPress() {
                         @blur="updateTimerAndStartLiveTimerUpdate"
                         @keydown.enter="onTimeEntryEnterPress"
                         v-model="currentTime"
-                        class="w-[110px] sm:w-[130px] h-full text-white py-2.5 rounded-r-lg text-center px-4 text-lg font-bold bg-card-background border-none placeholder-muted focus:ring-0 transition focus:bg-card-background-active"
+                        class="w-[110px] sm:w-[130px] h-full text-white py-2.5 rounded-r-lg text-center px-4 text-sm sm:text-lg font-bold bg-card-background border-none placeholder-muted focus:ring-0 transition focus:bg-card-background-active"
                         type="text" />
                 </div>
             </div>
         </div>
-        <div class="pl-6 pr-3 absolute sm:relative top-[7px] right-0">
+        <div class="pl-6 pr-3 absolute sm:relative top-[6px] sm:top-0 right-0">
             <TimeTrackerStartStop
                 :active="isActive"
                 @changed="onToggleButtonPress"

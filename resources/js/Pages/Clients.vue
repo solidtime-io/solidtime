@@ -10,6 +10,7 @@ import { onMounted, ref } from 'vue';
 import { useClientsStore } from '@/utils/useClients';
 import ClientTable from '@/Components/Common/Client/ClientTable.vue';
 import ClientCreateModal from '@/Components/Common/Client/ClientCreateModal.vue';
+import PageTitle from '@/Components/Common/PageTitle.vue';
 
 onMounted(() => {
     useClientsStore().fetchClients();
@@ -23,12 +24,7 @@ const createClient = ref(false);
         <MainContainer
             class="py-5 border-b border-default-background-separator flex justify-between items-center">
             <div class="flex items-center space-x-6">
-                <h3
-                    class="text-white font-bold text-base flex items-center space-x-2.5">
-                    <UserCircleIcon
-                        class="w-6 text-icon-default"></UserCircleIcon>
-                    <span> Clients </span>
-                </h3>
+                <PageTitle :icon="UserCircleIcon" title="Clients"> </PageTitle>
                 <TabBar>
                     <TabBarItem>All</TabBarItem>
                     <TabBarItem active>Active</TabBarItem>
