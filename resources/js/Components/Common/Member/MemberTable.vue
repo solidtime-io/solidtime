@@ -12,7 +12,7 @@ const createClient = ref(false);
 
 <template>
     <ClientCreateModal v-model:show="createClient"></ClientCreateModal>
-    <div class="flow-root">
+    <div class="flow-root max-w-[100vw] overflow-x-auto">
         <div class="inline-block min-w-full align-middle">
             <div
                 data-testid="client_table"
