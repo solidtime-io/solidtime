@@ -21,7 +21,7 @@ const props = withDefaults(
 
 const indicatorClasses = {
     base: 'w-2.5 h-2.5',
-    large: 'w-3 h-3',
+    large: 'w-2 sm:w-3 h-2 sm:h-3',
 };
 </script>
 

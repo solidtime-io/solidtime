@@ -4,6 +4,7 @@
 
 
 :root{
+    --theme-color-default-background: #040618;
     --theme-color-icon-default: #42466C;
     --theme-color-card-background: #13152B;
     --theme-color-card-background-active: #1C1E34;
@@ -28,6 +29,11 @@
 [x-cloak] {
     display: none;
 }
+
+body{
+    background-color: var(--theme-color-default-background);
+}
+
 
 @font-face {
     font-family: 'Outfit';

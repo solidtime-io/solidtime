@@ -152,9 +152,9 @@ function onTimeEntryEnterPress() {
 
 <template>
     <CardTitle title="Time Tracker" :icon="ClockIcon"></CardTitle>
-    <div class="flex items-center" data-testid="dashboard_timer">
+    <div class="flex items-center relative" data-testid="dashboard_timer">
         <div
-            class="flex w-full rounded-lg bg-card-background border-card-border border transition">
+            class="flex flex-col sm:flex-row w-full rounded-lg bg-card-background border-card-border border transition">
             <div class="flex-1 flex items-center pr-6">
                 <input
                     placeholder="What are you working on?"
@@ -162,36 +162,40 @@ function onTimeEntryEnterPress() {
                     v-model="currentTimeEntry.description"
                     @keydown.enter="startTimerIfNotActive"
                     @blur="updateTimeEntry"
-                    class="w-full rounded-l-lg py-3 px-5 text-lg text-white focus:bg-card-background-active font-medium bg-transparent border-none placeholder-muted focus:ring-0 transition"
+                    class="w-full rounded-l-lg py-2.5 px-3 border-b border-b-card-background-separator sm:px-4 text-sm sm:text-lg text-white focus:bg-card-background-active font-medium bg-transparent border-none placeholder-muted focus:ring-0 transition"
                     type="text" />
             </div>
-            <div class="flex items-center">
-                <TimeTrackerProjectTaskDropdown
-                    @changed="updateTimeEntry"
-                    v-model:project="currentTimeEntry.project_id"
-                    v-model:task="
-                        currentTimeEntry.task_id
-                    "></TimeTrackerProjectTaskDropdown>
-            </div>
-            <div class="flex items-center space-x-2 px-4">
-                <TimeTrackerTagDropdown
-                    @changed="updateTimeEntry"
-                    v-model="currentTimeEntry.tags"></TimeTrackerTagDropdown>
-                <BillableToggleButton></BillableToggleButton>
-            </div>
-            <div class="border-l border-card-border">
-                <input
-                    placeholder="00:00:00"
-                    @focus="pauseLiveTimerUpdate"
-                    data-testid="time_entry_time"
-                    @blur="updateTimerAndStartLiveTimerUpdate"
-                    @keydown.enter="onTimeEntryEnterPress"
-                    v-model="currentTime"
-                    class="w-40 h-full text-white py-4 rounded-r-lg text-center px-4 text-lg font-bold bg-card-background border-none placeholder-muted focus:ring-0 transition focus:bg-card-background-active"
-                    type="text" />
+            <div class="flex items-center justify-between pl-2">
+                <div class="flex items-center w-[130px]">
+                    <TimeTrackerProjectTaskDropdown
+                        @changed="updateTimeEntry"
+                        v-model:project="currentTimeEntry.project_id"
+                        v-model:task="
+                            currentTimeEntry.task_id
+                        "></TimeTrackerProjectTaskDropdown>
+                </div>
+                <div class="flex items-center space-x-2 px-4">
+                    <TimeTrackerTagDropdown
+                        @changed="updateTimeEntry"
+                        v-model="
+                            currentTimeEntry.tags
+                        "></TimeTrackerTagDropdown>
+                    <BillableToggleButton></BillableToggleButton>
+                </div>
+                <div class="border-l border-card-border">
+                    <input
+                        placeholder="00:00:00"
+                        @focus="pauseLiveTimerUpdate"
+                        data-testid="time_entry_time"
+                        @blur="updateTimerAndStartLiveTimerUpdate"
+                        @keydown.enter="onTimeEntryEnterPress"
+                        v-model="currentTime"
+                        class="w-[110px] sm:w-[130px] h-full text-white py-2.5 rounded-r-lg text-center px-4 text-lg font-bold bg-card-background border-none placeholder-muted focus:ring-0 transition focus:bg-card-background-active"
+                        type="text" />
+                </div>
             </div>
         </div>
-        <div class="pl-6 pr-3">
+        <div class="pl-6 pr-3 absolute sm:relative top-[7px] right-0">
             <TimeTrackerStartStop
                 :active="isActive"
                 @changed="onToggleButtonPress"
