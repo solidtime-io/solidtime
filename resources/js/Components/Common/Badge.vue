@@ -20,7 +20,7 @@ const props = withDefaults(
 
 const badgeClasses = {
     base: 'py-1 px-2 space-x-1.5 text-xs',
-    large: 'py-1.5 px-3 space-x-2 text-sm text-muted',
+    large: 'py-1 sm:py-1.5 px-2 sm:px-3 space-x-1.5 sm:space-x-2 text-xs sm:text-sm text-muted',
 };
 
 const borderClasses = computed(() => {

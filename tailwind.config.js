@@ -14,12 +14,15 @@ export default {
 
     theme: {
         extend: {
+            containers: {
+                '2xs': '16rem',
+            },
             fontFamily: {
                 sans: ['Outfit', ...defaultTheme.fontFamily.sans],
             },
             colors: {
                 'white': '#D9DCFB',
-                'default-background': '#040618',
+                'default-background': 'var(--theme-color-default-background)',
                 'default-background-separator': '#13152B',
                 'card-background': 'var(--theme-color-card-background)',
                 'card-background-active':
