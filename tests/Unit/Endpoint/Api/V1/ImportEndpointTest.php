@@ -24,7 +24,7 @@ class ImportEndpointTest extends ApiEndpointTestAbstract
         // Act
         $response = $this->postJson(route('api.v1.import.import', ['organization' => $data->organization->id]), [
             'type' => 'toggl_time_entries',
-            'data' => 'some data',
+            'data' => base64_encode('some data'),
             'options' => [],
         ]);
 
@@ -50,7 +50,7 @@ class ImportEndpointTest extends ApiEndpointTestAbstract
         // Act
         $response = $this->postJson(route('api.v1.import.import', ['organization' => $user->organization->id]), [
             'type' => 'toggl_time_entries',
-            'data' => 'some data',
+            'data' => base64_encode('some data'),
         ]);
 
         // Assert
@@ -86,7 +86,7 @@ class ImportEndpointTest extends ApiEndpointTestAbstract
         // Act
         $response = $this->postJson(route('api.v1.import.import', ['organization' => $user->organization->id]), [
             'type' => 'toggl_time_entries',
-            'data' => 'some data',
+            'data' => base64_encode('some data'),
         ]);
 
         // Assert

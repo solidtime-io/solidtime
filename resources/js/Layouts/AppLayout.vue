@@ -55,10 +55,10 @@ onMounted(async () => {
             <div>
                 <div
                     class="border-b border-default-background-separator pb-2 flex justify-between">
-                    <OrganizationSwitcher></OrganizationSwitcher>
+                    <OrganizationSwitcher class="w-full"></OrganizationSwitcher>
                     <XMarkIcon
                         @click="showSidebarMenu = false"
-                        class="w-8"></XMarkIcon>
+                        class="w-8 sm:hidden"></XMarkIcon>
                 </div>
                 <div class="border-b border-default-background-separator">
                     <CurrentSidebarTimer></CurrentSidebarTimer>
