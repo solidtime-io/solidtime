@@ -17,16 +17,25 @@ class ImportController extends Controller
      * Import data into the organization
      *
      * @throws AuthorizationException
+     *
+     * @operationId importData
      */
     public function import(Organization $organization, ImportRequest $request, ImportService $importService): JsonResponse
     {
         $this->checkPermission($organization, 'import');
 
         try {
+            $importData = base64_decode($request->input('data'), true);
+            if ($importData === false) {
+                return new JsonResponse([
+                    'message' => 'Invalid base64 encoded data',
+                ], 400);
+            }
+
             $report = $importService->import(
                 $organization,
                 $request->input('type'),
-                $request->input('data')
+                $importData
             );
 
             return new JsonResponse([

@@ -41,23 +41,23 @@ const switchToTeam = (team: Organization) => {
             <div
                 data-testid="organization_switcher"
                 class="flex hover:bg-white/10 cursor-pointer transition px-2 py-1 rounded-lg w-full items-center justify-between font-medium">
-                <div class="flex flex-1 space-x-3 items-center w-4/5">
+                <div
+                    class="flex flex-1 space-x-2 items-center w-[calc(100%-30px)]">
                     <div
-                        class="rounded sm:rounded-lg bg-blue-900 font-semibold text-xs sm:text-base flex-shrink-0 text-white w-5 sm:w-7 h-5 sm:h-7 flex items-center justify-center">
+                        class="rounded sm:rounded-lg bg-blue-900 font-semibold text-xs sm:text-sm flex-shrink-0 text-white w-5 sm:w-6 h-5 sm:h-6 flex items-center justify-center">
                         {{
                             page.props.auth.user.current_team.name
                                 .slice(0, 1)
                                 .toUpperCase()
                         }}
                     </div>
-                    <span
-                        class="text-sm sm:text-lg flex-1 truncate font-semibold">
+                    <span class="text-sm flex-1 truncate font-semibold">
                         {{ page.props.auth.user.current_team.name }}
                     </span>
                 </div>
-                <div class="w-1/5">
+                <div class="w-[30px]">
                     <button
-                        class="p-1 transition hover:bg-white/10 rounded-full flex items-center w-9 h-9">
+                        class="p-1 transition hover:bg-white/10 rounded-full flex items-center w-8 h-8">
                         <ChevronDownIcon
                             class="w-5 sm:w-full mt-[1px]"></ChevronDownIcon>
                     </button>

@@ -6,6 +6,7 @@ import TeamMemberManager from '@/Pages/Teams/Partials/TeamMemberManager.vue';
 import UpdateTeamNameForm from '@/Pages/Teams/Partials/UpdateTeamNameForm.vue';
 import type { Organization } from '@/types/models';
 import type { Permissions, Role } from '@/types/jetstream';
+import ImportData from '@/Pages/Teams/Partials/ImportData.vue';
 
 defineProps<{
     team: Organization;
@@ -38,6 +39,10 @@ defineProps<{
 
                     <DeleteTeamForm class="mt-10 sm:mt-0" :team="team" />
                 </template>
+
+                <SectionBorder />
+
+                <ImportData :team="team"></ImportData>
             </div>
         </div>
     </AppLayout>
