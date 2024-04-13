@@ -12,11 +12,13 @@ import {
     TagIcon,
     UserCircleIcon,
     UserGroupIcon,
+    Bars3Icon,
+    XMarkIcon,
 } from '@heroicons/vue/20/solid';
 import NavigationSidebarItem from '@/Components/NavigationSidebarItem.vue';
 import UserSettingsIcon from '@/Components/UserSettingsIcon.vue';
 import MainContainer from '@/Pages/MainContainer.vue';
-import { onMounted } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useProjectsStore } from '@/utils/useProjects';
 import { useTagsStore } from '@/utils/useTags';
 import { useTasksStore } from '@/utils/useTasks';
@@ -28,6 +30,8 @@ import NotificationContainer from '@/Components/NotificationContainer.vue';
 defineProps({
     title: String,
 });
+
+const showSidebarMenu = ref(false);
 
 onMounted(async () => {
     useProjectsStore().fetchProjects();
@@ -44,10 +48,17 @@ onMounted(async () => {
         v-bind="$attrs"
         class="flex flex-wrap bg-default-background text-muted">
         <div
-            class="flex-shrink-0 h-screen fixed w-[230px] 2xl:w-[270px] px-2.5 2xl:px-4 py-4 flex flex-col justify-between">
+            :class="{
+                '!flex bg-default-background w-full z-50': showSidebarMenu,
+            }"
+            class="flex-shrink-0 h-screen hidden fixed w-[230px] 2xl:w-[270px] px-2.5 2xl:px-4 py-4 sm:flex flex-col justify-between">
             <div>
-                <div class="border-b border-default-background-separator pb-2">
+                <div
+                    class="border-b border-default-background-separator pb-2 flex justify-between">
                     <OrganizationSwitcher></OrganizationSwitcher>
+                    <XMarkIcon
+                        @click="showSidebarMenu = false"
+                        class="w-8"></XMarkIcon>
                 </div>
                 <div class="border-b border-default-background-separator">
                     <CurrentSidebarTimer></CurrentSidebarTimer>
@@ -115,7 +126,15 @@ onMounted(async () => {
                 <UserSettingsIcon></UserSettingsIcon>
             </ul>
         </div>
-        <div class="flex-1 ml-[230px] 2xl:ml-[270px]">
+        <div class="flex-1 sm:ml-[230px] 2xl:ml-[270px]">
+            <div
+                class="sm:hidden w-full px-3 py-3 border-b border-b-default-background-separator text-muted flex justify-between items-center">
+                <Bars3Icon
+                    @click="showSidebarMenu = !showSidebarMenu"
+                    class="w-8 text-muted"></Bars3Icon>
+                <OrganizationSwitcher></OrganizationSwitcher>
+            </div>
+
             <Head :title="title" />
 
             <Banner />

@@ -10,13 +10,13 @@ import {
 </script>
 
 <template>
-    <div class="px-3.5 py-2 flex @container">
+    <div class="px-3.5 py-2 flex justify-between @container">
         <div class="flex items-center">
             <p class="font-semibold text-sm text-white">
                 {{ formatHumanReadableDate(date) }}
             </p>
         </div>
-        <div class="items-center justify-center flex-1 flex">
+        <div class="items-center justify-center flex-1 hidden @2xs:flex">
             <svg
                 class="w-20 opacity-70 transition hover:opacity-100"
                 viewBox="0 0 42 10"
