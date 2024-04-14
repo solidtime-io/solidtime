@@ -62,11 +62,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
                             'An request error occurred. Please try again later.'
                     );
                 } else if (error?.response?.status === 422) {
-                    const message = error.response.data.errors
-                        .map((error: { message: string }) => {
-                            return error.message;
-                        })
-                        .join('\n');
+                    const message = error.response.data.message;
                     addNotification('error', message);
                 } else {
                     addNotification(
