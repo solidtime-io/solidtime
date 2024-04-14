@@ -7,17 +7,29 @@ const props = withDefaults(
     defineProps<{
         type: HtmlButtonType;
         icon?: Component;
+        size: 'small' | 'base';
     }>(),
     {
         type: 'button',
+        size: 'base',
     }
 );
+
+const sizeClasses = {
+    small: 'text-xs px-2 sm:px-2.5 py-1 sm:py-1.5',
+    base: 'text-xs sm:text-sm px-2 sm:px-3 py-1 sm:py-2',
+};
 </script>
 
 <template>
     <button
         :type="type"
-        class="bg-button-secondary-background border border-button-secondary-border hover:bg-button-secondary-background-hover shadow-sm transition text-white text-xs sm:text-sm px-2 sm:px-3 py-1 sm:py-2 rounded-lg font-semibold inline-flex items-center space-x-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-25 ease-in-out">
+        :class="
+            twMerge(
+                'bg-button-secondary-background border border-button-secondary-border hover:bg-button-secondary-background-hover shadow-sm transition text-white rounded-lg font-semibold inline-flex items-center space-x-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-25 ease-in-out',
+                sizeClasses[props.size]
+            )
+        ">
         <span
             :class="
                 twMerge('flex items-center ', props.icon ? 'space-x-1.5' : '')
