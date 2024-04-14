@@ -5,6 +5,10 @@ import { useClientsStore } from '@/utils/useClients';
 import MemberMoreOptionsDropdown from '@/Components/Common/Member/MemberMoreOptionsDropdown.vue';
 import TableRow from '@/Components/TableRow.vue';
 import { capitalizeFirstLetter } from '../../../utils/format';
+import SecondaryButton from '@/Components/SecondaryButton.vue';
+import { api } from '../../../../../openapi.json.client';
+import { getCurrentOrganizationId } from '@/utils/useUser';
+import { useNotificationsStore } from '@/utils/notification';
 
 const props = defineProps<{
     member: Member;
@@ -12,6 +16,26 @@ const props = defineProps<{
 
 function removeMember() {
     useClientsStore().deleteClient(props.member.id);
+}
+
+async function invitePlaceholder(id: string) {
+    const { handleApiRequestNotifications } = useNotificationsStore();
+    const organizationId = getCurrentOrganizationId();
+    if (organizationId) {
+        await handleApiRequestNotifications(
+            api.invitePlaceholder(
+                {},
+                {
+                    params: {
+                        organization: organizationId,
+                        membership: id,
+                    },
+                }
+            ),
+            'Member invited successfully',
+            'Error inviting member'
+        );
+    }
 }
 </script>
 
@@ -45,6 +69,9 @@ function removeMember() {
         </div>
         <div
             class="relative whitespace-nowrap flex items-center pl-3 text-right text-sm font-medium sm:pr-0 pr-4 sm:pr-6 lg:pr-8 3xl:pr-12">
+            <SecondaryButton @click="invitePlaceholder(member.id)" size="small"
+                >Invite</SecondaryButton
+            >
             <MemberMoreOptionsDropdown
                 :member="member"
                 @delete="removeMember"></MemberMoreOptionsDropdown>
