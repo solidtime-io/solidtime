@@ -35,4 +35,16 @@ class ProjectResourceTest extends FilamentTestCase
         $response->assertSuccessful();
         $response->assertCanSeeTableRecords($projects);
     }
+
+    public function test_can_see_edit_page_of_project(): void
+    {
+        // Arrange
+        $project = Project::factory()->create();
+
+        // Act
+        $response = Livewire::test(ProjectResource\Pages\EditProject::class, ['record' => $project->getKey()]);
+
+        // Assert
+        $response->assertSuccessful();
+    }
 }
