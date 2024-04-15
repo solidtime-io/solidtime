@@ -24,9 +24,9 @@ class InvitationResource extends BaseResource
             /** @var string $id ID of the invitation */
             'id' => $this->resource->id,
             /** @var string $email Email */
-            'user_id' => $this->resource->email,
+            'email' => $this->resource->email,
             /** @var string $role Role */
-            'name' => $this->resource->role,
+            'role' => $this->resource->role,
         ];
     }
 }
