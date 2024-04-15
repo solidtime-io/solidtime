@@ -4,6 +4,7 @@ import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
 import { router, usePage } from '@inertiajs/vue3';
 import type { Organization, User } from '@/types/models';
+import { isBillingActivated } from '@/utils/billing';
 
 const page = usePage<{
     jetstream: {
@@ -80,7 +81,15 @@ const switchToTeam = (team: Organization) => {
                             page.props.auth.user.current_team.id
                         )
                     ">
-                    Team Settings
+                    Organization Settings
+                </DropdownLink>
+
+                <DropdownLink
+                    v-if="isBillingActivated()"
+                    href="
+                        /billing
+                    ">
+                    Billing
                 </DropdownLink>
 
                 <DropdownLink
