@@ -210,7 +210,7 @@ const disableTwoFactorAuthentication = () => {
                     </div>
 
                     <div
-                        class="grid gap-1 max-w-xl mt-4 px-4 py-4 font-mono text-sm bg-gray-100 text-gray-100 rounded-lg">
+                        class="grid gap-1 max-w-xl mt-4 px-4 py-4 font-mono text-sm bg-input-background text-gray-100 rounded-lg">
                         <div v-for="code in recoveryCodes" :key="code">
                             {{ code }}
                         </div>
