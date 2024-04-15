@@ -1,17 +1,18 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onMounted } from 'vue';
 import { storeToRefs } from 'pinia';
-import ClientCreateModal from '@/Components/Common/Client/ClientCreateModal.vue';
 import MemberTableHeading from '@/Components/Common/Member/MemberTableHeading.vue';
 import MemberTableRow from '@/Components/Common/Member/MemberTableRow.vue';
 import { useMembersStore } from '@/utils/useMembers';
 
 const { members } = storeToRefs(useMembersStore());
-const createClient = ref(false);
+
+onMounted(async () => {
+    await useMembersStore().fetchMembers();
+});
 </script>
 
 <template>
-    <ClientCreateModal v-model:show="createClient"></ClientCreateModal>
     <div class="flow-root max-w-[100vw] overflow-x-auto">
         <div class="inline-block min-w-full align-middle">
             <div

@@ -7,6 +7,15 @@ import { api } from '../../../openapi.json.client';
 
 export type SolidTimeApi = ApiOf<typeof api>;
 
+export type InvitationsIndexResponse = ZodiosResponseByAlias<
+    SolidTimeApi,
+    'getInvitations'
+>;
+
+export type CreateInvitationBody = ZodiosBodyByAlias<SolidTimeApi, 'invite'>;
+
+export type Invitation = InvitationsIndexResponse['data'][0];
+
 export type TimeEntryResponse = ZodiosResponseByAlias<
     SolidTimeApi,
     'getTimeEntries'

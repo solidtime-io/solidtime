@@ -14,7 +14,7 @@ const importData_Body = z
     .object({ type: z.string(), data: z.string() })
     .passthrough();
 const InvitationResource = z
-    .object({ id: z.string(), user_id: z.string(), name: z.string() })
+    .object({ id: z.string(), email: z.string(), role: z.string() })
     .passthrough();
 const Role = z.enum(['owner', 'admin', 'manager', 'employee', 'placeholder']);
 const invite_Body = z
@@ -449,7 +449,10 @@ const endpoints = makeApi([
         errors: [
             {
                 status: 400,
-                schema: z.object({ message: z.string() }).passthrough(),
+                schema: z.union([
+                    z.object({ message: z.string() }).passthrough(),
+                    z.object({ message: z.string() }).passthrough(),
+                ]),
             },
             {
                 status: 403,
