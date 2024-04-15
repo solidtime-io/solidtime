@@ -6,6 +6,7 @@ import { PageProps as AppPageProps } from './';
 declare global {
     interface Window {
         axios: AxiosInstance;
+        initialDataLoaded: boolean;
     }
 
     let route: typeof ziggyRoute;
