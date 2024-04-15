@@ -10,6 +10,7 @@ import type { TimeEntry } from '@/utils/api';
 import TimeEntryRowHeading from '@/Components/Common/TimeEntry/TimeEntryRowHeading.vue';
 import TimeEntryRow from '@/Components/Common/TimeEntry/TimeEntryRow.vue';
 import { useElementVisibility } from '@vueuse/core';
+import { ClockIcon } from '@heroicons/vue/20/solid';
 
 const timeEntriesStore = useTimeEntriesStore();
 const { timeEntries, allTimeEntriesLoaded } = storeToRefs(timeEntriesStore);
@@ -49,7 +50,7 @@ const groupedTimeEntries = computed(() => {
 <template>
     <AppLayout title="Dashboard" data-testid="time_view">
         <MainContainer
-            class="py-4 sm:py-8 border-b border-default-background-separator">
+            class="pt-5 sm:pt-8 pb-4 sm:pb-6 border-b border-default-background-separator">
             <TimeTracker></TimeTracker>
         </MainContainer>
         <div v-for="(value, key) in groupedTimeEntries" :key="key">
@@ -58,6 +59,13 @@ const groupedTimeEntries = computed(() => {
                 :key="entry.id"
                 v-for="entry in value"
                 :time-entry="entry"></TimeEntryRow>
+        </div>
+        <div
+            v-if="Object.keys(groupedTimeEntries).length === 0"
+            class="text-center pt-12">
+            <ClockIcon class="w-8 text-icon-default inline pb-2"></ClockIcon>
+            <h3 class="text-white font-semibold">No time entries found</h3>
+            <p class="pb-5">Create your first time entry now!</p>
         </div>
         <div ref="loadMoreContainer">
             <div

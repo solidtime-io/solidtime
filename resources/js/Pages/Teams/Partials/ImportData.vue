@@ -6,7 +6,7 @@ import { ref } from 'vue';
 import { useNotificationsStore } from '@/utils/notification';
 import { api } from '../../../../../openapi.json.client';
 import InputLabel from '@/Components/InputLabel.vue';
-import { PhotoIcon } from '@heroicons/vue/24/solid';
+import { DocumentIcon } from '@heroicons/vue/24/solid';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 
 defineProps<{
@@ -111,8 +111,8 @@ const importType = ref<ImportType | null>(null);
                 <div
                     class="mt-2 flex justify-center rounded-lg border border-dashed border-white/30 px-6 py-10">
                     <div class="text-center">
-                        <PhotoIcon
-                            class="mx-auto h-12 w-12 text-gray-500"
+                        <DocumentIcon
+                            class="mx-auto h-8 w-8 text-muted"
                             aria-hidden="true" />
 
                         <div class="mt-4 flex text-sm leading-6 text-muted">
