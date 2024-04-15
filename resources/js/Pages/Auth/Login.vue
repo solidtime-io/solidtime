@@ -37,6 +37,14 @@ const submit = () => {
             <AuthenticationCardLogo />
         </template>
 
+        <template #actions>
+            <Link
+                class="py-8 text-muted text-sm font-medium opacity-90 hover:opacity-100 transition"
+                :href="route('register')">
+                No account yet? <span class="text-white">Register here!</span>
+            </Link>
+        </template>
+
         <div v-if="status" class="mb-4 font-medium text-sm text-green-400">
             {{ status }}
         </div>
