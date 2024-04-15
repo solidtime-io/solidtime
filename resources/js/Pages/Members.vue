@@ -11,12 +11,18 @@ import MemberTable from '@/Components/Common/Member/MemberTable.vue';
 import MemberInviteModal from '@/Components/Common/Member/MemberInviteModal.vue';
 import type { Role } from '@/types/jetstream';
 import PageTitle from '@/Components/Common/PageTitle.vue';
+import InvitationTable from '@/Components/Common/Invitation/InvitationTable.vue';
 
 const inviteMember = ref(false);
 
 defineProps<{
     availableRoles: Role[];
 }>();
+
+const activeTab = ref<'all' | 'invitations'>('all');
+function isActiveTab(tab: string) {
+    return activeTab.value === tab;
+}
 </script>
 
 <template>
@@ -26,9 +32,16 @@ defineProps<{
             <div class="flex items-center space-x-4 sm:space-x-6">
                 <PageTitle :icon="UserGroupIcon" title="Members"> </PageTitle>
                 <TabBar>
-                    <TabBarItem active>All</TabBarItem>
-                    <TabBarItem>Active</TabBarItem>
-                    <TabBarItem>Inactive</TabBarItem>
+                    <TabBarItem
+                        :active="isActiveTab('all')"
+                        @click="activeTab = 'all'"
+                        >All</TabBarItem
+                    >
+                    <TabBarItem
+                        :active="isActiveTab('invitations')"
+                        @click="activeTab = 'invitations'"
+                        >Invitations</TabBarItem
+                    >
                 </TabBar>
             </div>
             <SecondaryButton :icon="PlusIcon" @click="inviteMember = true"
@@ -36,8 +49,10 @@ defineProps<{
             >
             <MemberInviteModal
                 :available-roles="availableRoles"
-                v-model:show="inviteMember"></MemberInviteModal>
+                v-model:show="inviteMember"
+                @close="activeTab = 'invitations'"></MemberInviteModal>
         </MainContainer>
-        <MemberTable></MemberTable>
+        <MemberTable v-if="activeTab === 'all'"></MemberTable>
+        <InvitationTable v-if="activeTab === 'invitations'"></InvitationTable>
     </AppLayout>
 </template>

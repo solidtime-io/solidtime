@@ -23,6 +23,8 @@ const addTeamMemberForm = useForm({
     role: null as string | null,
 });
 
+const emit = defineEmits(['close']);
+
 async function submit() {
     const organizationId = getCurrentOrganizationId();
     if (organizationId) {
@@ -31,6 +33,7 @@ async function submit() {
             preserveScroll: true,
             onSuccess: () => {
                 addTeamMemberForm.reset();
+                emit('close');
                 show.value = false;
             },
         });
