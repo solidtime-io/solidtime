@@ -38,4 +38,16 @@ class OrganizationResourceTest extends FilamentTestCase
         $response->assertSuccessful();
         $response->assertCanSeeTableRecords($organizations);
     }
+
+    public function test_can_see_edit_page_of_organization(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+
+        // Act
+        $response = Livewire::test(OrganizationResource\Pages\EditOrganization::class, ['record' => $organization->getKey()]);
+
+        // Assert
+        $response->assertSuccessful();
+    }
 }

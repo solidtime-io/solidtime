@@ -31,13 +31,14 @@ class ProfileInformationTest extends TestCase
     {
         // Arrange
         $user = User::factory()->create();
+        $timezone = app(TimezoneService::class)->getTimezones()[0];
         $this->actingAs($user);
 
         // Act
         $response = $this->put('/user/profile-information', [
             'name' => 'Test Name',
             'email' => 'test@example.com',
-            'timezone' => app(TimezoneService::class)->getTimezones()[0],
+            'timezone' => $timezone,
             'week_start' => Weekday::Sunday->value,
         ]);
 
@@ -46,7 +47,7 @@ class ProfileInformationTest extends TestCase
         $user = $user->fresh();
         $this->assertEquals('Test Name', $user->name);
         $this->assertEquals('test@example.com', $user->email);
-        $this->assertEquals(app(TimezoneService::class)->getTimezones()[0], $user->timezone);
+        $this->assertEquals($timezone, $user->timezone);
         $this->assertEquals(Weekday::Sunday, $user->week_start);
     }
 }

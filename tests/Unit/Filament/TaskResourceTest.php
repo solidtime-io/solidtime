@@ -35,4 +35,16 @@ class TaskResourceTest extends FilamentTestCase
         $response->assertSuccessful();
         $response->assertCanSeeTableRecords($tasks);
     }
+
+    public function test_can_see_edit_page_of_task(): void
+    {
+        // Arrange
+        $task = Task::factory()->create();
+
+        // Act
+        $response = Livewire::test(TaskResource\Pages\EditTask::class, ['record' => $task->getKey()]);
+
+        // Assert
+        $response->assertSuccessful();
+    }
 }

@@ -35,4 +35,16 @@ class ClientResourceTest extends FilamentTestCase
         $response->assertSuccessful();
         $response->assertCanSeeTableRecords($clients);
     }
+
+    public function test_can_see_edit_page_of_client(): void
+    {
+        // Arrange
+        $client = Client::factory()->create();
+
+        // Act
+        $response = Livewire::test(ClientResource\Pages\EditClient::class, ['record' => $client->getKey()]);
+
+        // Assert
+        $response->assertSuccessful();
+    }
 }

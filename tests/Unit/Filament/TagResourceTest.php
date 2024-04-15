@@ -35,4 +35,16 @@ class TagResourceTest extends FilamentTestCase
         $response->assertSuccessful();
         $response->assertCanSeeTableRecords($tags);
     }
+
+    public function test_can_see_edit_page_of_tag(): void
+    {
+        // Arrange
+        $tag = Tag::factory()->create();
+
+        // Act
+        $response = Livewire::test(TagResource\Pages\EditTag::class, ['record' => $tag->getKey()]);
+
+        // Assert
+        $response->assertSuccessful();
+    }
 }
