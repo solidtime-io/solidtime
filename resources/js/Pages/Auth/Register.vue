@@ -38,6 +38,15 @@ const page = usePage<{
             <AuthenticationCardLogo />
         </template>
 
+        <template #actions>
+            <Link
+                class="py-8 text-muted text-sm font-medium opacity-90 hover:opacity-100 transition"
+                :href="route('login')">
+                Already have an account?
+                <span class="text-white">Login here!</span>
+            </Link>
+        </template>
+
         <form @submit.prevent="submit">
             <div>
                 <InputLabel for="name" value="Name" />
