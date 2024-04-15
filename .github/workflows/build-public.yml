@@ -1,5 +1,13 @@
 on:
   push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    paths:
+      - 'workflows/build-public.yml'
+      - 'docker/prod/**'
+  workflow_dispatch:
 
 name: Build - Public
 jobs:

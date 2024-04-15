@@ -30,6 +30,7 @@ use Laravel\Passport\HasApiTokens;
  * @property string $timezone
  * @property bool $is_placeholder
  * @property Weekday $week_start
+ * @property-read Organization $currentTeam
  * @property Collection<Organization> $organizations
  * @property Collection<TimeEntry> $timeEntries
  *
@@ -37,6 +38,7 @@ use Laravel\Passport\HasApiTokens;
  * @method static UserFactory factory()
  * @method static Builder<User> query()
  * @method Builder<User> belongsToOrganization(Organization $organization)
+ * @method Builder<User> active()
  */
 class User extends Authenticatable implements FilamentUser
 {
@@ -129,6 +131,14 @@ class User extends Authenticatable implements FilamentUser
     public function timeEntries(): HasMany
     {
         return $this->hasMany(TimeEntry::class);
+    }
+
+    /**
+     * @param  Builder<User>  $builder
+     */
+    public function scopeActive(Builder $builder): void
+    {
+        $builder->where('is_placeholder', '=', false);
     }
 
     /**
