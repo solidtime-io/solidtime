@@ -35,4 +35,16 @@ class TimeEntryResourceTest extends FilamentTestCase
         $response->assertSuccessful();
         $response->assertCanSeeTableRecords($timeEntry);
     }
+
+    public function test_can_see_edit_page_of_time_entry(): void
+    {
+        // Arrange
+        $timeEntry = TimeEntry::factory()->create();
+
+        // Act
+        $response = Livewire::test(TimeEntryResource\Pages\EditTimeEntry::class, ['record' => $timeEntry->getKey()]);
+
+        // Assert
+        $response->assertSuccessful();
+    }
 }

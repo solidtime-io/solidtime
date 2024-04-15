@@ -34,4 +34,16 @@ class UserResourceTest extends FilamentTestCase
         $response->assertSuccessful();
         $response->assertCanSeeTableRecords($users);
     }
+
+    public function test_can_see_edit_page_of_user(): void
+    {
+        // Arrange
+        $user = User::factory()->create();
+
+        // Act
+        $response = Livewire::test(UserResource\Pages\EditUser::class, ['record' => $user->getKey()]);
+
+        // Assert
+        $response->assertSuccessful();
+    }
 }
