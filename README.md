@@ -2,10 +2,23 @@
 
 ![GitHub License](https://img.shields.io/github/license/solidtime-io/solidtime)
 ![Codecov](https://img.shields.io/codecov/c/github/solidtime-io/solidtime?style=flat-square&logo=codecov)
-![GitHub Actions Unit Tests Status](https://img.shields.io/github/actions/workflow/status/solidtime-io/solidtime/phpunit?style=flat-square)
-![PHPstan badge](https://img.shields.io/badge/PHPstan-Level_9-blue?style=flat-square&color=blue)
+![GitHub Actions Unit Tests Status](https://img.shields.io/github/actions/workflow/status/solidtime-io/solidtime/phpunit.yml?style=flat-square)
+![PHPStan badge](https://img.shields.io/badge/PHPstan-Level_7-blue?style=flat-square&color=blue)
 
 ![Screenshot of the solidtime application with header: solidtime - The modern Open-Source Time Tracker](docs/solidtime-banner.png "solidtime Banner")
+
+solidtime is a modern open-source time tracking application for Freelancers and Agencies.
+
+## Features
+
+ - Time tracking: Track your time with a modern and easy-to-use interface
+ - Projects: Create and manage projects and assign project members
+ - Tasks: Create and manage tasks and assign tasks to project members
+ - Clients: Create and manage clients and assign clients to projects
+ - Billable rates: Set billable rates for projects, project members, organization members and organizations 
+ - Multiple organizations: Create and manage multiple organizations with one account
+ - Roles and permissions: Create and manage organizations
+ - Import: Import your time tracking data from other time tracking applications (Supported: Toggl, Clockify, Timeentry CSV)
 
 ## Local setup for development
 
@@ -81,9 +94,13 @@ npm run zod:generate
 ## Contributing
 
 This project is in a very early stage. The structure and APIs are still subject to change and not stable. 
-Therefore we do not currently accept any contributions, unless you are a member of the team.
+Therefore, we do not currently accept any contributions, unless you are a member of the team.
 
 As soon as we feel comfortable enough that the application structure is stable enough, we will open up the project for contributions.
+
+## Security
+
+Looking to report a vulnerability? Please refer our [SECURITY.md](./SECURITY.md) file.
 
 ## License
 
