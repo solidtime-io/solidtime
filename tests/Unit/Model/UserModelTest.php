@@ -10,7 +10,11 @@ use App\Models\User;
 use App\Providers\Filament\AdminPanelProvider;
 use Filament\Panel;
 use Illuminate\Support\Facades\Config;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 
+#[CoversClass(User::class)]
+#[UsesClass(User::class)]
 class UserModelTest extends ModelTestAbstract
 {
     public function test_normal_user_can_not_access_admin_panel(): void
@@ -86,5 +90,23 @@ class UserModelTest extends ModelTestAbstract
         $this->assertNotNull($timeEntriesRel);
         $this->assertCount(3, $timeEntriesRel);
         $this->assertTrue($timeEntriesRel->first()->is($timeEntries->first()));
+    }
+
+    public function test_scope_active_returns_only_non_placeholder_users(): void
+    {
+        // Arrange
+        $placeholder = User::factory()->create([
+            'is_placeholder' => true,
+        ]);
+        $user = User::factory()->create([
+            'is_placeholder' => false,
+        ]);
+
+        // Act
+        $activeUsers = User::query()->active()->get();
+
+        // Assert
+        $this->assertCount(1, $activeUsers);
+        $this->assertTrue($activeUsers->first()->is($user));
     }
 }

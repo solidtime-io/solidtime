@@ -1,5 +1,13 @@
 on:
   push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    paths:
+      - 'workflows/build-private.yml'
+      - 'docker/prod/**'
+  workflow_dispatch:
 
 name: Build - Private
 jobs:
@@ -29,6 +37,12 @@ jobs:
           only_args: --no-dev --no-ansi --no-interaction --prefer-dist --ignore-platform-reqs --classmap-authoritative
           php_version: 8.3
 
+      - name: "Setup PHP with PECL extension"
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, dom, fileinfo, pgsql, swoole
+
       - name: "Install dependencies"
         uses: php-actions/composer@v6
         if: steps.cache-vendor.outputs.cache-hit != 'true' # Skip if cache hit
@@ -48,6 +62,9 @@ jobs:
       - name: "Build"
         run: npm run build
 
+      - name: "Activate billing extension"
+        run: php artisan module:enable Billing
+
       - name: "Login to GitHub Container Registry"
         uses: docker/login-action@v3
         with:
@@ -65,6 +82,7 @@ jobs:
             type=ref,event=pr
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
+            type=sha,format=long
 
       - name: "Set up Docker Buildx"
         uses: docker/setup-buildx-action@v3
