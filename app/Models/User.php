@@ -31,7 +31,9 @@ use Laravel\Passport\HasApiTokens;
  * @property string $timezone
  * @property bool $is_placeholder
  * @property Weekday $week_start
+ * @property string|null $profile_photo_path
  * @property-read Organization $currentTeam
+ * @property-read string $profile_photo_url
  * @property Collection<Organization> $organizations
  * @property Collection<TimeEntry> $timeEntries
  *
@@ -95,15 +97,6 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
      */
     protected $attributes = [
         'week_start' => Weekday::Monday,
-    ];
-
-    /**
-     * The accessors to append to the model's array form.
-     *
-     * @var array<int, string>
-     */
-    protected $appends = [
-        'profile_photo_url',
     ];
 
     public function canAccessPanel(Panel $panel): bool
