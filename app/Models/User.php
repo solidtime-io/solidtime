@@ -8,6 +8,7 @@ use App\Enums\Weekday;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -40,7 +41,7 @@ use Laravel\Passport\HasApiTokens;
  * @method Builder<User> belongsToOrganization(Organization $organization)
  * @method Builder<User> active()
  */
-class User extends Authenticatable implements FilamentUser
+class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 {
     use HasApiTokens;
     use HasFactory;
