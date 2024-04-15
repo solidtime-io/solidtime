@@ -26,6 +26,7 @@ import { useCurrentTimeEntryStore } from '@/utils/useCurrentTimeEntry';
 import { useClientsStore } from '@/utils/useClients';
 import { useMembersStore } from '@/utils/useMembers';
 import NotificationContainer from '@/Components/NotificationContainer.vue';
+import { useTimeEntriesStore } from '@/utils/useTimeEntries';
 
 defineProps({
     title: String,
@@ -34,12 +35,17 @@ defineProps({
 const showSidebarMenu = ref(false);
 
 onMounted(async () => {
-    useProjectsStore().fetchProjects();
-    useTasksStore().fetchTasks();
-    useTagsStore().fetchTags();
-    useCurrentTimeEntryStore().fetchCurrentTimeEntry();
-    useClientsStore().fetchClients();
-    useMembersStore().fetchMembers();
+    // make sure that the initial requests are only loaded once, this can be removed once we move away from inertia
+    if (window.initialDataLoaded !== true) {
+        window.initialDataLoaded = true;
+        useProjectsStore().fetchProjects();
+        useTasksStore().fetchTasks();
+        useTagsStore().fetchTags();
+        useCurrentTimeEntryStore().fetchCurrentTimeEntry();
+        useClientsStore().fetchClients();
+        useMembersStore().fetchMembers();
+        useTimeEntriesStore().fetchTimeEntries();
+    }
 });
 </script>
 
