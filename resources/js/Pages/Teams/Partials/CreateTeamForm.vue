@@ -26,7 +26,7 @@ const page = usePage<{
 
 <template>
     <FormSection @submitted="createTeam">
-        <template #title> Team Details</template>
+        <template #title> Organization Details</template>
 
         <template #description>
             Create a new team to collaborate with others on projects.
@@ -34,7 +34,7 @@ const page = usePage<{
 
         <template #form>
             <div class="col-span-6">
-                <InputLabel value="Team Owner" />
+                <InputLabel value="Organization Owner" />
 
                 <div class="flex items-center mt-2">
                     <img
@@ -54,7 +54,7 @@ const page = usePage<{
             </div>
 
             <div class="col-span-6 sm:col-span-4">
-                <InputLabel for="name" value="Team Name" />
+                <InputLabel for="name" value="Organization Name" />
                 <TextInput
                     id="name"
                     v-model="form.name"

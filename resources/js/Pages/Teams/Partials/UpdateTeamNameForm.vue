@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useForm } from '@inertiajs/vue3';
+import { Link, useForm } from '@inertiajs/vue3';
 import ActionMessage from '@/Components/ActionMessage.vue';
 import FormSection from '@/Components/FormSection.vue';
 import InputError from '@/Components/InputError.vue';
@@ -8,6 +8,8 @@ import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import type { Organization } from '@/types/models';
 import type { Permissions } from '@/types/jetstream';
+import { CreditCardIcon } from '@heroicons/vue/20/solid';
+import { isBillingActivated } from '@/utils/billing';
 
 const props = defineProps<{
     team: Organization;
@@ -29,7 +31,7 @@ const updateTeamName = () => {
 
 <template>
     <FormSection @submitted="updateTeamName">
-        <template #title> Team Name</template>
+        <template #title> Organization Name</template>
 
         <template #description>
             The team's name and owner information.
@@ -37,29 +39,39 @@ const updateTeamName = () => {
 
         <template #form>
             <!-- Organization Owner Information -->
-            <div class="col-span-6">
-                <InputLabel value="Team Owner" />
+            <div class="col-span-6 flex items-center justify-between">
+                <div class="">
+                    <InputLabel value="Team Owner" />
 
-                <div class="flex items-center mt-2">
-                    <img
-                        class="w-12 h-12 rounded-full object-cover"
-                        :src="team.owner.profile_photo_url"
-                        :alt="team.owner.name" />
+                    <div class="flex items-center mt-2">
+                        <img
+                            class="w-12 h-12 rounded-full object-cover"
+                            :src="team.owner.profile_photo_url"
+                            :alt="team.owner.name" />
 
-                    <div class="ms-4 leading-tight">
-                        <div class="text-white">
-                            {{ team.owner.name }}
-                        </div>
-                        <div class="text-muted text-sm">
-                            {{ team.owner.email }}
+                        <div class="ms-4 leading-tight">
+                            <div class="text-white">
+                                {{ team.owner.name }}
+                            </div>
+                            <div class="text-muted text-sm">
+                                {{ team.owner.email }}
+                            </div>
                         </div>
                     </div>
+                </div>
+                <div>
+                    <Link href="/billing">
+                        <PrimaryButton v-if="isBillingActivated()">
+                            <CreditCardIcon class="w-5 h-5 me-2" />
+                            Go to Billing
+                        </PrimaryButton>
+                    </Link>
                 </div>
             </div>
 
             <!-- Organization Name -->
             <div class="col-span-6 sm:col-span-4">
-                <InputLabel for="name" value="Team Name" />
+                <InputLabel for="name" value="Organization Name" />
 
                 <TextInput
                     id="name"
