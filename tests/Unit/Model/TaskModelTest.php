@@ -7,6 +7,7 @@ namespace Tests\Unit\Model;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Models\Task;
+use App\Models\TimeEntry;
 
 class TaskModelTest extends ModelTestAbstract
 {
@@ -38,5 +39,21 @@ class TaskModelTest extends ModelTestAbstract
         // Assert
         $this->assertNotNull($projectRel);
         $this->assertTrue($projectRel->is($project));
+    }
+
+    public function test_it_has_many_time_entries(): void
+    {
+        // Arrange
+        $otherTask = Task::factory()->create();
+        $task = Task::factory()->create();
+        $timeEntries = TimeEntry::factory()->forTask($task)->count(3)->create();
+        $otherTimeEntries = TimeEntry::factory()->forTask($otherTask)->count(2)->create();
+
+        // Act
+        $task->refresh();
+        $timeEntries = $task->timeEntries;
+
+        // Assert
+        $this->assertCount(3, $timeEntries);
     }
 }
