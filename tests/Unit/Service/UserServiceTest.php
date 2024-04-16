@@ -65,7 +65,7 @@ class UserServiceTest extends TestCase
         $userService->changeOwnership($organization, $newOwner);
 
         // Assert
-        $this->assertSame($newOwner->id, $organization->refresh()->user_id);
+        $this->assertSame($newOwner->getKey(), $organization->refresh()->user_id);
         $this->assertSame(Role::Owner->value, Membership::whereBelongsTo($newOwner)->whereBelongsTo($organization)->firstOrFail()->role);
         $this->assertSame(Role::Admin->value, Membership::whereBelongsTo($oldOwner)->whereBelongsTo($organization)->firstOrFail()->role);
     }

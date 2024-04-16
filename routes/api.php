@@ -103,6 +103,7 @@ Route::middleware('auth:api')->prefix('v1')->name('v1.')->group(static function 
 
     // Import routes
     Route::name('import.')->group(static function () {
+        Route::get('/organizations/{organization}/importers', [ImportController::class, 'index'])->name('index');
         Route::post('/organizations/{organization}/import', [ImportController::class, 'import'])->name('import');
     });
 });

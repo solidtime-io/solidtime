@@ -28,7 +28,7 @@ class OrganizationResourceTest extends FilamentTestCase
         // Arrange
         $user = User::factory()->create();
         $organizations = Organization::factory()->state([
-            'user_id' => $user->id,
+            'user_id' => $user->getKey(),
         ])->createMany(5);
 
         // Act
