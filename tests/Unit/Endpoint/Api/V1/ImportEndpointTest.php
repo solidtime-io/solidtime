@@ -13,6 +13,49 @@ use Mockery\MockInterface;
 
 class ImportEndpointTest extends ApiEndpointTestAbstract
 {
+    public function test_index_fails_if_user_does_not_have_permission()
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+        ]);
+
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.import.index', ['organization' => $data->organization->getKey()]));
+
+        // Assert
+        $response->assertForbidden();
+    }
+
+    public function test_index_returns_importers_if_user_has_permission()
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'import',
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.import.index', ['organization' => $data->organization->getKey()]));
+
+        // Assert
+        $response->assertOk();
+        $response->assertJsonStructure([
+            'data' => [
+                [
+                    'key',
+                    'name',
+                    'description',
+                ],
+            ],
+        ]);
+        $toggleTimeEntries = collect($response->json('data'))->where('key', 'toggl_time_entries')->first();
+        $this->assertSame('toggl_time_entries', $toggleTimeEntries['key']);
+        $this->assertSame('Toggl Time Entries', $toggleTimeEntries['name']);
+        $this->assertSame(__('importer.toggl_time_entries.description'), $toggleTimeEntries['description']);
+    }
+
     public function test_import_fails_if_user_does_not_have_permission()
     {
         // Arrange
@@ -22,7 +65,7 @@ class ImportEndpointTest extends ApiEndpointTestAbstract
         Passport::actingAs($data->user);
 
         // Act
-        $response = $this->postJson(route('api.v1.import.import', ['organization' => $data->organization->id]), [
+        $response = $this->postJson(route('api.v1.import.import', ['organization' => $data->organization->getKey()]), [
             'type' => 'toggl_time_entries',
             'data' => base64_encode('some data'),
             'options' => [],
@@ -48,7 +91,7 @@ class ImportEndpointTest extends ApiEndpointTestAbstract
         Passport::actingAs($user->user);
 
         // Act
-        $response = $this->postJson(route('api.v1.import.import', ['organization' => $user->organization->id]), [
+        $response = $this->postJson(route('api.v1.import.import', ['organization' => $user->organization->getKey()]), [
             'type' => 'toggl_time_entries',
             'data' => base64_encode('some data'),
         ]);
@@ -84,7 +127,7 @@ class ImportEndpointTest extends ApiEndpointTestAbstract
         Passport::actingAs($user->user);
 
         // Act
-        $response = $this->postJson(route('api.v1.import.import', ['organization' => $user->organization->id]), [
+        $response = $this->postJson(route('api.v1.import.import', ['organization' => $user->organization->getKey()]), [
             'type' => 'toggl_time_entries',
             'data' => base64_encode('some data'),
         ]);

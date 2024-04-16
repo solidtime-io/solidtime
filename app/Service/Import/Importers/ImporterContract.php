@@ -13,4 +13,8 @@ interface ImporterContract
     public function importData(string $data): void;
 
     public function getReport(): ReportDto;
+
+    public function getName(): string;
+
+    public function getDescription(): string;
 }
