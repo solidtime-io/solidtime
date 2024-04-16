@@ -60,6 +60,7 @@ export const useCurrentTimeEntryStore = defineStore('currentTimeEntry', () => {
                 api.getTimeEntries({
                     queries: {
                         active: 'true',
+                        user_id: getCurrentUserId(),
                     },
                     params: {
                         organization: organizationId,
