@@ -39,7 +39,7 @@ class ReportDto
      *    tasks: array{
      *       created: int,
      *    },
-     *    time-entries: array{
+     *    time_entries: array{
      *       created: int,
      *    },
      *    tags: array{
@@ -62,7 +62,7 @@ class ReportDto
             'tasks' => [
                 'created' => $this->tasksCreated,
             ],
-            'time-entries' => [
+            'time_entries' => [
                 'created' => $this->timeEntriesCreated,
             ],
             'tags' => [
