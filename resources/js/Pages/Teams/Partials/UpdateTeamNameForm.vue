@@ -61,7 +61,7 @@ const updateTeamName = () => {
                 </div>
                 <div>
                     <Link href="/billing">
-                        <PrimaryButton v-if="isBillingActivated()">
+                        <PrimaryButton type="button" v-if="isBillingActivated()">
                             <CreditCardIcon class="w-5 h-5 me-2" />
                             Go to Billing
                         </PrimaryButton>

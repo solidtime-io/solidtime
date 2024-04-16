@@ -12,6 +12,7 @@ import dayjs from 'dayjs';
 import { useCurrentTimeEntryStore } from '@/utils/useCurrentTimeEntry';
 import TimeEntryMoreOptionsDropdown from '@/Components/Common/TimeEntry/TimeEntryMoreOptionsDropdown.vue';
 import TimeTrackerProjectTaskDropdown from '@/Components/Common/TimeTracker/TimeTrackerProjectTaskDropdown.vue';
+import BillableToggleButton from '@/Components/Common/BillableToggleButton.vue';
 
 const currentTimeEntryStore = useCurrentTimeEntryStore();
 const { stopTimer, updateTimer } = currentTimeEntryStore;
@@ -106,6 +107,15 @@ function updateProjectAndTask(projectId: string, taskId: string) {
                     <TimeEntryRowTagDropdown
                         @changed="updateTimeEntryTags"
                         :modelValue="timeEntry.tags"></TimeEntryRowTagDropdown>
+                    <BillableToggleButton
+                        :modelValue="timeEntry.billable"
+                        size="small"
+                        @changed="
+                            updateTimeEntry({
+                                ...timeEntry,
+                                billable: $event,
+                            })
+                        "></BillableToggleButton>
                     <div class="flex-1">
                         <TimeEntryRangeSelector
                             :start="timeEntry.start"

@@ -4,7 +4,10 @@ import { PLAYWRIGHT_BASE_URL } from '../playwright/config';
 test('test that user name can be updated', async ({ page }) => {
     await page.goto(PLAYWRIGHT_BASE_URL + '/user/profile');
     await page.getByLabel('Name').fill('NEW NAME');
-    await page.getByRole('button', { name: 'Save' }).first().click();
+    await Promise.all([
+        page.getByRole('button', { name: 'Save' }).first().click(),
+        page.waitForResponse('**/user/profile-information'),
+    ]);
     await page.reload();
     await expect(page.getByLabel('Name')).toHaveValue('NEW NAME');
 });
