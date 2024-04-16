@@ -68,3 +68,9 @@ export type MemberIndexResponse = ZodiosResponseByAlias<
 export type Member = MemberIndexResponse['data'][0];
 
 export type CreateTagBody = ZodiosBodyByAlias<SolidTimeApi, 'createTag'>;
+
+export type ImportType = ZodiosResponseByAlias<
+    SolidTimeApi,
+    'getImporters'
+>['data'][0];
+export type ImportReport = ZodiosResponseByAlias<SolidTimeApi, 'importData'>;

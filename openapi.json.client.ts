@@ -433,7 +433,7 @@ const endpoints = makeApi([
                         tasks: z
                             .object({ created: z.number().int() })
                             .passthrough(),
-                        'time-entries': z
+                        time_entries: z
                             .object({ created: z.number().int() })
                             .passthrough(),
                         tags: z
@@ -473,6 +473,44 @@ const endpoints = makeApi([
                         errors: z.record(z.array(z.string())),
                     })
                     .passthrough(),
+            },
+        ],
+    },
+    {
+        method: 'get',
+        path: '/v1/organizations/:organization/importers',
+        alias: 'getImporters',
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'organization',
+                type: 'Path',
+                schema: z.string().uuid(),
+            },
+        ],
+        response: z
+            .object({
+                data: z.array(
+                    z
+                        .object({
+                            key: z.string(),
+                            name: z.string(),
+                            description: z.string(),
+                        })
+                        .passthrough()
+                ),
+            })
+            .passthrough(),
+        errors: [
+            {
+                status: 403,
+                description: `Authorization error`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 404,
+                description: `Not found`,
+                schema: z.object({ message: z.string() }).passthrough(),
             },
         ],
     },
@@ -1545,6 +1583,8 @@ const endpoints = makeApi([
         method: 'get',
         path: '/v1/organizations/:organization/time-entries',
         alias: 'getTimeEntries',
+        description: `If you only need time entries for a specific user, you can filter by &#x60;user_id&#x60;.
+Users with the permission &#x60;time-entries:view:own&#x60; can only use this endpoint with their own user ID in the user_id filter.`,
         requestFormat: 'json',
         parameters: [
             {

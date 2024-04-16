@@ -145,7 +145,7 @@ class ImportEndpointTest extends ApiEndpointTestAbstract
                 'tasks' => [
                     'created' => 3,
                 ],
-                'time-entries' => [
+                'time_entries' => [
                     'created' => 4,
                 ],
                 'tags' => [
