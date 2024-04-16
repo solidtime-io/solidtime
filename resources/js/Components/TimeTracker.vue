@@ -180,7 +180,11 @@ function onTimeEntryEnterPress() {
                         v-model="
                             currentTimeEntry.tags
                         "></TimeTrackerTagDropdown>
-                    <BillableToggleButton></BillableToggleButton>
+                    <BillableToggleButton
+                        @changed="updateTimeEntry"
+                        v-model="
+                            currentTimeEntry.billable
+                        "></BillableToggleButton>
                 </div>
                 <div class="border-l border-card-border">
                     <input
