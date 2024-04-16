@@ -142,4 +142,16 @@ class TogglTimeEntriesImporter extends DefaultImporter
             }
         }
     }
+
+    #[\Override]
+    public function getName(): string
+    {
+        return __('importer.toggl_time_entries.name');
+    }
+
+    #[\Override]
+    public function getDescription(): string
+    {
+        return __('importer.toggl_time_entries.description');
+    }
 }

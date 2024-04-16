@@ -84,4 +84,16 @@ class ClockifyProjectsImporter extends DefaultImporter
             }
         }
     }
+
+    #[\Override]
+    public function getName(): string
+    {
+        return __('importer.clockify_projects.name');
+    }
+
+    #[\Override]
+    public function getDescription(): string
+    {
+        return __('importer.clockify_projects.description');
+    }
 }

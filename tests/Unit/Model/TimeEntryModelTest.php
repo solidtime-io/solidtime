@@ -113,7 +113,7 @@ class TimeEntryModelTest extends ModelTestAbstract
         $this->assertSame('UTC', $timeEntry->start->getTimezone()->toRegionName());
         $this->assertSame('2021-01-01 13:00:00', $timeEntry->start->toDateTimeString());
         $this->assertDatabaseHas(TimeEntry::class, [
-            'id' => $timeEntry->id,
+            'id' => $timeEntry->getKey(),
             'start' => '2021-01-01 13:00:00',
         ]);
     }

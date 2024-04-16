@@ -158,4 +158,16 @@ class ClockifyTimeEntriesImporter extends DefaultImporter
             }
         }
     }
+
+    #[\Override]
+    public function getName(): string
+    {
+        return __('importer.toggl_data_importer.name');
+    }
+
+    #[\Override]
+    public function getDescription(): string
+    {
+        return __('importer.toggl_data_importer.description');
+    }
 }
