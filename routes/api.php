@@ -27,7 +27,10 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 |
 */
 
-Route::middleware('auth:api')->prefix('v1')->name('v1.')->group(static function () {
+Route::middleware([
+    'auth:api',
+    'verified',
+])->prefix('v1')->name('v1.')->group(static function () {
     // Organization routes
     Route::name('organizations.')->group(static function () {
         Route::get('/organizations/{organization}', [OrganizationController::class, 'show'])->name('show');

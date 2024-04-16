@@ -6,7 +6,9 @@ namespace App\Models;
 
 use App\Enums\Weekday;
 use Database\Factories\UserFactory;
+use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -29,6 +31,9 @@ use Laravel\Passport\HasApiTokens;
  * @property string $timezone
  * @property bool $is_placeholder
  * @property Weekday $week_start
+ * @property string|null $profile_photo_path
+ * @property-read Organization $currentTeam
+ * @property-read string $profile_photo_url
  * @property Collection<Organization> $organizations
  * @property Collection<TimeEntry> $timeEntries
  *
@@ -36,8 +41,9 @@ use Laravel\Passport\HasApiTokens;
  * @method static UserFactory factory()
  * @method static Builder<User> query()
  * @method Builder<User> belongsToOrganization(Organization $organization)
+ * @method Builder<User> active()
  */
-class User extends Authenticatable
+class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 {
     use HasApiTokens;
     use HasFactory;
@@ -93,18 +99,9 @@ class User extends Authenticatable
         'week_start' => Weekday::Monday,
     ];
 
-    /**
-     * The accessors to append to the model's array form.
-     *
-     * @var array<int, string>
-     */
-    protected $appends = [
-        'profile_photo_url',
-    ];
-
     public function canAccessPanel(Panel $panel): bool
     {
-        return in_array($this->email, config('auth.super_admins', []), true);
+        return in_array($this->email, config('auth.super_admins', []), true) && $this->hasVerifiedEmail();
     }
 
     /**
@@ -128,6 +125,14 @@ class User extends Authenticatable
     public function timeEntries(): HasMany
     {
         return $this->hasMany(TimeEntry::class);
+    }
+
+    /**
+     * @param  Builder<User>  $builder
+     */
+    public function scopeActive(Builder $builder): void
+    {
+        $builder->where('is_placeholder', '=', false);
     }
 
     /**

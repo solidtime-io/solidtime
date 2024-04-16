@@ -10,3 +10,5 @@ parameters:
     level: 7
 
     checkOctaneCompatibility: true
+    checkModelProperties: true
+    noEnvCallsOutsideOfConfig: true

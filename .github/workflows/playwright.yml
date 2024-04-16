@@ -1,9 +1,6 @@
 name: Playwright Tests
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  workflow_dispatch:
 jobs:
   test:
     timeout-minutes: 60
@@ -68,7 +65,7 @@ jobs:
         env:
           PLAYWRIGHT_BASE_URL: 'http://127.0.0.1:8000'
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: test-results
