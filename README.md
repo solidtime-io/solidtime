@@ -1,9 +1,9 @@
-# solidtime
+# solidtime - The modern Open-Source Time Tracker
 
-![GitHub License](https://img.shields.io/github/license/solidtime-io/solidtime)
+![GitHub License](https://img.shields.io/github/license/solidtime-io/solidtime?style=flat-square)
 ![Codecov](https://img.shields.io/codecov/c/github/solidtime-io/solidtime?style=flat-square&logo=codecov)
 ![GitHub Actions Unit Tests Status](https://img.shields.io/github/actions/workflow/status/solidtime-io/solidtime/phpunit.yml?style=flat-square)
-![PHPStan badge](https://img.shields.io/badge/PHPstan-Level_7-blue?style=flat-square&color=blue)
+![PHPStan badge](https://img.shields.io/badge/PHPStan-Level_7-blue?style=flat-square&color=blue)
 
 ![Screenshot of the solidtime application with header: solidtime - The modern Open-Source Time Tracker](docs/solidtime-banner.png "solidtime Banner")
 
