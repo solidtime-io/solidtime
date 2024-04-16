@@ -6,6 +6,8 @@ namespace App\Service;
 
 use App\Enums\Weekday;
 use App\Models\Organization;
+use App\Models\Project;
+use App\Models\Task;
 use App\Models\TimeEntry;
 use App\Models\User;
 use Carbon\Carbon;
@@ -41,11 +43,11 @@ class DashboardService
     /**
      * @return Collection<int, string>
      */
-    private function daysOfThisWeek(CarbonTimeZone $timeZone, Weekday $weekday): Collection
+    private function daysOfThisWeek(CarbonTimeZone $timeZone, Weekday $startOfWeek): Collection
     {
         $result = new Collection();
         $date = Carbon::now($timeZone);
-        $start = $date->startOfWeek($weekday->carbonWeekDay());
+        $start = $date->startOfWeek($startOfWeek->carbonWeekDay());
         for ($i = 0; $i < 7; $i++) {
             $result->push($start->format('Y-m-d'));
             $start->addDay();
@@ -77,6 +79,18 @@ class DashboardService
         return $builder->whereBetween('start', [
             $first->startOfDay()->utc(),
             $last->endOfDay()->utc(),
+        ]);
+    }
+
+    /**
+     * @param  Builder<TimeEntry>  $builder
+     * @return Builder<TimeEntry>
+     */
+    private function constrainDateByCurrentWeek(Builder $builder, CarbonTimeZone $timeZone, Weekday $startOfWeek): Builder
+    {
+        return $builder->whereBetween('start', [
+            Carbon::now($timeZone)->startOfWeek($startOfWeek->carbonWeekDay())->utc(),
+            Carbon::now($timeZone)->endOfWeek($startOfWeek->carbonWeekDay())->utc(),
         ]);
     }
 
@@ -235,22 +249,250 @@ class DashboardService
      */
     public function weeklyProjectOverview(User $user, Organization $organization): array
     {
+        $timezone = $this->timezoneService->getTimezoneFromUser($user);
+
+        $query = TimeEntry::query()
+            ->select(DB::raw('project_id, round(sum(extract(epoch from (coalesce("end", now()) - start)))) as aggregate'))
+            ->where('user_id', '=', $user->getKey())
+            ->where('organization_id', '=', $organization->getKey())
+            ->groupBy('project_id');
+
+        $query = $this->constrainDateByCurrentWeek($query, $timezone, $user->week_start);
+        /** @var Collection<int, object{project_id: string, aggregate: int}> $entries */
+        $entries = $query->get();
+
+        $projectIds = $entries->pluck('project_id')->whereNotNull()->all();
+        $projectsMap = Project::query()
+            ->select(['id', 'name', 'color'])
+            ->whereBelongsTo($organization, 'organization')
+            ->whereIn('id', $projectIds)
+            ->get()
+            ->keyBy('id');
+
+        $response = [];
+
+        $aggregateOther = 0;
+
+        foreach ($entries as $entry) {
+            $project = $projectsMap->get($entry->project_id);
+            if ($project === null) {
+                $aggregateOther += (int) $entry->aggregate;
+
+                continue;
+            }
+
+            $response[] = [
+                'value' => (int) $entry->aggregate,
+                'id' => $entry->project_id,
+                'name' => $project->name,
+                'color' => $project->color,
+            ];
+        }
+
+        if ($aggregateOther > 0 || count($response) === 0) {
+            $response[] = [
+                'value' => $aggregateOther,
+                'id' => null,
+                'name' => 'No project',
+                'color' => '#cccccc',
+            ];
+
+        }
+
+        return $response;
+    }
+
+    /**
+     * Rhe 4 most recently active members of your team with user_id, name, description of the latest time entry, time_entry_id, task_id and a boolean status if the team member is currently working
+     *
+     * @return array<int, array{user_id: string, name: string, description: string|null, time_entry_id: string, task_id: string|null, status: bool }>
+     */
+    public function latestTeamActivity(Organization $organization): array
+    {
+        $timeEntries = TimeEntry::query()
+            ->select(DB::raw('distinct on (user_id) user_id, description, id, task_id, start, "end"'))
+            ->whereBelongsTo($organization, 'organization')
+            ->orderBy('user_id')
+            ->orderBy('start', 'desc')
+            // Note: limit here does not work because of the distinct on
+            ->with([
+                'user',
+            ])
+            ->get()
+            ->sortByDesc('start')
+            ->slice(0, 4);
+
+        $response = [];
+
+        foreach ($timeEntries as $timeEntry) {
+            $response[] = [
+                'user_id' => $timeEntry->user_id,
+                'name' => $timeEntry->user->name,
+                'description' => $timeEntry->description,
+                'time_entry_id' => $timeEntry->id,
+                'task_id' => $timeEntry->task_id,
+                'status' => $timeEntry->end === null,
+            ];
+        }
+
+        return $response;
+    }
+
+    /**
+     * The 4 tasks with the most recent time entries
+     *
+     * @return array<int, array{id: string, name: string, project_name: string|null, project_id: string }>
+     */
+    public function latestTasks(User $user, Organization $organization): array
+    {
+        $tasks = Task::query()
+            ->where('organization_id', '=', $organization->getKey())
+            ->with([
+                'project',
+            ])
+            ->whereHas('timeEntries', function (Builder $builder) use ($user, $organization): void {
+                /** @var Builder<TimeEntry> $builder */
+                $builder->where('user_id', '=', $user->getKey())
+                    ->where('organization_id', '=', $organization->getKey());
+            })
+            ->orderByDesc(
+                TimeEntry::select('start')
+                    ->whereColumn('task_id', 'tasks.id')
+                    ->orderBy('start', 'desc')
+                    ->limit(1)
+            )
+            ->limit(4)
+            ->get();
+
+        $response = [];
+
+        foreach ($tasks as $task) {
+            $response[] = [
+                'id' => $task->id,
+                'name' => $task->name,
+                'project_name' => $task->project->name,
+                'project_id' => $task->project->id,
+            ];
+        }
+
+        return $response;
+    }
+
+    /**
+     * The last 7 days with statistics for the time entries
+     *
+     * @return array<int, array{ date: string, duration: int, history: array<int> }>
+     */
+    public function lastSevenDays(User $user, Organization $organization): array
+    {
         return [
             [
-                'value' => 120,
-                'name' => 'Project 11',
-                'color' => '#26a69a',
+                'date' => '2024-02-26',
+                'duration' => 3600, // in seconds
+                // if that is too difficult we can just skip that for now
+                'history' => [
+                    // duration in s of the 3h windows for the day starting at 00:00
+                    300,
+                    0,
+                    500,
+                    0,
+                    100,
+                    200,
+                    100,
+                    300,
+                ],
             ],
             [
-                'value' => 200,
-                'name' => 'Project 2',
-                'color' => '#d4e157',
+                'date' => '2024-02-25',
+                'duration' => 7200, // in seconds
+                'history' => [
+                    // duration in s of the 3h windows for the day starting at 00:00
+                    300,
+                    0,
+                    500,
+                    0,
+                    100,
+                    200,
+                    100,
+                    300,
+                ],
             ],
             [
-                'value' => 150,
-                'name' => 'Project 3',
-                'color' => '#ff7043',
+                'date' => '2024-02-24',
+                'duration' => 10800, // in seconds
+                'history' => [
+                    // duration in s of the 3h windows for the day starting at 00:00
+                    300,
+                    0,
+                    500,
+                    0,
+                    100,
+                    200,
+                    100,
+                    300,
+                ],
             ],
+            [
+                'date' => '2024-02-23',
+                'duration' => 14400, // in seconds
+                'history' => [
+                    // duration in s of the 3h windows for the day starting at 00:00
+                    300,
+                    0,
+                    500,
+                    0,
+                    100,
+                    200,
+                    100,
+                    300,
+                ],
+            ],
+            [
+                'date' => '2024-02-22',
+                'duration' => 18000, // in seconds
+                'history' => [
+                    // duration in s of the 3h windows for the day starting at 00:00
+                    300,
+                    0,
+                    500,
+                    0,
+                    100,
+                    200,
+                    100,
+                    300,
+                ],
+            ],
+            [
+                'date' => '2024-02-21',
+                'duration' => 21600, // in seconds
+                'history' => [
+                    // duration in s of the 3h windows for the day starting at 00:00
+                    300,
+                    0,
+                    500,
+                    0,
+                    100,
+                    200,
+                    100,
+                    300,
+                ],
+            ],
+            [
+                'date' => '2024-02-20',
+                'duration' => 25200, // in seconds
+                'history' => [
+                    // duration in s of the 3h windows for the day starting at 00:00
+                    300,
+                    0,
+                    500,
+                    0,
+                    100,
+                    200,
+                    100,
+                    300,
+                ],
+            ],
+
         ];
     }
 }
