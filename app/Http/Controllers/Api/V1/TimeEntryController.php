@@ -31,7 +31,10 @@ class TimeEntryController extends Controller
     }
 
     /**
-     * Get time entries
+     * Get all time entries in organization
+     *
+     * If you only need time entries for a specific user, you can filter by `user_id`.
+     * Users with the permission `time-entries:view:own` can only use this endpoint with their own user ID in the user_id filter.
      *
      * @throws AuthorizationException
      *

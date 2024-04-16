@@ -27,7 +27,7 @@ class ProjectController extends Controller
     }
 
     /**
-     * Get projects
+     * Get projects visible to the current user
      *
      * @return ProjectCollection<ProjectResource>
      *
