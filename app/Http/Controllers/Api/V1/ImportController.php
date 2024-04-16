@@ -84,7 +84,7 @@ class ImportController extends Controller
                  *   tasks: array{
                  *     created: int,
                  *   },
-                 *   time-entries: array{
+                 *   time_entries: array{
                  *     created: int,
                  *   },
                  *   tags: array{
