@@ -2,9 +2,20 @@
 import { computed } from 'vue';
 import { twMerge } from 'tailwind-merge';
 const active = defineModel({ default: false });
+const emit = defineEmits(['changed']);
 function toggleBillable() {
     active.value = !active.value;
+    emit('changed', active.value);
 }
+
+const props = withDefaults(
+    defineProps<{
+        size: 'small' | 'base';
+    }>(),
+    {
+        size: 'base',
+    }
+);
 
 const iconColorClasses = computed(() => {
     if (active.value) {
@@ -13,6 +24,19 @@ const iconColorClasses = computed(() => {
         return 'text-icon-default focus:text-icon-active hover:text-icon-active';
     }
 });
+
+const iconSizeClasses = computed(() => {
+    if (props.size === 'small') {
+        return 'w-5 h-5';
+    } else {
+        return 'w-5 sm:w-6 h-5 sm:h-6';
+    }
+});
+
+const iconSizeWrapperClasses =
+    props.size === 'small'
+        ? 'w-6 sm:w-8 h-6 sm:h-8'
+        : 'w-7 sm:w-10 h-7 sm:h-10';
 </script>
 
 <template>
@@ -21,11 +45,12 @@ const iconColorClasses = computed(() => {
         :class="
             twMerge(
                 iconColorClasses,
-                'flex-shrink-0 ring-0 focus:outline-none focus:ring-0 transition focus:bg-card-background-separator hover:bg-card-background-separator rounded-full w-7 sm:w-11 h-7 sm:h-11 flex items-center justify-center'
+                iconSizeWrapperClasses,
+                'flex-shrink-0 ring-0 focus:outline-none focus:ring-0 transition focus:bg-card-background-separator hover:bg-card-background-separator rounded-full flex items-center justify-center'
             )
         ">
         <svg
-            class="w-5 sm:w-7 h-5 sm:h-7"
+            :class="iconSizeClasses"
             viewBox="0 0 8 14"
             fill="none"
             xmlns="http://www.w3.org/2000/svg">

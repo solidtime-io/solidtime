@@ -276,3 +276,5 @@ test('test that adding a new tag when the timer is running', async ({
 // test that sidebar timetracker starts and stops timer
 
 // test that sidebar timetracker changes state when tmer on dashboard is started
+
+// test billable toggle
