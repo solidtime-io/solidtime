@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { getCurrentOrganizationId } from '@/utils/useUser';
+import { getCurrentOrganizationId, getCurrentUserId } from '@/utils/useUser';
 import { api } from '../../../openapi.json.client';
 import { reactive, ref } from 'vue';
 import type { TimeEntry } from '@/utils/api';
@@ -21,6 +21,7 @@ export const useTimeEntriesStore = defineStore('timeEntries', () => {
                     },
                     queries: {
                         only_full_dates: 'true',
+                        user_id: getCurrentUserId(),
                     },
                 }),
                 undefined,
@@ -46,6 +47,7 @@ export const useTimeEntriesStore = defineStore('timeEntries', () => {
                     },
                     queries: {
                         only_full_dates: 'true',
+                        user_id: getCurrentUserId(),
                         before: dayjs(latestTimeEntry.start).utc().format(),
                     },
                 }),
