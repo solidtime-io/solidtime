@@ -233,7 +233,7 @@ class TaskEndpointTest extends ApiEndpointTestAbstract
         $this->assertDatabaseHas(Task::class, [
             'name' => 'Task 1',
             'project_id' => $project->getKey(),
-            'organization_id' => $data->organization->id,
+            'organization_id' => $data->organization->getKey(),
         ]);
     }
 

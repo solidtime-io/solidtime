@@ -32,6 +32,14 @@ class ImporterProvider
         return array_keys($this->importers);
     }
 
+    /**
+     * @return array<string, class-string<ImporterContract>>
+     */
+    public function getImporters(): array
+    {
+        return $this->importers;
+    }
+
     public function getImporter(string $type): ImporterContract
     {
         if (! array_key_exists($type, $this->importers)) {
