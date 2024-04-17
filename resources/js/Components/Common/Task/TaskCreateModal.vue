@@ -24,6 +24,7 @@ async function submit() {
         project_id: props.projectId,
     });
     show.value = false;
+    taskName.value = '';
 }
 
 const taskNameInput = ref<HTMLInputElement | null>(null);
