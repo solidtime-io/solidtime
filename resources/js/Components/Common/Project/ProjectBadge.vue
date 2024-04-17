@@ -12,6 +12,7 @@ const props = withDefaults(
         border: boolean;
     }>(),
     {
+        name: '',
         size: 'base',
         tag: 'div',
         color: 'var(--theme-color-icon-default)',

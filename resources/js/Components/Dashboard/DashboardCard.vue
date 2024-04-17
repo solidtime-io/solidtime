@@ -3,8 +3,9 @@
         <CardTitle :title="title" :icon="icon"></CardTitle>
 
         <div
-            class="rounded-lg bg-card-background border border-card-border flex-1 flex items-center">
-            <div class="divide-y divide-card-background-separator w-full">
+            class="rounded-lg bg-card-background border border-card-border flex-1 flex items-stretch">
+            <div
+                class="divide-y divide-card-background-separator w-full flex flex-col">
                 <slot></slot>
             </div>
         </div>
