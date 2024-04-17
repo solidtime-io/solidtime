@@ -13,6 +13,7 @@ import { twMerge } from 'tailwind-merge';
 import Badge from '@/Components/Common/Badge.vue';
 import { useClientsStore } from '@/utils/useClients';
 import { storeToRefs } from 'pinia';
+import ProjectColorSelector from '@/Components/Common/Project/ProjectColorSelector.vue';
 
 const { createProject } = useProjectsStore();
 const { clients } = storeToRefs(useClientsStore());
@@ -28,6 +29,11 @@ const project = ref<CreateProjectBody>({
 async function submit() {
     await createProject(project.value);
     show.value = false;
+    project.value = {
+        name: '',
+        color: getRandomColor(),
+        client_id: null,
+    };
 }
 
 const projectNameInput = ref<HTMLInputElement | null>(null);
@@ -54,14 +60,8 @@ const currentClientName = computed(() => {
 
         <template #content>
             <div class="flex items-center space-x-4">
-                <div class="px-3">
-                    <div
-                        :style="{
-                            backgroundColor: project.color,
-                            boxShadow: `var(--tw-ring-inset) 0 0 0 calc(5px + var(--tw-ring-offset-width)) ${project.color}30`,
-                        }"
-                        class="w-4 h-4 rounded-full"></div>
-                </div>
+                <ProjectColorSelector
+                    v-model="project.color"></ProjectColorSelector>
                 <div class="col-span-6 sm:col-span-4 flex-1">
                     <TextInput
                         id="projectName"
