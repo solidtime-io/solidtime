@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Database\Factories\OrganizationInvitationFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Laravel\Jetstream\Jetstream;
 use Laravel\Jetstream\TeamInvitation as JetstreamTeamInvitation;
@@ -15,9 +17,12 @@ use Laravel\Jetstream\TeamInvitation as JetstreamTeamInvitation;
  * @property string $role
  * @property string $organization_id
  * @property-read Organization $organization
+ *
+ * @method static OrganizationInvitationFactory factory()
  */
 class OrganizationInvitation extends JetstreamTeamInvitation
 {
+    use HasFactory;
     use HasUuids;
 
     /**

@@ -76,4 +76,52 @@ class InvitationEndpointTest extends ApiEndpointTestAbstract
         $this->assertEquals('test@asdf.at', $invitation->email);
         $this->assertEquals('employee', $invitation->role);
     }
+
+    public function test_delete_fails_if_user_has_no_permission_to_remove_invitations(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+        ]);
+        Passport::actingAs($data->user);
+        $invitation = OrganizationInvitation::factory()->forOrganization($data->organization)->create();
+
+        // Act
+        $response = $this->deleteJson(route('api.v1.invitations.destroy', [$data->organization->getKey(), $invitation->getKey()]));
+
+        // Assert
+        $response->assertStatus(403);
+    }
+
+    public function test_delete_fails_if_invitation_belongs_to_different_organization(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'invitations:remove',
+        ]);
+        Passport::actingAs($data->user);
+        $invitation = OrganizationInvitation::factory()->create();
+
+        // Act
+        $response = $this->deleteJson(route('api.v1.invitations.destroy', [$data->organization->getKey(), $invitation->getKey()]));
+
+        // Assert
+        $response->assertStatus(403);
+    }
+
+    public function test_delete_removes_invitation(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'invitations:remove',
+        ]);
+        Passport::actingAs($data->user);
+        $invitation = OrganizationInvitation::factory()->forOrganization($data->organization)->create();
+
+        // Act
+        $response = $this->deleteJson(route('api.v1.invitations.destroy', [$data->organization->getKey(), $invitation->getKey()]));
+
+        // Assert
+        $response->assertStatus(204);
+        $this->assertNull(OrganizationInvitation::find($invitation->getKey()));
+    }
 }
