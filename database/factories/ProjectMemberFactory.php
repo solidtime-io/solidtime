@@ -22,7 +22,7 @@ class ProjectMemberFactory extends Factory
     public function definition(): array
     {
         return [
-            'billable_rate' => $this->faker->numberBetween(50, 1000) * 100,
+            'billable_rate' => $this->faker->numberBetween(10, 10000) * 100,
             'project_id' => Project::factory(),
             'user_id' => User::factory(),
         ];
