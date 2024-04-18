@@ -10,7 +10,8 @@ import {
 </script>
 
 <template>
-    <div class="px-3.5 py-2 flex justify-between @container">
+    <div
+        class="px-3.5 py-2 flex justify-between @container border-b border-card-background-separator">
         <div class="flex items-center">
             <p class="font-semibold text-sm text-white">
                 {{ formatHumanReadableDate(date) }}

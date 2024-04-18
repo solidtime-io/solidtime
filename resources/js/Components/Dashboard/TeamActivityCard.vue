@@ -20,6 +20,7 @@ defineProps<{
         <TeamActivityCardEntry
             v-for="activity in latestTeamActivity"
             :key="activity.user_id"
+            :class="latestTeamActivity.length === 4 ? 'last:border-0' : ''"
             :name="activity.name"
             :description="activity.description"
             :working="activity.status"></TeamActivityCardEntry>

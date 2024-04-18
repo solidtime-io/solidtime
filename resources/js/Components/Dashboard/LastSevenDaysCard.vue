@@ -15,6 +15,7 @@ defineProps<{
     <DashboardCard title="Last 7 Days" :icon="CalendarIcon">
         <DayOverviewCardEntry
             v-for="day in last7Days"
+            :class="last7Days.length === 7 ? 'last:border-0' : ''"
             :key="day.date"
             :date="day.date"
             :duration="day.duration"></DayOverviewCardEntry>

@@ -7,7 +7,7 @@ defineProps<{
 </script>
 
 <template>
-    <div class="px-4 py-2 2xl:py-3">
+    <div class="px-4 py-2 2xl:py-3 border-b border-card-background-separator">
         <div class="col-span-2">
             <div class="flex justify-between">
                 <p class="font-semibold text-sm text-white">
@@ -29,7 +29,8 @@ defineProps<{
                     </span>
                 </div>
             </div>
-            <div class="text-muted text-sm font-medium">
+            <div
+                class="text-muted text-sm font-medium text-ellipsis whitespace-nowrap max-w-full overflow-hidden">
                 {{ description }}
             </div>
         </div>
