@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 use Laravel\Jetstream\Events\TeamCreated;
 use Laravel\Jetstream\Events\TeamDeleted;
 use Laravel\Jetstream\Events\TeamUpdated;
@@ -24,8 +25,11 @@ use Laravel\Jetstream\Team as JetstreamTeam;
  * @property int|null $billable_rate
  * @property string $user_id
  * @property User $owner
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  * @property Collection<User> $users
  * @property Collection<string, User> $realUsers
+ * @property Membership $membership
  *
  * @method HasMany<OrganizationInvitation> teamInvitations()
  * @method static OrganizationFactory factory()
