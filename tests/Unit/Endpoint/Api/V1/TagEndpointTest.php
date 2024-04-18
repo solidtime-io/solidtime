@@ -6,6 +6,7 @@ namespace Tests\Unit\Endpoint\Api\V1;
 
 use App\Models\Organization;
 use App\Models\Tag;
+use App\Models\TimeEntry;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Laravel\Passport\Passport;
 
@@ -196,6 +197,29 @@ class TagEndpointTest extends ApiEndpointTestAbstract
             'id' => $tag->getKey(),
             'name' => $tag->name,
             'organization_id' => $otherOrganization->getKey(),
+        ]);
+    }
+
+    public function test_destroy_endpoint_fails_if_tag_is_still_in_use_by_a_time_entry(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'tags:delete',
+        ]);
+        $tag = Tag::factory()->forOrganization($data->organization)->create();
+        TimeEntry::factory()->forUser($data->user)->forOrganization($data->organization)->create([
+            'tags' => [$tag->getKey()],
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->deleteJson(route('api.v1.tags.destroy', [$data->organization->getKey(), $tag->getKey()]));
+
+        // Assert
+        $response->assertStatus(400);
+        $response->assertJsonPath('message', 'The tag is still used by a time entry and can not be deleted.');
+        $this->assertDatabaseHas(Tag::class, [
+            'id' => $tag->getKey(),
         ]);
     }
 

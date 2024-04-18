@@ -6,6 +6,9 @@ namespace Tests\Unit\Endpoint\Api\V1;
 
 use App\Models\Membership;
 use App\Models\Organization;
+use App\Models\Project;
+use App\Models\ProjectMember;
+use App\Models\TimeEntry;
 use App\Models\User;
 use Laravel\Passport\Passport;
 
@@ -152,6 +155,47 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
 
         // Assert
         $response->assertStatus(403);
+    }
+
+    public function test_destroy_endpoint_fails_if_member_is_still_in_use_by_a_time_entry(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'members:delete',
+        ]);
+        TimeEntry::factory()->forUser($data->user)->forOrganization($data->organization)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->deleteJson(route('api.v1.members.destroy', [$data->organization->getKey(), $data->member->getKey()]));
+
+        // Assert
+        $response->assertStatus(400);
+        $response->assertJsonPath('message', 'The member is still used by a time entry and can not be deleted.');
+        $this->assertDatabaseHas(Membership::class, [
+            'id' => $data->member->getKey(),
+        ]);
+    }
+
+    public function test_destroy_endpoint_fails_if_member_is_still_in_use_by_a_project_member(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'members:delete',
+        ]);
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        ProjectMember::factory()->forProject($project)->forUser($data->user)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->deleteJson(route('api.v1.members.destroy', [$data->organization->getKey(), $data->member->getKey()]));
+
+        // Assert
+        $response->assertStatus(400);
+        $response->assertJsonPath('message', 'The member is still used by a project member and can not be deleted.');
+        $this->assertDatabaseHas(Membership::class, [
+            'id' => $data->member->getKey(),
+        ]);
     }
 
     public function test_destroy_member_succeeds_if_data_is_valid(): void

@@ -75,6 +75,14 @@ class Project extends Model
     }
 
     /**
+     * @return HasMany<TimeEntry>
+     */
+    public function timeEntries(): HasMany
+    {
+        return $this->hasMany(TimeEntry::class, 'project_id');
+    }
+
+    /**
      * @param  Builder<Project>  $builder
      */
     public function scopeVisibleByUser(Builder $builder, User $user): void

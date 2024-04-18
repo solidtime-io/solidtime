@@ -6,6 +6,7 @@ namespace Tests\Unit\Endpoint\Api\V1;
 
 use App\Models\Client;
 use App\Models\Organization;
+use App\Models\Project;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Laravel\Passport\Passport;
 
@@ -196,6 +197,27 @@ class ClientEndpointTest extends ApiEndpointTestAbstract
             'id' => $client->getKey(),
             'name' => $client->name,
             'organization_id' => $otherOrganization->getKey(),
+        ]);
+    }
+
+    public function test_destroy_endpoint_fails_if_client_is_still_in_use_by_project(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'clients:delete',
+        ]);
+        $client = Client::factory()->forOrganization($data->organization)->create();
+        $project = Project::factory()->forOrganization($data->organization)->forClient($client)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->deleteJson(route('api.v1.clients.destroy', [$data->organization->getKey(), $client->getKey()]));
+
+        // Assert
+        $response->assertStatus(400);
+        $response->assertJsonPath('message', 'The client is still used by a project and can not be deleted.');
+        $this->assertDatabaseHas(Client::class, [
+            'id' => $client->getKey(),
         ]);
     }
 

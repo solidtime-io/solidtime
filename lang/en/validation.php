@@ -202,4 +202,16 @@ return [
     'currency' => 'The :attribute field must be a valid currency code (ISO 4217).',
     'organization' => 'The :attribute does not exist.',
     'task_belongs_to_project' => 'The :attribute is not part of the given project.',
+
+    'entities' => [
+        'organization' => 'organization',
+        'project' => 'project',
+        'task' => 'task',
+        'time_entry' => 'time entry',
+        'user' => 'user',
+        'client' => 'client',
+        'member' => 'member',
+        'project_member' => 'project member',
+        'tag' => 'tag',
+    ],
 ];

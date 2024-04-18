@@ -6,6 +6,7 @@ namespace Tests\Unit\Model;
 
 use App\Models\Organization;
 use App\Models\Project;
+use App\Models\Tag;
 use App\Models\Task;
 use App\Models\TimeEntry;
 use App\Models\User;
@@ -116,5 +117,31 @@ class TimeEntryModelTest extends ModelTestAbstract
             'id' => $timeEntry->getKey(),
             'start' => '2021-01-01 13:00:00',
         ]);
+    }
+
+    public function test_scope_has_tag_filter_by_tag(): void
+    {
+        // Arrange
+        $tag1 = Tag::factory()->create();
+        $tag2 = Tag::factory()->create();
+        $timeEntry1 = TimeEntry::factory()->create([
+            'tags' => [$tag1->getKey()],
+        ]);
+        $timeEntry2 = TimeEntry::factory()->create([
+            'tags' => [$tag2->getKey()],
+        ]);
+        $timeEntry3 = TimeEntry::factory()->create([
+            'tags' => ['something-else'],
+        ]);
+        $timeEntry4 = TimeEntry::factory()->create([
+            'tags' => null,
+        ]);
+
+        // Act
+        $result = TimeEntry::hasTag($tag1)->get();
+
+        // Assert
+        $this->assertCount(1, $result);
+        $this->assertTrue($result->first()->is($timeEntry1));
     }
 }

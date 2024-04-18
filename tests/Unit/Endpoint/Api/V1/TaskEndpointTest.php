@@ -7,6 +7,7 @@ namespace Tests\Unit\Endpoint\Api\V1;
 use App\Models\Project;
 use App\Models\ProjectMember;
 use App\Models\Task;
+use App\Models\TimeEntry;
 use Laravel\Passport\Passport;
 
 class TaskEndpointTest extends ApiEndpointTestAbstract
@@ -299,6 +300,27 @@ class TaskEndpointTest extends ApiEndpointTestAbstract
         // Assert
         $response->assertStatus(204);
         $this->assertDatabaseMissing(Task::class, [
+            'id' => $task->getKey(),
+        ]);
+    }
+
+    public function test_destroy_endpoint_fails_if_task_is_still_in_use_by_a_time_entry(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'tasks:delete',
+        ]);
+        $task = Task::factory()->forOrganization($data->organization)->create();
+        TimeEntry::factory()->forUser($data->user)->forTask($task)->forOrganization($data->organization)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->deleteJson(route('api.v1.tasks.destroy', [$data->organization->getKey(), $task->getKey()]));
+
+        // Assert
+        $response->assertStatus(400);
+        $response->assertJsonPath('message', 'The task is still used by a time entry and can not be deleted.');
+        $this->assertDatabaseHas(Task::class, [
             'id' => $task->getKey(),
         ]);
     }

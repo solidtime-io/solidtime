@@ -7,6 +7,8 @@ namespace Tests\Unit\Endpoint\Api\V1;
 use App\Models\Client;
 use App\Models\Organization;
 use App\Models\Project;
+use App\Models\Task;
+use App\Models\TimeEntry;
 use Laravel\Passport\Passport;
 
 class ProjectEndpointTest extends ApiEndpointTestAbstract
@@ -331,6 +333,48 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
 
         // Assert
         $response->assertForbidden();
+    }
+
+    public function test_destroy_endpoint_fails_if_project_is_still_in_use_by_a_task(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'projects:delete',
+        ]);
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        $task = Task::factory()->forProject($project)->forOrganization($data->organization)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->deleteJson(route('api.v1.projects.destroy', [$data->organization->getKey(), $project->getKey()]));
+
+        // Assert
+        $response->assertStatus(400);
+        $response->assertJsonPath('message', 'The project is still used by a task and can not be deleted.');
+        $this->assertDatabaseHas(Project::class, [
+            'id' => $project->getKey(),
+        ]);
+    }
+
+    public function test_destroy_endpoint_fails_if_project_is_still_in_use_by_a_time_entry(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'projects:delete',
+        ]);
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        $timeEntry = TimeEntry::factory()->forProject($project)->forOrganization($data->organization)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->deleteJson(route('api.v1.projects.destroy', [$data->organization->getKey(), $project->getKey()]));
+
+        // Assert
+        $response->assertStatus(400);
+        $response->assertJsonPath('message', 'The project is still used by a time entry and can not be deleted.');
+        $this->assertDatabaseHas(Project::class, [
+            'id' => $project->getKey(),
+        ]);
     }
 
     public function test_destroy_endpoint_deletes_project(): void
