@@ -18,6 +18,7 @@ defineProps<{
             :class="last7Days.length === 7 ? 'last:border-0' : ''"
             :key="day.date"
             :date="day.date"
+            :history="day.history"
             :duration="day.duration"></DayOverviewCardEntry>
     </DashboardCard>
 </template>
