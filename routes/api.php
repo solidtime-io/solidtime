@@ -49,6 +49,7 @@ Route::middleware([
     Route::name('invitations.')->group(static function () {
         Route::get('/organizations/{organization}/invitations', [InvitationController::class, 'index'])->name('index');
         Route::post('/organizations/{organization}/invitations', [InvitationController::class, 'store'])->name('store');
+        Route::delete('/organizations/{organization}/invitations/{invitation}', [InvitationController::class, 'destroy'])->name('destroy');
     });
 
     // Project routes
