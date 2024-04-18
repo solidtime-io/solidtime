@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Exceptions\Api\EntityStillInUseApiException;
 use App\Exceptions\Api\UserNotPlaceholderApiException;
 use App\Http\Requests\V1\Member\MemberIndexRequest;
 use App\Http\Requests\V1\Member\MemberUpdateRequest;
@@ -12,6 +13,8 @@ use App\Http\Resources\V1\Member\MemberPivotResource;
 use App\Http\Resources\V1\Member\MemberResource;
 use App\Models\Membership;
 use App\Models\Organization;
+use App\Models\ProjectMember;
+use App\Models\TimeEntry;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -68,13 +71,20 @@ class MemberController extends Controller
     /**
      * Remove a member of the organization.
      *
-     * @throws AuthorizationException
+     * @throws AuthorizationException|EntityStillInUseApiException
      *
      * @operationId removeMember
      */
     public function destroy(Organization $organization, Membership $membership): JsonResponse
     {
         $this->checkPermission($organization, 'members:delete', $membership);
+
+        if (TimeEntry::query()->where('user_id', $membership->user_id)->whereBelongsTo($organization, 'organization')->exists()) {
+            throw new EntityStillInUseApiException('member', 'time_entry');
+        }
+        if (ProjectMember::query()->whereBelongsToOrganization($organization)->where('user_id', $membership->user_id)->exists()) {
+            throw new EntityStillInUseApiException('member', 'project_member');
+        }
 
         $membership->delete();
 

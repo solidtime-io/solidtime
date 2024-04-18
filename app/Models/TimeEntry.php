@@ -7,6 +7,7 @@ namespace App\Models;
 use App\Service\BillableRateService;
 use Carbon\CarbonInterval;
 use Database\Factories\TimeEntryFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -31,6 +32,7 @@ use Korridor\LaravelComputedAttributes\ComputedAttributes;
  * @property string|null $task_id
  * @property-read Task|null $task
  *
+ * @method Builder<TimeEntry> hasTag(Tag $tag)
  * @method static TimeEntryFactory factory()
  */
 class TimeEntry extends Model
@@ -71,6 +73,14 @@ class TimeEntry extends Model
     public function getDuration(): ?CarbonInterval
     {
         return $this->end === null ? null : $this->start->diffAsCarbonInterval($this->end);
+    }
+
+    /**
+     * @param  Builder<TimeEntry>  $builder
+     */
+    public function scopeHasTag(Builder $builder, Tag $tag): void
+    {
+        $builder->whereJsonContains('tags', $tag->getKey());
     }
 
     /**

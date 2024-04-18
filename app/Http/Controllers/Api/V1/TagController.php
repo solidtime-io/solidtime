@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Exceptions\Api\EntityStillInUseApiException;
 use App\Http\Requests\V1\Tag\TagStoreRequest;
 use App\Http\Requests\V1\Tag\TagUpdateRequest;
 use App\Http\Resources\V1\Tag\TagCollection;
 use App\Http\Resources\V1\Tag\TagResource;
 use App\Models\Organization;
 use App\Models\Tag;
+use App\Models\TimeEntry;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 
@@ -83,13 +85,17 @@ class TagController extends Controller
     /**
      * Delete tag
      *
-     * @throws AuthorizationException
+     * @throws AuthorizationException|EntityStillInUseApiException
      *
      * @operationId deleteTag
      */
     public function destroy(Organization $organization, Tag $tag): JsonResponse
     {
         $this->checkPermission($organization, 'tags:delete', $tag);
+
+        if (TimeEntry::query()->hasTag($tag)->whereBelongsTo($organization, 'organization')->exists()) {
+            throw new EntityStillInUseApiException('tag', 'time_entry');
+        }
 
         $tag->delete();
 

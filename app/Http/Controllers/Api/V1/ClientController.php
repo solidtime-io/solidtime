@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Exceptions\Api\EntityStillInUseApiException;
 use App\Http\Requests\V1\Tag\TagStoreRequest;
 use App\Http\Requests\V1\Tag\TagUpdateRequest;
 use App\Http\Resources\V1\Client\ClientCollection;
@@ -83,13 +84,17 @@ class ClientController extends Controller
     /**
      * Delete client
      *
-     * @throws AuthorizationException
+     * @throws AuthorizationException|EntityStillInUseApiException
      *
      * @operationId deleteClient
      */
     public function destroy(Organization $organization, Client $client): JsonResponse
     {
         $this->checkPermission($organization, 'clients:delete', $client);
+
+        if ($client->projects()->exists()) {
+            throw new EntityStillInUseApiException('client', 'project');
+        }
 
         $client->delete();
 
