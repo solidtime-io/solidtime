@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import Dropdown from '@/Components/Dropdown.vue';
-import { TrashIcon } from '@heroicons/vue/20/solid';
+import { TrashIcon, PencilSquareIcon } from '@heroicons/vue/20/solid';
 import type { Project } from '@/utils/api';
 const emit = defineEmits<{
     delete: [];
+    edit: [];
 }>();
 const props = defineProps<{
     project: Project;
@@ -33,9 +34,18 @@ const props = defineProps<{
                 @click.prevent="emit('delete')"
                 :aria-label="'Delete Project ' + props.project.name"
                 data-testid="project_delete"
-                class="flex items-center space-x-3 w-full px-3 py-2.5 text-start text-sm font-medium leading-5 text-white hover:bg-card-background-active focus:outline-none focus:bg-card-background-active transition duration-150 ease-in-out">
+                class="border-b border-card-background-separator flex items-center space-x-3 w-full px-3 py-2.5 text-start text-sm font-medium leading-5 text-white hover:bg-card-background-active focus:outline-none focus:bg-card-background-active transition duration-150 ease-in-out">
                 <TrashIcon class="w-5 text-icon-active"></TrashIcon>
                 <span>Delete</span>
+            </button>
+            <button
+                @click.prevent="emit('edit')"
+                :aria-label="'Edit Project ' + props.project.name"
+                data-testid="project_edit"
+                class="flex items-center space-x-3 w-full px-3 py-2.5 text-start text-sm font-medium leading-5 text-white hover:bg-card-background-active focus:outline-none focus:bg-card-background-active transition duration-150 ease-in-out">
+                <PencilSquareIcon
+                    class="w-5 text-icon-active"></PencilSquareIcon>
+                <span>Edit</span>
             </button>
         </template>
     </Dropdown>

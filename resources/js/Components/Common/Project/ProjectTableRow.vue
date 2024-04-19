@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import ProjectMoreOptionsDropdown from '@/Components/Common/Project/ProjectMoreOptionsDropdown.vue';
 import type { Project } from '@/utils/api';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { CheckCircleIcon } from '@heroicons/vue/20/solid';
 import { useClientsStore } from '@/utils/useClients';
 import { storeToRefs } from 'pinia';
 import { useTasksStore } from '@/utils/useTasks';
 import { useProjectsStore } from '@/utils/useProjects';
 import TableRow from '@/Components/TableRow.vue';
+import ProjectEditModal from '@/Components/Common/Project/ProjectEditModal.vue';
 
 const { clients } = storeToRefs(useClientsStore());
 const { tasks } = storeToRefs(useTasksStore());
@@ -30,9 +31,14 @@ const projectTasksCount = computed(() => {
 function deleteProject() {
     useProjectsStore().deleteProject(props.project.id);
 }
+
+const showEditProjectModal = ref(false);
 </script>
 
 <template>
+    <ProjectEditModal
+        :original-project="project"
+        :show="showEditProjectModal"></ProjectEditModal>
     <TableRow :href="route('projects.show', { project: project.id })">
         <div
             class="whitespace-nowrap flex items-center space-x-5 3xl:pl-12 py-4 pr-3 text-sm font-medium text-white pl-4 sm:pl-6 lg:pl-8 3xl:pl-12">
@@ -65,6 +71,7 @@ function deleteProject() {
             class="relative whitespace-nowrap flex items-center pl-3 text-right text-sm font-medium sm:pr-0 pr-4 sm:pr-6 lg:pr-8 3xl:pr-12">
             <ProjectMoreOptionsDropdown
                 :project="project"
+                @edit="showEditProjectModal = true"
                 @delete="deleteProject"></ProjectMoreOptionsDropdown>
         </div>
     </TableRow>
