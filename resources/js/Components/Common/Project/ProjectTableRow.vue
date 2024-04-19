@@ -9,6 +9,7 @@ import { useTasksStore } from '@/utils/useTasks';
 import { useProjectsStore } from '@/utils/useProjects';
 import TableRow from '@/Components/TableRow.vue';
 import ProjectEditModal from '@/Components/Common/Project/ProjectEditModal.vue';
+import { formatCents } from '@/utils/money';
 
 const { clients } = storeToRefs(useClientsStore());
 const { tasks } = storeToRefs(useTasksStore());
@@ -37,8 +38,8 @@ const showEditProjectModal = ref(false);
 
 <template>
     <ProjectEditModal
-        :original-project="project"
-        :show="showEditProjectModal"></ProjectEditModal>
+        v-model:show="showEditProjectModal"
+        :original-project="project"></ProjectEditModal>
     <TableRow :href="route('projects.show', { project: project.id })">
         <div
             class="whitespace-nowrap flex items-center space-x-5 3xl:pl-12 py-4 pr-3 text-sm font-medium text-white pl-4 sm:pl-6 lg:pl-8 3xl:pl-12">
@@ -60,7 +61,11 @@ const showEditProjectModal = ref(false);
             <div v-else>No client</div>
         </div>
         <div class="whitespace-nowrap px-3 py-4 text-sm text-muted">
-            {{ project.billable_rate ?? '--' }}
+            {{
+                project.billable_rate
+                    ? formatCents(project.billable_rate)
+                    : '--'
+            }}
         </div>
         <div
             class="whitespace-nowrap px-3 py-4 text-sm text-muted flex space-x-1 items-center font-medium">

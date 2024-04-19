@@ -12,6 +12,8 @@ import { twMerge } from 'tailwind-merge';
 import Badge from '@/Components/Common/Badge.vue';
 import { useClientsStore } from '@/utils/useClients';
 import { storeToRefs } from 'pinia';
+import BillableRateInput from '@/Components/Common/BillableRateInput.vue';
+import ProjectColorSelector from '@/Components/Common/Project/ProjectColorSelector.vue';
 
 const { updateProject } = useProjectsStore();
 const { clients } = storeToRefs(useClientsStore());
@@ -57,16 +59,13 @@ const currentClientName = computed(() => {
         </template>
 
         <template #content>
-            <div class="flex items-center space-x-4">
-                <div class="px-3">
-                    <div
-                        :style="{
-                            backgroundColor: project.color,
-                            boxShadow: `var(--tw-ring-inset) 0 0 0 calc(5px + var(--tw-ring-offset-width)) ${project.color}30`,
-                        }"
-                        class="w-4 h-4 rounded-full"></div>
-                </div>
-                <div class="col-span-6 sm:col-span-4 flex-1">
+            <div
+                class="sm:flex items-center space-y-2 sm:space-y-0 sm:space-x-4">
+                <div class="flex-1 flex items-center">
+                    <div class="px-3">
+                        <ProjectColorSelector
+                            v-model="project.color"></ProjectColorSelector>
+                    </div>
                     <TextInput
                         id="projectName"
                         ref="projectNameInput"
@@ -78,7 +77,10 @@ const currentClientName = computed(() => {
                         required
                         autocomplete="projectName" />
                 </div>
-                <div class="col-span-6 sm:col-span-4">
+                <div class="sm:max-w-[120px]">
+                    <BillableRateInput v-model="project.billable_rate" />
+                </div>
+                <div class="">
                     <ClientDropdown v-model="project.client_id">
                         <template #trigger>
                             <Badge size="large">
@@ -96,7 +98,7 @@ const currentClientName = computed(() => {
             </div>
         </template>
         <template #footer>
-            <SecondaryButton @click="show = false"> Cancel </SecondaryButton>
+            <SecondaryButton @click="show = false"> Cancel</SecondaryButton>
 
             <PrimaryButton
                 class="ms-3"

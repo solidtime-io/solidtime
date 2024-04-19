@@ -14,6 +14,7 @@ import Badge from '@/Components/Common/Badge.vue';
 import { useClientsStore } from '@/utils/useClients';
 import { storeToRefs } from 'pinia';
 import ProjectColorSelector from '@/Components/Common/Project/ProjectColorSelector.vue';
+import BillableRateInput from '@/Components/Common/BillableRateInput.vue';
 
 const { createProject } = useProjectsStore();
 const { clients } = storeToRefs(useClientsStore());
@@ -59,10 +60,11 @@ const currentClientName = computed(() => {
         </template>
 
         <template #content>
-            <div class="flex items-center space-x-4">
-                <ProjectColorSelector
-                    v-model="project.color"></ProjectColorSelector>
-                <div class="col-span-6 sm:col-span-4 flex-1">
+            <div
+                class="sm:flex items-center space-y-2 sm:space-y-0 sm:space-x-4">
+                <div class="flex-1 flex items-center">
+                    <ProjectColorSelector
+                        v-model="project.color"></ProjectColorSelector>
                     <TextInput
                         id="projectName"
                         ref="projectNameInput"
@@ -74,7 +76,10 @@ const currentClientName = computed(() => {
                         required
                         autocomplete="projectName" />
                 </div>
-                <div class="col-span-6 sm:col-span-4">
+                <div class="sm:max-w-[120px]">
+                    <BillableRateInput v-model="project.billable_rate" />
+                </div>
+                <div>
                     <ClientDropdown v-model="project.client_id">
                         <template #trigger>
                             <Badge size="large">
