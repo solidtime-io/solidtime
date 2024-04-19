@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Model;
 
 use App\Models\Organization;
+use App\Models\ProjectMember;
 use App\Models\TimeEntry;
 use App\Models\User;
 use App\Providers\Filament\AdminPanelProvider;
@@ -90,6 +91,27 @@ class UserModelTest extends ModelTestAbstract
         $this->assertNotNull($timeEntriesRel);
         $this->assertCount(3, $timeEntriesRel);
         $this->assertTrue($timeEntriesRel->first()->is($timeEntries->first()));
+    }
+
+    public function test_it_has_many_project_members(): void
+    {
+        // Arrange
+        $user = User::factory()->create();
+        $otherUser = User::factory()->create();
+        $projectMembers = ProjectMember::factory()->forUser($user)->createMany(3);
+        $otherProjectMembers = ProjectMember::factory()->forUser($otherUser)->createMany(3);
+
+        // Act
+        $user->refresh();
+        $projectMembersRel = $user->projectMembers;
+
+        // Assert
+        $this->assertNotNull($projectMembersRel);
+        $this->assertCount(3, $projectMembersRel);
+        $this->assertEqualsCanonicalizing(
+            $projectMembers->pluck('id')->toArray(),
+            $projectMembersRel->pluck('id')->toArray()
+        );
     }
 
     public function test_scope_active_returns_only_non_placeholder_users(): void

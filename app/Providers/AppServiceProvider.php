@@ -86,5 +86,6 @@ class AppServiceProvider extends ServiceProvider
         });
 
         Route::model('member', Membership::class);
+        Route::model('invitation', OrganizationInvitation::class);
     }
 }

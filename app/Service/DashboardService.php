@@ -41,6 +41,35 @@ class DashboardService
     }
 
     /**
+     * @return array{start: string, end: string, dates: array<string, array<string>>}
+     */
+    private function lastDaysSplitInWindows(int $days, CarbonTimeZone $timeZone, int $windows): array
+    {
+        $result = [];
+        $windowSize = 24 / $windows;
+        $date = Carbon::now($timeZone)->startOfDay();
+        $end = $date->copy()->endOfDay()->utc()->toDateTimeString();
+        $start = $end;
+        for ($i = 0; $i < $days; $i++) {
+            $tempDate = $date->copy();
+            $start = $tempDate->utc()->toDateTimeString();
+            $tempWindows = [];
+            for ($j = 0; $j < $windows; $j++) {
+                $tempWindow = $tempDate->addHours($windowSize)->utc()->toDateTimeString();
+                $tempWindows[] = $tempWindow;
+            }
+            $result[$date->format('Y-m-d')] = $tempWindows;
+            $date->subDay();
+        }
+
+        return [
+            'start' => $start,
+            'end' => $end,
+            'dates' => $result,
+        ];
+    }
+
+    /**
      * @return Collection<int, string>
      */
     private function daysOfThisWeek(CarbonTimeZone $timeZone, Weekday $startOfWeek): Collection
@@ -385,114 +414,45 @@ class DashboardService
      */
     public function lastSevenDays(User $user, Organization $organization): array
     {
-        return [
-            [
-                'date' => '2024-02-26',
-                'duration' => 3600, // in seconds
-                // if that is too difficult we can just skip that for now
-                'history' => [
-                    // duration in s of the 3h windows for the day starting at 00:00
-                    300,
-                    0,
-                    500,
-                    0,
-                    100,
-                    200,
-                    100,
-                    300,
-                ],
-            ],
-            [
-                'date' => '2024-02-25',
-                'duration' => 7200, // in seconds
-                'history' => [
-                    // duration in s of the 3h windows for the day starting at 00:00
-                    300,
-                    0,
-                    500,
-                    0,
-                    100,
-                    200,
-                    100,
-                    300,
-                ],
-            ],
-            [
-                'date' => '2024-02-24',
-                'duration' => 10800, // in seconds
-                'history' => [
-                    // duration in s of the 3h windows for the day starting at 00:00
-                    300,
-                    0,
-                    500,
-                    0,
-                    100,
-                    200,
-                    100,
-                    300,
-                ],
-            ],
-            [
-                'date' => '2024-02-23',
-                'duration' => 14400, // in seconds
-                'history' => [
-                    // duration in s of the 3h windows for the day starting at 00:00
-                    300,
-                    0,
-                    500,
-                    0,
-                    100,
-                    200,
-                    100,
-                    300,
-                ],
-            ],
-            [
-                'date' => '2024-02-22',
-                'duration' => 18000, // in seconds
-                'history' => [
-                    // duration in s of the 3h windows for the day starting at 00:00
-                    300,
-                    0,
-                    500,
-                    0,
-                    100,
-                    200,
-                    100,
-                    300,
-                ],
-            ],
-            [
-                'date' => '2024-02-21',
-                'duration' => 21600, // in seconds
-                'history' => [
-                    // duration in s of the 3h windows for the day starting at 00:00
-                    300,
-                    0,
-                    500,
-                    0,
-                    100,
-                    200,
-                    100,
-                    300,
-                ],
-            ],
-            [
-                'date' => '2024-02-20',
-                'duration' => 25200, // in seconds
-                'history' => [
-                    // duration in s of the 3h windows for the day starting at 00:00
-                    300,
-                    0,
-                    500,
-                    0,
-                    100,
-                    200,
-                    100,
-                    300,
-                ],
-            ],
+        $timezone = $this->timezoneService->getTimezoneFromUser($user);
+        $lastDaysSplitInWindows = $this->lastDaysSplitInWindows(7, $timezone, 8);
+        $data = collect(DB::select('
+            SELECT time_ranges.start, EXTRACT(epoch FROM sum(LEAST(time_ranges."end", coalesce(time_entries."end", :now::timestamp)) - GREATEST(time_ranges.start, time_entries.start))) AS aggregate
+            FROM  (
+               SELECT time_range_starts.start AS start, time_range_starts.start + interval \'3 hours\' AS "end"
+               FROM generate_series(:start_time_ranges::timestamp, :end_time_ranges::timestamp, interval \'3 hours\') as time_range_starts (start)
+            ) time_ranges
+            JOIN   time_entries ON time_entries.start < time_ranges."end"
+                      AND coalesce(time_entries."end", :now::timestamp)   > time_ranges.start
+            where time_entries.user_id = :user_id and
+                  time_entries.organization_id = :organization_id
+            GROUP  BY time_ranges.start
+            ORDER  BY time_ranges.start
+        ', [
+            'start_time_ranges' => $lastDaysSplitInWindows['start'],
+            'end_time_ranges' => $lastDaysSplitInWindows['end'],
+            'user_id' => $user->getKey(),
+            'organization_id' => $organization->getKey(),
+            'now' => Carbon::now()->toDateTimeString(),
+        ]))->pluck('aggregate', 'start');
 
-        ];
+        $response = [];
+
+        foreach ($lastDaysSplitInWindows['dates'] as $date => $windows) {
+            $history = [];
+            $duration = 0;
+            foreach ($windows as $window) {
+                $value = (int) ($data->get($window, null) ?? 0);
+                $history[] = $value;
+                $duration += $value;
+            }
+            $response[] = [
+                'date' => $date,
+                'duration' => $duration,
+                'history' => $history,
+            ];
+        }
+
+        return $response;
     }
 }

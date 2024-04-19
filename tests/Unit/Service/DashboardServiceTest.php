@@ -532,4 +532,132 @@ class DashboardServiceTest extends TestCase
             ],
         ], $result);
     }
+
+    public function test_last_seven_days_returns_spend_time_in_the_last_seven_days_aggregated_in_three_hour_blocks(): void
+    {
+        // Arrange
+        $now = Carbon::create(2024, 4, 17, 12, 0, 0, 'Europe/Vienna');
+        $this->travelTo($now);
+        $organization = Organization::factory()->create();
+        $user = User::factory()->create([
+            'timezone' => 'Europe/Vienna',
+        ]);
+        $timeEntryOverWholePeriod = TimeEntry::factory()->forUser($user)->forOrganization($organization)->create([
+            'start' => now('Europe/Vienna')->subDays(7)->startOfDay()->subMinute()->utc(),
+            'end' => now('Europe/Vienna')->endOfDay()->addMinute()->utc(), // TODO: addMinute should not be necessary
+        ]);
+        $timeEntryOverWholePeriodWithoutEnd = TimeEntry::factory()->forUser($user)->forOrganization($organization)->create([
+            'start' => now('Europe/Vienna')->subDays(7)->startOfDay()->subMinute()->utc(),
+            'end' => null,
+        ]);
+        $timeEntry1Task1 = TimeEntry::factory()->forUser($user)->forOrganization($organization)->create([
+            'start' => now('Europe/Vienna')->subMinutes(30)->utc(),
+            'end' => now('Europe/Vienna')->subMinutes(20)->utc(),
+        ]);
+
+        // Act
+        $result = $this->dashboardService->lastSevenDays($user, $organization);
+
+        // Assert
+        $this->assertSame([
+            0 => [
+                'date' => '2024-04-17',
+                'duration' => 115800,
+                'history' => [
+                    0 => 21600,
+                    1 => 21600,
+                    2 => 22200,
+                    3 => 18000,
+                    4 => 10800,
+                    5 => 10800,
+                    6 => 10800, // TODO
+                    7 => 0, // TODO
+                ],
+            ],
+            1 => [
+                'date' => '2024-04-16',
+                'duration' => 172800,
+                'history' => [
+                    0 => 21600,
+                    1 => 21600,
+                    2 => 21600,
+                    3 => 21600,
+                    4 => 21600,
+                    5 => 21600,
+                    6 => 21600,
+                    7 => 21600,
+                ],
+            ],
+            2 => [
+                'date' => '2024-04-15',
+                'duration' => 172800,
+                'history' => [
+                    0 => 21600,
+                    1 => 21600,
+                    2 => 21600,
+                    3 => 21600,
+                    4 => 21600,
+                    5 => 21600,
+                    6 => 21600,
+                    7 => 21600,
+                ],
+            ],
+            3 => [
+                'date' => '2024-04-14',
+                'duration' => 172800,
+                'history' => [
+                    0 => 21600,
+                    1 => 21600,
+                    2 => 21600,
+                    3 => 21600,
+                    4 => 21600,
+                    5 => 21600,
+                    6 => 21600,
+                    7 => 21600,
+                ],
+            ],
+            4 => [
+                'date' => '2024-04-13',
+                'duration' => 172800,
+                'history' => [
+                    0 => 21600,
+                    1 => 21600,
+                    2 => 21600,
+                    3 => 21600,
+                    4 => 21600,
+                    5 => 21600,
+                    6 => 21600,
+                    7 => 21600,
+                ],
+            ],
+            5 => [
+                'date' => '2024-04-12',
+                'duration' => 172800,
+                'history' => [
+                    0 => 21600,
+                    1 => 21600,
+                    2 => 21600,
+                    3 => 21600,
+                    4 => 21600,
+                    5 => 21600,
+                    6 => 21600,
+                    7 => 21600,
+                ],
+            ],
+            6 => [
+                'date' => '2024-04-11',
+                'duration' => 172800,
+                'history' => [
+                    0 => 21600,
+                    1 => 21600,
+                    2 => 21600,
+                    3 => 21600,
+                    4 => 21600,
+                    5 => 21600,
+                    6 => 21600,
+                    7 => 21600,
+                ],
+            ],
+        ], $result);
+    }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Exceptions\Api\EntityStillInUseApiException;
 use App\Http\Requests\V1\Task\TaskIndexRequest;
 use App\Http\Requests\V1\Task\TaskStoreRequest;
 use App\Http\Requests\V1\Task\TaskUpdateRequest;
@@ -104,13 +105,17 @@ class TaskController extends Controller
     /**
      * Delete task
      *
-     * @throws AuthorizationException
+     * @throws AuthorizationException|EntityStillInUseApiException
      *
      * @operationId deleteTask
      */
     public function destroy(Organization $organization, Task $task): JsonResponse
     {
         $this->checkPermission($organization, 'tasks:delete', $task);
+
+        if ($task->timeEntries()->exists()) {
+            throw new EntityStillInUseApiException('task', 'time_entry');
+        }
 
         $task->delete();
 

@@ -4,17 +4,20 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Exceptions\Api\EntityStillInUseApiException;
 use App\Http\Requests\V1\Project\ProjectStoreRequest;
 use App\Http\Requests\V1\Project\ProjectUpdateRequest;
 use App\Http\Resources\V1\Project\ProjectCollection;
 use App\Http\Resources\V1\Project\ProjectResource;
 use App\Models\Organization;
 use App\Models\Project;
+use App\Models\ProjectMember;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ProjectController extends Controller
 {
@@ -113,7 +116,7 @@ class ProjectController extends Controller
     /**
      * Delete project
      *
-     * @throws AuthorizationException
+     * @throws AuthorizationException|EntityStillInUseApiException
      *
      * @operationId deleteProject
      */
@@ -121,7 +124,20 @@ class ProjectController extends Controller
     {
         $this->checkPermission($organization, 'projects:delete', $project);
 
-        $project->delete();
+        if ($project->tasks()->exists()) {
+            throw new EntityStillInUseApiException('project', 'task');
+        }
+        if ($project->timeEntries()->exists()) {
+            throw new EntityStillInUseApiException('project', 'time_entry');
+        }
+
+        DB::transaction(function () use (&$project) {
+            $project->members()->each(function (ProjectMember $member) {
+                $member->delete();
+            });
+
+            $project->delete();
+        });
 
         return response()
             ->json(null, 204);

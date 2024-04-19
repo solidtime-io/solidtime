@@ -10,6 +10,7 @@ use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -17,6 +18,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Jetstream\HasTeams;
@@ -28,14 +31,19 @@ use Laravel\Passport\HasApiTokens;
  * @property string $email
  * @property string|null $email_verified_at
  * @property string|null $password
+ * @property string|null $two_factor_secret
  * @property string $timezone
  * @property bool $is_placeholder
  * @property Weekday $week_start
  * @property string|null $profile_photo_path
  * @property-read Organization $currentTeam
  * @property-read string $profile_photo_url
- * @property Collection<Organization> $organizations
- * @property Collection<TimeEntry> $timeEntries
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property string $current_team_id
+ * @property Collection<int, Organization> $organizations
+ * @property Collection<int, TimeEntry> $timeEntries
+ * @property Membership $membership
  *
  * @method HasMany<Organization> ownedTeams()
  * @method static UserFactory factory()
@@ -99,6 +107,20 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         'week_start' => Weekday::Monday,
     ];
 
+    /**
+     * Get the URL to the user's profile photo.
+     *
+     * @return Attribute<string, never>
+     */
+    protected function profilePhotoUrl(): Attribute
+    {
+        return Attribute::get(function (): string {
+            return $this->profile_photo_path
+                ? Storage::disk($this->profilePhotoDisk())->url($this->profile_photo_path)
+                : $this->defaultProfilePhotoUrl();
+        });
+    }
+
     public function canAccessPanel(Panel $panel): bool
     {
         return in_array($this->email, config('auth.super_admins', []), true) && $this->hasVerifiedEmail();
@@ -125,6 +147,14 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     public function timeEntries(): HasMany
     {
         return $this->hasMany(TimeEntry::class);
+    }
+
+    /**
+     * @return HasMany<ProjectMember>
+     */
+    public function projectMembers(): HasMany
+    {
+        return $this->hasMany(ProjectMember::class, 'user_id');
     }
 
     /**
