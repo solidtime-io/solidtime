@@ -8,7 +8,7 @@ const props = defineProps<{
 
 const seriesData = props.history.map((el) => {
     return {
-        value: Math.max(el, 10),
+        value: el,
         ...{
             itemStyle: {
                 borderWidth: 1,
