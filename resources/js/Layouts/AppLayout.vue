@@ -19,14 +19,8 @@ import NavigationSidebarItem from '@/Components/NavigationSidebarItem.vue';
 import UserSettingsIcon from '@/Components/UserSettingsIcon.vue';
 import MainContainer from '@/Pages/MainContainer.vue';
 import { onMounted, ref } from 'vue';
-import { useProjectsStore } from '@/utils/useProjects';
-import { useTagsStore } from '@/utils/useTags';
-import { useTasksStore } from '@/utils/useTasks';
-import { useCurrentTimeEntryStore } from '@/utils/useCurrentTimeEntry';
-import { useClientsStore } from '@/utils/useClients';
-import { useMembersStore } from '@/utils/useMembers';
 import NotificationContainer from '@/Components/NotificationContainer.vue';
-import { useTimeEntriesStore } from '@/utils/useTimeEntries';
+import { initializeStores } from '@/utils/init';
 
 defineProps({
     title: String,
@@ -38,13 +32,7 @@ onMounted(async () => {
     // make sure that the initial requests are only loaded once, this can be removed once we move away from inertia
     if (window.initialDataLoaded !== true) {
         window.initialDataLoaded = true;
-        useProjectsStore().fetchProjects();
-        useTasksStore().fetchTasks();
-        useTagsStore().fetchTags();
-        useCurrentTimeEntryStore().fetchCurrentTimeEntry();
-        useClientsStore().fetchClients();
-        useMembersStore().fetchMembers();
-        useTimeEntriesStore().fetchTimeEntries();
+        initializeStores();
     }
 });
 </script>

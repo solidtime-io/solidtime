@@ -5,6 +5,7 @@ import DropdownLink from '@/Components/DropdownLink.vue';
 import { router, usePage } from '@inertiajs/vue3';
 import type { Organization, User } from '@/types/models';
 import { isBillingActivated } from '@/utils/billing';
+import { initializeStores } from '@/utils/init';
 
 const page = usePage<{
     jetstream: {
@@ -28,6 +29,9 @@ const switchToTeam = (team: Organization) => {
         },
         {
             preserveState: false,
+            onSuccess: () => {
+                initializeStores();
+            },
         }
     );
 };

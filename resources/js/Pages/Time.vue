@@ -92,7 +92,7 @@ const groupedTimeEntries = computed(() => {
             </div>
             <div
                 v-else-if="allTimeEntriesLoaded"
-                class="flex justify-center items-center py-5 text-white font-medium">
+                class="flex justify-center items-center py-5 text-muted font-medium">
                 All time entries are loaded!
             </div>
         </div>

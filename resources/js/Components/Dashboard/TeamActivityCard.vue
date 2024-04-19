@@ -2,6 +2,8 @@
 import DashboardCard from '@/Components/Dashboard/DashboardCard.vue';
 import TeamActivityCardEntry from '@/Components/Dashboard/TeamActivityCardEntry.vue';
 import { UserGroupIcon } from '@heroicons/vue/20/solid';
+import { router } from '@inertiajs/vue3';
+import SecondaryButton from '@/Components/SecondaryButton.vue';
 
 defineProps<{
     latestTeamActivity: {
@@ -24,5 +26,20 @@ defineProps<{
             :name="activity.name"
             :description="activity.description"
             :working="activity.status"></TeamActivityCardEntry>
+        <div
+            v-if="latestTeamActivity.length <= 2"
+            class="text-center flex flex-1 justify-center items-center">
+            <div>
+                <UserGroupIcon
+                    class="w-8 text-icon-default inline pb-2"></UserGroupIcon>
+                <h3 class="text-white font-semibold text-sm">
+                    Invite your co-workers
+                </h3>
+                <p class="pb-5 text-sm">You can invite your entire team.</p>
+                <SecondaryButton @click="router.visit(route('members'))"
+                    >Go to Members
+                </SecondaryButton>
+            </div>
+        </div>
     </DashboardCard>
 </template>
