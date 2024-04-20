@@ -63,3 +63,9 @@ test('test that creating and deleting a new project via the modal works', async 
 // Test that project task count is displayed correctly
 
 // Test that active / archive / all filter works (once implemented)
+
+// Edit Project Modal Test
+
+// Add Project with billable rate
+
+// Edit Project with billable rate

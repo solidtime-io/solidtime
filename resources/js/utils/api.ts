@@ -33,6 +33,11 @@ export type CreateProjectBody = ZodiosBodyByAlias<
     'createProject'
 >;
 
+export type UpdateProjectBody = ZodiosBodyByAlias<
+    SolidTimeApi,
+    'updateProject'
+>;
+
 export type ProjectMemberResponse = ZodiosResponseByAlias<
     SolidTimeApi,
     'getProjectMembers'

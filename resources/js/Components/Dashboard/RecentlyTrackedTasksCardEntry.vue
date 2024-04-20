@@ -35,7 +35,8 @@ async function startTaskTimer() {
 </script>
 
 <template>
-    <div class="px-3.5 py-2 grid grid-cols-5">
+    <div
+        class="px-3.5 py-2 grid grid-cols-5 border-b border-b-card-background-separator">
         <div class="col-span-4">
             <p class="font-semibold text-white text-sm pb-1">
                 {{ title }}
