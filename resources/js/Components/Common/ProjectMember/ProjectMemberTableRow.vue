@@ -22,7 +22,7 @@ function deleteProjectMember() {
 const { members } = storeToRefs(useMembersStore());
 const member = computed(() => {
     return members.value.find(
-        (member) => member.id === props.projectMember.user_id
+        (member) => member.user_id === props.projectMember.user_id
     );
 });
 </script>
