@@ -10,6 +10,7 @@ import InputError from '@/Components/InputError.vue';
 import type { Role } from '@/types/jetstream';
 import { useForm } from '@inertiajs/vue3';
 import { getCurrentOrganizationId } from '@/utils/useUser';
+import { filterRoles } from '@/utils/roles';
 
 const show = defineModel('show', { default: false });
 const saving = ref(false);
@@ -78,7 +79,7 @@ useFocus(clientNameInput, { initialValue: true });
                     <div
                         class="relative z-0 mt-1 border border-card-border rounded-lg cursor-pointer">
                         <button
-                            v-for="(role, i) in availableRoles"
+                            v-for="(role, i) in filterRoles(availableRoles)"
                             :key="role.key"
                             type="button"
                             class="relative px-4 py-3 inline-flex w-full rounded-lg focus:z-10 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500"
