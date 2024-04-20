@@ -13,8 +13,8 @@ defineProps<{
         :href="href"
         :class="
             twMerge(
-                'contents [&>*]:hover:bg-white/5 [&>*]:transition [&>*]:cursor-pointer [&>*]:border-row-separator [&>*]:border-b',
-                href ? '[&>*]:cursor-pointer' : ''
+                'contents [&>*]:transition [&>*]:border-row-separator [&>*]:border-b',
+                href ? '[&>*]:cursor-pointer [&>*]:hover:bg-white/5' : ''
             )
         ">
         <slot></slot>
