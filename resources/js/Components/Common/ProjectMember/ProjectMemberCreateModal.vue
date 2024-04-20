@@ -25,6 +25,10 @@ const projectMember = ref<CreateProjectMemberBody>({
 async function submit() {
     await createProjectMember(props.projectId, projectMember.value);
     show.value = false;
+    projectMember.value = {
+        user_id: '',
+        billable_rate: null,
+    };
 }
 
 const projectNameInput = ref<HTMLInputElement | null>(null);

@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import Dropdown from '@/Components/Dropdown.vue';
-import { type Component, computed, nextTick, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import ClientDropdownItem from '@/Components/Common/Client/ClientDropdownItem.vue';
 import { useMembersStore } from '@/utils/useMembers';
@@ -8,6 +7,7 @@ import { UserIcon, XMarkIcon } from '@heroicons/vue/24/solid';
 import TextInput from '@/Components/TextInput.vue';
 import { useFocus } from '@vueuse/core';
 import type { ProjectMember } from '@/utils/api';
+import Dropdown from '@/Components/Dropdown.vue';
 
 const membersStore = useMembersStore();
 const { members } = storeToRefs(membersStore);
@@ -21,7 +21,6 @@ const props = defineProps<{
 }>();
 
 const searchInput = ref<HTMLInputElement | null>(null);
-const dropdownViewport = ref<Component | null>(null);
 
 const searchValue = ref('');
 
@@ -38,7 +37,7 @@ const filteredMembers = computed(() => {
                 .toLowerCase()
                 .includes(searchValue.value?.toLowerCase()?.trim() || '') &&
             !props.hiddenMembers.some(
-                (hiddenMember) => hiddenMember.user_id === member.id
+                (hiddenMember) => hiddenMember.user_id === member.user_id
             ) &&
             member.is_placeholder === false
         );
@@ -55,7 +54,7 @@ onMounted(() => {
 
 function resetHighlightedItem() {
     if (filteredMembers.value.length > 0) {
-        highlightedItemId.value = filteredMembers.value[0].id;
+        highlightedItemId.value = filteredMembers.value[0].user_id;
     }
 }
 
@@ -66,10 +65,10 @@ function updateSearchValue(event: Event) {
         const highlightedClientId = highlightedItemId.value;
         if (highlightedClientId) {
             const highlightedClient = members.value.find(
-                (member) => member.id === highlightedClientId
+                (member) => member.user_id === highlightedClientId
             );
             if (highlightedClient) {
-                model.value = highlightedClient.id;
+                model.value = highlightedClient.user_id;
             }
         }
     } else {
@@ -80,6 +79,7 @@ function updateSearchValue(event: Event) {
 const emit = defineEmits(['update:modelValue', 'changed']);
 
 function updateMember(newValue: string | null) {
+    console.log(newValue);
     if (newValue) {
         model.value = newValue;
         nextTick(() => {
@@ -95,10 +95,10 @@ function moveHighlightUp() {
         );
         if (currentHightlightedIndex === 0) {
             highlightedItemId.value =
-                filteredMembers.value[filteredMembers.value.length - 1].id;
+                filteredMembers.value[filteredMembers.value.length - 1].user_id;
         } else {
             highlightedItemId.value =
-                filteredMembers.value[currentHightlightedIndex - 1].id;
+                filteredMembers.value[currentHightlightedIndex - 1].user_id;
         }
     }
 }
@@ -109,10 +109,10 @@ function moveHighlightDown() {
             highlightedItem.value
         );
         if (currentHightlightedIndex === filteredMembers.value.length - 1) {
-            highlightedItemId.value = filteredMembers.value[0].id;
+            highlightedItemId.value = filteredMembers.value[0].user_id;
         } else {
             highlightedItemId.value =
-                filteredMembers.value[currentHightlightedIndex + 1].id;
+                filteredMembers.value[currentHightlightedIndex + 1].user_id;
         }
     }
 }
@@ -120,13 +120,14 @@ function moveHighlightDown() {
 const highlightedItemId = ref<string | null>(null);
 const highlightedItem = computed(() => {
     return members.value.find(
-        (member) => member.id === highlightedItemId.value
+        (member) => member.user_id === highlightedItemId.value
     );
 });
 
 const currentValue = computed(() => {
     if (model.value) {
-        return members.value.find((member) => member.id === model.value)?.name;
+        return members.value.find((member) => member.user_id === model.value)
+            ?.name;
     }
     return searchValue.value;
 });
@@ -134,11 +135,23 @@ const currentValue = computed(() => {
 const hasMemberSelected = computed(() => {
     return model.value !== '';
 });
+
+const showMembersDropdown = ref(true);
+
+function onUnfocus() {
+    // TODO this is a hack to prevent the dropdown from closing when clicking on the dropdown
+    setTimeout(() => {
+        if (!focused.value) {
+            showMembersDropdown.value = false;
+        }
+    }, 100);
+}
 </script>
 
 <template>
     <div class="flex relative">
         <div
+            ref="reference"
             class="absolute h-full items-center px-3 w-full flex justify-between">
             <UserIcon class="relative z-10 w-4 text-muted"></UserIcon>
             <button
@@ -156,32 +169,37 @@ const hasMemberSelected = computed(() => {
             @keydown.up.prevent="moveHighlightUp"
             class="relative w-full pl-10"
             @keydown.down.prevent="moveHighlightDown"
+            @focusin="showMembersDropdown = true"
+            @blur="onUnfocus"
             placeholder="Search for a member..."
             ref="searchInput" />
     </div>
     <Dropdown
-        align="left"
+        align="bottom-start"
         width="300"
-        v-model="focused"
+        v-model="showMembersDropdown"
         :closeOnContentClick="true">
         <template #content>
-            <div ref="dropdownViewport" class="w-60">
-                <div
-                    v-for="member in filteredMembers"
-                    :key="member.id"
-                    role="option"
-                    :value="member.id"
-                    :class="{
-                        'bg-card-background-active':
-                            member.id === highlightedItemId,
-                    }"
-                    @click="updateMember(member.id)"
-                    data-testid="client_dropdown_entries"
-                    :data-client-id="member.id">
-                    <ClientDropdownItem
-                        :selected="isMemberSelected(member.id)"
-                        :name="member.name"></ClientDropdownItem>
-                </div>
+            <div
+                class="py-2 text-white px-3"
+                v-if="filteredMembers.length === 0">
+                All members are already added.
+            </div>
+            <div
+                v-for="member in filteredMembers"
+                :key="member.user_id"
+                role="option"
+                :value="member.user_id"
+                :class="{
+                    'bg-card-background-active':
+                        member.user_id === highlightedItemId,
+                }"
+                @click="updateMember(member.user_id)"
+                data-testid="client_dropdown_entries"
+                :data-client-id="member.user_id">
+                <ClientDropdownItem
+                    :selected="isMemberSelected(member.user_id)"
+                    :name="member.name"></ClientDropdownItem>
             </div>
         </template>
     </Dropdown>
