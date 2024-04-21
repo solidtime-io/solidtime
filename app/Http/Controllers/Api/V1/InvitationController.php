@@ -12,7 +12,9 @@ use App\Models\Organization;
 use App\Models\OrganizationInvitation;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Mail;
 use Laravel\Jetstream\Contracts\InvitesTeamMembers;
+use Laravel\Jetstream\Mail\TeamInvitation;
 
 class InvitationController extends Controller
 {
@@ -60,6 +62,22 @@ class InvitationController extends Controller
             $request->input('email'),
             $request->input('role')
         );
+
+        return response()->json(null, 204);
+    }
+
+    /**
+     * Resend email for a pending invitation
+     *
+     * @throws AuthorizationException
+     *
+     * @operationId resendInvitationEmail
+     */
+    public function resend(Organization $organization, OrganizationInvitation $invitation): JsonResponse
+    {
+        $this->checkPermission($organization, 'invitations:resend', $invitation);
+
+        Mail::to($invitation->email)->send(new TeamInvitation($invitation));
 
         return response()->json(null, 204);
     }
