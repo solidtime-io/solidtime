@@ -78,7 +78,7 @@ onMounted(() => {
             </nav>
         </MainContainer>
         <MainContainer>
-            <div class="grid grid-cols-2 gap-x-6 pt-6">
+            <div class="grid lg:grid-cols-2 gap-x-6 pt-6">
                 <div>
                     <CardTitle title="Tasks" :icon="CheckCircleIcon">
                         <template #actions>
