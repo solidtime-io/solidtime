@@ -29,7 +29,7 @@ const page = usePage<{
         <template #title> Organization Details</template>
 
         <template #description>
-            Create a new team to collaborate with others on projects.
+            Create a new organization to collaborate with others on projects.
         </template>
 
         <template #form>

@@ -90,16 +90,14 @@ const switchToTeam = (team: Organization) => {
 
                 <DropdownLink
                     v-if="isBillingActivated()"
-                    href="
-                        /billing
-                    ">
+                    href="/billing">
                     Billing
                 </DropdownLink>
 
                 <DropdownLink
                     v-if="page.props.jetstream.canCreateTeams"
                     :href="route('teams.create')">
-                    Create New Team
+                    Create new organization
                 </DropdownLink>
 
                 <!-- Organization Switcher -->
@@ -107,7 +105,7 @@ const switchToTeam = (team: Organization) => {
                     <div class="border-t border-card-background-separator" />
 
                     <div class="block px-4 py-2 text-xs text-muted">
-                        Switch Teams
+                        Switch Organizations
                     </div>
 
                     <template
