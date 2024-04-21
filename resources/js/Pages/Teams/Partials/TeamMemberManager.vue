@@ -130,10 +130,10 @@ const displayableRole = (role: string) => {
 
             <!-- Add Organization Member -->
             <FormSection @submitted="addTeamMember">
-                <template #title> Add Team Member</template>
+                <template #title> Add Organization Member</template>
 
                 <template #description>
-                    Add a new team member to your team, allowing them to
+                    Add a new member to your organization, allowing them to
                     collaborate with you.
                 </template>
 
@@ -141,7 +141,7 @@ const displayableRole = (role: string) => {
                     <div class="col-span-6">
                         <div class="max-w-xl text-sm text-muted">
                             Please provide the email address of the person you
-                            would like to add to this team.
+                            would like to add to this organization.
                         </div>
                     </div>
 
@@ -257,8 +257,8 @@ const displayableRole = (role: string) => {
                 <template #title> Pending Team Invitations</template>
 
                 <template #description>
-                    These people have been invited to your team and have been
-                    sent an invitation email. They may join the team by
+                    These people have been invited to your organization and have been
+                    sent an invitation email. They may join the organization by
                     accepting the email invitation.
                 </template>
 
@@ -293,10 +293,10 @@ const displayableRole = (role: string) => {
 
             <!-- Manage Organization Members -->
             <ActionSection class="mt-10 sm:mt-0">
-                <template #title> Team Members</template>
+                <template #title> Organization Members</template>
 
                 <template #description>
-                    All of the people that are part of this team.
+                    All of the people that are part of this organization.
                 </template>
 
                 <!-- Organization Member List -->
@@ -443,10 +443,10 @@ const displayableRole = (role: string) => {
         <ConfirmationModal
             :show="confirmingLeavingTeam"
             @close="confirmingLeavingTeam = false">
-            <template #title> Leave Team</template>
+            <template #title> Leave Organization</template>
 
             <template #content>
-                Are you sure you would like to leave this team?
+                Are you sure you would like to leave this organization?
             </template>
 
             <template #footer>
@@ -471,7 +471,7 @@ const displayableRole = (role: string) => {
             <template #title> Remove Team Member</template>
 
             <template #content>
-                Are you sure you would like to remove this person from the team?
+                Are you sure you would like to remove this person from the organization?
             </template>
 
             <template #footer>

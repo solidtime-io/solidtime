@@ -22,7 +22,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  * @property-read Project $project
  * @property-read Organization $organization
- * @property-read Collection<TimeEntry> $timeEntries
+ * @property-read Collection<int, TimeEntry> $timeEntries
  *
  * @method static TaskFactory factory()
  */

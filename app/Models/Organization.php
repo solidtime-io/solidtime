@@ -27,8 +27,9 @@ use Laravel\Jetstream\Team as JetstreamTeam;
  * @property User $owner
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * @property Collection<User> $users
- * @property Collection<string, User> $realUsers
+ * @property Collection<int, User> $users
+ * @property Collection<int, User> $realUsers
+ * @property-read Collection<int, OrganizationInvitation> $teamInvitations
  * @property Membership $membership
  *
  * @method HasMany<OrganizationInvitation> teamInvitations()
@@ -83,7 +84,7 @@ class Organization extends JetstreamTeam
     /**
      * Get all the non-placeholder users of the organization including its owner.
      *
-     * @return Collection<string, User>
+     * @return Collection<int, User>
      */
     public function allRealUsers(): Collection
     {
