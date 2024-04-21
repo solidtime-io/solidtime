@@ -16,6 +16,7 @@ use App\Enums\Role;
 use App\Enums\Weekday;
 use App\Models\Organization;
 use App\Models\OrganizationInvitation;
+use App\Models\User;
 use App\Service\TimezoneService;
 use Brick\Money\Currency;
 use Brick\Money\ISOCurrencyProvider;
@@ -103,7 +104,7 @@ class JetstreamServiceProvider extends ServiceProvider
             'members:change-role',
             'members:update',
             'members:delete',
-        ])->description('Owner users can perform any action.');
+        ])->description('Owner users can perform any action. There is only one owner per organization.');
 
         Jetstream::role(Role::Admin->value, 'Administrator', [
             'projects:view',
@@ -145,7 +146,7 @@ class JetstreamServiceProvider extends ServiceProvider
             'invitations:remove',
             'members:view',
             'members:invite-placeholder',
-        ])->description('Administrator users can perform any action.');
+        ])->description('Administrator users can perform any action, except accessing the billing dashboard.');
 
         Jetstream::role(Role::Manager->value, 'Manager', [
             'projects:view',
@@ -181,7 +182,7 @@ class JetstreamServiceProvider extends ServiceProvider
             'organizations:view',
             'invitations:view',
             'members:view',
-        ])->description('Managers have the ability to read, create, and update their own time entries as well as those of their team.');
+        ])->description('Managers have full access to all projects, time entries, ect. but cannot manage the organization (add/remove member, edit the organization, ect.).');
 
         Jetstream::role(Role::Employee->value, 'Employee', [
             'projects:view',
@@ -192,7 +193,7 @@ class JetstreamServiceProvider extends ServiceProvider
             'time-entries:update:own',
             'time-entries:delete:own',
             'organizations:view',
-        ])->description('Employees have the ability to read, create, and update their own time entries.');
+        ])->description('Employees have the ability to read, create, and update their own time entries and they can see the projects that they are members of.');
 
         Jetstream::role(Role::Placeholder->value, 'Placeholder', [
         ])->description('Placeholders are used for importing data. They cannot log in and have no permissions.');
@@ -210,7 +211,41 @@ class JetstreamServiceProvider extends ServiceProvider
             ->whenRendering(
                 'Teams/Show',
                 function (Request $request, array $data): array {
+                    /** @var Organization $teamModel */
+                    $teamModel = $data['team'];
+                    $owner = $teamModel->owner;
+
                     return array_merge($data, [
+                        'team' => [
+                            'id' => $teamModel->getKey(),
+                            'name' => $teamModel->name,
+                            'currency' => $teamModel->currency,
+                            'owner' => [
+                                'id' => $owner->getKey(),
+                                'name' => $owner->name,
+                                'email' => $owner->email,
+                                'profile_photo_url' => $owner->profile_photo_url,
+                            ],
+                            'users' => $teamModel->users->map(function (User $user): array {
+                                return [
+                                    'id' => $user->getKey(),
+                                    'name' => $user->name,
+                                    'email' => $user->email,
+                                    'profile_photo_url' => $user->profile_photo_url,
+                                    'membership' => [
+                                        'id' => $user->membership->id,
+                                        'role' => $user->membership->role,
+                                    ],
+                                ];
+                            }),
+                            'team_invitations' => $teamModel->teamInvitations->map(function (OrganizationInvitation $invitation): array {
+                                return [
+                                    'id' => $invitation->getKey(),
+                                    'email' => $invitation->email,
+                                    'role' => $invitation->role,
+                                ];
+                            }),
+                        ],
                         'currencies' => array_map(function (Currency $currency): string {
                             return $currency->getName();
                         }, ISOCurrencyProvider::getInstance()->getAvailableCurrencies()),

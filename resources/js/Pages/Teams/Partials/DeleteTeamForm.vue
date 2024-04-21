@@ -26,21 +26,21 @@ const deleteTeam = () => {
 
 <template>
     <ActionSection>
-        <template #title> Delete Team </template>
+        <template #title> Delete Organization </template>
 
-        <template #description> Permanently delete this team. </template>
+        <template #description> Permanently delete this organization. </template>
 
         <template #content>
             <div class="max-w-xl text-sm text-muted">
-                Once a team is deleted, all of its resources and data will be
-                permanently deleted. Before deleting this team, please download
-                any data or information regarding this team that you wish to
+                Once a organization is deleted, all of its resources and data will be
+                permanently deleted. Before deleting this organization, please download
+                any data or information regarding this organization that you wish to
                 retain.
             </div>
 
             <div class="mt-5">
                 <DangerButton @click="confirmTeamDeletion">
-                    Delete Team
+                    Delete Organization
                 </DangerButton>
             </div>
 
@@ -48,7 +48,7 @@ const deleteTeam = () => {
             <ConfirmationModal
                 :show="confirmingTeamDeletion"
                 @close="confirmingTeamDeletion = false">
-                <template #title> Delete Team </template>
+                <template #title> Delete Organization </template>
 
                 <template #content>
                     Are you sure you want to delete this team? Once a team is
@@ -66,7 +66,7 @@ const deleteTeam = () => {
                         :class="{ 'opacity-25': form.processing }"
                         :disabled="form.processing"
                         @click="deleteTeam">
-                        Delete Team
+                        Delete Organization
                     </DangerButton>
                 </template>
             </ConfirmationModal>
