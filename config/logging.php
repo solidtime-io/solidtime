@@ -67,6 +67,11 @@ return [
             'replace_placeholders' => true,
         ],
 
+        'stack_production' => [
+            'driver' => 'stack',
+            'channels' => ['single', 'sentry'],
+        ],
+
         'daily' => [
             'driver' => 'daily',
             'path' => storage_path('logs/laravel.log'),
@@ -82,6 +87,12 @@ return [
             'emoji' => ':boom:',
             'level' => env('LOG_LEVEL', 'critical'),
             'replace_placeholders' => true,
+        ],
+
+        'sentry' => [
+            'driver' => 'sentry',
+            'level' => env('LOG_LEVEL', 'error'),
+            'bubble' => true,
         ],
 
         'papertrail' => [
