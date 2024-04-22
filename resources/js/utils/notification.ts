@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import axios from 'axios';
+
 export type NotificationType = 'success' | 'error';
 
 export const useNotificationsStore = defineStore('notifications', () => {
@@ -50,9 +51,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
             if (axios.isAxiosError(error)) {
                 if (
                     error?.response?.status === 403 ||
-                    (error?.response?.status === 400 &&
-                        error?.response?.data?.error === true &&
-                        error?.response?.data?.errorMessage !== undefined)
+                    error?.response?.status === 400
                 ) {
                     addNotification(
                         'error',

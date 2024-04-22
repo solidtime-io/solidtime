@@ -33,7 +33,7 @@ onMounted(async () => {
     }
 });
 
-const reportResult = ref<ImportReport>();
+const reportResult = ref<ImportReport | null>();
 const files = ref<FileList | null>(null);
 
 async function importData() {
@@ -51,18 +51,24 @@ async function importData() {
     const base64String = await toBase64(files.value[0]);
     const organizationId = getCurrentOrganizationId();
     if (organizationId !== null) {
-        reportResult.value = await api.importData(
-            {
-                type: importType.value.key,
-                data: base64String.replace('data:text/csv;base64,', ''),
-            },
-            {
-                params: {
-                    organization: organizationId,
+        const { handleApiRequestNotifications } = useNotificationsStore();
+
+        reportResult.value = await handleApiRequestNotifications(
+            api.importData(
+                {
+                    type: importType.value.key,
+                    data: base64String.replace('data:text/csv;base64,', ''),
                 },
-            }
+                {
+                    params: {
+                        organization: organizationId,
+                    },
+                }
+            )
         );
-        showResultModal.value = true;
+        if (reportResult.value) {
+            showResultModal.value = true;
+        }
     }
 }
 
