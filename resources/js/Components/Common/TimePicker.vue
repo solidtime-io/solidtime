@@ -17,7 +17,7 @@ const minutes = computed(() => {
 function updateMinutes(event: Event) {
     const target = event.target as HTMLInputElement;
     const newValue = target.value;
-    if (parseInt(newValue)) {
+    if (!isNaN(parseInt(newValue))) {
         model.value = dayjs(model.value)
             .utc()
             .set('minutes', parseInt(newValue))
@@ -28,7 +28,7 @@ function updateMinutes(event: Event) {
 function updateHours(event: Event) {
     const target = event.target as HTMLInputElement;
     const newValue = target.value;
-    if (parseInt(newValue)) {
+    if (!isNaN(parseInt(newValue))) {
         model.value = dayjs(model.value)
             .utc()
             .set('hours', parseInt(newValue))

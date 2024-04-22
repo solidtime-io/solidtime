@@ -37,14 +37,17 @@ watch(focused, (newValue, oldValue) => {
         updateTimeEntry();
     }
 });
+
+const open = ref(false);
 </script>
 
 <template>
     <div class="relative">
         <Dropdown
+            v-model="open"
+            @submit="open = false"
             align="bottom"
-            :close-on-content-click="false"
-            @submit="updateTimeEntry">
+            :close-on-content-click="false">
             <template #trigger>
                 <button
                     data-testid="time_entry_range_selector"
