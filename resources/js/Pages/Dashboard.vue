@@ -28,7 +28,7 @@ const props = defineProps<{
         duration: number; // Total duration in seconds
         history: number[]; // Array representing the duration in seconds of the 3h windows for the day
     }[];
-    dailyTrackedHours: [string, number][];
+    dailyTrackedHours: { duration: number; date: string }[];
     weeklyProjectOverview: {
         value: number;
         name: string;

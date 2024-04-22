@@ -13,9 +13,10 @@ import {
 } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
 import dayjs from 'dayjs';
+import { formatDate, formatTime } from '@/utils/time';
 
 const props = defineProps<{
-    dailyHoursTracked: [string, number][];
+    dailyHoursTracked: { duration: number; date: string }[];
 }>();
 
 use([
@@ -29,7 +30,10 @@ use([
 
 provide(THEME_KEY, 'dark');
 
-const max = Math.max(...props.dailyHoursTracked.map((el) => el[1]));
+const max = Math.max(
+    Math.max(...props.dailyHoursTracked.map((el) => el.duration)),
+    1
+);
 
 const option = ref({
     tooltip: {},
@@ -67,9 +71,18 @@ const option = ref({
     series: {
         type: 'heatmap',
         coordinateSystem: 'calendar',
-        data: props.dailyHoursTracked,
+        data: props.dailyHoursTracked.map((el) => [el.date, el.duration]),
         itemStyle: {
             borderRadius: 5,
+        },
+        tooltip: {
+            valueFormatter: (value: string, dataIndex: number) => {
+                return (
+                    formatDate(props.dailyHoursTracked[dataIndex].date) +
+                    ': ' +
+                    formatTime(value)
+                );
+            },
         },
     },
     backgroundColor: 'transparent',
