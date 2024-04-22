@@ -5,7 +5,7 @@ on:
       - develop
   pull_request:
     paths:
-      - 'workflows/build-private.yml'
+      - '.github/workflows/build-private.yml'
       - 'docker/prod/**'
   workflow_dispatch:
 
@@ -37,6 +37,21 @@ jobs:
           only_args: --no-dev --no-ansi --no-interaction --prefer-dist --ignore-platform-reqs --classmap-authoritative
           php_version: 8.3
 
+      - name: "Checkout services extension"
+        uses: actions/checkout@v4
+        with:
+          repository: solidtime-io/extension-services
+          path: extensions/Services
+          ssh-key: ${{ secrets.SSH_PRIVATE_KEY_SERVICES_EXTENSION }}
+
+      - name: "Install dependencies in services extension"
+        uses: php-actions/composer@v6
+        with:
+          working_dir: "extensions/Services"
+          command: install
+          only_args: --no-dev --no-ansi --no-interaction --prefer-dist --ignore-platform-reqs --classmap-authoritative
+          php_version: 8.3
+
       - name: "Setup PHP with PECL extension"
         uses: shivammathur/setup-php@v2
         with:
@@ -64,6 +79,9 @@ jobs:
 
       - name: "Activate billing extension"
         run: php artisan module:enable Billing
+
+      - name: "Activate services extension"
+        run: php artisan module:enable Services
 
       - name: "Login to GitHub Container Registry"
         uses: docker/login-action@v3
