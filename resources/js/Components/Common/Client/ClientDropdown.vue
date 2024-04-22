@@ -146,6 +146,7 @@ const highlightedItem = computed(() => {
                     v-if="
                         searchValue.length > 0 && filteredClients.length === 0
                     "
+                    @click="addClientIfNoneExists"
                     class="bg-card-background-active">
                     <div
                         class="flex space-x-3 items-center px-4 py-3 text-xs text-white font-medium border-t rounded-b-lg border-card-background-separator">
