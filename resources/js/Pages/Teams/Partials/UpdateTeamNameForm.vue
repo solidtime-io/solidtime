@@ -34,14 +34,14 @@ const updateTeamName = () => {
         <template #title> Organization Name</template>
 
         <template #description>
-            The team's name and owner information.
+            The organization's name and owner information.
         </template>
 
         <template #form>
             <!-- Organization Owner Information -->
             <div class="col-span-6 flex items-center justify-between">
                 <div class="">
-                    <InputLabel value="Team Owner" />
+                    <InputLabel value="Organization Owner" />
 
                     <div class="flex items-center mt-2">
                         <img

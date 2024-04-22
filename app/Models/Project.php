@@ -22,7 +22,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int|null $billable_rate
  * @property-read Organization $organization
  * @property-read Client|null $client
- * @property-read Collection<Task> $tasks
+ * @property-read Collection<int, Task> $tasks
  *
  * @method Builder<Project> visibleByUser(User $user)
  * @method static ProjectFactory factory()

@@ -21,14 +21,14 @@ use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\App;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Nwidart\Modules\Facades\Module;
 use pxlrbt\FilamentEnvironmentIndicator\EnvironmentIndicatorPlugin;
 
 class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
-        return $panel
-            ->default()
+        $panel->default()
             ->id('admin')
             ->path('admin')
             ->colors([
@@ -72,5 +72,26 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ]);
+
+        $modules = Module::allEnabled();
+
+        foreach ($modules as $module) {
+            $panel->discoverResources(
+                in: module_path($module->getName(), 'app/Filament/Resources'),
+                for: 'Extensions\\'.$module->getName().'\\App\\Filament\\Resources'
+            );
+
+            $panel->discoverPages(
+                in: module_path($module->getName(), 'app/Filament/Pages'),
+                for: 'Extensions\\'.$module->getName().'\\App\\Filament\\Pages'
+            );
+
+            $panel->discoverWidgets(
+                in: module_path($module->getName(), 'app/Filament/Widgets'),
+                for: 'Extensions\\'.$module->getName().'\\App\\Filament\\Widgets'
+            );
+        }
+
+        return $panel;
     }
 }
