@@ -6,6 +6,7 @@ namespace App\Service\Import\Importers;
 
 use Exception;
 use Spatie\TemporaryDirectory\TemporaryDirectory;
+use ValueError;
 use ZipArchive;
 
 class TogglDataImporter extends DefaultImporter
@@ -20,7 +21,10 @@ class TogglDataImporter extends DefaultImporter
             $zip = new ZipArchive();
             $temporaryDirectory = TemporaryDirectory::make();
             file_put_contents($temporaryDirectory->path('import.zip'), $data);
-            $zip->open($temporaryDirectory->path('import.zip'), ZipArchive::RDONLY);
+            $res = $zip->open($temporaryDirectory->path('import.zip'), ZipArchive::RDONLY);
+            if ($res !== true) {
+                throw new ImportException('Invalid ZIP, error code: '.$res);
+            }
             $temporaryDirectory = TemporaryDirectory::make();
             $zip->extractTo($temporaryDirectory->path());
             $zip->close();
@@ -107,6 +111,8 @@ class TogglDataImporter extends DefaultImporter
                     ], [], (string) $task->id);
                 }
             }
+        } catch (ValueError $exception) {
+
         } catch (ImportException $exception) {
             throw $exception;
         } catch (Exception $exception) {

@@ -5,7 +5,7 @@ on:
       - develop
   pull_request:
     paths:
-      - 'workflows/build-public.yml'
+      - '.github/workflows/build-public.yml'
       - 'docker/prod/**'
   workflow_dispatch:
 

@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Tests\Unit\Service\Import\Importer;
 
 use App\Models\Organization;
+use App\Service\Import\Importers\ImportException;
 use App\Service\Import\Importers\TogglDataImporter;
+use Exception;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Spatie\TemporaryDirectory\TemporaryDirectory;
@@ -25,6 +27,25 @@ class TogglDataImporterTest extends ImporterTestAbstract
         $zip->close();
 
         return $zipPath;
+    }
+
+    public function test_import_throws_exception_if_data_is_not_zip(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $importer = new TogglDataImporter();
+        $importer->init($organization);
+
+        // Act
+        try {
+            $importer->importData('not a zip');
+        } catch (Exception $e) {
+            $this->assertInstanceOf(ImportException::class, $e);
+            $this->assertSame('Invalid ZIP, error code: 19', $e->getMessage());
+
+            return;
+        }
+        $this->fail();
     }
 
     public function test_import_of_test_file_succeeds(): void
@@ -48,7 +69,6 @@ class TogglDataImporterTest extends ImporterTestAbstract
         $this->assertSame(1, $report->usersCreated);
         $this->assertSame(2, $report->projectsCreated);
         $this->assertSame(1, $report->clientsCreated);
-
     }
 
     public function test_import_of_test_file_twice_succeeds(): void

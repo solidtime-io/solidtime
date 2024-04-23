@@ -69,7 +69,7 @@ return [
 
         'stack_production' => [
             'driver' => 'stack',
-            'channels' => ['single', 'sentry'],
+            'channels' => ['stderr', 'sentry'],
         ],
 
         'daily' => [
