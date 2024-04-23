@@ -14,4 +14,8 @@ function getCurrentOrganizationId() {
     return page.props.auth.user.current_team_id;
 }
 
-export { getCurrentOrganizationId, getCurrentUserId };
+function getUserTimezone() {
+    return page.props.auth.user.timezone;
+}
+
+export { getCurrentOrganizationId, getCurrentUserId, getUserTimezone };

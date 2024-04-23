@@ -5,12 +5,12 @@ import { computed, onMounted, ref, watch } from 'vue';
 import MainContainer from '@/Pages/MainContainer.vue';
 import { useTimeEntriesStore } from '@/utils/useTimeEntries';
 import { storeToRefs } from 'pinia';
-import dayjs from 'dayjs';
 import type { TimeEntry } from '@/utils/api';
 import TimeEntryRowHeading from '@/Components/Common/TimeEntry/TimeEntryRowHeading.vue';
 import TimeEntryRow from '@/Components/Common/TimeEntry/TimeEntryRow.vue';
 import { useElementVisibility } from '@vueuse/core';
 import { ClockIcon } from '@heroicons/vue/20/solid';
+import { getLocalizedDateFromTimestamp } from '@/utils/time';
 
 const timeEntriesStore = useTimeEntriesStore();
 const { timeEntries, allTimeEntriesLoaded } = storeToRefs(timeEntriesStore);
@@ -38,10 +38,9 @@ const groupedTimeEntries = computed(() => {
     const groupedEntries: Record<string, TimeEntry[]> = {};
     for (const entry of timeEntries.value) {
         const oldEntries =
-            groupedEntries[dayjs(entry.start).utc().format('YYYY-MM-DD')];
+            groupedEntries[getLocalizedDateFromTimestamp(entry.start)];
         const newEntries = [...(oldEntries ?? []), entry];
-        groupedEntries[dayjs(entry.start).utc().format('YYYY-MM-DD')] =
-            newEntries;
+        groupedEntries[getLocalizedDateFromTimestamp(entry.start)] = newEntries;
     }
     return groupedEntries;
 });

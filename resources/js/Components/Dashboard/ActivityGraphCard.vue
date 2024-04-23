@@ -13,7 +13,7 @@ import {
 } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
 import dayjs from 'dayjs';
-import { formatDate, formatTime } from '@/utils/time';
+import { formatDate, formatHumanReadableDuration } from '@/utils/time';
 
 const props = defineProps<{
     dailyHoursTracked: { duration: number; date: string }[];
@@ -76,11 +76,11 @@ const option = ref({
             borderRadius: 5,
         },
         tooltip: {
-            valueFormatter: (value: string, dataIndex: number) => {
+            valueFormatter: (value: number, dataIndex: number) => {
                 return (
                     formatDate(props.dailyHoursTracked[dataIndex].date) +
                     ': ' +
-                    formatTime(value)
+                    formatHumanReadableDuration(value)
                 );
             },
         },
