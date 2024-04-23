@@ -1,26 +1,26 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import dayjs from 'dayjs';
+import { getLocalizedDayJs } from '@/utils/time';
 
 const model = defineModel<string | null>({
     default: null,
 });
 
 const hours = computed(() => {
-    return model.value ? dayjs(model.value).utc().hour() : null;
+    return model.value ? getLocalizedDayJs(model.value).hour() : null;
 });
 
 const minutes = computed(() => {
-    return model.value ? dayjs(model.value).utc().minute() : null;
+    return model.value ? getLocalizedDayJs(model.value).minute() : null;
 });
 
 function updateMinutes(event: Event) {
     const target = event.target as HTMLInputElement;
     const newValue = target.value;
     if (!isNaN(parseInt(newValue))) {
-        model.value = dayjs(model.value)
-            .utc()
+        model.value = getLocalizedDayJs(model.value)
             .set('minutes', parseInt(newValue))
+            .utc()
             .format();
     }
 }
@@ -29,9 +29,9 @@ function updateHours(event: Event) {
     const target = event.target as HTMLInputElement;
     const newValue = target.value;
     if (!isNaN(parseInt(newValue))) {
-        model.value = dayjs(model.value)
-            .utc()
+        model.value = getLocalizedDayJs(model.value)
             .set('hours', parseInt(newValue))
+            .utc()
             .format();
     }
 }
