@@ -18,11 +18,14 @@ createInertiaApp({
             import.meta.glob<DefineComponent>('./Pages/**/*.vue')
         ),
     setup({ el, App, props, plugin }) {
-        createApp({ render: () => h(App, props) })
-            .use(plugin)
-            .use(pinia)
-            .use(ZiggyVue)
-            .mount(el);
+        const app = createApp({ render: () => h(App, props) });
+
+        // currently only one vue app setup hook is supported
+        if (window.vueAppSetupHook) {
+            window.vueAppSetupHook(app);
+        }
+
+        app.use(plugin).use(pinia).use(ZiggyVue).mount(el);
     },
 
     progress: {

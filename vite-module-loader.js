@@ -1,7 +1,16 @@
 import fs from 'fs/promises';
 import path from 'path';
 
-async function collectModuleAssetsPaths(paths, modulesPath) {
+async function collectModuleAssetsPaths(modulesPath) {
+    return await getExportedModulesArrayAttributes(modulesPath, 'paths');
+}
+
+async function collectModulePlugins(modulesPath) {
+    return await getExportedModulesArrayAttributes(modulesPath, 'plugins');
+}
+
+async function getExportedModulesArrayAttributes(modulesPath, attribute) {
+    const result = [];
     modulesPath = path.join(__dirname, modulesPath);
 
     const moduleStatusesPath = path.join(__dirname, 'modules_statuses.json');
@@ -37,10 +46,10 @@ async function collectModuleAssetsPaths(paths, modulesPath) {
                     const moduleConfig = await import(viteConfigPath);
 
                     if (
-                        moduleConfig.paths &&
-                        Array.isArray(moduleConfig.paths)
+                        moduleConfig[attribute] &&
+                        Array.isArray(moduleConfig[attribute])
                     ) {
-                        paths.push(...moduleConfig.paths);
+                        result.push(...moduleConfig[attribute]);
                     }
                 }
             }
@@ -51,7 +60,7 @@ async function collectModuleAssetsPaths(paths, modulesPath) {
         );
     }
 
-    return paths;
+    return result;
 }
 
-export default collectModuleAssetsPaths;
+export { collectModuleAssetsPaths, collectModulePlugins };

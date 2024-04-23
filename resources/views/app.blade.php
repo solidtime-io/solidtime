@@ -23,7 +23,7 @@
 
         <!-- Scripts -->
         @routes
-        @vite(['resources/js/app.ts', "resources/js/Pages/{$page['component']}.vue"])
+        @vite(\Nwidart\Modules\Module::getAssets())
         @inertiaHead
     </head>
     <body class="font-sans antialiased">
