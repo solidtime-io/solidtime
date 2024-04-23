@@ -88,9 +88,7 @@ const switchToTeam = (team: Organization) => {
                     Organization Settings
                 </DropdownLink>
 
-                <DropdownLink
-                    v-if="isBillingActivated()"
-                    href="/billing">
+                <DropdownLink v-if="isBillingActivated()" href="/billing">
                     Billing
                 </DropdownLink>
 

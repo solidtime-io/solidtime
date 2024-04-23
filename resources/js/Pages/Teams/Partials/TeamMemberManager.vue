@@ -257,9 +257,9 @@ const displayableRole = (role: string) => {
                 <template #title> Pending Team Invitations</template>
 
                 <template #description>
-                    These people have been invited to your organization and have been
-                    sent an invitation email. They may join the organization by
-                    accepting the email invitation.
+                    These people have been invited to your organization and have
+                    been sent an invitation email. They may join the
+                    organization by accepting the email invitation.
                 </template>
 
                 <!-- Pending Organization Member Invitation List -->
@@ -471,7 +471,8 @@ const displayableRole = (role: string) => {
             <template #title> Remove Team Member</template>
 
             <template #content>
-                Are you sure you would like to remove this person from the organization?
+                Are you sure you would like to remove this person from the
+                organization?
             </template>
 
             <template #footer>

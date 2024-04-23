@@ -28,14 +28,16 @@ const deleteTeam = () => {
     <ActionSection>
         <template #title> Delete Organization </template>
 
-        <template #description> Permanently delete this organization. </template>
+        <template #description>
+            Permanently delete this organization.
+        </template>
 
         <template #content>
             <div class="max-w-xl text-sm text-muted">
-                Once a organization is deleted, all of its resources and data will be
-                permanently deleted. Before deleting this organization, please download
-                any data or information regarding this organization that you wish to
-                retain.
+                Once a organization is deleted, all of its resources and data
+                will be permanently deleted. Before deleting this organization,
+                please download any data or information regarding this
+                organization that you wish to retain.
             </div>
 
             <div class="mt-5">
