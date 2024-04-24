@@ -107,7 +107,8 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
     {
         $data = $this->createUserWithPermission([
             'members:invite-placeholder',
-        ], true);
+            'invitations:create',
+        ]);
         $user = User::factory()->create([
             'is_placeholder' => true,
         ]);
@@ -242,6 +243,7 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
         // Arrange
         $data = $this->createUserWithPermission([
             'members:invite-placeholder',
+            'invitations:create',
         ]);
         $otherOrganization = Organization::factory()->create();
         $user = User::factory()->create([
@@ -265,6 +267,7 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
         // Arrange
         $data = $this->createUserWithPermission([
             'members:invite-placeholder',
+            'invitations:create',
         ]);
         Passport::actingAs($data->user);
 

@@ -6,7 +6,6 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Laravel\Jetstream\Features;
 use Tests\TestCase;
 
 class DeleteAccountTest extends TestCase
@@ -15,31 +14,32 @@ class DeleteAccountTest extends TestCase
 
     public function test_user_accounts_can_be_deleted(): void
     {
-        if (! Features::hasAccountDeletionFeatures()) {
-            $this->markTestSkipped('Account deletion is not enabled.');
-        }
+        // Arrange
+        $user = User::factory()->create();
+        $this->actingAs($user);
 
-        $this->actingAs($user = User::factory()->create());
-
+        // Act
         $response = $this->delete('/user', [
             'password' => 'password',
         ]);
 
+        // Assert
+        $response->assertStatus(302);
         $this->assertNull($user->fresh());
     }
 
     public function test_correct_password_must_be_provided_before_account_can_be_deleted(): void
     {
-        if (! Features::hasAccountDeletionFeatures()) {
-            $this->markTestSkipped('Account deletion is not enabled.');
-        }
+        // Arrange
+        $user = User::factory()->create();
+        $this->actingAs($user);
 
-        $this->actingAs($user = User::factory()->create());
-
+        // Act
         $response = $this->delete('/user', [
             'password' => 'wrong-password',
         ]);
 
+        // Assert
         $this->assertNotNull($user->fresh());
     }
 }
