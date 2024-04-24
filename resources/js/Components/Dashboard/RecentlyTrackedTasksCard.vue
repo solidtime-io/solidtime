@@ -42,7 +42,7 @@ const props = defineProps<{
         </div>
         <div
             v-if="props.latestTasks.length === 1"
-            class="text-center flex flex-1 justify-center items-center">
+            class="text-center flex flex-1 justify-center items-center text-sm">
             <div>
                 <PlusCircleIcon
                     class="w-8 text-icon-default inline pb-2"></PlusCircleIcon>

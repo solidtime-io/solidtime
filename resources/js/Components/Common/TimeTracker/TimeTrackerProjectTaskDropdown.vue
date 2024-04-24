@@ -45,9 +45,11 @@ type ProjectWithTasks = {
 withDefaults(
     defineProps<{
         showBadgeBorder: boolean;
+        size: 'base' | 'large' | 'xlarge';
     }>(),
     {
         showBadgeBorder: true,
+        size: 'large',
     }
 );
 
@@ -298,7 +300,7 @@ function selectProject(projectId: string) {
             <ProjectBadge
                 ref="projectDropdownTrigger"
                 :color="selectedProjectColor"
-                size="large"
+                :size="size"
                 :border="showBadgeBorder"
                 tag="button"
                 :name="selectedProjectName"

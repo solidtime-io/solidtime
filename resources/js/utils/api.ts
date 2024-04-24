@@ -22,6 +22,11 @@ export type TimeEntryResponse = ZodiosResponseByAlias<
 >;
 export type TimeEntry = TimeEntryResponse['data'][0];
 
+export type CreateTimeEntryBody = ZodiosBodyByAlias<
+    SolidTimeApi,
+    'createTimeEntry'
+>;
+
 export type ProjectResponse = ZodiosResponseByAlias<
     SolidTimeApi,
     'getProjects'

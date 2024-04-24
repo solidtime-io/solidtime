@@ -71,7 +71,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
                 }
             }
         }
-        return null;
+        throw new Error('Failed to handle API request');
     }
 
     return { addNotification, notifications, handleApiRequestNotifications };

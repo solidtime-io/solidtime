@@ -461,3 +461,5 @@ test('test that load more works when the end of page is reached', async ({
 // TODO: Test for resume button click works with project / task
 
 // TODO: Test that time entries are loaded at the end of the page
+
+// TODO: Test manual time entries

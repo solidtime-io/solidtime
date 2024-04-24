@@ -80,7 +80,7 @@ function updateProjectAndTask(projectId: string, taskId: string) {
 
 <template>
     <div
-        class="border-b border-card-border transition"
+        class="border-b border-default-background-separator transition"
         data-testid="time_entry_row">
         <MainContainer>
             <div class="sm:flex py-1.5 items-center justify-between group">

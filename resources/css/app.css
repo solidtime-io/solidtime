@@ -4,20 +4,21 @@
 
 
 :root{
-    --theme-color-default-background: #040618;
+    --theme-color-default-background: #0b0d1c;
     --theme-color-icon-default: #42466C;
     --theme-color-card-background: #13152B;
     --theme-color-card-background-active: #1C1E34;
-    --theme-color-card-border: #242940;
+    --theme-color-card-background-separator: #1c2033;
+    --theme-color-card-border: #1c2033;
     --theme-color-card-border-active: #2A3461;
+    --theme-color-default-background-separator: #141a2f;
     --theme-color-tab-background: var(--theme-color-card-background);
     --theme-color-tab-background-active: var(--theme-color-card-background-active);
     --theme-color-tab-border: var(--theme-color-card-border);
-    --theme-color-row-separator-background: var(--theme-color-card-border);
+    --theme-color-row-separator-background: var(--theme-color-default-background-separator);
     --theme-color-row-heading-background: var(--theme-color-card-background);
     --theme-color-row-border: var(--theme-color-card-border);
     --theme-color-row-heading-border: var(--theme-color-card-border);
-
 }
 
 *{
