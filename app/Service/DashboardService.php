@@ -47,18 +47,21 @@ class DashboardService
     {
         $result = [];
         $windowSize = 24 / $windows;
+        $end = Carbon::now($timeZone)->endOfDay()->subHours(3)->utc()->toDateTimeString();
+        $start = Carbon::now($timeZone)->subDays($days)->startOfDay()->utc()->toDateTimeString();
+
         $date = Carbon::now($timeZone)->startOfDay();
-        $end = $date->copy()->endOfDay()->utc()->toDateTimeString();
-        $start = $end;
         for ($i = 0; $i < $days; $i++) {
+            $dateString = $date->format('Y-m-d');
             $tempDate = $date->copy();
-            $start = $tempDate->utc()->toDateTimeString();
+            $start = $tempDate->copy()->utc()->toDateTimeString();
             $tempWindows = [];
             for ($j = 0; $j < $windows; $j++) {
-                $tempWindow = $tempDate->addHours($windowSize)->utc()->toDateTimeString();
+                $tempWindow = $tempDate->utc()->toDateTimeString();
                 $tempWindows[] = $tempWindow;
+                $tempDate->addHours($windowSize);
             }
-            $result[$date->format('Y-m-d')] = $tempWindows;
+            $result[$dateString] = $tempWindows;
             $date->subDay();
         }
 
@@ -420,14 +423,14 @@ class DashboardService
             SELECT time_ranges.start, EXTRACT(epoch FROM sum(LEAST(time_ranges."end", coalesce(time_entries."end", :now::timestamp)) - GREATEST(time_ranges.start, time_entries.start))) AS aggregate
             FROM  (
                SELECT time_range_starts.start AS start, time_range_starts.start + interval \'3 hours\' AS "end"
-               FROM generate_series(:start_time_ranges::timestamp, :end_time_ranges::timestamp, interval \'3 hours\') as time_range_starts (start)
+               FROM generate_series(:start_time_ranges::timestamp, :end_time_ranges::timestamp + interval \'3 hours\', interval \'3 hours\') as time_range_starts (start)
             ) time_ranges
             JOIN   time_entries ON time_entries.start < time_ranges."end"
-                      AND coalesce(time_entries."end", :now::timestamp)   > time_ranges.start
-            where time_entries.user_id = :user_id and
+                      AND coalesce(time_entries."end", :now::timestamp) > time_ranges.start
+            WHERE time_entries.user_id = :user_id and
                   time_entries.organization_id = :organization_id
-            GROUP  BY time_ranges.start
-            ORDER  BY time_ranges.start
+            GROUP BY time_ranges.start
+            ORDER BY time_ranges.start
         ', [
             'start_time_ranges' => $lastDaysSplitInWindows['start'],
             'end_time_ranges' => $lastDaysSplitInWindows['end'],

@@ -536,18 +536,18 @@ class DashboardServiceTest extends TestCase
     public function test_last_seven_days_returns_spend_time_in_the_last_seven_days_aggregated_in_three_hour_blocks(): void
     {
         // Arrange
-        $now = Carbon::create(2024, 4, 17, 12, 0, 0, 'Europe/Vienna');
+        $now = Carbon::create(2024, 4, 17, 12, 0, 0, 'Europe/Vienna')->utc();
         $this->travelTo($now);
         $organization = Organization::factory()->create();
         $user = User::factory()->create([
             'timezone' => 'Europe/Vienna',
         ]);
         $timeEntryOverWholePeriod = TimeEntry::factory()->forUser($user)->forOrganization($organization)->create([
-            'start' => now('Europe/Vienna')->subDays(7)->startOfDay()->subMinute()->utc(),
-            'end' => now('Europe/Vienna')->endOfDay()->addMinute()->utc(), // TODO: addMinute should not be necessary
+            'start' => now('Europe/Vienna')->subDays(7)->startOfDay()->utc(),
+            'end' => now('Europe/Vienna')->endOfDay()->addSecond()->utc(), // TODO: fix problem with last second
         ]);
         $timeEntryOverWholePeriodWithoutEnd = TimeEntry::factory()->forUser($user)->forOrganization($organization)->create([
-            'start' => now('Europe/Vienna')->subDays(7)->startOfDay()->subMinute()->utc(),
+            'start' => now('Europe/Vienna')->subDays(7)->startOfDay()->utc(),
             'end' => null,
         ]);
         $timeEntry1Task1 = TimeEntry::factory()->forUser($user)->forOrganization($organization)->create([
@@ -562,16 +562,16 @@ class DashboardServiceTest extends TestCase
         $this->assertSame([
             0 => [
                 'date' => '2024-04-17',
-                'duration' => 115800,
+                'duration' => 130200,
                 'history' => [
                     0 => 21600,
                     1 => 21600,
-                    2 => 22200,
-                    3 => 18000,
+                    2 => 21600,
+                    3 => 22200,
                     4 => 10800,
                     5 => 10800,
-                    6 => 10800, // TODO
-                    7 => 0, // TODO
+                    6 => 10800,
+                    7 => 10800,
                 ],
             ],
             1 => [
