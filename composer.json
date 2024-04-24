@@ -24,7 +24,7 @@
         "pxlrbt/filament-environment-indicator": "^2.0",
         "spatie/temporary-directory": "^2.2",
         "tightenco/ziggy": "^2.1.0",
-        "tpetry/laravel-postgresql-enhanced": "^0.37.0",
+        "tpetry/laravel-postgresql-enhanced": "^0.38.0",
         "wikimedia/composer-merge-plugin": "^2.1.0"
     },
     "require-dev": {
