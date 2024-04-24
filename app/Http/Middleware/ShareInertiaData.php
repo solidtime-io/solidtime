@@ -6,6 +6,7 @@ namespace App\Http\Middleware;
 
 use App\Models\Organization;
 use App\Models\User;
+use App\Service\PermissionStore;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -23,7 +24,9 @@ class ShareInertiaData
      */
     public function handle(Request $request, Closure $next): Response
     {
+        $permissions = app(PermissionStore::class);
         Inertia::share(array_filter([
+            'permissions' => $request->user() !== null ? $permissions->permissions($request->user()->currentTeam) : [],
             'jetstream' => function () use ($request) {
                 /** @var User|null $user */
                 $user = $request->user();
