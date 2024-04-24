@@ -22,7 +22,7 @@ test('test that new manager can be invited', async ({ page }) => {
     const editorId = Math.round(Math.random() * 10000);
     await page.getByLabel('Email').fill(`new+${editorId}@editor.test`);
     await page.getByRole('button', { name: 'Manager' }).click();
-    await page.getByRole('button', { name: 'Add' }).click();
+    await page.getByRole('button', { name: 'Add', exact: true }).click();
     await page.reload();
     await expect(page.getByRole('main')).toContainText(
         `new+${editorId}@editor.test`
@@ -34,7 +34,7 @@ test('test that new employee can be invited', async ({ page }) => {
     const editorId = Math.round(Math.random() * 10000);
     await page.getByLabel('Email').fill(`new+${editorId}@editor.test`);
     await page.getByRole('button', { name: 'Employee' }).click();
-    await page.getByRole('button', { name: 'Add' }).click();
+    await page.getByRole('button', { name: 'Add', exact: true }).click();
     await page.reload();
     await expect(page.getByRole('main')).toContainText(
         `new+${editorId}@editor.test`
@@ -46,7 +46,7 @@ test('test that new admin can be invited', async ({ page }) => {
     const adminId = Math.round(Math.random() * 10000);
     await page.getByLabel('Email').fill(`new+${adminId}@admin.test`);
     await page.getByRole('button', { name: 'Administrator' }).click();
-    await page.getByRole('button', { name: 'Add' }).click();
+    await page.getByRole('button', { name: 'Add', exact: true }).click();
     await page.reload();
     await expect(page.getByRole('main')).toContainText(
         `new+${adminId}@admin.test`
@@ -57,7 +57,7 @@ test('test that error shows if no role is selected', async ({ page }) => {
     const noRoleId = Math.round(Math.random() * 10000);
 
     await page.getByLabel('Email').fill(`new+${noRoleId}@norole.test`);
-    await page.getByRole('button', { name: 'Add' }).click();
+    await page.getByRole('button', { name: 'Add', exact: true }).click();
     await expect(page.getByRole('main')).toContainText(
         'The role field is required.'
     );
