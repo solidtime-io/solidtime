@@ -17,6 +17,11 @@ class PermissionStore
      */
     private array $permissionCache = [];
 
+    public function clear(): void
+    {
+        $this->permissionCache = [];
+    }
+
     public function has(Organization $organization, string $permission): bool
     {
         /** @var User|null $user */
@@ -26,15 +31,11 @@ class PermissionStore
         }
 
         if (! isset($this->permissionCache[$user->getKey().'|'.$organization->getKey()])) {
-            if ($user->ownsTeam($organization)) {
-                return true;
-            }
-
             if (! $user->belongsToTeam($organization)) {
                 return false;
             }
 
-            $permissions = $user->teamPermissions($organization);
+            $permissions = $this->getPermissionsByUser($organization, $user);
             $this->permissionCache[$user->getKey().'|'.$organization->getKey()] = $permissions;
         } else {
             $permissions = $this->permissionCache[$user->getKey().'|'.$organization->getKey()];
@@ -46,14 +47,8 @@ class PermissionStore
     /**
      * @return array<string>
      */
-    public function getPermissions(Organization $organization): array
+    private function getPermissionsByUser(Organization $organization, User $user): array
     {
-        /** @var User|null $user */
-        $user = Auth::user();
-        if ($user === null) {
-            return [];
-        }
-
         if (! $user->belongsToTeam($organization)) {
             return [];
         }
@@ -68,5 +63,19 @@ class PermissionStore
         $roleObj = Jetstream::findRole($role);
 
         return $role !== null ? ($roleObj?->permissions ?? []) : [];
+    }
+
+    /**
+     * @return array<string>
+     */
+    public function getPermissions(Organization $organization): array
+    {
+        /** @var User|null $user */
+        $user = Auth::user();
+        if ($user === null) {
+            return [];
+        }
+
+        return $this->getPermissionsByUser($organization, $user);
     }
 }
