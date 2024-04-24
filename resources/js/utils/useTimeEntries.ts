@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import { getCurrentOrganizationId, getCurrentUserId } from '@/utils/useUser';
 import { api } from '../../../openapi.json.client';
 import { reactive, ref } from 'vue';
-import type { TimeEntry } from '@/utils/api';
+import type { CreateTimeEntryBody, TimeEntry } from '@/utils/api';
 import dayjs from 'dayjs';
 import { useNotificationsStore } from '@/utils/notification';
 
@@ -83,7 +83,7 @@ export const useTimeEntriesStore = defineStore('timeEntries', () => {
         }
     }
 
-    async function createTimeEntry(timeEntry: TimeEntry) {
+    async function createTimeEntry(timeEntry: CreateTimeEntryBody) {
         const organizationId = getCurrentOrganizationId();
         if (organizationId) {
             await handleApiRequestNotifications(

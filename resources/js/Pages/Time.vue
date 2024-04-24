@@ -11,6 +11,9 @@ import TimeEntryRow from '@/Components/Common/TimeEntry/TimeEntryRow.vue';
 import { useElementVisibility } from '@vueuse/core';
 import { ClockIcon } from '@heroicons/vue/20/solid';
 import { getLocalizedDateFromTimestamp } from '@/utils/time';
+import SecondaryButton from '@/Components/SecondaryButton.vue';
+import { PlusIcon } from '@heroicons/vue/16/solid';
+import TimeEntryCreateModal from '@/Components/Common/TimeEntry/TimeEntryCreateModal.vue';
 
 const timeEntriesStore = useTimeEntriesStore();
 const { timeEntries, allTimeEntriesLoaded } = storeToRefs(timeEntriesStore);
@@ -44,13 +47,33 @@ const groupedTimeEntries = computed(() => {
     }
     return groupedEntries;
 });
+const showManualTimeEntryModal = ref(false);
 </script>
 
 <template>
+    <TimeEntryCreateModal
+        v-model:show="showManualTimeEntryModal"></TimeEntryCreateModal>
     <AppLayout title="Dashboard" data-testid="time_view">
         <MainContainer
             class="pt-5 sm:pt-8 pb-4 sm:pb-6 border-b border-default-background-separator">
-            <TimeTracker></TimeTracker>
+            <div
+                class="flex items-end divide-x divide-default-background-separator space-x-2">
+                <div class="flex-1">
+                    <TimeTracker></TimeTracker>
+                </div>
+                <div class="pb-2 pl-4 flex justify-center">
+                    <SecondaryButton
+                        @click="showManualTimeEntryModal = true"
+                        :icon="PlusIcon"
+                        >Manual time entry</SecondaryButton
+                    >
+                </div>
+            </div>
+        </MainContainer>
+        <MainContainer>
+            <div class="flex justify-between py-2 items-center">
+                <div class="text-sm">0 selected</div>
+            </div>
         </MainContainer>
         <div v-for="(value, key) in groupedTimeEntries" :key="key">
             <TimeEntryRowHeading :date="key"></TimeEntryRowHeading>
