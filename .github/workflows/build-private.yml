@@ -17,6 +17,11 @@ jobs:
       - name: "Check out code"
         uses: actions/checkout@v4
 
+      - name: "Use Node.js"
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
       - name: "Copy .env template for production"
         run: cp .env.production .env && cat .env
 
@@ -44,13 +49,16 @@ jobs:
           path: extensions/Services
           ssh-key: ${{ secrets.SSH_PRIVATE_KEY_SERVICES_EXTENSION }}
 
-      - name: "Install dependencies in services extension"
+      - name: "Install composer dependencies in services extension"
         uses: php-actions/composer@v6
         with:
           working_dir: "extensions/Services"
           command: install
           only_args: --no-dev --no-ansi --no-interaction --prefer-dist --ignore-platform-reqs --classmap-authoritative
           php_version: 8.3
+
+      - name: "Install npm dependencies in services extension"
+        run: cd extensions/Services && npm ci
 
       - name: "Setup PHP with PECL extension"
         uses: shivammathur/setup-php@v2
@@ -66,22 +74,17 @@ jobs:
           only_args: --no-dev --no-ansi --no-interaction --prefer-dist --ignore-platform-reqs --classmap-authoritative
           php_version: 8.3
 
-      - name: "Use Node.js"
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20.x'
+      - name: "Activate billing extension"
+        run: php artisan module:enable Billing
+
+      - name: "Activate services extension"
+        run: php artisan module:enable Services
 
       - name: "Install npm dependencies"
         run: npm ci
 
       - name: "Build"
         run: npm run build
-
-      - name: "Activate billing extension"
-        run: php artisan module:enable Billing
-
-      - name: "Activate services extension"
-        run: php artisan module:enable Services
 
       - name: "Login to GitHub Container Registry"
         uses: docker/login-action@v3
