@@ -7,6 +7,8 @@ namespace App\Service;
 use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Laravel\Jetstream\Jetstream;
+use Laravel\Jetstream\Role;
 
 class PermissionStore
 {
@@ -39,5 +41,32 @@ class PermissionStore
         }
 
         return in_array($permission, $permissions, true);
+    }
+
+    /**
+     * @return array<string>
+     */
+    public function getPermissions(Organization $organization): array
+    {
+        /** @var User|null $user */
+        $user = Auth::user();
+        if ($user === null) {
+            return [];
+        }
+
+        if (! $user->belongsToTeam($organization)) {
+            return [];
+        }
+
+        $role = $organization->users
+            ->where('id', $user->getKey())
+            ->first()
+            ?->membership
+            ?->role;
+
+        /** @var Role|null $roleObj */
+        $roleObj = Jetstream::findRole($role);
+
+        return $role !== null ? ($roleObj?->permissions ?? []) : [];
     }
 }
