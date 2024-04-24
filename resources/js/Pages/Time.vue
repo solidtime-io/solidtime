@@ -70,11 +70,6 @@ const showManualTimeEntryModal = ref(false);
                 </div>
             </div>
         </MainContainer>
-        <MainContainer>
-            <div class="flex justify-between py-2 items-center">
-                <div class="text-sm">0 selected</div>
-            </div>
-        </MainContainer>
         <div v-for="(value, key) in groupedTimeEntries" :key="key">
             <TimeEntryRowHeading :date="key"></TimeEntryRowHeading>
             <TimeEntryRow
