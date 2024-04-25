@@ -10,6 +10,7 @@ import { onMounted, ref } from 'vue';
 import { useProjectsStore } from '@/utils/useProjects';
 import ProjectCreateModal from '@/Components/Common/Project/ProjectCreateModal.vue';
 import PageTitle from '@/Components/Common/PageTitle.vue';
+import { canCreateProjects } from '@/utils/permissions';
 
 onMounted(() => {
     useProjectsStore().fetchProjects();
@@ -30,7 +31,10 @@ const createProject = ref(false);
                     <TabBarItem>Archived</TabBarItem>
                 </TabBar>
             </div>
-            <SecondaryButton :icon="PlusIcon" @click="createProject = true"
+            <SecondaryButton
+                v-if="canCreateProjects()"
+                :icon="PlusIcon"
+                @click="createProject = true"
                 >Create Project</SecondaryButton
             >
             <ProjectCreateModal

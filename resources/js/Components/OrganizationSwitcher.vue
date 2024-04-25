@@ -6,6 +6,7 @@ import { router, usePage } from '@inertiajs/vue3';
 import type { Organization, User } from '@/types/models';
 import { isBillingActivated } from '@/utils/billing';
 import { initializeStores } from '@/utils/init';
+import { canUpdateOrganization } from '@/utils/permissions';
 
 const page = usePage<{
     jetstream: {
@@ -88,7 +89,9 @@ const switchToTeam = (team: Organization) => {
                     Organization Settings
                 </DropdownLink>
 
-                <DropdownLink v-if="isBillingActivated()" href="/billing">
+                <DropdownLink
+                    v-if="canUpdateOrganization() && isBillingActivated()"
+                    href="/billing">
                     Billing
                 </DropdownLink>
 

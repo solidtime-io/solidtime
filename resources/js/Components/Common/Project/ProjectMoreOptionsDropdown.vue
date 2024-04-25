@@ -2,6 +2,7 @@
 import Dropdown from '@/Components/Dropdown.vue';
 import { TrashIcon, PencilSquareIcon } from '@heroicons/vue/20/solid';
 import type { Project } from '@/utils/api';
+import { canDeleteProjects, canUpdateProjects } from '@/utils/permissions';
 const emit = defineEmits<{
     delete: [];
     edit: [];
@@ -34,12 +35,14 @@ const props = defineProps<{
                 @click.prevent="emit('delete')"
                 :aria-label="'Delete Project ' + props.project.name"
                 data-testid="project_delete"
+                v-if="canDeleteProjects()"
                 class="border-b border-card-background-separator flex items-center space-x-3 w-full px-3 py-2.5 text-start text-sm font-medium leading-5 text-white hover:bg-card-background-active focus:outline-none focus:bg-card-background-active transition duration-150 ease-in-out">
                 <TrashIcon class="w-5 text-icon-active"></TrashIcon>
                 <span>Delete</span>
             </button>
             <button
                 @click.prevent="emit('edit')"
+                v-if="canUpdateProjects()"
                 :aria-label="'Edit Project ' + props.project.name"
                 data-testid="project_edit"
                 class="flex items-center space-x-3 w-full px-3 py-2.5 text-start text-sm font-medium leading-5 text-white hover:bg-card-background-active focus:outline-none focus:bg-card-background-active transition duration-150 ease-in-out">

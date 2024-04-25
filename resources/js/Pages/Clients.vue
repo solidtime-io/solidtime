@@ -11,6 +11,7 @@ import { useClientsStore } from '@/utils/useClients';
 import ClientTable from '@/Components/Common/Client/ClientTable.vue';
 import ClientCreateModal from '@/Components/Common/Client/ClientCreateModal.vue';
 import PageTitle from '@/Components/Common/PageTitle.vue';
+import { canCreateClients } from '@/utils/permissions';
 
 onMounted(() => {
     useClientsStore().fetchClients();
@@ -31,7 +32,10 @@ const createClient = ref(false);
                     <TabBarItem>Archived</TabBarItem>
                 </TabBar>
             </div>
-            <SecondaryButton :icon="PlusIcon" @click="createClient = true"
+            <SecondaryButton
+                v-if="canCreateClients()"
+                :icon="PlusIcon"
+                @click="createClient = true"
                 >Create Client</SecondaryButton
             >
             <ClientCreateModal v-model:show="createClient"></ClientCreateModal>

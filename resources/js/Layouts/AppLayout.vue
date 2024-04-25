@@ -21,6 +21,12 @@ import MainContainer from '@/Pages/MainContainer.vue';
 import { onMounted, ref } from 'vue';
 import NotificationContainer from '@/Components/NotificationContainer.vue';
 import { initializeStores } from '@/utils/init';
+import {
+    canViewClients,
+    canViewMembers,
+    canViewProjects,
+    canViewTags,
+} from '@/utils/permissions';
 
 defineProps({
     title: String,
@@ -84,6 +90,7 @@ onMounted(async () => {
                 <nav>
                     <ul class="space-y-1">
                         <NavigationSidebarItem
+                            v-if="canViewProjects()"
                             title="Projects"
                             :icon="FolderIcon"
                             :href="route('projects')"
@@ -91,16 +98,19 @@ onMounted(async () => {
                                 route().current('projects')
                             "></NavigationSidebarItem>
                         <NavigationSidebarItem
+                            v-if="canViewClients()"
                             title="Clients"
                             :icon="UserCircleIcon"
                             :current="route().current('clients')"
                             :href="route('clients')"></NavigationSidebarItem>
                         <NavigationSidebarItem
                             title="Members"
+                            v-if="canViewMembers()"
                             :icon="UserGroupIcon"
                             :current="route().current('members')"
                             :href="route('members')"></NavigationSidebarItem>
                         <NavigationSidebarItem
+                            v-if="canViewTags()"
                             title="Tags"
                             :icon="TagIcon"
                             :current="route().current('tags')"

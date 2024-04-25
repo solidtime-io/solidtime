@@ -2,6 +2,7 @@
 import Dropdown from '@/Components/Dropdown.vue';
 import { TrashIcon } from '@heroicons/vue/20/solid';
 import type { Member } from '@/utils/api';
+import { canDeleteMembers } from '@/utils/permissions';
 
 const emit = defineEmits<{
     delete: [];
@@ -31,6 +32,7 @@ const props = defineProps<{
         </template>
         <template #content>
             <button
+                v-if="canDeleteMembers()"
                 @click="emit('delete')"
                 :aria-label="'Delete Member ' + props.member.name"
                 data-testid="client_delete"
