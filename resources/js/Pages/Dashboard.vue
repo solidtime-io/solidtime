@@ -7,6 +7,7 @@ import TeamActivityCard from '@/Components/Dashboard/TeamActivityCard.vue';
 import ThisWeekOverview from '@/Components/Dashboard/ThisWeekOverview.vue';
 import ActivityGraphCard from '@/Components/Dashboard/ActivityGraphCard.vue';
 import MainContainer from '@/Pages/MainContainer.vue';
+import { canViewMembers } from '@/utils/permissions';
 
 const props = defineProps<{
     latestTasks: {
@@ -64,6 +65,7 @@ const props = defineProps<{
                     props.dailyTrackedHours
                 "></ActivityGraphCard>
             <TeamActivityCard
+                v-if="canViewMembers()"
                 class="flex lg:hidden xl:flex"
                 :latestTeamActivity="
                     props.latestTeamActivity
