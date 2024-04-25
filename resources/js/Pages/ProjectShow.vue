@@ -37,7 +37,9 @@ const projectId = route()?.params?.project as string;
 const { projectMembers } = storeToRefs(useProjectMembersStore());
 
 onMounted(() => {
-    useProjectMembersStore().fetchProjectMembers(projectId);
+    if (canViewProjectMembers()) {
+        useProjectMembersStore().fetchProjectMembers(projectId);
+    }
 });
 </script>
 
