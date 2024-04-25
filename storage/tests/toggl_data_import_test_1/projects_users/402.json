@@ -1,0 +1,14 @@
+[
+    {
+        "gid": null,
+        "group_id": null,
+        "id": 801,
+        "labour_cost": null,
+        "manager": true,
+        "project_id": 402,
+        "rate": 100.02,
+        "rate_last_updated": null,
+        "user_id": 2001,
+        "workspace_id": 0
+    }
+]

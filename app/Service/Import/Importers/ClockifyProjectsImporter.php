@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Service\Import\Importers;
 
 use Exception;
+use Illuminate\Support\Str;
 use League\Csv\Exception as CsvException;
 use League\Csv\Reader;
 
@@ -22,6 +23,7 @@ class ClockifyProjectsImporter extends DefaultImporter
             $reader->setDelimiter(',');
             $header = $reader->getHeader();
             $this->validateHeader($header);
+            $billableRateKey = $this->getBillableRateKey($header);
             $records = $reader->getRecords();
             foreach ($records as $record) {
                 $clientId = null;
@@ -32,18 +34,19 @@ class ClockifyProjectsImporter extends DefaultImporter
                     ]);
                 }
                 $projectId = null;
-                if ($record['Name'] !== '') {
+                if ($record['Project'] !== '') {
                     $projectId = $this->projectImportHelper->getKey([
-                        'name' => $record['Name'],
+                        'name' => $record['Project'],
                         'organization_id' => $this->organization->id,
                     ], [
                         'client_id' => $clientId,
                         'color' => $this->colorService->getRandomColor(),
+                        'billable_rate' => $billableRateKey !== null && $record[$billableRateKey] !== '' ? (int) (((float) $record[$billableRateKey]) * 100) : null,
                     ]);
                 }
 
-                if ($record['Tasks'] !== '') {
-                    $tasks = explode(', ', $record['Tasks']);
+                if ($record['Task'] !== '') {
+                    $tasks = explode(', ', $record['Task']);
                     foreach ($tasks as $task) {
                         $this->taskImportHelper->getKey([
                             'name' => $task,
@@ -71,18 +74,34 @@ class ClockifyProjectsImporter extends DefaultImporter
     private function validateHeader(array $header): void
     {
         $requiredFields = [
-            'Name',
+            'Project',
             'Client',
             'Status',
             'Visibility',
             'Billability',
-            'Tasks',
+            'Task',
         ];
         foreach ($requiredFields as $requiredField) {
             if (! in_array($requiredField, $header, true)) {
                 throw new ImportException('Invalid CSV header, missing field: '.$requiredField);
             }
         }
+    }
+
+    /**
+     * @param  array<string>  $header
+     */
+    private function getBillableRateKey(array $header): ?string
+    {
+        $billableRateKey = null;
+        foreach ($header as $value) {
+            if (Str::startsWith($value, 'Billable Rate (')) {
+                $billableRateKey = $value;
+                break;
+            }
+        }
+
+        return $billableRateKey;
     }
 
     #[\Override]
