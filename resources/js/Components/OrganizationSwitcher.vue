@@ -75,7 +75,7 @@ const switchToTeam = (team: Organization) => {
             <div class="w-60">
                 <!-- Organization Management -->
                 <div class="block px-4 py-2 text-xs text-muted">
-                    Manage Team
+                    Manage Organization
                 </div>
 
                 <!-- Organization Settings -->
