@@ -7,12 +7,13 @@ namespace App\Http\Controllers\Web;
 use App\Models\Organization;
 use App\Models\User;
 use App\Service\DashboardService;
+use App\Service\PermissionStore;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class DashboardController extends Controller
 {
-    public function dashboard(DashboardService $dashboardService): Response
+    public function dashboard(DashboardService $dashboardService, PermissionStore $permissionStore): Response
     {
         /** @var User $user */
         $user = auth()->user();
@@ -24,9 +25,13 @@ class DashboardController extends Controller
         $totalWeeklyBillableTime = $dashboardService->totalWeeklyBillableTime($user, $organization);
         $totalWeeklyBillableAmount = $dashboardService->totalWeeklyBillableAmount($user, $organization);
         $weeklyProjectOverview = $dashboardService->weeklyProjectOverview($user, $organization);
-        $latestTeamActivity = $dashboardService->latestTeamActivity($organization);
         $latestTasks = $dashboardService->latestTasks($user, $organization);
         $lastSevenDays = $dashboardService->lastSevenDays($user, $organization);
+
+        $latestTeamActivity = null;
+        if ($permissionStore->has($organization, 'time-entries:view:all')) {
+            $latestTeamActivity = $dashboardService->latestTeamActivity($organization);
+        }
 
         return Inertia::render('Dashboard', [
             'weeklyProjectOverview' => $weeklyProjectOverview,

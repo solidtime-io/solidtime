@@ -39,6 +39,15 @@ class UserFactory extends Factory
         ];
     }
 
+    public function forCurrentOrganization(Organization $organization): static
+    {
+        return $this->state(function (array $attributes) use ($organization): array {
+            return [
+                'current_team_id' => $organization->getKey(),
+            ];
+        });
+    }
+
     public function randomTimeZone(): static
     {
         return $this->state(function (array $attributes) {
