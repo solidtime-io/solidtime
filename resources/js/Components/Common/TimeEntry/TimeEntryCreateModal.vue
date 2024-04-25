@@ -30,12 +30,12 @@ const timeEntryDefaultValues = {
     user_id: getCurrentUserId(),
 };
 
-const timeEntry = ref(timeEntryDefaultValues);
+const timeEntry = ref({ ...timeEntryDefaultValues });
 
 async function submit() {
     await createTimeEntry(timeEntry.value);
+    timeEntry.value = { ...timeEntryDefaultValues };
     show.value = false;
-    timeEntry.value = timeEntryDefaultValues;
 }
 
 const projectNameInput = ref<HTMLInputElement | null>(null);

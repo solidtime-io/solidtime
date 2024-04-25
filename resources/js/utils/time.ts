@@ -19,7 +19,10 @@ export function getDayJsInstance() {
 }
 
 export function formatHumanReadableDuration(duration: number): string {
-    return dayjs.duration(duration, 's').format('HH[h] mm[min]');
+    const dayJsDuration = dayjs.duration(duration, 's');
+    const hours = dayJsDuration.hours() + dayJsDuration.days() * 24;
+    const minutes = dayJsDuration.minutes();
+    return `${hours}h ${minutes.toString().padStart(2, '0')}min`;
 }
 
 export function calculateDifference(start: string, end: string | null) {
