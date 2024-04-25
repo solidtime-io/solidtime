@@ -48,7 +48,10 @@ async function importData() {
         );
         return;
     }
-    const base64String = await toBase64(files.value[0]);
+    const rawBase64String = await toBase64(files.value[0]);
+    const base64String = rawBase64String
+        .split(';')[1]
+        .replace('base64,', '') as string;
     const organizationId = getCurrentOrganizationId();
     if (organizationId !== null) {
         const { handleApiRequestNotifications } = useNotificationsStore();
@@ -57,7 +60,7 @@ async function importData() {
             api.importData(
                 {
                     type: importType.value.key,
-                    data: base64String.replace('data:text/csv;base64,', ''),
+                    data: base64String,
                 },
                 {
                     params: {
