@@ -4,6 +4,7 @@ import { CheckCircleIcon } from '@heroicons/vue/20/solid';
 import { useTasksStore } from '@/utils/useTasks';
 import TaskMoreOptionsDropdown from '@/Components/Common/Task/TaskMoreOptionsDropdown.vue';
 import TableRow from '@/Components/TableRow.vue';
+import { canDeleteTasks } from '@/utils/permissions';
 
 const props = defineProps<{
     task: Task;
@@ -30,6 +31,7 @@ function deleteTask() {
         <div
             class="relative whitespace-nowrap flex items-center pl-3 text-right text-sm font-medium sm:pr-0 pr-4 sm:pr-6 lg:pr-8 3xl:pr-12">
             <TaskMoreOptionsDropdown
+                v-if="canDeleteTasks()"
                 :task="task"
                 @delete="deleteTask"></TaskMoreOptionsDropdown>
         </div>
