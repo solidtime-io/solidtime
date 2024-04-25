@@ -44,7 +44,7 @@
         "id": 402,
         "is_private": true,
         "name": "Project for Big Company",
-        "rate": null,
+        "rate": 100.01,
         "rate_last_updated": null,
         "recurring": false,
         "recurring_parameters": null,

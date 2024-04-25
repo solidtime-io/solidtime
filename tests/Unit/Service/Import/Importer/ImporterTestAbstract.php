@@ -19,7 +19,7 @@ class ImporterTestAbstract extends TestCase
     /**
      * @return object{user1: User, project1: Project, project2: Project, tag1: Tag, tag2: Tag}
      */
-    protected function checkTestScenarioAfterImportExcludingTimeEntries(): object
+    protected function checkTestScenarioAfterImportExcludingTimeEntries(bool $detailed = false): object
     {
         $users = User::all();
         $this->assertCount(2, $users);
@@ -32,7 +32,7 @@ class ImporterTestAbstract extends TestCase
         $this->assertCount(1, $clients);
         $client1 = $clients->firstWhere('name', 'Big Company');
         $this->assertNotNull($client1);
-        $projects = Project::all();
+        $projects = Project::with(['members'])->get();
         $this->assertCount(2, $projects);
         $project1 = $projects->firstWhere('name', 'Project without Client');
         $this->assertNotNull($project1);
@@ -40,6 +40,13 @@ class ImporterTestAbstract extends TestCase
         $project2 = $projects->firstWhere('name', 'Project for Big Company');
         $this->assertNotNull($project2);
         $this->assertSame($client1->getKey(), $project2->client_id);
+        if ($detailed) {
+            $this->assertSame(10001, $project2->billable_rate);
+            $projectMembersOfProject2 = $project2->members;
+            $this->assertCount(1, $projectMembersOfProject2);
+            $this->assertSame($user1->getKey(), $projectMembersOfProject2->first()->user_id);
+            $this->assertSame(10002, $projectMembersOfProject2->first()->billable_rate);
+        }
         $tasks = Task::all();
         $this->assertCount(1, $tasks);
         $task1 = $tasks->firstWhere('name', 'Task 1');
@@ -76,6 +83,7 @@ class ImporterTestAbstract extends TestCase
         $this->assertNull($project1->client_id);
         $project2 = $projects->firstWhere('name', 'Project for Big Company');
         $this->assertNotNull($project2);
+        $this->assertSame(10001, $project2->billable_rate);
         $this->assertSame($client1->getKey(), $project2->client_id);
         $tasks = Task::all();
         $this->assertCount(3, $tasks);

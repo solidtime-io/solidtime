@@ -62,7 +62,7 @@ class TogglDataImporterTest extends ImporterTestAbstract
         $report = $importer->getReport();
 
         // Assert
-        $this->checkTestScenarioAfterImportExcludingTimeEntries();
+        $this->checkTestScenarioAfterImportExcludingTimeEntries(true);
         $this->assertSame(0, $report->timeEntriesCreated);
         $this->assertSame(2, $report->tagsCreated);
         $this->assertSame(1, $report->tasksCreated);
@@ -88,7 +88,7 @@ class TogglDataImporterTest extends ImporterTestAbstract
         $report = $importer->getReport();
 
         // Assert
-        $this->checkTestScenarioAfterImportExcludingTimeEntries();
+        $this->checkTestScenarioAfterImportExcludingTimeEntries(true);
         $this->assertSame(0, $report->timeEntriesCreated);
         $this->assertSame(0, $report->tagsCreated);
         $this->assertSame(0, $report->tasksCreated);

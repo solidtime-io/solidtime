@@ -23,6 +23,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property-read Organization $organization
  * @property-read Client|null $client
  * @property-read Collection<int, Task> $tasks
+ * @property-read Collection<int, ProjectMember> $members
  *
  * @method Builder<Project> visibleByUser(User $user)
  * @method static ProjectFactory factory()

@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Service\Import\Importers;
 
+use App\Enums\Role;
 use App\Models\Client;
 use App\Models\Organization;
 use App\Models\Project;
+use App\Models\ProjectMember;
 use App\Models\Tag;
 use App\Models\Task;
 use App\Models\User;
@@ -50,6 +52,11 @@ abstract class DefaultImporter implements ImporterContract
 
     protected TimezoneService $timezoneService;
 
+    /**
+     * @var ImportDatabaseHelper<ProjectMember>
+     */
+    protected ImportDatabaseHelper $projectMemberImportHelper;
+
     public function init(Organization $organization): void
     {
         $this->organization = $organization;
@@ -58,7 +65,7 @@ abstract class DefaultImporter implements ImporterContract
             return $builder->belongsToOrganization($this->organization);
         }, function (User $user) {
             $user->organizations()->attach($this->organization, [
-                'role' => 'placeholder',
+                'role' => Role::Placeholder->value,
             ]);
         }, validate: [
             'name' => [
@@ -71,11 +78,25 @@ abstract class DefaultImporter implements ImporterContract
             ],
         ]);
         $this->projectImportHelper = new ImportDatabaseHelper(Project::class, ['name', 'organization_id'], true, function (Builder $builder) {
+            /** @var Builder<Project> $builder */
             return $builder->where('organization_id', $this->organization->id);
         }, validate: [
             'name' => [
                 'required',
                 'max:255',
+            ],
+            'billable_rate' => [
+                'nullable',
+                'integer',
+            ],
+        ]);
+        $this->projectMemberImportHelper = new ImportDatabaseHelper(ProjectMember::class, ['project_id', 'user_id'], true, function (Builder $builder) {
+            /** @var Builder<ProjectMember> $builder */
+            return $builder->whereBelongsToOrganization($this->organization);
+        }, validate: [
+            'billable_rate' => [
+                'nullable',
+                'integer',
             ],
         ]);
         $this->tagImportHelper = new ImportDatabaseHelper(Tag::class, ['name', 'organization_id'], true, function (Builder $builder) {
