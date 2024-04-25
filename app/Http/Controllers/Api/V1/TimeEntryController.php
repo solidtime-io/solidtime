@@ -73,10 +73,11 @@ class TimeEntryController extends Controller
             $timeEntriesQuery->where('user_id', $request->input('user_id'));
         }
 
-        $limit = $request->has('limit') ? (int) $request->get('limit', 150) : null;
-        if ($limit !== null) {
-            $timeEntriesQuery->limit($limit);
+        $limit = $request->has('limit') ? (int) $request->get('limit', 100) : 100;
+        if ($limit > 1000) {
+            $limit = 1000;
         }
+        $timeEntriesQuery->limit($limit);
 
         $timeEntries = $timeEntriesQuery->get();
 
