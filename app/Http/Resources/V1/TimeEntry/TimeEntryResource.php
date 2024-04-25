@@ -39,6 +39,8 @@ class TimeEntryResource extends BaseResource
             'task_id' => $this->resource->task_id,
             /** @var string|null $project_id ID of project */
             'project_id' => $this->resource->project_id,
+            /** @var string $organization_id ID of organization */
+            'organization_id' => $this->resource->organization_id,
             /** @var string $user_id ID of user */
             'user_id' => $this->resource->user_id,
             /** @var array<string> $tags List of tag IDs */
