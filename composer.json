@@ -20,7 +20,7 @@
         "laravel/octane": "^2.3",
         "laravel/passport": "^12.0",
         "laravel/tinker": "^2.8",
-        "nwidart/laravel-modules": "^11.0.3",
+        "nwidart/laravel-modules": "dev-feature/fixed_path",
         "pxlrbt/filament-environment-indicator": "^2.0",
         "spatie/temporary-directory": "^2.2",
         "tightenco/ziggy": "^2.1.0",
@@ -104,6 +104,10 @@
         {
             "type": "vcs",
             "url": "https://github.com/korridor/scramble"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/korridor/laravel-modules"
         }
     ],
     "config": {
