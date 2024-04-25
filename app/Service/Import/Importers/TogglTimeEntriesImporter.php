@@ -102,6 +102,7 @@ class TogglTimeEntriesImporter extends DefaultImporter
                     throw new ImportException('End date ("'.$record['End date'].'") or time ("'.$record['End time'].'") are invalid');
                 }
                 $timeEntry->end = $end;
+                $timeEntry->setComputedAttributeValue('billable_rate');
                 $timeEntry->save();
                 $this->timeEntriesCreated++;
             }
