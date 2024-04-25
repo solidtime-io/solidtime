@@ -8,6 +8,7 @@ import { useTagsStore } from '@/utils/useTags';
 import TagTableRow from '@/Components/Common/Tag/TagTableRow.vue';
 import TagCreateModal from '@/Components/Common/Tag/TagCreateModal.vue';
 import TagTableHeading from '@/Components/Common/Tag/TagTableHeading.vue';
+import { canCreateTags } from '@/utils/permissions';
 
 const { tags } = storeToRefs(useTagsStore());
 const createTag = ref(false);
@@ -28,8 +29,13 @@ const createTag = ref(false);
                     <FolderPlusIcon
                         class="w-8 text-icon-default inline pb-2"></FolderPlusIcon>
                     <h3 class="text-white font-semibold">No tags found</h3>
-                    <p class="pb-5">Create your first tag now!</p>
-                    <SecondaryButton @click="createTag = true" :icon="PlusIcon"
+                    <p class="pb-5" v-if="canCreateTags()">
+                        Create your first tag now!
+                    </p>
+                    <SecondaryButton
+                        v-if="canCreateTags()"
+                        @click="createTag = true"
+                        :icon="PlusIcon"
                         >Create your First Tag</SecondaryButton
                     >
                 </div>

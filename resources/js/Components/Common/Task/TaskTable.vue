@@ -8,6 +8,7 @@ import { useTasksStore } from '@/utils/useTasks';
 import TaskTableRow from '@/Components/Common/Task/TaskTableRow.vue';
 import TaskTableHeading from '@/Components/Common/Task/TaskTableHeading.vue';
 import TaskCreateModal from '@/Components/Common/Task/TaskCreateModal.vue';
+import { canCreateTasks } from '@/utils/permissions';
 
 const { tasks } = storeToRefs(useTasksStore());
 
@@ -39,8 +40,13 @@ const createTask = ref(false);
                     <PlusCircleIcon
                         class="w-8 text-icon-default inline pb-2"></PlusCircleIcon>
                     <h3 class="text-white font-semibold">No tasks found</h3>
-                    <p class="pb-5">Create your first task now!</p>
-                    <SecondaryButton @click="createTask = true" :icon="PlusIcon"
+                    <p class="pb-5" v-if="canCreateTasks()">
+                        Create your first task now!
+                    </p>
+                    <SecondaryButton
+                        v-if="canCreateTasks()"
+                        @click="createTask = true"
+                        :icon="PlusIcon"
                         >Create your First Task
                     </SecondaryButton>
                 </div>

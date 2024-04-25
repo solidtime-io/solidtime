@@ -3,6 +3,7 @@ import type { Tag } from '@/utils/api';
 import { useTagsStore } from '@/utils/useTags';
 import TagMoreOptionsDropdown from '@/Components/Common/Tag/TagMoreOptionsDropdown.vue';
 import TableRow from '@/Components/TableRow.vue';
+import { canDeleteTags } from '@/utils/permissions';
 
 const props = defineProps<{
     tag: Tag;
@@ -24,6 +25,7 @@ function deleteTag() {
         <div
             class="relative whitespace-nowrap flex items-center pl-3 text-right text-sm font-medium sm:pr-0 pr-4 sm:pr-6 lg:pr-8 3xl:pr-12">
             <TagMoreOptionsDropdown
+                v-if="canDeleteTags()"
                 :tag="tag"
                 @delete="deleteTag"></TagMoreOptionsDropdown>
         </div>

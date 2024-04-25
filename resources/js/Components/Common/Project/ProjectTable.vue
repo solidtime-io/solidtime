@@ -8,6 +8,7 @@ import ProjectCreateModal from '@/Components/Common/Project/ProjectCreateModal.v
 import { storeToRefs } from 'pinia';
 import ProjectTableHeading from '@/Components/Common/Project/ProjectTableHeading.vue';
 import ProjectTableRow from '@/Components/Common/Project/ProjectTableRow.vue';
+import { canCreateProjects } from '@/utils/permissions';
 
 const { projects } = storeToRefs(useProjectsStore());
 
@@ -29,8 +30,11 @@ const createProject = ref(false);
                     <FolderPlusIcon
                         class="w-8 text-icon-default inline pb-2"></FolderPlusIcon>
                     <h3 class="text-white font-semibold">No projects found</h3>
-                    <p class="pb-5">Create your first project now!</p>
+                    <p class="pb-5" v-if="canCreateProjects()">
+                        Create your first project now!
+                    </p>
                     <SecondaryButton
+                        v-if="canCreateProjects()"
                         @click="createProject = true"
                         :icon="PlusIcon"
                         >Create your First Project

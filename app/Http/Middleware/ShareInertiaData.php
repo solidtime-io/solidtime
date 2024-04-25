@@ -27,7 +27,6 @@ class ShareInertiaData
         /** @var PermissionStore $permissions */
         $permissions = app(PermissionStore::class);
         Inertia::share(array_filter([
-            'permissions' => $request->user() !== null && $request->user()->currentTeam !== null ? $permissions->getPermissions($request->user()->currentTeam) : [],
             'jetstream' => function () use ($request) {
                 /** @var User|null $user */
                 $user = $request->user();
@@ -49,6 +48,7 @@ class ShareInertiaData
                 ];
             },
             'auth' => [
+                'permissions' => $request->user() !== null && $request->user()->currentTeam !== null ? $permissions->getPermissions($request->user()->currentTeam) : [],
                 'user' => function () use ($request): array {
                     /** @var User|null $user */
                     $user = $request->user();

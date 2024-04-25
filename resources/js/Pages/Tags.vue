@@ -7,6 +7,7 @@ import { ref } from 'vue';
 import TagTable from '@/Components/Common/Tag/TagTable.vue';
 import TagCreateModal from '@/Components/Common/Tag/TagCreateModal.vue';
 import PageTitle from '@/Components/Common/PageTitle.vue';
+import { canCreateTags } from '@/utils/permissions';
 
 const createTag = ref(false);
 </script>
@@ -18,7 +19,10 @@ const createTag = ref(false);
             <div class="flex items-center space-x-6">
                 <PageTitle :icon="FolderIcon" title="Tags"> </PageTitle>
             </div>
-            <SecondaryButton :icon="PlusIcon" @click="createTag = true"
+            <SecondaryButton
+                v-if="canCreateTags()"
+                :icon="PlusIcon"
+                @click="createTag = true"
                 >Create Tag</SecondaryButton
             >
             <TagCreateModal v-model:show="createTag"></TagCreateModal>

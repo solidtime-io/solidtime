@@ -12,6 +12,7 @@ import MemberInviteModal from '@/Components/Common/Member/MemberInviteModal.vue'
 import type { Role } from '@/types/jetstream';
 import PageTitle from '@/Components/Common/PageTitle.vue';
 import InvitationTable from '@/Components/Common/Invitation/InvitationTable.vue';
+import { canCreateInvitations } from '@/utils/permissions';
 
 const inviteMember = ref(false);
 
@@ -44,7 +45,10 @@ function isActiveTab(tab: string) {
                     >
                 </TabBar>
             </div>
-            <SecondaryButton :icon="PlusIcon" @click="inviteMember = true"
+            <SecondaryButton
+                v-if="canCreateInvitations()"
+                :icon="PlusIcon"
+                @click="inviteMember = true"
                 >Invite member</SecondaryButton
             >
             <MemberInviteModal

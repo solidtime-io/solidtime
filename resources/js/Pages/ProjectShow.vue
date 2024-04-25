@@ -19,6 +19,7 @@ import Card from '@/Components/Common/Card.vue';
 import ProjectMemberTable from '@/Components/Common/ProjectMember/ProjectMemberTable.vue';
 import ProjectMemberCreateModal from '@/Components/Common/ProjectMember/ProjectMemberCreateModal.vue';
 import { useProjectMembersStore } from '@/utils/useProjectMembers';
+import { canCreateTasks, canViewProjectMembers } from '@/utils/permissions';
 
 const { projects } = storeToRefs(useProjectsStore());
 
@@ -83,6 +84,7 @@ onMounted(() => {
                     <CardTitle title="Tasks" :icon="CheckCircleIcon">
                         <template #actions>
                             <SecondaryButton
+                                v-if="canCreateTasks()"
                                 :icon="PlusIcon"
                                 @click="createTask = true"
                                 >Create Task
@@ -96,7 +98,7 @@ onMounted(() => {
                         <TaskTable :project-id="projectId"></TaskTable>
                     </Card>
                 </div>
-                <div>
+                <div v-if="canViewProjectMembers()">
                     <CardTitle title="Project Members" :icon="UserGroupIcon">
                         <template #actions>
                             <SecondaryButton

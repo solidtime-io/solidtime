@@ -7,6 +7,7 @@ import UpdateTeamNameForm from '@/Pages/Teams/Partials/UpdateTeamNameForm.vue';
 import type { Organization } from '@/types/models';
 import type { Permissions, Role } from '@/types/jetstream';
 import ImportData from '@/Pages/Teams/Partials/ImportData.vue';
+import { canUpdateOrganization } from '@/utils/permissions';
 
 defineProps<{
     team: Organization;
@@ -42,7 +43,9 @@ defineProps<{
 
                 <SectionBorder />
 
-                <ImportData :team="team"></ImportData>
+                <ImportData
+                    v-if="canUpdateOrganization()"
+                    :team="team"></ImportData>
             </div>
         </div>
     </AppLayout>

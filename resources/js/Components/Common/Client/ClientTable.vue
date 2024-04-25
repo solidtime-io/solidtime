@@ -8,6 +8,7 @@ import { useClientsStore } from '@/utils/useClients';
 import ClientTableRow from '@/Components/Common/Client/ClientTableRow.vue';
 import ClientCreateModal from '@/Components/Common/Client/ClientCreateModal.vue';
 import ClientTableHeading from '@/Components/Common/Client/ClientTableHeading.vue';
+import { canCreateClients } from '@/utils/permissions';
 
 const { clients } = storeToRefs(useClientsStore());
 
@@ -29,8 +30,11 @@ const createClient = ref(false);
                     <UserCircleIcon
                         class="w-8 text-icon-default inline pb-2"></UserCircleIcon>
                     <h3 class="text-white font-semibold">No clients found</h3>
-                    <p class="pb-5">Create your first client now!</p>
+                    <p class="pb-5" v-if="canCreateClients()">
+                        Create your first client now!
+                    </p>
                     <SecondaryButton
+                        v-if="canCreateClients()"
                         @click="createClient = true"
                         :icon="PlusIcon"
                         >Create your First Client
