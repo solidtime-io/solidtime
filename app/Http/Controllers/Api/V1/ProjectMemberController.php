@@ -46,7 +46,7 @@ class ProjectMemberController extends Controller
 
         $projectMembers = ProjectMember::query()
             ->whereBelongsTo($project, 'project')
-            ->paginate();
+            ->paginate(config('app.pagination_per_page_default'));
 
         return new ProjectMemberCollection($projectMembers);
     }

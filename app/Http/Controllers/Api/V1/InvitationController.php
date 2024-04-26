@@ -40,7 +40,7 @@ class InvitationController extends Controller
         $this->checkPermission($organization, 'invitations:view');
 
         $invitations = $organization->teamInvitations()
-            ->paginate();
+            ->paginate(config('app.pagination_per_page_default'));
 
         return InvitationCollection::make($invitations);
     }
