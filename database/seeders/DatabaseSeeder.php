@@ -25,12 +25,14 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->deleteAll();
-        $userAcmeOwner = User::factory()->create([
+        $userAcmeOwner = User::factory()->withPersonalOrganization()->create([
             'name' => 'Acme Owner',
             'email' => 'owner@acme.test',
         ]);
         $organizationAcme = Organization::factory()->withOwner($userAcmeOwner)->create([
             'name' => 'ACME Corp',
+            'personal_team' => false,
+            'currency' => 'EUR',
         ]);
         $userAcmeManager = User::factory()->withPersonalOrganization()->create([
             'name' => 'Acme Manager',
@@ -80,29 +82,35 @@ class DatabaseSeeder extends Seeder
             ->forUser($userAcmeEmployee)
             ->forOrganization($organizationAcme)
             ->create();
-        $client = Client::factory()->create([
+        $client = Client::factory()->forOrganization($organizationAcme)->create([
             'name' => 'Big Company',
         ]);
-        $bigCompanyProject = Project::factory()->forClient($client)->create([
+        $bigCompanyProject = Project::factory()->forOrganization($organizationAcme)->forClient($client)->create([
             'name' => 'Big Company Project',
         ]);
-        Task::factory()->forProject($bigCompanyProject)->create();
+        Task::factory()->forOrganization($organizationAcme)->forProject($bigCompanyProject)->create();
 
-        $internalProject = Project::factory()->create([
+        $internalProject = Project::factory()->forOrganization($organizationAcme)->create([
             'name' => 'Internal Project',
         ]);
 
-        $organization2 = Organization::factory()->create([
+        $organization2Owner = User::factory()->create([
+            'name' => 'Other Owner',
+            'email' => 'owner@rival-company.test',
+        ]);
+        $organization2 = Organization::factory()->withOwner($organization2Owner)->create([
             'name' => 'Rival Corp',
+            'personal_team' => true,
+            'currency' => 'USD',
         ]);
         $userAcmeManager = User::factory()->withPersonalOrganization()->create([
             'name' => 'Other User',
             'email' => 'test@rival-company.test',
         ]);
         $userAcmeManager->organizations()->attach($organization2, [
-            'role' => 'admin',
+            'role' => Role::Admin->value,
         ]);
-        $otherCompanyProject = Project::factory()->forClient($client)->create([
+        $otherCompanyProject = Project::factory()->forOrganization($organization2)->forClient($client)->create([
             'name' => 'Scale Company',
         ]);
 

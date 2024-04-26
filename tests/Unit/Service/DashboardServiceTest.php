@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Service;
 
+use App\Enums\Role;
 use App\Enums\Weekday;
 use App\Models\Organization;
 use App\Models\Project;
@@ -267,7 +268,7 @@ class DashboardServiceTest extends TestCase
         ]);
         $organization = Organization::factory()->withOwner($user)->create();
         $organization->users()->attach($user, [
-            'role' => 'owner',
+            'role' => Role::Owner->value,
         ]);
         $project1 = Project::factory()->forOrganization($organization)->create();
         $project2 = Project::factory()->forOrganization($organization)->create();

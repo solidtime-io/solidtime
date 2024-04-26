@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Enums\Role;
 use App\Models\Membership;
 use App\Models\User;
 use App\Providers\RouteServiceProvider;
@@ -58,7 +59,7 @@ class RegistrationTest extends TestCase
         $organization = $user->organizations()->firstOrFail();
         $this->assertSame(true, $organization->personal_team);
         $member = Membership::query()->whereBelongsTo($user, 'user')->whereBelongsTo($organization, 'organization')->firstOrFail();
-        $this->assertSame('owner', $member->role);
+        $this->assertSame(Role::Owner->value, $member->role);
     }
 
     public function test_new_users_can_register_and_frontend_can_send_timezone_for_user(): void

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Jetstream;
 
+use App\Enums\Role;
 use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -42,7 +43,7 @@ class CreateOrganization implements CreatesTeams
 
         $organization->users()->attach(
             $user, [
-                'role' => 'owner',
+                'role' => Role::Owner->value,
             ]
         );
 

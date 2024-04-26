@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Enums\Role;
 use App\Enums\Weekday;
 use App\Models\Organization;
 use App\Models\User;
@@ -100,7 +101,9 @@ class UserFactory extends Factory
                 ->when(is_callable($callback), $callback)
                 ->create();
 
-            $organization->users()->attach($user, ['role' => 'owner']);
+            $organization->users()->attach($user, ['role' => Role::Owner->value]);
+            $user->currentTeam()->associate($organization);
+            $user->save();
         });
     }
 }
