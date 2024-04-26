@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1;
 
 use App\Exceptions\Api\EntityStillInUseApiException;
+use App\Http\Requests\V1\Project\ProjectIndexRequest;
 use App\Http\Requests\V1\Project\ProjectStoreRequest;
 use App\Http\Requests\V1\Project\ProjectUpdateRequest;
 use App\Http\Resources\V1\Project\ProjectCollection;
@@ -38,7 +39,7 @@ class ProjectController extends Controller
      *
      * @operationId getProjects
      */
-    public function index(Organization $organization): ProjectCollection
+    public function index(Organization $organization, ProjectIndexRequest $request): ProjectCollection
     {
         $this->checkPermission($organization, 'projects:view');
         $canViewAllProjects = $this->hasPermission($organization, 'projects:view:all');
@@ -52,7 +53,7 @@ class ProjectController extends Controller
             $projectsQuery->visibleByUser($user);
         }
 
-        $projects = $projectsQuery->paginate();
+        $projects = $projectsQuery->paginate(config('app.pagination_per_page_default'));
 
         return new ProjectCollection($projects);
     }

@@ -115,6 +115,8 @@ return [
 
     'faker_locale' => 'en_US',
 
+    'pagination_per_page_default' => (int) env('PAGINATION_PER_PAGE_DEFAULT', 15),
+
     /*
     |--------------------------------------------------------------------------
     | Encryption Key
@@ -191,5 +193,4 @@ return [
     'aliases' => Facade::defaultAliases()->merge([
         // 'Example' => App\Facades\Example::class,
     ])->toArray(),
-
 ];

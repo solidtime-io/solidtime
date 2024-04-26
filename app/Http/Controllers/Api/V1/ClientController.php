@@ -40,7 +40,7 @@ class ClientController extends Controller
         $clients = Client::query()
             ->whereBelongsTo($organization, 'organization')
             ->orderBy('created_at', 'desc')
-            ->paginate();
+            ->paginate(config('app.pagination_per_page_default'));
 
         return new ClientCollection($clients);
     }

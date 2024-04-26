@@ -45,7 +45,7 @@ class MemberController extends Controller
         $this->checkPermission($organization, 'members:view');
 
         $members = $organization->users()
-            ->paginate();
+            ->paginate(config('app.pagination_per_page_default'));
 
         return MemberCollection::make($members);
     }
