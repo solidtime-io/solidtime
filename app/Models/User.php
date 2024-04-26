@@ -126,6 +126,11 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         return in_array($this->email, config('auth.super_admins', []), true) && $this->hasVerifiedEmail();
     }
 
+    public function canBeImpersonated(): bool
+    {
+        return $this->is_placeholder === false;
+    }
+
     /**
      * @return BelongsToMany<Organization>
      */

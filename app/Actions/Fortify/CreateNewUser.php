@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Fortify;
 
+use App\Enums\Role;
 use App\Enums\Weekday;
 use App\Models\Organization;
 use App\Models\User;
@@ -81,7 +82,7 @@ class CreateNewUser implements CreatesNewUsers
 
         $organization->users()->attach(
             $user, [
-                'role' => 'owner',
+                'role' => Role::Owner->value,
             ]
         );
 
