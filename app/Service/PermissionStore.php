@@ -59,10 +59,14 @@ class PermissionStore
             ?->membership
             ?->role;
 
+        if ($role === null) {
+            return [];
+        }
+
         /** @var Role|null $roleObj */
         $roleObj = Jetstream::findRole($role);
 
-        return $role !== null ? ($roleObj?->permissions ?? []) : [];
+        return $roleObj?->permissions ?? [];
     }
 
     /**

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Enums\Role;
 use App\Models\Membership;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -29,6 +30,6 @@ class CreateTeamTest extends TestCase
         $this->assertCount(2, $user->fresh()->ownedTeams);
         $this->assertEquals('Test Organization', $newOrganization->name);
         $member = Membership::query()->whereBelongsTo($user, 'user')->whereBelongsTo($newOrganization, 'organization')->firstOrFail();
-        $this->assertSame('owner', $member->role);
+        $this->assertSame(Role::Owner->value, $member->role);
     }
 }

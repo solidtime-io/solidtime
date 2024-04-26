@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Enums\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -64,12 +65,12 @@ class UpdateTeamMemberRoleTest extends TestCase
 
         // Act
         $response = $this->withoutExceptionHandling()->put('/teams/'.$user->currentTeam->id.'/members/'.$otherUser->getKey(), [
-            'role' => 'owner',
+            'role' => Role::Owner->value,
         ]);
 
         // Assert
         $this->assertTrue($otherUser->fresh()->hasTeamRole(
-            $user->currentTeam->fresh(), 'owner'
+            $user->currentTeam->fresh(), Role::Owner->value
         ));
         $this->assertSame($user->currentTeam->fresh()->user_id, $otherUser->getKey());
     }

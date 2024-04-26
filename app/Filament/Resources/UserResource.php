@@ -8,6 +8,7 @@ use App\Filament\Resources\UserResource\Pages;
 use App\Filament\Resources\UserResource\RelationManagers\OrganizationsRelationManager;
 use App\Filament\Resources\UserResource\RelationManagers\OwnedOrganizationsRelationManager;
 use App\Models\User;
+use Exception;
 use Filament\Forms;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
@@ -15,6 +16,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Hash;
+use STS\FilamentImpersonate\Tables\Actions\Impersonate;
 
 class UserResource extends Resource
 {
@@ -70,6 +72,19 @@ class UserResource extends Resource
                 //
             ])
             ->actions([
+                Impersonate::make()->before(function (User $record): void {
+                    if ($record->currentTeam === null) {
+                        $organization = $record->organizations()->where('personal_team', '=', true)->first();
+                        if ($organization === null) {
+                            $organization = $record->organizations()->first();
+                        }
+                        if ($organization === null) {
+                            throw new Exception('User has no organization');
+                        }
+                        $record->currentTeam()->associate($organization);
+                        $record->save();
+                    }
+                }),
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
