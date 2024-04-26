@@ -16,7 +16,7 @@ import CardTitle from '@/Components/Common/CardTitle.vue';
 import LinearGradient from 'zrender/lib/graphic/LinearGradient';
 import ProjectsChartCard from '@/Components/Dashboard/ProjectsChartCard.vue';
 import { formatHumanReadableDuration } from '@/utils/time';
-import { formatMoney } from '@/utils/money';
+import { formatCents } from '@/utils/money';
 
 use([
     CanvasRenderer,
@@ -150,12 +150,7 @@ const option = ref({
                 " />
             <StatCard
                 title="Billable Amount"
-                :value="
-                    formatMoney(
-                        props.totalWeeklyBillableAmount.value,
-                        props.totalWeeklyBillableAmount.currency
-                    )
-                " />
+                :value="formatCents(props.totalWeeklyBillableAmount.value)" />
             <ProjectsChartCard
                 :weekly-project-overview="
                     props.weeklyProjectOverview
