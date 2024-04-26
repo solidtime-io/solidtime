@@ -15,8 +15,8 @@ function updateDate(event: Event) {
     if (newDate) {
         model.value = getLocalizedDayJs(model.value)
             .set('year', newDate.year())
-            .set('day', newDate.day())
             .set('month', newDate.month())
+            .set('date', newDate.date())
             .utc()
             .format();
     }
