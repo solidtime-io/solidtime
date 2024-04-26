@@ -27,7 +27,7 @@ defineProps<{
             :description="activity.description"
             :working="activity.status"></TeamActivityCardEntry>
         <div
-            v-if="latestTeamActivity.length === 1"
+            v-if="latestTeamActivity.length <= 1"
             class="text-center flex flex-1 justify-center items-center">
             <div>
                 <UserGroupIcon
