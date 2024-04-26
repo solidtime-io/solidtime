@@ -7,7 +7,6 @@ const page = usePage<{
 }>();
 
 function currentUserHasPermission(permission: string) {
-    console.log(page.props.auth.permissions);
     if (Array.isArray(page.props.auth.permissions)) {
         return page.props.auth.permissions.includes(permission);
     }

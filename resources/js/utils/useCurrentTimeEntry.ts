@@ -22,6 +22,7 @@ const emptyTimeEntry = {
     project_id: null,
     tags: [],
     billable: false,
+    organization_id: '',
 } as TimeEntry;
 
 export const useCurrentTimeEntryStore = defineStore('currentTimeEntry', () => {
@@ -56,20 +57,10 @@ export const useCurrentTimeEntryStore = defineStore('currentTimeEntry', () => {
     async function fetchCurrentTimeEntry() {
         const organizationId = getCurrentOrganizationId();
         if (organizationId) {
-            const timeEntriesResponse = await handleApiRequestNotifications(
-                api.getTimeEntries({
-                    queries: {
-                        active: 'true',
-                        user_id: getCurrentUserId(),
-                    },
-                    params: {
-                        organization: organizationId,
-                    },
-                })
-            );
+            const timeEntriesResponse = await api.getMyActiveTimeEntry({});
             if (timeEntriesResponse?.data) {
-                if (timeEntriesResponse.data.length === 1) {
-                    currentTimeEntry.value = timeEntriesResponse.data[0];
+                if (timeEntriesResponse.data) {
+                    currentTimeEntry.value = timeEntriesResponse.data;
                 } else {
                     currentTimeEntry.value = { ...emptyTimeEntry };
                 }

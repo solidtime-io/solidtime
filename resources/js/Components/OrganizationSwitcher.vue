@@ -2,11 +2,11 @@
 import { ChevronDownIcon } from '@heroicons/vue/20/solid';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
-import { router, usePage } from '@inertiajs/vue3';
+import { usePage } from '@inertiajs/vue3';
 import type { Organization, User } from '@/types/models';
 import { isBillingActivated } from '@/utils/billing';
-import { initializeStores } from '@/utils/init';
 import { canUpdateOrganization } from '@/utils/permissions';
+import { switchOrganization } from '@/utils/useOrganization';
 
 const page = usePage<{
     jetstream: {
@@ -22,19 +22,8 @@ const page = usePage<{
     };
 }>();
 
-const switchToTeam = (team: Organization) => {
-    router.put(
-        route('current-team.update'),
-        {
-            team_id: team.id,
-        },
-        {
-            preserveState: false,
-            onSuccess: () => {
-                initializeStores();
-            },
-        }
-    );
+const switchToTeam = (organization: Organization) => {
+    switchOrganization(organization.id);
 };
 </script>
 

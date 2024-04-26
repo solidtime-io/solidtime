@@ -256,7 +256,7 @@ test('test that updating a the duration in the overview works on blur', async ({
 
     await expect(
         newTimeEntry.getByTestId('time_entry_duration_input')
-    ).toHaveValue('00h 20min');
+    ).toHaveValue('0h 20min');
 });
 
 // Test that start stop button stops running timer

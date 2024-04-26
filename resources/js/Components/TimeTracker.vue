@@ -15,6 +15,9 @@ import { storeToRefs } from 'pinia';
 import parse from 'parse-duration';
 import TimeTrackerTagDropdown from '@/Components/Common/TimeTracker/TimeTrackerTagDropdown.vue';
 import TimeTrackerProjectTaskDropdown from '@/Components/Common/TimeTracker/TimeTrackerProjectTaskDropdown.vue';
+import { getCurrentOrganizationId } from '@/utils/useUser';
+import { switchOrganization } from '@/utils/useOrganization';
+import SecondaryButton from '@/Components/SecondaryButton.vue';
 
 const page = usePage<{
     auth: {
@@ -148,62 +151,93 @@ function onTimeEntryEnterPress() {
     const activeElement = document.activeElement as HTMLElement;
     activeElement?.blur();
 }
+
+const isRunningInDifferentOrganization = computed(() => {
+    return (
+        currentTimeEntry.value.organization_id &&
+        getCurrentOrganizationId() &&
+        currentTimeEntry.value.organization_id !== getCurrentOrganizationId()
+    );
+});
+
+function switchToTimeEntryOrganization() {
+    if (currentTimeEntry.value.organization_id) {
+        switchOrganization(currentTimeEntry.value.organization_id);
+    }
+}
 </script>
 
 <template>
     <CardTitle title="Time Tracker" :icon="ClockIcon"></CardTitle>
-    <div class="flex items-center relative" data-testid="dashboard_timer">
+    <div class="relative">
         <div
-            class="flex flex-col sm:flex-row w-full rounded-lg bg-card-background border-card-border border transition">
-            <div class="flex-1 flex items-center pr-6">
-                <input
-                    placeholder="What are you working on?"
-                    data-testid="time_entry_description"
-                    v-model="currentTimeEntry.description"
-                    @keydown.enter="startTimerIfNotActive"
-                    @blur="updateTimeEntry"
-                    class="w-full rounded-l-lg py-2.5 px-3 border-b border-b-card-background-separator sm:px-4 text-sm sm:text-lg text-white focus:bg-card-background-active font-medium bg-transparent border-none placeholder-muted focus:ring-0 transition"
-                    type="text" />
-            </div>
-            <div class="flex items-center justify-between pl-2">
-                <div class="flex items-center w-[130px] sm:w-auto">
-                    <TimeTrackerProjectTaskDropdown
-                        @changed="updateTimeEntry"
-                        v-model:project="currentTimeEntry.project_id"
-                        v-model:task="
-                            currentTimeEntry.task_id
-                        "></TimeTrackerProjectTaskDropdown>
-                </div>
-                <div class="flex items-center space-x-2 px-4">
-                    <TimeTrackerTagDropdown
-                        @changed="updateTimeEntry"
-                        v-model="
-                            currentTimeEntry.tags
-                        "></TimeTrackerTagDropdown>
-                    <BillableToggleButton
-                        @changed="updateTimeEntry"
-                        v-model="
-                            currentTimeEntry.billable
-                        "></BillableToggleButton>
-                </div>
-                <div class="border-l border-card-border">
-                    <input
-                        placeholder="00:00:00"
-                        @focus="pauseLiveTimerUpdate"
-                        data-testid="time_entry_time"
-                        @blur="updateTimerAndStartLiveTimerUpdate"
-                        @keydown.enter="onTimeEntryEnterPress"
-                        v-model="currentTime"
-                        class="w-[110px] sm:w-[130px] h-full text-white py-2.5 rounded-r-lg text-center px-4 text-sm sm:text-lg font-bold bg-card-background border-none placeholder-muted focus:ring-0 transition focus:bg-card-background-active"
-                        type="text" />
-                </div>
+            class="absolute w-full h-full backdrop-blur-sm z-10 flex items-center justify-center"
+            v-if="isRunningInDifferentOrganization">
+            <div
+                class="w-full h-[calc(100%+10px)] absolute bg-default-background opacity-75 backdrop-blur-sm"></div>
+            <div class="flex space-x-3 items-center w-full z-20 justify-center">
+                <span class="text-sm text-white">
+                    The Timer is running in a different organization.
+                </span>
+                <SecondaryButton @click="switchToTimeEntryOrganization"
+                    >Switch to organization</SecondaryButton
+                >
             </div>
         </div>
-        <div class="pl-6 pr-3 absolute sm:relative top-[6px] sm:top-0 right-0">
-            <TimeTrackerStartStop
-                :active="isActive"
-                @changed="onToggleButtonPress"
-                size="large"></TimeTrackerStartStop>
+        <div class="flex items-center relative" data-testid="dashboard_timer">
+            <div
+                class="flex flex-col sm:flex-row w-full rounded-lg bg-card-background border-card-border border transition">
+                <div class="flex-1 flex items-center pr-6">
+                    <input
+                        placeholder="What are you working on?"
+                        data-testid="time_entry_description"
+                        v-model="currentTimeEntry.description"
+                        @keydown.enter="startTimerIfNotActive"
+                        @blur="updateTimeEntry"
+                        class="w-full rounded-l-lg py-2.5 px-3 border-b border-b-card-background-separator sm:px-4 text-sm sm:text-lg text-white focus:bg-card-background-active font-medium bg-transparent border-none placeholder-muted focus:ring-0 transition"
+                        type="text" />
+                </div>
+                <div class="flex items-center justify-between pl-2">
+                    <div class="flex items-center w-[130px] sm:w-auto">
+                        <TimeTrackerProjectTaskDropdown
+                            @changed="updateTimeEntry"
+                            v-model:project="currentTimeEntry.project_id"
+                            v-model:task="
+                                currentTimeEntry.task_id
+                            "></TimeTrackerProjectTaskDropdown>
+                    </div>
+                    <div class="flex items-center space-x-2 px-4">
+                        <TimeTrackerTagDropdown
+                            @changed="updateTimeEntry"
+                            v-model="
+                                currentTimeEntry.tags
+                            "></TimeTrackerTagDropdown>
+                        <BillableToggleButton
+                            @changed="updateTimeEntry"
+                            v-model="
+                                currentTimeEntry.billable
+                            "></BillableToggleButton>
+                    </div>
+                    <div class="border-l border-card-border">
+                        <input
+                            placeholder="00:00:00"
+                            @focus="pauseLiveTimerUpdate"
+                            data-testid="time_entry_time"
+                            @blur="updateTimerAndStartLiveTimerUpdate"
+                            @keydown.enter="onTimeEntryEnterPress"
+                            v-model="currentTime"
+                            class="w-[110px] sm:w-[130px] h-full text-white py-2.5 rounded-r-lg text-center px-4 text-sm sm:text-lg font-bold bg-card-background border-none placeholder-muted focus:ring-0 transition focus:bg-card-background-active"
+                            type="text" />
+                    </div>
+                </div>
+            </div>
+            <div
+                class="pl-6 pr-3 absolute sm:relative top-[6px] sm:top-0 right-0">
+                <TimeTrackerStartStop
+                    :active="isActive"
+                    @changed="onToggleButtonPress"
+                    size="large"></TimeTrackerStartStop>
+            </div>
         </div>
     </div>
 </template>

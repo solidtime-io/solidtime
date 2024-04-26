@@ -128,6 +128,7 @@ const TimeEntryResource = z
         description: z.union([z.string(), z.null()]),
         task_id: z.union([z.string(), z.null()]),
         project_id: z.union([z.string(), z.null()]),
+        organization_id: z.string(),
         user_id: z.string(),
         tags: z.array(z.string()),
         billable: z.boolean(),
@@ -392,6 +393,17 @@ const endpoints = makeApi([
         response: z.null(),
         errors: [
             {
+                status: 400,
+                description: `API exception`,
+                schema: z
+                    .object({
+                        error: z.boolean(),
+                        key: z.string(),
+                        message: z.string(),
+                    })
+                    .passthrough(),
+            },
+            {
                 status: 403,
                 description: `Authorization error`,
                 schema: z.object({ message: z.string() }).passthrough(),
@@ -624,6 +636,78 @@ const endpoints = makeApi([
         ],
     },
     {
+        method: 'delete',
+        path: '/v1/organizations/:organization/invitations/:invitation',
+        alias: 'removeInvitation',
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'body',
+                type: 'Body',
+                schema: z.object({}).partial().passthrough(),
+            },
+            {
+                name: 'organization',
+                type: 'Path',
+                schema: z.string().uuid(),
+            },
+            {
+                name: 'invitation',
+                type: 'Path',
+                schema: z.string().uuid(),
+            },
+        ],
+        response: z.null(),
+        errors: [
+            {
+                status: 403,
+                description: `Authorization error`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 404,
+                description: `Not found`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+        ],
+    },
+    {
+        method: 'post',
+        path: '/v1/organizations/:organization/invitations/:invitation/resend',
+        alias: 'resendInvitationEmail',
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'body',
+                type: 'Body',
+                schema: z.object({}).partial().passthrough(),
+            },
+            {
+                name: 'organization',
+                type: 'Path',
+                schema: z.string().uuid(),
+            },
+            {
+                name: 'invitation',
+                type: 'Path',
+                schema: z.string().uuid(),
+            },
+        ],
+        response: z.null(),
+        errors: [
+            {
+                status: 403,
+                description: `Authorization error`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 404,
+                description: `Not found`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+        ],
+    },
+    {
         method: 'get',
         path: '/v1/organizations/:organization/members',
         alias: 'getMembers',
@@ -761,6 +845,17 @@ const endpoints = makeApi([
         ],
         response: z.null(),
         errors: [
+            {
+                status: 400,
+                description: `API exception`,
+                schema: z
+                    .object({
+                        error: z.boolean(),
+                        key: z.string(),
+                        message: z.string(),
+                    })
+                    .passthrough(),
+            },
             {
                 status: 403,
                 description: `Authorization error`,
@@ -1103,6 +1198,17 @@ const endpoints = makeApi([
         response: z.null(),
         errors: [
             {
+                status: 400,
+                description: `API exception`,
+                schema: z
+                    .object({
+                        error: z.boolean(),
+                        key: z.string(),
+                        message: z.string(),
+                    })
+                    .passthrough(),
+            },
+            {
                 status: 403,
                 description: `Authorization error`,
                 schema: z.object({ message: z.string() }).passthrough(),
@@ -1372,6 +1478,17 @@ const endpoints = makeApi([
         response: z.null(),
         errors: [
             {
+                status: 400,
+                description: `API exception`,
+                schema: z
+                    .object({
+                        error: z.boolean(),
+                        key: z.string(),
+                        message: z.string(),
+                    })
+                    .passthrough(),
+            },
+            {
                 status: 403,
                 description: `Authorization error`,
                 schema: z.object({ message: z.string() }).passthrough(),
@@ -1567,6 +1684,17 @@ const endpoints = makeApi([
         ],
         response: z.null(),
         errors: [
+            {
+                status: 400,
+                description: `API exception`,
+                schema: z
+                    .object({
+                        error: z.boolean(),
+                        key: z.string(),
+                        message: z.string(),
+                    })
+                    .passthrough(),
+            },
             {
                 status: 403,
                 description: `Authorization error`,

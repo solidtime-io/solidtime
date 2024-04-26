@@ -136,7 +136,6 @@ function moveHighlightDown() {
                 filteredTags.value[currentHightlightedIndex + 1].id;
         }
     }
-    console.log('move down');
 }
 
 const highlightedItemId = ref<string | null>(null);

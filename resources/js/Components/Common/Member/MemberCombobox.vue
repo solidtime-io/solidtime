@@ -79,7 +79,6 @@ function updateSearchValue(event: Event) {
 const emit = defineEmits(['update:modelValue', 'changed']);
 
 function updateMember(newValue: string | null) {
-    console.log(newValue);
     if (newValue) {
         model.value = newValue;
         nextTick(() => {
