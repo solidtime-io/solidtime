@@ -9,7 +9,7 @@ import {
     TooltipComponent,
 } from 'echarts/components';
 import VChart, { THEME_KEY } from 'vue-echarts';
-import { provide, ref } from 'vue';
+import { computed, provide, ref } from 'vue';
 import StatCard from '@/Components/Common/StatCard.vue';
 import { ClockIcon } from '@heroicons/vue/20/solid';
 import CardTitle from '@/Components/Common/CardTitle.vue';
@@ -17,6 +17,7 @@ import LinearGradient from 'zrender/lib/graphic/LinearGradient';
 import ProjectsChartCard from '@/Components/Dashboard/ProjectsChartCard.vue';
 import { formatHumanReadableDuration } from '@/utils/time';
 import { formatCents } from '@/utils/money';
+import { getWeekStart } from '@/utils/useUser';
 
 use([
     CanvasRenderer,
@@ -78,6 +79,33 @@ const seriesData = props.weeklyHistory.map((el) => {
         },
     };
 });
+
+const weekdays = computed(() => {
+    const daysOrder = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const dayMapping: Record<string, string> = {
+        monday: 'Mon',
+        tuesday: 'Tue',
+        wednesday: 'Wed',
+        thursday: 'Thu',
+        friday: 'Fri',
+        saturday: 'Sat',
+        sunday: 'Sun',
+    };
+
+    if (dayMapping[getWeekStart()]) {
+        const customOrder = [];
+        const startIndex = daysOrder.indexOf(dayMapping[getWeekStart()]);
+
+        for (let i = startIndex; i < 7 + startIndex; i++) {
+            customOrder.push(daysOrder[i % daysOrder.length]);
+        }
+
+        return customOrder;
+    } else {
+        return daysOrder;
+    }
+});
+
 const option = ref({
     grid: {
         top: 0,
@@ -88,7 +116,7 @@ const option = ref({
     backgroundColor: 'transparent',
     xAxis: {
         type: 'category',
-        data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        data: weekdays.value,
         markLine: {
             lineStyle: {
                 color: 'rgba(125,156,188,0.1)',

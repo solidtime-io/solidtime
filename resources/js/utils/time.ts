@@ -5,7 +5,9 @@ import isToday from 'dayjs/plugin/isToday';
 import isYesterday from 'dayjs/plugin/isYesterday';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
-import { getUserTimezone } from '@/utils/useUser';
+import { getUserTimezone, getWeekStart } from '@/utils/useUser';
+import updateLocale from 'dayjs/plugin/updateLocale';
+import { computed } from 'vue';
 
 dayjs.extend(relativeTime);
 dayjs.extend(isToday);
@@ -13,10 +15,27 @@ dayjs.extend(isYesterday);
 dayjs.extend(duration);
 dayjs.extend(utc);
 dayjs.extend(timezone);
+dayjs.extend(updateLocale);
 
 export function getDayJsInstance() {
+    dayjs.updateLocale('en', {
+        weekStart: firstDayIndex.value,
+    });
     return dayjs;
 }
+
+export const firstDayIndex = computed(() => {
+    const apiDayOrder = [
+        'sunday',
+        'monday',
+        'tuesday',
+        'wednesday',
+        'thursday',
+        'friday',
+        'saturday',
+    ];
+    return apiDayOrder.indexOf(getWeekStart());
+});
 
 export function formatHumanReadableDuration(duration: number): string {
     const dayJsDuration = dayjs.duration(duration, 's');
