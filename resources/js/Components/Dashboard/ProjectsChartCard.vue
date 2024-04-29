@@ -60,7 +60,7 @@ const seriesData = props.weeklyProjectOverview.map((el) => {
             itemStyle: {
                 borderRadius: 15,
                 // TODO: Fix dynamic color
-                borderColor: '#040618',
+                borderColor: '#0b0d1c',
                 borderWidth: 18,
                 color: new LinearGradient(0, 0, 0, 1, [
                     {
