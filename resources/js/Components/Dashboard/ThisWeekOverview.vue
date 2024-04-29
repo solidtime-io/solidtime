@@ -165,7 +165,7 @@ const option = ref({
                 title="This Week"
                 class="pb-8"
                 :icon="ClockIcon"></CardTitle>
-            <v-chart class="chart" :option="option" />
+            <v-chart :autoresize="true" class="chart" :option="option" />
         </div>
         <div class="space-y-6">
             <StatCard
