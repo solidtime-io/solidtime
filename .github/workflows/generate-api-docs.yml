@@ -1,0 +1,62 @@
+name: Generate API docs
+on:
+  push:
+    branches:
+      - main
+jobs:
+  api_docs:
+    runs-on: ubuntu-latest
+
+    services:
+      pgsql_test:
+        image: postgres:15
+        env:
+          PGPASSWORD: 'root'
+          POSTGRES_DB: 'laravel'
+          POSTGRES_USER: 'root'
+          POSTGRES_PASSWORD: 'root'
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: "Checkout code"
+        uses: actions/checkout@v4
+
+      - name: "Setup PHP"
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv
+
+      - name: "Run composer install"
+        run: composer install -n --prefer-dist
+
+      - name: "Create build directory"
+        run: mkdir build
+
+      - name: Prepare Laravel Application
+        run: |
+          cp .env.ci .env
+          php artisan migrate
+
+      - name: "Export API docs"
+        run: php artisan scramble:export --path=build/api-docs.json
+
+      - name: "Upload API docs to GitHub"
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-docs.json
+          path: build/api-docs.json
+
+      - name: "Download Fastfront CLI"
+        run: curl https://fastfront-cli.s3.fr-par.scw.cloud/fastfront-cli.phar -o fastfront-cli.phar
+
+      - name: "Deploy with Fastfront"
+        run: php fastfront-cli.phar deploy 9beab6cf-f459-446b-85f1-38ec007cf457 ./build
+        env:
+          FASTFRONT_API_KEY: ${{ secrets.FASTFRONT_API_DOCS_API_KEY }}
