@@ -20,6 +20,7 @@
         "laravel/octane": "^2.3",
         "laravel/passport": "^12.0",
         "laravel/tinker": "^2.8",
+        "league/flysystem-aws-s3-v3": "^3.0",
         "nwidart/laravel-modules": "dev-feature/fixed_path",
         "pxlrbt/filament-environment-indicator": "^2.0",
         "spatie/temporary-directory": "^2.2",
