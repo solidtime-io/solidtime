@@ -47,4 +47,14 @@ abstract class ApiException extends Exception
     {
         return __('exceptions.api.'.$this->getKey());
     }
+
+    /**
+     * Report the exception.
+     *
+     * @return bool true means the exception handler will not report it again
+     */
+    public function report(): bool
+    {
+        return true;
+    }
 }
