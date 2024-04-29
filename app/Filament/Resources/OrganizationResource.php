@@ -51,7 +51,15 @@ class OrganizationResource extends Resource
                     ->required(),
                 Forms\Components\Select::make('currency')
                     ->label('Currency')
-                    ->options(ISOCurrencyProvider::getInstance()->getAvailableCurrencies())
+                    ->options(function (): array {
+                        $currencies = ISOCurrencyProvider::getInstance()->getAvailableCurrencies();
+                        $select = [];
+                        foreach ($currencies as $currency) {
+                            $select[$currency->getCurrencyCode()] = $currency->getName().' ('.$currency->getCurrencyCode().')';
+                        }
+
+                        return $select;
+                    })
                     ->searchable(),
                 Forms\Components\TextInput::make('billable_rate')
                     ->label('Billable rate (in Cents)')
