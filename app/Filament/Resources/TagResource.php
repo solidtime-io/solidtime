@@ -56,6 +56,7 @@ class TagResource extends Resource
                     ->label('Updated at')
                     ->sortable(),
             ])
+            ->defaultSort('created_at', 'desc')
             ->filters([
                 //
             ])

@@ -11,6 +11,7 @@ use App\Service\Import\Importers\ImporterProvider;
 use App\Service\Import\Importers\ImportException;
 use App\Service\Import\Importers\ReportDto;
 use App\Service\Import\ImportService;
+use Brick\Money\ISOCurrencyProvider;
 use Filament\Forms;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
@@ -18,6 +19,7 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Storage;
 
@@ -47,6 +49,20 @@ class OrganizationResource extends Resource
                     ->relationship(name: 'owner', titleAttribute: 'email')
                     ->searchable(['name', 'email'])
                     ->required(),
+                Forms\Components\Select::make('currency')
+                    ->label('Currency')
+                    ->options(ISOCurrencyProvider::getInstance()->getAvailableCurrencies())
+                    ->searchable(),
+                Forms\Components\TextInput::make('billable_rate')
+                    ->label('Billable rate (in Cents)')
+                    ->nullable()
+                    ->numeric(),
+                Forms\Components\DateTimePicker::make('created_at')
+                    ->label('Created At')
+                    ->disabled(),
+                Forms\Components\DateTimePicker::make('updated_at')
+                    ->label('Updated At')
+                    ->disabled(),
             ]);
     }
 
@@ -63,7 +79,18 @@ class OrganizationResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('owner.email')
                     ->sortable(),
+                Tables\Columns\TextColumn::make('currency'),
+                TextColumn::make('billable_rate')
+                    ->money(fn (Organization $resource) => $resource->currency ?? 'EUR', divideBy: 100),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->dateTime()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->defaultSort('created_at', 'desc')
             ->filters([
                 //
             ])
@@ -139,6 +166,7 @@ class OrganizationResource extends Resource
             'index' => Pages\ListOrganizations::route('/'),
             'create' => Pages\CreateOrganization::route('/create'),
             'edit' => Pages\EditOrganization::route('/{record}/edit'),
+            'view' => Pages\ViewOrganization::route('/{record}'),
         ];
     }
 }
