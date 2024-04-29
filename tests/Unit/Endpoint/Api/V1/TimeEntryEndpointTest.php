@@ -311,21 +311,27 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
             'time-entries:view:own',
         ]);
         $timeEntriesAfter = TimeEntry::factory()->forOrganization($data->organization)->forUser($data->user)
-            ->startBetween(Carbon::now()->subDay()->startOfDay(), Carbon::now())
+            ->startBetween(
+                Carbon::now()->timezone($data->user->timezone)->subDay()->startOfDay()->utc(),
+                Carbon::now()->timezone($data->user->timezone)->utc()
+            )
             ->createMany(3);
         $timeEntriesBefore = TimeEntry::factory()->forOrganization($data->organization)->forUser($data->user)
-            ->startBetween(Carbon::now()->subDays(2)->startOfDay(), Carbon::now()->subDays(2)->endOfDay())
+            ->startBetween(
+                Carbon::now()->timezone($data->user->timezone)->subDays(2)->startOfDay()->utc(),
+                Carbon::now()->timezone($data->user->timezone)->subDays(2)->endOfDay()->utc()
+            )
             ->createMany(3);
         $timeEntriesDirectlyBeforeLimit = TimeEntry::factory()->forOrganization($data->organization)->forUser($data->user)
             ->create([
-                'start' => Carbon::now()->subDays(2)->endOfDay(),
+                'start' => Carbon::now()->timezone($data->user->timezone)->subDays(2)->endOfDay()->utc(),
             ]);
         Passport::actingAs($data->user);
 
         // Act
         $response = $this->getJson(route('api.v1.time-entries.index', [
             $data->organization->getKey(),
-            'before' => Carbon::now()->subDay()->startOfDay()->toIso8601ZuluString(),
+            'before' => Carbon::now()->timezone($data->user->timezone)->subDay()->startOfDay()->toIso8601ZuluString(),
             'user_id' => $data->user->getKey(),
         ]));
 
@@ -348,21 +354,21 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
             'time-entries:view:own',
         ]);
         $timeEntriesAfter = TimeEntry::factory()->forOrganization($data->organization)->forUser($data->user)
-            ->startBetween(Carbon::now()->startOfDay(), Carbon::now())
+            ->startBetween(Carbon::now($data->user->timezone)->startOfDay()->utc(), Carbon::now($data->user->timezone)->utc())
             ->createMany(3);
         $timeEntriesBefore = TimeEntry::factory()->forOrganization($data->organization)->forUser($data->user)
-            ->startBetween(Carbon::now()->subDay()->startOfDay(), Carbon::now()->subDay()->endOfDay())
+            ->startBetween(Carbon::now($data->user->timezone)->subDay()->startOfDay()->utc(), Carbon::now($data->user->timezone)->subDay()->endOfDay()->utc())
             ->createMany(3);
         $timeEntriesDirectlyAfterLimit = TimeEntry::factory()->forOrganization($data->organization)->forUser($data->user)
             ->create([
-                'start' => Carbon::now()->startOfDay(),
+                'start' => Carbon::now($data->user->timezone)->startOfDay()->utc(),
             ]);
         Passport::actingAs($data->user);
 
         // Act
         $response = $this->getJson(route('api.v1.time-entries.index', [
             $data->organization->getKey(),
-            'after' => Carbon::now()->subDay()->endOfDay()->toIso8601ZuluString(), // yesterday
+            'after' => Carbon::now($data->user->timezone)->subDay()->endOfDay()->toIso8601ZuluString(), // yesterday
             'user_id' => $data->user->getKey(),
         ]));
 

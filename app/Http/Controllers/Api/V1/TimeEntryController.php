@@ -17,6 +17,7 @@ use App\Service\TimezoneService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
@@ -53,11 +54,11 @@ class TimeEntryController extends Controller
             ->orderBy('start', 'desc');
 
         if ($request->has('before')) {
-            $timeEntriesQuery->whereDate('start', '<', $request->input('before'));
+            $timeEntriesQuery->where('start', '<', Carbon::createFromFormat('Y-m-d\TH:i:s\Z', $request->input('before'), 'UTC'));
         }
 
         if ($request->has('after')) {
-            $timeEntriesQuery->whereDate('start', '>', $request->input('after'));
+            $timeEntriesQuery->where('start', '>', Carbon::createFromFormat('Y-m-d\TH:i:s\Z', $request->input('after'), 'UTC'));
         }
 
         if ($request->has('active')) {
@@ -105,7 +106,8 @@ class TimeEntryController extends Controller
                 ]);
                 $timeEntries = $timeEntriesQuery
                     ->limit(5000)
-                    ->whereDate('start', '=', $lastDate->toDateString())
+                    ->where('start', '>=', $lastDate->copy()->startOfDay()->utc())
+                    ->where('start', '<=', $lastDate->copy()->endOfDay()->utc())
                     ->get();
             }
         }
