@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\UserResource\RelationManagers;
 
-use Filament\Forms;
+use App\Filament\Resources\OrganizationResource;
+use App\Models\Organization;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
+use Filament\Tables\Actions\Action;
 use Filament\Tables\Table;
 
 class OwnedOrganizationsRelationManager extends RelationManager
@@ -20,9 +22,6 @@ class OwnedOrganizationsRelationManager extends RelationManager
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('name')
-                    ->required()
-                    ->maxLength(255),
             ]);
     }
 
@@ -39,7 +38,18 @@ class OwnedOrganizationsRelationManager extends RelationManager
             ->headerActions([
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Action::make('view')
+                    ->icon('heroicon-o-eye')
+                    ->color('gray')
+                    ->url(fn (Organization $record): string => OrganizationResource::getUrl('view', [
+                        'record' => $record->getKey(),
+                    ])),
+                Action::make('edit')
+                    ->icon('heroicon-o-pencil')
+                    ->url(fn (Organization $record): string => OrganizationResource::getUrl('edit', [
+                        'record' => $record->getKey(),
+                    ]))
+                    ->openUrlInNewTab(),
             ])
             ->bulkActions([
             ]);
