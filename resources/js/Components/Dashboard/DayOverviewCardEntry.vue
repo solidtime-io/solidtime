@@ -15,7 +15,7 @@ import {
 <template>
     <div
         class="px-3.5 py-2 flex justify-between @container border-b border-card-background-separator">
-        <div class="flex items-center">
+        <div class="flex items-center min-w-[70px]">
             <p class="font-semibold text-sm text-white">
                 {{ formatHumanReadableDate(date) }}
             </p>
@@ -24,7 +24,7 @@ import {
             <DayOverviewCardChart :history="history"></DayOverviewCardChart>
         </div>
         <div
-            class="flex text-sm items-center justify-center text-muted font-semibold">
+            class="flex text-sm items-center justify-center text-muted min-w-[65px] font-semibold">
             {{ formatHumanReadableDuration(duration) }}
         </div>
     </div>
