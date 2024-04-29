@@ -13,7 +13,12 @@ import {
 } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
 import dayjs from 'dayjs';
-import { formatDate, formatHumanReadableDuration } from '@/utils/time';
+import {
+    firstDayIndex,
+    formatDate,
+    formatHumanReadableDuration,
+    getDayJsInstance,
+} from '@/utils/time';
 
 const props = defineProps<{
     dailyHoursTracked: { duration: number; date: string }[];
@@ -55,12 +60,18 @@ const option = ref({
         left: 40,
         right: 10,
         cellSize: [40, 40],
+        dayLabel: {
+            firstDay: firstDayIndex.value,
+        },
         splitLine: {
             show: false,
         },
         range: [
             dayjs().format('YYYY-MM-DD'),
-            dayjs().subtract(50, 'day').startOf('week').format('YYYY-MM-DD'),
+            getDayJsInstance()()
+                .subtract(50, 'day')
+                .startOf('week')
+                .format('YYYY-MM-DD'),
         ],
         itemStyle: {
             borderWidth: 8,

@@ -10,6 +10,10 @@ function getCurrentUserId() {
     return page.props.auth.user.id;
 }
 
+function getWeekStart() {
+    return page.props.auth.user.week_start;
+}
+
 function getCurrentOrganizationId() {
     return page.props.auth.user.current_team_id;
 }
@@ -18,4 +22,9 @@ function getUserTimezone() {
     return page.props.auth.user.timezone;
 }
 
-export { getCurrentOrganizationId, getCurrentUserId, getUserTimezone };
+export {
+    getCurrentOrganizationId,
+    getCurrentUserId,
+    getUserTimezone,
+    getWeekStart,
+};
