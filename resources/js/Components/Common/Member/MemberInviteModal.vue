@@ -56,7 +56,7 @@ useFocus(clientNameInput, { initialValue: true });
         <template #content>
             <div class="space-y-4">
                 <div class="col-span-6 sm:col-span-4 flex-1">
-                    <InputLabel for="roles" value="Email" />
+                    <InputLabel for="email" value="Email" />
                     <TextInput
                         id="email"
                         name="email"
@@ -68,6 +68,9 @@ useFocus(clientNameInput, { initialValue: true });
                         class="mt-1 block w-full"
                         required
                         autocomplete="memberName" />
+                    <InputError
+                        :message="addTeamMemberForm.errors.email"
+                        class="mt-2" />
                 </div>
 
                 <div v-if="availableRoles.length > 0">
