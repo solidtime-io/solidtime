@@ -13,7 +13,7 @@ defineProps<{
         :href="href"
         :class="
             twMerge(
-                'contents [&>*]:transition [&>*]:border-row-separator [&>*]:border-b',
+                'contents group [&>*]:transition [&>*]:border-row-separator [&>*]:border-b',
                 href ? '[&>*]:cursor-pointer [&>*]:hover:bg-white/5' : ''
             )
         ">
