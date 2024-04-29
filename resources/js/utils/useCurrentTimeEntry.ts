@@ -57,13 +57,17 @@ export const useCurrentTimeEntryStore = defineStore('currentTimeEntry', () => {
     async function fetchCurrentTimeEntry() {
         const organizationId = getCurrentOrganizationId();
         if (organizationId) {
-            const timeEntriesResponse = await api.getMyActiveTimeEntry({});
-            if (timeEntriesResponse?.data) {
-                if (timeEntriesResponse.data) {
-                    currentTimeEntry.value = timeEntriesResponse.data;
-                } else {
-                    currentTimeEntry.value = { ...emptyTimeEntry };
+            try {
+                const timeEntriesResponse = await api.getMyActiveTimeEntry({});
+                if (timeEntriesResponse?.data) {
+                    if (timeEntriesResponse.data) {
+                        currentTimeEntry.value = timeEntriesResponse.data;
+                    } else {
+                        currentTimeEntry.value = { ...emptyTimeEntry };
+                    }
                 }
+            } catch (error) {
+                currentTimeEntry.value = { ...emptyTimeEntry };
             }
         } else {
             throw new Error(
