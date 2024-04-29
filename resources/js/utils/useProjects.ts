@@ -78,8 +78,8 @@ export const useProjectsStore = defineStore('projects', () => {
                         project: projectId,
                     },
                 }),
-                'Project deleted successfully',
-                'Failed to delete project'
+                'Project updated successfully',
+                'Failed to update project'
             );
             await fetchProjects();
         }
