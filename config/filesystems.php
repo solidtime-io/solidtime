@@ -35,7 +35,7 @@ return [
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app'),
-            'throw' => false,
+            'throw' => true,
         ],
 
         'public' => [
@@ -43,7 +43,7 @@ return [
             'root' => storage_path('app/public'),
             'url' => env('APP_URL').'/storage',
             'visibility' => 'public',
-            'throw' => false,
+            'throw' => true,
         ],
 
         's3' => [
@@ -55,13 +55,13 @@ return [
             'url' => env('S3_URL'),
             'endpoint' => env('S3_ENDPOINT'),
             'use_path_style_endpoint' => env('S3_USE_PATH_STYLE_ENDPOINT', false),
-            'throw' => false,
+            'throw' => true,
         ],
 
         'testfiles' => [
             'driver' => 'local',
             'root' => storage_path('tests'),
-            'throw' => false,
+            'throw' => true,
         ],
 
     ],
