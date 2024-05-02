@@ -107,6 +107,9 @@ const weekdays = computed(() => {
 });
 
 const option = ref({
+    tooltip: {
+        trigger: 'item',
+    },
     grid: {
         top: 0,
         right: 0,
@@ -152,6 +155,11 @@ const option = ref({
         {
             data: seriesData,
             type: 'bar',
+            tooltip: {
+                valueFormatter: (value: number) => {
+                    return formatHumanReadableDuration(value);
+                },
+            },
         },
     ],
 });
