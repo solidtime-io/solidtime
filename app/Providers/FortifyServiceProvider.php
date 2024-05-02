@@ -9,6 +9,7 @@ use App\Actions\Fortify\ResetUserPassword;
 use App\Actions\Fortify\UpdateUserPassword;
 use App\Actions\Fortify\UpdateUserProfileInformation;
 use App\Extensions\Fortify\CustomLoginResponse;
+use App\Extensions\Fortify\CustomTwoFactorLoginResponse;
 use App\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -16,6 +17,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
+use Laravel\Fortify\Contracts\TwoFactorLoginResponse;
 use Laravel\Fortify\Fortify;
 use Laravel\Fortify\Http\Responses\LoginResponse;
 
@@ -64,5 +66,6 @@ class FortifyServiceProvider extends ServiceProvider
         });
 
         $this->app->instance(LoginResponse::class, new CustomLoginResponse());
+        $this->app->instance(TwoFactorLoginResponse::class, new CustomTwoFactorLoginResponse());
     }
 }
