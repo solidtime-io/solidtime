@@ -57,12 +57,13 @@ const showManualTimeEntryModal = ref(false);
         <MainContainer
             class="pt-5 sm:pt-8 pb-4 sm:pb-6 border-b border-default-background-separator">
             <div
-                class="flex items-end divide-x divide-default-background-separator space-x-2">
+                class="sm:flex items-end sm:divide-x divide-default-background-separator divide-y sm:divide-y-0 space-y-2 sm:space-y-0 sm:space-x-2">
                 <div class="flex-1">
                     <TimeTracker></TimeTracker>
                 </div>
-                <div class="pb-2 pl-4 flex justify-center">
+                <div class="pb-2 pt-2 sm:pt-0 sm:pl-4 flex justify-center">
                     <SecondaryButton
+                        class="w-full text-center flex justify-center"
                         @click="showManualTimeEntryModal = true"
                         :icon="PlusIcon"
                         >Manual time entry</SecondaryButton
