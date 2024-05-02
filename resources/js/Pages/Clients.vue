@@ -3,8 +3,6 @@ import MainContainer from '@/Pages/MainContainer.vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { PlusIcon } from '@heroicons/vue/16/solid';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
-import TabBar from '@/Components/Common/TabBar/TabBar.vue';
-import TabBarItem from '@/Components/Common/TabBar/TabBarItem.vue';
 import { UserCircleIcon } from '@heroicons/vue/20/solid';
 import { onMounted, ref } from 'vue';
 import { useClientsStore } from '@/utils/useClients';
@@ -26,11 +24,6 @@ const createClient = ref(false);
             class="py-5 border-b border-default-background-separator flex justify-between items-center">
             <div class="flex items-center space-x-6">
                 <PageTitle :icon="UserCircleIcon" title="Clients"> </PageTitle>
-                <TabBar>
-                    <TabBarItem>All</TabBarItem>
-                    <TabBarItem active>Active</TabBarItem>
-                    <TabBarItem>Archived</TabBarItem>
-                </TabBar>
             </div>
             <SecondaryButton
                 v-if="canCreateClients()"
