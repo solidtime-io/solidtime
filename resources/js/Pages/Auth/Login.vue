@@ -2,7 +2,6 @@
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import AuthenticationCard from '@/Components/AuthenticationCard.vue';
 import AuthenticationCardLogo from '@/Components/AuthenticationCardLogo.vue';
-import Checkbox from '@/Components/Checkbox.vue';
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
@@ -16,7 +15,7 @@ defineProps({
 const form = useForm({
     email: '',
     password: '',
-    remember: false,
+    remember: true,
 });
 
 const submit = () => {
@@ -73,13 +72,6 @@ const submit = () => {
                     required
                     autocomplete="current-password" />
                 <InputError class="mt-2" :message="form.errors.password" />
-            </div>
-
-            <div class="block mt-4">
-                <label class="flex items-center">
-                    <Checkbox v-model:checked="form.remember" name="remember" />
-                    <span class="ms-2 text-sm text-muted">Remember me</span>
-                </label>
             </div>
 
             <div class="flex items-center justify-end mt-4">
