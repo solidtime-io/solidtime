@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import axios from 'axios';
+import { router } from '@inertiajs/vue3';
 
 export type NotificationType = 'success' | 'error';
 
@@ -63,6 +64,8 @@ export const useNotificationsStore = defineStore('notifications', () => {
                 } else if (error?.response?.status === 422) {
                     const message = error.response.data.message;
                     addNotification('error', message);
+                } else if (error?.response?.status === 401) {
+                    router.get(route('login'));
                 } else {
                     addNotification(
                         'error',
