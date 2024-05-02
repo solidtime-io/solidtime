@@ -27,6 +27,9 @@ const page = usePage<{
     jetstream: {
         hasTermsAndPrivacyPolicyFeature: boolean;
     };
+    flash: {
+        message: string;
+    };
 }>();
 </script>
 
@@ -46,6 +49,12 @@ const page = usePage<{
                 <span class="text-white">Login here!</span>
             </Link>
         </template>
+
+        <div
+            v-if="page.props.flash?.message"
+            class="bg-red-400 text-black text-center w-full px-3 py-1 mb-4 rounded-lg">
+            {{ page.props.flash?.message }}
+        </div>
 
         <form @submit.prevent="submit">
             <div>

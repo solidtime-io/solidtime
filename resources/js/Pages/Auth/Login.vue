@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import AuthenticationCard from '@/Components/AuthenticationCard.vue';
 import AuthenticationCardLogo from '@/Components/AuthenticationCardLogo.vue';
 import Checkbox from '@/Components/Checkbox.vue';
@@ -27,6 +27,12 @@ const submit = () => {
         onFinish: () => form.reset('password'),
     });
 };
+
+const page = usePage<{
+    flash: {
+        message: string;
+    };
+}>();
 </script>
 
 <template>
@@ -47,6 +53,11 @@ const submit = () => {
 
         <div v-if="status" class="mb-4 font-medium text-sm text-green-400">
             {{ status }}
+        </div>
+        <div
+            v-if="page.props.flash?.message"
+            class="bg-red-400 text-black text-center w-full px-3 py-1 mb-4 rounded-lg">
+            {{ page.props.flash?.message }}
         </div>
 
         <form @submit.prevent="submit">

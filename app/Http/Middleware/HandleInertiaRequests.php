@@ -40,6 +40,9 @@ class HandleInertiaRequests extends Middleware
     {
         return array_merge(parent::share($request), [
             'has_billing_extension' => Module::has('Billing'),
+            'flash' => [
+                'message' => fn () => $request->session()->get('message'),
+            ],
         ]);
     }
 }
