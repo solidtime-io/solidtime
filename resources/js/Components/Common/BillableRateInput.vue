@@ -18,6 +18,7 @@ function cleanUpDecimalValue(value: string) {
 }
 
 function updateRate(value: string) {
+    value = value.trim();
     if (value.includes(',')) {
         const parts = value.split(',');
         const lastPart = (parts[parts.length - 1] = parts[parts.length - 1]);
@@ -43,7 +44,7 @@ function formatCents(modelValue: number) {
         modelValue / 100,
         getOrganizationCurrencyString()
     );
-    return formattedValue.replace(getOrganizationCurrencySymbol(), '');
+    return formattedValue.replace(getOrganizationCurrencySymbol(), '').trim();
 }
 </script>
 
