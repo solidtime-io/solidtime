@@ -18,7 +18,7 @@ use Korridor\LaravelModelValidationRules\Rules\ExistsEloquent;
 /**
  * @property Organization $organization
  */
-class TimeEntryIndexRequest extends FormRequest
+class TimeEntryAggregateRequest extends FormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -28,6 +28,15 @@ class TimeEntryIndexRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'group_1' => [
+                'required_with:group_2',
+                'in:day,week,month,year,user,project,task,client,billable',
+            ],
+
+            'group_2' => [
+                'in:day,week,month,year,user,project,task,client,billable',
+            ],
+
             // Filter by user ID
             'user_id' => [
                 'string',
@@ -96,17 +105,6 @@ class TimeEntryIndexRequest extends FormRequest
             ],
             // Filter by billable status
             'billable' => [
-                'string',
-                'in:true,false',
-            ],
-            // Limit the number of returned time entries (default: 150)
-            'limit' => [
-                'integer',
-                'min:1',
-                'max:500',
-            ],
-            // Filter makes sure that only time entries of a whole date are returned
-            'only_full_dates' => [
                 'string',
                 'in:true,false',
             ],

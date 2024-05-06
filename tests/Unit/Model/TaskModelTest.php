@@ -6,8 +6,10 @@ namespace Tests\Unit\Model;
 
 use App\Models\Organization;
 use App\Models\Project;
+use App\Models\ProjectMember;
 use App\Models\Task;
 use App\Models\TimeEntry;
+use App\Models\User;
 
 class TaskModelTest extends ModelTestAbstract
 {
@@ -55,5 +57,33 @@ class TaskModelTest extends ModelTestAbstract
 
         // Assert
         $this->assertCount(3, $timeEntries);
+    }
+
+    public function test_scope_visible_by_user_filters_so_that_only_tasks_of_public_projects_or_projects_where_the_user_is_member_are_shown(): void
+    {
+        // Arrange
+        $user = User::factory()->create();
+        $projectPrivate = Project::factory()->isPrivate()->create();
+        $projectPublic = Project::factory()->isPublic()->create();
+        $projectPrivateButMember = Project::factory()->isPrivate()->create();
+        ProjectMember::factory()->forProject($projectPrivateButMember)->forUser($user)->create();
+        $taskPrivate = Task::factory()->forProject($projectPrivate)->create();
+        $taskPublic = Task::factory()->forProject($projectPublic)->create();
+        $taskPrivateButMember = Task::factory()->forProject($projectPrivateButMember)->create();
+
+        // Act
+        $tasksVisible = Task::query()->visibleByUser($user)->get();
+        $allTasks = Task::query()->get();
+
+        // Assert
+        $this->assertEqualsIdsOfEloquentCollection([
+            $taskPublic->getKey(),
+            $taskPrivateButMember->getKey(),
+        ], $tasksVisible);
+        $this->assertEqualsIdsOfEloquentCollection([
+            $taskPrivate->getKey(),
+            $taskPublic->getKey(),
+            $taskPrivateButMember->getKey(),
+        ], $allTasks);
     }
 }

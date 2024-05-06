@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Enums\Weekday;
 use App\Exceptions\Api\TimeEntryCanNotBeRestartedApiException;
 use App\Exceptions\Api\TimeEntryStillRunningApiException;
+use App\Http\Requests\V1\TimeEntry\TimeEntryAggregateRequest;
 use App\Http\Requests\V1\TimeEntry\TimeEntryIndexRequest;
 use App\Http\Requests\V1\TimeEntry\TimeEntryStoreRequest;
 use App\Http\Requests\V1\TimeEntry\TimeEntryUpdateRequest;
@@ -13,13 +15,16 @@ use App\Http\Resources\V1\TimeEntry\TimeEntryCollection;
 use App\Http\Resources\V1\TimeEntry\TimeEntryResource;
 use App\Models\Organization;
 use App\Models\TimeEntry;
+use App\Service\TimeEntryFilter;
 use App\Service\TimezoneService;
+use Carbon\CarbonTimeZone;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Ramsey\Uuid\Type\Time;
 
 class TimeEntryController extends Controller
 {
@@ -53,26 +58,16 @@ class TimeEntryController extends Controller
             ->whereBelongsTo($organization, 'organization')
             ->orderBy('start', 'desc');
 
-        if ($request->has('before')) {
-            $timeEntriesQuery->where('start', '<', Carbon::createFromFormat('Y-m-d\TH:i:s\Z', $request->input('before'), 'UTC'));
-        }
-
-        if ($request->has('after')) {
-            $timeEntriesQuery->where('start', '>', Carbon::createFromFormat('Y-m-d\TH:i:s\Z', $request->input('after'), 'UTC'));
-        }
-
-        if ($request->has('active')) {
-            if ($request->get('active') === 'true') {
-                $timeEntriesQuery->whereNull('end');
-            }
-            if ($request->get('active') === 'false') {
-                $timeEntriesQuery->whereNotNull('end');
-            }
-        }
-
-        if ($request->has('user_id')) {
-            $timeEntriesQuery->where('user_id', $request->input('user_id'));
-        }
+        $filter = new TimeEntryFilter($timeEntriesQuery);
+        $filter->addBeforeFilter($request->input('before'));
+        $filter->addAfterFilter($request->input('after'));
+        $filter->addActiveFilter($request->input('active'));
+        $filter->addUserIdFilter($request->input('user_id'));
+        $filter->addProjectIdsFilter($request->input('project_ids'));
+        $filter->addTagIdsFilter($request->input('tag_ids'));
+        $filter->addTaskIdsFilter($request->input('task_ids'));
+        $filter->addClientIdsFilter($request->input('client_ids'));
+        $filter->addBillableFilter($request->input('billable'));
 
         $limit = $request->has('limit') ? (int) $request->get('limit', 100) : 100;
         if ($limit > 1000) {
@@ -113,6 +108,152 @@ class TimeEntryController extends Controller
         }
 
         return new TimeEntryCollection($timeEntries);
+    }
+
+    /**
+     * Get aggregated time entries in organization
+     *
+     * @throws AuthorizationException
+     */
+    public function aggregate(Organization $organization, TimeEntryAggregateRequest $request): array
+    {
+        if ($request->has('user_id') && $request->get('user_id') === Auth::id()) {
+            $this->checkPermission($organization, 'time-entries:view:own');
+        } else {
+            $this->checkPermission($organization, 'time-entries:view:all');
+        }
+
+        $timeEntriesQuery = TimeEntry::query()
+            ->whereBelongsTo($organization, 'organization');
+
+        $filter = new TimeEntryFilter($timeEntriesQuery);
+        $filter->addBeforeFilter($request->input('before'));
+        $filter->addAfterFilter($request->input('after'));
+        $filter->addActiveFilter($request->input('active'));
+        $filter->addUserIdFilter($request->input('user_id'));
+        $filter->addProjectIdsFilter($request->input('project_ids'));
+        $filter->addTagIdsFilter($request->input('tag_ids'));
+        $filter->addTaskIdsFilter($request->input('task_ids'));
+        $filter->addClientIdsFilter($request->input('client_ids'));
+        $filter->addBillableFilter($request->input('billable'));
+        $timeEntriesQuery = $filter->get();
+
+        $user = Auth::user();
+
+        $group1Type = $request->get('group_1');
+        $group2Type = $request->get('group_2');
+
+        $group1Select = null;
+        $group2Select = null;
+        $groupBy = null;
+        if ($group1Type !== null) {
+            $group1Select = $this->getGroupByQuery($group1Type, $user->timezone, $user->week_start);
+            $groupBy = ['group_1'];
+            if ($group2Type !== null) {
+                $group2Select = $this->getGroupByQuery($group2Type, $user->timezone, $user->week_start);
+                $groupBy = ['group_1', 'group_2'];
+            }
+        }
+
+        $timeEntriesQuery->selectRaw(
+            ($group1Select !== null ? $group1Select.' as group_1,' : '').
+            ($group2Select !== null ? $group2Select.' as group_2,' : '').
+            ' round(sum(extract(epoch from (coalesce("end", now()) - start)))) as aggregate,'.
+            ' round(
+                  sum(
+                      extract(epoch from (coalesce("end", now()) - start)) * (coalesce(billable_rate, 0)::float/60/60)
+                  )
+              ) as cost'
+        );
+        if ($groupBy !== null) {
+            $timeEntriesQuery->groupBy($groupBy);
+        }
+
+        $timeEntriesAggregates = $timeEntriesQuery->get();
+
+        if ($group1Select !== null) {
+            $groupedAggregates = $timeEntriesAggregates->groupBy($group2Select !== null ? ['group_1', 'group_2'] : ['group_1']);
+
+            $group1Response = [];
+            $group1ResponseSum = 0;
+            $group1ResponseCost = 0;
+            foreach ($groupedAggregates as $group1 => $group1Aggregates) {
+                $group2Response = [];
+                if ($group2Select !== null) {
+                    $group2ResponseSum = 0;
+                    $group2ResponseCost = 0;
+                    foreach ($group1Aggregates as $group2 => $aggregate) {
+                        $group2Response[] = [
+                            'type' => $group2Type,
+                            'value' => $group2 === '' ? null : $group2,
+                            'aggregate' => (int) $aggregate->get(0)->aggregate,
+                            'cost' => (int) $aggregate->get(0)->cost,
+                        ];
+                        $group2ResponseSum += (int) $aggregate->get(0)->aggregate;
+                        $group2ResponseCost += (int) $aggregate->get(0)->cost;
+                    }
+                } else {
+                    $group2ResponseSum = (int) $group1Aggregates->get(0)->aggregate;
+                    $group2ResponseCost = (int) $group1Aggregates->get(0)->cost;
+                    $group2Response = null;
+                }
+
+                $group1Response[] = [
+                    'type' => $group1Type,
+                    'value' => $group1 === '' ? null : $group1,
+                    'aggregate' => $group2ResponseSum,
+                    'grouped_data' => $group2Response,
+                ];
+                $group1ResponseSum += $group2ResponseSum;
+                $group1ResponseCost += $group2ResponseCost;
+            }
+        } else {
+            $group1Response = null;
+            $group1ResponseSum = (int) $timeEntriesAggregates->get(0)->aggregate;
+            $group1ResponseCost = (int) $timeEntriesAggregates->get(0)->cost;
+        }
+
+        return [
+            'data' => [
+                'grouped_data' => $group1Response,
+                'aggregate' => $group1ResponseSum,
+                'cost' => $group1ResponseCost,
+            ],
+        ];
+    }
+
+    private function getGroupByQuery(string $group, string $timezone, Weekday $startOfWeek): string
+    {
+        $timezoneShift = app(TimezoneService::class)->getShiftFromUtc(new CarbonTimeZone($timezone));
+        if ($timezoneShift > 0) {
+            $dateWithTimeZone = 'start + INTERVAL \''.$timezoneShift.' second\'';
+        } elseif ($timezoneShift < 0) {
+            $dateWithTimeZone = 'start - INTERVAL \''.abs($timezoneShift).' second\'';
+        } else {
+            $dateWithTimeZone = 'start';
+        }
+        $startOfWeek = Carbon::now()->setTimezone($timezone)->startOfWeek($startOfWeek->carbonWeekDay())->utc()->toDateTimeString();
+        if ($group === 'day') {
+            return 'date('.$dateWithTimeZone.')';
+        } elseif ($group === 'week') {
+            return "to_char(date_bin('7 days', ".$dateWithTimeZone.", timestamp '".$startOfWeek."'), 'YYYY-MM-DD HH24:MI:SS')";
+        } elseif ($group === 'month') {
+            return 'to_char('.$dateWithTimeZone.', \'YYYY-MM\')';
+        } elseif ($group === 'year') {
+            return 'to_char('.$dateWithTimeZone.', \'YYYY\')';
+        } elseif ($group === 'user') {
+            return 'user_id';
+        } elseif ($group === 'project') {
+            return 'project_id';
+        } elseif ($group === 'task') {
+            return 'task_id';
+        } elseif ($group === 'client') {
+            return 'client_id';
+        } elseif ($group === 'billable') {
+            return 'billable';
+        }
+
+        throw new \LogicException('Invalid group');
     }
 
     /**

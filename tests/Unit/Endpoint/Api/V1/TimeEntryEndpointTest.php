@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Endpoint\Api\V1;
 
+use App\Models\Project;
 use App\Models\TimeEntry;
 use App\Models\User;
 use Carbon\Carbon;
@@ -382,6 +383,92 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
             ->where('data.2.id', $timeEntriesAfter->sortByDesc('start')->get(2)->getKey())
             ->where('data.3.id', $timeEntriesDirectlyAfterLimit->getKey())
         );
+    }
+
+    public function test_aggregate_endpoint_fails_if_user_has_no_permission_to_view_time_entries(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.time-entries.aggregate', [$data->organization->getKey()]));
+
+        // Assert
+        $response->assertForbidden();
+    }
+
+    public function test_aggregate_endpoint_groups_by_two_groups(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:view:all',
+        ]);
+        $timeEntries = TimeEntry::factory()->forOrganization($data->organization)->forUser($data->user)->createMany(3);
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        $timeEntries = TimeEntry::factory()->forOrganization($data->organization)->forUser($data->user)->forProject($project)->createMany(3);
+        $timeEntries = TimeEntry::factory()->forOrganization($data->organization)->forUser($data->user)->state([
+            'start' => $timeEntries->get(0)->start,
+        ])->createMany(3);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.time-entries.aggregate', [
+            $data->organization->getKey(),
+            'group_1' => 'day',
+            'group_2' => 'project',
+        ]));
+
+        // Assert
+        $response->assertSuccessful();
+    }
+
+    public function test_aggregate_endpoint_groups_by_one_group(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:view:all',
+        ]);
+        $timeEntries = TimeEntry::factory()->forOrganization($data->organization)->forUser($data->user)->createMany(3);
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        $timeEntries = TimeEntry::factory()->forOrganization($data->organization)->forUser($data->user)->forProject($project)->createMany(3);
+        $timeEntries = TimeEntry::factory()->forOrganization($data->organization)->forUser($data->user)->state([
+            'start' => $timeEntries->get(0)->start,
+        ])->createMany(3);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.time-entries.aggregate', [
+            $data->organization->getKey(),
+            'group_1' => 'week',
+        ]));
+
+        // Assert
+        $response->assertSuccessful();
+    }
+
+    public function test_aggregate_endpoint_with_no_group(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:view:all',
+        ]);
+        $timeEntries = TimeEntry::factory()->forOrganization($data->organization)->forUser($data->user)->createMany(3);
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        $timeEntries = TimeEntry::factory()->forOrganization($data->organization)->forUser($data->user)->forProject($project)->createMany(3);
+        $timeEntries = TimeEntry::factory()->forOrganization($data->organization)->forUser($data->user)->state([
+            'start' => $timeEntries->get(0)->start,
+        ])->createMany(3);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.time-entries.aggregate', [
+            $data->organization->getKey(),
+        ]));
+
+        // Assert
+        $response->assertSuccessful();
     }
 
     public function test_store_endpoint_fails_if_user_has_no_permission_to_create_time_entries(): void
