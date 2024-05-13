@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Http\Resources\V1\Member;
 
 use App\Http\Resources\V1\BaseResource;
-use App\Models\Membership;
+use App\Models\Member;
 use App\Models\User;
 use Illuminate\Http\Request;
 
 /**
- * @property Membership $resource
+ * @property Member $resource
  */
 class MemberResource extends BaseResource
 {

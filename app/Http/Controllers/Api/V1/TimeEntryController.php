@@ -13,6 +13,7 @@ use App\Http\Requests\V1\TimeEntry\TimeEntryStoreRequest;
 use App\Http\Requests\V1\TimeEntry\TimeEntryUpdateRequest;
 use App\Http\Resources\V1\TimeEntry\TimeEntryCollection;
 use App\Http\Resources\V1\TimeEntry\TimeEntryResource;
+use App\Models\Member;
 use App\Models\Organization;
 use App\Models\TimeEntry;
 use App\Service\TimeEntryFilter;
@@ -22,9 +23,9 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use Ramsey\Uuid\Type\Time;
 
 class TimeEntryController extends Controller
 {
@@ -48,7 +49,9 @@ class TimeEntryController extends Controller
      */
     public function index(Organization $organization, TimeEntryIndexRequest $request): JsonResource
     {
-        if ($request->has('user_id') && $request->get('user_id') === Auth::id()) {
+        /** @var Member|null $member */
+        $member = $request->has('member_id') ? Member::query()->findOrFail($request->get('member_id')) : null;
+        if ($member !== null && $member->user_id === Auth::id()) {
             $this->checkPermission($organization, 'time-entries:view:own');
         } else {
             $this->checkPermission($organization, 'time-entries:view:all');
@@ -62,7 +65,8 @@ class TimeEntryController extends Controller
         $filter->addBeforeFilter($request->input('before'));
         $filter->addAfterFilter($request->input('after'));
         $filter->addActiveFilter($request->input('active'));
-        $filter->addUserIdFilter($request->input('user_id'));
+        $filter->addMemberIdFilter($member);
+        $filter->addMemberIdsFilter($request->input('member_ids'));
         $filter->addProjectIdsFilter($request->input('project_ids'));
         $filter->addTagIdsFilter($request->input('tag_ids'));
         $filter->addTaskIdsFilter($request->input('task_ids'));
@@ -78,7 +82,7 @@ class TimeEntryController extends Controller
         $timeEntries = $timeEntriesQuery->get();
 
         if ($timeEntries->count() === $limit && $request->has('only_full_dates') && (bool) $request->get('only_full_dates') === true) {
-            $user = Auth::user();
+            $user = $this->user();
             $timezone = app(TimezoneService::class)->getTimezoneFromUser($user);
             $lastDate = null;
             /** @var TimeEntry $timeEntry */
@@ -113,11 +117,38 @@ class TimeEntryController extends Controller
     /**
      * Get aggregated time entries in organization
      *
+     * This endpoint allows you to filter time entries and aggregate them by different criteria.
+     * The parameters `group` and `sub_group` allow you to group the time entries by different criteria.
+     * If the group parameters are all set to `null` or are all missing, the endpoint will aggregate all filtered time entries.
+     *
+     * @operationId getAggregatedTimeEntries
+     *
+     * @return array{
+     *     data: array{
+     *          grouped_data: null|array<array{
+     *              type: string,
+     *              value: string|null,
+     *              aggregate: int,
+     *              cost: int,
+     *              grouped_data: null|array<array{
+     *                  type: string,
+     *                  value: string|null,
+     *                  aggregate: int,
+     *                  cost: int
+     *              }>
+     *          }>,
+     *          aggregate: int,
+     *          cost: int
+     *      }
+     * }
+     *
      * @throws AuthorizationException
      */
     public function aggregate(Organization $organization, TimeEntryAggregateRequest $request): array
     {
-        if ($request->has('user_id') && $request->get('user_id') === Auth::id()) {
+        /** @var Member|null $member */
+        $member = $request->has('member_id') ? Member::query()->findOrFail($request->get('member_id')) : null;
+        if ($member !== null && $member->user_id === Auth::id()) {
             $this->checkPermission($organization, 'time-entries:view:own');
         } else {
             $this->checkPermission($organization, 'time-entries:view:all');
@@ -130,7 +161,8 @@ class TimeEntryController extends Controller
         $filter->addBeforeFilter($request->input('before'));
         $filter->addAfterFilter($request->input('after'));
         $filter->addActiveFilter($request->input('active'));
-        $filter->addUserIdFilter($request->input('user_id'));
+        $filter->addMemberIdFilter($member);
+        $filter->addMemberIdsFilter($request->input('member_ids'));
         $filter->addProjectIdsFilter($request->input('project_ids'));
         $filter->addTagIdsFilter($request->input('tag_ids'));
         $filter->addTaskIdsFilter($request->input('task_ids'));
@@ -138,10 +170,12 @@ class TimeEntryController extends Controller
         $filter->addBillableFilter($request->input('billable'));
         $timeEntriesQuery = $filter->get();
 
-        $user = Auth::user();
+        $user = $this->user();
 
-        $group1Type = $request->get('group_1');
-        $group2Type = $request->get('group_2');
+        /** @var string|null $group1Type */
+        $group1Type = $request->get('group');
+        /** @var string|null $group2Type */
+        $group2Type = $request->get('sub_group');
 
         $group1Select = null;
         $group2Select = null;
@@ -178,11 +212,15 @@ class TimeEntryController extends Controller
             $group1ResponseSum = 0;
             $group1ResponseCost = 0;
             foreach ($groupedAggregates as $group1 => $group1Aggregates) {
+                /** @var string $group1 */
                 $group2Response = [];
                 if ($group2Select !== null) {
                     $group2ResponseSum = 0;
                     $group2ResponseCost = 0;
                     foreach ($group1Aggregates as $group2 => $aggregate) {
+                        /** @var string $group2 */
+                        /** @var Collection<int, object{aggregate: int, cost: int}> $aggregate */
+                        /** @var string $group2Type */
                         $group2Response[] = [
                             'type' => $group2Type,
                             'value' => $group2 === '' ? null : $group2,
@@ -193,15 +231,18 @@ class TimeEntryController extends Controller
                         $group2ResponseCost += (int) $aggregate->get(0)->cost;
                     }
                 } else {
+                    /** @var Collection<int, object{aggregate: int, cost: int}> $group1Aggregates */
                     $group2ResponseSum = (int) $group1Aggregates->get(0)->aggregate;
                     $group2ResponseCost = (int) $group1Aggregates->get(0)->cost;
                     $group2Response = null;
                 }
 
+                /** @var string $group1Type */
                 $group1Response[] = [
                     'type' => $group1Type,
                     'value' => $group1 === '' ? null : $group1,
                     'aggregate' => $group2ResponseSum,
+                    'cost' => $group2ResponseCost,
                     'grouped_data' => $group2Response,
                 ];
                 $group1ResponseSum += $group2ResponseSum;
@@ -209,6 +250,7 @@ class TimeEntryController extends Controller
             }
         } else {
             $group1Response = null;
+            /** @var Collection<int, object{aggregate: int, cost: int}> $timeEntriesAggregates */
             $group1ResponseSum = (int) $timeEntriesAggregates->get(0)->aggregate;
             $group1ResponseCost = (int) $timeEntriesAggregates->get(0)->cost;
         }
@@ -266,18 +308,21 @@ class TimeEntryController extends Controller
      */
     public function store(Organization $organization, TimeEntryStoreRequest $request): JsonResource
     {
-        if ($request->get('user_id') === Auth::id()) {
+        /** @var Member $member */
+        $member = Member::query()->findOrFail($request->get('member_id'));
+        if ($member->user_id === Auth::id()) {
             $this->checkPermission($organization, 'time-entries:create:own');
         } else {
             $this->checkPermission($organization, 'time-entries:create:all');
         }
 
-        if ($request->get('end') === null && TimeEntry::query()->where('user_id', $request->get('user_id'))->where('end', null)->exists()) {
+        if ($request->get('end') === null && TimeEntry::query()->whereBelongsTo($member, 'member')->where('end', null)->exists()) {
             throw new TimeEntryStillRunningApiException();
         }
 
         $timeEntry = new TimeEntry();
         $timeEntry->fill($request->validated());
+        $timeEntry->user_id = $member->user_id;
         $timeEntry->description = $request->get('description') ?? '';
         $timeEntry->organization()->associate($organization);
         $timeEntry->setComputedAttributeValue('billable_rate');
@@ -295,10 +340,12 @@ class TimeEntryController extends Controller
      */
     public function update(Organization $organization, TimeEntry $timeEntry, TimeEntryUpdateRequest $request): JsonResource
     {
-        if ($timeEntry->user_id === Auth::id() && $request->get('user_id') === Auth::id()) {
-            $this->checkPermission($organization, 'time-entries:update:own', $timeEntry);
+        /** @var Member|null $member */
+        $member = $request->has('member_id') ? Member::query()->findOrFail($request->get('member_id')) : null;
+        if ($timeEntry->member->user_id === Auth::id() && $member?->user_id === Auth::id()) {
+            $this->checkPermission($organization, 'time-entries:update:own');
         } else {
-            $this->checkPermission($organization, 'time-entries:update:all', $timeEntry);
+            $this->checkPermission($organization, 'time-entries:update:all');
         }
 
         if ($timeEntry->end !== null && $request->has('end') && $request->get('end') === null) {
@@ -321,7 +368,7 @@ class TimeEntryController extends Controller
      */
     public function destroy(Organization $organization, TimeEntry $timeEntry): JsonResponse
     {
-        if ($timeEntry->user_id === Auth::id()) {
+        if ($timeEntry->member->user_id === Auth::id()) {
             $this->checkPermission($organization, 'time-entries:delete:own', $timeEntry);
         } else {
             $this->checkPermission($organization, 'time-entries:delete:all', $timeEntry);

@@ -65,9 +65,14 @@ class Task extends Model
         return $this->hasMany(TimeEntry::class, 'task_id');
     }
 
+    /**
+     * @param  Builder<Task>  $builder
+     * @return Builder<Task>
+     */
     public function scopeVisibleByUser(Builder $builder, User $user): Builder
     {
         return $builder->whereHas('project', function (Builder $builder) use ($user): Builder {
+            /** @var Builder<Project> $builder */
             return $builder->visibleByUser($user);
         });
     }

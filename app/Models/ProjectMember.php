@@ -14,9 +14,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * @property string $id
  * @property int|null $billable_rate
- * @property string $project_id
- * @property string $user_id
+ * @property string $project_id Project ID
+ * @property string $member_id Member ID
+ * @property string $user_id User ID (legacy)
  * @property-read Project $project
+ * @property-read Member $member
  * @property-read User $user
  *
  * @method static Builder<ProjectMember> whereBelongsToOrganization(Organization $organization)
@@ -45,11 +47,21 @@ class ProjectMember extends Model
     }
 
     /**
+     * @deprecated Use member relationship instead
+     *
      * @return BelongsTo<User, ProjectMember>
      */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    /**
+     * @return BelongsTo<Member, ProjectMember>
+     */
+    public function member(): BelongsTo
+    {
+        return $this->belongsTo(Member::class, 'member_id');
     }
 
     /**

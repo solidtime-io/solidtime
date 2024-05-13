@@ -43,7 +43,7 @@ use Laravel\Passport\HasApiTokens;
  * @property string $current_team_id
  * @property Collection<int, Organization> $organizations
  * @property Collection<int, TimeEntry> $timeEntries
- * @property Membership $membership
+ * @property Member $membership
  *
  * @method HasMany<Organization> ownedTeams()
  * @method static UserFactory factory()
@@ -136,7 +136,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
      */
     public function organizations(): BelongsToMany
     {
-        return $this->belongsToMany(Organization::class, Membership::class)
+        return $this->belongsToMany(Organization::class, Member::class)
             ->withPivot([
                 'id',
                 'role',

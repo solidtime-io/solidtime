@@ -12,11 +12,9 @@ use App\Http\Resources\V1\Task\TaskCollection;
 use App\Http\Resources\V1\Task\TaskResource;
 use App\Models\Organization;
 use App\Models\Task;
-use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\Auth;
 
 class TaskController extends Controller
 {
@@ -41,8 +39,7 @@ class TaskController extends Controller
     {
         $this->checkPermission($organization, 'tasks:view');
         $canViewAllTasks = $this->hasPermission($organization, 'tasks:view:all');
-        /** @var User $user */
-        $user = Auth::user();
+        $user = $this->user();
 
         $projectId = $request->input('project_id');
 

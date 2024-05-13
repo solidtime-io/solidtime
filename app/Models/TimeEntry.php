@@ -24,7 +24,9 @@ use Korridor\LaravelComputedAttributes\ComputedAttributes;
  * @property bool $billable
  * @property array $tags
  * @property string $user_id
+ * @property string $member_id
  * @property-read User $user
+ * @property-read Member $member
  * @property string $organization_id
  * @property-read Organization $organization
  * @property string|null $project_id
@@ -89,6 +91,14 @@ class TimeEntry extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    /**
+     * @return BelongsTo<Member, TimeEntry>
+     */
+    public function member(): BelongsTo
+    {
+        return $this->belongsTo(Member::class, 'member_id');
     }
 
     /**

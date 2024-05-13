@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace Database\Factories;
 
 use App\Enums\Role;
-use App\Models\Membership;
+use App\Models\Member;
 use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<Membership>
+ * @extends Factory<Member>
  */
-class MembershipFactory extends Factory
+class MemberFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -24,9 +24,18 @@ class MembershipFactory extends Factory
     {
         return [
             'role' => Role::Employee,
-            'organization_id' => OrganizationFactory::class,
-            'user_id' => UserFactory::class,
+            'organization_id' => Organization::factory(),
+            'user_id' => User::factory(),
         ];
+    }
+
+    public function role(Role $role): static
+    {
+        return $this->state(function (array $attributes) use ($role): array {
+            return [
+                'role' => $role->value,
+            ];
+        });
     }
 
     public function forOrganization(Organization $organization): static

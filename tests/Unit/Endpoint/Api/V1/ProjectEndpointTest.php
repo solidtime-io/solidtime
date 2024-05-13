@@ -55,7 +55,7 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
         ]);
         $privateProjects = Project::factory()->forOrganization($data->organization)->isPrivate()->createMany(2);
         $publicProjects = Project::factory()->forOrganization($data->organization)->isPublic()->createMany(2);
-        $privateProjectsWithMembership = Project::factory()->forOrganization($data->organization)->addMember($data->user)->isPrivate()->createMany(2);
+        $privateProjectsWithMembership = Project::factory()->forOrganization($data->organization)->addMember($data->member)->isPrivate()->createMany(2);
         Passport::actingAs($data->user);
 
         // Act

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Actions\Jetstream;
 
 use App\Enums\Role;
-use App\Models\Membership;
+use App\Models\Member;
 use App\Models\Organization;
 use App\Models\User;
 use App\Service\PermissionStore;
@@ -32,7 +32,7 @@ class UpdateMemberRole
         }
 
         $user = User::where('id', '=', $userId)->firstOrFail();
-        $member = Membership::whereBelongsTo($user)->whereBelongsTo($organization)->firstOrFail();
+        $member = Member::whereBelongsTo($user)->whereBelongsTo($organization)->firstOrFail();
         if ($member->role === Role::Placeholder->value) {
             abort(403, 'Cannot update the role of a placeholder member.');
         }

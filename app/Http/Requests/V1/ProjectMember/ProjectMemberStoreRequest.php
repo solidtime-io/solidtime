@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\V1\ProjectMember;
 
+use App\Models\Member;
 use App\Models\Organization;
-use App\Models\User;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Http\FormRequest;
@@ -24,12 +24,12 @@ class ProjectMemberStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'user_id' => [
+            'member_id' => [
                 'required',
                 'uuid',
-                new ExistsEloquent(User::class, null, function (Builder $builder): Builder {
-                    /** @var Builder<User> $builder */
-                    return $builder->belongsToOrganization($this->organization);
+                new ExistsEloquent(Member::class, null, function (Builder $builder): Builder {
+                    /** @var Builder<Member> $builder */
+                    return $builder->whereBelongsTo($this->organization, 'organization');
                 }),
             ],
             'billable_rate' => [

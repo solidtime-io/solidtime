@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Models\Member;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Models\Tag;
@@ -34,6 +35,7 @@ class TimeEntryFactory extends Factory
             'billable' => $this->faker->boolean(),
             'tags' => [],
             'user_id' => User::factory(),
+            'member_id' => Member::factory(),
             'task_id' => null,
             'project_id' => null,
             'organization_id' => Organization::factory(),
@@ -86,11 +88,25 @@ class TimeEntryFactory extends Factory
         });
     }
 
+    /**
+     * @deprecated Use forMember instead
+     */
     public function forUser(User $user): self
     {
         return $this->state(function (array $attributes) use ($user) {
             return [
                 'user_id' => $user->getKey(),
+            ];
+        });
+    }
+
+    public function forMember(Member $member): static
+    {
+        return $this->state(function (array $attributes) use ($member): array {
+            return [
+                'member_id' => $member->getKey(),
+                'user_id' => $member->user_id,
+                'organization_id' => $member->organization_id,
             ];
         });
     }

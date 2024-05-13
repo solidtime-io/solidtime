@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\V1\TimeEntry;
 
+use App\Models\Member;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Models\Tag;
 use App\Models\Task;
-use App\Models\User;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Http\FormRequest;
@@ -27,14 +27,14 @@ class TimeEntryStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // ID of the user that the time entry should belong to
-            'user_id' => [
+            // ID of the organization member that the time entry should belong to
+            'member_id' => [
                 'required',
                 'string',
                 'uuid',
-                new ExistsEloquent(User::class, null, function (Builder $builder): Builder {
-                    /** @var Builder<User> $builder */
-                    return $builder->belongsToOrganization($this->organization);
+                new ExistsEloquent(Member::class, null, function (Builder $builder): Builder {
+                    /** @var Builder<Member> $builder */
+                    return $builder->whereBelongsTo($this->organization, 'organization');
                 }),
             ],
             'project_id' => [

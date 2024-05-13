@@ -27,8 +27,8 @@ class UserTimeEntryEndpointTest extends ApiEndpointTestAbstract
         // Arrange
         $data = $this->createUserWithPermission([
         ]);
-        $activeTimeEntry = TimeEntry::factory()->forUser($data->user)->active()->create();
-        $inactiveTimeEntry = TimeEntry::factory()->forUser($data->user)->create();
+        $activeTimeEntry = TimeEntry::factory()->forMember($data->member)->active()->create();
+        $inactiveTimeEntry = TimeEntry::factory()->forMember($data->member)->create();
         Passport::actingAs($data->user);
 
         // Act
@@ -43,7 +43,7 @@ class UserTimeEntryEndpointTest extends ApiEndpointTestAbstract
         // Arrange
         $data = $this->createUserWithPermission([
         ]);
-        $inactiveTimeEntry = TimeEntry::factory()->forUser($data->user)->create();
+        $inactiveTimeEntry = TimeEntry::factory()->forMember($data->member)->create();
         Passport::actingAs($data->user);
 
         // Act

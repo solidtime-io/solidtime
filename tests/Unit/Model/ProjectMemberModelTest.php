@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Model;
 
+use App\Models\Member;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Models\ProjectMember;
-use App\Models\User;
 
 class ProjectMemberModelTest extends ModelTestAbstract
 {
@@ -15,8 +15,8 @@ class ProjectMemberModelTest extends ModelTestAbstract
     {
         // Arrange
         $project = Project::factory()->create();
-        $user = User::factory()->create();
-        $projectMember = ProjectMember::factory()->forProject($project)->forUser($user)->create();
+        $member = Member::factory()->create();
+        $projectMember = ProjectMember::factory()->forProject($project)->forMember($member)->create();
 
         // Act
         $projectMember->refresh();
@@ -27,19 +27,19 @@ class ProjectMemberModelTest extends ModelTestAbstract
         $this->assertTrue($projectRel->is($project));
     }
 
-    public function test_it_belongs_to_a_user(): void
+    public function test_it_belongs_to_a_member(): void
     {
         // Arrange
-        $user = User::factory()->create();
-        $projectMember = ProjectMember::factory()->forUser($user)->create();
+        $member = Member::factory()->create();
+        $projectMember = ProjectMember::factory()->forMember($member)->create();
 
         // Act
         $projectMember->refresh();
-        $userRel = $projectMember->user;
+        $memberRel = $projectMember->member;
 
         // Assert
-        $this->assertNotNull($userRel);
-        $this->assertTrue($userRel->is($user));
+        $this->assertNotNull($memberRel);
+        $this->assertTrue($memberRel->is($member));
     }
 
     public function test_scope_where_belongs_to_organization_filters_project_members_to_only_retrieve_project_members_that_belong_to_a_project_of_the_organization(): void

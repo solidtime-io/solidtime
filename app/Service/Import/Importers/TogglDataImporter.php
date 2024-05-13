@@ -74,13 +74,17 @@ class TogglDataImporter extends DefaultImporter
             }
 
             foreach ($workspaceUsers as $workspaceUser) {
-                $this->userImportHelper->getKey([
+                $userId = $this->userImportHelper->getKey([
                     'email' => $workspaceUser->email,
                 ], [
                     'name' => $workspaceUser->name,
                     'timezone' => $workspaceUser->timezone ?? 'UTC',
                     'is_placeholder' => true,
                 ], (string) $workspaceUser->uid);
+                $memberId = $this->memberImportHelper->getKey([
+                    'user_id' => $userId,
+                    'organization_id' => $this->organization->getKey(),
+                ], [], $userId);
             }
 
             foreach ($projects as $project) {
@@ -114,10 +118,12 @@ class TogglDataImporter extends DefaultImporter
                 }
                 $projectMembers = json_decode($projectMembersFileContent);
                 foreach ($projectMembers as $projectMember) {
+                    $userId = $this->userImportHelper->getKeyByExternalIdentifier((string) $projectMember->user_id);
                     $this->projectMemberImportHelper->getKey([
                         'project_id' => $projectId,
-                        'user_id' => $this->userImportHelper->getKeyByExternalIdentifier((string) $projectMember->user_id),
+                        'member_id' => $this->memberImportHelper->getKeyByExternalIdentifier($userId),
                     ], [
+                        'user_id' => $userId,
                         'billable_rate' => $projectMember->rate !== null ? (int) ($projectMember->rate * 100) : null,
                     ]);
                 }

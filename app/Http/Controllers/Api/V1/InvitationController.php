@@ -57,7 +57,7 @@ class InvitationController extends Controller
         $this->checkPermission($organization, 'invitations:create');
 
         app(InvitesTeamMembers::class)->invite(
-            $request->user(),
+            $this->user(),
             $organization,
             $request->input('email'),
             $request->input('role')

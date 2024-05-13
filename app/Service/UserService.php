@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Enums\Role;
-use App\Models\Membership;
+use App\Models\Member;
 use App\Models\Organization;
 use App\Models\ProjectMember;
 use App\Models\TimeEntry;
@@ -19,12 +19,22 @@ class UserService
      */
     public function assignOrganizationEntitiesToDifferentUser(Organization $organization, User $fromUser, User $toUser): void
     {
+        /** @var Member|null $toMember */
+        $toMember = Member::query()
+            ->whereBelongsTo($organization, 'organization')
+            ->whereBelongsTo($toUser, 'user')
+            ->first();
+        if ($toMember === null) {
+            throw new \InvalidArgumentException('User is not a member of the organization');
+        }
+
         // Time entries
         TimeEntry::query()
             ->whereBelongsTo($organization, 'organization')
             ->whereBelongsTo($fromUser, 'user')
             ->update([
                 'user_id' => $toUser->getKey(),
+                'member_id' => $toMember->getKey(),
             ]);
 
         // Project members
@@ -33,6 +43,7 @@ class UserService
             ->whereBelongsTo($fromUser, 'user')
             ->update([
                 'user_id' => $toUser->getKey(),
+                'member_id' => $toMember->getKey(),
             ]);
     }
 
@@ -45,13 +56,17 @@ class UserService
         $organization->update([
             'user_id' => $newOwner->getKey(),
         ]);
-        $userMembership = Membership::query()
+        /** @var Member|null $userMembership */
+        $userMembership = Member::query()
             ->whereBelongsTo($organization, 'organization')
             ->whereBelongsTo($newOwner, 'user')
             ->first();
+        if ($userMembership === null) {
+            throw new \InvalidArgumentException('User is not a member of the organization');
+        }
         $userMembership->role = Role::Owner->value;
         $userMembership->save();
-        $oldOwners = Membership::query()
+        $oldOwners = Member::query()
             ->whereBelongsTo($organization, 'organization')
             ->where('role', '=', Role::Owner->value)
             ->where('user_id', '!=', $newOwner->getKey())

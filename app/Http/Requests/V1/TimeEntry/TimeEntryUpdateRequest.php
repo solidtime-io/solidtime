@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\V1\TimeEntry;
 
+use App\Models\Member;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Models\Tag;
@@ -26,6 +27,16 @@ class TimeEntryUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
+            // ID of the organization member that the time entry should belong to
+            'member_id' => [
+                'string',
+                'uuid',
+                new ExistsEloquent(Member::class, null, function (Builder $builder): Builder {
+                    /** @var Builder<Member> $builder */
+                    return $builder->whereBelongsTo($this->organization, 'organization');
+                }),
+            ],
+            // ID of the project that the time entry should belong to
             'project_id' => [
                 'nullable',
                 'string',

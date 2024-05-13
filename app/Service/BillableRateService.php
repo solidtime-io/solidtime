@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service;
 
-use App\Models\Membership;
+use App\Models\Member;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Models\ProjectMember;
@@ -36,13 +36,13 @@ class BillableRateService
             }
         }
         // Member rate
-        /** @var Membership|null $membership */
-        $membership = Membership::query()
+        /** @var Member|null $member */
+        $member = Member::query()
             ->where('user_id', '=', $timeEntry->user_id)
             ->where('organization_id', '=', $timeEntry->organization_id)
             ->first();
-        if ($membership !== null && $membership->billable_rate !== null) {
-            return $membership->billable_rate;
+        if ($member !== null && $member->billable_rate !== null) {
+            return $member->billable_rate;
         }
 
         // Organization rate

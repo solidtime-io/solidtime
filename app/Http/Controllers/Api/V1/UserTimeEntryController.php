@@ -10,7 +10,6 @@ use App\Models\TimeEntry;
 use App\Models\User;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class UserTimeEntryController extends Controller
@@ -24,8 +23,7 @@ class UserTimeEntryController extends Controller
      */
     public function myActive(): JsonResource
     {
-        /** @var User $user */
-        $user = Auth::user();
+        $user = $this->user();
 
         $activeTimeEntriesOfUser = TimeEntry::query()
             ->whereBelongsTo($user, 'user')

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\V1\TimeEntry;
 
+use App\Models\Member;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Models\Tag;
@@ -28,13 +29,37 @@ class TimeEntryAggregateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'group_1' => [
+            'group' => [
+                'nullable',
                 'required_with:group_2',
                 'in:day,week,month,year,user,project,task,client,billable',
             ],
 
-            'group_2' => [
+            'sub_group' => [
+                'nullable',
                 'in:day,week,month,year,user,project,task,client,billable',
+            ],
+            // Filter by member ID
+            'member_id' => [
+                'string',
+                'uuid',
+                new ExistsEloquent(Member::class, null, function (Builder $builder): Builder {
+                    /** @var Builder<Member> $builder */
+                    return $builder->whereBelongsTo($this->organization, 'organization');
+                }),
+            ],
+            // Filter by multiple member IDs, member IDs are OR combined, but AND combined with the member_id parameter
+            'member_ids' => [
+                'array',
+                'min:1',
+            ],
+            'member_ids.*' => [
+                'string',
+                'uuid',
+                new ExistsEloquent(Member::class, null, function (Builder $builder): Builder {
+                    /** @var Builder<Member> $builder */
+                    return $builder->whereBelongsTo($this->organization, 'organization');
+                }),
             ],
 
             // Filter by user ID

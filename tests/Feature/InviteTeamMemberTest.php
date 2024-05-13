@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Enums\Role;
+use App\Models\Member;
 use App\Models\TimeEntry;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -62,13 +64,13 @@ class InviteTeamMemberTest extends TestCase
         $existingUser = User::factory()->create([
             'is_placeholder' => true,
         ]);
-        $user->currentTeam->users()->attach($existingUser, ['role' => 'employee']);
+        $user->currentTeam->users()->attach($existingUser, ['role' => Role::Employee->value]);
         $this->actingAs($user);
 
         // Act
         $response = $this->post('/teams/'.$user->currentTeam->id.'/members', [
             'email' => $existingUser->email,
-            'role' => 'employee',
+            'role' => Role::Employee->value,
         ]);
 
         // Assert
@@ -103,7 +105,7 @@ class InviteTeamMemberTest extends TestCase
         $user = User::factory()->withPersonalOrganization()->create();
         $invitation = $owner->currentTeam->teamInvitations()->create([
             'email' => $user->email,
-            'role' => 'employee',
+            'role' => Role::Employee->value,
         ]);
         $this->actingAs($user);
 
@@ -126,11 +128,11 @@ class InviteTeamMemberTest extends TestCase
     {
         // Arrange
         Mail::fake();
-        $placeholder = User::factory()->withPersonalOrganization()->placeholder()->create();
-
+        $placeholder = User::factory()->placeholder()->create();
         $owner = User::factory()->withPersonalOrganization()->create();
-        $owner->currentTeam->users()->attach($placeholder, ['role' => 'employee']);
-        $timeEntries = TimeEntry::factory()->forOrganization($owner->currentTeam)->forUser($placeholder)->createMany(5);
+        $placeholderMember = Member::factory()->forOrganization($owner->currentTeam)->forUser($placeholder)->create();
+
+        $timeEntries = TimeEntry::factory()->forOrganization($owner->currentTeam)->forMember($placeholderMember)->createMany(5);
 
         $user = User::factory()->withPersonalOrganization()->create([
             'email' => $placeholder->email,
@@ -138,7 +140,7 @@ class InviteTeamMemberTest extends TestCase
 
         $invitation = $owner->currentTeam->teamInvitations()->create([
             'email' => $user->email,
-            'role' => 'employee',
+            'role' => Role::Employee->value,
         ]);
         $this->actingAs($user);
 
@@ -167,7 +169,7 @@ class InviteTeamMemberTest extends TestCase
         $user = User::factory()->withPersonalOrganization()->create();
         $invitation = $owner->currentTeam->teamInvitations()->create([
             'email' => 'firstname.lastname@mail.test',
-            'role' => 'employee',
+            'role' => Role::Employee->value,
         ]);
         $this->actingAs($user);
 

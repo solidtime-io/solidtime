@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\Models\Member;
 use App\Models\TimeEntry;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
@@ -59,12 +60,25 @@ class TimeEntryFilter
         return $this;
     }
 
-    public function addUserIdFilter(?string $userId): self
+    public function addMemberIdFilter(?Member $member): self
     {
-        if ($userId === null) {
+        if ($member === null) {
             return $this;
         }
-        $this->builder->where('user_id', $userId);
+        $this->builder->where('member_id', $member->getKey());
+
+        return $this;
+    }
+
+    /**
+     * @param  array<string>|null  $memberIds
+     */
+    public function addMemberIdsFilter(?array $memberIds): self
+    {
+        if ($memberIds === null) {
+            return $this;
+        }
+        $this->builder->whereIn('member_id', $memberIds);
 
         return $this;
     }

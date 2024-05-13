@@ -25,8 +25,8 @@ class ProjectMemberResource extends BaseResource
             'id' => $this->resource->id,
             /** @var int|null $billable_rate Billable rate in cents per hour */
             'billable_rate' => $this->resource->billable_rate,
-            /** @var string $user_id ID of the user */
-            'user_id' => $this->resource->user_id,
+            /** @var string $member_id ID of the organization member */
+            'member_id' => $this->resource->member_id,
             /** @var string $project_id ID of the project */
             'project_id' => $this->resource->project_id,
         ];

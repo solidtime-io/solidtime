@@ -30,7 +30,7 @@ use Laravel\Jetstream\Team as JetstreamTeam;
  * @property Collection<int, User> $users
  * @property Collection<int, User> $realUsers
  * @property-read Collection<int, OrganizationInvitation> $teamInvitations
- * @property Membership $membership
+ * @property Member $membership
  *
  * @method HasMany<OrganizationInvitation> teamInvitations()
  * @method static OrganizationFactory factory()

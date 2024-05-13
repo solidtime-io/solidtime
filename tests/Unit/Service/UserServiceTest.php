@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Service;
 
 use App\Enums\Role;
-use App\Models\Membership;
+use App\Models\Member;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Models\ProjectMember;
@@ -27,10 +27,13 @@ class UserServiceTest extends TestCase
         $otherUser = User::factory()->create();
         $fromUser = User::factory()->create();
         $toUser = User::factory()->create();
-        TimeEntry::factory()->forOrganization($organization)->forUser($otherUser)->createMany(3);
-        TimeEntry::factory()->forOrganization($organization)->forUser($fromUser)->createMany(3);
-        ProjectMember::factory()->forProject($project)->forUser($otherUser)->create();
-        ProjectMember::factory()->forProject($project)->forUser($fromUser)->create();
+        $otherUserMember = Member::factory()->forOrganization($organization)->forUser($otherUser)->create();
+        $fromUserMember = Member::factory()->forOrganization($organization)->forUser($fromUser)->create();
+        $toUserMember = Member::factory()->forOrganization($organization)->forUser($toUser)->create();
+        TimeEntry::factory()->forOrganization($organization)->forMember($otherUserMember)->createMany(3);
+        TimeEntry::factory()->forOrganization($organization)->forMember($fromUserMember)->createMany(3);
+        ProjectMember::factory()->forProject($project)->forMember($otherUserMember)->create();
+        ProjectMember::factory()->forProject($project)->forMember($fromUserMember)->create();
 
         // Act
         /** @var UserService $userService */
@@ -66,7 +69,7 @@ class UserServiceTest extends TestCase
 
         // Assert
         $this->assertSame($newOwner->getKey(), $organization->refresh()->user_id);
-        $this->assertSame(Role::Owner->value, Membership::whereBelongsTo($newOwner)->whereBelongsTo($organization)->firstOrFail()->role);
-        $this->assertSame(Role::Admin->value, Membership::whereBelongsTo($oldOwner)->whereBelongsTo($organization)->firstOrFail()->role);
+        $this->assertSame(Role::Owner->value, Member::whereBelongsTo($newOwner)->whereBelongsTo($organization)->firstOrFail()->role);
+        $this->assertSame(Role::Admin->value, Member::whereBelongsTo($oldOwner)->whereBelongsTo($organization)->firstOrFail()->role);
     }
 }
