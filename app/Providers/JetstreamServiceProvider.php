@@ -22,6 +22,8 @@ use Brick\Money\Currency;
 use Brick\Money\ISOCurrencyProvider;
 use Illuminate\Http\Request;
 use Illuminate\Support\ServiceProvider;
+use Inertia\Inertia;
+use Laravel\Fortify\Fortify;
 use Laravel\Jetstream\Actions\UpdateTeamMemberRole;
 use Laravel\Jetstream\Jetstream;
 
@@ -52,6 +54,13 @@ class JetstreamServiceProvider extends ServiceProvider
         Jetstream::useTeamModel(Organization::class);
         Jetstream::useTeamInvitationModel(OrganizationInvitation::class);
         app()->singleton(UpdateTeamMemberRole::class, UpdateMemberRole::class);
+        Fortify::registerView(function () {
+            return Inertia::render('Auth/Register', [
+                'terms_url' => config('auth.terms_url'),
+                'privacy_policy_url' => config('auth.privacy_policy_url'),
+                'newsletter_consent' => config('auth.newsletter_consent'),
+            ]);
+        });
     }
 
     /**

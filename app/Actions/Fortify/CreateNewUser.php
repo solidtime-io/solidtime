@@ -6,6 +6,7 @@ namespace App\Actions\Fortify;
 
 use App\Enums\Role;
 use App\Enums\Weekday;
+use App\Events\NewsletterRegistered;
 use App\Models\Organization;
 use App\Models\User;
 use App\Service\TimezoneService;
@@ -49,6 +50,9 @@ class CreateNewUser implements CreatesNewUsers
             ],
             'password' => $this->passwordRules(),
             'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature() ? ['accepted', 'required'] : '',
+            'newsletter_consent' => [
+                'boolean',
+            ],
         ])->validate();
 
         $timezone = 'UTC';
@@ -56,7 +60,7 @@ class CreateNewUser implements CreatesNewUsers
             $timezone = $input['timezone'];
         }
 
-        return DB::transaction(function () use ($input, $timezone) {
+        $user = DB::transaction(function () use ($input, $timezone) {
             return tap(User::create([
                 'name' => $input['name'],
                 'email' => $input['email'],
@@ -67,6 +71,13 @@ class CreateNewUser implements CreatesNewUsers
                 $this->createTeam($user);
             });
         });
+
+        $newsletterConsent = isset($input['newsletter_consent']) && (bool) $input['newsletter_consent'];
+        if ($newsletterConsent) {
+            NewsletterRegistered::dispatch($input['name'], $input['email'], $user->getKey());
+        }
+
+        return $user;
     }
 
     /**

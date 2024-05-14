@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Enums\Role;
+use App\Events\NewsletterRegistered;
 use App\Models\Membership;
 use App\Models\User;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Event;
 use Laravel\Fortify\Features;
 use Laravel\Jetstream\Jetstream;
 use Tests\TestCase;
@@ -41,6 +43,11 @@ class RegistrationTest extends TestCase
 
     public function test_new_users_can_register(): void
     {
+        // Arrange
+        Event::fake([
+            NewsletterRegistered::class,
+        ]);
+
         // Act
         $response = $this->post('/register', [
             'name' => 'Test User',
@@ -51,6 +58,7 @@ class RegistrationTest extends TestCase
         ]);
 
         // Assert
+        $response->assertValid();
         $this->assertAuthenticated();
         $response->assertRedirect(RouteServiceProvider::HOME);
         $user = User::where('email', 'test@example.com')->firstOrFail();
@@ -60,6 +68,34 @@ class RegistrationTest extends TestCase
         $this->assertSame(true, $organization->personal_team);
         $member = Membership::query()->whereBelongsTo($user, 'user')->whereBelongsTo($organization, 'organization')->firstOrFail();
         $this->assertSame(Role::Owner->value, $member->role);
+        Event::assertNotDispatched(NewsletterRegistered::class);
+    }
+
+    public function test_new_users_can_consent_to_newsletter_during_registration(): void
+    {
+        // Arrange
+        Event::fake([
+            NewsletterRegistered::class,
+        ]);
+
+        // Act
+        $response = $this->post('/register', [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+            'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature(),
+            'newsletter_consent' => true,
+        ]);
+
+        // Assert
+        $response->assertValid();
+        $this->assertAuthenticated();
+        $response->assertRedirect(RouteServiceProvider::HOME);
+        $user = User::where('email', 'test@example.com')->firstOrFail();
+        $this->assertSame('Test User', $user->name);
+        $this->assertSame('UTC', $user->timezone);
+        Event::assertDispatched(NewsletterRegistered::class);
     }
 
     public function test_new_users_can_register_and_frontend_can_send_timezone_for_user(): void
