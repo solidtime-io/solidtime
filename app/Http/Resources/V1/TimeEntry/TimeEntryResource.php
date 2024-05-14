@@ -32,7 +32,7 @@ class TimeEntryResource extends BaseResource
              */
             'end' => $this->formatDateTime($this->resource->end),
             /** @var int|null $duration Duration of time entry in seconds */
-            'duration' => $this->resource->getDuration()?->seconds,
+            'duration' => (int) $this->resource->getDuration()?->totalSeconds,
             /** @var string|null $description Description of time entry */
             'description' => $this->resource->description,
             /** @var string|null $task_id ID of task */
