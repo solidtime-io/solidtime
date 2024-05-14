@@ -15,15 +15,21 @@ const form = useForm({
     password_confirmation: '',
     terms: false,
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone ?? null,
+    newsletter_consent: false,
 });
 
 const submit = () => {
     form.post(route('register'), {
-        onFinish: () => form.reset('password', 'password_confirmation'),
+        onSuccess: () => {
+            form.reset('password', 'password_confirmation');
+        },
     });
 };
 
 const page = usePage<{
+    terms_url: string | null;
+    privacy_policy_url: string | null;
+    newsletter_consent: boolean;
     jetstream: {
         hasTermsAndPrivacyPolicyFeature: boolean;
     };
@@ -111,34 +117,56 @@ const page = usePage<{
             </div>
 
             <div
-                v-if="page.props.jetstream.hasTermsAndPrivacyPolicyFeature"
+                v-if="
+                    page.props.jetstream.hasTermsAndPrivacyPolicyFeature &&
+                    page.props.terms_url !== null &&
+                    page.props.privacy_policy_url !== null
+                "
                 class="mt-4">
                 <InputLabel for="terms">
                     <div class="flex items-center">
                         <Checkbox
                             id="terms"
                             v-model:checked="form.terms"
-                            name="terms"
-                            required />
+                            name="terms" />
 
                         <div class="ms-2">
                             I agree to the
                             <a
                                 target="_blank"
-                                :href="route('terms.show')"
-                                class="underline text-sm text-muted hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                :href="page.props.terms_url"
+                                class="underline text-sm text-muted hover:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                                 >Terms of Service</a
                             >
                             and
                             <a
                                 target="_blank"
-                                :href="route('policy.show')"
-                                class="underline text-sm text-muted hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                :href="page.props.privacy_policy_url"
+                                class="underline text-sm text-muted hover:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                                 >Privacy Policy</a
                             >
                         </div>
                     </div>
                     <InputError class="mt-2" :message="form.errors.terms" />
+                </InputLabel>
+            </div>
+
+            <div class="mt-4" v-if="page.props.newsletter_consent">
+                <InputLabel for="newsletter_consent">
+                    <div class="flex items-center">
+                        <Checkbox
+                            id="newsletter_consent"
+                            v-model:checked="form.newsletter_consent"
+                            name="newsletter_consent" />
+
+                        <div class="ms-2">
+                            I agree to receive emails about product related
+                            updates
+                        </div>
+                    </div>
+                    <InputError
+                        class="mt-2"
+                        :message="form.errors.newsletter_consent" />
                 </InputLabel>
             </div>
 
