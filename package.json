@@ -41,7 +41,7 @@
         "@vue/eslint-config-prettier": "^9.0.0",
         "@vue/eslint-config-typescript": "^13.0.0",
         "@vueuse/core": "^10.9.0",
-        "dayjs": "^1.11.10",
+        "dayjs": "^1.11.11",
         "echarts": "^5.5.0",
         "parse-duration": "^1.1.0",
         "pinia": "^2.1.7",

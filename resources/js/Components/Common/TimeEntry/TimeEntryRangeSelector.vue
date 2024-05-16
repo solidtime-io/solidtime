@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import Dropdown from '@/Components/Dropdown.vue';
 import { defineProps, ref, watch } from 'vue';
-import { formatTime } from '@/utils/time';
+import { formatStartEnd } from '@/utils/time';
 import TimePicker from '@/Components/Common/TimePicker.vue';
 import { useFocusWithin } from '@vueuse/core';
 
@@ -10,13 +10,6 @@ const props = defineProps<{
     end: string | null;
 }>();
 
-function formatStartEnd(start: string, end: string | null) {
-    if (end) {
-        return `${formatTime(start)} - ${formatTime(end)}`;
-    } else {
-        return `${formatTime(start)} - ...`;
-    }
-}
 const emit = defineEmits(['changed']);
 const tempStart = ref(props.start);
 const tempEnd = ref(props.end || null);

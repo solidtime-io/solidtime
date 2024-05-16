@@ -1,41 +1,37 @@
 <script setup lang="ts">
 import MainContainer from '@/Pages/MainContainer.vue';
 import TimeTrackerStartStop from '@/Components/Common/TimeTrackerStartStop.vue';
-import TimeEntryRangeSelector from '@/Components/Common/TimeEntry/TimeEntryRangeSelector.vue';
 import type { TimeEntry } from '@/utils/api';
 import { storeToRefs } from 'pinia';
 import TimeEntryDescriptionInput from '@/Components/Common/TimeEntry/TimeEntryDescriptionInput.vue';
-import { useTimeEntriesStore } from '@/utils/useTimeEntries';
+import {
+    type TimeEntriesGroupedByType,
+    useTimeEntriesStore,
+} from '@/utils/useTimeEntries';
 import TimeEntryRowTagDropdown from '@/Components/Common/TimeEntry/TimeEntryRowTagDropdown.vue';
-import TimeEntryRowDurationInput from '@/Components/Common/TimeEntry/TimeEntryRowDurationInput.vue';
 import dayjs from 'dayjs';
 import { useCurrentTimeEntryStore } from '@/utils/useCurrentTimeEntry';
 import TimeEntryMoreOptionsDropdown from '@/Components/Common/TimeEntry/TimeEntryMoreOptionsDropdown.vue';
 import TimeTrackerProjectTaskDropdown from '@/Components/Common/TimeTracker/TimeTrackerProjectTaskDropdown.vue';
 import BillableToggleButton from '@/Components/Common/BillableToggleButton.vue';
+import { computed, ref } from 'vue';
+import { twMerge } from 'tailwind-merge';
+import {
+    formatHumanReadableDuration,
+    formatStartEnd,
+} from '../../../utils/time';
+import TimeEntryRow from '@/Components/Common/TimeEntry/TimeEntryRow.vue';
 
 const currentTimeEntryStore = useCurrentTimeEntryStore();
-const { stopTimer, updateTimer } = currentTimeEntryStore;
+const { stopTimer } = currentTimeEntryStore;
 const { currentTimeEntry } = storeToRefs(currentTimeEntryStore);
 
 const props = defineProps<{
-    timeEntry: TimeEntry;
-    indent?: boolean;
+    timeEntry: TimeEntriesGroupedByType;
 }>();
 
 const { updateTimeEntry, createTimeEntry, fetchTimeEntries } =
     useTimeEntriesStore();
-
-async function updateStartEndTime(start: string, end: string | null) {
-    if (currentTimeEntry.value.id === props.timeEntry.id) {
-        currentTimeEntry.value.start = start;
-        currentTimeEntry.value.end = end;
-        await updateTimer();
-    } else {
-        await updateTimeEntry({ ...props.timeEntry, start, end });
-    }
-    await fetchTimeEntries();
-}
 
 async function onStartStopClick() {
     if (props.timeEntry.start && !props.timeEntry.end) {
@@ -58,29 +54,58 @@ async function onStartStopClick() {
 }
 
 function deleteTimeEntry() {
-    useTimeEntriesStore().deleteTimeEntry(props.timeEntry.id);
+    const timeEntries = props.timeEntry.timeEntries;
+    timeEntries.forEach((entry) => {
+        useTimeEntriesStore().deleteTimeEntry(entry.id);
+    });
     fetchTimeEntries();
 }
 
 function updateTimeEntryDescription(description: string) {
-    updateTimeEntry({ ...props.timeEntry, description });
+    const timeEntries = props.timeEntry.timeEntries;
+    timeEntries.forEach((entry) => {
+        updateTimeEntry({ ...entry, description });
+        entry.description = description;
+    });
 }
 
 function updateTimeEntryTags(tags: string[]) {
-    updateTimeEntry({ ...props.timeEntry, tags });
+    const timeEntries = props.timeEntry.timeEntries as TimeEntry[];
+    timeEntries.forEach((entry) => {
+        updateTimeEntry({ ...entry, tags });
+        entry.tags = tags;
+    });
 }
 
 function updateTimeEntryBillable(billable: boolean) {
-    updateTimeEntry({ ...props.timeEntry, billable });
+    const timeEntries = props.timeEntry.timeEntries as TimeEntry[];
+    timeEntries.forEach((entry) => {
+        updateTimeEntry({ ...entry, billable });
+        entry.billable = billable;
+    });
 }
 
 function updateProjectAndTask(projectId: string, taskId: string) {
-    updateTimeEntry({
-        ...props.timeEntry,
-        project_id: projectId,
-        task_id: taskId,
+    const timeEntries = props.timeEntry.timeEntries as TimeEntry[];
+    timeEntries.forEach((entry) => {
+        updateTimeEntry({
+            ...entry,
+            project_id: projectId,
+            task_id: taskId,
+        });
+        entry.project_id = projectId;
+        entry.task_id = taskId;
     });
 }
+
+const expanded = ref(false);
+
+const expandedStatusClasses = computed(() => {
+    if (expanded.value) {
+        return 'border-card-border border bg-card-background-active text-white';
+    }
+    return 'border-card-border border bg-card-background text-muted';
+});
 </script>
 
 <template>
@@ -89,11 +114,22 @@ function updateProjectAndTask(projectId: string, taskId: string) {
         data-testid="time_entry_row">
         <MainContainer>
             <div class="sm:flex py-1.5 items-center justify-between group">
-                <div class="flex space-x-1 items-center">
+                <div class="flex space-x-3 items-center">
                     <input
                         type="checkbox"
                         class="h-4 w-4 rounded bg-card-background border-input-border text-accent-500/80 focus:ring-accent-500/80" />
-                    <div class="w-7 h-7" v-if="indent === true"></div>
+                    <button
+                        @click="expanded = !expanded"
+                        :class="
+                            twMerge(
+                                expandedStatusClasses,
+                                'font-medium w-7 h-7 rounded flex items-center transition justify-center'
+                            )
+                        ">
+                        <span>
+                            {{ timeEntry?.timeEntries?.length }}
+                        </span>
+                    </button>
                     <TimeEntryDescriptionInput
                         @changed="updateTimeEntryDescription"
                         class="flex-1"
@@ -119,19 +155,20 @@ function updateProjectAndTask(projectId: string, taskId: string) {
                             updateTimeEntryBillable
                         "></BillableToggleButton>
                     <div class="flex-1">
-                        <TimeEntryRangeSelector
-                            :start="timeEntry.start"
-                            :end="timeEntry.end"
-                            @changed="
-                                updateStartEndTime
-                            "></TimeEntryRangeSelector>
+                        <button
+                            @click="expanded = !expanded"
+                            class="text-muted w-[110px] px-2 py-2 bg-transparent text-center hover:bg-card-background rounded-lg border border-transparent hover:border-card-border text-sm font-medium">
+                            {{ formatStartEnd(timeEntry.start, timeEntry.end) }}
+                        </button>
                     </div>
-                    <TimeEntryRowDurationInput
-                        :start="timeEntry.start"
-                        :end="timeEntry.end"
-                        @changed="
-                            updateStartEndTime
-                        "></TimeEntryRowDurationInput>
+                    <button
+                        @click="expanded = !expanded"
+                        class="text-white w-[100px] px-3 py-2 bg-transparent text-center hover:bg-card-background rounded-lg border border-transparent hover:border-card-border text-sm font-semibold">
+                        {{
+                            formatHumanReadableDuration(timeEntry.duration ?? 0)
+                        }}
+                    </button>
+
                     <TimeTrackerStartStop
                         @changed="onStartStopClick"
                         :active="!!(timeEntry.start && !timeEntry.end)"
@@ -143,6 +180,15 @@ function updateProjectAndTask(projectId: string, taskId: string) {
                 </div>
             </div>
         </MainContainer>
+        <div
+            v-if="expanded"
+            class="w-full border-t border-default-background-separator bg-black/15">
+            <TimeEntryRow
+                indent
+                :key="subEntry.id"
+                v-for="subEntry in timeEntry.timeEntries"
+                :time-entry="subEntry"></TimeEntryRow>
+        </div>
     </div>
 </template>
 

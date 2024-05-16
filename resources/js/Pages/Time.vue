@@ -3,17 +3,21 @@ import AppLayout from '@/Layouts/AppLayout.vue';
 import TimeTracker from '@/Components/TimeTracker.vue';
 import { computed, onMounted, ref, watch } from 'vue';
 import MainContainer from '@/Pages/MainContainer.vue';
-import { useTimeEntriesStore } from '@/utils/useTimeEntries';
+import {
+    type TimeEntriesGroupedByType,
+    useTimeEntriesStore,
+} from '@/utils/useTimeEntries';
 import { storeToRefs } from 'pinia';
 import type { TimeEntry } from '@/utils/api';
 import TimeEntryRowHeading from '@/Components/Common/TimeEntry/TimeEntryRowHeading.vue';
 import TimeEntryRow from '@/Components/Common/TimeEntry/TimeEntryRow.vue';
 import { useElementVisibility } from '@vueuse/core';
 import { ClockIcon } from '@heroicons/vue/20/solid';
-import { getLocalizedDateFromTimestamp } from '@/utils/time';
+import { getDayJsInstance, getLocalizedDateFromTimestamp } from '@/utils/time';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import { PlusIcon } from '@heroicons/vue/16/solid';
 import TimeEntryCreateModal from '@/Components/Common/TimeEntry/TimeEntryCreateModal.vue';
+import TimeEntryAggregateRow from '@/Components/Common/TimeEntry/TimeEntryAggregateRow.vue';
 
 const timeEntriesStore = useTimeEntriesStore();
 const { timeEntries, allTimeEntriesLoaded } = storeToRefs(timeEntriesStore);
@@ -38,14 +42,67 @@ onMounted(async () => {
 });
 
 const groupedTimeEntries = computed(() => {
-    const groupedEntries: Record<string, TimeEntry[]> = {};
+    const groupedEntriesByDay: Record<string, TimeEntry[]> = {};
     for (const entry of timeEntries.value) {
         const oldEntries =
-            groupedEntries[getLocalizedDateFromTimestamp(entry.start)];
-        const newEntries = [...(oldEntries ?? []), entry];
-        groupedEntries[getLocalizedDateFromTimestamp(entry.start)] = newEntries;
+            groupedEntriesByDay[getLocalizedDateFromTimestamp(entry.start)];
+        groupedEntriesByDay[getLocalizedDateFromTimestamp(entry.start)] = [
+            ...(oldEntries ?? []),
+            entry,
+        ];
     }
-    return groupedEntries;
+    const groupedEntriesByDayAndType: Record<
+        string,
+        TimeEntriesGroupedByType[]
+    > = {};
+    for (const dailyEntriesKey in groupedEntriesByDay) {
+        const dailyEntries = groupedEntriesByDay[dailyEntriesKey];
+        const newDailyEntries: TimeEntriesGroupedByType[] = [];
+
+        for (const entry of dailyEntries) {
+            // check if same entry already exists
+            const oldEntriesIndex = newDailyEntries.findIndex(
+                (e) =>
+                    e.project_id === entry.project_id &&
+                    e.task_id === entry.task_id &&
+                    e.billable === entry.billable &&
+                    e.description === entry.description
+            );
+            console.log(oldEntriesIndex);
+            if (oldEntriesIndex !== -1 && newDailyEntries[oldEntriesIndex]) {
+                newDailyEntries[oldEntriesIndex].timeEntries.push(entry);
+
+                // Add up durations for time entries of the same type
+                console.log(newDailyEntries[oldEntriesIndex], entry?.duration);
+                newDailyEntries[oldEntriesIndex].duration =
+                    (newDailyEntries[oldEntriesIndex].duration ?? 0) +
+                    (entry?.duration ?? 0);
+
+                // adapt start end times so they show the earliest start and latest end time
+                if (
+                    getDayJsInstance()(entry.start).isBefore(
+                        getDayJsInstance()(
+                            newDailyEntries[oldEntriesIndex].start
+                        )
+                    )
+                ) {
+                    newDailyEntries[oldEntriesIndex].start = entry.start;
+                }
+                if (
+                    getDayJsInstance()(entry.end).isAfter(
+                        getDayJsInstance()(newDailyEntries[oldEntriesIndex].end)
+                    )
+                ) {
+                    newDailyEntries[oldEntriesIndex].end = entry.end;
+                }
+            } else {
+                newDailyEntries.push({ ...entry, timeEntries: [entry] });
+            }
+        }
+
+        groupedEntriesByDayAndType[dailyEntriesKey] = newDailyEntries;
+    }
+    return groupedEntriesByDayAndType;
 });
 const showManualTimeEntryModal = ref(false);
 </script>
@@ -66,17 +123,21 @@ const showManualTimeEntryModal = ref(false);
                         class="w-full text-center flex justify-center"
                         @click="showManualTimeEntryModal = true"
                         :icon="PlusIcon"
-                        >Manual time entry</SecondaryButton
-                    >
+                        >Manual time entry
+                    </SecondaryButton>
                 </div>
             </div>
         </MainContainer>
         <div v-for="(value, key) in groupedTimeEntries" :key="key">
             <TimeEntryRowHeading :date="key"></TimeEntryRowHeading>
-            <TimeEntryRow
-                :key="entry.id"
-                v-for="entry in value"
-                :time-entry="entry"></TimeEntryRow>
+            <template v-for="entry in value" :key="entry.id">
+                <TimeEntryAggregateRow
+                    v-if="
+                        'timeEntries' in entry && entry.timeEntries.length > 1
+                    "
+                    :time-entry="entry"></TimeEntryAggregateRow>
+                <TimeEntryRow v-else :time-entry="entry"></TimeEntryRow>
+            </template>
         </div>
         <div
             v-if="Object.keys(groupedTimeEntries).length === 0"

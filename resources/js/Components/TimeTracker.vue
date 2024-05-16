@@ -194,7 +194,7 @@ function switchToTimeEntryOrganization() {
                         v-model="currentTimeEntry.description"
                         @keydown.enter="startTimerIfNotActive"
                         @blur="updateTimeEntry"
-                        class="w-full rounded-l-lg py-2.5 px-3 border-b border-b-card-background-separator sm:px-4 text-sm sm:text-lg text-white focus:bg-card-background-active font-medium bg-transparent border-none placeholder-muted focus:ring-0 transition"
+                        class="w-full rounded-l-lg py-4 sm:py-2.5 px-3 border-b border-b-card-background-separator sm:px-4 text-base sm:text-lg text-white focus:bg-card-background-active font-medium bg-transparent border-none placeholder-muted focus:ring-0 transition"
                         type="text" />
                 </div>
                 <div class="flex items-center justify-between pl-2">

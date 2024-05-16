@@ -4,7 +4,9 @@ const emit = defineEmits(['changed']);
 
 function onChange(event: Event) {
     const target = event.target as HTMLInputElement;
-    emit('changed', target.value);
+    if (target.value !== value.value) {
+        emit('changed', target.value);
+    }
 }
 </script>
 
@@ -13,7 +15,7 @@ function onChange(event: Event) {
         <label class="input-sizer text-sm font-medium" :data-value="value">
             <input
                 data-testid="time_entry_description"
-                v-model="value"
+                :value="value"
                 @blur="onChange"
                 @keydown.enter="onChange"
                 placeholder="Add a description"

@@ -87,3 +87,11 @@ export function formatHumanReadableDate(date: string) {
     }
     return dayjs(date).fromNow();
 }
+
+export function formatStartEnd(start: string, end: string | null) {
+    if (end) {
+        return `${formatTime(start)} - ${formatTime(end)}`;
+    } else {
+        return `${formatTime(start)} - ...`;
+    }
+}

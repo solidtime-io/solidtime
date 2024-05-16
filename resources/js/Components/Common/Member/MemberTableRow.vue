@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { Member } from '@/utils/api';
 import { CheckCircleIcon, UserCircleIcon } from '@heroicons/vue/20/solid';
-import { useClientsStore } from '@/utils/useClients';
 import MemberMoreOptionsDropdown from '@/Components/Common/Member/MemberMoreOptionsDropdown.vue';
 import TableRow from '@/Components/TableRow.vue';
 import { capitalizeFirstLetter } from '../../../utils/format';
@@ -10,13 +9,14 @@ import { api } from '../../../../../openapi.json.client';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import { useNotificationsStore } from '@/utils/notification';
 import { canInvitePlaceholderMembers } from '@/utils/permissions';
+import { useMembersStore } from '@/utils/useMembers';
 
 const props = defineProps<{
     member: Member;
 }>();
 
 function removeMember() {
-    useClientsStore().deleteClient(props.member.id);
+    useMembersStore().removeMember(props.member.id);
 }
 
 async function invitePlaceholder(id: string) {

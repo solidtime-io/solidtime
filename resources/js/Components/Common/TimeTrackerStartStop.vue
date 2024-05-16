@@ -16,11 +16,11 @@ const props = withDefaults(
 );
 const buttonSizeClasses = {
     base: 'w-8 h-8 bg-accent-200/40 hover:scale-110 hover:bg-accent-300/70 ring-accent-200/10 focus:ring-accent-200/10 hover:ring-4',
-    large: 'w-8 sm:w-11 h-8 sm:h-11 ring-accent-200/10 focus:ring-accent-200/20 ring-4 sm:ring-8 hover:scale-110',
+    large: 'w-11 h-11 ring-accent-200/10 focus:ring-accent-200/20 ring-4 sm:ring-8 hover:scale-110',
 };
 const iconClass = {
     base: 'w-3.5 h-3.5',
-    large: 'w-3.5 h-3.5 sm:w-4 sm:h-4',
+    large: 'w-4 h-4',
 };
 
 const buttonColorClasses = computed(() => {

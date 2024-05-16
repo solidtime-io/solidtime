@@ -5,6 +5,7 @@ import { reactive, ref } from 'vue';
 import type { CreateTimeEntryBody, TimeEntry } from '@/utils/api';
 import dayjs from 'dayjs';
 import { useNotificationsStore } from '@/utils/notification';
+export type TimeEntriesGroupedByType = TimeEntry & { timeEntries: TimeEntry[] };
 
 export const useTimeEntriesStore = defineStore('timeEntries', () => {
     const timeEntries = ref<TimeEntry[]>(reactive([]));
