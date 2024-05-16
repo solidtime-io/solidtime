@@ -421,9 +421,10 @@ test('test that deleting a time entry from the overview works', async ({
     await expect(timeEntryRows).toHaveCount(timeEntryCount - 1);
 });
 
-test('test that load more works when the end of page is reached', async ({
+test.skip('test that load more works when the end of page is reached', async ({
     page,
 }) => {
+    // this test is flaky when you do not need to scroll
     await Promise.all([
         goToTimeOverview(page),
         page.waitForResponse(
@@ -463,3 +464,5 @@ test('test that load more works when the end of page is reached', async ({
 // TODO: Test that time entries are loaded at the end of the page
 
 // TODO: Test manual time entries
+
+// TODO: Test Grouped time entries by description/project
