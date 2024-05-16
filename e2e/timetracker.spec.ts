@@ -36,6 +36,7 @@ test('test that starting and stopping a timer with a description works', async (
 }) => {
     await goToDashboard(page);
     // TODO: Fix flakyness by disabling description input field until timer is loaded
+    await page.waitForTimeout(500);
     await page
         .getByTestId('time_entry_description')
         .fill('New Time Entry Description');

@@ -8,18 +8,11 @@ const props = withDefaults(
     defineProps<{
         align: Placement;
         width: string;
-        contentClasses?: string[];
         closeOnContentClick: boolean;
     }>(),
     {
         align: 'bottom-start',
         width: '48',
-        contentClasses: () => [
-            'overflow-none',
-            'bg-card-background',
-            'border',
-            'border-card-border',
-        ],
         closeOnContentClick: true,
     }
 );
@@ -101,8 +94,7 @@ const { floatingStyles } = useFloating(reference, floating, {
                     leave-to-class="transform opacity-0 scale-95">
                     <div
                         v-if="open"
-                        class="rounded-lg ring-1 relative ring-black ring-opacity-5"
-                        :class="contentClasses">
+                        class="rounded-lg ring-1 relative ring-black ring-opacity-5 border border-card-border overflow-none bg-card-background shadow-lg">
                         <slot name="content" />
                     </div>
                 </transition>

@@ -54,28 +54,43 @@ withDefaults(
 );
 
 const filteredProjects = computed(() => {
-    return projects.value.reduce((filtered: ProjectWithTasks[], project) => {
-        const projectNameIncludesSearchTerm = project.name
-            .toLowerCase()
-            .includes(searchValue.value?.toLowerCase()?.trim() || '');
-
-        // check if one of the project tasks
-        const projectTasks = tasks.value.filter((task) => {
-            return task.project_id === project.id;
-        });
-
-        const filteredTasks = projectTasks.filter((task) => {
-            return task.name
+    return projects.value.reduce(
+        (filtered: ProjectWithTasks[], project) => {
+            const projectNameIncludesSearchTerm = project.name
                 .toLowerCase()
                 .includes(searchValue.value?.toLowerCase()?.trim() || '');
-        });
 
-        if (projectNameIncludesSearchTerm || filteredTasks.length > 0) {
-            filtered.push({ project: project, tasks: filteredTasks });
-        }
+            // check if one of the project tasks
+            const projectTasks = tasks.value.filter((task) => {
+                return task.project_id === project.id;
+            });
 
-        return filtered;
-    }, []);
+            const filteredTasks = projectTasks.filter((task) => {
+                return task.name
+                    .toLowerCase()
+                    .includes(searchValue.value?.toLowerCase()?.trim() || '');
+            });
+
+            if (projectNameIncludesSearchTerm || filteredTasks.length > 0) {
+                filtered.push({ project: project, tasks: filteredTasks });
+            }
+
+            return filtered;
+        },
+        [
+            {
+                project: {
+                    id: '',
+                    name: 'No Project',
+                    color: 'var(--theme-color-icon-default)',
+                    value: '',
+                    client_id: null,
+                    billable_rate: null,
+                },
+                tasks: [],
+            },
+        ]
+    );
 });
 
 async function addClientIfNoneExists() {

@@ -7,6 +7,7 @@ async function registerNewUser(page, email, password) {
     await page.getByLabel('Email').fill(email);
     await page.getByLabel('Password', { exact: true }).fill(password);
     await page.getByLabel('Confirm Password').fill(password);
+    await page.getByLabel('I agree to the Terms of').click();
     await page.getByRole('button', { name: 'Register' }).click();
     await expect(page.getByTestId('dashboard_view')).toBeVisible();
 }

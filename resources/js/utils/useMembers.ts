@@ -24,9 +24,29 @@ export const useMembersStore = defineStore('members', () => {
         }
     }
 
+    async function removeMember(membershipId: string) {
+        const organization = getCurrentOrganizationId();
+        if (organization) {
+            await handleApiRequestNotifications(
+                api.removeMember(
+                    {},
+                    {
+                        params: {
+                            organization: organization,
+                            membership: membershipId,
+                        },
+                    }
+                ),
+                'Member deleted successfully',
+                'Failed to delete member'
+            );
+            await fetchMembers();
+        }
+    }
+
     const members = computed<Member[]>(() => {
         return membersResponse.value?.data || [];
     });
 
-    return { members, fetchMembers };
+    return { members, fetchMembers, removeMember };
 });
