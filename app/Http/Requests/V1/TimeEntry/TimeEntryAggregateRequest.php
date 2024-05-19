@@ -110,18 +110,18 @@ class TimeEntryAggregateRequest extends FormRequest
                     return $builder->visibleByUser(Auth::user());
                 }),
             ],
-            // Filter only time entries that have a start date before (not including) the given date (example: 2021-12-31)
+            // Filter only time entries that have a start date before the given timestamp in UTC (example: 2021-01-01T00:00:00Z)
             'before' => [
                 'nullable',
                 'string',
                 'date_format:Y-m-d\TH:i:s\Z',
-                'before:after',
             ],
-            // Filter only time entries that have a start date after (not including) the given date (example: 2021-12-31)
+            // Filter only time entries that have a start date after the given timestamp in UTC (example: 2021-01-01T00:00:00Z)
             'after' => [
                 'nullable',
                 'string',
                 'date_format:Y-m-d\TH:i:s\Z',
+                'before:before',
             ],
             // Filter by active status (active means has no end date, is still running)
             'active' => [
