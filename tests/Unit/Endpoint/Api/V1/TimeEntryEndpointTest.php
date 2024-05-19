@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Tests\Unit\Endpoint\Api\V1;
 
 use App\Enums\Role;
+use App\Exceptions\Api\TimeEntryCanNotBeRestartedApiException;
 use App\Models\Member;
 use App\Models\Project;
+use App\Models\Task;
 use App\Models\TimeEntry;
 use App\Models\User;
 use Carbon\Carbon;
@@ -860,6 +862,32 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         ]);
     }
 
+    public function test_update_endpoint_fails_if_user_tries_to_reactivate_a_time_entry(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:update:own',
+        ]);
+        $timeEntry = TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)->create();
+        $timeEntryFake = TimeEntry::factory()->forOrganization($data->organization)->make();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.time-entries.update', [$data->organization->getKey(), $timeEntry->getKey()]), [
+            'description' => $timeEntryFake->description,
+            'start' => $timeEntryFake->start->toIso8601ZuluString(),
+            'end' => null,
+            'tags' => $timeEntryFake->tags,
+            'member_id' => $data->member->getKey(),
+            'task_id' => $timeEntryFake->task_id,
+        ]);
+
+        // Assert
+        $response->assertStatus(400);
+        $response->assertJsonPath('error', true);
+        $response->assertJsonPath('message', __('exceptions.api.'.TimeEntryCanNotBeRestartedApiException::KEY));
+    }
+
     public function test_update_endpoint_updates_time_entry_of_other_user_in_organization(): void
     {
         // Arrange
@@ -997,6 +1025,330 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         $response->assertNoContent();
         $this->assertDatabaseMissing(TimeEntry::class, [
             'id' => $timeEntry->getKey(),
+        ]);
+    }
+
+    public function test_update_multiple_endpoint_fails_if_user_has_no_permission_to_update_own_time_entries_or_all_time_entries(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission();
+        $timeEntries = TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)->createMany(3);
+        $timeEntriesFake = TimeEntry::factory()->forOrganization($data->organization)->make();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->patchJson(route('api.v1.time-entries.update-multiple', [$data->organization->getKey()]), [
+            'ids' => $timeEntries->pluck('id')->toArray(),
+            'changes' => [
+                'description' => $timeEntriesFake->description,
+            ],
+        ]);
+
+        // Assert
+        $response->assertValid();
+        $response->assertForbidden();
+    }
+
+    public function test_update_multiple_updates_own_time_entries_and_fails_for_time_entries_of_other_users_and_and_other_organizations_with_own_time_entries_permission(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:update:own',
+        ]);
+        $otherData = $this->createUserWithPermission();
+        $otherUser = User::factory()->create();
+        $otherMember = Member::factory()->forOrganization($data->organization)->forUser($otherUser)->role(Role::Employee)->create();
+
+        $ownTimeEntry = TimeEntry::factory()->forMember($data->member)->create();
+        $otherTimeEntry = TimeEntry::factory()->forMember($otherMember)->create();
+        $otherOrganizationTimeEntry = TimeEntry::factory()->forMember($otherData->member)->create();
+        $timeEntriesFake = TimeEntry::factory()->forOrganization($data->organization)->make();
+        $wrongId = Str::uuid();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->patchJson(route('api.v1.time-entries.update-multiple', [$data->organization->getKey()]), [
+            'ids' => [
+                $ownTimeEntry->getKey(),
+                $otherTimeEntry->getKey(),
+                $otherOrganizationTimeEntry->getKey(),
+                $wrongId,
+            ],
+            'changes' => [
+                'description' => $timeEntriesFake->description,
+            ],
+        ]);
+
+        // Assert
+        $response->assertValid();
+        $response->assertStatus(200);
+        $response->assertExactJson([
+            'success' => [
+                $ownTimeEntry->getKey(),
+            ],
+            'error' => [
+                $otherTimeEntry->getKey(),
+                $otherOrganizationTimeEntry->getKey(),
+                $wrongId,
+            ],
+        ]);
+        $this->assertDatabaseHas(TimeEntry::class, [
+            'id' => $ownTimeEntry->getKey(),
+            'description' => $timeEntriesFake->description,
+        ]);
+        $this->assertDatabaseHas(TimeEntry::class, [
+            'id' => $otherOrganizationTimeEntry->getKey(),
+            'description' => $otherOrganizationTimeEntry->description,
+        ]);
+        $this->assertDatabaseHas(TimeEntry::class, [
+            'id' => $otherTimeEntry->getKey(),
+            'description' => $otherTimeEntry->description,
+        ]);
+    }
+
+    public function test_update_multiple_updates_own_time_entries_and_fails_for_time_entries_of_other_users_and_and_other_organizations_with_own_time_entries_permission_and_full_changeset(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:update:own',
+        ]);
+        $otherData = $this->createUserWithPermission();
+        $otherUser = User::factory()->create();
+        $otherMember = Member::factory()->forOrganization($data->organization)->forUser($otherUser)->role(Role::Employee)->create();
+
+        $ownTimeEntry = TimeEntry::factory()->forMember($data->member)->create();
+        $otherTimeEntry = TimeEntry::factory()->forMember($otherMember)->create();
+        $otherOrganizationTimeEntry = TimeEntry::factory()->forMember($otherData->member)->create();
+        $timeEntriesFake = TimeEntry::factory()->forOrganization($data->organization)->withTags($data->organization)->make();
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        $task = Task::factory()->forProject($project)->forOrganization($data->organization)->create();
+        $wrongId = Str::uuid();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->patchJson(route('api.v1.time-entries.update-multiple', [$data->organization->getKey()]), [
+            'ids' => [
+                $ownTimeEntry->getKey(),
+                $otherTimeEntry->getKey(),
+                $otherOrganizationTimeEntry->getKey(),
+                $wrongId,
+            ],
+            'changes' => [
+                'member_id' => $data->member->getKey(),
+                'project_id' => $project->getKey(),
+                'task_id' => $task->getKey(),
+                'billable' => $timeEntriesFake->billable,
+                'description' => $timeEntriesFake->description,
+                'tags' => $timeEntriesFake->tags,
+            ],
+        ]);
+
+        // Assert
+        $response->assertValid();
+        $response->assertStatus(200);
+        $response->assertExactJson([
+            'success' => [
+                $ownTimeEntry->getKey(),
+            ],
+            'error' => [
+                $otherTimeEntry->getKey(),
+                $otherOrganizationTimeEntry->getKey(),
+                $wrongId,
+            ],
+        ]);
+        $this->assertDatabaseHas(TimeEntry::class, [
+            'id' => $ownTimeEntry->getKey(),
+            'member_id' => $data->member->getKey(),
+            'project_id' => $project->getKey(),
+            'task_id' => $task->getKey(),
+            'billable' => $timeEntriesFake->billable,
+            'description' => $timeEntriesFake->description,
+            'tags' => json_encode($timeEntriesFake->tags),
+        ]);
+        $this->assertDatabaseHas(TimeEntry::class, [
+            'id' => $otherOrganizationTimeEntry->getKey(),
+            'member_id' => $otherOrganizationTimeEntry->member_id,
+            'project_id' => $otherOrganizationTimeEntry->project_id,
+            'task_id' => $otherOrganizationTimeEntry->task_id,
+            'billable' => $otherOrganizationTimeEntry->billable,
+            'description' => $otherOrganizationTimeEntry->description,
+            'tags' => json_encode($otherOrganizationTimeEntry->tags),
+        ]);
+        $this->assertDatabaseHas(TimeEntry::class, [
+            'id' => $otherTimeEntry->getKey(),
+            'member_id' => $otherTimeEntry->member_id,
+            'project_id' => $otherTimeEntry->project_id,
+            'task_id' => $otherTimeEntry->task_id,
+            'billable' => $otherTimeEntry->billable,
+            'description' => $otherTimeEntry->description,
+            'tags' => json_encode($otherTimeEntry->tags),
+        ]);
+    }
+
+    public function test_update_multiple_updates_all_time_entries_and_fails_for_time_entries_of_other_users_and_and_other_organizations_with_all_time_entries_permission(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:update:all',
+        ]);
+        $otherData = $this->createUserWithPermission();
+        $otherUser = User::factory()->create();
+        $otherMember = Member::factory()->forOrganization($data->organization)->forUser($otherUser)->role(Role::Employee)->create();
+
+        $ownTimeEntry = TimeEntry::factory()->forMember($data->member)->create();
+        $otherTimeEntry = TimeEntry::factory()->forMember($otherMember)->create();
+        $otherOrganizationTimeEntry = TimeEntry::factory()->forMember($otherData->member)->create();
+        $timeEntriesFake = TimeEntry::factory()->forOrganization($data->organization)->make();
+        $wrongId = Str::uuid();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->patchJson(route('api.v1.time-entries.update-multiple', [$data->organization->getKey()]), [
+            'ids' => [
+                $ownTimeEntry->getKey(),
+                $otherTimeEntry->getKey(),
+                $otherOrganizationTimeEntry->getKey(),
+                $wrongId,
+            ],
+            'changes' => [
+                'description' => $timeEntriesFake->description,
+            ],
+        ]);
+
+        // Assert
+        $response->assertValid();
+        $response->assertStatus(200);
+        $response->assertExactJson([
+            'success' => [
+                $ownTimeEntry->getKey(),
+                $otherTimeEntry->getKey(),
+            ],
+            'error' => [
+                $otherOrganizationTimeEntry->getKey(),
+                $wrongId,
+            ],
+        ]);
+        $this->assertDatabaseHas(TimeEntry::class, [
+            'id' => $ownTimeEntry->getKey(),
+            'description' => $timeEntriesFake->description,
+        ]);
+        $this->assertDatabaseHas(TimeEntry::class, [
+            'id' => $otherOrganizationTimeEntry->getKey(),
+            'description' => $otherOrganizationTimeEntry->description,
+        ]);
+        $this->assertDatabaseHas(TimeEntry::class, [
+            'id' => $otherTimeEntry->getKey(),
+            'description' => $timeEntriesFake->description,
+        ]);
+    }
+
+    public function test_update_multiple_updates_all_time_entries_and_fails_for_time_entries_of_other_users_and_and_other_organizations_with_all_time_entries_permission_and_full_changeset(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:update:all',
+        ]);
+        $otherData = $this->createUserWithPermission();
+        $otherUser = User::factory()->create();
+        $otherMember = Member::factory()->forOrganization($data->organization)->forUser($otherUser)->role(Role::Employee)->create();
+
+        $ownTimeEntry = TimeEntry::factory()->forMember($data->member)->create();
+        $otherTimeEntry = TimeEntry::factory()->forMember($otherMember)->create();
+        $otherOrganizationTimeEntry = TimeEntry::factory()->forMember($otherData->member)->create();
+        $timeEntriesFake = TimeEntry::factory()->forOrganization($data->organization)->withTags($data->organization)->make();
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        $task = Task::factory()->forProject($project)->forOrganization($data->organization)->create();
+        $wrongId = Str::uuid();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->patchJson(route('api.v1.time-entries.update-multiple', [$data->organization->getKey()]), [
+            'ids' => [
+                $ownTimeEntry->getKey(),
+                $otherTimeEntry->getKey(),
+                $otherOrganizationTimeEntry->getKey(),
+                $wrongId,
+            ],
+            'changes' => [
+                'member_id' => $otherMember->getKey(),
+                'project_id' => $project->getKey(),
+                'task_id' => $task->getKey(),
+                'billable' => $timeEntriesFake->billable,
+                'description' => $timeEntriesFake->description,
+                'tags' => $timeEntriesFake->tags,
+            ],
+        ]);
+
+        // Assert
+        $response->assertValid();
+        $response->assertStatus(200);
+        $response->assertExactJson([
+            'success' => [
+                $ownTimeEntry->getKey(),
+                $otherTimeEntry->getKey(),
+            ],
+            'error' => [
+                $otherOrganizationTimeEntry->getKey(),
+                $wrongId,
+            ],
+        ]);
+        $this->assertDatabaseHas(TimeEntry::class, [
+            'id' => $ownTimeEntry->getKey(),
+            'member_id' => $otherMember->getKey(),
+            'project_id' => $project->getKey(),
+            'task_id' => $task->getKey(),
+            'billable' => $timeEntriesFake->billable,
+            'description' => $timeEntriesFake->description,
+            'tags' => json_encode($timeEntriesFake->tags),
+        ]);
+        $this->assertDatabaseHas(TimeEntry::class, [
+            'id' => $otherOrganizationTimeEntry->getKey(),
+            'member_id' => $otherOrganizationTimeEntry->member_id,
+            'project_id' => $otherOrganizationTimeEntry->project_id,
+            'task_id' => $otherOrganizationTimeEntry->task_id,
+            'billable' => $otherOrganizationTimeEntry->billable,
+            'description' => $otherOrganizationTimeEntry->description,
+            'tags' => json_encode($otherOrganizationTimeEntry->tags),
+        ]);
+        $this->assertDatabaseHas(TimeEntry::class, [
+            'id' => $otherTimeEntry->getKey(),
+            'member_id' => $otherMember->getKey(),
+            'project_id' => $project->getKey(),
+            'task_id' => $task->getKey(),
+            'billable' => $timeEntriesFake->billable,
+            'description' => $timeEntriesFake->description,
+            'tags' => json_encode($timeEntriesFake->tags),
+        ]);
+    }
+
+    public function test_update_multiple_updates_own_time_entries_fails_if_member_id_is_not_your_own_and_you_dont_have_update_all_permission(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:update:own',
+        ]);
+        $otherUser = User::factory()->create();
+        $otherMember = Member::factory()->forOrganization($data->organization)->forUser($otherUser)->role(Role::Employee)->create();
+
+        $ownTimeEntry = TimeEntry::factory()->forMember($data->member)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->patchJson(route('api.v1.time-entries.update-multiple', [$data->organization->getKey()]), [
+            'ids' => [
+                $ownTimeEntry->getKey(),
+            ],
+            'changes' => [
+                'member_id' => $otherMember->getKey(),
+            ],
+        ]);
+
+        // Assert
+        $response->assertValid();
+        $response->assertStatus(403);
+        $this->assertDatabaseHas(TimeEntry::class, [
+            'id' => $ownTimeEntry->getKey(),
+            'member_id' => $ownTimeEntry->member_id,
         ]);
     }
 }

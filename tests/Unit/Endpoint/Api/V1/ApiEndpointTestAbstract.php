@@ -8,6 +8,7 @@ use App\Models\Member;
 use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use Laravel\Jetstream\Jetstream;
 use Tests\TestCase;
 
@@ -19,9 +20,10 @@ class ApiEndpointTestAbstract extends TestCase
      * @param  array<string>  $permissions
      * @return object{user: User, organization: Organization, member: Member}
      */
-    protected function createUserWithPermission(array $permissions, bool $isOwner = false): object
+    protected function createUserWithPermission(array $permissions = [], bool $isOwner = false): object
     {
-        Jetstream::role('custom-test', 'Custom Test', $permissions)
+        $roleName = 'custom-test-'.Str::uuid();
+        Jetstream::role($roleName, 'Custom Test', $permissions)
             ->description('Role custom for testing');
         $user = User::factory()->create();
         if ($isOwner) {
@@ -30,7 +32,7 @@ class ApiEndpointTestAbstract extends TestCase
             $organization = Organization::factory()->create();
         }
         $member = Member::factory()->forUser($user)->forOrganization($organization)->create([
-            'role' => 'custom-test',
+            'role' => $roleName,
         ]);
 
         return (object) [

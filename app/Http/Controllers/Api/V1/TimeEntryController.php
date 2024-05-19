@@ -10,6 +10,7 @@ use App\Exceptions\Api\TimeEntryStillRunningApiException;
 use App\Http\Requests\V1\TimeEntry\TimeEntryAggregateRequest;
 use App\Http\Requests\V1\TimeEntry\TimeEntryIndexRequest;
 use App\Http\Requests\V1\TimeEntry\TimeEntryStoreRequest;
+use App\Http\Requests\V1\TimeEntry\TimeEntryUpdateMultipleRequest;
 use App\Http\Requests\V1\TimeEntry\TimeEntryUpdateRequest;
 use App\Http\Resources\V1\TimeEntry\TimeEntryCollection;
 use App\Http\Resources\V1\TimeEntry\TimeEntryResource;
@@ -357,6 +358,56 @@ class TimeEntryController extends Controller
         $timeEntry->save();
 
         return new TimeEntryResource($timeEntry);
+    }
+
+    /**
+     * @throws AuthorizationException
+     */
+    public function updateMultiple(Organization $organization, TimeEntryUpdateMultipleRequest $request): JsonResponse
+    {
+        $this->checkAnyPermission($organization, ['time-entries:update:all', 'time-entries:update:own']);
+        $canAccessAll = $this->hasPermission($organization, 'time-entries:update:all');
+
+        $ids = $request->get('ids');
+
+        $timeEntries = TimeEntry::query()
+            ->whereBelongsTo($organization, 'organization')
+            ->whereIn('id', $ids)
+            ->get();
+
+        $changes = $request->get('changes');
+
+        if (isset($changes['member_id']) && ! $canAccessAll && $this->member($organization)->getKey() !== $changes['member_id']) {
+            throw new AuthorizationException();
+        }
+
+        $success = new Collection();
+        $error = new Collection();
+
+        foreach ($ids as $id) {
+            $timeEntry = $timeEntries->firstWhere('id', $id);
+            if ($timeEntry === null) {
+                // Note: ID wrong or time entry in different organization
+                $error->push($id);
+
+                continue;
+            }
+            if (! $canAccessAll && $timeEntry->user_id !== Auth::id()) {
+                $error->push($id);
+
+                continue;
+
+            }
+
+            $timeEntry->fill($changes);
+            $timeEntry->save();
+            $success->push($id);
+        }
+
+        return response()->json([
+            'success' => $success->toArray(),
+            'error' => $error->toArray(),
+        ]);
     }
 
     /**
