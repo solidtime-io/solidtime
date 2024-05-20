@@ -28,7 +28,7 @@ function updateValue(event: Event) {
 <template>
     <input
         ref="input"
-        class="border-input-border bg-input-background text-white focus:border-input-border-active rounded-md shadow-sm"
+        class="border-input-border border bg-input-background text-white focus:ring-input-border-active focus:ring-0 focus-visible:border-input-border-active rounded-md shadow-sm"
         :value="modelValue"
         :name="name"
         @input="updateValue" />

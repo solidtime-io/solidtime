@@ -18,7 +18,7 @@ const props = defineProps<{
 }>();
 
 const projectMember = ref<CreateProjectMemberBody>({
-    user_id: '',
+    member_id: '',
     billable_rate: null,
 });
 
@@ -26,7 +26,7 @@ async function submit() {
     await createProjectMember(props.projectId, projectMember.value);
     show.value = false;
     projectMember.value = {
-        user_id: '',
+        member_id: '',
         billable_rate: null,
     };
 }
@@ -49,10 +49,11 @@ useFocus(projectNameInput, { initialValue: true });
                 <div class="col-span-3 sm:col-span-2">
                     <MemberCombobox
                         :hidden-members="props.existingMembers"
-                        v-model="projectMember.user_id"></MemberCombobox>
+                        v-model="projectMember.member_id"></MemberCombobox>
                 </div>
                 <div class="col-span-3 sm:col-span-1 flex-1">
                     <BillableRateInput
+                        name="billable_rate"
                         v-model="
                             projectMember.billable_rate
                         "></BillableRateInput>

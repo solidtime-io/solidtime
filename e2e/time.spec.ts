@@ -57,7 +57,7 @@ test('test that starting and stopping an empty time entry shows a new time entry
 
 async function assertThatTimeEntryRowIsStopped(newTimeEntry: Locator) {
     await expect(newTimeEntry.getByTestId('timer_button')).toHaveClass(
-        /bg-accent-300\/50/
+        /bg-accent-300\/70/
     );
 }
 
@@ -297,7 +297,7 @@ test('test that stopping a time entry from the overview works', async ({
     ]);
 
     await expect(newTimeEntry.getByTestId('timer_button')).toHaveClass(
-        /bg-accent-300\/50/
+        /bg-accent-300\/70/
     );
 });
 
@@ -311,7 +311,7 @@ test('test that starting a time entry from the overview works', async ({
 
     const newTimeEntry = timeEntryRows.first();
     const startButton = newTimeEntry.getByTestId('timer_button');
-    await expect(startButton).toHaveClass(/bg-accent-300\/50/);
+    await expect(startButton).toHaveClass(/bg-accent-300\/70/);
 
     await Promise.all([
         page.waitForResponse(async (response) => {
@@ -341,7 +341,7 @@ test('test that starting a time entry from the overview works', async ({
             );
         }),
         startOrStopTimerWithButton(page),
-        expect(startButton).toHaveClass(/bg-accent-300\/50/),
+        expect(startButton).toHaveClass(/bg-accent-300\/70/),
     ]);
 });
 
@@ -401,7 +401,7 @@ test('test that updating a the duration in the overview for a running timer work
             );
         }),
         startOrStopTimerWithButton(page),
-        expect(startButton).toHaveClass(/bg-accent-300\/50/),
+        expect(startButton).toHaveClass(/bg-accent-300\/70/),
     ]);
 });
 

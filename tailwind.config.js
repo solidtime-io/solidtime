@@ -2,7 +2,7 @@ import defaultTheme from 'tailwindcss/defaultTheme';
 import forms from '@tailwindcss/forms';
 import typography from '@tailwindcss/typography';
 
-/** @type {import('tailwindcss').Config} */
+/** @type {import("tailwindcss").Config} */
 export default {
     content: [
         './vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php',
@@ -11,9 +11,12 @@ export default {
         './resources/views/**/*.blade.php',
         './resources/js/**/*.vue',
     ],
-
     theme: {
         extend: {
+            boxShadow: {
+                'card': '0 4px 7px 0px rgb(0 0 0 / 30%)',
+                'dropdown': '0 4px 7px 0px rgb(0 0 0 / 40%)',
+            },
             containers: {
                 '2xs': '16rem',
             },
@@ -21,27 +24,38 @@ export default {
                 sans: ['Outfit', ...defaultTheme.fontFamily.sans],
             },
             colors: {
-                'white': '#D9DCFB',
+                'primary': 'var(--color-bg-primary)',
+                'secondary': 'var(--color-bg-secondary)',
+                'tertiary': 'var(--color-bg-tertiary)',
+                'quaternary': 'var(--color-bg-quaternary)',
+                'text-primary': 'var(--color-text-primary)',
+                'text-secondary': 'var(--color-text-secondary)',
+                'text-tertiary': 'var(--color-text-tertiary)',
+                'text-quaternary': 'var(--color-text-quaternary)',
+                'border-primary': 'var(--color-border-primary)',
+                'border-secondary': 'var(--color-border-secondary)',
+                'border-tertiary': 'var(--color-border-tertiary)',
                 'default-background': 'var(--theme-color-default-background)',
-                'default-background-separator': '#13152B',
+                'default-background-separator':
+                    'var(--theme-color-default-background-separator)',
                 'card-background': 'var(--theme-color-card-background)',
                 'card-background-active':
                     'var(--theme-color-card-background-active)',
-                'card-background-separator': '#262A51',
+                'card-background-separator':
+                    'var(--theme-color-card-background-separator)',
                 'card-border': 'var(--theme-color-card-border)',
                 'card-border-active': 'var(--theme-color-card-border-active)',
-                'muted': '#8F93B7',
+                'muted': 'var(--theme-color-muted-text)',
                 'icon-default': 'var(--theme-color-icon-default)',
                 'tab-background': 'var(--theme-color-tab-background)',
                 'tab-background-active':
                     'var(--theme-color-tab-background-active)',
                 'tab-border': 'var(--theme-color-tab-border)',
-                'icon-active': '#787DA8',
-                'menu-active': '#13152B',
-                'input-placeholder': '#42466C',
-                'input-border': '#242740',
-                'input-border-active': '#797EA8',
-                'input-background': '#030513',
+                'icon-active': 'var(--theme-color-icon-active)',
+                'menu-active': 'var(--theme-color-menu-active)',
+                'input-border': 'var(--theme-color-input-border)',
+                'input-border-active': 'var(--color-input-border-active)',
+                'input-background': 'var(--theme-color-input-background)',
                 'button-secondary-background':
                     'var(--theme-color-card-background)',
                 'button-secondary-background-hover':
@@ -52,17 +66,10 @@ export default {
                     'var(--theme-color-row-heading-background)',
                 'row-heading-border': 'var(--theme-color-row-heading-border)',
                 'accent': {
-                    '50': '#eff7ff',
-                    '100': '#daecff',
-                    '200': '#b0d7ff',
-                    '300': '#91caff',
-                    '400': '#5eadfc',
-                    '500': '#388bf9',
-                    '600': '#226cee',
-                    '700': '#1a57db',
-                    '800': '#1c46b1',
-                    '900': '#1c3f8c',
-                    '950': '#162755',
+                    '200': 'rgba(var(--color-accent-quaternary), <alpha-value>)',
+                    '300': 'rgba(var(--color-accent-tertiary), <alpha-value>)',
+                    '400': 'rgba(var(--color-accent-secondary), <alpha-value>)',
+                    '500': 'rgba(var(--color-accent-primary), <alpha-value>)',
                 },
             },
         },

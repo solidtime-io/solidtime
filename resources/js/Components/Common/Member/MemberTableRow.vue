@@ -29,7 +29,7 @@ async function invitePlaceholder(id: string) {
                 {
                     params: {
                         organization: organizationId,
-                        membership: id,
+                        member: id,
                     },
                 }
             ),

@@ -85,6 +85,7 @@ class ShareInertiaData
                                 'currency' => $organization->currency,
                                 'membership' => [
                                     'role' => $organization->membership->role,
+                                    'id' => $organization->membership->id,
                                 ],
                             ];
                         })->all(),

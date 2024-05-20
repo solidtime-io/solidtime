@@ -47,6 +47,6 @@
         "pinia": "^2.1.7",
         "radix-vue": "^1.5.2",
         "tailwind-merge": "^2.2.1",
-        "vue-echarts": "^6.6.9"
+        "vue-echarts": "^6.7.2"
     }
 }

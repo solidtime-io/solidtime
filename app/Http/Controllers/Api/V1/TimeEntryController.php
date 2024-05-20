@@ -224,7 +224,7 @@ class TimeEntryController extends Controller
                         /** @var string $group2Type */
                         $group2Response[] = [
                             'type' => $group2Type,
-                            'key' => $group2 === '' ? null : $group2,
+                            'key' => $group2 === '' ? null : (string) $group2,
                             'seconds' => (int) $aggregate->get(0)->aggregate,
                             'cost' => (int) $aggregate->get(0)->cost,
                         ];
@@ -241,7 +241,7 @@ class TimeEntryController extends Controller
                 /** @var string $group1Type */
                 $group1Response[] = [
                     'type' => $group1Type,
-                    'key' => $group1 === '' ? null : $group1,
+                    'key' => $group1 === '' ? null : (string) $group1,
                     'seconds' => $group2ResponseSum,
                     'cost' => $group2ResponseCost,
                     'grouped_data' => $group2Response,

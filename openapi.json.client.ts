@@ -83,13 +83,13 @@ const ProjectMemberResource = z
     .object({
         id: z.string(),
         billable_rate: z.union([z.number(), z.null()]),
-        user_id: z.string(),
+        member_id: z.string(),
         project_id: z.string(),
     })
     .passthrough();
 const createProjectMember_Body = z
     .object({
-        user_id: z.string().uuid(),
+        member_id: z.string().uuid(),
         billable_rate: z.union([z.number(), z.null()]).optional(),
     })
     .passthrough();
@@ -137,7 +137,7 @@ const TimeEntryResource = z
 const TimeEntryCollection = z.array(TimeEntryResource);
 const createTimeEntry_Body = z
     .object({
-        user_id: z.string().uuid(),
+        member_id: z.string().uuid(),
         project_id: z.union([z.string(), z.null()]).optional(),
         task_id: z.union([z.string(), z.null()]).optional(),
         start: z.string(),
@@ -147,8 +147,41 @@ const createTimeEntry_Body = z
         tags: z.union([z.array(z.string()), z.null()]).optional(),
     })
     .passthrough();
+const v1_time_entries_update_multiple_Body = z
+    .object({
+        ids: z.array(z.string()),
+        changes: z
+            .object({
+                member_id: z.string().uuid(),
+                project_id: z.union([z.string(), z.null()]),
+                task_id: z.union([z.string(), z.null()]),
+                billable: z.boolean(),
+                description: z.union([z.string(), z.null()]),
+                tags: z.union([z.array(z.string()), z.null()]),
+            })
+            .partial()
+            .passthrough(),
+    })
+    .passthrough();
+const group = z
+    .union([
+        z.enum([
+            'day',
+            'week',
+            'month',
+            'year',
+            'user',
+            'project',
+            'task',
+            'client',
+            'billable',
+        ]),
+        z.null(),
+    ])
+    .optional();
 const updateTimeEntry_Body = z
     .object({
+        member_id: z.string().uuid().optional(),
         project_id: z.union([z.string(), z.null()]).optional(),
         task_id: z.union([z.string(), z.null()]).optional(),
         start: z.string(),
@@ -184,6 +217,8 @@ export const schemas = {
     TimeEntryResource,
     TimeEntryCollection,
     createTimeEntry_Body,
+    v1_time_entries_update_multiple_Body,
+    group,
     updateTimeEntry_Body,
 };
 
@@ -197,7 +232,7 @@ const endpoints = makeApi([
             {
                 name: 'organization',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
         ],
         response: z.object({ data: OrganizationResource }).passthrough(),
@@ -228,7 +263,7 @@ const endpoints = makeApi([
             {
                 name: 'organization',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
         ],
         response: z.object({ data: OrganizationResource }).passthrough(),
@@ -264,7 +299,7 @@ const endpoints = makeApi([
             {
                 name: 'organization',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
         ],
         response: z.object({ data: ClientCollection }).passthrough(),
@@ -295,7 +330,7 @@ const endpoints = makeApi([
             {
                 name: 'organization',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
         ],
         response: z.object({ data: ClientResource }).passthrough(),
@@ -336,12 +371,12 @@ const endpoints = makeApi([
             {
                 name: 'organization',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
             {
                 name: 'client',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
         ],
         response: z.object({ data: ClientResource }).passthrough(),
@@ -382,12 +417,12 @@ const endpoints = makeApi([
             {
                 name: 'organization',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
             {
                 name: 'client',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
         ],
         response: z.null(),
@@ -429,7 +464,7 @@ const endpoints = makeApi([
             {
                 name: 'organization',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
         ],
         response: z
@@ -497,7 +532,7 @@ const endpoints = makeApi([
             {
                 name: 'organization',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
         ],
         response: z
@@ -535,7 +570,7 @@ const endpoints = makeApi([
             {
                 name: 'organization',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
         ],
         response: z
@@ -608,7 +643,7 @@ const endpoints = makeApi([
             {
                 name: 'organization',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
         ],
         response: z.null(),
@@ -649,12 +684,12 @@ const endpoints = makeApi([
             {
                 name: 'organization',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
             {
                 name: 'invitation',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
         ],
         response: z.null(),
@@ -685,12 +720,12 @@ const endpoints = makeApi([
             {
                 name: 'organization',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
             {
                 name: 'invitation',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
         ],
         response: z.null(),
@@ -716,7 +751,7 @@ const endpoints = makeApi([
             {
                 name: 'organization',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
         ],
         response: z
@@ -777,7 +812,7 @@ const endpoints = makeApi([
     },
     {
         method: 'put',
-        path: '/v1/organizations/:organization/members/:membership',
+        path: '/v1/organizations/:organization/members/:member',
         alias: 'updateMember',
         requestFormat: 'json',
         parameters: [
@@ -789,12 +824,12 @@ const endpoints = makeApi([
             {
                 name: 'organization',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
             {
-                name: 'membership',
+                name: 'member',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
         ],
         response: z.object({ data: MemberResource }).passthrough(),
@@ -823,7 +858,7 @@ const endpoints = makeApi([
     },
     {
         method: 'delete',
-        path: '/v1/organizations/:organization/members/:membership',
+        path: '/v1/organizations/:organization/members/:member',
         alias: 'removeMember',
         requestFormat: 'json',
         parameters: [
@@ -835,12 +870,12 @@ const endpoints = makeApi([
             {
                 name: 'organization',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
             {
-                name: 'membership',
+                name: 'member',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
         ],
         response: z.null(),
@@ -870,7 +905,7 @@ const endpoints = makeApi([
     },
     {
         method: 'post',
-        path: '/v1/organizations/:organization/members/:membership/invite-placeholder',
+        path: '/v1/organizations/:organization/members/:member/invite-placeholder',
         alias: 'invitePlaceholder',
         requestFormat: 'json',
         parameters: [
@@ -882,12 +917,12 @@ const endpoints = makeApi([
             {
                 name: 'organization',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
             {
-                name: 'membership',
+                name: 'member',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
         ],
         response: z.null(),
@@ -929,12 +964,12 @@ const endpoints = makeApi([
             {
                 name: 'organization',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
             {
                 name: 'projectMember',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
         ],
         response: z.object({ data: ProjectMemberResource }).passthrough(),
@@ -975,12 +1010,12 @@ const endpoints = makeApi([
             {
                 name: 'organization',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
             {
                 name: 'projectMember',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
         ],
         response: z.null(),
@@ -1006,7 +1041,12 @@ const endpoints = makeApi([
             {
                 name: 'organization',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
+            },
+            {
+                name: 'page',
+                type: 'Query',
+                schema: z.number().int().gte(1).optional(),
             },
         ],
         response: z
@@ -1053,6 +1093,16 @@ const endpoints = makeApi([
                 description: `Not found`,
                 schema: z.object({ message: z.string() }).passthrough(),
             },
+            {
+                status: 422,
+                description: `Validation error`,
+                schema: z
+                    .object({
+                        message: z.string(),
+                        errors: z.record(z.array(z.string())),
+                    })
+                    .passthrough(),
+            },
         ],
     },
     {
@@ -1069,7 +1119,7 @@ const endpoints = makeApi([
             {
                 name: 'organization',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
         ],
         response: z.object({ data: ProjectResource }).passthrough(),
@@ -1105,12 +1155,12 @@ const endpoints = makeApi([
             {
                 name: 'organization',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
             {
                 name: 'project',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
         ],
         response: z.object({ data: ProjectResource }).passthrough(),
@@ -1141,12 +1191,12 @@ const endpoints = makeApi([
             {
                 name: 'organization',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
             {
                 name: 'project',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
         ],
         response: z.object({ data: ProjectResource }).passthrough(),
@@ -1187,12 +1237,12 @@ const endpoints = makeApi([
             {
                 name: 'organization',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
             {
                 name: 'project',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
         ],
         response: z.null(),
@@ -1229,12 +1279,12 @@ const endpoints = makeApi([
             {
                 name: 'organization',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
             {
                 name: 'project',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
         ],
         response: z
@@ -1297,12 +1347,12 @@ const endpoints = makeApi([
             {
                 name: 'organization',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
             {
                 name: 'project',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
         ],
         response: z.object({ data: ProjectMemberResource }).passthrough(),
@@ -1349,7 +1399,7 @@ const endpoints = makeApi([
             {
                 name: 'organization',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
         ],
         response: z.object({ data: TagCollection }).passthrough(),
@@ -1380,7 +1430,7 @@ const endpoints = makeApi([
             {
                 name: 'organization',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
         ],
         response: z.object({ data: TagResource }).passthrough(),
@@ -1421,12 +1471,12 @@ const endpoints = makeApi([
             {
                 name: 'organization',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
             {
                 name: 'tag',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
         ],
         response: z.object({ data: TagResource }).passthrough(),
@@ -1467,12 +1517,12 @@ const endpoints = makeApi([
             {
                 name: 'organization',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
             {
                 name: 'tag',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
         ],
         response: z.null(),
@@ -1509,7 +1559,7 @@ const endpoints = makeApi([
             {
                 name: 'organization',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
             {
                 name: 'project_id',
@@ -1587,7 +1637,7 @@ const endpoints = makeApi([
             {
                 name: 'organization',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
         ],
         response: z.object({ data: TaskResource }).passthrough(),
@@ -1628,12 +1678,12 @@ const endpoints = makeApi([
             {
                 name: 'organization',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
             {
                 name: 'task',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
         ],
         response: z.object({ data: TaskResource }).passthrough(),
@@ -1674,12 +1724,12 @@ const endpoints = makeApi([
             {
                 name: 'organization',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
             {
                 name: 'task',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
         ],
         response: z.null(),
@@ -1718,10 +1768,10 @@ Users with the permission &#x60;time-entries:view:own&#x60; can only use this en
             {
                 name: 'organization',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
             {
-                name: 'user_id',
+                name: 'member_id',
                 type: 'Query',
                 schema: z.string().uuid().optional(),
             },
@@ -1741,6 +1791,11 @@ Users with the permission &#x60;time-entries:view:own&#x60; can only use this en
                 schema: z.enum(['true', 'false']).optional(),
             },
             {
+                name: 'billable',
+                type: 'Query',
+                schema: z.enum(['true', 'false']).optional(),
+            },
+            {
                 name: 'limit',
                 type: 'Query',
                 schema: z.number().int().gte(1).lte(500).optional(),
@@ -1749,6 +1804,26 @@ Users with the permission &#x60;time-entries:view:own&#x60; can only use this en
                 name: 'only_full_dates',
                 type: 'Query',
                 schema: z.enum(['true', 'false']).optional(),
+            },
+            {
+                name: 'member_ids',
+                type: 'Query',
+                schema: z.array(z.string()).min(1).optional(),
+            },
+            {
+                name: 'project_ids',
+                type: 'Query',
+                schema: z.array(z.string()).min(1).optional(),
+            },
+            {
+                name: 'tag_ids',
+                type: 'Query',
+                schema: z.array(z.string()).min(1).optional(),
+            },
+            {
+                name: 'task_ids',
+                type: 'Query',
+                schema: z.array(z.string()).min(1).optional(),
             },
         ],
         response: z.object({ data: TimeEntryCollection }).passthrough(),
@@ -1789,7 +1864,7 @@ Users with the permission &#x60;time-entries:view:own&#x60; can only use this en
             {
                 name: 'organization',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
         ],
         response: z.object({ data: TimeEntryResource }).passthrough(),
@@ -1828,6 +1903,49 @@ Users with the permission &#x60;time-entries:view:own&#x60; can only use this en
         ],
     },
     {
+        method: 'patch',
+        path: '/v1/organizations/:organization/time-entries',
+        alias: 'v1.time-entries.update-multiple',
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'body',
+                type: 'Body',
+                schema: v1_time_entries_update_multiple_Body,
+            },
+            {
+                name: 'organization',
+                type: 'Path',
+                schema: z.string(),
+            },
+        ],
+        response: z
+            .object({ success: z.string(), error: z.string() })
+            .passthrough(),
+        errors: [
+            {
+                status: 403,
+                description: `Authorization error`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 404,
+                description: `Not found`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 422,
+                description: `Validation error`,
+                schema: z
+                    .object({
+                        message: z.string(),
+                        errors: z.record(z.array(z.string())),
+                    })
+                    .passthrough(),
+            },
+        ],
+    },
+    {
         method: 'put',
         path: '/v1/organizations/:organization/time-entries/:timeEntry',
         alias: 'updateTimeEntry',
@@ -1841,12 +1959,12 @@ Users with the permission &#x60;time-entries:view:own&#x60; can only use this en
             {
                 name: 'organization',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
             {
                 name: 'timeEntry',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
         ],
         response: z.object({ data: TimeEntryResource }).passthrough(),
@@ -1898,12 +2016,12 @@ Users with the permission &#x60;time-entries:view:own&#x60; can only use this en
             {
                 name: 'organization',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
             {
                 name: 'timeEntry',
                 type: 'Path',
-                schema: z.string().uuid(),
+                schema: z.string(),
             },
         ],
         response: z.null(),
@@ -1917,6 +2035,145 @@ Users with the permission &#x60;time-entries:view:own&#x60; can only use this en
                 status: 404,
                 description: `Not found`,
                 schema: z.object({ message: z.string() }).passthrough(),
+            },
+        ],
+    },
+    {
+        method: 'get',
+        path: '/v1/organizations/:organization/time-entries/aggregate',
+        alias: 'getAggregatedTimeEntries',
+        description: `This endpoint allows you to filter time entries and aggregate them by different criteria.
+The parameters &#x60;group&#x60; and &#x60;sub_group&#x60; allow you to group the time entries by different criteria.
+If the group parameters are all set to &#x60;null&#x60; or are all missing, the endpoint will aggregate all filtered time entries.`,
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'organization',
+                type: 'Path',
+                schema: z.string(),
+            },
+            {
+                name: 'group',
+                type: 'Query',
+                schema: group,
+            },
+            {
+                name: 'sub_group',
+                type: 'Query',
+                schema: group,
+            },
+            {
+                name: 'member_id',
+                type: 'Query',
+                schema: z.string().uuid().optional(),
+            },
+            {
+                name: 'user_id',
+                type: 'Query',
+                schema: z.string().uuid().optional(),
+            },
+            {
+                name: 'before',
+                type: 'Query',
+                schema: before,
+            },
+            {
+                name: 'after',
+                type: 'Query',
+                schema: before,
+            },
+            {
+                name: 'active',
+                type: 'Query',
+                schema: z.enum(['true', 'false']).optional(),
+            },
+            {
+                name: 'billable',
+                type: 'Query',
+                schema: z.enum(['true', 'false']).optional(),
+            },
+            {
+                name: 'member_ids',
+                type: 'Query',
+                schema: z.array(z.string()).min(1).optional(),
+            },
+            {
+                name: 'project_ids',
+                type: 'Query',
+                schema: z.array(z.string()).min(1).optional(),
+            },
+            {
+                name: 'tag_ids',
+                type: 'Query',
+                schema: z.array(z.string()).min(1).optional(),
+            },
+            {
+                name: 'task_ids',
+                type: 'Query',
+                schema: z.array(z.string()).min(1).optional(),
+            },
+        ],
+        response: z
+            .object({
+                data: z
+                    .object({
+                        grouped_data: z.union([
+                            z.array(
+                                z
+                                    .object({
+                                        type: z.string(),
+                                        key: z.union([z.string(), z.null()]),
+                                        seconds: z.number().int(),
+                                        cost: z.number().int(),
+                                        grouped_data: z.union([
+                                            z.array(
+                                                z
+                                                    .object({
+                                                        type: z.string(),
+                                                        key: z.union([
+                                                            z.string(),
+                                                            z.null(),
+                                                        ]),
+                                                        seconds: z
+                                                            .number()
+                                                            .int(),
+                                                        cost: z.number().int(),
+                                                    })
+                                                    .passthrough()
+                                            ),
+                                            z.null(),
+                                        ]),
+                                    })
+                                    .passthrough()
+                            ),
+                            z.null(),
+                        ]),
+                        seconds: z.number().int(),
+                        cost: z.number().int(),
+                    })
+                    .passthrough(),
+            })
+            .passthrough(),
+        errors: [
+            {
+                status: 403,
+                description: `Authorization error`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 404,
+                description: `Not found`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 422,
+                description: `Validation error`,
+                schema: z
+                    .object({
+                        message: z.string(),
+                        errors: z.record(z.array(z.string())),
+                    })
+                    .passthrough(),
             },
         ],
     },

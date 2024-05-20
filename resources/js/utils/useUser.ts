@@ -18,6 +18,12 @@ function getCurrentOrganizationId() {
     return page.props.auth.user.current_team_id;
 }
 
+function getCurrentMembershipId() {
+    return page.props.auth.user.all_teams.find(
+        (team) => team.id === getCurrentOrganizationId()
+    )?.membership.id;
+}
+
 function getUserTimezone() {
     return page.props.auth.user.timezone;
 }
@@ -27,4 +33,5 @@ export {
     getCurrentUserId,
     getUserTimezone,
     getWeekStart,
+    getCurrentMembershipId,
 };

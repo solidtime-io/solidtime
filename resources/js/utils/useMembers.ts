@@ -33,7 +33,7 @@ export const useMembersStore = defineStore('members', () => {
                     {
                         params: {
                             organization: organization,
-                            membership: membershipId,
+                            member: membershipId,
                         },
                     }
                 ),

@@ -37,10 +37,10 @@ const borderClasses = computed(() => {
         :is="tag"
         :class="
             twMerge(
-                props.class,
                 badgeClasses[size],
                 borderClasses,
-                'rounded inline-flex items-center font-semibold text-white'
+                'rounded inline-flex items-center font-semibold text-white',
+                props.class
             )
         ">
         <slot></slot>

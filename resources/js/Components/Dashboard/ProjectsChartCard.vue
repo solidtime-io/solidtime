@@ -11,6 +11,8 @@ import {
     TitleComponent,
     TooltipComponent,
 } from 'echarts/components';
+import { useCssVar } from '@vueuse/core';
+import { formatHumanReadableDuration } from '@/utils/time';
 
 use([
     CanvasRenderer,
@@ -22,6 +24,8 @@ use([
 ]);
 
 provide(THEME_KEY, 'dark');
+
+const backgroundColor = useCssVar('--theme-color-default-background');
 
 function hexToRGBA(hex: string, opacity = 1) {
     // Remove the hash at the start if it's there
@@ -60,7 +64,7 @@ const seriesData = props.weeklyProjectOverview.map((el) => {
             itemStyle: {
                 borderRadius: 15,
                 // TODO: Fix dynamic color
-                borderColor: '#0b0d1c',
+                borderColor: backgroundColor.value,
                 borderWidth: 18,
                 color: new LinearGradient(0, 0, 0, 1, [
                     {
@@ -77,13 +81,23 @@ const seriesData = props.weeklyProjectOverview.map((el) => {
     };
 });
 const option = ref({
+    tooltip: {
+        trigger: 'item',
+    },
+    legend: {
+        orient: 'vertical',
+        bottom: 'bottom',
+    },
     backgroundColor: 'transparent',
     series: [
         {
             label: {
-                // TODO: Muted color make dynamic
-                color: '#D9DCFB',
-                fontWeight: 'bold',
+                show: false,
+            },
+            tooltip: {
+                valueFormatter: (value: number) => {
+                    return formatHumanReadableDuration(value);
+                },
             },
             data: seriesData,
             radius: ['30%', '65%'],

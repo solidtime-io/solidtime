@@ -78,7 +78,9 @@ const currentClientName = computed(() => {
                         autocomplete="projectName" />
                 </div>
                 <div class="sm:max-w-[120px]">
-                    <BillableRateInput v-model="project.billable_rate" />
+                    <BillableRateInput
+                        v-model="project.billable_rate"
+                        name="billable_rate" />
                 </div>
                 <div class="">
                     <ClientDropdown v-model="project.client_id">

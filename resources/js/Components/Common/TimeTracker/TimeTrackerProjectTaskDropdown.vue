@@ -8,6 +8,9 @@ import { useTasksStore } from '@/utils/useTasks';
 import ProjectDropdownItem from '@/Components/Common/Project/ProjectDropdownItem.vue';
 import type { Project, Task } from '@/utils/api';
 import ProjectBadge from '@/Components/Common/Project/ProjectBadge.vue';
+import Badge from '@/Components/Common/Badge.vue';
+import { PlusIcon } from '@heroicons/vue/16/solid';
+import ProjectCreateModal from '@/Components/Common/Project/ProjectCreateModal.vue';
 
 const projectStore = useProjectsStore();
 const { projects } = storeToRefs(projectStore);
@@ -94,9 +97,7 @@ const filteredProjects = computed(() => {
 });
 
 async function addClientIfNoneExists() {
-    if (highlightedItemId.value) {
-        setProjectAndClientBasedOnHighlightedItem();
-    }
+    setProjectAndClientBasedOnHighlightedItem();
 }
 
 function isProjectSelected(project: Project) {
@@ -142,131 +143,122 @@ function updateSearchValue(event: Event) {
 const emit = defineEmits(['update:modelValue', 'changed']);
 
 function moveHighlightUp() {
-    if (highlightedItemId.value) {
-        const currentHighlightedIndex = filteredProjects.value.findIndex(
+    const currentHighlightedIndex = filteredProjects.value.findIndex(
+        (projectWithTasks) =>
+            projectWithTasks.project.id === highlightedItemId.value
+    );
+    // check if it is a project id
+    if (currentHighlightedIndex === -1) {
+        // the ID is a task ID
+        const currentProjectWithTasks = filteredProjects.value.find(
             (projectWithTasks) =>
-                projectWithTasks.project.id === highlightedItemId.value
-        );
-        // check if it is a project id
-        if (currentHighlightedIndex === -1) {
-            // the ID is a task ID
-            const currentProjectWithTasks = filteredProjects.value.find(
-                (projectWithTasks) =>
-                    projectWithTasks.tasks.some(
-                        (task) => task.id === highlightedItemId.value
-                    )
-            );
-            if (currentProjectWithTasks) {
-                const taskIndex = currentProjectWithTasks.tasks.findIndex(
+                projectWithTasks.tasks.some(
                     (task) => task.id === highlightedItemId.value
-                );
-                if (taskIndex === -1) {
-                    return;
-                }
-                if (taskIndex === 0) {
-                    // highlight the project if it was the first task before
-                    highlightedItemId.value =
-                        currentProjectWithTasks.project.id;
-                    return;
-                }
-                highlightedItemId.value =
-                    currentProjectWithTasks.tasks[taskIndex - 1].id;
+                )
+        );
+        if (currentProjectWithTasks) {
+            const taskIndex = currentProjectWithTasks.tasks.findIndex(
+                (task) => task.id === highlightedItemId.value
+            );
+            if (taskIndex === -1) {
+                return;
             }
+            if (taskIndex === 0) {
+                // highlight the project if it was the first task before
+                highlightedItemId.value = currentProjectWithTasks.project.id;
+                return;
+            }
+            highlightedItemId.value =
+                currentProjectWithTasks.tasks[taskIndex - 1].id;
         }
-        if (currentHighlightedIndex === 0) {
-            // highlight the last project or the last project of the last project
-            const lastProject =
-                filteredProjects.value[filteredProjects.value.length - 1];
-            if (lastProject.tasks.length > 0) {
-                // highlight last task of last project
-                highlightedItemId.value =
-                    lastProject.tasks[lastProject.tasks.length - 1].id;
-            } else {
-                highlightedItemId.value =
-                    filteredProjects.value[
-                        filteredProjects.value.length - 1
-                    ].project.id;
-            }
+    }
+    if (currentHighlightedIndex === 0) {
+        // highlight the last project or the last project of the last project
+        const lastProject =
+            filteredProjects.value[filteredProjects.value.length - 1];
+        if (lastProject.tasks.length > 0) {
+            // highlight last task of last project
+            highlightedItemId.value =
+                lastProject.tasks[lastProject.tasks.length - 1].id;
         } else {
-            const previousProject =
-                filteredProjects.value[currentHighlightedIndex - 1];
-            if (previousProject.tasks.length > 0) {
-                // highlight last task of previous project
-                highlightedItemId.value =
-                    previousProject.tasks[previousProject.tasks.length - 1].id;
-            } else {
-                highlightedItemId.value =
-                    filteredProjects.value[
-                        currentHighlightedIndex - 1
-                    ].project.id;
-            }
+            highlightedItemId.value =
+                filteredProjects.value[
+                    filteredProjects.value.length - 1
+                ].project.id;
+        }
+    } else {
+        const previousProject =
+            filteredProjects.value[currentHighlightedIndex - 1];
+        if (previousProject.tasks.length > 0) {
+            // highlight last task of previous project
+            highlightedItemId.value =
+                previousProject.tasks[previousProject.tasks.length - 1].id;
+        } else {
+            highlightedItemId.value =
+                filteredProjects.value[currentHighlightedIndex - 1].project.id;
         }
     }
 }
 
 function moveHighlightDown() {
-    if (highlightedItemId.value) {
-        const currentHighlightedIndex = filteredProjects.value.findIndex(
+    const currentHighlightedIndex = filteredProjects.value.findIndex(
+        (projectWithTasks) =>
+            projectWithTasks.project.id === highlightedItemId.value
+    );
+    // check if it is a project id
+    if (currentHighlightedIndex === -1) {
+        // the ID is a task ID
+        const currentProjectWithTasks = filteredProjects.value.find(
             (projectWithTasks) =>
-                projectWithTasks.project.id === highlightedItemId.value
-        );
-        // check if it is a project id
-        if (currentHighlightedIndex === -1) {
-            // the ID is a task ID
-            const currentProjectWithTasks = filteredProjects.value.find(
-                (projectWithTasks) =>
-                    projectWithTasks.tasks.some(
-                        (task) => task.id === highlightedItemId.value
-                    )
-            );
-            if (currentProjectWithTasks) {
-                const taskIndex = currentProjectWithTasks.tasks.findIndex(
+                projectWithTasks.tasks.some(
                     (task) => task.id === highlightedItemId.value
+                )
+        );
+        if (currentProjectWithTasks) {
+            const taskIndex = currentProjectWithTasks.tasks.findIndex(
+                (task) => task.id === highlightedItemId.value
+            );
+            if (taskIndex === -1) {
+                return;
+            }
+            if (taskIndex === currentProjectWithTasks.tasks.length - 1) {
+                // highlight the next project if it was the last task in current project
+                const projectIndex = filteredProjects.value.indexOf(
+                    currentProjectWithTasks
                 );
-                if (taskIndex === -1) {
-                    return;
+                if (projectIndex === filteredProjects.value.length - 1) {
+                    // highlight the first project if it was the last project
+                    highlightedItemId.value =
+                        filteredProjects.value[0].project.id;
+                } else {
+                    highlightedItemId.value =
+                        filteredProjects.value[projectIndex + 1].project.id;
                 }
-                if (taskIndex === currentProjectWithTasks.tasks.length - 1) {
-                    // highlight the next project if it was the last task in current project
-                    const projectIndex = filteredProjects.value.indexOf(
-                        currentProjectWithTasks
-                    );
-                    if (projectIndex === filteredProjects.value.length - 1) {
-                        // highlight the first project if it was the last project
-                        highlightedItemId.value =
-                            filteredProjects.value[0].project.id;
-                    } else {
-                        highlightedItemId.value =
-                            filteredProjects.value[projectIndex + 1].project.id;
-                    }
-                    return;
-                }
-                highlightedItemId.value =
-                    currentProjectWithTasks.tasks[taskIndex + 1].id;
+                return;
             }
+            highlightedItemId.value =
+                currentProjectWithTasks.tasks[taskIndex + 1].id;
         }
-        if (currentHighlightedIndex === filteredProjects.value.length - 1) {
-            // highlight the first project or the last project of the last project
-            const lastProject =
-                filteredProjects.value[filteredProjects.value.length - 1];
-            if (lastProject.tasks.length > 0) {
-                // highlight last task of last project
-                highlightedItemId.value = lastProject.tasks[0].id;
-            } else {
-                highlightedItemId.value = filteredProjects.value[0].project.id;
-            }
+    }
+    if (currentHighlightedIndex === filteredProjects.value.length - 1) {
+        // highlight the first project or the last project of the last project
+        const lastProject =
+            filteredProjects.value[filteredProjects.value.length - 1];
+        if (lastProject.tasks.length > 0) {
+            // highlight last task of last project
+            highlightedItemId.value = lastProject.tasks[0].id;
         } else {
-            const currentProjectWithTasks =
-                filteredProjects.value[currentHighlightedIndex];
-            if (currentProjectWithTasks.tasks.length > 0) {
-                // highlight last task of previous project
-                highlightedItemId.value = currentProjectWithTasks.tasks[0].id;
-            } else {
-                highlightedItemId.value =
-                    filteredProjects.value[
-                        currentHighlightedIndex + 1
-                    ].project.id;
-            }
+            highlightedItemId.value = filteredProjects.value[0].project.id;
+        }
+    } else {
+        const currentProjectWithTasks =
+            filteredProjects.value[currentHighlightedIndex];
+        if (currentProjectWithTasks.tasks.length > 0) {
+            // highlight last task of previous project
+            highlightedItemId.value = currentProjectWithTasks.tasks[0].id;
+        } else {
+            highlightedItemId.value =
+                filteredProjects.value[currentHighlightedIndex + 1].project.id;
         }
     }
 }
@@ -307,10 +299,23 @@ function selectProject(projectId: string) {
     open.value = false;
     emit('changed', project.value, task.value);
 }
+
+const showCreateProject = ref(false);
 </script>
 
 <template>
-    <Dropdown width="120" v-model="open" :closeOnContentClick="true">
+    <div v-if="projects.length === 0">
+        <Badge
+            @click="showCreateProject = true"
+            size="large"
+            class="cursor-pointer hover:bg-tertiary">
+            <PlusIcon class="-ml-1 w-5"></PlusIcon>
+            <span>Add new project</span>
+        </Badge>
+        <ProjectCreateModal
+            v-model:show="showCreateProject"></ProjectCreateModal>
+    </div>
+    <Dropdown v-else width="120" v-model="open" :closeOnContentClick="true">
         <template #trigger>
             <ProjectBadge
                 ref="projectDropdownTrigger"
@@ -319,7 +324,7 @@ function selectProject(projectId: string) {
                 :border="showBadgeBorder"
                 tag="button"
                 :name="selectedProjectName"
-                class="focus:border-input-border-active focus:outline-0 focus:bg-card-background-separator hover:bg-card-background-separator">
+                class="focus:border-border-tertiary focus:outline-0 focus:bg-card-background-separator hover:bg-card-background-separator">
                 <div class="flex items-center space-x-1">
                     <span>
                         {{ selectedProjectName }}

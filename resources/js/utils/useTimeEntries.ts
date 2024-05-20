@@ -1,10 +1,14 @@
 import { defineStore } from 'pinia';
-import { getCurrentOrganizationId, getCurrentUserId } from '@/utils/useUser';
+import {
+    getCurrentMembershipId,
+    getCurrentOrganizationId,
+} from '@/utils/useUser';
 import { api } from '../../../openapi.json.client';
 import { reactive, ref } from 'vue';
 import type { CreateTimeEntryBody, TimeEntry } from '@/utils/api';
 import dayjs from 'dayjs';
 import { useNotificationsStore } from '@/utils/notification';
+
 export type TimeEntriesGroupedByType = TimeEntry & { timeEntries: TimeEntry[] };
 
 export const useTimeEntriesStore = defineStore('timeEntries', () => {
@@ -12,6 +16,7 @@ export const useTimeEntriesStore = defineStore('timeEntries', () => {
 
     const allTimeEntriesLoaded = ref(false);
     const { handleApiRequestNotifications } = useNotificationsStore();
+
     async function fetchTimeEntries() {
         const organizationId = getCurrentOrganizationId();
         if (organizationId) {
@@ -22,7 +27,7 @@ export const useTimeEntriesStore = defineStore('timeEntries', () => {
                     },
                     queries: {
                         only_full_dates: 'true',
-                        user_id: getCurrentUserId(),
+                        member_id: getCurrentMembershipId(),
                     },
                 }),
                 undefined,
@@ -48,7 +53,7 @@ export const useTimeEntriesStore = defineStore('timeEntries', () => {
                     },
                     queries: {
                         only_full_dates: 'true',
-                        user_id: getCurrentUserId(),
+                        member_id: getCurrentMembershipId(),
                         before: dayjs(latestTimeEntry.start).utc().format(),
                     },
                 }),
@@ -84,11 +89,18 @@ export const useTimeEntriesStore = defineStore('timeEntries', () => {
         }
     }
 
-    async function createTimeEntry(timeEntry: CreateTimeEntryBody) {
+    async function createTimeEntry(
+        timeEntry: Omit<CreateTimeEntryBody, 'member_id'>
+    ) {
         const organizationId = getCurrentOrganizationId();
-        if (organizationId) {
+        const memberId = getCurrentMembershipId();
+        if (organizationId && memberId !== undefined) {
+            const newTimeEntry = {
+                ...timeEntry,
+                member_id: memberId,
+            } as CreateTimeEntryBody;
             await handleApiRequestNotifications(
-                api.createTimeEntry(timeEntry, {
+                api.createTimeEntry(newTimeEntry, {
                     params: {
                         organization: organizationId,
                     },

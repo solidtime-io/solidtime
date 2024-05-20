@@ -40,7 +40,7 @@ export async function assertThatTimerIsStopped(page: Page) {
         page.locator(
             '[data-testid="dashboard_timer"] [data-testid="timer_button"]'
         )
-    ).toHaveClass(/bg-accent-300\/50/);
+    ).toHaveClass(/bg-accent-300\/70/);
 }
 
 export async function stoppedTimeEntryResponse(

@@ -19,7 +19,7 @@ function onChange(event: Event) {
                 @blur="onChange"
                 @keydown.enter="onChange"
                 placeholder="Add a description"
-                class="text-white placeholder-muted font-medium bg-transparent hover:bg-card-background rounded-lg border border-transparent hover:border-card-border" />
+                class="text-white font-medium bg-transparent focus-visible:ring-0 hover:bg-card-background rounded-lg border border-transparent hover:border-card-border" />
         </label>
     </div>
 </template>

@@ -19,6 +19,7 @@ import {
     formatHumanReadableDuration,
     getDayJsInstance,
 } from '@/utils/time';
+import { useCssVar } from '@vueuse/core';
 
 const props = defineProps<{
     dailyHoursTracked: { duration: number; date: string }[];
@@ -40,6 +41,8 @@ const max = Math.max(
     1
 );
 
+const backgroundColor = useCssVar('--color-bg-secondary');
+const itemBackgroundColor = useCssVar('--color-bg-tertiary');
 const option = ref({
     tooltip: {},
     visualMap: {
@@ -50,7 +53,7 @@ const option = ref({
         left: 'center',
         top: 'center',
         inRange: {
-            color: ['#242940', '#2DBE45'],
+            color: [itemBackgroundColor.value, '#2DBE45'],
         },
         show: false,
     },
@@ -74,8 +77,9 @@ const option = ref({
                 .format('YYYY-MM-DD'),
         ],
         itemStyle: {
+            color: 'transparent',
             borderWidth: 8,
-            borderColor: '#13152B',
+            borderColor: backgroundColor.value,
         },
         yearLabel: { show: false },
     },
@@ -85,6 +89,8 @@ const option = ref({
         data: props.dailyHoursTracked.map((el) => [el.date, el.duration]),
         itemStyle: {
             borderRadius: 5,
+            borderColor: 'rgba(255,255,255,0.05)',
+            borderWidth: 1,
         },
         tooltip: {
             valueFormatter: (value: number, dataIndex: number) => {
@@ -104,10 +110,9 @@ const option = ref({
     <DashboardCard title="Activity Graph" :icon="BoltIcon">
         <div class="px-2">
             <v-chart
-                :autoresize="true"
                 class="chart"
                 :option="option"
-                style="height: 260px" />
+                style="height: 260px; background-color: transparent" />
         </div>
     </DashboardCard>
 </template>

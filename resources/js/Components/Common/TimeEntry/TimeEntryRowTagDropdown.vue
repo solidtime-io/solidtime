@@ -21,7 +21,9 @@ const timeEntryTags = computed<Tag[]>(() => {
 <template>
     <TagDropdown @changed="emit('changed', model)" v-model="model">
         <template #trigger>
-            <button data-testid="time_entry_tag_dropdown">
+            <button
+                data-testid="time_entry_tag_dropdown"
+                class="opacity-50 group-hover:opacity-100 transition">
                 <TagBadge
                     :border="false"
                     size="large"
