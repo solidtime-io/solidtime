@@ -2,9 +2,10 @@
 import { PlusCircleIcon } from '@heroicons/vue/20/solid';
 import Dropdown from '@/Components/Dropdown.vue';
 import { type Component, computed, nextTick, ref, watch } from 'vue';
-import TagDropdownItem from '@/Components/Common/Tag/TagDropdownItem.vue';
 import { useTagsStore } from '@/utils/useTags';
 import { storeToRefs } from 'pinia';
+import TagCreateModal from '@/Components/Common/Tag/TagCreateModal.vue';
+import MultiselectDropdownItem from '@/Components/Common/MultiselectDropdownItem.vue';
 
 const tagsStore = useTagsStore();
 const { tags } = storeToRefs(tagsStore);
@@ -46,6 +47,11 @@ watch(open, (isOpen) => {
                 return a.name.localeCompare(b.name);
             }
             return model.value.includes(a.id) ? -1 : 1;
+        });
+        nextTick(() => {
+            if (filteredTags.value.length > 0) {
+                highlightedItemId.value = filteredTags.value[0].id;
+            }
         });
     }
 });
@@ -96,17 +102,15 @@ function updateSearchValue(event: Event) {
     }
 }
 
-const emit = defineEmits(['update:modelValue', 'changed']);
+const emit = defineEmits(['update:modelValue', 'changed', 'submit']);
 
 function toggleTag(newValue: string) {
     if (model.value.includes(newValue)) {
-        model.value = model.value.filter((id) => id !== newValue);
+        model.value = [...model.value].filter((id) => id !== newValue);
     } else {
-        model.value.push(newValue);
+        model.value = [...model.value, newValue];
     }
-    nextTick(() => {
-        emit('changed');
-    });
+    emit('changed');
 }
 
 function moveHighlightUp() {
@@ -142,10 +146,17 @@ const highlightedItemId = ref<string | null>(null);
 const highlightedItem = computed(() => {
     return tags.value.find((tag) => tag.id === highlightedItemId.value);
 });
+
+const showCreateTagModal = ref(false);
 </script>
 
 <template>
-    <Dropdown width="120" v-model="open" :closeOnContentClick="false">
+    <TagCreateModal v-model:show="showCreateTagModal"></TagCreateModal>
+    <Dropdown
+        @submit="emit('submit')"
+        v-model="open"
+        align="bottom-start"
+        :closeOnContentClick="false">
         <template #trigger>
             <slot name="trigger"></slot>
         </template>
@@ -159,20 +170,20 @@ const highlightedItem = computed(() => {
                 @keydown.down.prevent="moveHighlightDown"
                 ref="searchInput"
                 class="bg-card-background border-0 placeholder-muted text-sm text-white py-2.5 focus:ring-0 border-b border-card-background-separator focus:border-card-background-separator w-full"
-                placeholder="Search for a tag..." />
+                placeholder="Search for a Tag..." />
             <div ref="dropdownViewport" class="w-60">
                 <div
                     v-if="searchValue.length > 0 && filteredTags.length === 0"
-                    class="bg-card-background-active">
+                    class="bg-card-background-active rounded-b-lg">
                     <div
                         @click="addTagIfNoneExists"
-                        class="text-white flex space-x-3 items-center px-4 py-3 text-xs font-medium border-t rounded-b-lg border-card-background-separator">
+                        class="text-white flex space-x-3 items-center px-4 py-3 text-xs font-medium border-t border-card-background-separator">
                         <PlusCircleIcon
                             class="w-5 flex-shrink-0"></PlusCircleIcon>
                         <span>Add "{{ searchValue }}" as a new Tag</span>
                     </div>
                 </div>
-                <div v-else></div>
+
                 <div
                     v-for="tag in filteredTags"
                     :key="tag.id"
@@ -184,10 +195,22 @@ const highlightedItem = computed(() => {
                     }"
                     data-testid="tag_dropdown_entries"
                     :data-tag-id="tag.id">
-                    <TagDropdownItem
+                    <MultiselectDropdownItem
                         :selected="isTagSelected(tag.id)"
                         @click="toggleTag(tag.id)"
-                        :name="tag.name"></TagDropdownItem>
+                        :name="tag.name"></MultiselectDropdownItem>
+                </div>
+                <div class="hover:bg-card-background-active rounded-b-lg">
+                    <button
+                        @click="
+                            open = false;
+                            showCreateTagModal = true;
+                        "
+                        class="text-white flex space-x-3 items-center px-4 py-3 text-xs font-semibold border-t border-card-background-separator">
+                        <PlusCircleIcon
+                            class="w-5 flex-shrink-0 text-icon-default"></PlusCircleIcon>
+                        <span>Create new Tag</span>
+                    </button>
                 </div>
             </div>
         </template>

@@ -12,7 +12,7 @@ const iconClasses = computed(() => {
     if (props.selected) {
         return 'text-accent-200';
     } else {
-        return 'text-card-border';
+        return 'text-white/10';
     }
 });
 </script>
