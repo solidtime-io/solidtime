@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Service\Import\Importers;
 
-use App\Enums\Role;
 use App\Models\Client;
 use App\Models\Member;
 use App\Models\Organization;
@@ -69,11 +68,7 @@ abstract class DefaultImporter implements ImporterContract
         $this->userImportHelper = new ImportDatabaseHelper(User::class, ['email'], true, function (Builder $builder) {
             /** @var Builder<User> $builder */
             return $builder->belongsToOrganization($this->organization);
-        }, function (User $user) {
-            $user->organizations()->attach($this->organization, [
-                'role' => Role::Placeholder->value,
-            ]);
-        }, validate: [
+        }, null, validate: [
             'name' => [
                 'required',
                 'max:255',
@@ -86,7 +81,13 @@ abstract class DefaultImporter implements ImporterContract
         $this->memberImportHelper = new ImportDatabaseHelper(Member::class, ['user_id', 'organization_id'], true, function (Builder $builder) {
             /** @var Builder<Member> $builder */
             return $builder->whereBelongsTo($this->organization, 'organization');
-        });
+        }, null, validate: [
+            'role' => [
+                'required',
+                'string',
+                'in:placeholder',
+            ],
+        ]);
         $this->projectImportHelper = new ImportDatabaseHelper(Project::class, ['name', 'organization_id'], true, function (Builder $builder) {
             /** @var Builder<Project> $builder */
             return $builder->where('organization_id', $this->organization->id);

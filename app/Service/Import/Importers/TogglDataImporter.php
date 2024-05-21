@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service\Import\Importers;
 
+use App\Enums\Role;
 use Exception;
 use Spatie\TemporaryDirectory\TemporaryDirectory;
 use ValueError;
@@ -93,10 +94,12 @@ class TogglDataImporter extends DefaultImporter
                     'timezone' => $workspaceUser->timezone ?? 'UTC',
                     'is_placeholder' => true,
                 ], (string) $workspaceUser->uid);
-                $memberId = $this->memberImportHelper->getKey([
+                $this->memberImportHelper->getKey([
                     'user_id' => $userId,
                     'organization_id' => $this->organization->getKey(),
-                ], [], $userId);
+                ], [
+                    'role' => Role::Placeholder->value,
+                ], $userId);
             }
 
             foreach ($projects as $project) {

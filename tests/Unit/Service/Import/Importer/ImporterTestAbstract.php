@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Service\Import\Importer;
 
+use App\Enums\Role;
 use App\Models\Client;
+use App\Models\Member;
 use App\Models\Project;
 use App\Models\Tag;
 use App\Models\Task;
@@ -28,6 +30,11 @@ class ImporterTestAbstract extends TestCase
         $this->assertSame(null, $user1->password);
         $this->assertSame('Peter Tester', $user1->name);
         $this->assertSame('peter.test@email.test', $user1->email);
+        $members = Member::all();
+        $this->assertCount(1, $members);
+        $member1 = $members->firstWhere('user_id', $user1->getKey());
+        $this->assertNotNull($member1);
+        $this->assertSame(Role::Placeholder->value, $member1->role);
         $clients = Client::all();
         $this->assertCount(1, $clients);
         $client1 = $clients->firstWhere('name', 'Big Company');
