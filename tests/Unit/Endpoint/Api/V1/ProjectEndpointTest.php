@@ -7,6 +7,7 @@ namespace Tests\Unit\Endpoint\Api\V1;
 use App\Models\Client;
 use App\Models\Organization;
 use App\Models\Project;
+use App\Models\ProjectMember;
 use App\Models\Task;
 use App\Models\TimeEntry;
 use Laravel\Passport\Passport;
@@ -55,7 +56,7 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
         ]);
         $privateProjects = Project::factory()->forOrganization($data->organization)->isPrivate()->createMany(2);
         $publicProjects = Project::factory()->forOrganization($data->organization)->isPublic()->createMany(2);
-        $privateProjectsWithMembership = Project::factory()->forOrganization($data->organization)->addMember($data->user)->isPrivate()->createMany(2);
+        $privateProjectsWithMembership = Project::factory()->forOrganization($data->organization)->addMember($data->member)->isPrivate()->createMany(2);
         Passport::actingAs($data->user);
 
         // Act
@@ -377,13 +378,14 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
         ]);
     }
 
-    public function test_destroy_endpoint_deletes_project(): void
+    public function test_destroy_endpoint_deletes_project_with_project_members(): void
     {
         // Arrange
         $data = $this->createUserWithPermission([
             'projects:delete',
         ]);
         $project = Project::factory()->forOrganization($data->organization)->create();
+        $projectMember = ProjectMember::factory()->forMember($data->member)->forProject($project)->create();
         Passport::actingAs($data->user);
 
         // Act
@@ -394,6 +396,9 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
         $response->assertNoContent();
         $this->assertDatabaseMissing(Project::class, [
             'id' => $project->getKey(),
+        ]);
+        $this->assertDatabaseMissing(ProjectMember::class, [
+            'id' => $projectMember->getKey(),
         ]);
     }
 }

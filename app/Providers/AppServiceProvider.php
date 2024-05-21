@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Models\Client;
-use App\Models\Membership;
+use App\Models\Member;
 use App\Models\Organization;
 use App\Models\OrganizationInvitation;
 use App\Models\Project;
@@ -51,7 +51,7 @@ class AppServiceProvider extends ServiceProvider
         Model::preventSilentlyDiscardingAttributes(! $this->app->isProduction());
         Model::preventAccessingMissingAttributes(! $this->app->isProduction());
         Relation::enforceMorphMap([
-            'membership' => Membership::class,
+            'membership' => Member::class,
             'organization' => Organization::class,
             'organization-invitation' => OrganizationInvitation::class,
             'user' => User::class,
@@ -85,7 +85,7 @@ class AppServiceProvider extends ServiceProvider
             return new PermissionStore();
         });
 
-        Route::model('member', Membership::class);
+        Route::model('member', Member::class);
         Route::model('invitation', OrganizationInvitation::class);
     }
 }

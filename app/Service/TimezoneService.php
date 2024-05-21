@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Models\User;
-use Carbon\Carbon;
 use Carbon\CarbonTimeZone;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 
 class TimezoneService

@@ -108,11 +108,15 @@ class OrganizationResource extends Resource
                     ->icon('heroicon-o-inbox-arrow-down')
                     ->action(function (Organization $record, array $data) {
                         try {
+                            $file = Storage::disk(config('filament.default_filesystem_disk'))->get($data['file']);
+                            if ($file === null) {
+                                throw new \Exception('File not found');
+                            }
                             /** @var ReportDto $report */
                             $report = app(ImportService::class)->import(
                                 $record,
                                 $data['type'],
-                                Storage::disk(config('filament.default_filesystem_disk'))->get($data['file'])
+                                $file
                             );
                             Notification::make()
                                 ->title('Import successful')

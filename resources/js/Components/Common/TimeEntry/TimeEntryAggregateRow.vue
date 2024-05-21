@@ -14,13 +14,13 @@ import { useCurrentTimeEntryStore } from '@/utils/useCurrentTimeEntry';
 import TimeEntryMoreOptionsDropdown from '@/Components/Common/TimeEntry/TimeEntryMoreOptionsDropdown.vue';
 import TimeTrackerProjectTaskDropdown from '@/Components/Common/TimeTracker/TimeTrackerProjectTaskDropdown.vue';
 import BillableToggleButton from '@/Components/Common/BillableToggleButton.vue';
-import { computed, ref } from 'vue';
-import { twMerge } from 'tailwind-merge';
+import { ref } from 'vue';
 import {
     formatHumanReadableDuration,
     formatStartEnd,
 } from '../../../utils/time';
 import TimeEntryRow from '@/Components/Common/TimeEntry/TimeEntryRow.vue';
+import GroupedItemsCountButton from '@/Components/Common/GroupedItemsCountButton.vue';
 
 const currentTimeEntryStore = useCurrentTimeEntryStore();
 const { stopTimer } = currentTimeEntryStore;
@@ -99,13 +99,6 @@ function updateProjectAndTask(projectId: string, taskId: string) {
 }
 
 const expanded = ref(false);
-
-const expandedStatusClasses = computed(() => {
-    if (expanded.value) {
-        return 'border-card-border border bg-card-background-active text-white';
-    }
-    return 'border-card-border border bg-card-background text-muted';
-});
 </script>
 
 <template>
@@ -118,18 +111,11 @@ const expandedStatusClasses = computed(() => {
                     <input
                         type="checkbox"
                         class="h-4 w-4 rounded bg-card-background border-input-border text-accent-500/80 focus:ring-accent-500/80" />
-                    <button
-                        @click="expanded = !expanded"
-                        :class="
-                            twMerge(
-                                expandedStatusClasses,
-                                'font-medium w-7 h-7 rounded flex items-center transition justify-center'
-                            )
-                        ">
-                        <span>
-                            {{ timeEntry?.timeEntries?.length }}
-                        </span>
-                    </button>
+                    <GroupedItemsCountButton
+                        :expanded="expanded"
+                        @click="expanded = !expanded">
+                        {{ timeEntry?.timeEntries?.length }}
+                    </GroupedItemsCountButton>
                     <TimeEntryDescriptionInput
                         @changed="updateTimeEntryDescription"
                         class="flex-1"

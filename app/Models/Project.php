@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Models\Concerns\HasUuids;
 use Database\Factories\ProjectFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -25,7 +25,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property-read Collection<int, Task> $tasks
  * @property-read Collection<int, ProjectMember> $members
  *
- * @method Builder<Project> visibleByUser(User $user)
+ * @method Builder<Project> visibleByEmployee(User $user)
  * @method static ProjectFactory factory()
  */
 class Project extends Model
@@ -64,7 +64,7 @@ class Project extends Model
      */
     public function members(): HasMany
     {
-        return $this->hasMany(ProjectMember::class);
+        return $this->hasMany(ProjectMember::class, 'project_id');
     }
 
     /**
@@ -86,7 +86,7 @@ class Project extends Model
     /**
      * @param  Builder<Project>  $builder
      */
-    public function scopeVisibleByUser(Builder $builder, User $user): void
+    public function scopeVisibleByEmployee(Builder $builder, User $user): void
     {
         $builder->where(function (Builder $builder) use ($user): Builder {
             return $builder->where('is_public', '=', true)

@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Database\Factories;
 
 use App\Models\Client;
+use App\Models\Member;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Models\ProjectMember;
-use App\Models\User;
 use App\Service\ColorService;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -61,12 +61,12 @@ class ProjectFactory extends Factory
         });
     }
 
-    public function addMember(User $user, array $attributes = []): self
+    public function addMember(Member $member, array $attributes = []): self
     {
-        return $this->afterCreating(function (Project $project) use ($user, $attributes): void {
+        return $this->afterCreating(function (Project $project) use ($member, $attributes): void {
             ProjectMember::factory()
                 ->forProject($project)
-                ->forUser($user)
+                ->forMember($member)
                 ->create($attributes);
         });
     }

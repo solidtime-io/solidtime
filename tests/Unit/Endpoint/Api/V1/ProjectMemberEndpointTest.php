@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Endpoint\Api\V1;
 
+use App\Models\Member;
 use App\Models\Project;
 use App\Models\ProjectMember;
 use App\Models\User;
@@ -81,13 +82,14 @@ class ProjectMemberEndpointTest extends ApiEndpointTestAbstract
         ]);
         $project = Project::factory()->forOrganization($data->organization)->create();
         $projectMemberFake = ProjectMember::factory()->make();
-        $user = User::factory()->attachToOrganization($data->organization)->create();
+        $user = User::factory()->create();
+        $member = Member::factory()->forOrganization($data->organization)->forUser($user)->create();
         Passport::actingAs($data->user);
 
         // Act
         $response = $this->postJson(route('api.v1.project-members.store', [$data->organization->getKey(), $project->getKey()]), [
             'billable_rate' => $projectMemberFake->billable_rate,
-            'user_id' => $user->getKey(),
+            'member_id' => $member->getKey(),
         ]);
 
         // Assert
@@ -105,13 +107,14 @@ class ProjectMemberEndpointTest extends ApiEndpointTestAbstract
         ]);
         $project = Project::factory()->forOrganization($otherData->organization)->create();
         $projectMemberFake = ProjectMember::factory()->make();
-        $user = User::factory()->attachToOrganization($data->organization)->create();
+        $user = User::factory()->create();
+        $member = Member::factory()->forOrganization($data->organization)->forUser($user)->create();
         Passport::actingAs($data->user);
 
         // Act
         $response = $this->postJson(route('api.v1.project-members.store', [$data->organization->getKey(), $project->getKey()]), [
             'billable_rate' => $projectMemberFake->billable_rate,
-            'user_id' => $user->getKey(),
+            'member_id' => $member->getKey(),
         ]);
 
         // Assert
@@ -129,17 +132,18 @@ class ProjectMemberEndpointTest extends ApiEndpointTestAbstract
         ]);
         $project = Project::factory()->forOrganization($data->organization)->create();
         $projectMemberFake = ProjectMember::factory()->make();
-        $user = User::factory()->attachToOrganization($otherData->organization)->create();
+        $user = User::factory()->create();
+        $member = Member::factory()->forOrganization($otherData->organization)->forUser($user)->create();
         Passport::actingAs($data->user);
 
         // Act
         $response = $this->postJson(route('api.v1.project-members.store', [$data->organization->getKey(), $project->getKey()]), [
             'billable_rate' => $projectMemberFake->billable_rate,
-            'user_id' => $user->getKey(),
+            'member_id' => $member->getKey(),
         ]);
 
         // Assert
-        $response->assertInvalid(['user_id']);
+        $response->assertInvalid(['member_id']);
     }
 
     public function test_store_endpoint_fails_if_user_is_a_placeholder(): void
@@ -150,13 +154,14 @@ class ProjectMemberEndpointTest extends ApiEndpointTestAbstract
         ]);
         $project = Project::factory()->forOrganization($data->organization)->create();
         $projectMemberFake = ProjectMember::factory()->make();
-        $user = User::factory()->attachToOrganization($data->organization)->placeholder()->create();
+        $user = User::factory()->placeholder()->create();
+        $member = Member::factory()->forOrganization($data->organization)->forUser($user)->create();
         Passport::actingAs($data->user);
 
         // Act
         $response = $this->postJson(route('api.v1.project-members.store', [$data->organization->getKey(), $project->getKey()]), [
             'billable_rate' => $projectMemberFake->billable_rate,
-            'user_id' => $user->getKey(),
+            'member_id' => $member->getKey(),
         ]);
 
         // Assert
@@ -168,7 +173,7 @@ class ProjectMemberEndpointTest extends ApiEndpointTestAbstract
         ]);
         $this->assertDatabaseMissing(ProjectMember::class, [
             'billable_rate' => $projectMemberFake->billable_rate,
-            'user_id' => $user->getKey(),
+            'member_id' => $member->getKey(),
             'project_id' => $project->getKey(),
         ]);
     }
@@ -181,14 +186,14 @@ class ProjectMemberEndpointTest extends ApiEndpointTestAbstract
         ]);
         $project = Project::factory()->forOrganization($data->organization)->create();
         $projectMemberFake = ProjectMember::factory()->make();
-        $user = User::factory()->attachToOrganization($data->organization)->create();
-        ProjectMember::factory()->forProject($project)->forUser($user)->create();
+        $member = Member::factory()->forOrganization($data->organization)->create();
+        ProjectMember::factory()->forProject($project)->forMember($member)->create();
         Passport::actingAs($data->user);
 
         // Act
         $response = $this->postJson(route('api.v1.project-members.store', [$data->organization->getKey(), $project->getKey()]), [
             'billable_rate' => $projectMemberFake->billable_rate,
-            'user_id' => $user->getKey(),
+            'member_id' => $member->getKey(),
         ]);
 
         // Assert
@@ -200,7 +205,7 @@ class ProjectMemberEndpointTest extends ApiEndpointTestAbstract
         ]);
         $this->assertDatabaseMissing(ProjectMember::class, [
             'billable_rate' => $projectMemberFake->billable_rate,
-            'user_id' => $user->getKey(),
+            'member_id' => $member->getKey(),
             'project_id' => $project->getKey(),
         ]);
     }
@@ -213,20 +218,21 @@ class ProjectMemberEndpointTest extends ApiEndpointTestAbstract
         ]);
         $project = Project::factory()->forOrganization($data->organization)->create();
         $projectMemberFake = ProjectMember::factory()->make();
-        $user = User::factory()->attachToOrganization($data->organization)->create();
+        $user = User::factory()->create();
+        $member = Member::factory()->forOrganization($data->organization)->forUser($user)->create();
         Passport::actingAs($data->user);
 
         // Act
         $response = $this->postJson(route('api.v1.project-members.store', [$data->organization->getKey(), $project->getKey()]), [
             'billable_rate' => $projectMemberFake->billable_rate,
-            'user_id' => $user->getKey(),
+            'member_id' => $member->getKey(),
         ]);
 
         // Assert
         $response->assertStatus(201);
         $this->assertDatabaseHas(ProjectMember::class, [
             'billable_rate' => $projectMemberFake->billable_rate,
-            'user_id' => $user->getKey(),
+            'member_id' => $member->getKey(),
             'project_id' => $project->getKey(),
         ]);
     }
@@ -294,7 +300,7 @@ class ProjectMemberEndpointTest extends ApiEndpointTestAbstract
         $this->assertDatabaseHas(ProjectMember::class, [
             'id' => $projectMember->getKey(),
             'billable_rate' => $projectMemberFake->billable_rate,
-            'user_id' => $projectMember->user_id,
+            'member_id' => $projectMember->member_id,
         ]);
     }
 
@@ -321,7 +327,7 @@ class ProjectMemberEndpointTest extends ApiEndpointTestAbstract
         ]);
     }
 
-    public function test_destroy_endpoint_fails_if_user_has_no_permission_to_delete_projects(): void
+    public function test_destroy_endpoint_fails_if_user_has_no_permission_to_delete_project_members(): void
     {
         // Arrange
         $data = $this->createUserWithPermission([
@@ -340,14 +346,14 @@ class ProjectMemberEndpointTest extends ApiEndpointTestAbstract
         ]);
     }
 
-    public function test_destroy_endpoint_deletes_project(): void
+    public function test_destroy_endpoint_deletes_project_member(): void
     {
         // Arrange
         $data = $this->createUserWithPermission([
             'project-members:delete',
         ]);
         $project = Project::factory()->forOrganization($data->organization)->create();
-        $projectMember = ProjectMember::factory()->forProject($project)->create();
+        $projectMember = ProjectMember::factory()->forProject($project)->forMember($data->member)->create();
         Passport::actingAs($data->user);
 
         // Act

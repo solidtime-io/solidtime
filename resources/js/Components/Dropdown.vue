@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
 import { flip, type Placement, useFloating } from '@floating-ui/vue';
 import { offset } from '@floating-ui/vue';
 import { autoUpdate } from '@floating-ui/vue';
@@ -7,12 +7,10 @@ import { autoUpdate } from '@floating-ui/vue';
 const props = withDefaults(
     defineProps<{
         align: Placement;
-        width: string;
         closeOnContentClick: boolean;
     }>(),
     {
         align: 'bottom-start',
-        width: '48',
         closeOnContentClick: true,
     }
 );
@@ -38,12 +36,6 @@ function onContentClick() {
         open.value = false;
     }
 }
-
-const widthClass = computed(() => {
-    return {
-        48: 'w-48',
-    }[props.width.toString()];
-});
 
 function toggleOpen() {
     open.value = !open.value;
@@ -82,7 +74,6 @@ const { floatingStyles } = useFloating(reference, floating, {
                 v-show="open"
                 ref="floating"
                 class="z-50"
-                :class="[widthClass]"
                 :style="floatingStyles"
                 @click="onContentClick">
                 <transition
@@ -94,7 +85,7 @@ const { floatingStyles } = useFloating(reference, floating, {
                     leave-to-class="transform opacity-0 scale-95">
                     <div
                         v-if="open"
-                        class="rounded-lg ring-1 relative ring-black ring-opacity-5 border border-card-border overflow-none bg-card-background shadow-lg">
+                        class="rounded-lg ring-1 relative ring-black ring-opacity-5 border border-card-border overflow-none shadow-dropdown bg-card-background">
                         <slot name="content" />
                     </div>
                 </transition>

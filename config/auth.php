@@ -117,9 +117,9 @@ return [
 
     'super_admins' => ! is_string(env('SUPER_ADMINS', null)) ? [] : explode(',', env('SUPER_ADMINS')),
 
-    'terms_url' => env('TERMS_URL'),
+    'terms_url' => env('TERMS_URL', ''),
 
-    'privacy_policy_url' => env('PRIVACY_POLICY_URL'),
+    'privacy_policy_url' => env('PRIVACY_POLICY_URL', ''),
 
     'newsletter_consent' => env('NEWSLETTER_CONSENT', false),
 

@@ -75,6 +75,8 @@ export interface Task {
     organization: Organization;
 }
 
+type OrganizationWithMembership = Organization & { membership: Membership };
+
 export interface User {
     // columns
     id: string;
@@ -98,6 +100,7 @@ export interface User {
     organizations: Organization[];
     clients: Client[];
     current_team: Organization;
+    all_teams: OrganizationWithMembership[];
     owned_teams: Organization[];
     teams: Organization[];
 }

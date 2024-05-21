@@ -14,6 +14,7 @@ use App\Actions\Jetstream\UpdateMemberRole;
 use App\Actions\Jetstream\UpdateOrganization;
 use App\Enums\Role;
 use App\Enums\Weekday;
+use App\Models\Member;
 use App\Models\Organization;
 use App\Models\OrganizationInvitation;
 use App\Models\User;
@@ -52,6 +53,7 @@ class JetstreamServiceProvider extends ServiceProvider
         Jetstream::deleteTeamsUsing(DeleteOrganization::class);
         Jetstream::deleteUsersUsing(DeleteUser::class);
         Jetstream::useTeamModel(Organization::class);
+        Jetstream::useMembershipModel(Member::class);
         Jetstream::useTeamInvitationModel(OrganizationInvitation::class);
         app()->singleton(UpdateTeamMemberRole::class, UpdateMemberRole::class);
         Fortify::registerView(function () {

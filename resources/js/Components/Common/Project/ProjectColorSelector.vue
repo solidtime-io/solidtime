@@ -6,15 +6,17 @@ const model = defineModel<string>({ default: '' });
 </script>
 
 <template>
-    <div class="px-3">
+    <div>
         <Dropdown align="bottom">
             <template #trigger>
-                <div
-                    :style="{
-                        backgroundColor: model,
-                        boxShadow: `var(--tw-ring-inset) 0 0 0 calc(5px + var(--tw-ring-offset-width)) ${model}30`,
-                    }"
-                    class="w-4 h-4 rounded-full cursor-pointer"></div>
+                <button
+                    class="p-2 bg-input-background hover:bg-tertiary transition rounded-full border border-input-border">
+                    <div
+                        :style="{
+                            backgroundColor: model,
+                        }"
+                        class="w-5 h-5 rounded-full cursor-pointer"></div>
+                </button>
             </template>
             <template #content>
                 <div class="text-white grid grid-cols-6 gap-3 px-3 py-3">

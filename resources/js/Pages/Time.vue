@@ -68,12 +68,10 @@ const groupedTimeEntries = computed(() => {
                     e.billable === entry.billable &&
                     e.description === entry.description
             );
-            console.log(oldEntriesIndex);
             if (oldEntriesIndex !== -1 && newDailyEntries[oldEntriesIndex]) {
                 newDailyEntries[oldEntriesIndex].timeEntries.push(entry);
 
                 // Add up durations for time entries of the same type
-                console.log(newDailyEntries[oldEntriesIndex], entry?.duration);
                 newDailyEntries[oldEntriesIndex].duration =
                     (newDailyEntries[oldEntriesIndex].duration ?? 0) +
                     (entry?.duration ?? 0);

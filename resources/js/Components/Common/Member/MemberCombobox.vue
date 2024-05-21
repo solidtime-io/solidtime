@@ -37,7 +37,7 @@ const filteredMembers = computed(() => {
                 .toLowerCase()
                 .includes(searchValue.value?.toLowerCase()?.trim() || '') &&
             !props.hiddenMembers.some(
-                (hiddenMember) => hiddenMember.user_id === member.user_id
+                (hiddenMember) => hiddenMember.id === member.id
             ) &&
             member.is_placeholder === false
         );
@@ -54,7 +54,7 @@ onMounted(() => {
 
 function resetHighlightedItem() {
     if (filteredMembers.value.length > 0) {
-        highlightedItemId.value = filteredMembers.value[0].user_id;
+        highlightedItemId.value = filteredMembers.value[0].id;
     }
 }
 
@@ -65,10 +65,10 @@ function updateSearchValue(event: Event) {
         const highlightedClientId = highlightedItemId.value;
         if (highlightedClientId) {
             const highlightedClient = members.value.find(
-                (member) => member.user_id === highlightedClientId
+                (member) => member.id === highlightedClientId
             );
             if (highlightedClient) {
-                model.value = highlightedClient.user_id;
+                model.value = highlightedClient.id;
             }
         }
     } else {
@@ -94,10 +94,10 @@ function moveHighlightUp() {
         );
         if (currentHightlightedIndex === 0) {
             highlightedItemId.value =
-                filteredMembers.value[filteredMembers.value.length - 1].user_id;
+                filteredMembers.value[filteredMembers.value.length - 1].id;
         } else {
             highlightedItemId.value =
-                filteredMembers.value[currentHightlightedIndex - 1].user_id;
+                filteredMembers.value[currentHightlightedIndex - 1].id;
         }
     }
 }
@@ -108,10 +108,10 @@ function moveHighlightDown() {
             highlightedItem.value
         );
         if (currentHightlightedIndex === filteredMembers.value.length - 1) {
-            highlightedItemId.value = filteredMembers.value[0].user_id;
+            highlightedItemId.value = filteredMembers.value[0].id;
         } else {
             highlightedItemId.value =
-                filteredMembers.value[currentHightlightedIndex + 1].user_id;
+                filteredMembers.value[currentHightlightedIndex + 1].id;
         }
     }
 }
@@ -119,14 +119,13 @@ function moveHighlightDown() {
 const highlightedItemId = ref<string | null>(null);
 const highlightedItem = computed(() => {
     return members.value.find(
-        (member) => member.user_id === highlightedItemId.value
+        (member) => member.id === highlightedItemId.value
     );
 });
 
 const currentValue = computed(() => {
     if (model.value) {
-        return members.value.find((member) => member.user_id === model.value)
-            ?.name;
+        return members.value.find((member) => member.id === model.value)?.name;
     }
     return searchValue.value;
 });
@@ -186,18 +185,18 @@ function onUnfocus() {
             </div>
             <div
                 v-for="member in filteredMembers"
-                :key="member.user_id"
+                :key="member.id"
                 role="option"
-                :value="member.user_id"
+                :value="member.id"
                 :class="{
                     'bg-card-background-active':
-                        member.user_id === highlightedItemId,
+                        member.id === highlightedItemId,
                 }"
-                @click="updateMember(member.user_id)"
+                @click="updateMember(member.id)"
                 data-testid="client_dropdown_entries"
-                :data-client-id="member.user_id">
+                :data-client-id="member.id">
                 <ClientDropdownItem
-                    :selected="isMemberSelected(member.user_id)"
+                    :selected="isMemberSelected(member.id)"
                     :name="member.name"></ClientDropdownItem>
             </div>
         </template>

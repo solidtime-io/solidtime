@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Endpoint\Api\V1;
 
+use App\Enums\Role;
 use App\Models\OrganizationInvitation;
 use Illuminate\Support\Facades\Mail;
 use Laravel\Jetstream\Mail\TeamInvitation;
@@ -31,6 +32,7 @@ class InvitationEndpointTest extends ApiEndpointTestAbstract
         $data = $this->createUserWithPermission([
             'invitations:view',
         ]);
+        $invitation1 = OrganizationInvitation::factory()->forOrganization($data->organization)->create();
         Passport::actingAs($data->user);
 
         // Act
@@ -38,6 +40,15 @@ class InvitationEndpointTest extends ApiEndpointTestAbstract
 
         // Assert
         $response->assertStatus(200);
+        $response->assertJson([
+            'data' => [
+                [
+                    'id' => $invitation1->getKey(),
+                    'email' => $invitation1->email,
+                    'role' => $invitation1->role,
+                ],
+            ],
+        ]);
     }
 
     public function test_store_fails_if_user_has_no_permission_to_create_invitations(): void
@@ -50,7 +61,7 @@ class InvitationEndpointTest extends ApiEndpointTestAbstract
         // Act
         $response = $this->postJson(route('api.v1.invitations.store', $data->organization->getKey()), [
             'email' => 'test@mail.test',
-            'role' => 'employee',
+            'role' => Role::Employee->value,
         ]);
 
         // Assert
@@ -68,7 +79,7 @@ class InvitationEndpointTest extends ApiEndpointTestAbstract
         // Act
         $response = $this->postJson(route('api.v1.invitations.store', $data->organization->getKey()), [
             'email' => 'test@asdf.at',
-            'role' => 'employee',
+            'role' => Role::Employee->value,
         ]);
 
         // Assert
@@ -76,7 +87,7 @@ class InvitationEndpointTest extends ApiEndpointTestAbstract
         $invitation = OrganizationInvitation::first();
         $this->assertNotNull($invitation);
         $this->assertEquals('test@asdf.at', $invitation->email);
-        $this->assertEquals('employee', $invitation->role);
+        $this->assertEquals(Role::Employee->value, $invitation->role);
     }
 
     public function test_resend_fails_if_user_has_no_permission_to_resend_the_invitation(): void

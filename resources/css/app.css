@@ -2,16 +2,40 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+    --color-bg-primary: #0f1011;
+    --color-bg-secondary: #1b1c20;
+    --color-bg-tertiary: #2A2C32;
+    --color-bg-quaternary: #141518;
+    --color-text-primary: #ffffff;
+    --color-text-secondary: #e3e4e6;
+    --color-text-tertiary: #969799;
+    --color-text-quaternary: #595a5c;
+    --color-border-primary: #191b1f;
+    --color-border-secondary: #23252a;
+    --color-border-tertiary: #2c2e33;
+    --color-border-quaternary: #393B42;
+    --color-input-border-active: rgba(255,255,255,0.3);
 
-:root{
-    --theme-color-default-background: #0b0d1c;
-    --theme-color-icon-default: #42466C;
-    --theme-color-card-background: #13152B;
-    --theme-color-card-background-active: #1C1E34;
-    --theme-color-card-background-separator: #1c2033;
-    --theme-color-card-border: #1c2033;
-    --theme-color-card-border-active: #2A3461;
-    --theme-color-default-background-separator: #141a2f;
+    --color-accent-primary: 14, 165, 233;  /* sky-500 */
+    --color-accent-secondary: 56, 189, 248;
+    --color-accent-tertiary: 125, 211, 252;
+    --color-accent-quaternary: 186, 230, 253;
+
+    --theme-color-default-background: var(--color-bg-primary);
+    --theme-color-icon-default: var(--color-text-tertiary);
+    --theme-color-icon-active: rgb(var(--color-text-tertiary));
+    --theme-color-card-background: var(--color-bg-secondary);
+    --theme-color-card-background-active: var(--color-bg-tertiary);
+    --theme-color-card-background-separator: var(--color-border-quaternary);
+    --theme-color-card-border: var(--color-border-secondary);
+    --theme-color-card-border-active: var(--color-border-tertiary);
+    --theme-color-default-background-separator: var(--color-border-primary);
+    --theme-color-primary-text: var(--color-text-primary);
+    --theme-color-muted-text: var(--color-text-secondary);
+    --theme-color-menu-active: var(--color-bg-secondary);
+    --theme-color-input-border: var(--color-border-quaternary);
+    --theme-color-input-background: var(--color-bg-secondary);
     --theme-color-tab-background: var(--theme-color-card-background);
     --theme-color-tab-background-active: var(--theme-color-card-background-active);
     --theme-color-tab-border: var(--theme-color-card-border);
@@ -21,17 +45,15 @@
     --theme-color-row-heading-border: var(--theme-color-card-border);
 }
 
-*{
+* {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
 
-
 [x-cloak] {
     display: none;
 }
-
-body{
+body {
     background-color: var(--theme-color-default-background);
 }
 

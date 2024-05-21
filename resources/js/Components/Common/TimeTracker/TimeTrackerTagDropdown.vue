@@ -25,7 +25,7 @@ const iconColorClasses = computed(() => {
                 :class="
                     twMerge(
                         iconColorClasses,
-                        'flex-shrink-0 ring-0 focus:outline-none focus:ring-0 transition focus:bg-card-background-separator hover:bg-card-background-separator rounded-full w-7 sm:w-10 h-7 sm:h-10 flex items-center justify-center'
+                        'flex-shrink-0 ring-0 focus:outline-none focus:ring-0 transition focus-visible:bg-card-background-separator hover:bg-card-background-separator rounded-full w-7 sm:w-10 h-7 sm:h-10 flex items-center justify-center'
                     )
                 ">
                 <TagIcon class="w-5 sm:w-6 h-5 sm:h-6"></TagIcon>

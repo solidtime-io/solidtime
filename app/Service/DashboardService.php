@@ -10,9 +10,9 @@ use App\Models\Project;
 use App\Models\Task;
 use App\Models\TimeEntry;
 use App\Models\User;
-use Carbon\Carbon;
 use Carbon\CarbonTimeZone;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -335,20 +335,22 @@ class DashboardService
     }
 
     /**
-     * Rhe 4 most recently active members of your team with user_id, name, description of the latest time entry, time_entry_id, task_id and a boolean status if the team member is currently working
+     * Rhe 4 most recently active members of your team with member_id, name, description of the latest time entry, time_entry_id, task_id and a boolean status if the team member is currently working
      *
-     * @return array<int, array{user_id: string, name: string, description: string|null, time_entry_id: string, task_id: string|null, status: bool }>
+     * @return array<int, array{member_id: string, name: string, description: string|null, time_entry_id: string, task_id: string|null, status: bool }>
      */
     public function latestTeamActivity(Organization $organization): array
     {
         $timeEntries = TimeEntry::query()
-            ->select(DB::raw('distinct on (user_id) user_id, description, id, task_id, start, "end"'))
+            ->select(DB::raw('distinct on (member_id) member_id, description, id, task_id, start, "end"'))
             ->whereBelongsTo($organization, 'organization')
-            ->orderBy('user_id')
+            ->orderBy('member_id')
             ->orderBy('start', 'desc')
             // Note: limit here does not work because of the distinct on
             ->with([
-                'user',
+                'member' => [
+                    'user',
+                ],
             ])
             ->get()
             ->sortByDesc('start')
@@ -358,8 +360,8 @@ class DashboardService
 
         foreach ($timeEntries as $timeEntry) {
             $response[] = [
-                'user_id' => $timeEntry->user_id,
-                'name' => $timeEntry->user->name,
+                'member_id' => $timeEntry->member_id,
+                'name' => $timeEntry->member->user->name,
                 'description' => $timeEntry->description,
                 'time_entry_id' => $timeEntry->id,
                 'task_id' => $timeEntry->task_id,

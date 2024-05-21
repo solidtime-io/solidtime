@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Model;
 
+use App\Enums\Role;
+use App\Models\Member;
 use App\Models\Organization;
 use App\Models\ProjectMember;
 use App\Models\TimeEntry;
@@ -57,12 +59,12 @@ class UserModelTest extends ModelTestAbstract
         $organization = Organization::factory()->withOwner($owner)->create();
         $user = User::factory()->create();
         $user->organizations()->attach($organization, [
-            'role' => 'employee',
+            'role' => Role::Employee->value,
         ]);
         $otherOrganization = Organization::factory()->create();
         $otherUser = User::factory()->create();
         $otherUser->organizations()->attach($otherOrganization, [
-            'role' => 'employee',
+            'role' => Role::Employee->value,
         ]);
 
         // Act
@@ -98,8 +100,10 @@ class UserModelTest extends ModelTestAbstract
         // Arrange
         $user = User::factory()->create();
         $otherUser = User::factory()->create();
-        $projectMembers = ProjectMember::factory()->forUser($user)->createMany(3);
-        $otherProjectMembers = ProjectMember::factory()->forUser($otherUser)->createMany(3);
+        $member = Member::factory()->forUser($user)->create();
+        $otherMember = Member::factory()->forUser($otherUser)->create();
+        $projectMembers = ProjectMember::factory()->forMember($member)->createMany(3);
+        $otherProjectMembers = ProjectMember::factory()->forMember($otherMember)->createMany(3);
 
         // Act
         $user->refresh();

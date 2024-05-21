@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\V1\TimeEntry;
 
+use App\Models\Member;
 use App\Models\Organization;
-use App\Models\User;
+use App\Models\Project;
+use App\Models\Tag;
+use App\Models\Task;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Http\FormRequest;
@@ -24,30 +27,87 @@ class TimeEntryIndexRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // Filter by user ID
-            'user_id' => [
+            // Filter by member ID
+            'member_id' => [
                 'string',
                 'uuid',
-                new ExistsEloquent(User::class, null, function (Builder $builder): Builder {
-                    /** @var Builder<User> $builder */
-                    return $builder->belongsToOrganization($this->organization);
+                new ExistsEloquent(Member::class, null, function (Builder $builder): Builder {
+                    /** @var Builder<Member> $builder */
+                    return $builder->whereBelongsTo($this->organization, 'organization');
                 }),
             ],
-            // Filter only time entries that have a start date before (not including) the given date (example: 2021-12-31)
-            'before' => [
+            // Filter by multiple member IDs, member IDs are OR combined, but AND combined with the member_id parameter
+            'member_ids' => [
+                'array',
+                'min:1',
+            ],
+            'member_ids.*' => [
+                'string',
+                'uuid',
+                new ExistsEloquent(Member::class, null, function (Builder $builder): Builder {
+                    /** @var Builder<Member> $builder */
+                    return $builder->whereBelongsTo($this->organization, 'organization');
+                }),
+            ],
+            // Filter by project IDs, project IDs are OR combined
+            'project_ids' => [
+                'array',
+                'min:1',
+            ],
+            'project_ids.*' => [
+                'string',
+                'uuid',
+                new ExistsEloquent(Project::class, null, function (Builder $builder): Builder {
+                    /** @var Builder<Project> $builder */
+                    return $builder->whereBelongsTo($this->organization, 'organization');
+                }),
+            ],
+            // Filter by tag IDs, tag IDs are AND combined
+            'tag_ids' => [
+                'array',
+                'min:1',
+            ],
+            'tag_ids.*' => [
+                'string',
+                'uuid',
+                new ExistsEloquent(Tag::class, null, function (Builder $builder): Builder {
+                    /** @var Builder<Tag> $builder */
+                    return $builder->whereBelongsTo($this->organization, 'organization');
+                }),
+            ],
+            // Filter by task IDs, task IDs are OR combined
+            'task_ids' => [
+                'array',
+                'min:1',
+            ],
+            'task_ids.*' => [
+                'string',
+                'uuid',
+                new ExistsEloquent(Task::class, null, function (Builder $builder): Builder {
+                    /** @var Builder<Task> $builder */
+                    return $builder->whereBelongsTo($this->organization, 'organization');
+                }),
+            ],
+            // Filter only time entries that have a start date after the given timestamp in UTC (example: 2021-01-01T00:00:00Z)
+            'start' => [
                 'nullable',
                 'string',
                 'date_format:Y-m-d\TH:i:s\Z',
-                'before:after',
+                'before:end',
             ],
-            // Filter only time entries that have a start date after (not including) the given date (example: 2021-12-31)
-            'after' => [
+            // Filter only time entries that have a start date before the given timestamp in UTC (example: 2021-01-01T00:00:00Z)
+            'end' => [
                 'nullable',
                 'string',
                 'date_format:Y-m-d\TH:i:s\Z',
             ],
-            // Filter only time entries that are active (have no end date, are still running)
+            // Filter by active status (active means has no end date, is still running)
             'active' => [
+                'string',
+                'in:true,false',
+            ],
+            // Filter by billable status
+            'billable' => [
                 'string',
                 'in:true,false',
             ],
@@ -63,5 +123,10 @@ class TimeEntryIndexRequest extends FormRequest
                 'in:true,false',
             ],
         ];
+    }
+
+    public function getOnlyFullDates(): bool
+    {
+        return $this->input('only_full_dates', 'false') === 'true';
     }
 }

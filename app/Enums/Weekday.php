@@ -16,6 +16,19 @@ enum Weekday: string
     case Saturday = 'saturday';
     case Sunday = 'sunday';
 
+    public function toEndOfWeek(): self
+    {
+        return match ($this) {
+            Weekday::Monday => Weekday::Sunday,
+            Weekday::Tuesday => Weekday::Monday,
+            Weekday::Wednesday => Weekday::Tuesday,
+            Weekday::Thursday => Weekday::Wednesday,
+            Weekday::Friday => Weekday::Thursday,
+            Weekday::Saturday => Weekday::Friday,
+            Weekday::Sunday => Weekday::Saturday,
+        };
+    }
+
     public function carbonWeekDay(): int
     {
         return match ($this) {

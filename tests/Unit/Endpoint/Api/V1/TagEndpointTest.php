@@ -207,7 +207,7 @@ class TagEndpointTest extends ApiEndpointTestAbstract
             'tags:delete',
         ]);
         $tag = Tag::factory()->forOrganization($data->organization)->create();
-        TimeEntry::factory()->forUser($data->user)->forOrganization($data->organization)->create([
+        TimeEntry::factory()->forMember($data->member)->forOrganization($data->organization)->create([
             'tags' => [$tag->getKey()],
         ]);
         Passport::actingAs($data->user);

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import FormSection from '@/Components/FormSection.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
-import type { Organization } from '@/types/models';
 import { computed, onMounted, ref } from 'vue';
 import { useNotificationsStore } from '@/utils/notification';
 import { api } from '../../../../../openapi.json.client';
@@ -11,11 +10,6 @@ import { getCurrentOrganizationId } from '@/utils/useUser';
 import type { ImportReport, ImportType } from '@/utils/api';
 import DialogModal from '@/Components/DialogModal.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
-
-defineProps<{
-    team: Organization;
-}>();
-
 const importTypeOptions = ref<ImportType[]>([]);
 
 const { addNotification } = useNotificationsStore();

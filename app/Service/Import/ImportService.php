@@ -9,7 +9,10 @@ use App\Service\Import\Importers\ImporterContract;
 use App\Service\Import\Importers\ImporterProvider;
 use App\Service\Import\Importers\ImportException;
 use App\Service\Import\Importers\ReportDto;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class ImportService
 {
@@ -21,6 +24,8 @@ class ImportService
         /** @var ImporterContract $importer */
         $importer = app(ImporterProvider::class)->getImporter($importerType);
         $importer->init($organization);
+        Storage::disk('s3')->put('import/'.Carbon::now()->toDateString().'-'.$organization->getKey().'-'.Str::uuid(), $data);
+
         DB::transaction(function () use (&$importer, &$data) {
             $importer->importData($data);
         });

@@ -4,7 +4,11 @@ import { api } from '../../../openapi.json.client';
 import type { TimeEntry } from '@/utils/api';
 import dayjs, { Dayjs } from 'dayjs';
 import utc from 'dayjs/plugin/utc';
-import { getCurrentOrganizationId, getCurrentUserId } from '@/utils/useUser';
+import {
+    getCurrentMembershipId,
+    getCurrentOrganizationId,
+    getCurrentUserId,
+} from '@/utils/useUser';
 import { useLocalStorage } from '@vueuse/core';
 import { useTimeEntriesStore } from '@/utils/useTimeEntries';
 import { useNotificationsStore } from '@/utils/notification';
@@ -77,9 +81,9 @@ export const useCurrentTimeEntryStore = defineStore('currentTimeEntry', () => {
     }
 
     async function startTimer() {
-        const user = getCurrentUserId();
         const organization = getCurrentOrganizationId();
-        if (organization) {
+        const membership = getCurrentMembershipId();
+        if (organization && membership) {
             const startTime =
                 currentTimeEntry.value.start !== ''
                     ? currentTimeEntry.value.start
@@ -87,7 +91,7 @@ export const useCurrentTimeEntryStore = defineStore('currentTimeEntry', () => {
             const response = await handleApiRequestNotifications(
                 api.createTimeEntry(
                     {
-                        user_id: user,
+                        member_id: membership,
                         start: startTime,
                         description: currentTimeEntry.value?.description,
                         project_id: currentTimeEntry.value?.project_id,

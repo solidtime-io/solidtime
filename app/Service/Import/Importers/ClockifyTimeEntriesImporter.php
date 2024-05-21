@@ -56,6 +56,10 @@ class ClockifyTimeEntriesImporter extends DefaultImporter
                     'timezone' => 'UTC',
                     'is_placeholder' => true,
                 ]);
+                $memberId = $this->memberImportHelper->getKey([
+                    'user_id' => $userId,
+                    'organization_id' => $this->organization->getKey(),
+                ]);
                 $clientId = null;
                 if ($record['Client'] !== '') {
                     $clientId = $this->clientImportHelper->getKey([
@@ -83,6 +87,7 @@ class ClockifyTimeEntriesImporter extends DefaultImporter
                 }
                 $timeEntry = new TimeEntry();
                 $timeEntry->user_id = $userId;
+                $timeEntry->member_id = $memberId;
                 $timeEntry->task_id = $taskId;
                 $timeEntry->project_id = $projectId;
                 $timeEntry->organization_id = $this->organization->id;

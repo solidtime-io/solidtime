@@ -86,7 +86,7 @@ class TaskEndpointTest extends ApiEndpointTestAbstract
         $projectPublic = Project::factory()->isPublic()->create();
         Task::factory()->forOrganization($data->organization)->forProject($projectPublic)->createMany(2);
         $projectAsMember = Project::factory()->isPrivate()->create();
-        ProjectMember::factory()->forProject($projectAsMember)->forUser($data->user)->create();
+        ProjectMember::factory()->forProject($projectAsMember)->forMember($data->member)->create();
         Task::factory()->forOrganization($data->organization)->forProject($projectAsMember)->createMany(2);
         Passport::actingAs($data->user);
 
@@ -177,7 +177,7 @@ class TaskEndpointTest extends ApiEndpointTestAbstract
             'tasks:view',
         ]);
         $project = Project::factory()->forOrganization($data->organization)->create();
-        ProjectMember::factory()->forProject($project)->forUser($data->user)->create();
+        ProjectMember::factory()->forProject($project)->forMember($data->member)->create();
         Task::factory()->forOrganization($data->organization)->createMany(4);
         Task::factory()->forOrganization($data->organization)->forProject($project)->createMany(2);
         Passport::actingAs($data->user);
@@ -311,7 +311,7 @@ class TaskEndpointTest extends ApiEndpointTestAbstract
             'tasks:delete',
         ]);
         $task = Task::factory()->forOrganization($data->organization)->create();
-        TimeEntry::factory()->forUser($data->user)->forTask($task)->forOrganization($data->organization)->create();
+        TimeEntry::factory()->forMember($data->member)->forTask($task)->forOrganization($data->organization)->create();
         Passport::actingAs($data->user);
 
         // Act

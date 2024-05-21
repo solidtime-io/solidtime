@@ -36,6 +36,9 @@ class TogglDataImporter extends DefaultImporter
                 throw new ImportException('File "clients.json" can not be opened');
             }
             $clients = json_decode($clientsFileContent);
+            if ($clients === null) {
+                throw new ImportException('File "clients.json" is empty');
+            }
             if (! file_exists($temporaryDirectory->path('projects.json'))) {
                 throw new ImportException('File "projects.json" missing in ZIP');
             }
@@ -44,6 +47,9 @@ class TogglDataImporter extends DefaultImporter
                 throw new ImportException('File "projects.json" can not be opened');
             }
             $projects = json_decode($projectsFileContent);
+            if ($projects === null) {
+                throw new ImportException('File "projects.json" is empty');
+            }
             if (! file_exists($temporaryDirectory->path('tags.json'))) {
                 throw new ImportException('File "tags.json" missing in ZIP');
             }
@@ -52,6 +58,9 @@ class TogglDataImporter extends DefaultImporter
                 throw new ImportException('File "tags.json" can not be opened');
             }
             $tags = json_decode($tagsFileContent);
+            if ($tags === null) {
+                throw new ImportException('File "tags.json" is empty');
+            }
             if (! file_exists($temporaryDirectory->path('workspace_users.json'))) {
                 throw new ImportException('File "workspace_users.json" missing in ZIP');
             }
@@ -60,6 +69,9 @@ class TogglDataImporter extends DefaultImporter
                 throw new ImportException('File "workspace_users.json" can not be opened');
             }
             $workspaceUsers = json_decode($workspaceUsersFileContent);
+            if ($workspaceUsers === null) {
+                throw new ImportException('File "workspace_users.json" is empty');
+            }
             foreach ($clients as $client) {
                 $this->clientImportHelper->getKey([
                     'name' => $client->name,
@@ -74,13 +86,17 @@ class TogglDataImporter extends DefaultImporter
             }
 
             foreach ($workspaceUsers as $workspaceUser) {
-                $this->userImportHelper->getKey([
+                $userId = $this->userImportHelper->getKey([
                     'email' => $workspaceUser->email,
                 ], [
                     'name' => $workspaceUser->name,
                     'timezone' => $workspaceUser->timezone ?? 'UTC',
                     'is_placeholder' => true,
                 ], (string) $workspaceUser->uid);
+                $memberId = $this->memberImportHelper->getKey([
+                    'user_id' => $userId,
+                    'organization_id' => $this->organization->getKey(),
+                ], [], $userId);
             }
 
             foreach ($projects as $project) {
@@ -113,11 +129,16 @@ class TogglDataImporter extends DefaultImporter
                     throw new ImportException('File "projects_users/'.$project->id.'.json" can not be opened');
                 }
                 $projectMembers = json_decode($projectMembersFileContent);
+                if ($projectMembers === null) {
+                    throw new ImportException('File "projects_users/'.$project->id.'.json" is empty');
+                }
                 foreach ($projectMembers as $projectMember) {
+                    $userId = $this->userImportHelper->getKeyByExternalIdentifier((string) $projectMember->user_id);
                     $this->projectMemberImportHelper->getKey([
                         'project_id' => $projectId,
-                        'user_id' => $this->userImportHelper->getKeyByExternalIdentifier((string) $projectMember->user_id),
+                        'member_id' => $this->memberImportHelper->getKeyByExternalIdentifier($userId),
                     ], [
+                        'user_id' => $userId,
                         'billable_rate' => $projectMember->rate !== null ? (int) ($projectMember->rate * 100) : null,
                     ]);
                 }
@@ -132,6 +153,9 @@ class TogglDataImporter extends DefaultImporter
                     throw new ImportException('File "tasks/'.$projectIdExternal.'.json" can not be opened');
                 }
                 $tasks = json_decode($tasksFileContent);
+                if ($tasks === null) {
+                    throw new ImportException('File "tasks/'.$projectIdExternal.'.json" is empty');
+                }
                 foreach ($tasks as $task) {
                     $projectId = $this->projectImportHelper->getKeyByExternalIdentifier((string) $projectIdExternal);
 

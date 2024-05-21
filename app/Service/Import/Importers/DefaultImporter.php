@@ -6,6 +6,7 @@ namespace App\Service\Import\Importers;
 
 use App\Enums\Role;
 use App\Models\Client;
+use App\Models\Member;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Models\ProjectMember;
@@ -25,6 +26,11 @@ abstract class DefaultImporter implements ImporterContract
      * @var ImportDatabaseHelper<User>
      */
     protected ImportDatabaseHelper $userImportHelper;
+
+    /**
+     * @var ImportDatabaseHelper<Member>
+     */
+    protected ImportDatabaseHelper $memberImportHelper;
 
     /**
      * @var ImportDatabaseHelper<Project>
@@ -77,6 +83,10 @@ abstract class DefaultImporter implements ImporterContract
                 'timezone:all',
             ],
         ]);
+        $this->memberImportHelper = new ImportDatabaseHelper(Member::class, ['user_id', 'organization_id'], true, function (Builder $builder) {
+            /** @var Builder<Member> $builder */
+            return $builder->whereBelongsTo($this->organization, 'organization');
+        });
         $this->projectImportHelper = new ImportDatabaseHelper(Project::class, ['name', 'organization_id'], true, function (Builder $builder) {
             /** @var Builder<Project> $builder */
             return $builder->where('organization_id', $this->organization->id);
@@ -90,7 +100,7 @@ abstract class DefaultImporter implements ImporterContract
                 'integer',
             ],
         ]);
-        $this->projectMemberImportHelper = new ImportDatabaseHelper(ProjectMember::class, ['project_id', 'user_id'], true, function (Builder $builder) {
+        $this->projectMemberImportHelper = new ImportDatabaseHelper(ProjectMember::class, ['project_id', 'member_id'], true, function (Builder $builder) {
             /** @var Builder<ProjectMember> $builder */
             return $builder->whereBelongsToOrganization($this->organization);
         }, validate: [

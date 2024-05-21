@@ -115,7 +115,6 @@ test('test that starting and updating the time while running works', async ({
                 (await response.json()).data.project_id === null &&
                 (await response.json()).data.description === '' &&
                 (await response.json()).data.task_id === null &&
-                (await response.json()).data.duration === null &&
                 (await response.json()).data.user_id !== null &&
                 JSON.stringify((await response.json()).data.tags) ===
                     JSON.stringify([])

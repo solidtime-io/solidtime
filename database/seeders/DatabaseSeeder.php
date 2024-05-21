@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use App\Enums\Role;
 use App\Models\Client;
+use App\Models\Member;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Models\ProjectMember;
@@ -25,6 +25,11 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->deleteAll();
+        $userWithMultipleOrganizations = User::factory()->withPersonalOrganization()->create([
+            'name' => 'Mister Overemployed',
+            'email' => 'overemployed@acme.test',
+        ]);
+
         $userAcmeOwner = User::factory()->withPersonalOrganization()->create([
             'name' => 'Acme Owner',
             'email' => 'owner@acme.test',
@@ -34,7 +39,7 @@ class DatabaseSeeder extends Seeder
             'personal_team' => false,
             'currency' => 'EUR',
         ]);
-        $userAcmeManager = User::factory()->withPersonalOrganization()->create([
+        $userRivalManager = User::factory()->withPersonalOrganization()->create([
             'name' => 'Acme Manager',
             'email' => 'test@example.com',
         ]);
@@ -51,36 +56,28 @@ class DatabaseSeeder extends Seeder
             'email' => 'old.employee@acme.test',
             'password' => null,
         ]);
-        $userAcmeOwner->organizations()->attach($organizationAcme, [
-            'role' => Role::Owner->value,
-        ]);
-        $userAcmeManager->organizations()->attach($organizationAcme, [
-            'role' => Role::Manager->value,
-        ]);
-        $userAcmeAdmin->organizations()->attach($organizationAcme, [
-            'role' => Role::Admin->value,
-        ]);
-        $userAcmeEmployee->organizations()->attach($organizationAcme, [
-            'role' => Role::Employee->value,
-        ]);
-        $userAcmePlaceholder->organizations()->attach($organizationAcme, [
-            'role' => Role::Placeholder->value,
-        ]);
+        $userAcmeOwnerMember = Member::factory()->forUser($userAcmeOwner)->forOrganization($organizationAcme)->role(Role::Owner)->create();
+        $userAcmeManagerMember = Member::factory()->forUser($userRivalManager)->forOrganization($organizationAcme)->role(Role::Manager)->create();
+        $userAcmeAdminMember = Member::factory()->forUser($userAcmeAdmin)->forOrganization($organizationAcme)->role(Role::Admin)->create();
+        $userAcmeEmployeeMember = Member::factory()->forUser($userAcmeEmployee)->forOrganization($organizationAcme)->role(Role::Employee)->create();
+        $userAcmePlaceholderMember = Member::factory()->forUser($userAcmePlaceholder)->forOrganization($organizationAcme)->role(Role::Placeholder)->create();
+        $userWithMultipleOrganizationsAcmeMember = Member::factory()->forUser($userWithMultipleOrganizations)->forOrganization($organizationAcme)->role(Role::Employee)->create();
 
-        $timeEntriesAcmeAdmin = TimeEntry::factory()
+        TimeEntry::factory()
             ->count(10)
-            ->forUser($userAcmeAdmin)
-            ->forOrganization($organizationAcme)
+            ->forMember($userAcmeAdminMember)
             ->create();
-        $timeEntriesAcmePlaceholder = TimeEntry::factory()
+        TimeEntry::factory()
             ->count(10)
-            ->forUser($userAcmePlaceholder)
-            ->forOrganization($organizationAcme)
+            ->forMember($userAcmePlaceholderMember)
             ->create();
-        $timeEntriesAcmePlaceholder = TimeEntry::factory()
+        TimeEntry::factory()
             ->count(10)
-            ->forUser($userAcmeEmployee)
-            ->forOrganization($organizationAcme)
+            ->forMember($userAcmeEmployeeMember)
+            ->create();
+        TimeEntry::factory()
+            ->count(5)
+            ->forMember($userWithMultipleOrganizationsAcmeMember)
             ->create();
         $client = Client::factory()->forOrganization($organizationAcme)->create([
             'name' => 'Big Company',
@@ -88,6 +85,10 @@ class DatabaseSeeder extends Seeder
         $bigCompanyProject = Project::factory()->forOrganization($organizationAcme)->forClient($client)->create([
             'name' => 'Big Company Project',
         ]);
+        ProjectMember::factory()->forProject($bigCompanyProject)->forMember($userAcmeEmployeeMember)->create();
+        ProjectMember::factory()->forProject($bigCompanyProject)->forMember($userAcmeAdminMember)->create();
+        ProjectMember::factory()->forProject($bigCompanyProject)->forMember($userWithMultipleOrganizationsAcmeMember)->create();
+
         Task::factory()->forOrganization($organizationAcme)->forProject($bigCompanyProject)->create();
 
         $internalProject = Project::factory()->forOrganization($organizationAcme)->create([
@@ -98,21 +99,26 @@ class DatabaseSeeder extends Seeder
             'name' => 'Other Owner',
             'email' => 'owner@rival-company.test',
         ]);
-        $organization2 = Organization::factory()->withOwner($organization2Owner)->create([
+        $organizationRival = Organization::factory()->withOwner($organization2Owner)->create([
             'name' => 'Rival Corp',
             'personal_team' => true,
             'currency' => 'USD',
         ]);
-        $userAcmeManager = User::factory()->withPersonalOrganization()->create([
+        $userRivalManager = User::factory()->withPersonalOrganization()->create([
             'name' => 'Other User',
             'email' => 'test@rival-company.test',
         ]);
-        $userAcmeManager->organizations()->attach($organization2, [
-            'role' => Role::Admin->value,
-        ]);
-        $otherCompanyProject = Project::factory()->forOrganization($organization2)->forClient($client)->create([
+        $userRivalManagerMember = Member::factory()->forUser($userRivalManager)->forOrganization($organizationRival)->role(Role::Admin)->create();
+        $userWithMultipleOrganizationsRivalMember = Member::factory()->forUser($userWithMultipleOrganizations)->forOrganization($organizationRival)->role(Role::Employee)->create();
+        $otherCompanyProject = Project::factory()->forOrganization($organizationRival)->forClient($client)->create([
             'name' => 'Scale Company',
         ]);
+        ProjectMember::factory()->forProject($otherCompanyProject)->forMember($userRivalManagerMember)->create();
+        ProjectMember::factory()->forProject($otherCompanyProject)->forMember($userWithMultipleOrganizationsRivalMember)->create();
+        TimeEntry::factory()
+            ->count(5)
+            ->forMember($userWithMultipleOrganizationsRivalMember)
+            ->create();
 
         User::factory()->withPersonalOrganization()->create([
             'email' => 'admin@example.com',

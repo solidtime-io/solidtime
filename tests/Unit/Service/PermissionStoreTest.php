@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Service;
 
+use App\Enums\Role;
 use App\Models\Organization;
 use App\Models\User;
 use App\Service\PermissionStore;
@@ -20,7 +21,7 @@ class PermissionStoreTest extends TestCase
         // Arrange
         $organization = Organization::factory()->create();
         $user = User::factory()->create();
-        $organization->users()->attach($user, ['role' => 'employee']);
+        $organization->users()->attach($user, ['role' => Role::Employee->value]);
         $permissionStore = new PermissionStore();
 
         // Act
@@ -50,7 +51,7 @@ class PermissionStoreTest extends TestCase
         // Arrange
         $organization = Organization::factory()->create();
         $user = User::factory()->create();
-        $organization->users()->attach($user, ['role' => 'employee']);
+        $organization->users()->attach($user, ['role' => Role::Employee->value]);
         $permissionStore = new PermissionStore();
         $this->actingAs($user);
 
@@ -66,7 +67,7 @@ class PermissionStoreTest extends TestCase
         // Arrange
         $organization = Organization::factory()->create();
         $user = User::factory()->create();
-        $organization->users()->attach($user, ['role' => 'employee']);
+        $organization->users()->attach($user, ['role' => Role::Employee->value]);
         $permissionStore = new PermissionStore();
         $this->actingAs($user);
 
@@ -82,7 +83,7 @@ class PermissionStoreTest extends TestCase
         // Arrange
         $organization = Organization::factory()->create();
         $user = User::factory()->create();
-        $organization->users()->attach($user, ['role' => 'employee']);
+        $organization->users()->attach($user, ['role' => Role::Employee->value]);
         $permissionStore = new PermissionStore();
 
         // Act
@@ -111,7 +112,7 @@ class PermissionStoreTest extends TestCase
         // Arrange
         $organization = Organization::factory()->create();
         $user = User::factory()->create();
-        $organization->users()->attach($user, ['role' => 'employee']);
+        $organization->users()->attach($user, ['role' => Role::Employee->value]);
         $permissionStore = new PermissionStore();
         $this->actingAs($user);
 
@@ -119,6 +120,6 @@ class PermissionStoreTest extends TestCase
         $result = $permissionStore->getPermissions($organization);
 
         // Assert
-        $this->assertSame(Jetstream::findRole('employee')->permissions, $result);
+        $this->assertSame(Jetstream::findRole(Role::Employee->value)->permissions, $result);
     }
 }

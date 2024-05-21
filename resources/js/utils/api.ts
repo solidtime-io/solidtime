@@ -2,6 +2,7 @@ import type {
     ApiOf,
     ZodiosResponseByAlias,
     ZodiosBodyByAlias,
+    ZodiosQueryParamsByAlias,
 } from '@zodios/core';
 import { api } from '../../../openapi.json.client';
 
@@ -84,3 +85,16 @@ export type ImportType = ZodiosResponseByAlias<
     'getImporters'
 >['data'][0];
 export type ImportReport = ZodiosResponseByAlias<SolidTimeApi, 'importData'>;
+
+export type ReportingResponse = ZodiosResponseByAlias<
+    SolidTimeApi,
+    'getAggregatedTimeEntries'
+>;
+
+export type AggregatedTimeEntries = ReportingResponse['data'];
+export type GroupedDataEntries = ReportingResponse['data']['grouped_data'];
+
+export type AggregatedTimeEntriesQueryParams = ZodiosQueryParamsByAlias<
+    SolidTimeApi,
+    'getAggregatedTimeEntries'
+>;

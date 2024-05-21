@@ -14,7 +14,7 @@ test('test that creating and deleting a new tag in a new project works', async (
         'New Project ' + Math.floor(1 + Math.random() * 10000);
     await goToProjectsOverview(page);
     await page.getByRole('button', { name: 'Create Project' }).click();
-    await page.getByPlaceholder('Project Name').fill(newProjectName);
+    await page.getByLabel('Project Name').fill(newProjectName);
     await Promise.all([
         page.getByRole('button', { name: 'Create Project' }).nth(1).click(),
         page.waitForResponse(

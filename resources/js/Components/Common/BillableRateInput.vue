@@ -6,6 +6,10 @@ import {
     getOrganizationCurrencySymbol,
 } from '../../utils/money';
 
+defineProps<{
+    name: string;
+}>();
+
 const model = defineModel({
     default: null,
     type: Number,
@@ -51,13 +55,14 @@ function formatCents(modelValue: number) {
 <template>
     <div class="relative">
         <TextInput
-            id="projectMemberRate"
+            :id="name"
             ref="projectMemberRateInput"
             :modelValue="formatCents(model)"
             @blur="updateRate($event.target.value)"
             type="text"
+            :name="name"
             placeholder="Billable Rate"
-            class="mt-1 block w-full"
+            class="mt-2 block w-full"
             autocomplete="teamMemberRate" />
         <span>
             <div

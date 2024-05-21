@@ -10,10 +10,10 @@ use App\Http\Requests\V1\ProjectMember\ProjectMemberStoreRequest;
 use App\Http\Requests\V1\ProjectMember\ProjectMemberUpdateRequest;
 use App\Http\Resources\V1\ProjectMember\ProjectMemberCollection;
 use App\Http\Resources\V1\ProjectMember\ProjectMemberResource;
+use App\Models\Member;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Models\ProjectMember;
-use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -62,17 +62,18 @@ class ProjectMemberController extends Controller
     {
         $this->checkPermission($organization, 'project-members:create', $project);
 
-        $user = User::findOrFail((string) $request->input('user_id'));
-        if ($user->is_placeholder) {
+        $member = Member::findOrFail((string) $request->input('member_id'));
+        if ($member->user->is_placeholder) {
             throw new InactiveUserCanNotBeUsedApiException();
         }
-        if (ProjectMember::whereBelongsTo($project, 'project')->whereBelongsTo($user, 'user')->exists()) {
+        if (ProjectMember::whereBelongsTo($project, 'project')->whereBelongsTo($member, 'member')->exists()) {
             throw new UserIsAlreadyMemberOfProjectApiException();
         }
 
         $projectMember = new ProjectMember();
         $projectMember->billable_rate = $request->input('billable_rate');
-        $projectMember->user()->associate($user);
+        $projectMember->member()->associate($member);
+        $projectMember->user()->associate($member->user);
         $projectMember->project()->associate($project);
         $projectMember->save();
 

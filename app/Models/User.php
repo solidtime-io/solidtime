@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\Weekday;
+use App\Models\Concerns\HasUuids;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
@@ -12,7 +13,6 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -43,7 +43,7 @@ use Laravel\Passport\HasApiTokens;
  * @property string $current_team_id
  * @property Collection<int, Organization> $organizations
  * @property Collection<int, TimeEntry> $timeEntries
- * @property Membership $membership
+ * @property Member $membership
  *
  * @method HasMany<Organization> ownedTeams()
  * @method static UserFactory factory()
@@ -136,7 +136,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
      */
     public function organizations(): BelongsToMany
     {
-        return $this->belongsToMany(Organization::class, Membership::class)
+        return $this->belongsToMany(Organization::class, Member::class)
             ->withPivot([
                 'id',
                 'role',

@@ -7,6 +7,7 @@ namespace Tests\Unit\Service\Import;
 use App\Models\Organization;
 use App\Service\Import\ImportService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class ImportServiceTest extends TestCase
@@ -16,6 +17,7 @@ class ImportServiceTest extends TestCase
     public function test_import_gets_importer_from_provider_runs_importer_and_returns_report(): void
     {
         // Arrange
+        Storage::fake('s3');
         $organization = Organization::factory()->create();
         $data = file_get_contents(storage_path('tests/toggl_time_entries_import_test_1.csv'));
 

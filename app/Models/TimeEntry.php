@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Models\Concerns\HasUuids;
 use App\Service\BillableRateService;
 use Carbon\CarbonInterval;
 use Database\Factories\TimeEntryFactory;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -24,7 +24,9 @@ use Korridor\LaravelComputedAttributes\ComputedAttributes;
  * @property bool $billable
  * @property array $tags
  * @property string $user_id
+ * @property string $member_id
  * @property-read User $user
+ * @property-read Member $member
  * @property string $organization_id
  * @property-read Organization $organization
  * @property string|null $project_id
@@ -89,6 +91,14 @@ class TimeEntry extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    /**
+     * @return BelongsTo<Member, TimeEntry>
+     */
+    public function member(): BelongsTo
+    {
+        return $this->belongsTo(Member::class, 'member_id');
     }
 
     /**

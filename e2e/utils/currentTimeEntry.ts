@@ -27,7 +27,6 @@ export function newTimeEntryResponse(
             (await response.json()).data.project_id === null &&
             (await response.json()).data.description === description &&
             (await response.json()).data.task_id === null &&
-            (await response.json()).data.duration === null &&
             (await response.json()).data.user_id !== null &&
             JSON.stringify((await response.json()).data.tags) ===
                 JSON.stringify(tags)
@@ -40,7 +39,7 @@ export async function assertThatTimerIsStopped(page: Page) {
         page.locator(
             '[data-testid="dashboard_timer"] [data-testid="timer_button"]'
         )
-    ).toHaveClass(/bg-accent-300\/50/);
+    ).toHaveClass(/bg-accent-300\/70/);
 }
 
 export async function stoppedTimeEntryResponse(

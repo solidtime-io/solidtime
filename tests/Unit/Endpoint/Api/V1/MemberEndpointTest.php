@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Endpoint\Api\V1;
 
-use App\Models\Membership;
+use App\Enums\Role;
+use App\Models\Member;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Models\ProjectMember;
@@ -53,7 +54,7 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
         // Act
         $response = $this->putJson(route('api.v1.members.update', [$data->organization->getKey(), $data->member->getKey()]), [
             'billable_rate' => 10001,
-            'role' => 'employee',
+            'role' => Role::Employee->value,
         ]);
 
         // Assert
@@ -74,7 +75,7 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
         // Act
         $response = $this->putJson(route('api.v1.members.update', [$data->organization->getKey(), $otherData->member->getKey()]), [
             'billable_rate' => 10001,
-            'role' => 'employee',
+            'role' => Role::Employee->value,
         ]);
 
         // Assert
@@ -92,7 +93,7 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
         // Act
         $response = $this->putJson(route('api.v1.members.update', [$data->organization->id, $data->member]), [
             'billable_rate' => 10001,
-            'role' => 'employee',
+            'role' => Role::Employee->value,
         ]);
 
         // Assert
@@ -100,7 +101,7 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
         $member = $data->member;
         $member->refresh();
         $this->assertSame(10001, $member->billable_rate);
-        $this->assertSame('employee', $member->role);
+        $this->assertSame(Role::Employee->value, $member->role);
     }
 
     public function test_invite_placeholder_succeeds_if_data_is_valid(): void
@@ -112,7 +113,7 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
         $user = User::factory()->create([
             'is_placeholder' => true,
         ]);
-        $member = Membership::factory()->forUser($user)->forOrganization($data->organization)->create();
+        $member = Member::factory()->forUser($user)->forOrganization($data->organization)->create();
         Passport::actingAs($data->user);
 
         // Act
@@ -140,6 +141,23 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
         $response->assertStatus(403);
     }
 
+    public function test_destroy_member_fails_if_member_is_owner(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'members:delete',
+        ]);
+        $memberToDelete = Member::factory()->forOrganization($data->organization)->role(Role::Owner)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->deleteJson(route('api.v1.members.destroy', [$data->organization->getKey(), $memberToDelete->getKey()]));
+
+        // Assert
+        $response->assertStatus(400);
+        $response->assertJsonPath('message', 'Can not remove owner from organization');
+    }
+
     public function test_destroy_member_fails_if_member_is_not_part_of_org(): void
     {
         // Arrange
@@ -164,7 +182,7 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
         $data = $this->createUserWithPermission([
             'members:delete',
         ]);
-        TimeEntry::factory()->forUser($data->user)->forOrganization($data->organization)->create();
+        TimeEntry::factory()->forMember($data->member)->forOrganization($data->organization)->create();
         Passport::actingAs($data->user);
 
         // Act
@@ -173,7 +191,7 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
         // Assert
         $response->assertStatus(400);
         $response->assertJsonPath('message', 'The member is still used by a time entry and can not be deleted.');
-        $this->assertDatabaseHas(Membership::class, [
+        $this->assertDatabaseHas(Member::class, [
             'id' => $data->member->getKey(),
         ]);
     }
@@ -185,7 +203,7 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
             'members:delete',
         ]);
         $project = Project::factory()->forOrganization($data->organization)->create();
-        ProjectMember::factory()->forProject($project)->forUser($data->user)->create();
+        ProjectMember::factory()->forProject($project)->forMember($data->member)->create();
         Passport::actingAs($data->user);
 
         // Act
@@ -194,7 +212,7 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
         // Assert
         $response->assertStatus(400);
         $response->assertJsonPath('message', 'The member is still used by a project member and can not be deleted.');
-        $this->assertDatabaseHas(Membership::class, [
+        $this->assertDatabaseHas(Member::class, [
             'id' => $data->member->getKey(),
         ]);
     }
@@ -212,7 +230,7 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
 
         // Assert
         $response->assertStatus(204);
-        $this->assertDatabaseMissing(Membership::class, [
+        $this->assertDatabaseMissing(Member::class, [
             'id' => $data->member->getKey(),
         ]);
     }
@@ -225,7 +243,7 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
         $user = User::factory()->create([
             'is_placeholder' => true,
         ]);
-        $member = Membership::factory()->forUser($user)->forOrganization($data->organization)->create();
+        $member = Member::factory()->forUser($user)->forOrganization($data->organization)->create();
         Passport::actingAs($data->user);
 
         // Act
@@ -249,7 +267,7 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
         $user = User::factory()->create([
             'is_placeholder' => true,
         ]);
-        $member = Membership::factory()->forUser($user)->forOrganization($otherOrganization)->create();
+        $member = Member::factory()->forUser($user)->forOrganization($otherOrganization)->create();
         Passport::actingAs($data->user);
 
         // Act

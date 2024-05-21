@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import VChart from 'vue-echarts';
 import { ref } from 'vue';
+import { useCssVar } from '@vueuse/core';
 
 const props = defineProps<{
     history: number[];
 }>();
+
+const accentColor = useCssVar('--color-accent-quaternary');
 
 const seriesData = props.history.map((el) => {
     return {
@@ -12,9 +15,9 @@ const seriesData = props.history.map((el) => {
         ...{
             itemStyle: {
                 borderWidth: 1,
-                borderColor: 'rgba(125,156,188,1)',
+                borderColor: 'rgba(' + accentColor.value + ',0.8)',
                 borderRadius: [2, 2, 0, 0],
-                color: 'rgba(125,156,188,1)',
+                color: 'rgba(' + accentColor.value + ',0.8)',
             },
         },
     };

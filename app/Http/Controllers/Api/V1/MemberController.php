@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Enums\Role;
+use App\Exceptions\Api\CanNotRemoveOwnerFromOrganization;
 use App\Exceptions\Api\EntityStillInUseApiException;
 use App\Exceptions\Api\UserNotPlaceholderApiException;
 use App\Http\Requests\V1\Member\MemberIndexRequest;
@@ -11,7 +13,7 @@ use App\Http\Requests\V1\Member\MemberUpdateRequest;
 use App\Http\Resources\V1\Member\MemberCollection;
 use App\Http\Resources\V1\Member\MemberPivotResource;
 use App\Http\Resources\V1\Member\MemberResource;
-use App\Models\Membership;
+use App\Models\Member;
 use App\Models\Organization;
 use App\Models\ProjectMember;
 use App\Models\TimeEntry;
@@ -23,10 +25,10 @@ use Laravel\Jetstream\Contracts\InvitesTeamMembers;
 
 class MemberController extends Controller
 {
-    protected function checkPermission(Organization $organization, string $permission, ?Membership $membership = null): void
+    protected function checkPermission(Organization $organization, string $permission, ?Member $member = null): void
     {
         parent::checkPermission($organization, $permission);
-        if ($membership !== null && $membership->organization_id !== $organization->id) {
+        if ($member !== null && $member->organization_id !== $organization->id) {
             throw new AuthorizationException('Member does not belong to organization');
         }
     }
@@ -57,36 +59,39 @@ class MemberController extends Controller
      *
      * @operationId updateMember
      */
-    public function update(Organization $organization, Membership $membership, MemberUpdateRequest $request): JsonResource
+    public function update(Organization $organization, Member $member, MemberUpdateRequest $request): JsonResource
     {
-        $this->checkPermission($organization, 'members:update', $membership);
+        $this->checkPermission($organization, 'members:update', $member);
 
-        $membership->billable_rate = $request->input('billable_rate');
-        $membership->role = $request->input('role');
-        $membership->save();
+        $member->billable_rate = $request->input('billable_rate');
+        $member->role = $request->input('role');
+        $member->save();
 
-        return new MemberResource($membership);
+        return new MemberResource($member);
     }
 
     /**
      * Remove a member of the organization.
      *
-     * @throws AuthorizationException|EntityStillInUseApiException
+     * @throws AuthorizationException|EntityStillInUseApiException|CanNotRemoveOwnerFromOrganization
      *
      * @operationId removeMember
      */
-    public function destroy(Organization $organization, Membership $membership): JsonResponse
+    public function destroy(Organization $organization, Member $member): JsonResponse
     {
-        $this->checkPermission($organization, 'members:delete', $membership);
+        $this->checkPermission($organization, 'members:delete', $member);
 
-        if (TimeEntry::query()->where('user_id', $membership->user_id)->whereBelongsTo($organization, 'organization')->exists()) {
+        if (TimeEntry::query()->where('user_id', $member->user_id)->whereBelongsTo($organization, 'organization')->exists()) {
             throw new EntityStillInUseApiException('member', 'time_entry');
         }
-        if (ProjectMember::query()->whereBelongsToOrganization($organization)->where('user_id', $membership->user_id)->exists()) {
+        if (ProjectMember::query()->whereBelongsToOrganization($organization)->where('user_id', $member->user_id)->exists()) {
             throw new EntityStillInUseApiException('member', 'project_member');
         }
+        if ($member->role === Role::Owner->value) {
+            throw new CanNotRemoveOwnerFromOrganization();
+        }
 
-        $membership->delete();
+        $member->delete();
 
         return response()
             ->json(null, 204);
@@ -99,20 +104,20 @@ class MemberController extends Controller
      *
      * @operationId invitePlaceholder
      */
-    public function invitePlaceholder(Organization $organization, Membership $membership, Request $request): JsonResponse
+    public function invitePlaceholder(Organization $organization, Member $member, Request $request): JsonResponse
     {
-        $this->checkPermission($organization, 'members:invite-placeholder', $membership);
-        $user = $membership->user;
+        $this->checkPermission($organization, 'members:invite-placeholder', $member);
+        $user = $member->user;
 
         if (! $user->is_placeholder) {
             throw new UserNotPlaceholderApiException();
         }
 
         app(InvitesTeamMembers::class)->invite(
-            $request->user(),
+            $this->user(),
             $organization,
             $user->email,
-            'employee'
+            Role::Employee->value,
         );
 
         return response()->json(null, 204);

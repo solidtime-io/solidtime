@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Models\Concerns\HasUuids;
 use Database\Factories\TaskFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -62,5 +63,17 @@ class Task extends Model
     public function timeEntries(): HasMany
     {
         return $this->hasMany(TimeEntry::class, 'task_id');
+    }
+
+    /**
+     * @param  Builder<Task>  $builder
+     * @return Builder<Task>
+     */
+    public function scopeVisibleByEmployee(Builder $builder, User $user): Builder
+    {
+        return $builder->whereHas('project', function (Builder $builder) use ($user): Builder {
+            /** @var Builder<Project> $builder */
+            return $builder->visibleByEmployee($user);
+        });
     }
 }

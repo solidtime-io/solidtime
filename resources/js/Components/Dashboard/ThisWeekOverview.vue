@@ -18,6 +18,7 @@ import ProjectsChartCard from '@/Components/Dashboard/ProjectsChartCard.vue';
 import { formatHumanReadableDuration } from '@/utils/time';
 import { formatCents } from '@/utils/money';
 import { getWeekStart } from '@/utils/useUser';
+import { useCssVar } from '@vueuse/core';
 
 use([
     CanvasRenderer,
@@ -47,6 +48,7 @@ const props = defineProps<{
         duration: number;
     }[];
 }>();
+const accentColor = useCssVar('--color-accent-quaternary');
 
 const seriesData = props.weeklyHistory.map((el) => {
     return {
@@ -56,23 +58,34 @@ const seriesData = props.weeklyHistory.map((el) => {
                 borderColor: new LinearGradient(0, 0, 0, 1, [
                     {
                         offset: 0,
-                        color: 'rgba(125,156,188,1)',
+                        color: 'rgba(' + accentColor.value + ',0.7)',
                     },
                     {
                         offset: 1,
-                        color: 'rgba(125,156,188,0.7)',
+                        color: 'rgba(' + accentColor.value + ',0.5)',
                     },
                 ]),
-                borderWidth: 3,
+                emphasis: {
+                    color: new LinearGradient(0, 0, 0, 1, [
+                        {
+                            offset: 0,
+                            color: 'rgba(' + accentColor.value + ',0.9)',
+                        },
+                        {
+                            offset: 1,
+                            color: 'rgba(' + accentColor.value + ',0.7)',
+                        },
+                    ]),
+                },
                 borderRadius: [12, 12, 0, 0],
                 color: new LinearGradient(0, 0, 0, 1, [
                     {
                         offset: 0,
-                        color: 'rgba(125,156,188,0.9)',
+                        color: 'rgba(' + accentColor.value + ',0.7)',
                     },
                     {
                         offset: 1,
-                        color: 'rgba(125,156,188,0.4)',
+                        color: 'rgba(' + accentColor.value + ',0.5)',
                     },
                 ]),
             },
@@ -106,6 +119,8 @@ const weekdays = computed(() => {
     }
 });
 
+const markLineColor = useCssVar('--color-border-secondary');
+
 const option = ref({
     tooltip: {
         trigger: 'item',
@@ -120,12 +135,6 @@ const option = ref({
     xAxis: {
         type: 'category',
         data: weekdays.value,
-        markLine: {
-            lineStyle: {
-                color: 'rgba(125,156,188,0.1)',
-                type: 'dashed',
-            },
-        },
         axisLine: {
             lineStyle: {
                 color: 'transparent', // Set desired color here
@@ -147,7 +156,7 @@ const option = ref({
         type: 'value',
         splitLine: {
             lineStyle: {
-                color: 'rgba(125,156,188,0.2)', // Set desired color here
+                color: markLineColor.value,
             },
         },
     },

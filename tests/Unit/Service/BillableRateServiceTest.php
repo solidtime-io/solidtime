@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Service;
 
+use App\Models\Member;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Models\ProjectMember;
@@ -31,16 +32,17 @@ class BillableRateServiceTest extends TestCase
         $organization = Organization::factory()->create([
             'billable_rate' => 1001,
         ]);
-        $user = User::factory()->attachToOrganization($organization, [
+        $user = User::factory()->create();
+        $member = Member::factory()->forOrganization($organization)->forUser($user)->create([
             'billable_rate' => 2002,
-        ])->create();
+        ]);
         $project = Project::factory()->forOrganization($organization)->create([
             'billable_rate' => 3003,
         ]);
-        $projectMember = ProjectMember::factory()->forUser($user)->forProject($project)->create([
+        $projectMember = ProjectMember::factory()->forMember($member)->forProject($project)->create([
             'billable_rate' => 4004,
         ]);
-        $timeEntry = TimeEntry::factory()->forProject($project)->forUser($user)->forOrganization($organization)->create([
+        $timeEntry = TimeEntry::factory()->forProject($project)->forMember($member)->forOrganization($organization)->create([
             'billable' => false,
         ]);
 
@@ -57,16 +59,17 @@ class BillableRateServiceTest extends TestCase
         $organization = Organization::factory()->create([
             'billable_rate' => 1001,
         ]);
-        $user = User::factory()->attachToOrganization($organization, [
+        $user = User::factory()->create();
+        $member = Member::factory()->forOrganization($organization)->forUser($user)->create([
             'billable_rate' => 2002,
-        ])->create();
+        ]);
         $project = Project::factory()->forOrganization($organization)->create([
             'billable_rate' => 3003,
         ]);
-        $projectMember = ProjectMember::factory()->forUser($user)->forProject($project)->create([
+        $projectMember = ProjectMember::factory()->forMember($member)->forProject($project)->create([
             'billable_rate' => 4004,
         ]);
-        $timeEntry = TimeEntry::factory()->forProject($project)->forUser($user)->forOrganization($organization)->create([
+        $timeEntry = TimeEntry::factory()->forProject($project)->forMember($member)->forOrganization($organization)->create([
             'billable' => true,
         ]);
 
@@ -83,16 +86,17 @@ class BillableRateServiceTest extends TestCase
         $organization = Organization::factory()->create([
             'billable_rate' => 1001,
         ]);
-        $user = User::factory()->attachToOrganization($organization, [
+        $user = User::factory()->create();
+        $member = Member::factory()->forOrganization($organization)->forUser($user)->create([
             'billable_rate' => 2002,
-        ])->create();
+        ]);
         $project = Project::factory()->forOrganization($organization)->create([
             'billable_rate' => 3003,
         ]);
-        $projectMember = ProjectMember::factory()->forUser($user)->forProject($project)->create([
+        $projectMember = ProjectMember::factory()->forMember($member)->forProject($project)->create([
             'billable_rate' => null,
         ]);
-        $timeEntry = TimeEntry::factory()->forProject($project)->forUser($user)->forOrganization($organization)->create([
+        $timeEntry = TimeEntry::factory()->forProject($project)->forMember($member)->forOrganization($organization)->create([
             'billable' => true,
         ]);
 
@@ -109,13 +113,14 @@ class BillableRateServiceTest extends TestCase
         $organization = Organization::factory()->create([
             'billable_rate' => 1001,
         ]);
-        $user = User::factory()->attachToOrganization($organization, [
+        $user = User::factory()->create();
+        $member = Member::factory()->forOrganization($organization)->forUser($user)->create([
             'billable_rate' => 2002,
-        ])->create();
+        ]);
         $project = Project::factory()->forOrganization($organization)->create([
             'billable_rate' => 3003,
         ]);
-        $timeEntry = TimeEntry::factory()->forProject($project)->forUser($user)->forOrganization($organization)->create([
+        $timeEntry = TimeEntry::factory()->forProject($project)->forMember($member)->forOrganization($organization)->create([
             'billable' => true,
         ]);
 
@@ -132,16 +137,17 @@ class BillableRateServiceTest extends TestCase
         $organization = Organization::factory()->create([
             'billable_rate' => 1001,
         ]);
-        $user = User::factory()->attachToOrganization($organization, [
+        $user = User::factory()->create();
+        $member = Member::factory()->forOrganization($organization)->forUser($user)->create([
             'billable_rate' => 2002,
-        ])->create();
+        ]);
         $project = Project::factory()->forOrganization($organization)->create([
             'billable_rate' => null,
         ]);
-        $projectMember = ProjectMember::factory()->forUser($user)->forProject($project)->create([
+        $projectMember = ProjectMember::factory()->forMember($member)->forProject($project)->create([
             'billable_rate' => null,
         ]);
-        $timeEntry = TimeEntry::factory()->forProject($project)->forUser($user)->forOrganization($organization)->create([
+        $timeEntry = TimeEntry::factory()->forProject($project)->forMember($member)->forOrganization($organization)->create([
             'billable' => true,
         ]);
 
@@ -158,10 +164,11 @@ class BillableRateServiceTest extends TestCase
         $organization = Organization::factory()->create([
             'billable_rate' => 1001,
         ]);
-        $user = User::factory()->attachToOrganization($organization, [
+        $user = User::factory()->create();
+        $member = Member::factory()->forOrganization($organization)->forUser($user)->create([
             'billable_rate' => 2002,
-        ])->create();
-        $timeEntry = TimeEntry::factory()->forUser($user)->forOrganization($organization)->create([
+        ]);
+        $timeEntry = TimeEntry::factory()->forMember($member)->forOrganization($organization)->create([
             'billable' => true,
         ]);
 
@@ -178,16 +185,17 @@ class BillableRateServiceTest extends TestCase
         $organization = Organization::factory()->create([
             'billable_rate' => 1001,
         ]);
-        $user = User::factory()->attachToOrganization($organization, [
+        $user = User::factory()->create();
+        $member = Member::factory()->forOrganization($organization)->forUser($user)->create([
             'billable_rate' => null,
-        ])->create();
+        ]);
         $project = Project::factory()->forOrganization($organization)->create([
             'billable_rate' => null,
         ]);
-        $projectMember = ProjectMember::factory()->forUser($user)->forProject($project)->create([
+        $projectMember = ProjectMember::factory()->forMember($member)->forProject($project)->create([
             'billable_rate' => null,
         ]);
-        $timeEntry = TimeEntry::factory()->forProject($project)->forUser($user)->forOrganization($organization)->create([
+        $timeEntry = TimeEntry::factory()->forProject($project)->forMember($member)->forOrganization($organization)->create([
             'billable' => true,
         ]);
 
@@ -205,7 +213,10 @@ class BillableRateServiceTest extends TestCase
             'billable_rate' => 1001,
         ]);
         $user = User::factory()->create();
-        $timeEntry = TimeEntry::factory()->forUser($user)->forOrganization($organization)->create([
+        $member = Member::factory()->forOrganization($organization)->forUser($user)->create([
+            'billable_rate' => null,
+        ]);
+        $timeEntry = TimeEntry::factory()->forMember($member)->forOrganization($organization)->create([
             'billable' => true,
         ]);
 
@@ -222,16 +233,17 @@ class BillableRateServiceTest extends TestCase
         $organization = Organization::factory()->create([
             'billable_rate' => null,
         ]);
-        $user = User::factory()->attachToOrganization($organization, [
+        $user = User::factory()->create();
+        $member = Member::factory()->forOrganization($organization)->forUser($user)->create([
             'billable_rate' => null,
-        ])->create();
+        ]);
         $project = Project::factory()->forOrganization($organization)->create([
             'billable_rate' => null,
         ]);
-        $projectMember = ProjectMember::factory()->forUser($user)->forProject($project)->create([
+        $projectMember = ProjectMember::factory()->forMember($member)->forProject($project)->create([
             'billable_rate' => null,
         ]);
-        $timeEntry = TimeEntry::factory()->forProject($project)->forUser($user)->forOrganization($organization)->create([
+        $timeEntry = TimeEntry::factory()->forProject($project)->forMember($member)->forOrganization($organization)->create([
             'billable' => true,
         ]);
 

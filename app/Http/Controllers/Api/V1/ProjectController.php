@@ -17,7 +17,6 @@ use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class ProjectController extends Controller
@@ -43,14 +42,13 @@ class ProjectController extends Controller
     {
         $this->checkPermission($organization, 'projects:view');
         $canViewAllProjects = $this->hasPermission($organization, 'projects:view:all');
-        /** @var User $user */
-        $user = Auth::user();
+        $user = $this->user();
 
         $projectsQuery = Project::query()
             ->whereBelongsTo($organization, 'organization');
 
         if (! $canViewAllProjects) {
-            $projectsQuery->visibleByUser($user);
+            $projectsQuery->visibleByEmployee($user);
         }
 
         $projects = $projectsQuery->paginate(config('app.pagination_per_page_default'));
@@ -133,7 +131,7 @@ class ProjectController extends Controller
         }
 
         DB::transaction(function () use (&$project) {
-            $project->members()->each(function (ProjectMember $member) {
+            $project->members->each(function (ProjectMember $member) {
                 $member->delete();
             });
 

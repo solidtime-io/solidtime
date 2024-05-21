@@ -6,7 +6,7 @@ namespace Tests\Feature;
 
 use App\Enums\Role;
 use App\Events\NewsletterRegistered;
-use App\Models\Membership;
+use App\Models\Member;
 use App\Models\User;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -66,7 +66,7 @@ class RegistrationTest extends TestCase
         $this->assertSame('UTC', $user->timezone);
         $organization = $user->organizations()->firstOrFail();
         $this->assertSame(true, $organization->personal_team);
-        $member = Membership::query()->whereBelongsTo($user, 'user')->whereBelongsTo($organization, 'organization')->firstOrFail();
+        $member = Member::query()->whereBelongsTo($user, 'user')->whereBelongsTo($organization, 'organization')->firstOrFail();
         $this->assertSame(Role::Owner->value, $member->role);
         Event::assertNotDispatched(NewsletterRegistered::class);
     }
