@@ -25,7 +25,7 @@ import TaskMultiselectDropdown from '@/Components/Common/Task/TaskMultiselectDro
 import SelectDropdown from '@/Components/Common/SelectDropdown.vue';
 import ReportingGroupBySelect from '@/Components/Common/Reporting/ReportingGroupBySelect.vue';
 import ReportingRow from '@/Components/Common/Reporting/ReportingRow.vue';
-import { formatMoney } from '@/utils/money';
+import { formatCents } from '@/utils/money';
 import ReportingPieChart from '@/Components/Common/Reporting/ReportingPieChart.vue';
 
 const startDate = ref<string | null>(
@@ -284,7 +284,7 @@ onMounted(() => {
                                 <div
                                     class="justify-end pr-6 flex items-center font-medium">
                                     {{
-                                        formatMoney(
+                                        formatCents(
                                             aggregatedTableTimeEntries.cost
                                         )
                                     }}

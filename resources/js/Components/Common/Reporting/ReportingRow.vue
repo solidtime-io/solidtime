@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { formatHumanReadableDuration } from '@/utils/time';
-import { formatMoney } from '@/utils/money';
+import { formatCents } from '@/utils/money';
 import GroupedItemsCountButton from '@/Components/Common/GroupedItemsCountButton.vue';
 import { ref } from 'vue';
 import { twMerge } from 'tailwind-merge';
@@ -54,7 +54,7 @@ const expanded = ref(false);
             {{ formatHumanReadableDuration(entry.seconds) }}
         </div>
         <div class="justify-end pr-6 flex items-center">
-            {{ formatMoney(entry.cost) }}
+            {{ formatCents(entry.cost) }}
         </div>
     </div>
     <div

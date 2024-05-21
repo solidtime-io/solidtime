@@ -10,7 +10,7 @@ const page = usePage<{
     };
 }>();
 
-export function formatMoney(
+function formatMoney(
     amount: number,
     currency: string = getOrganizationCurrencyString()
 ) {

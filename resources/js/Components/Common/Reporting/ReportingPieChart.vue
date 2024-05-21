@@ -100,8 +100,7 @@ const option = ref({
         trigger: 'item',
     },
     legend: {
-        orient: 'vertical',
-        bottom: 'bottom',
+        top: 'bottom',
     },
     backgroundColor: 'transparent',
     series: [

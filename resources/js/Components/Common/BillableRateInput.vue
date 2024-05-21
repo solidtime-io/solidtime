@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import TextInput from '@/Components/TextInput.vue';
 import {
-    formatMoney,
+    formatCents,
     getOrganizationCurrencyString,
     getOrganizationCurrencySymbol,
 } from '../../utils/money';
@@ -43,11 +43,8 @@ function updateRate(value: string) {
         model.value = parseInt(cleanUpDecimalValue(value)) * 100;
     }
 }
-function formatCents(modelValue: number) {
-    const formattedValue = formatMoney(
-        modelValue / 100,
-        getOrganizationCurrencyString()
-    );
+function formatValue(modelValue: number) {
+    const formattedValue = formatCents(modelValue);
     return formattedValue.replace(getOrganizationCurrencySymbol(), '').trim();
 }
 </script>
@@ -57,7 +54,7 @@ function formatCents(modelValue: number) {
         <TextInput
             :id="name"
             ref="projectMemberRateInput"
-            :modelValue="formatCents(model)"
+            :modelValue="formatValue(model)"
             @blur="updateRate($event.target.value)"
             type="text"
             :name="name"
