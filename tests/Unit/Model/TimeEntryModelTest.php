@@ -10,7 +10,7 @@ use App\Models\Tag;
 use App\Models\Task;
 use App\Models\TimeEntry;
 use App\Models\User;
-use Carbon\Carbon;
+use Illuminate\Support\Carbon;
 
 class TimeEntryModelTest extends ModelTestAbstract
 {

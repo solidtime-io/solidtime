@@ -11,8 +11,8 @@ use App\Models\Tag;
 use App\Models\Task;
 use App\Models\TimeEntry;
 use App\Models\User;
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Carbon;
 
 /**
  * @extends Factory<TimeEntry>
@@ -67,11 +67,13 @@ class TimeEntryFactory extends Factory
         });
     }
 
-    public function startBetween(Carbon $rangeStart, Carbon $rangeEnd): self
+    public function startBetween(Carbon $rangeStart, Carbon $rangeEnd, bool $fixedValueForMultiple = false): self
     {
-        $start = Carbon::instance($this->faker->dateTimeBetween($rangeStart, $rangeEnd));
+        $fixedStart = Carbon::instance($this->faker->dateTimeBetween($rangeStart, $rangeEnd));
 
-        return $this->state(function (array $attributes) use ($start): array {
+        return $this->state(function (array $attributes) use ($rangeStart, $rangeEnd, $fixedStart, $fixedValueForMultiple): array {
+            $start = $fixedValueForMultiple ? $fixedStart : Carbon::instance($this->faker->dateTimeBetween($rangeStart, $rangeEnd));
+
             return [
                 'start' => $start->utc(),
                 'end' => $this->faker->dateTimeBetween($start, 'now'),
@@ -107,6 +109,34 @@ class TimeEntryFactory extends Factory
                 'member_id' => $member->getKey(),
                 'user_id' => $member->user_id,
                 'organization_id' => $member->organization_id,
+            ];
+        });
+    }
+
+    public function billable(): self
+    {
+        return $this->state(function (array $attributes): array {
+            return [
+                'billable' => true,
+            ];
+        });
+    }
+
+    public function startWithDuration(Carbon $start, int $durationInSeconds): self
+    {
+        return $this->state(function (array $attributes) use ($start, $durationInSeconds): array {
+            return [
+                'start' => $start->utc(),
+                'end' => $start->copy()->addSeconds($durationInSeconds),
+            ];
+        });
+    }
+
+    public function start(Carbon $start): self
+    {
+        return $this->state(function (array $attributes) use ($start): array {
+            return [
+                'start' => $start->utc(),
             ];
         });
     }

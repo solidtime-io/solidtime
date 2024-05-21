@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\V1\TimeEntry;
 
+use App\Enums\TimeEntryAggregationType;
 use App\Models\Member;
 use App\Models\Organization;
 use App\Models\Project;
@@ -13,7 +14,8 @@ use App\Models\User;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Carbon;
+use Illuminate\Validation\Rule;
 use Korridor\LaravelModelValidationRules\Rules\ExistsEloquent;
 
 /**
@@ -24,7 +26,7 @@ class TimeEntryAggregateRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, array<string|ValidationRule>>
+     * @return array<string, array<string|ValidationRule|\Illuminate\Contracts\Validation\Rule>>
      */
     public function rules(): array
     {
@@ -32,12 +34,12 @@ class TimeEntryAggregateRequest extends FormRequest
             'group' => [
                 'nullable',
                 'required_with:group_2',
-                'in:day,week,month,year,user,project,task,client,billable',
+                Rule::enum(TimeEntryAggregationType::class),
             ],
 
             'sub_group' => [
                 'nullable',
-                'in:day,week,month,year,user,project,task,client,billable',
+                Rule::enum(TimeEntryAggregationType::class),
             ],
             // Filter by member ID
             'member_id' => [
@@ -81,7 +83,7 @@ class TimeEntryAggregateRequest extends FormRequest
                 'uuid',
                 new ExistsEloquent(Project::class, null, function (Builder $builder): Builder {
                     /** @var Builder<Project> $builder */
-                    return $builder->visibleByUser(Auth::user());
+                    return $builder->whereBelongsTo($this->organization, 'organization');
                 }),
             ],
             // Filter by tag IDs, tag IDs are AND combined
@@ -106,8 +108,7 @@ class TimeEntryAggregateRequest extends FormRequest
                 'string',
                 'uuid',
                 new ExistsEloquent(Task::class, null, function (Builder $builder): Builder {
-                    /** @var Builder<Task> $builder */
-                    return $builder->visibleByUser(Auth::user());
+                    return $builder->whereBelongsTo($this->organization, 'organization');
                 }),
             ],
             // Filter only time entries that have a start date before the given timestamp in UTC (example: 2021-01-01T00:00:00Z)
@@ -133,6 +134,35 @@ class TimeEntryAggregateRequest extends FormRequest
                 'string',
                 'in:true,false',
             ],
+            'fill_gaps_in_time_groups' => [
+                'string',
+                'in:true,false',
+            ],
         ];
+    }
+
+    public function getGroup(): ?TimeEntryAggregationType
+    {
+        return $this->get('group') !== null ? TimeEntryAggregationType::from($this->get('group')) : null;
+    }
+
+    public function getSubGroup(): ?TimeEntryAggregationType
+    {
+        return $this->get('sub_group') !== null ? TimeEntryAggregationType::from($this->get('sub_group')) : null;
+    }
+
+    public function getFillGapsInTimeGroups(): bool
+    {
+        return $this->has('fill_gaps_in_time_groups') && $this->get('fill_gaps_in_time_groups') === 'true';
+    }
+
+    public function getStart(): ?Carbon
+    {
+        return $this->get('after') !== null ? Carbon::createFromFormat('Y-m-d\TH:i:s\Z', $this->get('after'), 'UTC') : null;
+    }
+
+    public function getEnd(): ?Carbon
+    {
+        return $this->get('before') !== null ? Carbon::createFromFormat('Y-m-d\TH:i:s\Z', $this->get('before'), 'UTC') : null;
     }
 }

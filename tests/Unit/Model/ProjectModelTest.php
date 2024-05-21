@@ -98,7 +98,7 @@ class ProjectModelTest extends ModelTestAbstract
         ProjectMember::factory()->forProject($projectPrivateButMember)->forMember($member)->create();
 
         // Act
-        $projectsVisible = Project::query()->visibleByUser($member->user)->get();
+        $projectsVisible = Project::query()->visibleByEmployee($member->user)->get();
         $allProjects = Project::query()->get();
 
         // Assert

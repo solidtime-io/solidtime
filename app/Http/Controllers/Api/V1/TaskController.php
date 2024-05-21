@@ -51,7 +51,7 @@ class TaskController extends Controller
         }
 
         if (! $canViewAllTasks) {
-            $query->visibleByUser($user);
+            $query->visibleByEmployee($user);
         }
 
         $tasks = $query->paginate(config('app.pagination_per_page_default'));

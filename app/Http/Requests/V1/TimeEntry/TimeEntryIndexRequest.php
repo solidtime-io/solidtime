@@ -12,7 +12,6 @@ use App\Models\Task;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Auth;
 use Korridor\LaravelModelValidationRules\Rules\ExistsEloquent;
 
 /**
@@ -60,7 +59,7 @@ class TimeEntryIndexRequest extends FormRequest
                 'uuid',
                 new ExistsEloquent(Project::class, null, function (Builder $builder): Builder {
                     /** @var Builder<Project> $builder */
-                    return $builder->visibleByUser(Auth::user());
+                    return $builder->whereBelongsTo($this->organization, 'organization');
                 }),
             ],
             // Filter by tag IDs, tag IDs are AND combined
@@ -86,7 +85,7 @@ class TimeEntryIndexRequest extends FormRequest
                 'uuid',
                 new ExistsEloquent(Task::class, null, function (Builder $builder): Builder {
                     /** @var Builder<Task> $builder */
-                    return $builder->visibleByUser(Auth::user());
+                    return $builder->whereBelongsTo($this->organization, 'organization');
                 }),
             ],
             // Filter only time entries that have a start date before the given timestamp in UTC (example: 2021-01-01T00:00:00Z)
@@ -124,5 +123,10 @@ class TimeEntryIndexRequest extends FormRequest
                 'in:true,false',
             ],
         ];
+    }
+
+    public function getOnlyFullDates(): bool
+    {
+        return $this->input('only_full_dates', 'false') === 'true';
     }
 }

@@ -32,6 +32,7 @@ class InvitationEndpointTest extends ApiEndpointTestAbstract
         $data = $this->createUserWithPermission([
             'invitations:view',
         ]);
+        $invitation1 = OrganizationInvitation::factory()->forOrganization($data->organization)->create();
         Passport::actingAs($data->user);
 
         // Act
@@ -39,6 +40,15 @@ class InvitationEndpointTest extends ApiEndpointTestAbstract
 
         // Assert
         $response->assertStatus(200);
+        $response->assertJson([
+            'data' => [
+                [
+                    'id' => $invitation1->getKey(),
+                    'email' => $invitation1->email,
+                    'role' => $invitation1->role,
+                ],
+            ],
+        ]);
     }
 
     public function test_store_fails_if_user_has_no_permission_to_create_invitations(): void

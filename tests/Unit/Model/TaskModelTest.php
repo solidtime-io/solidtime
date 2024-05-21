@@ -72,7 +72,7 @@ class TaskModelTest extends ModelTestAbstract
         $taskPrivateButMember = Task::factory()->forProject($projectPrivateButMember)->create();
 
         // Act
-        $tasksVisible = Task::query()->visibleByUser($member->user)->get();
+        $tasksVisible = Task::query()->visibleByEmployee($member->user)->get();
         $allTasks = Task::query()->get();
 
         // Assert

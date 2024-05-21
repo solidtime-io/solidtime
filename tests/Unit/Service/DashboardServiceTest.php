@@ -13,9 +13,9 @@ use App\Models\Task;
 use App\Models\TimeEntry;
 use App\Models\User;
 use App\Service\DashboardService;
-use Carbon\Carbon;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
 class DashboardServiceTest extends TestCase

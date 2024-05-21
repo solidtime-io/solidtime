@@ -327,7 +327,7 @@ class ProjectMemberEndpointTest extends ApiEndpointTestAbstract
         ]);
     }
 
-    public function test_destroy_endpoint_fails_if_user_has_no_permission_to_delete_projects(): void
+    public function test_destroy_endpoint_fails_if_user_has_no_permission_to_delete_project_members(): void
     {
         // Arrange
         $data = $this->createUserWithPermission([
@@ -346,14 +346,14 @@ class ProjectMemberEndpointTest extends ApiEndpointTestAbstract
         ]);
     }
 
-    public function test_destroy_endpoint_deletes_project(): void
+    public function test_destroy_endpoint_deletes_project_member(): void
     {
         // Arrange
         $data = $this->createUserWithPermission([
             'project-members:delete',
         ]);
         $project = Project::factory()->forOrganization($data->organization)->create();
-        $projectMember = ProjectMember::factory()->forProject($project)->create();
+        $projectMember = ProjectMember::factory()->forProject($project)->forMember($data->member)->create();
         Passport::actingAs($data->user);
 
         // Act

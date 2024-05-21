@@ -48,7 +48,7 @@ class ProjectController extends Controller
             ->whereBelongsTo($organization, 'organization');
 
         if (! $canViewAllProjects) {
-            $projectsQuery->visibleByUser($user);
+            $projectsQuery->visibleByEmployee($user);
         }
 
         $projects = $projectsQuery->paginate(config('app.pagination_per_page_default'));
@@ -131,7 +131,7 @@ class ProjectController extends Controller
         }
 
         DB::transaction(function () use (&$project) {
-            $project->members()->each(function (ProjectMember $member) {
+            $project->members->each(function (ProjectMember $member) {
                 $member->delete();
             });
 

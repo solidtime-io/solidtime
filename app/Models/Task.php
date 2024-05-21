@@ -69,11 +69,11 @@ class Task extends Model
      * @param  Builder<Task>  $builder
      * @return Builder<Task>
      */
-    public function scopeVisibleByUser(Builder $builder, User $user): Builder
+    public function scopeVisibleByEmployee(Builder $builder, User $user): Builder
     {
         return $builder->whereHas('project', function (Builder $builder) use ($user): Builder {
             /** @var Builder<Project> $builder */
-            return $builder->visibleByUser($user);
+            return $builder->visibleByEmployee($user);
         });
     }
 }

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1;
 
-use App\Enums\Weekday;
 use App\Exceptions\Api\TimeEntryCanNotBeRestartedApiException;
 use App\Exceptions\Api\TimeEntryStillRunningApiException;
 use App\Http\Requests\V1\TimeEntry\TimeEntryAggregateRequest;
@@ -17,13 +16,12 @@ use App\Http\Resources\V1\TimeEntry\TimeEntryResource;
 use App\Models\Member;
 use App\Models\Organization;
 use App\Models\TimeEntry;
+use App\Service\TimeEntryAggregationService;
 use App\Service\TimeEntryFilter;
 use App\Service\TimezoneService;
-use Carbon\CarbonTimeZone;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -82,7 +80,7 @@ class TimeEntryController extends Controller
 
         $timeEntries = $timeEntriesQuery->get();
 
-        if ($timeEntries->count() === $limit && $request->has('only_full_dates') && (bool) $request->get('only_full_dates') === true) {
+        if ($timeEntries->count() === $limit && $request->getOnlyFullDates()) {
             $user = $this->user();
             $timezone = app(TimezoneService::class)->getTimezoneFromUser($user);
             $lastDate = null;
@@ -126,16 +124,18 @@ class TimeEntryController extends Controller
      *
      * @return array{
      *     data: array{
+     *          grouped_type: string|null,
      *          grouped_data: null|array<array{
-     *              type: string,
      *              key: string|null,
      *              seconds: int,
      *              cost: int,
+     *              grouped_type: string|null,
      *              grouped_data: null|array<array{
-     *                  type: string,
      *                  key: string|null,
      *                  seconds: int,
-     *                  cost: int
+     *                  cost: int,
+     *                  grouped_type: null,
+     *                  grouped_data: null
      *              }>
      *          }>,
      *          seconds: int,
@@ -145,7 +145,7 @@ class TimeEntryController extends Controller
      *
      * @throws AuthorizationException
      */
-    public function aggregate(Organization $organization, TimeEntryAggregateRequest $request): array
+    public function aggregate(Organization $organization, TimeEntryAggregateRequest $request, TimeEntryAggregationService $aggregationService): array
     {
         /** @var Member|null $member */
         $member = $request->has('member_id') ? Member::query()->findOrFail($request->get('member_id')) : null;
@@ -173,130 +173,23 @@ class TimeEntryController extends Controller
 
         $user = $this->user();
 
-        /** @var string|null $group1Type */
-        $group1Type = $request->get('group');
-        /** @var string|null $group2Type */
-        $group2Type = $request->get('sub_group');
+        $group1Type = $request->getGroup();
+        $group2Type = $request->getSubGroup();
 
-        $group1Select = null;
-        $group2Select = null;
-        $groupBy = null;
-        if ($group1Type !== null) {
-            $group1Select = $this->getGroupByQuery($group1Type, $user->timezone, $user->week_start);
-            $groupBy = ['group_1'];
-            if ($group2Type !== null) {
-                $group2Select = $this->getGroupByQuery($group2Type, $user->timezone, $user->week_start);
-                $groupBy = ['group_1', 'group_2'];
-            }
-        }
-
-        $timeEntriesQuery->selectRaw(
-            ($group1Select !== null ? $group1Select.' as group_1,' : '').
-            ($group2Select !== null ? $group2Select.' as group_2,' : '').
-            ' round(sum(extract(epoch from (coalesce("end", now()) - start)))) as aggregate,'.
-            ' round(
-                  sum(
-                      extract(epoch from (coalesce("end", now()) - start)) * (coalesce(billable_rate, 0)::float/60/60)
-                  )
-              ) as cost'
+        $aggregatedData = $aggregationService->getAggregatedTimeEntries(
+            $timeEntriesQuery,
+            $group1Type,
+            $group2Type,
+            $user->timezone,
+            $user->week_start,
+            $request->getFillGapsInTimeGroups(),
+            $request->getStart(),
+            $request->getEnd()
         );
-        if ($groupBy !== null) {
-            $timeEntriesQuery->groupBy($groupBy);
-        }
-
-        $timeEntriesAggregates = $timeEntriesQuery->get();
-
-        if ($group1Select !== null) {
-            $groupedAggregates = $timeEntriesAggregates->groupBy($group2Select !== null ? ['group_1', 'group_2'] : ['group_1']);
-
-            $group1Response = [];
-            $group1ResponseSum = 0;
-            $group1ResponseCost = 0;
-            foreach ($groupedAggregates as $group1 => $group1Aggregates) {
-                /** @var string $group1 */
-                $group2Response = [];
-                if ($group2Select !== null) {
-                    $group2ResponseSum = 0;
-                    $group2ResponseCost = 0;
-                    foreach ($group1Aggregates as $group2 => $aggregate) {
-                        /** @var string $group2 */
-                        /** @var Collection<int, object{aggregate: int, cost: int}> $aggregate */
-                        /** @var string $group2Type */
-                        $group2Response[] = [
-                            'type' => $group2Type,
-                            'key' => $group2 === '' ? null : (string) $group2,
-                            'seconds' => (int) $aggregate->get(0)->aggregate,
-                            'cost' => (int) $aggregate->get(0)->cost,
-                        ];
-                        $group2ResponseSum += (int) $aggregate->get(0)->aggregate;
-                        $group2ResponseCost += (int) $aggregate->get(0)->cost;
-                    }
-                } else {
-                    /** @var Collection<int, object{aggregate: int, cost: int}> $group1Aggregates */
-                    $group2ResponseSum = (int) $group1Aggregates->get(0)->aggregate;
-                    $group2ResponseCost = (int) $group1Aggregates->get(0)->cost;
-                    $group2Response = null;
-                }
-
-                /** @var string $group1Type */
-                $group1Response[] = [
-                    'type' => $group1Type,
-                    'key' => $group1 === '' ? null : (string) $group1,
-                    'seconds' => $group2ResponseSum,
-                    'cost' => $group2ResponseCost,
-                    'grouped_data' => $group2Response,
-                ];
-                $group1ResponseSum += $group2ResponseSum;
-                $group1ResponseCost += $group2ResponseCost;
-            }
-        } else {
-            $group1Response = null;
-            /** @var Collection<int, object{aggregate: int, cost: int}> $timeEntriesAggregates */
-            $group1ResponseSum = (int) $timeEntriesAggregates->get(0)->aggregate;
-            $group1ResponseCost = (int) $timeEntriesAggregates->get(0)->cost;
-        }
 
         return [
-            'data' => [
-                'grouped_data' => $group1Response,
-                'seconds' => $group1ResponseSum,
-                'cost' => $group1ResponseCost,
-            ],
+            'data' => $aggregatedData,
         ];
-    }
-
-    private function getGroupByQuery(string $group, string $timezone, Weekday $startOfWeek): string
-    {
-        $timezoneShift = app(TimezoneService::class)->getShiftFromUtc(new CarbonTimeZone($timezone));
-        if ($timezoneShift > 0) {
-            $dateWithTimeZone = 'start + INTERVAL \''.$timezoneShift.' second\'';
-        } elseif ($timezoneShift < 0) {
-            $dateWithTimeZone = 'start - INTERVAL \''.abs($timezoneShift).' second\'';
-        } else {
-            $dateWithTimeZone = 'start';
-        }
-        $startOfWeek = Carbon::now()->setTimezone($timezone)->startOfWeek($startOfWeek->carbonWeekDay())->utc()->toDateTimeString();
-        if ($group === 'day') {
-            return 'date('.$dateWithTimeZone.')';
-        } elseif ($group === 'week') {
-            return "to_char(date_bin('7 days', ".$dateWithTimeZone.", timestamp '".$startOfWeek."'), 'YYYY-MM-DD HH24:MI:SS')";
-        } elseif ($group === 'month') {
-            return 'to_char('.$dateWithTimeZone.', \'YYYY-MM\')';
-        } elseif ($group === 'year') {
-            return 'to_char('.$dateWithTimeZone.', \'YYYY\')';
-        } elseif ($group === 'user') {
-            return 'user_id';
-        } elseif ($group === 'project') {
-            return 'project_id';
-        } elseif ($group === 'task') {
-            return 'task_id';
-        } elseif ($group === 'client') {
-            return 'client_id';
-        } elseif ($group === 'billable') {
-            return 'billable';
-        }
-
-        throw new \LogicException('Invalid group');
     }
 
     /**

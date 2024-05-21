@@ -33,7 +33,7 @@ class TaskIndexRequest extends FormRequest
                     $builder = $builder->whereBelongsTo($this->organization, 'organization');
 
                     if (! app(PermissionStore::class)->has($this->organization, 'tasks:view:all')) {
-                        $builder = $builder->visibleByUser(Auth::user());
+                        $builder = $builder->visibleByEmployee(Auth::user());
                     }
 
                     return $builder;
