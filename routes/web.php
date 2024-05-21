@@ -59,6 +59,10 @@ Route::middleware([
         return Inertia::render('Tags');
     })->name('tags');
 
+    Route::get('/import', function () {
+        return Inertia::render('Import');
+    })->name('import');
+
 });
 
 Route::get('health-check/up', [HealthCheckController::class, 'up']);

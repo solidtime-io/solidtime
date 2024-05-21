@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
+import { Head, usePage } from '@inertiajs/vue3';
 import Banner from '@/Components/Banner.vue';
 import OrganizationSwitcher from '@/Components/OrganizationSwitcher.vue';
 import CurrentSidebarTimer from '@/Components/CurrentSidebarTimer.vue';
@@ -14,6 +14,7 @@ import {
     UserGroupIcon,
     Bars3Icon,
     XMarkIcon,
+    CreditCardIcon,
 } from '@heroicons/vue/20/solid';
 import NavigationSidebarItem from '@/Components/NavigationSidebarItem.vue';
 import UserSettingsIcon from '@/Components/UserSettingsIcon.vue';
@@ -22,11 +23,15 @@ import { onMounted, ref } from 'vue';
 import NotificationContainer from '@/Components/NotificationContainer.vue';
 import { initializeStores } from '@/utils/init';
 import {
+    canUpdateOrganization,
     canViewClients,
     canViewMembers,
     canViewProjects,
     canViewTags,
 } from '@/utils/permissions';
+import { isBillingActivated } from '@/utils/billing';
+import type { User } from '@/types/models';
+import { ArrowsRightLeftIcon } from '@heroicons/vue/16/solid';
 
 defineProps({
     title: String,
@@ -41,6 +46,12 @@ onMounted(async () => {
         initializeStores();
     }
 });
+
+const page = usePage<{
+    auth: {
+        user: User;
+    };
+}>();
 </script>
 
 <template>
@@ -64,7 +75,7 @@ onMounted(async () => {
                     <CurrentSidebarTimer></CurrentSidebarTimer>
                 </div>
                 <nav>
-                    <ul class="space-y-1">
+                    <ul>
                         <NavigationSidebarItem
                             title="Dashboard"
                             :icon="HomeIcon"
@@ -85,10 +96,13 @@ onMounted(async () => {
                     </ul>
                 </nav>
 
-                <div class="text-muted text-sm font-bold pt-6 pb-4">Manage</div>
+                <div
+                    class="text-text-tertiary text-sm font-semibold pt-5 pb-1.5">
+                    Manage
+                </div>
 
                 <nav>
-                    <ul class="space-y-1">
+                    <ul>
                         <NavigationSidebarItem
                             v-if="canViewProjects()"
                             title="Projects"
@@ -117,13 +131,51 @@ onMounted(async () => {
                             :href="route('tags')"></NavigationSidebarItem>
                     </ul>
                 </nav>
+                <div
+                    class="text-text-tertiary text-sm font-semibold pt-5 pb-1.5">
+                    Admin
+                </div>
+
+                <nav>
+                    <ul>
+                        <NavigationSidebarItem
+                            v-if="
+                                canUpdateOrganization() && isBillingActivated()
+                            "
+                            title="Billing"
+                            :icon="CreditCardIcon"
+                            href="/billing"></NavigationSidebarItem>
+                        <NavigationSidebarItem
+                            v-if="canUpdateOrganization()"
+                            title="Import"
+                            :icon="ArrowsRightLeftIcon"
+                            :current="route().current('import')"
+                            :href="route('import')"></NavigationSidebarItem>
+                        <NavigationSidebarItem
+                            v-if="canUpdateOrganization()"
+                            title="Settings"
+                            :icon="Cog6ToothIcon"
+                            :href="
+                                route(
+                                    'teams.show',
+                                    page.props.auth.user.current_team.id
+                                )
+                            "
+                            :current="
+                                route().current(
+                                    'teams.show',
+                                    page.props.auth.user.current_team.id
+                                )
+                            "></NavigationSidebarItem>
+                    </ul>
+                </nav>
             </div>
 
             <ul
                 class="border-t border-default-background-separator pt-3 flex justify-between pr-4 items-center">
                 <NavigationSidebarItem
                     class="flex-1"
-                    title="Settings"
+                    title="Profile Settings"
                     :icon="Cog6ToothIcon"
                     :href="route('profile.show')"></NavigationSidebarItem>
 
