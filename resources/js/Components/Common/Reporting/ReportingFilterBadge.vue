@@ -23,7 +23,7 @@ const activeClass = computed(() => {
         size="large"
         :class="
             twMerge(
-                'cursor-pointer hover:bg-card-background transition space-x-5 flex',
+                'cursor-pointer hover:bg-card-background transition flex',
                 activeClass
             )
         ">

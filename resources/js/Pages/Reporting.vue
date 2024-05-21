@@ -134,8 +134,10 @@ onMounted(() => {
             </div>
         </MainContainer>
         <div class="p-3 w-full border-b border-default-background-separator">
-            <MainContainer class="flex justify-between">
-                <div class="flex items-center space-x-4">
+            <MainContainer
+                class="sm:flex space-y-4 sm:space-y-0 justify-between">
+                <div
+                    class="flex flex-wrap items-center space-y-2 sm:space-y-0 space-x-4">
                     <div class="text-sm font-medium">Filters</div>
                     <MemberMultiselectDropdown
                         @submit="updateReporting"
@@ -230,7 +232,7 @@ onMounted(() => {
             </div>
         </MainContainer>
         <MainContainer>
-            <div class="grid grid-cols-4 pt-6 items-start">
+            <div class="sm:grid grid-cols-4 pt-6 items-start">
                 <div
                     class="col-span-3 bg-card-background rounded-lg border border-card-border pt-3">
                     <div

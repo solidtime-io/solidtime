@@ -117,6 +117,7 @@ const option = ref({
             data: seriesData,
             radius: ['30%', '65%'],
             type: 'pie',
+            top: '-10%',
         },
     ],
 });
