@@ -25,6 +25,10 @@ solidtime is a modern open-source time tracking application for Freelancers and 
 **System requirements**
  * Docker
 
+First you need to download or clone the repository f.e. with `git@github.com:solidtime-io/solidtime.git`. 
+
+After that, execute the following commands **inside the project folder**: 
+
 ```bash
 docker run --rm \
     --pull=always \
@@ -49,6 +53,8 @@ cp .env.example .env
 ```
 
 Make sure to set the APP_PORT and VITE_PORT inside your `.env` file to a port that is not already used by your system.
+
+By default the application will run on [localhost:8083](http://localhost:8083/)
 
 ### Setup with Reverse Proxy
 
