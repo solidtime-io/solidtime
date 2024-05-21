@@ -5,6 +5,7 @@ import isToday from 'dayjs/plugin/isToday';
 import isYesterday from 'dayjs/plugin/isYesterday';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
+import weekOfYear from 'dayjs/plugin/weekOfYear';
 import { getUserTimezone, getWeekStart } from '@/utils/useUser';
 import updateLocale from 'dayjs/plugin/updateLocale';
 import { computed } from 'vue';
@@ -16,6 +17,7 @@ dayjs.extend(duration);
 dayjs.extend(utc);
 dayjs.extend(timezone);
 dayjs.extend(updateLocale);
+dayjs.extend(weekOfYear);
 
 export function getDayJsInstance() {
     dayjs.updateLocale('en', {
@@ -73,6 +75,10 @@ export function getLocalizedDateFromTimestamp(timestamp: string) {
  */
 export function formatDate(date: string): string {
     return dayjs(date).format('DD.MM.YYYY');
+}
+
+export function formatWeek(date: string | null): string {
+    return 'Week ' + dayjs(date).week();
 }
 
 /*

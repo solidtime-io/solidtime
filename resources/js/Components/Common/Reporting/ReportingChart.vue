@@ -2,7 +2,11 @@
 import VChart, { THEME_KEY } from 'vue-echarts';
 import { computed, provide, ref } from 'vue';
 import LinearGradient from 'zrender/lib/graphic/LinearGradient';
-import { formatHumanReadableDuration } from '@/utils/time';
+import {
+    formatDate,
+    formatHumanReadableDuration,
+    formatWeek,
+} from '@/utils/time';
 import { use } from 'echarts/core';
 import { CanvasRenderer } from 'echarts/renderers';
 import { BarChart } from 'echarts/charts';
@@ -30,10 +34,14 @@ type GroupedData = AggregatedTimeEntries['grouped_data'];
 
 const props = defineProps<{
     groupedData: GroupedData;
+    groupedType: string | null;
 }>();
 
 const xAxisLabels = computed(() => {
-    return props?.groupedData?.map((el) => el.key);
+    if (props.groupedType === 'week') {
+        return props?.groupedData?.map((el) => formatWeek(el.key));
+    }
+    return props?.groupedData?.map((el) => formatDate(el.key ?? ''));
 });
 const accentColor = useCssVar('--color-accent-quaternary');
 
@@ -108,9 +116,10 @@ const option = ref({
             },
         },
         axisLabel: {
-            fontSize: 16,
+            fontSize: 12,
             fontWeight: 600,
-            margin: 24,
+            color: 'rgba(255,255,255,0.7)',
+            margin: 16,
             fontFamily: 'Outfit, sans-serif',
         },
         axisTick: {

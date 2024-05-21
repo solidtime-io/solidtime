@@ -54,7 +54,7 @@ export const useTimeEntriesStore = defineStore('timeEntries', () => {
                     queries: {
                         only_full_dates: 'true',
                         member_id: getCurrentMembershipId(),
-                        before: dayjs(latestTimeEntry.start).utc().format(),
+                        end: dayjs(latestTimeEntry.start).utc().format(),
                     },
                 }),
                 undefined,

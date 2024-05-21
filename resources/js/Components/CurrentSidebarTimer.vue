@@ -30,7 +30,7 @@ const isRunningInDifferentOrganization = computed(() => {
 </script>
 
 <template>
-    <div class="py-4 px-2 flex justify-between items-center relative">
+    <div class="pt-3 pb-2.5 px-2 flex justify-between items-center relative">
         <div
             class="absolute w-full h-full backdrop-blur-sm z-10 flex items-center justify-center"
             v-if="isRunningInDifferentOrganization">
@@ -44,7 +44,7 @@ const isRunningInDifferentOrganization = computed(() => {
         </div>
         <div>
             <div class="text-muted font-extrabold text-xs">Current Timer</div>
-            <div class="text-white font-medium text-lg py-1">
+            <div class="text-white font-medium text-lg">
                 {{ currentTime }}
             </div>
         </div>

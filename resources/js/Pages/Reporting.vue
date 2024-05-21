@@ -26,9 +26,10 @@ import SelectDropdown from '@/Components/Common/SelectDropdown.vue';
 import ReportingGroupBySelect from '@/Components/Common/Reporting/ReportingGroupBySelect.vue';
 import ReportingRow from '@/Components/Common/Reporting/ReportingRow.vue';
 import { formatMoney } from '@/utils/money';
+import ReportingPieChart from '@/Components/Common/Reporting/ReportingPieChart.vue';
 
 const startDate = ref<string | null>(
-    getDayJsInstance()().subtract(31, 'd').format('YYYY-MM-DD')
+    getDayJsInstance()().subtract(14, 'd').format('YYYY-MM-DD')
 );
 const endDate = ref<string | null>(getDayJsInstance()().format('YYYY-MM-DD'));
 const selectedTags = ref<string[]>([]);
@@ -44,8 +45,8 @@ const subGroup = ref<GroupingOption>('task');
 
 function getFilterAttributes() {
     let params: AggregatedTimeEntriesQueryParams = {
-        after: getDayJsInstance()(startDate.value).utc().format(),
-        before: getDayJsInstance()(endDate.value).endOf('day').utc().format(),
+        start: getDayJsInstance()(startDate.value).utc().format(),
+        end: getDayJsInstance()(endDate.value).endOf('day').utc().format(),
     };
     if (selectedMembers.value.length > 0) {
         params = {
@@ -86,6 +87,7 @@ function updateGraphReporting() {
         'd'
     );
     const params = getFilterAttributes();
+    params.fill_gaps_in_time_groups = 'true';
     params.group = getOptimalGroupingOption(diffInDays);
     useReportingStore().fetchGraphReporting(params);
 }
@@ -130,13 +132,9 @@ onMounted(() => {
             <div class="flex items-center space-x-3 sm:space-x-6">
                 <PageTitle :icon="ChartBarIcon" title="Reporting"></PageTitle>
             </div>
-            <DateRangePicker
-                v-model:start="startDate"
-                v-model:end="endDate"
-                @submit="updateReporting"></DateRangePicker>
         </MainContainer>
         <div class="p-3 w-full border-b border-default-background-separator">
-            <MainContainer>
+            <MainContainer class="flex justify-between">
                 <div class="flex items-center space-x-4">
                     <div class="text-sm font-medium">Filters</div>
                     <MemberMultiselectDropdown
@@ -214,18 +212,25 @@ onMounted(() => {
                         </template>
                     </SelectDropdown>
                 </div>
+                <div>
+                    <DateRangePicker
+                        v-model:start="startDate"
+                        v-model:end="endDate"
+                        @submit="updateReporting"></DateRangePicker>
+                </div>
             </MainContainer>
         </div>
         <MainContainer>
             <div class="pt-10 w-full px-3 relative">
                 <ReportingChart
+                    :groupedType="aggregatedGraphTimeEntries?.grouped_type"
                     :groupedData="
                         aggregatedGraphTimeEntries?.grouped_data
                     "></ReportingChart>
             </div>
         </MainContainer>
         <MainContainer>
-            <div class="grid grid-cols-4 pt-6">
+            <div class="grid grid-cols-4 pt-6 items-start">
                 <div
                     class="col-span-3 bg-card-background rounded-lg border border-card-border pt-3">
                     <div
@@ -257,20 +262,25 @@ onMounted(() => {
                             <ReportingRow
                                 v-for="entry in aggregatedTableTimeEntries.grouped_data"
                                 :key="entry.key ?? 'none'"
-                                :entry="entry"></ReportingRow>
+                                :entry="entry"
+                                :type="
+                                    aggregatedTableTimeEntries.grouped_type
+                                "></ReportingRow>
                             <div
                                 class="contents [&>*]:transition text-text-tertiary [&>*]:h-[50px]">
                                 <div class="flex items-center pl-6 font-medium">
                                     <span>Total</span>
                                 </div>
-                                <div class="justify-end flex items-center">
+                                <div
+                                    class="justify-end flex items-center font-medium">
                                     {{
                                         formatHumanReadableDuration(
                                             aggregatedTableTimeEntries.seconds
                                         )
                                     }}
                                 </div>
-                                <div class="justify-end pr-6 flex items-center">
+                                <div
+                                    class="justify-end pr-6 flex items-center font-medium">
                                     {{
                                         formatMoney(
                                             aggregatedTableTimeEntries.cost
@@ -289,7 +299,13 @@ onMounted(() => {
                         </div>
                     </div>
                 </div>
-                <div></div>
+                <div>
+                    <ReportingPieChart
+                        :type="aggregatedTableTimeEntries?.grouped_type"
+                        :data="
+                            aggregatedTableTimeEntries?.grouped_data
+                        "></ReportingPieChart>
+                </div>
             </div>
         </MainContainer>
     </AppLayout>

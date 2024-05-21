@@ -118,7 +118,7 @@ const TaskResource = z
 const createTask_Body = z
     .object({ name: z.string(), project_id: z.string() })
     .passthrough();
-const before = z.union([z.string(), z.null()]).optional();
+const start = z.union([z.string(), z.null()]).optional();
 const TimeEntryResource = z
     .object({
         id: z.string(),
@@ -163,22 +163,6 @@ const v1_time_entries_update_multiple_Body = z
             .passthrough(),
     })
     .passthrough();
-const group = z
-    .union([
-        z.enum([
-            'day',
-            'week',
-            'month',
-            'year',
-            'user',
-            'project',
-            'task',
-            'client',
-            'billable',
-        ]),
-        z.null(),
-    ])
-    .optional();
 const updateTimeEntry_Body = z
     .object({
         member_id: z.string().uuid().optional(),
@@ -213,12 +197,11 @@ export const schemas = {
     TagCollection,
     TaskResource,
     createTask_Body,
-    before,
+    start,
     TimeEntryResource,
     TimeEntryCollection,
     createTimeEntry_Body,
     v1_time_entries_update_multiple_Body,
-    group,
     updateTimeEntry_Body,
 };
 
@@ -1776,14 +1759,14 @@ Users with the permission &#x60;time-entries:view:own&#x60; can only use this en
                 schema: z.string().uuid().optional(),
             },
             {
-                name: 'before',
+                name: 'start',
                 type: 'Query',
-                schema: before,
+                schema: start,
             },
             {
-                name: 'after',
+                name: 'end',
                 type: 'Query',
-                schema: before,
+                schema: start,
             },
             {
                 name: 'active',
@@ -2055,12 +2038,36 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
             {
                 name: 'group',
                 type: 'Query',
-                schema: group,
+                schema: z
+                    .enum([
+                        'day',
+                        'week',
+                        'month',
+                        'year',
+                        'user',
+                        'project',
+                        'task',
+                        'client',
+                        'billable',
+                    ])
+                    .optional(),
             },
             {
                 name: 'sub_group',
                 type: 'Query',
-                schema: group,
+                schema: z
+                    .enum([
+                        'day',
+                        'week',
+                        'month',
+                        'year',
+                        'user',
+                        'project',
+                        'task',
+                        'client',
+                        'billable',
+                    ])
+                    .optional(),
             },
             {
                 name: 'member_id',
@@ -2073,14 +2080,14 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
                 schema: z.string().uuid().optional(),
             },
             {
-                name: 'before',
+                name: 'start',
                 type: 'Query',
-                schema: before,
+                schema: start,
             },
             {
-                name: 'after',
+                name: 'end',
                 type: 'Query',
-                schema: before,
+                schema: start,
             },
             {
                 name: 'active',
@@ -2089,6 +2096,11 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
             },
             {
                 name: 'billable',
+                type: 'Query',
+                schema: z.enum(['true', 'false']).optional(),
+            },
+            {
+                name: 'fill_gaps_in_time_groups',
                 type: 'Query',
                 schema: z.enum(['true', 'false']).optional(),
             },
@@ -2117,19 +2129,22 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
             .object({
                 data: z
                     .object({
+                        grouped_type: z.union([z.string(), z.null()]),
                         grouped_data: z.union([
                             z.array(
                                 z
                                     .object({
-                                        type: z.string(),
                                         key: z.union([z.string(), z.null()]),
                                         seconds: z.number().int(),
                                         cost: z.number().int(),
+                                        grouped_type: z.union([
+                                            z.string(),
+                                            z.null(),
+                                        ]),
                                         grouped_data: z.union([
                                             z.array(
                                                 z
                                                     .object({
-                                                        type: z.string(),
                                                         key: z.union([
                                                             z.string(),
                                                             z.null(),
@@ -2138,6 +2153,8 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
                                                             .number()
                                                             .int(),
                                                         cost: z.number().int(),
+                                                        grouped_type: z.null(),
+                                                        grouped_data: z.null(),
                                                     })
                                                     .passthrough()
                                             ),

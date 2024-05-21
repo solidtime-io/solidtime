@@ -74,7 +74,7 @@ const page = usePage<{
                 <div class="border-b border-default-background-separator">
                     <CurrentSidebarTimer></CurrentSidebarTimer>
                 </div>
-                <nav>
+                <nav class="pt-2">
                     <ul>
                         <NavigationSidebarItem
                             title="Dashboard"

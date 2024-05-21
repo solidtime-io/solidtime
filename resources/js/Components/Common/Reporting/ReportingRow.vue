@@ -2,14 +2,13 @@
 import { formatHumanReadableDuration } from '@/utils/time';
 import { formatMoney } from '@/utils/money';
 import GroupedItemsCountButton from '@/Components/Common/GroupedItemsCountButton.vue';
-import { computed, ref } from 'vue';
-import { useProjectsStore } from '@/utils/useProjects';
-import { storeToRefs } from 'pinia';
-import { useMembersStore } from '@/utils/useMembers';
-import { useTasksStore } from '@/utils/useTasks';
+import { ref } from 'vue';
 import { twMerge } from 'tailwind-merge';
+import { useReportingStore } from '@/utils/useReporting';
+const { getNameForReportingRowEntry } = useReportingStore();
 
 type AggregatedGroupedData = GroupedData & {
+    grouped_type?: string | null;
     grouped_data?: GroupedData[] | null;
 };
 
@@ -17,48 +16,16 @@ type GroupedData = {
     key: string | null;
     seconds: number;
     cost: number;
-    type: string;
 };
 
 const props = defineProps<{
     entry: AggregatedGroupedData;
     indent?: boolean;
+    type: string | null;
 }>();
 
-const emptyPlaceholder = computed(() => {
-    const emptyPlaceholder = {
-        user: 'No User',
-        project: 'No Project',
-        task: 'No Task',
-        billable: 'Non-Billable',
-    };
-
-    return emptyPlaceholder[props.entry.type as keyof typeof emptyPlaceholder];
-});
-
-function getNameForKey(key: string) {
-    if (props.entry.type === 'project') {
-        const projectsStore = useProjectsStore();
-        const { projects } = storeToRefs(projectsStore);
-        return projects.value.find((project) => project.id === key)?.name;
-    }
-    if (props.entry.type === 'user') {
-        const memberStore = useMembersStore();
-        const { members } = storeToRefs(memberStore);
-        return members.value.find((member) => member.user_id === key)?.name;
-    }
-    if (props.entry.type === 'task') {
-        const taskStore = useTasksStore();
-        const { tasks } = storeToRefs(taskStore);
-        return tasks.value.find((task) => task.id === key)?.name;
-    }
-    if (props.entry.type === 'billable') {
-        if (key === '0') {
-            return 'Non-Billable';
-        } else {
-            return 'Billable';
-        }
-    }
+function getNameForKey(key: string | null) {
+    return getNameForReportingRowEntry(key, props.type);
 }
 const expanded = ref(false);
 </script>
@@ -80,7 +47,7 @@ const expanded = ref(false);
                 {{ entry.grouped_data?.length }}
             </GroupedItemsCountButton>
             <span>
-                {{ entry.key ? getNameForKey(entry.key) : emptyPlaceholder }}
+                {{ getNameForKey(entry.key) }}
             </span>
         </div>
         <div class="justify-end flex items-center">
@@ -97,6 +64,7 @@ const expanded = ref(false);
         <ReportingRow
             indent
             v-for="subEntry in entry.grouped_data"
+            :type="entry?.grouped_type ?? null"
             :key="subEntry.key ?? 'none'"
             :entry="subEntry"></ReportingRow>
     </div>
