@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1;
 
 use App\Enums\Role;
+use App\Exceptions\Api\CanNotRemoveOwnerFromOrganization;
 use App\Exceptions\Api\EntityStillInUseApiException;
 use App\Exceptions\Api\UserNotPlaceholderApiException;
 use App\Http\Requests\V1\Member\MemberIndexRequest;
@@ -72,7 +73,7 @@ class MemberController extends Controller
     /**
      * Remove a member of the organization.
      *
-     * @throws AuthorizationException|EntityStillInUseApiException
+     * @throws AuthorizationException|EntityStillInUseApiException|CanNotRemoveOwnerFromOrganization
      *
      * @operationId removeMember
      */
@@ -85,6 +86,9 @@ class MemberController extends Controller
         }
         if (ProjectMember::query()->whereBelongsToOrganization($organization)->where('user_id', $member->user_id)->exists()) {
             throw new EntityStillInUseApiException('member', 'project_member');
+        }
+        if ($member->role === Role::Owner->value) {
+            throw new CanNotRemoveOwnerFromOrganization();
         }
 
         $member->delete();

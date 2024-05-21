@@ -141,6 +141,23 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
         $response->assertStatus(403);
     }
 
+    public function test_destroy_member_fails_if_member_is_owner(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'members:delete',
+        ]);
+        $memberToDelete = Member::factory()->forOrganization($data->organization)->role(Role::Owner)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->deleteJson(route('api.v1.members.destroy', [$data->organization->getKey(), $memberToDelete->getKey()]));
+
+        // Assert
+        $response->assertStatus(400);
+        $response->assertJsonPath('message', 'Can not remove owner from organization');
+    }
+
     public function test_destroy_member_fails_if_member_is_not_part_of_org(): void
     {
         // Arrange

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Exceptions\Api\CanNotRemoveOwnerFromOrganization;
 use App\Exceptions\Api\EntityStillInUseApiException;
 use App\Exceptions\Api\InactiveUserCanNotBeUsedApiException;
 use App\Exceptions\Api\TimeEntryCanNotBeRestartedApiException;
@@ -17,5 +18,6 @@ return [
         InactiveUserCanNotBeUsedApiException::KEY => 'Inactive user can not be used',
         UserIsAlreadyMemberOfProjectApiException::KEY => 'User is already a member of the project',
         EntityStillInUseApiException::KEY => 'The :modelToDelete is still used by a :modelInUse and can not be deleted.',
+        CanNotRemoveOwnerFromOrganization::KEY => 'Can not remove owner from organization',
     ],
 ];
