@@ -61,8 +61,8 @@ class TimeEntryController extends Controller
             ->orderBy('start', 'desc');
 
         $filter = new TimeEntryFilter($timeEntriesQuery);
-        $filter->addBeforeFilter($request->input('before'));
-        $filter->addAfterFilter($request->input('after'));
+        $filter->addStartFilter($request->input('start'));
+        $filter->addEndFilter($request->input('end'));
         $filter->addActiveFilter($request->input('active'));
         $filter->addMemberIdFilter($member);
         $filter->addMemberIdsFilter($request->input('member_ids'));
@@ -159,8 +159,8 @@ class TimeEntryController extends Controller
             ->whereBelongsTo($organization, 'organization');
 
         $filter = new TimeEntryFilter($timeEntriesQuery);
-        $filter->addBeforeFilter($request->input('before'));
-        $filter->addAfterFilter($request->input('after'));
+        $filter->addEndFilter($request->input('end'));
+        $filter->addStartFilter($request->input('start'));
         $filter->addActiveFilter($request->input('active'));
         $filter->addMemberIdFilter($member);
         $filter->addMemberIdsFilter($request->input('member_ids'));

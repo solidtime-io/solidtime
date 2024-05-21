@@ -29,7 +29,7 @@ class TestJobCommand extends Command
      */
     public function handle(): int
     {
-        $user = User::first();
+        $user = User::firstOrFail();
         TestJob::dispatch($user, 'Test job message.');
 
         return self::SUCCESS;

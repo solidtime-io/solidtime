@@ -111,18 +111,18 @@ class TimeEntryAggregateRequest extends FormRequest
                     return $builder->whereBelongsTo($this->organization, 'organization');
                 }),
             ],
-            // Filter only time entries that have a start date before the given timestamp in UTC (example: 2021-01-01T00:00:00Z)
-            'before' => [
-                'nullable',
-                'string',
-                'date_format:Y-m-d\TH:i:s\Z',
-            ],
             // Filter only time entries that have a start date after the given timestamp in UTC (example: 2021-01-01T00:00:00Z)
-            'after' => [
+            'start' => [
                 'nullable',
                 'string',
                 'date_format:Y-m-d\TH:i:s\Z',
-                'before:before',
+                'before:end',
+            ],
+            // Filter only time entries that have a start date before the given timestamp in UTC (example: 2021-01-01T00:00:00Z)
+            'end' => [
+                'nullable',
+                'string',
+                'date_format:Y-m-d\TH:i:s\Z',
             ],
             // Filter by active status (active means has no end date, is still running)
             'active' => [
@@ -158,11 +158,11 @@ class TimeEntryAggregateRequest extends FormRequest
 
     public function getStart(): ?Carbon
     {
-        return $this->get('after') !== null ? Carbon::createFromFormat('Y-m-d\TH:i:s\Z', $this->get('after'), 'UTC') : null;
+        return $this->get('start') !== null ? Carbon::createFromFormat('Y-m-d\TH:i:s\Z', $this->get('start'), 'UTC') : null;
     }
 
     public function getEnd(): ?Carbon
     {
-        return $this->get('before') !== null ? Carbon::createFromFormat('Y-m-d\TH:i:s\Z', $this->get('before'), 'UTC') : null;
+        return $this->get('end') !== null ? Carbon::createFromFormat('Y-m-d\TH:i:s\Z', $this->get('end'), 'UTC') : null;
     }
 }

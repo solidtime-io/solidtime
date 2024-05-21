@@ -88,18 +88,18 @@ class TimeEntryIndexRequest extends FormRequest
                     return $builder->whereBelongsTo($this->organization, 'organization');
                 }),
             ],
-            // Filter only time entries that have a start date before the given timestamp in UTC (example: 2021-01-01T00:00:00Z)
-            'before' => [
-                'nullable',
-                'string',
-                'date_format:Y-m-d\TH:i:s\Z',
-            ],
             // Filter only time entries that have a start date after the given timestamp in UTC (example: 2021-01-01T00:00:00Z)
-            'after' => [
+            'start' => [
                 'nullable',
                 'string',
                 'date_format:Y-m-d\TH:i:s\Z',
-                'before:before',
+                'before:end',
+            ],
+            // Filter only time entries that have a start date before the given timestamp in UTC (example: 2021-01-01T00:00:00Z)
+            'end' => [
+                'nullable',
+                'string',
+                'date_format:Y-m-d\TH:i:s\Z',
             ],
             // Filter by active status (active means has no end date, is still running)
             'active' => [

@@ -342,7 +342,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         // Act
         $response = $this->getJson(route('api.v1.time-entries.index', [
             $data->organization->getKey(),
-            'before' => Carbon::now()->timezone($data->user->timezone)->subDay()->startOfDay()->toIso8601ZuluString(),
+            'end' => Carbon::now()->timezone($data->user->timezone)->subDay()->startOfDay()->toIso8601ZuluString(),
             'member_id' => $data->member->getKey(),
         ]));
 
@@ -380,7 +380,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         // Act
         $response = $this->getJson(route('api.v1.time-entries.index', [
             $data->organization->getKey(),
-            'after' => Carbon::now($data->user->timezone)->subDay()->endOfDay()->toIso8601ZuluString(), // yesterday
+            'start' => Carbon::now($data->user->timezone)->subDay()->endOfDay()->toIso8601ZuluString(), // yesterday
             'member_id' => $data->member->getKey(),
         ]));
 
@@ -427,8 +427,8 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
             'project_ids' => [$project->getKey()],
             'task_ids' => [$task->getKey()],
             'tag_ids' => [$tag->getKey()],
-            'before' => Carbon::now()->toIso8601ZuluString(),
-            'after' => Carbon::now()->subDay()->toIso8601ZuluString(),
+            'start' => Carbon::now()->subDay()->toIso8601ZuluString(),
+            'end' => Carbon::now()->toIso8601ZuluString(),
             'active' => 'true',
             'only_full_dates' => 'true',
             'limit' => 1,
@@ -558,8 +558,8 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
             'group' => 'project',
             'sub_group' => 'day',
             'fill_gaps_in_time_groups' => 'true',
-            'after' => $day2->copy()->subSecond()->toIso8601ZuluString(),
-            'before' => $day1->copy()->addSecond()->toIso8601ZuluString(),
+            'start' => $day2->copy()->subSecond()->toIso8601ZuluString(),
+            'end' => $day1->copy()->addSecond()->toIso8601ZuluString(),
         ]));
 
         // Assert
@@ -699,8 +699,8 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
             $data->organization->getKey(),
             'group' => 'week',
             'fill_gaps_in_time_groups' => 'true',
-            'after' => $earlierWeekStart->toIso8601ZuluString(),
-            'before' => $laterWeekEnd->toIso8601ZuluString(),
+            'start' => $earlierWeekStart->toIso8601ZuluString(),
+            'end' => $laterWeekEnd->toIso8601ZuluString(),
         ]));
 
         // Assert

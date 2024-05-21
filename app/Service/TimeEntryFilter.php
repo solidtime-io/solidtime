@@ -25,7 +25,7 @@ class TimeEntryFilter
         $this->builder = $builder;
     }
 
-    public function addBeforeFilter(?string $dateTime): self
+    public function addEndFilter(?string $dateTime): self
     {
         if ($dateTime === null) {
             return $this;
@@ -35,7 +35,7 @@ class TimeEntryFilter
         return $this;
     }
 
-    public function addAfterFilter(?string $dateTime): self
+    public function addStartFilter(?string $dateTime): self
     {
         if ($dateTime === null) {
             return $this;
