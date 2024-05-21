@@ -236,7 +236,7 @@ class TimeEntryController extends Controller
     {
         /** @var Member|null $member */
         $member = $request->has('member_id') ? Member::query()->findOrFail($request->get('member_id')) : null;
-        if ($timeEntry->member->user_id === Auth::id() && $member?->user_id === Auth::id()) {
+        if ($timeEntry->member->user_id === Auth::id() && ($member === null || $member->user_id === Auth::id())) {
             $this->checkPermission($organization, 'time-entries:update:own');
         } else {
             $this->checkPermission($organization, 'time-entries:update:all');

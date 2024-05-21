@@ -1144,6 +1144,33 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         ]);
     }
 
+    public function test_update_endpoint_updates_time_entry_for_current_user_but_does_not_send_member_id(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:update:own',
+        ]);
+        $timeEntry = TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)->create();
+        $timeEntryFake = TimeEntry::factory()->withTags($data->organization)->forOrganization($data->organization)->make();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.time-entries.update', [$data->organization->getKey(), $timeEntry->getKey()]), [
+            'description' => $timeEntryFake->description,
+            'start' => $timeEntryFake->start->toIso8601ZuluString(),
+            'end' => $timeEntryFake->end->toIso8601ZuluString(),
+            'tags' => $timeEntryFake->tags,
+        ]);
+
+        // Assert
+        $response->assertStatus(200);
+        $this->assertDatabaseHas(TimeEntry::class, [
+            'id' => $timeEntry->getKey(),
+            'member_id' => $data->member->getKey(),
+            'task_id' => $timeEntryFake->task_id,
+        ]);
+    }
+
     public function test_update_endpoint_fails_if_user_tries_to_reactivate_a_time_entry(): void
     {
         // Arrange
