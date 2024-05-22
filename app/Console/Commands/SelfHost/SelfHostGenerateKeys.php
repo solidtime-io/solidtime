@@ -41,8 +41,8 @@ class SelfHostGenerateKeys extends Command
 
         if ($format === 'env') {
             $this->line('APP_KEY="'.$appKey.'"');
-            $this->line('PASSPORT_PRIVATE_KEY="'.$publicKey.'"');
-            $this->line('PASSPORT_PUBLIC_KEY="'.$privateKey.'"');
+            $this->line('PASSPORT_PRIVATE_KEY="'.$privateKey.'"');
+            $this->line('PASSPORT_PUBLIC_KEY="'.$publicKey.'"');
         } elseif ($format === 'yaml') {
             $this->line('APP_KEY: "'.$appKey.'"');
             $this->line("PASSPORT_PRIVATE_KEY: |\n  ".Str::replace("\n", "\n  ", $privateKey));
