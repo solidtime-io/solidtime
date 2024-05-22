@@ -12,6 +12,7 @@ use Carbon\CarbonTimeZone;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 
 class TimeEntryAggregationService
 {
@@ -175,18 +176,19 @@ class TimeEntryAggregationService
             return $data;
         } else {
             $format = match ($interval) {
-                TimeEntryAggregationTypeInterval::Day => 'Y-m-d',
-                TimeEntryAggregationTypeInterval::Week => 'Y-m-d H:i:s',
+                TimeEntryAggregationTypeInterval::Day, TimeEntryAggregationTypeInterval::Week => 'Y-m-d',
                 TimeEntryAggregationTypeInterval::Month => 'Y-m',
                 TimeEntryAggregationTypeInterval::Year => 'Y',
             };
             $slots = $this->timeSlotsBetween($start, $end, $timezone, $startOfWeek, $interval, $format);
+            $foundEntries = [];
             $filledData = [];
             foreach ($slots as $slot) {
                 $foundDataSet = null;
                 foreach ($data as $item) {
                     if ($item['key'] === $slot) {
                         $foundDataSet = $item;
+                        $foundEntries[] = $item['key'];
                         break;
                     }
                 }
@@ -219,6 +221,16 @@ class TimeEntryAggregationService
                 }
             }
 
+            if (count($foundEntries) !== count($data)) {
+                foreach ($data as $item) {
+                    if (! in_array($item['key'], $foundEntries, true)) {
+                        Log::error('Problem with filling gaps in time groups', [
+                            'item' => $item,
+                        ]);
+                    }
+                }
+            }
+
             return $filledData;
         }
     }
@@ -233,11 +245,11 @@ class TimeEntryAggregationService
         } else {
             $dateWithTimeZone = 'start';
         }
-        $startOfWeek = Carbon::now()->setTimezone($timezone)->startOfWeek($startOfWeek->carbonWeekDay())->utc()->toDateTimeString();
+        $startOfWeek = Carbon::now()->setTimezone($timezone)->startOfWeek($startOfWeek->carbonWeekDay())->toDateTimeString();
         if ($group === TimeEntryAggregationType::Day) {
             return 'date('.$dateWithTimeZone.')';
         } elseif ($group === TimeEntryAggregationType::Week) {
-            return "to_char(date_bin('7 days', ".$dateWithTimeZone.", timestamp '".$startOfWeek."'), 'YYYY-MM-DD HH24:MI:SS')";
+            return "to_char(date_bin('7 days', ".$dateWithTimeZone.", timestamp '".$startOfWeek."'), 'YYYY-MM-DD')";
         } elseif ($group === TimeEntryAggregationType::Month) {
             return 'to_char('.$dateWithTimeZone.', \'YYYY-MM\')';
         } elseif ($group === TimeEntryAggregationType::Year) {
@@ -268,7 +280,7 @@ class TimeEntryAggregationService
         if ($interval === TimeEntryAggregationTypeInterval::Day) {
             $current->startOfDay();
         } elseif ($interval === TimeEntryAggregationTypeInterval::Week) {
-            $current->startOfWeek($startOfWeek->carbonWeekDay())->utc();
+            $current->startOfWeek($startOfWeek->carbonWeekDay());
         } elseif ($interval === TimeEntryAggregationTypeInterval::Month) {
             $current->startOfMonth();
         } elseif ($interval === TimeEntryAggregationTypeInterval::Year) {
