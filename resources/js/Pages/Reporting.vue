@@ -27,6 +27,7 @@ import ReportingGroupBySelect from '@/Components/Common/Reporting/ReportingGroup
 import ReportingRow from '@/Components/Common/Reporting/ReportingRow.vue';
 import { formatCents } from '@/utils/money';
 import ReportingPieChart from '@/Components/Common/Reporting/ReportingPieChart.vue';
+import { getCurrentMembershipId, getCurrentRole } from '@/utils/useUser';
 
 const startDate = ref<string | null>(
     getDayJsInstance()().subtract(14, 'd').format('YYYY-MM-DD')
@@ -87,6 +88,9 @@ function updateGraphReporting() {
         'd'
     );
     const params = getFilterAttributes();
+    if (getCurrentRole() === 'employee') {
+        params.member_id = getCurrentMembershipId();
+    }
     params.fill_gaps_in_time_groups = 'true';
     params.group = getOptimalGroupingOption(diffInDays);
     useReportingStore().fetchGraphReporting(params);
@@ -94,6 +98,9 @@ function updateGraphReporting() {
 
 function updateTableReporting() {
     const params = getFilterAttributes();
+    if (getCurrentRole() === 'employee') {
+        params.member_id = getCurrentMembershipId();
+    }
     params.group = group.value;
     params.sub_group = subGroup.value;
     useReportingStore().fetchTableReporting(params);
@@ -185,6 +192,7 @@ onMounted(() => {
                     </TagDropdown>
 
                     <SelectDropdown
+                        @changed="updateReporting"
                         v-model="billable"
                         :get-key-from-item="(item) => item.value"
                         :get-name-for-item="(item) => item.label"

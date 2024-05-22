@@ -78,7 +78,7 @@ export function formatDate(date: string): string {
 }
 
 export function formatWeek(date: string | null): string {
-    return 'Week ' + dayjs(date).week();
+    return 'Week ' + getDayJsInstance()(date).week();
 }
 
 /*
