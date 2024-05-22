@@ -638,8 +638,8 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         $data = $this->createUserWithPermission([
             'time-entries:view:all',
         ]);
-        $week1 = Carbon::now()->timezone($data->user->timezone)->startOfWeek($data->user->week_start->carbonWeekDay())->utc();
-        $week2 = Carbon::now()->timezone($data->user->timezone)->subWeeks(2)->startOfWeek($data->user->week_start->carbonWeekDay())->utc();
+        $week1 = Carbon::now()->timezone($data->user->timezone)->startOfWeek($data->user->week_start->carbonWeekDay());
+        $week2 = Carbon::now()->timezone($data->user->timezone)->subWeeks(2)->startOfWeek($data->user->week_start->carbonWeekDay());
         $timeEntry1Week1 = TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)->startWithDuration($week1->copy()->addDays(1), 10)->create();
         $timeEntry2Week1 = TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)->startWithDuration($week1->copy()->addDays(2), 10)->create();
         $timeEntry1Week2 = TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)->startWithDuration($week2->copy()->addDays(3), 10)->create();
@@ -661,14 +661,14 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
                 'grouped_type' => 'week',
                 'grouped_data' => [
                     0 => [
-                        'key' => $week2->format('Y-m-d H:i:s'),
+                        'key' => $week2->format('Y-m-d'),
                         'seconds' => 20,
                         'cost' => 0,
                         'grouped_type' => null,
                         'grouped_data' => null,
                     ],
                     1 => [
-                        'key' => $week1->format('Y-m-d H:i:s'),
+                        'key' => $week1->format('Y-m-d'),
                         'seconds' => 20,
                         'cost' => 0,
                         'grouped_type' => null,
@@ -685,8 +685,8 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         $data = $this->createUserWithPermission([
             'time-entries:view:all',
         ]);
-        $laterWeekEnd = Carbon::now()->timezone($data->user->timezone)->endOfWeek($data->user->week_start->toEndOfWeek()->carbonWeekDay())->utc();
-        $earlierWeekStart = Carbon::now()->timezone($data->user->timezone)->subWeeks(2)->startOfWeek($data->user->week_start->carbonWeekDay())->utc();
+        $laterWeekEnd = Carbon::now()->timezone($data->user->timezone)->endOfWeek($data->user->week_start->toEndOfWeek()->carbonWeekDay());
+        $earlierWeekStart = Carbon::now()->timezone($data->user->timezone)->subWeeks(2)->startOfWeek($data->user->week_start->carbonWeekDay());
 
         $timeEntry1 = TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)->startWithDuration($laterWeekEnd->copy()->subDays(1), 10)->create();
         $timeEntry2 = TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)->startWithDuration($laterWeekEnd->copy()->subDays(2), 10)->create();
@@ -712,21 +712,21 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
                 'grouped_type' => 'week',
                 'grouped_data' => [
                     0 => [
-                        'key' => '2024-05-05 22:00:00',
+                        'key' => $earlierWeekStart->startOfWeek($data->user->week_start->carbonWeekDay())->format('Y-m-d'),
                         'seconds' => 20,
                         'cost' => 0,
                         'grouped_type' => null,
                         'grouped_data' => null,
                     ],
                     1 => [
-                        'key' => '2024-05-12 22:00:00',
+                        'key' => $laterWeekEnd->copy()->subWeek()->startOfWeek($data->user->week_start->carbonWeekDay())->format('Y-m-d'),
                         'seconds' => 0,
                         'cost' => 0,
                         'grouped_type' => null,
                         'grouped_data' => null,
                     ],
                     2 => [
-                        'key' => '2024-05-19 22:00:00',
+                        'key' => $laterWeekEnd->startOfWeek($data->user->week_start->carbonWeekDay())->format('Y-m-d'),
                         'seconds' => 20,
                         'cost' => 0,
                         'grouped_type' => null,
