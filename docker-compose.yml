@@ -11,21 +11,20 @@ services:
         labels:
             - "traefik.enable=true"
             - "traefik.docker.network=${NETWORK_NAME}"
-            - "traefik.http.routers.solidtime.rule=Host(`${NGINX_HOST_NAME}`)"
-            - "traefik.http.routers.solidtime.entrypoints=web"
-            - "traefik.http.services.solidtime.loadbalancer.server.port=80"
-            - "traefik.http.routers.solidtime.service=solidtime"
-            - "traefik.http.services.solidtime-https.loadbalancer.server.port=80"
-            - "traefik.http.routers.solidtime-https.rule=Host(`${NGINX_HOST_NAME}`)"
-            - "traefik.http.routers.solidtime-https.entrypoints=websecure"
-            - "traefik.http.routers.solidtime-https.tls=true"
-            - "traefik.http.routers.solidtime-https.service=solidtime-https"
+            - "traefik.http.services.solidtime-dev.loadbalancer.server.port=80"
+            - "traefik.http.routers.solidtime-dev.rule=Host(`${NGINX_HOST_NAME}`)"
+            - "traefik.http.routers.solidtime-dev.entrypoints=web"
+            - "traefik.http.routers.solidtime-dev.service=solidtime-dev"
+            - "traefik.http.routers.solidtime-dev-https.rule=Host(`${NGINX_HOST_NAME}`)"
+            - "traefik.http.routers.solidtime-dev-https.service=solidtime-dev"
+            - "traefik.http.routers.solidtime-dev-https.entrypoints=websecure"
+            - "traefik.http.routers.solidtime-dev-https.tls=true"
             # vite
-            - "traefik.http.services.solidtime-vite.loadbalancer.server.port=5173"
+            - "traefik.http.services.solidtime-dev-vite.loadbalancer.server.port=5173"
             # http
-            - "traefik.http.routers.solidtime-vite.rule=Host(`${VITE_HOST_NAME}`)"
-            - "traefik.http.routers.solidtime-vite.service=solidtime-vite"
-            - "traefik.http.routers.solidtime-vite.entrypoints=web"
+            - "traefik.http.routers.solidtime-dev-vite.rule=Host(`${VITE_HOST_NAME}`)"
+            - "traefik.http.routers.solidtime-dev-vite.service=solidtime-dev-vite"
+            - "traefik.http.routers.solidtime-dev-vite.entrypoints=web"
         extra_hosts:
             - 'host.docker.internal:host-gateway'
         environment:
@@ -95,12 +94,14 @@ services:
         labels:
             - "traefik.enable=true"
             - "traefik.docker.network=${NETWORK_NAME}"
-            - "traefik.http.routers.solidtime-mailpit.rule=Host(`mail.${NGINX_HOST_NAME}`)"
-            - "traefik.http.routers.solidtime-mailpit.entrypoints=web"
-            - "traefik.http.services.solidtime-mailpit.loadbalancer.server.port=8025"
-            - "traefik.http.routers.solidtime-mailpit-https.rule=Host(`mail.${NGINX_HOST_NAME}`)"
-            - "traefik.http.routers.solidtime-mailpit-https.entrypoints=websecure"
-            - "traefik.http.routers.solidtime-mailpit-https.tls=true"
+            - "traefik.http.services.solidtime-dev-mailpit.loadbalancer.server.port=8025"
+            - "traefik.http.routers.solidtime-dev-mailpit.rule=Host(`mail.${NGINX_HOST_NAME}`)"
+            - "traefik.http.routers.solidtime-dev-mailpit.entrypoints=web"
+            - "traefik.http.routers.solidtime-dev-mailpit.service=solidtime-dev-mailpit"
+            - "traefik.http.routers.solidtime-dev-mailpit-https.rule=Host(`mail.${NGINX_HOST_NAME}`)"
+            - "traefik.http.routers.solidtime-dev-mailpit-https.service=solidtime-dev-mailpit"
+            - "traefik.http.routers.solidtime-dev-mailpit-https.entrypoints=websecure"
+            - "traefik.http.routers.solidtime-dev-mailpit-https.tls=true"
         networks:
             - sail
             - reverse-proxy
@@ -114,12 +115,12 @@ services:
         labels:
             - "traefik.enable=true"
             - "traefik.docker.network=${NETWORK_NAME}"
-            - "traefik.http.routers.playwright.rule=Host(`playwright.${NGINX_HOST_NAME}`)"
-            - "traefik.http.routers.playwright.entrypoints=web"
-            - "traefik.http.services.playwright.loadbalancer.server.port=8080"
-            - "traefik.http.routers.playwright-https.rule=Host(`playwright.${NGINX_HOST_NAME}`)"
-            - "traefik.http.routers.playwright-https.entrypoints=websecure"
-            - "traefik.http.routers.playwright-https.tls=true"
+            - "traefik.http.services.solidtime-dev-playwright.loadbalancer.server.port=8080"
+            - "traefik.http.routers.solidtime-dev-playwright.rule=Host(`playwright.${NGINX_HOST_NAME}`)"
+            - "traefik.http.routers.solidtime-dev-playwright.entrypoints=web"
+            - "traefik.http.routers.solidtime-dev-playwright-https.rule=Host(`playwright.${NGINX_HOST_NAME}`)"
+            - "traefik.http.routers.solidtime-dev-playwright-https.entrypoints=websecure"
+            - "traefik.http.routers.solidtime-dev-playwright-https.tls=true"
         networks:
             - sail
             - reverse-proxy
