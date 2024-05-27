@@ -25,7 +25,7 @@ jobs:
         if: steps.cache-vendor.outputs.cache-hit != 'true' # Skip if cache hit
         with:
           command: install
-          only_args: --no-dev --no-ansi --no-interaction --no-scripts --prefer-dist --ignore-platform-reqs --classmap-authoritative
+          only_args: --no-dev --no-ansi --no-interaction --prefer-dist --ignore-platform-reqs --classmap-authoritative
           php_version: 8.3
 
       - name: "Use Node.js"
@@ -64,6 +64,7 @@ jobs:
         with:
           context: .
           file: docker/prod/Dockerfile
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
