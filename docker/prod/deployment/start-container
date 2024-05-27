@@ -3,9 +3,14 @@ set -e
 
 container_mode=${CONTAINER_MODE:-http}
 octane_server=${OCTANE_SERVER}
+auto_db_migrate=${AUTO_DB_MIGRATE:-false}
 echo "Container mode: $container_mode"
 
 initialStuff() {
+    if [ ${auto_db_migrate} = "true" ]; then
+        echo "Auto database migration enabled."
+        php artisan migrate --force
+    fi
     php artisan optimize:clear; \
     php artisan event:cache; \
     php artisan config:cache; \
