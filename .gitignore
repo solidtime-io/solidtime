@@ -31,3 +31,5 @@ yarn-error.log
 /auth.json
 /modules_statuses.json
 /k8s
+/_ide_helper.php
+/.phpstorm.meta.php
