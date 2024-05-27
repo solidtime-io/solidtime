@@ -77,6 +77,6 @@ return [
     |
     */
 
-    'profile_photo_disk' => env('PROFILE_PHOTO_DISK', 's3'),
+    'profile_photo_disk' => env('PROFILE_PHOTO_DISK', env('PUBLIC_FILESYSTEM_DISK', 'public')),
 
 ];

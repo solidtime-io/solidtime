@@ -67,6 +67,11 @@ return [
             'replace_placeholders' => true,
         ],
 
+        'stderr_daily' => [
+            'driver' => 'stack',
+            'channels' => ['stderr', 'daily'],
+        ],
+
         'stack_production' => [
             'driver' => 'stack',
             'channels' => ['stderr', 'sentry'],

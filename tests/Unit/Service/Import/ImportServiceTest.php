@@ -17,7 +17,7 @@ class ImportServiceTest extends TestCase
     public function test_import_gets_importer_from_provider_runs_importer_and_returns_report(): void
     {
         // Arrange
-        Storage::fake('s3');
+        Storage::fake(config('filesystems.default'));
         $organization = Organization::factory()->create();
         $data = file_get_contents(storage_path('tests/toggl_time_entries_import_test_1.csv'));
 

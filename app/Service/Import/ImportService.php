@@ -24,7 +24,8 @@ class ImportService
         /** @var ImporterContract $importer */
         $importer = app(ImporterProvider::class)->getImporter($importerType);
         $importer->init($organization);
-        Storage::disk('s3')->put('import/'.Carbon::now()->toDateString().'-'.$organization->getKey().'-'.Str::uuid(), $data);
+        Storage::disk(config('filesystems.default'))
+            ->put('import/'.Carbon::now()->toDateString().'-'.$organization->getKey().'-'.Str::uuid(), $data);
 
         DB::transaction(function () use (&$importer, &$data) {
             $importer->importData($data);
