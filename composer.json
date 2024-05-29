@@ -11,6 +11,7 @@
         "brick/money": "^0.8.1",
         "dedoc/scramble": "dev-main",
         "filament/filament": "^3.2",
+        "flowframe/laravel-trend": "^0.2.0",
         "guzzlehttp/guzzle": "^7.2",
         "inertiajs/inertia-laravel": "^1.0",
         "korridor/laravel-computed-attributes": "^3.1",
@@ -30,6 +31,7 @@
         "wikimedia/composer-merge-plugin": "^2.1.0"
     },
     "require-dev": {
+        "barryvdh/laravel-ide-helper": "^3.0",
         "brianium/paratest": "^7.3",
         "fakerphp/faker": "^1.9.1",
         "fumeapp/modeltyper": "^2.2",
@@ -93,6 +95,10 @@
         ],
         "fix": [
             "@php pint"
+        ],
+        "ide-helper": [
+            "@php artisan ide-helper:generate",
+            "@php artisan ide-helper:meta"
         ]
     },
     "extra": {
