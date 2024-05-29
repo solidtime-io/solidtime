@@ -50,7 +50,7 @@ class TimeEntryController extends Controller
     public function index(Organization $organization, TimeEntryIndexRequest $request): JsonResource
     {
         /** @var Member|null $member */
-        $member = $request->has('member_id') ? Member::query()->findOrFail($request->get('member_id')) : null;
+        $member = $request->has('member_id') ? Member::query()->findOrFail($request->input('member_id')) : null;
         if ($member !== null && $member->user_id === Auth::id()) {
             $this->checkPermission($organization, 'time-entries:view:own');
         } else {
@@ -73,7 +73,7 @@ class TimeEntryController extends Controller
         $filter->addClientIdsFilter($request->input('client_ids'));
         $filter->addBillableFilter($request->input('billable'));
 
-        $limit = $request->has('limit') ? (int) $request->get('limit', 100) : 100;
+        $limit = $request->has('limit') ? (int) $request->input('limit', 100) : 100;
         if ($limit > 1000) {
             $limit = 1000;
         }
@@ -149,7 +149,7 @@ class TimeEntryController extends Controller
     public function aggregate(Organization $organization, TimeEntryAggregateRequest $request, TimeEntryAggregationService $aggregationService): array
     {
         /** @var Member|null $member */
-        $member = $request->has('member_id') ? Member::query()->findOrFail($request->get('member_id')) : null;
+        $member = $request->has('member_id') ? Member::query()->findOrFail($request->input('member_id')) : null;
         if ($member !== null && $member->user_id === Auth::id()) {
             $this->checkPermission($organization, 'time-entries:view:own');
         } else {
@@ -204,24 +204,24 @@ class TimeEntryController extends Controller
     public function store(Organization $organization, TimeEntryStoreRequest $request): JsonResource
     {
         /** @var Member $member */
-        $member = Member::query()->findOrFail($request->get('member_id'));
+        $member = Member::query()->findOrFail($request->input('member_id'));
         if ($member->user_id === Auth::id()) {
             $this->checkPermission($organization, 'time-entries:create:own');
         } else {
             $this->checkPermission($organization, 'time-entries:create:all');
         }
 
-        if ($request->get('end') === null && TimeEntry::query()->whereBelongsTo($member, 'member')->where('end', null)->exists()) {
+        if ($request->input('end') === null && TimeEntry::query()->whereBelongsTo($member, 'member')->where('end', null)->exists()) {
             throw new TimeEntryStillRunningApiException();
         }
 
-        $client = $request->get('project_id') !== null ? Project::findOrFail($request->get('project_id'))->client : null;
+        $client = $request->input('project_id') !== null ? Project::findOrFail($request->input('project_id'))->client : null;
 
         $timeEntry = new TimeEntry();
         $timeEntry->fill($request->validated());
         $timeEntry->client()->associate($client);
         $timeEntry->user_id = $member->user_id;
-        $timeEntry->description = $request->get('description') ?? '';
+        $timeEntry->description = $request->input('description') ?? '';
         $timeEntry->organization()->associate($organization);
         $timeEntry->setComputedAttributeValue('billable_rate');
         $timeEntry->save();
@@ -239,24 +239,24 @@ class TimeEntryController extends Controller
     public function update(Organization $organization, TimeEntry $timeEntry, TimeEntryUpdateRequest $request): JsonResource
     {
         /** @var Member|null $member */
-        $member = $request->has('member_id') ? Member::query()->findOrFail($request->get('member_id')) : null;
+        $member = $request->has('member_id') ? Member::query()->findOrFail($request->input('member_id')) : null;
         if ($timeEntry->member->user_id === Auth::id() && ($member === null || $member->user_id === Auth::id())) {
             $this->checkPermission($organization, 'time-entries:update:own');
         } else {
             $this->checkPermission($organization, 'time-entries:update:all');
         }
 
-        if ($timeEntry->end !== null && $request->has('end') && $request->get('end') === null) {
+        if ($timeEntry->end !== null && $request->has('end') && $request->input('end') === null) {
             throw new TimeEntryCanNotBeRestartedApiException();
         }
 
         if ($request->has('project_id')) {
-            $client = $request->get('project_id') !== null ? Project::findOrFail($request->get('project_id'))->client : null;
+            $client = $request->input('project_id') !== null ? Project::findOrFail($request->input('project_id'))->client : null;
             $timeEntry->client()->associate($client);
         }
 
         $timeEntry->fill($request->validated());
-        $timeEntry->description = $request->get('description', $timeEntry->description) ?? '';
+        $timeEntry->description = $request->input('description', $timeEntry->description) ?? '';
         $timeEntry->save();
 
         return new TimeEntryResource($timeEntry);
@@ -270,14 +270,14 @@ class TimeEntryController extends Controller
         $this->checkAnyPermission($organization, ['time-entries:update:all', 'time-entries:update:own']);
         $canAccessAll = $this->hasPermission($organization, 'time-entries:update:all');
 
-        $ids = $request->get('ids');
+        $ids = $request->input('ids');
 
         $timeEntries = TimeEntry::query()
             ->whereBelongsTo($organization, 'organization')
             ->whereIn('id', $ids)
             ->get();
 
-        $changes = $request->get('changes');
+        $changes = $request->input('changes');
 
         if (isset($changes['member_id']) && ! $canAccessAll && $this->member($organization)->getKey() !== $changes['member_id']) {
             throw new AuthorizationException();
