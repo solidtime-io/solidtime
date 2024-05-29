@@ -215,7 +215,7 @@ class TimeEntryController extends Controller
             throw new TimeEntryStillRunningApiException();
         }
 
-        $client = $request->input('project_id') !== null ? Project::findOrFail($request->input('project_id'))->client : null;
+        $client = $request->input('project_id') !== null ? Project::findOrFail((string) $request->input('project_id'))->client : null;
 
         $timeEntry = new TimeEntry();
         $timeEntry->fill($request->validated());
@@ -251,7 +251,7 @@ class TimeEntryController extends Controller
         }
 
         if ($request->has('project_id')) {
-            $client = $request->input('project_id') !== null ? Project::findOrFail($request->input('project_id'))->client : null;
+            $client = $request->input('project_id') !== null ? Project::findOrFail((string) $request->input('project_id'))->client : null;
             $timeEntry->client()->associate($client);
         }
 
@@ -286,7 +286,7 @@ class TimeEntryController extends Controller
         $client = null;
         $overwriteClient = false;
         if ($request->has('changes.project_id')) {
-            $client = $request->input('changes.project_id') !== null ? Project::findOrFail($request->input('changes.project_id'))?->client : null;
+            $client = $request->input('changes.project_id') !== null ? Project::findOrFail((string) $request->input('changes.project_id'))->client : null;
             $overwriteClient = true;
         }
 
