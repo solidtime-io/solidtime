@@ -7,6 +7,7 @@ namespace Tests\Unit\Service\Import\Importer;
 use App\Models\Organization;
 use App\Models\TimeEntry;
 use App\Service\Import\Importers\TogglTimeEntriesImporter;
+use Illuminate\Support\Facades\Storage;
 
 class TogglTimeEntriesImporterTest extends ImporterTestAbstract
 {
@@ -14,12 +15,13 @@ class TogglTimeEntriesImporterTest extends ImporterTestAbstract
     {
         // Arrange
         $organization = Organization::factory()->create();
+        $timezone = 'Europe/Vienna';
         $importer = new TogglTimeEntriesImporter();
         $importer->init($organization);
-        $data = file_get_contents(storage_path('tests/toggl_time_entries_import_test_1.csv'));
+        $data = Storage::disk('testfiles')->get('toggl_time_entries_import_test_1.csv');
 
         // Act
-        $importer->importData($data);
+        $importer->importData($data, $timezone);
         $report = $importer->getReport();
 
         // Assert
@@ -52,15 +54,16 @@ class TogglTimeEntriesImporterTest extends ImporterTestAbstract
     {
         // Arrange
         $organization = Organization::factory()->create();
+        $timezone = 'Europe/Vienna';
         $importer = new TogglTimeEntriesImporter();
         $importer->init($organization);
-        $data = file_get_contents(storage_path('tests/toggl_time_entries_import_test_1.csv'));
-        $importer->importData($data, []);
+        $data = Storage::disk('testfiles')->get('toggl_time_entries_import_test_1.csv');
+        $importer->importData($data, $timezone);
         $importer = new TogglTimeEntriesImporter();
         $importer->init($organization);
 
         // Act
-        $importer->importData($data);
+        $importer->importData($data, $timezone);
         $report = $importer->getReport();
 
         // Assert

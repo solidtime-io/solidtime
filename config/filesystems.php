@@ -60,7 +60,7 @@ return [
 
         'testfiles' => [
             'driver' => 'local',
-            'root' => storage_path('tests'),
+            'root' => resource_path('testfiles'),
             'throw' => true,
         ],
 

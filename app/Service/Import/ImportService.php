@@ -19,7 +19,7 @@ class ImportService
     /**
      * @throws ImportException
      */
-    public function import(Organization $organization, string $importerType, string $data): ReportDto
+    public function import(Organization $organization, string $importerType, string $data, string $timezone): ReportDto
     {
         /** @var ImporterContract $importer */
         $importer = app(ImporterProvider::class)->getImporter($importerType);
@@ -27,8 +27,8 @@ class ImportService
         Storage::disk(config('filesystems.default'))
             ->put('import/'.Carbon::now()->toDateString().'-'.$organization->getKey().'-'.Str::uuid(), $data);
 
-        DB::transaction(function () use (&$importer, &$data) {
-            $importer->importData($data);
+        DB::transaction(function () use (&$importer, &$data, &$timezone) {
+            $importer->importData($data, $timezone);
         });
 
         return $importer->getReport();

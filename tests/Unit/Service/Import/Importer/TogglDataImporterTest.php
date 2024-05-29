@@ -33,12 +33,13 @@ class TogglDataImporterTest extends ImporterTestAbstract
     {
         // Arrange
         $organization = Organization::factory()->create();
+        $timezone = 'Europe/Vienna';
         $importer = new TogglDataImporter();
         $importer->init($organization);
 
         // Act
         try {
-            $importer->importData('not a zip');
+            $importer->importData('not a zip', $timezone);
         } catch (Exception $e) {
             $this->assertInstanceOf(ImportException::class, $e);
             $this->assertSame('Invalid ZIP, error code: 19', $e->getMessage());
@@ -52,13 +53,14 @@ class TogglDataImporterTest extends ImporterTestAbstract
     {
         // Arrange
         $zipPath = $this->createTestZip('toggl_data_import_test_1');
+        $timezone = 'Europe/Vienna';
         $organization = Organization::factory()->create();
         $importer = new TogglDataImporter();
         $importer->init($organization);
         $data = file_get_contents($zipPath);
 
         // Act
-        $importer->importData($data);
+        $importer->importData($data, $timezone);
         $report = $importer->getReport();
 
         // Assert
@@ -75,16 +77,17 @@ class TogglDataImporterTest extends ImporterTestAbstract
     {
         // Arrange
         $zipPath = $this->createTestZip('toggl_data_import_test_1');
+        $timezone = 'Europe/Vienna';
         $organization = Organization::factory()->create();
         $importer = new TogglDataImporter();
         $importer->init($organization);
         $data = file_get_contents($zipPath);
-        $importer->importData($data);
+        $importer->importData($data, $timezone);
         $importer = new TogglDataImporter();
         $importer->init($organization);
 
         // Act
-        $importer->importData($data);
+        $importer->importData($data, $timezone);
         $report = $importer->getReport();
 
         // Assert

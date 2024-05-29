@@ -40,7 +40,7 @@ class TogglTimeEntriesImporter extends DefaultImporter
      * @throws ImportException
      */
     #[\Override]
-    public function importData(string $data): void
+    public function importData(string $data, string $timezone): void
     {
         try {
             $reader = Reader::createFromString($data);
@@ -100,12 +100,12 @@ class TogglTimeEntriesImporter extends DefaultImporter
                 }
                 $timeEntry->billable = $record['Billable'] === 'Yes';
                 $timeEntry->tags = $this->getTags($record['Tags']);
-                $start = Carbon::createFromFormat('Y-m-d H:i:s', $record['Start date'].' '.$record['Start time'], 'UTC');
+                $start = Carbon::createFromFormat('Y-m-d H:i:s', $record['Start date'].' '.$record['Start time'], $timezone);
                 if ($start === null) {
                     throw new ImportException('Start date ("'.$record['Start date'].'") or time ("'.$record['Start time'].'") are invalid');
                 }
                 $timeEntry->start = $start;
-                $end = Carbon::createFromFormat('Y-m-d H:i:s', $record['End date'].' '.$record['End time'], 'UTC');
+                $end = Carbon::createFromFormat('Y-m-d H:i:s', $record['End date'].' '.$record['End time'], $timezone);
                 if ($end === null) {
                     throw new ImportException('End date ("'.$record['End date'].'") or time ("'.$record['End time'].'") are invalid');
                 }

@@ -19,11 +19,12 @@ class ImportServiceTest extends TestCase
         // Arrange
         Storage::fake(config('filesystems.default'));
         $organization = Organization::factory()->create();
-        $data = file_get_contents(storage_path('tests/toggl_time_entries_import_test_1.csv'));
+        $timezone = 'Europe/Vienna';
+        $data = Storage::disk('testfiles')->get('toggl_time_entries_import_test_1.csv');
 
         // Act
         $importService = app(ImportService::class);
-        $report = $importService->import($organization, 'toggl_time_entries', $data);
+        $report = $importService->import($organization, 'toggl_time_entries', $data, $timezone);
 
         // Assert
         $this->assertSame(2, $report->timeEntriesCreated);

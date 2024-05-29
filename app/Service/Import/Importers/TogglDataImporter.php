@@ -16,7 +16,7 @@ class TogglDataImporter extends DefaultImporter
      * @throws ImportException
      */
     #[\Override]
-    public function importData(string $data): void
+    public function importData(string $data, string $timezone): void
     {
         try {
             $zip = new ZipArchive();

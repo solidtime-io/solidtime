@@ -7,6 +7,7 @@ namespace Tests\Unit\Service\Import\Importer;
 use App\Models\Organization;
 use App\Models\TimeEntry;
 use App\Service\Import\Importers\ClockifyTimeEntriesImporter;
+use Illuminate\Support\Facades\Storage;
 
 class ClockifyTimeEntriesImporterTest extends ImporterTestAbstract
 {
@@ -14,12 +15,13 @@ class ClockifyTimeEntriesImporterTest extends ImporterTestAbstract
     {
         // Arrange
         $organization = Organization::factory()->create();
+        $timezone = 'Europe/Vienna';
         $importer = new ClockifyTimeEntriesImporter();
         $importer->init($organization);
-        $data = file_get_contents(storage_path('tests/clockify_time_entries_import_test_1.csv'));
+        $data = Storage::disk('testfiles')->get('clockify_time_entries_import_test_1.csv');
 
         // Act
-        $importer->importData($data);
+        $importer->importData($data, $timezone);
 
         // Assert
         $testScenario = $this->checkTestScenarioAfterImportExcludingTimeEntries();
@@ -45,15 +47,16 @@ class ClockifyTimeEntriesImporterTest extends ImporterTestAbstract
     {
         // Arrange
         $organization = Organization::factory()->create();
+        $timezone = 'Europe/Vienna';
         $importer = new ClockifyTimeEntriesImporter();
         $importer->init($organization);
-        $data = file_get_contents(storage_path('tests/clockify_time_entries_import_test_1.csv'));
-        $importer->importData($data);
+        $data = Storage::disk('testfiles')->get('clockify_time_entries_import_test_1.csv');
+        $importer->importData($data, $timezone);
         $importer = new ClockifyTimeEntriesImporter();
         $importer->init($organization);
 
         // Act
-        $importer->importData($data);
+        $importer->importData($data, $timezone);
 
         // Assert
         $testScenario = $this->checkTestScenarioAfterImportExcludingTimeEntries();

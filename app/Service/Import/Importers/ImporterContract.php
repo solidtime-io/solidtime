@@ -10,7 +10,7 @@ interface ImporterContract
 {
     public function init(Organization $organization): void;
 
-    public function importData(string $data): void;
+    public function importData(string $data, string $timezone): void;
 
     public function getReport(): ReportDto;
 

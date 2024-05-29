@@ -11,6 +11,7 @@ use App\Service\Import\Importers\ImporterProvider;
 use App\Service\Import\Importers\ImportException;
 use App\Service\Import\Importers\ReportDto;
 use App\Service\Import\ImportService;
+use App\Service\TimezoneService;
 use Brick\Money\ISOCurrencyProvider;
 use Filament\Forms;
 use Filament\Forms\Components\Select;
@@ -112,11 +113,14 @@ class OrganizationResource extends Resource
                             if ($file === null) {
                                 throw new \Exception('File not found');
                             }
+                            /** @var string $timezone */
+                            $timezone = $data['timezone'];
                             /** @var ReportDto $report */
                             $report = app(ImportService::class)->import(
                                 $record,
                                 $data['type'],
-                                $file
+                                $file,
+                                $timezone
                             );
                             Notification::make()
                                 ->title('Import successful')
@@ -156,6 +160,11 @@ class OrganizationResource extends Resource
 
                                 return $select;
                             }),
+                        Forms\Components\Select::make('timezone')
+                            ->label('Timezone')
+                            ->options(fn (): array => app(TimezoneService::class)->getSelectOptions())
+                            ->searchable()
+                            ->required(),
                     ]),
             ])
             ->bulkActions([
