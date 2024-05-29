@@ -5,10 +5,12 @@ declare(strict_types=1);
 return [
     'clockify_time_entries' => [
         'name' => 'Clockify Time Entries',
-        'description' => 'Go to REPORTS -> TIME -> Detailed in the navigation on the left. '.
+        'description' => 'First make sure that you set the Date format to "MM/DD/YYYY" and the Time format to "12-hour" in the user settings. '.
+            'Go to REPORTS -> TIME -> Detailed in the navigation on the left. '.
             'Now select the date range that you want to export in the right top. '.
-            'It is currently not possible to select more than one year. You can export each year seperatly and import them one after another.'.
-            'Now click Export -> Save as CSV. The Export dropdown is in the header of the export table left of the printer symbol.',
+            'It is currently not possible to select more than one year. You can export each year separately and import them one after another .'.
+            'Now click Export -> Save as CSV. The Export dropdown is in the header of the export table left of the printer symbol. '.
+            'Before you import make sure that the Timezone settings in Clockify are the same as in solidtime.',
     ],
     'clockify_projects' => [
         'name' => 'Clockify Projects',
@@ -27,6 +29,7 @@ return [
     'toggl_time_entries' => [
         'name' => 'Toggl Time Entries',
         'description' => 'Important: If you want to import a Toggl organization use the "Toggl Data Importer" before using this importer, since this export contains more details. '.
-            'Go to Admin -> Settings -> Data export. Under "Time entries" select the year you want to export and click on "Export time entries". You can export all years one after another and import them one after another.',
+            'Go to Admin -> Settings -> Data export. Under "Time entries" select the year you want to export and click on "Export time entries". You can export all years one after another and import them one after another. '.
+            'Before you import make sure that the Timezone settings in Toggl are the same as in solidtime.',
     ],
 ];
