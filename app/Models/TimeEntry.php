@@ -31,6 +31,8 @@ use Korridor\LaravelComputedAttributes\ComputedAttributes;
  * @property-read Organization $organization
  * @property string|null $project_id
  * @property-read Project|null $project
+ * @property string|null $client_id
+ * @property-read Client|null $client
  * @property string|null $task_id
  * @property-read Task|null $task
  *
@@ -123,5 +125,15 @@ class TimeEntry extends Model
     public function task(): BelongsTo
     {
         return $this->belongsTo(Task::class, 'task_id');
+    }
+
+    /**
+     * This relation can be reconstructed via the task relation. It is only here for performance reasons.
+     *
+     * @return BelongsTo<Client, TimeEntry>
+     */
+    public function client(): BelongsTo
+    {
+        return $this->belongsTo(Client::class, 'client_id');
     }
 }

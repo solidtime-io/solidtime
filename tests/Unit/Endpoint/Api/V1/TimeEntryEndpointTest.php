@@ -6,6 +6,7 @@ namespace Tests\Unit\Endpoint\Api\V1;
 
 use App\Enums\Role;
 use App\Exceptions\Api\TimeEntryCanNotBeRestartedApiException;
+use App\Models\Client;
 use App\Models\Member;
 use App\Models\Project;
 use App\Models\Tag;
@@ -924,6 +925,36 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         ]);
     }
 
+    public function test_store_endpoint_can_create_new_time_entry_with_project_and_automatically_set_client(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:create:own',
+        ]);
+        $client = Client::factory()->forOrganization($data->organization)->create();
+        $project = Project::factory()->forOrganization($data->organization)->forClient($client)->create();
+        $timeEntryFake = TimeEntry::factory()->forOrganization($data->organization)->make();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.time-entries.store', [$data->organization->getKey()]), [
+            'billable' => $timeEntryFake->billable,
+            'start' => $timeEntryFake->start->toIso8601ZuluString(),
+            'member_id' => $data->member->getKey(),
+            'project_id' => $project->getKey(),
+        ]);
+
+        // Assert
+        $response->assertStatus(201);
+        $this->assertDatabaseHas(TimeEntry::class, [
+            'id' => $response->json('data.id'),
+            'member_id' => $data->member->getKey(),
+            'task_id' => null,
+            'project_id' => $project->getKey(),
+            'client_id' => $client->getKey(),
+        ]);
+    }
+
     public function test_store_endpoint_fails_if_user_has_no_permission_to_create_time_entries_for_others(): void
     {
         // Arrange
@@ -1225,6 +1256,66 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
             'id' => $timeEntry->getKey(),
             'member_id' => $member->getKey(),
             'task_id' => $timeEntryFake->task_id,
+        ]);
+    }
+
+    public function test_update_endpoint_can_update_project_and_automatically_set_client(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:update:all',
+        ]);
+        $user = User::factory()->create();
+        $client = Client::factory()->forOrganization($data->organization)->create();
+        $project = Project::factory()->forOrganization($data->organization)->forClient($client)->create();
+        $member = Member::factory()->forOrganization($data->organization)->forUser($user)->role(Role::Employee)->create();
+        $timeEntry = TimeEntry::factory()->forOrganization($data->organization)->forMember($member)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.time-entries.update', [$data->organization->getKey(), $timeEntry->getKey()]), [
+            'project_id' => $project->getKey(),
+        ]);
+
+        // Assert
+        $response->assertValid();
+        $response->assertStatus(200);
+        $this->assertDatabaseHas(TimeEntry::class, [
+            'id' => $timeEntry->getKey(),
+            'member_id' => $member->getKey(),
+            'task_id' => $timeEntry->task_id,
+            'project_id' => $project->getKey(),
+            'client_id' => $client->getKey(),
+        ]);
+    }
+
+    public function test_update_endpoint_can_removed_project_from_time_entry_and_automatically_remove_client(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:update:all',
+        ]);
+        $user = User::factory()->create();
+        $client = Client::factory()->forOrganization($data->organization)->create();
+        $project = Project::factory()->forOrganization($data->organization)->forClient($client)->create();
+        $member = Member::factory()->forOrganization($data->organization)->forUser($user)->role(Role::Employee)->create();
+        $timeEntry = TimeEntry::factory()->forOrganization($data->organization)->forMember($member)->forProject($project)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.time-entries.update', [$data->organization->getKey(), $timeEntry->getKey()]), [
+            'project_id' => null,
+        ]);
+
+        // Assert
+        $response->assertValid();
+        $response->assertStatus(200);
+        $this->assertDatabaseHas(TimeEntry::class, [
+            'id' => $timeEntry->getKey(),
+            'member_id' => $member->getKey(),
+            'task_id' => null,
+            'project_id' => null,
+            'client_id' => null,
         ]);
     }
 
@@ -1627,6 +1718,108 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
             'billable' => $timeEntriesFake->billable,
             'description' => $timeEntriesFake->description,
             'tags' => json_encode($timeEntriesFake->tags),
+        ]);
+    }
+
+    public function test_update_multiple_can_update_project_and_sets_client_automatically(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:update:all',
+        ]);
+
+        $oldClient = Client::factory()->forOrganization($data->organization)->create();
+        $oldProject = Project::factory()->forOrganization($data->organization)->forClient($oldClient)->create();
+        $timeEntry1 = TimeEntry::factory()->forMember($data->member)->forProject($oldProject)->create();
+        $timeEntry2 = TimeEntry::factory()->forMember($data->member)->create();
+        $client = Client::factory()->forOrganization($data->organization)->create();
+        $project = Project::factory()->forClient($client)->forOrganization($data->organization)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->patchJson(route('api.v1.time-entries.update-multiple', [$data->organization->getKey()]), [
+            'ids' => [
+                $timeEntry1->getKey(),
+                $timeEntry2->getKey(),
+            ],
+            'changes' => [
+                'project_id' => $project->getKey(),
+            ],
+        ]);
+
+        // Assert
+        $response->assertValid();
+        $response->assertStatus(200);
+        $response->assertExactJson([
+            'success' => [
+                $timeEntry1->getKey(),
+                $timeEntry2->getKey(),
+            ],
+            'error' => [
+            ],
+        ]);
+        $this->assertDatabaseHas(TimeEntry::class, [
+            'id' => $timeEntry1->getKey(),
+            'client_id' => $client->getKey(),
+            'project_id' => $project->getKey(),
+            'task_id' => null,
+        ]);
+        $this->assertDatabaseHas(TimeEntry::class, [
+            'id' => $timeEntry2->getKey(),
+            'client_id' => $client->getKey(),
+            'project_id' => $project->getKey(),
+            'task_id' => null,
+        ]);
+    }
+
+    public function test_update_multiple_can_remove_project_from_time_entries_and_sets_client_automatically(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:update:all',
+        ]);
+
+        $oldClient = Client::factory()->forOrganization($data->organization)->create();
+        $oldProject = Project::factory()->forOrganization($data->organization)->forClient($oldClient)->create();
+        $timeEntry1 = TimeEntry::factory()->forMember($data->member)->forProject($oldProject)->create();
+        $timeEntry2 = TimeEntry::factory()->forMember($data->member)->create();
+        $client = Client::factory()->forOrganization($data->organization)->create();
+        $project = Project::factory()->forClient($client)->forOrganization($data->organization)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->patchJson(route('api.v1.time-entries.update-multiple', [$data->organization->getKey()]), [
+            'ids' => [
+                $timeEntry1->getKey(),
+                $timeEntry2->getKey(),
+            ],
+            'changes' => [
+                'project_id' => null,
+            ],
+        ]);
+
+        // Assert
+        $response->assertValid();
+        $response->assertStatus(200);
+        $response->assertExactJson([
+            'success' => [
+                $timeEntry1->getKey(),
+                $timeEntry2->getKey(),
+            ],
+            'error' => [
+            ],
+        ]);
+        $this->assertDatabaseHas(TimeEntry::class, [
+            'id' => $timeEntry1->getKey(),
+            'client_id' => null,
+            'project_id' => null,
+            'task_id' => null,
+        ]);
+        $this->assertDatabaseHas(TimeEntry::class, [
+            'id' => $timeEntry2->getKey(),
+            'client_id' => null,
+            'project_id' => null,
+            'task_id' => null,
         ]);
     }
 

@@ -6,6 +6,8 @@ namespace Tests\Unit\Service;
 
 use App\Enums\TimeEntryAggregationType;
 use App\Enums\Weekday;
+use App\Models\Client;
+use App\Models\Project;
 use App\Models\TimeEntry;
 use App\Service\TimeEntryAggregationService;
 use Illuminate\Support\Carbon;
@@ -21,7 +23,7 @@ class TimeEntryAggregationServiceTest extends TestCaseWithDatabase
         $this->service = app(TimeEntryAggregationService::class);
     }
 
-    public function test_aggregate_time_entries_by_day_and_project_returns_empty_array_if_no_time_entries_given(): void
+    public function test_aggregate_time_entries_empty_state_by_day_and_project_returns_empty_array_if_no_time_entries_given(): void
     {
         // Arrange
         $query = TimeEntry::query();
@@ -47,7 +49,7 @@ class TimeEntryAggregationServiceTest extends TestCaseWithDatabase
         ], $result);
     }
 
-    public function test_aggregate_time_entries_by_day_and_project_with_filled_gaps(): void
+    public function test_aggregate_time_entries_empty_state_by_day_and_project_with_filled_gaps(): void
     {
         // Arrange
         $query = TimeEntry::query();
@@ -88,7 +90,7 @@ class TimeEntryAggregationServiceTest extends TestCaseWithDatabase
         ], $result);
     }
 
-    public function test_aggregate_time_entries_by_user_and_project_with_filled_gaps(): void
+    public function test_aggregate_time_entries_empty_state_by_user_and_project_with_filled_gaps(): void
     {
         // Arrange
         $query = TimeEntry::query();
@@ -114,7 +116,7 @@ class TimeEntryAggregationServiceTest extends TestCaseWithDatabase
         ], $result);
     }
 
-    public function test_aggregate_time_entries_by_user_and_day_with_filled_gaps(): void
+    public function test_aggregate_time_entries_empty_state_by_user_and_day_with_filled_gaps(): void
     {
         // Arrange
         $query = TimeEntry::query();
@@ -137,6 +139,94 @@ class TimeEntryAggregationServiceTest extends TestCaseWithDatabase
             'cost' => 0,
             'grouped_type' => 'user',
             'grouped_data' => [],
+        ], $result);
+    }
+
+    public function test_aggregate_time_entries_by_client_and_project(): void
+    {
+        // Arrange
+        $client1 = Client::factory()->create();
+        $client2 = Client::factory()->create();
+        $project1 = Project::factory()->forClient($client1)->create();
+        $project2 = Project::factory()->forClient($client2)->create();
+        $project3 = Project::factory()->create();
+        $timeEntry1 = TimeEntry::factory()->startWithDuration(now(), 10)->forProject($project1)->create();
+        $timeEntry2 = TimeEntry::factory()->startWithDuration(now(), 10)->forProject($project2)->create();
+        $timeEntry3 = TimeEntry::factory()->startWithDuration(now(), 10)->forProject($project3)->create();
+        $timeEntry4 = TimeEntry::factory()->startWithDuration(now(), 10)->create();
+        $query = TimeEntry::query();
+
+        // Act
+        $result = $this->service->getAggregatedTimeEntries(
+            $query,
+            TimeEntryAggregationType::Client,
+            TimeEntryAggregationType::Project,
+            'Europe/Vienna',
+            Weekday::Monday,
+            false,
+            null,
+            null
+        );
+
+        // Assert
+        $this->assertEqualsCanonicalizing([
+            'seconds' => 40,
+            'cost' => 0,
+            'grouped_type' => 'client',
+            'grouped_data' => [
+                [
+                    'key' => null,
+                    'seconds' => 20,
+                    'cost' => 0,
+                    'grouped_type' => 'project',
+                    'grouped_data' => [
+                        [
+                            'key' => null,
+                            'seconds' => 10,
+                            'cost' => 0,
+                            'grouped_type' => null,
+                            'grouped_data' => null,
+                        ],
+                        [
+                            'key' => $project3->getKey(),
+                            'seconds' => 10,
+                            'cost' => 0,
+                            'grouped_type' => null,
+                            'grouped_data' => null,
+                        ],
+                    ],
+                ],
+                [
+                    'key' => $client1->getKey(),
+                    'seconds' => 10,
+                    'cost' => 0,
+                    'grouped_type' => 'project',
+                    'grouped_data' => [
+                        [
+                            'key' => $project1->getKey(),
+                            'seconds' => 10,
+                            'cost' => 0,
+                            'grouped_type' => null,
+                            'grouped_data' => null,
+                        ],
+                    ],
+                ],
+                [
+                    'key' => $client2->getKey(),
+                    'seconds' => 10,
+                    'cost' => 0,
+                    'grouped_type' => 'project',
+                    'grouped_data' => [
+                        [
+                            'key' => $project2->getKey(),
+                            'seconds' => 10,
+                            'cost' => 0,
+                            'grouped_type' => null,
+                            'grouped_data' => null,
+                        ],
+                    ],
+                ],
+            ],
         ], $result);
     }
 }
