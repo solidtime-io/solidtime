@@ -143,26 +143,26 @@ class TimeEntryAggregateRequest extends FormRequest
 
     public function getGroup(): ?TimeEntryAggregationType
     {
-        return $this->get('group') !== null ? TimeEntryAggregationType::from($this->get('group')) : null;
+        return $this->input('group') !== null ? TimeEntryAggregationType::from($this->input('group')) : null;
     }
 
     public function getSubGroup(): ?TimeEntryAggregationType
     {
-        return $this->get('sub_group') !== null ? TimeEntryAggregationType::from($this->get('sub_group')) : null;
+        return $this->input('sub_group') !== null ? TimeEntryAggregationType::from($this->input('sub_group')) : null;
     }
 
     public function getFillGapsInTimeGroups(): bool
     {
-        return $this->has('fill_gaps_in_time_groups') && $this->get('fill_gaps_in_time_groups') === 'true';
+        return $this->has('fill_gaps_in_time_groups') && $this->input('fill_gaps_in_time_groups') === 'true';
     }
 
     public function getStart(): ?Carbon
     {
-        return $this->get('start') !== null ? Carbon::createFromFormat('Y-m-d\TH:i:s\Z', $this->get('start'), 'UTC') : null;
+        return $this->input('start') !== null ? Carbon::createFromFormat('Y-m-d\TH:i:s\Z', $this->input('start'), 'UTC') : null;
     }
 
     public function getEnd(): ?Carbon
     {
-        return $this->get('end') !== null ? Carbon::createFromFormat('Y-m-d\TH:i:s\Z', $this->get('end'), 'UTC') : null;
+        return $this->input('end') !== null ? Carbon::createFromFormat('Y-m-d\TH:i:s\Z', $this->input('end'), 'UTC') : null;
     }
 }
