@@ -155,6 +155,7 @@ class TimeEntryFactory extends Factory
         return $this->state(function (array $attributes) use ($project) {
             return [
                 'project_id' => $project?->getKey(),
+                'client_id' => $project?->client_id,
             ];
         });
     }
@@ -164,6 +165,8 @@ class TimeEntryFactory extends Factory
         return $this->state(function (array $attributes) use ($task) {
             return [
                 'task_id' => $task?->getKey(),
+                'project_id' => $task?->project?->getKey(),
+                'client_id' => $task?->project?->client?->getKey(),
             ];
         });
     }

@@ -89,6 +89,12 @@ class DatabaseSeeder extends Seeder
         ProjectMember::factory()->forProject($bigCompanyProject)->forMember($userAcmeAdminMember)->create();
         ProjectMember::factory()->forProject($bigCompanyProject)->forMember($userWithMultipleOrganizationsAcmeMember)->create();
 
+        TimeEntry::factory()
+            ->count(3)
+            ->forMember($userAcmeEmployeeMember)
+            ->forProject($bigCompanyProject)
+            ->create();
+
         Task::factory()->forOrganization($organizationAcme)->forProject($bigCompanyProject)->create();
 
         $internalProject = Project::factory()->forOrganization($organizationAcme)->create([

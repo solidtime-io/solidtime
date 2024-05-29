@@ -15,6 +15,7 @@ use App\Http\Resources\V1\TimeEntry\TimeEntryCollection;
 use App\Http\Resources\V1\TimeEntry\TimeEntryResource;
 use App\Models\Member;
 use App\Models\Organization;
+use App\Models\Project;
 use App\Models\TimeEntry;
 use App\Service\TimeEntryAggregationService;
 use App\Service\TimeEntryFilter;
@@ -214,8 +215,11 @@ class TimeEntryController extends Controller
             throw new TimeEntryStillRunningApiException();
         }
 
+        $client = $request->get('project_id') !== null ? Project::findOrFail($request->get('project_id'))->client : null;
+
         $timeEntry = new TimeEntry();
         $timeEntry->fill($request->validated());
+        $timeEntry->client()->associate($client);
         $timeEntry->user_id = $member->user_id;
         $timeEntry->description = $request->get('description') ?? '';
         $timeEntry->organization()->associate($organization);
@@ -246,6 +250,11 @@ class TimeEntryController extends Controller
             throw new TimeEntryCanNotBeRestartedApiException();
         }
 
+        if ($request->has('project_id')) {
+            $client = $request->get('project_id') !== null ? Project::findOrFail($request->get('project_id'))->client : null;
+            $timeEntry->client()->associate($client);
+        }
+
         $timeEntry->fill($request->validated());
         $timeEntry->description = $request->get('description', $timeEntry->description) ?? '';
         $timeEntry->save();
@@ -274,6 +283,13 @@ class TimeEntryController extends Controller
             throw new AuthorizationException();
         }
 
+        $client = null;
+        $overwriteClient = false;
+        if ($request->has('changes.project_id')) {
+            $client = $request->input('changes.project_id') !== null ? Project::findOrFail($request->input('changes.project_id'))?->client : null;
+            $overwriteClient = true;
+        }
+
         $success = new Collection();
         $error = new Collection();
 
@@ -291,8 +307,10 @@ class TimeEntryController extends Controller
                 continue;
 
             }
-
             $timeEntry->fill($changes);
+            if ($overwriteClient) {
+                $timeEntry->client()->associate($client);
+            }
             $timeEntry->save();
             $success->push($id);
         }

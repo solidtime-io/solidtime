@@ -64,12 +64,10 @@ class TimeEntryUpdateRequest extends FormRequest
             ],
             // Start of time entry (ISO 8601 format, UTC timezone)
             'start' => [
-                'required',
                 'date_format:Y-m-d\TH:i:s\Z',
             ],
             // End of time entry (ISO 8601 format, UTC timezone)
             'end' => [
-                'present',
                 'nullable',
                 'date_format:Y-m-d\TH:i:s\Z',
                 'after:start',
