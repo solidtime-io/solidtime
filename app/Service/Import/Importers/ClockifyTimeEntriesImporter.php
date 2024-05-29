@@ -40,7 +40,7 @@ class ClockifyTimeEntriesImporter extends DefaultImporter
      * @throws ImportException
      */
     #[\Override]
-    public function importData(string $data): void
+    public function importData(string $data, string $timezone): void
     {
         try {
             $reader = Reader::createFromString($data);
@@ -106,9 +106,9 @@ class ClockifyTimeEntriesImporter extends DefaultImporter
 
                 // Start
                 if (preg_match('/^[0-9]{1,2}:[0-9]{1,2} (AM|PM)$/', $record['Start Time']) === 1) {
-                    $start = Carbon::createFromFormat('m/d/Y h:i A', $record['Start Date'].' '.$record['Start Time'], 'UTC');
+                    $start = Carbon::createFromFormat('m/d/Y h:i A', $record['Start Date'].' '.$record['Start Time'], $timezone);
                 } else {
-                    $start = Carbon::createFromFormat('m/d/Y H:i:s A', $record['Start Date'].' '.$record['Start Time'], 'UTC');
+                    $start = Carbon::createFromFormat('m/d/Y H:i:s A', $record['Start Date'].' '.$record['Start Time'], $timezone);
                 }
                 if ($start === null) {
                     throw new ImportException('Start date ("'.$record['Start Date'].'") or time ("'.$record['Start Time'].'") are invalid');
@@ -117,9 +117,9 @@ class ClockifyTimeEntriesImporter extends DefaultImporter
 
                 // End
                 if (preg_match('/^[0-9]{1,2}:[0-9]{1,2} (AM|PM)$/', $record['End Time']) === 1) {
-                    $end = Carbon::createFromFormat('m/d/Y h:i A', $record['End Date'].' '.$record['End Time'], 'UTC');
+                    $end = Carbon::createFromFormat('m/d/Y h:i A', $record['End Date'].' '.$record['End Time'], $timezone);
                 } else {
-                    $end = Carbon::createFromFormat('m/d/Y H:i:s A', $record['End Date'].' '.$record['End Time'], 'UTC');
+                    $end = Carbon::createFromFormat('m/d/Y H:i:s A', $record['End Date'].' '.$record['End Time'], $timezone);
                 }
                 if ($end === null) {
                     throw new ImportException('End date ("'.$record['End Date'].'") or time ("'.$record['End Time'].'") are invalid');

@@ -67,10 +67,12 @@ class ImportController extends Controller
                 ], 400);
             }
 
+            $timezone = $this->user()->timezone;
             $report = $importService->import(
                 $organization,
                 $request->input('type'),
-                $importData
+                $importData,
+                $timezone
             );
 
             return new JsonResponse([

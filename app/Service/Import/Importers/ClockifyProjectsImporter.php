@@ -15,7 +15,7 @@ class ClockifyProjectsImporter extends DefaultImporter
      * @throws ImportException
      */
     #[\Override]
-    public function importData(string $data): void
+    public function importData(string $data, string $timezone): void
     {
         try {
             $reader = Reader::createFromString($data);
