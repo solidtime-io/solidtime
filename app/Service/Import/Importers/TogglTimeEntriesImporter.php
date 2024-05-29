@@ -6,6 +6,7 @@ namespace App\Service\Import\Importers;
 
 use App\Enums\Role;
 use App\Models\TimeEntry;
+use Carbon\Exceptions\InvalidFormatException;
 use Exception;
 use Illuminate\Support\Carbon;
 use League\Csv\Exception as CsvException;
@@ -101,12 +102,21 @@ class TogglTimeEntriesImporter extends DefaultImporter
                 }
                 $timeEntry->billable = $record['Billable'] === 'Yes';
                 $timeEntry->tags = $this->getTags($record['Tags']);
-                $start = Carbon::createFromFormat('Y-m-d H:i:s', $record['Start date'].' '.$record['Start time'], $timezone);
+                try {
+                    $start = Carbon::createFromFormat('Y-m-d H:i:s', $record['Start date'].' '.$record['Start time'], $timezone);
+                } catch (InvalidFormatException) {
+                    throw new ImportException('Start date ("'.$record['Start date'].'") or time ("'.$record['Start time'].'") are invalid');
+                }
                 if ($start === null) {
                     throw new ImportException('Start date ("'.$record['Start date'].'") or time ("'.$record['Start time'].'") are invalid');
                 }
                 $timeEntry->start = $start;
-                $end = Carbon::createFromFormat('Y-m-d H:i:s', $record['End date'].' '.$record['End time'], $timezone);
+
+                try {
+                    $end = Carbon::createFromFormat('Y-m-d H:i:s', $record['End date'].' '.$record['End time'], $timezone);
+                } catch (InvalidFormatException) {
+                    throw new ImportException('End date ("'.$record['End date'].'") or time ("'.$record['End time'].'") are invalid');
+                }
                 if ($end === null) {
                     throw new ImportException('End date ("'.$record['End date'].'") or time ("'.$record['End time'].'") are invalid');
                 }

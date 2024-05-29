@@ -6,6 +6,7 @@ namespace App\Service\Import\Importers;
 
 use App\Enums\Role;
 use App\Models\TimeEntry;
+use Carbon\Exceptions\InvalidFormatException;
 use Exception;
 use Illuminate\Support\Carbon;
 use League\Csv\Exception as CsvException;
@@ -106,10 +107,14 @@ class ClockifyTimeEntriesImporter extends DefaultImporter
                 $timeEntry->tags = $this->getTags($record['Tags']);
 
                 // Start
-                if (preg_match('/^[0-9]{1,2}:[0-9]{1,2} (AM|PM)$/', $record['Start Time']) === 1) {
-                    $start = Carbon::createFromFormat('m/d/Y h:i A', $record['Start Date'].' '.$record['Start Time'], $timezone);
-                } else {
-                    $start = Carbon::createFromFormat('m/d/Y H:i:s A', $record['Start Date'].' '.$record['Start Time'], $timezone);
+                try {
+                    if (preg_match('/^[0-9]{1,2}:[0-9]{1,2} (AM|PM)$/', $record['Start Time']) === 1) {
+                        $start = Carbon::createFromFormat('m/d/Y h:i A', $record['Start Date'].' '.$record['Start Time'], $timezone);
+                    } else {
+                        $start = Carbon::createFromFormat('m/d/Y H:i:s A', $record['Start Date'].' '.$record['Start Time'], $timezone);
+                    }
+                } catch (InvalidFormatException) {
+                    throw new ImportException('Start date ("'.$record['Start Date'].'") or time ("'.$record['Start Time'].'") are invalid');
                 }
                 if ($start === null) {
                     throw new ImportException('Start date ("'.$record['Start Date'].'") or time ("'.$record['Start Time'].'") are invalid');
@@ -117,10 +122,14 @@ class ClockifyTimeEntriesImporter extends DefaultImporter
                 $timeEntry->start = $start;
 
                 // End
-                if (preg_match('/^[0-9]{1,2}:[0-9]{1,2} (AM|PM)$/', $record['End Time']) === 1) {
-                    $end = Carbon::createFromFormat('m/d/Y h:i A', $record['End Date'].' '.$record['End Time'], $timezone);
-                } else {
-                    $end = Carbon::createFromFormat('m/d/Y H:i:s A', $record['End Date'].' '.$record['End Time'], $timezone);
+                try {
+                    if (preg_match('/^[0-9]{1,2}:[0-9]{1,2} (AM|PM)$/', $record['End Time']) === 1) {
+                        $end = Carbon::createFromFormat('m/d/Y h:i A', $record['End Date'].' '.$record['End Time'], $timezone);
+                    } else {
+                        $end = Carbon::createFromFormat('m/d/Y H:i:s A', $record['End Date'].' '.$record['End Time'], $timezone);
+                    }
+                } catch (InvalidFormatException) {
+                    throw new ImportException('End date ("'.$record['End Date'].'") or time ("'.$record['End Time'].'") are invalid');
                 }
                 if ($end === null) {
                     throw new ImportException('End date ("'.$record['End Date'].'") or time ("'.$record['End Time'].'") are invalid');
