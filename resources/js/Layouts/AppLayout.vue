@@ -132,6 +132,7 @@ const page = usePage<{
                     </ul>
                 </nav>
                 <div
+                    v-if="canUpdateOrganization()"
                     class="text-text-tertiary text-sm font-semibold pt-5 pb-1.5">
                     Admin
                 </div>
