@@ -122,7 +122,7 @@ class DashboardService
     {
         return $builder->whereBetween('start', [
             Carbon::now($timeZone)->startOfWeek($startOfWeek->carbonWeekDay())->utc(),
-            Carbon::now($timeZone)->endOfWeek($startOfWeek->carbonWeekDay())->utc(),
+            Carbon::now($timeZone)->endOfWeek($startOfWeek->toEndOfWeek()->carbonWeekDay())->utc(),
         ]);
     }
 

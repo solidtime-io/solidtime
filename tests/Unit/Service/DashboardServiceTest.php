@@ -273,38 +273,38 @@ class DashboardServiceTest extends TestCase
         $project2 = Project::factory()->forOrganization($organization)->create();
         $timeEntry1Project1 = TimeEntry::factory()->forMember($member)->forOrganization($organization)->forProject($project1)->create([
             // Note: At the start of the week
-            'start' => $now->startOfWeek(Weekday::Sunday->carbonWeekDay())->utc(),
-            'end' => $now->startOfWeek(Weekday::Sunday->carbonWeekDay())->addSeconds(40)->utc(),
+            'start' => $now->startOfWeek($user->week_start->carbonWeekDay())->utc(),
+            'end' => $now->startOfWeek($user->week_start->carbonWeekDay())->addSeconds(40)->utc(),
         ]);
         $timeEntry2Project1 = TimeEntry::factory()->forMember($member)->forOrganization($organization)->forProject($project1)->create([
             // Note: At the end of the week
-            'start' => $now->endOfWeek(Weekday::Sunday->carbonWeekDay())->utc(),
-            'end' => $now->endOfWeek(Weekday::Sunday->carbonWeekDay())->addSeconds(40)->utc(),
+            'start' => $now->endOfWeek($user->week_start->toEndOfWeek()->carbonWeekDay())->utc(),
+            'end' => $now->endOfWeek($user->week_start->toEndOfWeek()->carbonWeekDay())->addSeconds(40)->utc(),
         ]);
         $timeEntry1Project2 = TimeEntry::factory()->forMember($member)->forOrganization($organization)->forProject($project2)->create([
             // Note: At the start of the week
-            'start' => $now->startOfWeek(Weekday::Sunday->carbonWeekDay())->utc(),
-            'end' => $now->startOfWeek(Weekday::Sunday->carbonWeekDay())->addSeconds(40)->utc(),
+            'start' => $now->startOfWeek($user->week_start->carbonWeekDay())->utc(),
+            'end' => $now->startOfWeek($user->week_start->carbonWeekDay())->addSeconds(40)->utc(),
         ]);
         $timeEntry2Project2 = TimeEntry::factory()->forMember($member)->forOrganization($organization)->forProject($project2)->create([
             // Note: At the end of the week
-            'start' => $now->endOfWeek(Weekday::Sunday->carbonWeekDay())->utc(),
-            'end' => $now->endOfWeek(Weekday::Sunday->carbonWeekDay())->addSeconds(40)->utc(),
+            'start' => $now->endOfWeek($user->week_start->toEndOfWeek()->carbonWeekDay())->utc(),
+            'end' => $now->endOfWeek($user->week_start->toEndOfWeek()->carbonWeekDay())->addSeconds(40)->utc(),
         ]);
         $timeEntry1WithoutProject = TimeEntry::factory()->forMember($member)->forOrganization($organization)->create([
             // Note: At the start of the week
-            'start' => $now->startOfWeek(Weekday::Sunday->carbonWeekDay())->utc(),
-            'end' => $now->startOfWeek(Weekday::Sunday->carbonWeekDay())->addSeconds(40)->utc(),
+            'start' => $now->startOfWeek($user->week_start->carbonWeekDay())->utc(),
+            'end' => $now->startOfWeek($user->week_start->carbonWeekDay())->addSeconds(40)->utc(),
         ]);
         $timeEntry2WithoutProject = TimeEntry::factory()->forMember($member)->forOrganization($organization)->create([
             // Note: At the end of the week
-            'start' => $now->endOfWeek(Weekday::Sunday->carbonWeekDay())->utc(),
-            'end' => $now->endOfWeek(Weekday::Sunday->carbonWeekDay())->addSeconds(40)->utc(),
+            'start' => $now->endOfWeek($user->week_start->toEndOfWeek()->carbonWeekDay())->utc(),
+            'end' => $now->endOfWeek($user->week_start->toEndOfWeek()->carbonWeekDay())->addSeconds(40)->utc(),
         ]);
         $timeEntry1WithoutProjectOutsideOfWeek = TimeEntry::factory()->forMember($member)->forOrganization($organization)->create([
             // Note: Outside of week
-            'start' => $now->startOfWeek(Weekday::Sunday->carbonWeekDay())->subSecond()->utc(),
-            'end' => $now->startOfWeek(Weekday::Sunday->carbonWeekDay())->addSeconds(39)->utc(),
+            'start' => $now->startOfWeek($user->week_start->carbonWeekDay())->subSecond()->utc(),
+            'end' => $now->startOfWeek($user->week_start->carbonWeekDay())->addSeconds(39)->utc(),
         ]);
 
         // Act
@@ -347,18 +347,18 @@ class DashboardServiceTest extends TestCase
         $member = Member::factory()->forUser($user)->forOrganization($organization)->create();
         $timeEntry1WithoutProject = TimeEntry::factory()->forMember($member)->forOrganization($organization)->create([
             // Note: At the start of the week
-            'start' => $now->startOfWeek(Weekday::Sunday->carbonWeekDay())->utc(),
-            'end' => $now->startOfWeek(Weekday::Sunday->carbonWeekDay())->addSeconds(40)->utc(),
+            'start' => $now->startOfWeek($user->week_start->carbonWeekDay())->utc(),
+            'end' => $now->startOfWeek($user->week_start->carbonWeekDay())->addSeconds(40)->utc(),
         ]);
         $timeEntry2WithoutProject = TimeEntry::factory()->forMember($member)->forOrganization($organization)->create([
             // Note: At the end of the week
-            'start' => $now->endOfWeek(Weekday::Sunday->carbonWeekDay())->utc(),
-            'end' => $now->endOfWeek(Weekday::Sunday->carbonWeekDay())->addSeconds(40)->utc(),
+            'start' => $now->endOfWeek($user->week_start->toEndOfWeek()->carbonWeekDay())->utc(),
+            'end' => $now->endOfWeek($user->week_start->toEndOfWeek()->carbonWeekDay())->addSeconds(40)->utc(),
         ]);
         $timeEntry1WithoutProjectOutsideOfWeek = TimeEntry::factory()->forMember($member)->forOrganization($organization)->create([
             // Note: Outside of week
-            'start' => $now->startOfWeek(Weekday::Sunday->carbonWeekDay())->subSecond()->utc(),
-            'end' => $now->startOfWeek(Weekday::Sunday->carbonWeekDay())->addSeconds(39)->utc(),
+            'start' => $now->startOfWeek($user->week_start->carbonWeekDay())->subSecond()->utc(),
+            'end' => $now->startOfWeek($user->week_start->carbonWeekDay())->addSeconds(39)->utc(),
         ]);
 
         // Act

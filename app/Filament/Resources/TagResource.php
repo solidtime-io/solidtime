@@ -11,6 +11,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class TagResource extends Resource
@@ -58,7 +59,9 @@ class TagResource extends Resource
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([
-                //
+                SelectFilter::make('organization')
+                    ->relationship('organization', 'name')
+                    ->searchable(),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
