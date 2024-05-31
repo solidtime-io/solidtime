@@ -1,50 +1,19 @@
 <script setup lang="ts">
-import { FolderIcon } from '@heroicons/vue/16/solid';
 import SelectDropdown from '@/Components/Common/SelectDropdown.vue';
 import Badge from '@/Components/Common/Badge.vue';
-import { computed } from 'vue';
-import {
-    CheckCircleIcon,
-    UserCircleIcon,
-    UserGroupIcon,
-} from '@heroicons/vue/20/solid';
-import BillableIcon from '@/Components/Common/Icons/BillableIcon.vue';
-
-const groupByOptions = [
-    {
-        label: 'Members',
-        value: 'user',
-        icon: UserGroupIcon,
-    },
-    {
-        label: 'Projects',
-        value: 'project',
-        icon: FolderIcon,
-    },
-    {
-        label: 'Tasks',
-        value: 'task',
-        icon: CheckCircleIcon,
-    },
-    {
-        label: 'Clients',
-        value: 'client',
-        icon: UserCircleIcon,
-    },
-    {
-        label: 'Billable',
-        value: 'billable',
-        icon: BillableIcon,
-    },
-];
+import { type Component, computed } from 'vue';
 
 const model = defineModel<string | null>({ default: null });
-
+const props = defineProps<{
+    groupByOptions: { value: string; label: string; icon: Component }[];
+}>();
 const icon = computed(() => {
-    return groupByOptions.find((option) => option.value === model.value)?.icon;
+    return props.groupByOptions.find((option) => option.value === model.value)
+        ?.icon;
 });
 const title = computed(() => {
-    return groupByOptions.find((option) => option.value === model.value)?.label;
+    return props.groupByOptions.find((option) => option.value === model.value)
+        ?.label;
 });
 </script>
 

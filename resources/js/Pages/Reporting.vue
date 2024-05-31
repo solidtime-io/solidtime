@@ -14,7 +14,7 @@ import ReportingChart from '@/Components/Common/Reporting/ReportingChart.vue';
 import BillableIcon from '@/Components/Common/Icons/BillableIcon.vue';
 import { onMounted, ref } from 'vue';
 import { formatHumanReadableDuration, getDayJsInstance } from '@/utils/time';
-import { useReportingStore } from '@/utils/useReporting';
+import { type GroupingOption, useReportingStore } from '@/utils/useReporting';
 import { storeToRefs } from 'pinia';
 import TagDropdown from '@/Components/Common/Tag/TagDropdown.vue';
 import type { AggregatedTimeEntriesQueryParams } from '@/utils/api';
@@ -42,10 +42,15 @@ const selectedClients = ref<string[]>([]);
 
 const billable = ref<'true' | 'false' | null>(null);
 
-type GroupingOption = 'project' | 'task' | 'user' | 'billable' | 'client';
-
 const group = ref<GroupingOption>('project');
 const subGroup = ref<GroupingOption>('task');
+
+const reportingStore = useReportingStore();
+
+const { aggregatedGraphTimeEntries, aggregatedTableTimeEntries } =
+    storeToRefs(reportingStore);
+
+const { groupByOptions } = reportingStore;
 
 function getFilterAttributes() {
     let params: AggregatedTimeEntriesQueryParams = {
@@ -90,6 +95,14 @@ function updateGraphReporting() {
 
 function updateTableReporting() {
     const params = getFilterAttributes();
+    if (group.value === subGroup.value) {
+        const fallbackOption = groupByOptions.find(
+            (el) => el.value !== group.value
+        );
+        if (fallbackOption?.value) {
+            subGroup.value = fallbackOption.value;
+        }
+    }
     if (getCurrentRole() === 'employee') {
         params.member_id = getCurrentMembershipId();
     }
@@ -102,11 +115,6 @@ function updateReporting() {
     updateGraphReporting();
     updateTableReporting();
 }
-
-const reportingStore = useReportingStore();
-
-const { aggregatedGraphTimeEntries, aggregatedTableTimeEntries } =
-    storeToRefs(reportingStore);
 
 function getOptimalGroupingOption(diff: number): 'day' | 'week' | 'month' {
     if (diff <= 31) {
@@ -248,10 +256,16 @@ onMounted(() => {
                         class="text-sm flex text-white items-center space-x-3 font-medium px-6 border-b border-card-background-separator pb-3">
                         <span>Group by</span>
                         <ReportingGroupBySelect
+                            :group-by-options="groupByOptions"
                             @changed="updateTableReporting"
                             v-model="group"></ReportingGroupBySelect>
                         <span>and</span>
                         <ReportingGroupBySelect
+                            :group-by-options="
+                                groupByOptions.filter(
+                                    (el) => el.value !== group
+                                )
+                            "
                             @changed="updateTableReporting"
                             v-model="subGroup"></ReportingGroupBySelect>
                     </div>
