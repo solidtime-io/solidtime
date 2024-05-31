@@ -28,6 +28,7 @@ export default {
                 'secondary': 'var(--color-bg-secondary)',
                 'tertiary': 'var(--color-bg-tertiary)',
                 'quaternary': 'var(--color-bg-quaternary)',
+                'background': 'var(--color-bg-background)',
                 'text-primary': 'var(--color-text-primary)',
                 'text-secondary': 'var(--color-text-secondary)',
                 'text-tertiary': 'var(--color-text-tertiary)',
