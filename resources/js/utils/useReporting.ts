@@ -11,6 +11,7 @@ import { useNotificationsStore } from '@/utils/notification';
 import { useProjectsStore } from '@/utils/useProjects';
 import { useMembersStore } from '@/utils/useMembers';
 import { useTasksStore } from '@/utils/useTasks';
+import { useClientsStore } from '@/utils/useClients';
 
 export const useReportingStore = defineStore('reporting', () => {
     const reportingGraphResponse = ref<ReportingResponse | null>(null);
@@ -75,6 +76,7 @@ export const useReportingStore = defineStore('reporting', () => {
                 project: 'No Project',
                 task: 'No Task',
                 billable: 'Non-Billable',
+                client: 'No Client',
             };
 
             return emptyPlaceholder[type as keyof typeof emptyPlaceholder];
@@ -94,6 +96,11 @@ export const useReportingStore = defineStore('reporting', () => {
             const taskStore = useTasksStore();
             const { tasks } = storeToRefs(taskStore);
             return tasks.value.find((task) => task.id === key)?.name;
+        }
+        if (type === 'client') {
+            const clientsStore = useClientsStore();
+            const { clients } = storeToRefs(clientsStore);
+            return clients.value.find((client) => client.id === key)?.name;
         }
         if (type === 'billable') {
             if (key === '0') {
