@@ -69,6 +69,7 @@ async function importData() {
                 reject('Import type is null');
             });
         });
+        initializeStores();
         if (reportResult.value) {
             showResultModal.value = true;
         }

@@ -6,6 +6,7 @@ import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import type { User } from '@/types/models';
+import { initializeStores } from '@/utils/init';
 
 const form = useForm({
     name: '',
@@ -15,6 +16,9 @@ const createTeam = () => {
     form.post(route('teams.store'), {
         errorBag: 'createTeam',
         preserveScroll: true,
+        onSuccess: () => {
+            initializeStores();
+        },
     });
 };
 const page = usePage<{
