@@ -17,11 +17,12 @@ export const useProjectsStore = defineStore('projects', () => {
         const organization = getCurrentOrganizationId();
         if (organization) {
             projectResponse.value = await handleApiRequestNotifications(
-                api.getProjects({
-                    params: {
-                        organization: organization,
-                    },
-                }),
+                () =>
+                    api.getProjects({
+                        params: {
+                            organization: organization,
+                        },
+                    }),
                 undefined,
                 'Failed to fetch projects'
             );
@@ -32,11 +33,12 @@ export const useProjectsStore = defineStore('projects', () => {
         const organization = getCurrentOrganizationId();
         if (organization) {
             await handleApiRequestNotifications(
-                api.createProject(projectBody, {
-                    params: {
-                        organization: organization,
-                    },
-                }),
+                () =>
+                    api.createProject(projectBody, {
+                        params: {
+                            organization: organization,
+                        },
+                    }),
                 'Project created successfully',
                 'Failed to create project'
             );
@@ -49,15 +51,16 @@ export const useProjectsStore = defineStore('projects', () => {
         const organizationId = getCurrentOrganizationId();
         if (organizationId) {
             await handleApiRequestNotifications(
-                api.deleteProject(
-                    {},
-                    {
-                        params: {
-                            organization: organizationId,
-                            project: projectId,
-                        },
-                    }
-                ),
+                () =>
+                    api.deleteProject(
+                        {},
+                        {
+                            params: {
+                                organization: organizationId,
+                                project: projectId,
+                            },
+                        }
+                    ),
                 'Project deleted successfully',
                 'Failed to delete project'
             );
@@ -72,12 +75,13 @@ export const useProjectsStore = defineStore('projects', () => {
         const organizationId = getCurrentOrganizationId();
         if (organizationId) {
             await handleApiRequestNotifications(
-                api.updateProject(updateProjectBody, {
-                    params: {
-                        organization: organizationId,
-                        project: projectId,
-                    },
-                }),
+                () =>
+                    api.updateProject(updateProjectBody, {
+                        params: {
+                            organization: organizationId,
+                            project: projectId,
+                        },
+                    }),
                 'Project updated successfully',
                 'Failed to update project'
             );

@@ -17,11 +17,12 @@ export const useClientsStore = defineStore('clients', () => {
         const organization = getCurrentOrganizationId();
         if (organization) {
             clientResponse.value = await handleApiRequestNotifications(
-                api.getClients({
-                    params: {
-                        organization: organization,
-                    },
-                }),
+                () =>
+                    api.getClients({
+                        params: {
+                            organization: organization,
+                        },
+                    }),
                 undefined,
                 'Failed to fetch clients'
             );
@@ -34,11 +35,12 @@ export const useClientsStore = defineStore('clients', () => {
         const organization = getCurrentOrganizationId();
         if (organization) {
             const response = await handleApiRequestNotifications(
-                api.createClient(clientBody, {
-                    params: {
-                        organization: organization,
-                    },
-                }),
+                () =>
+                    api.createClient(clientBody, {
+                        params: {
+                            organization: organization,
+                        },
+                    }),
                 'Client created successfully',
                 'Failed to create client'
             );
@@ -51,15 +53,16 @@ export const useClientsStore = defineStore('clients', () => {
         const organization = getCurrentOrganizationId();
         if (organization) {
             await handleApiRequestNotifications(
-                api.deleteClient(
-                    {},
-                    {
-                        params: {
-                            organization: organization,
-                            client: clientId,
-                        },
-                    }
-                ),
+                () =>
+                    api.deleteClient(
+                        {},
+                        {
+                            params: {
+                                organization: organization,
+                                client: clientId,
+                            },
+                        }
+                    ),
                 'Client deleted successfully',
                 'Failed to delete client'
             );
