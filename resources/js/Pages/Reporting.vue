@@ -28,6 +28,7 @@ import ReportingRow from '@/Components/Common/Reporting/ReportingRow.vue';
 import { formatCents } from '@/utils/money';
 import ReportingPieChart from '@/Components/Common/Reporting/ReportingPieChart.vue';
 import { getCurrentMembershipId, getCurrentRole } from '@/utils/useUser';
+import ClientMultiselectDropdown from '@/Components/Common/Client/ClientMultiselectDropdown.vue';
 
 const startDate = ref<string | null>(
     getDayJsInstance()().subtract(14, 'd').format('YYYY-MM-DD')
@@ -37,6 +38,8 @@ const selectedTags = ref<string[]>([]);
 const selectedProjects = ref<string[]>([]);
 const selectedMembers = ref<string[]>([]);
 const selectedTasks = ref<string[]>([]);
+const selectedClients = ref<string[]>([]);
+
 const billable = ref<'true' | 'false' | null>(null);
 
 type GroupingOption = 'project' | 'task' | 'user' | 'billable' | 'client';
@@ -49,36 +52,25 @@ function getFilterAttributes() {
         start: getDayJsInstance()(startDate.value).utc().format(),
         end: getDayJsInstance()(endDate.value).endOf('day').utc().format(),
     };
-    if (selectedMembers.value.length > 0) {
-        params = {
-            ...params,
-            member_ids: selectedMembers.value,
-        };
-    }
-    if (selectedProjects.value.length > 0) {
-        params = {
-            ...params,
-            project_ids: selectedProjects.value,
-        };
-    }
-    if (selectedTasks.value.length > 0) {
-        params = {
-            ...params,
-            task_ids: selectedTasks.value,
-        };
-    }
-    if (selectedTags.value.length > 0) {
-        params = {
-            ...params,
-            tag_ids: selectedTags.value,
-        };
-    }
-    if (billable.value !== null) {
-        params = {
-            ...params,
-            billable: billable.value,
-        };
-    }
+    params = {
+        ...params,
+        member_ids:
+            selectedMembers.value.length > 0
+                ? selectedMembers.value
+                : undefined,
+        project_ids:
+            selectedProjects.value.length > 0
+                ? selectedProjects.value
+                : undefined,
+        task_ids:
+            selectedTasks.value.length > 0 ? selectedTasks.value : undefined,
+        client_ids:
+            selectedClients.value.length > 0
+                ? selectedClients.value
+                : undefined,
+        tag_ids: selectedTags.value.length > 0 ? selectedTags.value : undefined,
+        billable: billable.value !== null ? billable.value : undefined,
+    };
     return params;
 }
 
@@ -179,6 +171,15 @@ onMounted(() => {
                                 :icon="CheckCircleIcon"></ReportingFilterBadge>
                         </template>
                     </TaskMultiselectDropdown>
+                    <ClientMultiselectDropdown
+                        @submit="updateReporting"
+                        v-model="selectedClients">
+                        <template v-slot:trigger>
+                            <ReportingFilterBadge
+                                title="Clients"
+                                :icon="FolderIcon"></ReportingFilterBadge>
+                        </template>
+                    </ClientMultiselectDropdown>
                     <TagDropdown
                         @submit="updateReporting"
                         v-model="selectedTags">

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\V1\TimeEntry;
 
 use App\Enums\TimeEntryAggregationType;
+use App\Models\Client;
 use App\Models\Member;
 use App\Models\Organization;
 use App\Models\Project;
@@ -83,6 +84,19 @@ class TimeEntryAggregateRequest extends FormRequest
                 'uuid',
                 new ExistsEloquent(Project::class, null, function (Builder $builder): Builder {
                     /** @var Builder<Project> $builder */
+                    return $builder->whereBelongsTo($this->organization, 'organization');
+                }),
+            ],
+            // Filter by client IDs, client IDs are OR combined
+            'client_ids' => [
+                'array',
+                'min:1',
+            ],
+            'client_ids.*' => [
+                'string',
+                'uuid',
+                new ExistsEloquent(Client::class, null, function (Builder $builder): Builder {
+                    /** @var Builder<Client> $builder */
                     return $builder->whereBelongsTo($this->organization, 'organization');
                 }),
             ],
