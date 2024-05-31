@@ -37,13 +37,23 @@ export const useNotificationsStore = defineStore('notifications', () => {
         }
     }
 
+    async function fetchToken() {
+        return new Promise((resolve) => {
+            router.reload({
+                onFinish: () => {
+                    resolve(null);
+                },
+            });
+        });
+    }
+
     async function handleApiRequestNotifications<T>(
-        apiRequest: Promise<T>,
+        apiRequest: () => Promise<T>,
         successMessage?: string,
         errorMessage?: string
     ) {
         try {
-            const response = await apiRequest;
+            const response = await apiRequest();
             if (successMessage) {
                 addNotification('success', successMessage);
             }
@@ -65,7 +75,16 @@ export const useNotificationsStore = defineStore('notifications', () => {
                     const message = error.response.data.message;
                     addNotification('error', message);
                 } else if (error?.response?.status === 401) {
-                    router.get(route('login'));
+                    await fetchToken();
+                    try {
+                        const response = await apiRequest();
+                        if (successMessage) {
+                            addNotification('success', successMessage);
+                        }
+                        return response;
+                    } catch (error) {
+                        router.get(route('login'));
+                    }
                 } else {
                     addNotification(
                         'error',

@@ -12,7 +12,7 @@ export const useTasksStore = defineStore('tasks', () => {
     async function fetchTasks() {
         const organizationId = getCurrentOrganizationId();
         if (organizationId) {
-            const tasksResponse = await handleApiRequestNotifications(
+            const tasksResponse = await handleApiRequestNotifications(() =>
                 api.getTasks({
                     params: {
                         organization: organizationId,
@@ -29,12 +29,13 @@ export const useTasksStore = defineStore('tasks', () => {
         const organizationId = getCurrentOrganizationId();
         if (organizationId) {
             await handleApiRequestNotifications(
-                api.updateTask(task, {
-                    params: {
-                        organization: organizationId,
-                        task: task.id,
-                    },
-                }),
+                () =>
+                    api.updateTask(task, {
+                        params: {
+                            organization: organizationId,
+                            task: task.id,
+                        },
+                    }),
                 'Task updated successfully',
                 'Failed to update task'
             );
@@ -45,11 +46,12 @@ export const useTasksStore = defineStore('tasks', () => {
         const organizationId = getCurrentOrganizationId();
         if (organizationId) {
             await handleApiRequestNotifications(
-                api.createTask(task, {
-                    params: {
-                        organization: organizationId,
-                    },
-                }),
+                () =>
+                    api.createTask(task, {
+                        params: {
+                            organization: organizationId,
+                        },
+                    }),
                 'Task created successfully',
                 'Failed to create task'
             );
@@ -61,15 +63,16 @@ export const useTasksStore = defineStore('tasks', () => {
         const organizationId = getCurrentOrganizationId();
         if (organizationId) {
             await handleApiRequestNotifications(
-                api.deleteTask(
-                    {},
-                    {
-                        params: {
-                            organization: organizationId,
-                            task: taskId,
-                        },
-                    }
-                ),
+                () =>
+                    api.deleteTask(
+                        {},
+                        {
+                            params: {
+                                organization: organizationId,
+                                task: taskId,
+                            },
+                        }
+                    ),
                 'Task deleted successfully',
                 'Failed to delete task'
             );

@@ -39,12 +39,13 @@ export const useReportingStore = defineStore('reporting', () => {
         const organization = getCurrentOrganizationId();
         if (organization) {
             reportingGraphResponse.value = await handleApiRequestNotifications(
-                api.getAggregatedTimeEntries({
-                    params: {
-                        organization: organization,
-                    },
-                    queries: params,
-                }),
+                () =>
+                    api.getAggregatedTimeEntries({
+                        params: {
+                            organization: organization,
+                        },
+                        queries: params,
+                    }),
                 undefined,
                 'Failed to fetch reporting data'
             );
@@ -57,12 +58,13 @@ export const useReportingStore = defineStore('reporting', () => {
         const organization = getCurrentOrganizationId();
         if (organization) {
             reportingTableResponse.value = await handleApiRequestNotifications(
-                api.getAggregatedTimeEntries({
-                    params: {
-                        organization: organization,
-                    },
-                    queries: params,
-                }),
+                () =>
+                    api.getAggregatedTimeEntries({
+                        params: {
+                            organization: organization,
+                        },
+                        queries: params,
+                    }),
                 undefined,
                 'Failed to fetch reporting data'
             );

@@ -17,12 +17,13 @@ export const useProjectMembersStore = defineStore('project-members', () => {
         const organization = getCurrentOrganizationId();
         if (organization) {
             projectMemberResponse.value = await handleApiRequestNotifications(
-                api.getProjectMembers({
-                    params: {
-                        organization: organization,
-                        project: projectId,
-                    },
-                }),
+                () =>
+                    api.getProjectMembers({
+                        params: {
+                            organization: organization,
+                            project: projectId,
+                        },
+                    }),
                 undefined,
                 'Failed to fetch project members'
             );
@@ -36,12 +37,13 @@ export const useProjectMembersStore = defineStore('project-members', () => {
         const organization = getCurrentOrganizationId();
         if (organization) {
             await handleApiRequestNotifications(
-                api.createProjectMember(projectMemberBody, {
-                    params: {
-                        organization: organization,
-                        project: projectId,
-                    },
-                }),
+                () =>
+                    api.createProjectMember(projectMemberBody, {
+                        params: {
+                            organization: organization,
+                            project: projectId,
+                        },
+                    }),
                 'Project member added successfully',
                 'Failed to add project member'
             );
@@ -56,15 +58,16 @@ export const useProjectMembersStore = defineStore('project-members', () => {
         const organizationId = getCurrentOrganizationId();
         if (organizationId) {
             await handleApiRequestNotifications(
-                api.deleteProjectMember(
-                    {},
-                    {
-                        params: {
-                            organization: organizationId,
-                            projectMember: projectMemberId,
-                        },
-                    }
-                ),
+                () =>
+                    api.deleteProjectMember(
+                        {},
+                        {
+                            params: {
+                                organization: organizationId,
+                                projectMember: projectMemberId,
+                            },
+                        }
+                    ),
                 'Project member removed successfully',
                 'Failed to remove project member'
             );

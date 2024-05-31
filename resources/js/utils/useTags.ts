@@ -12,11 +12,12 @@ export const useTagsStore = defineStore('tags', () => {
         const organizationId = getCurrentOrganizationId();
         if (organizationId) {
             const response = await handleApiRequestNotifications(
-                api.getTags({
-                    params: {
-                        organization: organizationId,
-                    },
-                }),
+                () =>
+                    api.getTags({
+                        params: {
+                            organization: organizationId,
+                        },
+                    }),
                 undefined,
                 'Failed to fetch tags'
             );
@@ -34,15 +35,16 @@ export const useTagsStore = defineStore('tags', () => {
         const organizationId = getCurrentOrganizationId();
         if (organizationId) {
             await handleApiRequestNotifications(
-                api.deleteTag(
-                    {},
-                    {
-                        params: {
-                            organization: organizationId,
-                            tag: tagId,
-                        },
-                    }
-                ),
+                () =>
+                    api.deleteTag(
+                        {},
+                        {
+                            params: {
+                                organization: organizationId,
+                                tag: tagId,
+                            },
+                        }
+                    ),
                 'Tag deleted successfully',
                 'Failed to delete tag'
             );
@@ -54,16 +56,17 @@ export const useTagsStore = defineStore('tags', () => {
         const organizationId = getCurrentOrganizationId();
         if (organizationId) {
             const response = await handleApiRequestNotifications(
-                api.createTag(
-                    {
-                        name: name,
-                    },
-                    {
-                        params: {
-                            organization: organizationId,
+                () =>
+                    api.createTag(
+                        {
+                            name: name,
                         },
-                    }
-                ),
+                        {
+                            params: {
+                                organization: organizationId,
+                            },
+                        }
+                    ),
                 'Tag created successfully',
                 'Failed to create tag'
             );

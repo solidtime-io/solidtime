@@ -13,11 +13,12 @@ export const useMembersStore = defineStore('members', () => {
         const organization = getCurrentOrganizationId();
         if (organization) {
             membersResponse.value = await handleApiRequestNotifications(
-                api.getMembers({
-                    params: {
-                        organization: organization,
-                    },
-                }),
+                () =>
+                    api.getMembers({
+                        params: {
+                            organization: organization,
+                        },
+                    }),
                 undefined,
                 'Failed to fetch members'
             );
@@ -28,15 +29,16 @@ export const useMembersStore = defineStore('members', () => {
         const organization = getCurrentOrganizationId();
         if (organization) {
             await handleApiRequestNotifications(
-                api.removeMember(
-                    {},
-                    {
-                        params: {
-                            organization: organization,
-                            member: membershipId,
-                        },
-                    }
-                ),
+                () =>
+                    api.removeMember(
+                        {},
+                        {
+                            params: {
+                                organization: organization,
+                                member: membershipId,
+                            },
+                        }
+                    ),
                 'Member deleted successfully',
                 'Failed to delete member'
             );

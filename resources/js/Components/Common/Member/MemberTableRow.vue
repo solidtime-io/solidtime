@@ -24,15 +24,16 @@ async function invitePlaceholder(id: string) {
     const organizationId = getCurrentOrganizationId();
     if (organizationId) {
         await handleApiRequestNotifications(
-            api.invitePlaceholder(
-                {},
-                {
-                    params: {
-                        organization: organizationId,
-                        member: id,
-                    },
-                }
-            ),
+            () =>
+                api.invitePlaceholder(
+                    {},
+                    {
+                        params: {
+                            organization: organizationId,
+                            member: id,
+                        },
+                    }
+                ),
             'Member invited successfully',
             'Error inviting member'
         );
