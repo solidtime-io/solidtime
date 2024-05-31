@@ -3,7 +3,11 @@ import { FolderIcon } from '@heroicons/vue/16/solid';
 import SelectDropdown from '@/Components/Common/SelectDropdown.vue';
 import Badge from '@/Components/Common/Badge.vue';
 import { computed } from 'vue';
-import { CheckCircleIcon, UserGroupIcon } from '@heroicons/vue/20/solid';
+import {
+    CheckCircleIcon,
+    UserCircleIcon,
+    UserGroupIcon,
+} from '@heroicons/vue/20/solid';
 import BillableIcon from '@/Components/Common/Icons/BillableIcon.vue';
 
 const groupByOptions = [
@@ -21,6 +25,11 @@ const groupByOptions = [
         label: 'Tasks',
         value: 'task',
         icon: CheckCircleIcon,
+    },
+    {
+        label: 'Clients',
+        value: 'client',
+        icon: UserCircleIcon,
     },
     {
         label: 'Billable',
