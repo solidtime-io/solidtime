@@ -111,17 +111,18 @@ const expanded = ref(false);
                     <input
                         type="checkbox"
                         class="h-4 w-4 rounded bg-card-background border-input-border text-accent-500/80 focus:ring-accent-500/80" />
-                    <GroupedItemsCountButton
-                        :expanded="expanded"
-                        @click="expanded = !expanded">
-                        {{ timeEntry?.timeEntries?.length }}
-                    </GroupedItemsCountButton>
-                    <TimeEntryDescriptionInput
-                        @changed="updateTimeEntryDescription"
-                        class="flex-1"
-                        :modelValue="
-                            timeEntry.description
-                        "></TimeEntryDescriptionInput>
+                    <div class="flex items-center">
+                        <GroupedItemsCountButton
+                            :expanded="expanded"
+                            @click="expanded = !expanded">
+                            {{ timeEntry?.timeEntries?.length }}
+                        </GroupedItemsCountButton>
+                        <TimeEntryDescriptionInput
+                            @changed="updateTimeEntryDescription"
+                            :modelValue="
+                                timeEntry.description
+                            "></TimeEntryDescriptionInput>
+                    </div>
                     <TimeTrackerProjectTaskDropdown
                         :showBadgeBorder="false"
                         @changed="updateProjectAndTask"
