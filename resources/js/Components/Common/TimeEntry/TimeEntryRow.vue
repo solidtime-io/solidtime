@@ -96,7 +96,6 @@ function updateProjectAndTask(projectId: string, taskId: string) {
                     <div class="w-7 h-7" v-if="indent === true"></div>
                     <TimeEntryDescriptionInput
                         @changed="updateTimeEntryDescription"
-                        class="flex-1"
                         :modelValue="
                             timeEntry.description
                         "></TimeEntryDescriptionInput>
