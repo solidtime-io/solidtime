@@ -40,7 +40,7 @@ const displaysPlaceholder = computed(() => {
                 @input="onInput"
                 @keydown.enter="onChange"
                 placeholder="Add a description"
-                class="absolute px-0 pl-3 pr-1 left-0 top-0 w-full text-white font-medium bg-transparent focus-visible:ring-0 rounded-lg border-0" />
+                class="absolute px-0 h-full pl-3 pr-1 left-0 top-0 w-full text-white font-medium bg-transparent focus-visible:ring-0 rounded-lg border-0" />
         </div>
     </div>
 </template>
