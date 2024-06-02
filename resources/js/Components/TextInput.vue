@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 
-defineProps({
-    modelValue: String,
-    name: String,
-});
+defineProps<{
+    name?: string;
+}>();
 
 const input = ref<HTMLInputElement | null>(null);
 
@@ -15,21 +14,13 @@ onMounted(() => {
 });
 
 defineExpose({ focus: () => input.value?.focus() });
-
-const emit = defineEmits(['update:modelValue']);
-
-function updateValue(event: Event) {
-    if (event.target && 'value' in event.target) {
-        emit('update:modelValue', event?.target?.value);
-    }
-}
+const model = defineModel();
 </script>
 
 <template>
     <input
         ref="input"
         class="border-input-border border bg-input-background text-white focus:ring-input-border-active focus:ring-0 focus-visible:border-input-border-active rounded-md shadow-sm"
-        :value="modelValue"
-        :name="name"
-        @input="updateValue" />
+        v-model="model"
+        :name="name" />
 </template>
