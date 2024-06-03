@@ -58,7 +58,8 @@ const page = usePage<{
     <div v-bind="$attrs" class="flex flex-wrap bg-background text-muted">
         <div
             :class="{
-                '!flex bg-default-background w-full z-50': showSidebarMenu,
+                '!flex bg-default-background w-full z-[9999999999]':
+                    showSidebarMenu,
             }"
             class="flex-shrink-0 h-screen hidden fixed w-[230px] 2xl:w-[250px] px-2.5 2xl:px-4 py-4 sm:flex flex-col justify-between">
             <div>
@@ -208,7 +209,7 @@ const page = usePage<{
                 </header>
 
                 <!-- Page Content -->
-                <main>
+                <main class="pb-28">
                     <slot />
                 </main>
             </div>
