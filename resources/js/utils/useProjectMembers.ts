@@ -5,6 +5,7 @@ import type {
     CreateProjectMemberBody,
     ProjectMember,
     ProjectMemberResponse,
+    UpdateProjectMemberBody,
 } from '@/utils/api';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import { useNotificationsStore } from '@/utils/notification';
@@ -51,6 +52,27 @@ export const useProjectMembersStore = defineStore('project-members', () => {
         }
     }
 
+    async function updateProjectMember(
+        projectMemberId: string,
+        projectMemberBody: UpdateProjectMemberBody
+    ) {
+        const organization = getCurrentOrganizationId();
+        if (organization) {
+            const response = await handleApiRequestNotifications(
+                () =>
+                    api.updateProjectMember(projectMemberBody, {
+                        params: {
+                            organization: organization,
+                            projectMember: projectMemberId,
+                        },
+                    }),
+                'Project member updated successfully',
+                'Failed to update project member'
+            );
+            await fetchProjectMembers(response.data.project_id);
+        }
+    }
+
     async function deleteProjectMember(
         projectId: string,
         projectMemberId: string
@@ -84,5 +106,6 @@ export const useProjectMembersStore = defineStore('project-members', () => {
         fetchProjectMembers,
         createProjectMember,
         deleteProjectMember,
+        updateProjectMember,
     };
 });

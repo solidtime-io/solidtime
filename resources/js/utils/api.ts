@@ -54,6 +54,11 @@ export type CreateProjectMemberBody = ZodiosBodyByAlias<
     'createProjectMember'
 >;
 
+export type UpdateProjectMemberBody = ZodiosBodyByAlias<
+    SolidTimeApi,
+    'updateProjectMember'
+>;
+
 export type ProjectMember = ProjectMemberResponse['data'][0];
 
 export type CreateTaskBody = ZodiosBodyByAlias<SolidTimeApi, 'createTask'>;
