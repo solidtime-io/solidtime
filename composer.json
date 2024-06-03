@@ -8,7 +8,7 @@
     "require": {
         "php": "8.3.*",
         "ext-zip": "*",
-        "brick/money": "^0.8.1",
+        "brick/money": "^0.9.0",
         "dedoc/scramble": "dev-main",
         "filament/filament": "^3.2",
         "flowframe/laravel-trend": "^0.2.0",
@@ -27,7 +27,7 @@
         "spatie/temporary-directory": "^2.2",
         "stechstudio/filament-impersonate": "^3.8",
         "tightenco/ziggy": "^2.1.0",
-        "tpetry/laravel-postgresql-enhanced": "^0.38.0",
+        "tpetry/laravel-postgresql-enhanced": "^0.39.0",
         "wikimedia/composer-merge-plugin": "^2.1.0"
     },
     "require-dev": {
