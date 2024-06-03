@@ -1,35 +1,15 @@
 <script setup lang="ts">
 import Dropdown from '@/Components/Dropdown.vue';
-import { defineProps, ref, watch } from 'vue';
+import { defineProps, ref } from 'vue';
 import { formatStartEnd } from '@/utils/time';
-import TimePicker from '@/Components/Common/TimePicker.vue';
-import { useFocusWithin } from '@vueuse/core';
+import TimeRangeSelector from '@/Components/Common/TimeRangeSelector.vue';
 
-const props = defineProps<{
+defineProps<{
     start: string;
     end: string | null;
 }>();
 
 const emit = defineEmits(['changed']);
-const tempStart = ref(props.start);
-const tempEnd = ref(props.end || null);
-
-watch(props, () => {
-    tempStart.value = props.start;
-    tempEnd.value = props.end;
-});
-function updateTimeEntry() {
-    emit('changed', tempStart.value, tempEnd.value);
-}
-
-const dropdownContent = ref();
-const { focused } = useFocusWithin(dropdownContent);
-
-watch(focused, (newValue, oldValue) => {
-    if (oldValue === true && newValue === false) {
-        updateTimeEntry();
-    }
-});
 
 const open = ref(false);
 </script>
@@ -49,26 +29,13 @@ const open = ref(false);
                 </button>
             </template>
             <template #content>
-                <div
-                    ref="dropdownContent"
-                    class="grid grid-cols-2 divide-x divide-card-background-separator text-center py-1">
-                    <div>
-                        <div class="font-bold text-white text-sm pb-1">
-                            Start
-                        </div>
-                        <TimePicker
-                            data-testid="time_entry_range_start"
-                            @updated="updateTimeEntry"
-                            v-model="tempStart"></TimePicker>
-                    </div>
-                    <div>
-                        <div class="font-bold text-white text-sm pb-1">End</div>
-                        <TimePicker
-                            data-testid="time_entry_range_end"
-                            @updated="updateTimeEntry"
-                            v-model="tempEnd"></TimePicker>
-                    </div>
-                </div>
+                <TimeRangeSelector
+                    @changed="
+                        (newStart, newEnd) => emit('changed', newStart, newEnd)
+                    "
+                    :start="start"
+                    :end="end">
+                </TimeRangeSelector>
             </template>
         </Dropdown>
     </div>

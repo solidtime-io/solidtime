@@ -17,11 +17,11 @@ const props = withDefaults(
 );
 
 const hours = computed(() => {
-    return model.value ? getLocalizedDayJs(model.value).hour() : null;
+    return model.value ? getLocalizedDayJs(model.value).format('HH') : null;
 });
 
 const minutes = computed(() => {
-    return model.value ? getLocalizedDayJs(model.value).minute() : null;
+    return model.value ? getLocalizedDayJs(model.value).format('mm') : null;
 });
 
 function updateMinutes(event: Event) {
@@ -45,6 +45,8 @@ function updateHours(event: Event) {
             .format();
     }
 }
+
+const emit = defineEmits(['changed']);
 </script>
 
 <template>
@@ -59,6 +61,8 @@ function updateHours(event: Event) {
             <input
                 :value="hours"
                 @input="updateHours"
+                @keydown.enter="emit('changed')"
+                @focus="($event.target as HTMLInputElement).select()"
                 data-testid="time_picker_hour"
                 type="text"
                 :class="
@@ -70,7 +74,9 @@ function updateHours(event: Event) {
             <span>:</span>
             <input
                 :value="minutes"
+                @keydown.enter="emit('changed')"
                 @input="updateMinutes"
+                @focus="($event.target as HTMLInputElement).select()"
                 data-testid="time_picker_minute"
                 type="text"
                 :class="
