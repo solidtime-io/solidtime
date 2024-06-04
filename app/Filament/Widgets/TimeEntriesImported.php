@@ -9,13 +9,13 @@ use Filament\Widgets\ChartWidget;
 use Flowframe\Trend\Trend;
 use Flowframe\Trend\TrendValue;
 
-class TimeEntriesCreated extends ChartWidget
+class TimeEntriesImported extends ChartWidget
 {
-    protected static ?string $heading = 'Time Entries Created';
+    protected static ?string $heading = 'Time Entries Imported';
 
     public ?string $filter = 'week';
 
-    protected static ?int $sort = 3;
+    protected static ?int $sort = 4;
 
     protected function getData(): array
     {
@@ -30,7 +30,7 @@ class TimeEntriesCreated extends ChartWidget
             $start = now()->subWeek();
         }
         $trend = Trend::query(
-            TimeEntry::query()->where('is_imported', '=', false)
+            TimeEntry::query()->where('is_imported', '=', true)
         )
             ->between(
                 start: $start,

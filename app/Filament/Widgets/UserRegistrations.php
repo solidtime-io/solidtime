@@ -15,6 +15,8 @@ class UserRegistrations extends ChartWidget
 
     public ?string $filter = 'week';
 
+    protected static ?int $sort = 2;
+
     protected function getData(): array
     {
         $filter = $this->filter;

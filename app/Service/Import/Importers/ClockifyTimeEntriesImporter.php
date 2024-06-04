@@ -79,6 +79,7 @@ class ClockifyTimeEntriesImporter extends DefaultImporter
                     ], [
                         'client_id' => $clientId,
                         'color' => $this->colorService->getRandomColor(),
+                        'is_billable' => false,
                     ]);
                 }
                 $taskId = null;
@@ -105,6 +106,7 @@ class ClockifyTimeEntriesImporter extends DefaultImporter
                 }
                 $timeEntry->billable = $record['Billable'] === 'Yes';
                 $timeEntry->tags = $this->getTags($record['Tags']);
+                $timeEntry->is_imported = true;
 
                 // Start
                 try {

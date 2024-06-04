@@ -11,6 +11,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class ActiveUserOverview extends BaseWidget
 {
+    protected static ?int $sort = 1;
+
     protected static ?string $heading = 'A Registrations';
 
     protected function getCards(): array

@@ -33,6 +33,7 @@ class ClockifyTimeEntriesImporterTest extends ImporterTestAbstract
         $this->assertSame('2024-03-04 10:23:52', $timeEntry1->start->toDateTimeString());
         $this->assertSame('2024-03-04 10:23:52', $timeEntry1->end->toDateTimeString());
         $this->assertFalse($timeEntry1->billable);
+        $this->assertTrue($timeEntry1->is_imported);
         $this->assertSame([$testScenario->tag1->getKey(), $testScenario->tag2->getKey()], $timeEntry1->tags);
         $timeEntry2 = $timeEntries->firstWhere('description', 'Working hard');
         $this->assertNotNull($timeEntry2);
@@ -40,6 +41,7 @@ class ClockifyTimeEntriesImporterTest extends ImporterTestAbstract
         $this->assertSame('2024-03-04 10:23:00', $timeEntry2->start->toDateTimeString());
         $this->assertSame('2024-03-04 11:23:01', $timeEntry2->end->toDateTimeString());
         $this->assertTrue($timeEntry2->billable);
+        $this->assertTrue($timeEntry2->is_imported);
         $this->assertSame([], $timeEntry2->tags);
     }
 
@@ -68,6 +70,7 @@ class ClockifyTimeEntriesImporterTest extends ImporterTestAbstract
         $this->assertSame('2024-03-04 10:23:52', $timeEntry1->start->toDateTimeString());
         $this->assertSame('2024-03-04 10:23:52', $timeEntry1->end->toDateTimeString());
         $this->assertFalse($timeEntry1->billable);
+        $this->assertTrue($timeEntry1->is_imported);
         $this->assertSame([$testScenario->tag1->getKey(), $testScenario->tag2->getKey()], $timeEntry1->tags);
         $timeEntry2 = $timeEntries->firstWhere('description', 'Working hard');
         $this->assertNotNull($timeEntry2);
@@ -75,6 +78,7 @@ class ClockifyTimeEntriesImporterTest extends ImporterTestAbstract
         $this->assertSame('2024-03-04 10:23:00', $timeEntry2->start->toDateTimeString());
         $this->assertSame('2024-03-04 11:23:01', $timeEntry2->end->toDateTimeString());
         $this->assertTrue($timeEntry2->billable);
+        $this->assertTrue($timeEntry2->is_imported);
         $this->assertSame([], $timeEntry2->tags);
     }
 }
