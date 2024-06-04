@@ -64,12 +64,15 @@ export type ProjectMember = ProjectMemberResponse['data'][0];
 export type CreateTaskBody = ZodiosBodyByAlias<SolidTimeApi, 'createTask'>;
 
 export type CreateClientBody = ZodiosBodyByAlias<SolidTimeApi, 'createClient'>;
+export type UpdateClientBody = ZodiosBodyByAlias<SolidTimeApi, 'updateClient'>;
 
 export type TagIndexResponse = ZodiosResponseByAlias<SolidTimeApi, 'getTags'>;
 export type Tag = TagIndexResponse['data'][0];
 
 export type TaskIndexResponse = ZodiosResponseByAlias<SolidTimeApi, 'getTasks'>;
 export type Task = TaskIndexResponse['data'][0];
+
+export type UpdateTaskBody = ZodiosBodyByAlias<SolidTimeApi, 'updateTask'>;
 
 export type ClientIndexResponse = ZodiosResponseByAlias<
     SolidTimeApi,
