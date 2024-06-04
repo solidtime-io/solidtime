@@ -5,6 +5,7 @@ import type {
     CreateClientBody,
     ClientIndexResponse,
     Client,
+    UpdateClientBody,
 } from '@/utils/api';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import { useNotificationsStore } from '@/utils/notification';
@@ -49,6 +50,27 @@ export const useClientsStore = defineStore('clients', () => {
         }
     }
 
+    async function updateClient(
+        clientId: string,
+        clientBody: UpdateClientBody
+    ) {
+        const organization = getCurrentOrganizationId();
+        if (organization) {
+            await handleApiRequestNotifications(
+                () =>
+                    api.updateClient(clientBody, {
+                        params: {
+                            organization: organization,
+                            client: clientId,
+                        },
+                    }),
+                'Client updated successfully',
+                'Failed to update client'
+            );
+            await fetchClients();
+        }
+    }
+
     async function deleteClient(clientId: string) {
         const organization = getCurrentOrganizationId();
         if (organization) {
@@ -74,5 +96,5 @@ export const useClientsStore = defineStore('clients', () => {
         return clientResponse.value?.data || [];
     });
 
-    return { clients, fetchClients, createClient, deleteClient };
+    return { clients, fetchClients, createClient, deleteClient, updateClient };
 });

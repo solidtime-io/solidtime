@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import Dropdown from '@/Components/Dropdown.vue';
-import { TrashIcon } from '@heroicons/vue/20/solid';
+import { PencilSquareIcon, TrashIcon } from '@heroicons/vue/20/solid';
 import type { Client } from '@/utils/api';
-import { canDeleteClients } from '@/utils/permissions';
+import { canDeleteClients, canUpdateClients } from '@/utils/permissions';
 
 const emit = defineEmits<{
     delete: [];
+    edit: [];
 }>();
 const props = defineProps<{
     client: Client;
@@ -31,15 +32,27 @@ const props = defineProps<{
             </svg>
         </template>
         <template #content>
-            <button
-                v-if="canDeleteClients()"
-                @click="emit('delete')"
-                :aria-label="'Delete Client ' + props.client.name"
-                data-testid="client_delete"
-                class="flex items-center space-x-3 w-full px-3 py-2.5 text-start text-sm font-medium leading-5 text-white hover:bg-card-background-active focus:outline-none focus:bg-card-background-active transition duration-150 ease-in-out">
-                <TrashIcon class="w-5 text-icon-active"></TrashIcon>
-                <span>Delete</span>
-            </button>
+            <div class="min-w-[150px]">
+                <button
+                    v-if="canUpdateClients()"
+                    @click="emit('edit')"
+                    :aria-label="'Edit Client ' + props.client.name"
+                    data-testid="client_edit"
+                    class="flex items-center space-x-3 w-full px-3 py-2.5 text-start text-sm font-medium leading-5 text-white hover:bg-card-background-active focus:outline-none focus:bg-card-background-active transition duration-150 ease-in-out">
+                    <PencilSquareIcon
+                        class="w-5 text-icon-active"></PencilSquareIcon>
+                    <span>Edit</span>
+                </button>
+                <button
+                    v-if="canDeleteClients()"
+                    @click="emit('delete')"
+                    :aria-label="'Delete Client ' + props.client.name"
+                    data-testid="client_delete"
+                    class="flex items-center space-x-3 w-full px-3 py-2.5 text-start text-sm font-medium leading-5 text-white hover:bg-card-background-active focus:outline-none focus:bg-card-background-active transition duration-150 ease-in-out">
+                    <TrashIcon class="w-5 text-icon-active"></TrashIcon>
+                    <span>Delete</span>
+                </button>
+            </div>
         </template>
     </Dropdown>
 </template>

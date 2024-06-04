@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import { api } from '../../../openapi.json.client';
 import { reactive, ref } from 'vue';
-import type { CreateTaskBody, Task } from '@/utils/api';
+import type { CreateTaskBody, Task, UpdateTaskBody } from '@/utils/api';
 import { useNotificationsStore } from '@/utils/notification';
 
 export const useTasksStore = defineStore('tasks', () => {
@@ -25,20 +25,21 @@ export const useTasksStore = defineStore('tasks', () => {
         }
     }
 
-    async function updateTask(task: Task) {
+    async function updateTask(taskId: string, taskBody: UpdateTaskBody) {
         const organizationId = getCurrentOrganizationId();
         if (organizationId) {
             await handleApiRequestNotifications(
                 () =>
-                    api.updateTask(task, {
+                    api.updateTask(taskBody, {
                         params: {
+                            task: taskId,
                             organization: organizationId,
-                            task: task.id,
                         },
                     }),
                 'Task updated successfully',
                 'Failed to update task'
             );
+            await fetchTasks();
         }
     }
 

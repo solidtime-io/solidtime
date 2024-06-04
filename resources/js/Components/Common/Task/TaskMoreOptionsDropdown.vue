@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import Dropdown from '@/Components/Dropdown.vue';
-import { TrashIcon } from '@heroicons/vue/20/solid';
+import { TrashIcon, PencilSquareIcon } from '@heroicons/vue/20/solid';
 import type { Task } from '@/utils/api';
+import { canDeleteTasks, canUpdateTasks } from '@/utils/permissions';
 const emit = defineEmits<{
     delete: [];
+    edit: [];
 }>();
 const props = defineProps<{
     task: Task;
@@ -11,7 +13,7 @@ const props = defineProps<{
 </script>
 
 <template>
-    <Dropdown>
+    <Dropdown align="bottom-end">
         <template #trigger>
             <svg
                 data-testid="task_actions"
@@ -29,14 +31,27 @@ const props = defineProps<{
             </svg>
         </template>
         <template #content>
-            <button
-                @click="emit('delete')"
-                :aria-label="'Delete Task ' + props.task.name"
-                data-testid="task_delete"
-                class="flex items-center space-x-3 w-full px-3 py-2.5 text-start text-sm font-medium leading-5 text-white hover:bg-card-background-active focus:outline-none focus:bg-card-background-active transition duration-150 ease-in-out">
-                <TrashIcon class="w-5 text-icon-active"></TrashIcon>
-                <span>Delete</span>
-            </button>
+            <div class="min-w-[150px]">
+                <button
+                    @click="emit('edit')"
+                    v-if="canUpdateTasks()"
+                    :aria-label="'Edit Task ' + props.task.name"
+                    data-testid="task_edit"
+                    class="flex items-center space-x-3 w-full px-3 py-2.5 text-start text-sm font-medium leading-5 text-white hover:bg-card-background-active focus:outline-none focus:bg-card-background-active transition duration-150 ease-in-out">
+                    <PencilSquareIcon
+                        class="w-5 text-icon-active"></PencilSquareIcon>
+                    <span>Edit</span>
+                </button>
+                <button
+                    @click="emit('delete')"
+                    :aria-label="'Delete Task ' + props.task.name"
+                    v-if="canDeleteTasks()"
+                    data-testid="task_delete"
+                    class="flex items-center space-x-3 w-full px-3 py-2.5 text-start text-sm font-medium leading-5 text-white hover:bg-card-background-active focus:outline-none focus:bg-card-background-active transition duration-150 ease-in-out">
+                    <TrashIcon class="w-5 text-icon-active"></TrashIcon>
+                    <span>Delete</span>
+                </button>
+            </div>
         </template>
     </Dropdown>
 </template>

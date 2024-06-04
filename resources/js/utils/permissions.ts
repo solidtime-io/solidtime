@@ -41,12 +41,20 @@ export function canCreateTasks() {
     return currentUserHasPermission('tasks:create');
 }
 
+export function canUpdateTasks() {
+    return currentUserHasPermission('tasks:update');
+}
+
 export function canDeleteTasks() {
     return currentUserHasPermission('tasks:delete');
 }
 
 export function canCreateClients() {
     return currentUserHasPermission('clients:create');
+}
+
+export function canUpdateClients() {
+    return currentUserHasPermission('clients:update');
 }
 
 export function canDeleteClients() {
