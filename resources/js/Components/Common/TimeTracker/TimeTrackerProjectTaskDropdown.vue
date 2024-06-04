@@ -9,7 +9,7 @@ import ProjectDropdownItem from '@/Components/Common/Project/ProjectDropdownItem
 import type { Project, Task } from '@/utils/api';
 import ProjectBadge from '@/Components/Common/Project/ProjectBadge.vue';
 import Badge from '@/Components/Common/Badge.vue';
-import { PlusIcon } from '@heroicons/vue/16/solid';
+import { PlusIcon, PlusCircleIcon } from '@heroicons/vue/16/solid';
 import ProjectCreateModal from '@/Components/Common/Project/ProjectCreateModal.vue';
 
 const projectStore = useProjectsStore();
@@ -312,10 +312,8 @@ const showCreateProject = ref(false);
             <PlusIcon class="-ml-1 w-5"></PlusIcon>
             <span>Add new project</span>
         </Badge>
-        <ProjectCreateModal
-            v-model:show="showCreateProject"></ProjectCreateModal>
     </div>
-    <Dropdown v-else width="120" v-model="open" :closeOnContentClick="true">
+    <Dropdown v-else v-model="open" :closeOnContentClick="true" align="bottom">
         <template #trigger>
             <ProjectBadge
                 ref="projectDropdownTrigger"
@@ -347,7 +345,9 @@ const showCreateProject = ref(false);
                 ref="searchInput"
                 class="bg-card-background border-0 placeholder-muted text-sm text-white py-2.5 focus:ring-0 border-b border-card-background-separator focus:border-card-background-separator w-full"
                 placeholder="Search for a project or task..." />
-            <div ref="dropdownViewport" class="w-60">
+            <div
+                ref="dropdownViewport"
+                class="min-w-[300px] max-h-[250px] overflow-y-scroll relative">
                 <template
                     v-for="projectWithTasks in filteredProjects"
                     :key="projectWithTasks.project.id">
@@ -386,8 +386,21 @@ const showCreateProject = ref(false);
                     </div>
                 </template>
             </div>
+            <div class="hover:bg-card-background-active rounded-b-lg">
+                <button
+                    @click="
+                        open = false;
+                        showCreateProject = true;
+                    "
+                    class="text-white flex space-x-3 items-center px-4 py-3 text-xs font-semibold border-t border-card-background-separator">
+                    <PlusCircleIcon
+                        class="w-5 flex-shrink-0 text-icon-default"></PlusCircleIcon>
+                    <span>Create new Project</span>
+                </button>
+            </div>
         </template>
     </Dropdown>
+    <ProjectCreateModal v-model:show="showCreateProject"></ProjectCreateModal>
 </template>
 
 <style scoped></style>
