@@ -37,6 +37,10 @@ class ProjectUpdateRequest extends FormRequest
                 'max:255',
                 new ColorRule(),
             ],
+            'is_billable' => [
+                'required',
+                'boolean',
+            ],
             'billable_rate' => [
                 'nullable',
                 'integer',

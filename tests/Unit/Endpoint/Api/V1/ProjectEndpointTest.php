@@ -128,6 +128,7 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
         $response = $this->postJson(route('api.v1.projects.store', [$data->organization->getKey()]), [
             'name' => $projectFake->name,
             'color' => $projectFake->color,
+            'is_billable' => $projectFake->is_billable,
         ]);
 
         // Assert
@@ -140,21 +141,23 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
         $data = $this->createUserWithPermission([
             'projects:create',
         ]);
-        $project = Project::factory()->forOrganization($data->organization)->make();
+        $projectFake = Project::factory()->forOrganization($data->organization)->make();
         Passport::actingAs($data->user);
 
         // Act
         $response = $this->postJson(route('api.v1.projects.store', [$data->organization->getKey()]), [
-            'name' => $project->name,
-            'color' => $project->color,
+            'name' => $projectFake->name,
+            'color' => $projectFake->color,
+            'is_billable' => $projectFake->is_billable,
         ]);
 
         // Assert
         $response->assertStatus(201);
         $this->assertDatabaseHas(Project::class, [
-            'name' => $project->name,
-            'color' => $project->color,
-            'organization_id' => $project->organization_id,
+            'name' => $projectFake->name,
+            'color' => $projectFake->color,
+            'organization_id' => $projectFake->organization_id,
+            'is_billable' => $projectFake->is_billable,
         ]);
     }
 
@@ -165,22 +168,24 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
             'projects:create',
         ]);
         $client = Client::factory()->forOrganization($data->organization)->create();
-        $project = Project::factory()->forOrganization($data->organization)->make();
+        $projectFake = Project::factory()->forOrganization($data->organization)->make();
         Passport::actingAs($data->user);
 
         // Act
         $response = $this->postJson(route('api.v1.projects.store', [$data->organization->getKey()]), [
-            'name' => $project->name,
-            'color' => $project->color,
+            'name' => $projectFake->name,
+            'color' => $projectFake->color,
+            'is_billable' => $projectFake->is_billable,
             'client_id' => $client->getKey(),
         ]);
 
         // Assert
         $response->assertStatus(201);
         $this->assertDatabaseHas(Project::class, [
-            'name' => $project->name,
-            'color' => $project->color,
-            'organization_id' => $project->organization_id,
+            'name' => $projectFake->name,
+            'color' => $projectFake->color,
+            'is_billable' => $projectFake->is_billable,
+            'organization_id' => $projectFake->organization_id,
             'client_id' => $client->getKey(),
         ]);
     }
@@ -191,23 +196,25 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
         $data = $this->createUserWithPermission([
             'projects:create',
         ]);
-        $project = Project::factory()->forOrganization($data->organization)->make();
+        $projectFake = Project::factory()->forOrganization($data->organization)->make();
         Passport::actingAs($data->user);
 
         // Act
         $response = $this->postJson(route('api.v1.projects.store', [$data->organization->getKey()]), [
-            'name' => $project->name,
-            'color' => $project->color,
+            'name' => $projectFake->name,
+            'color' => $projectFake->color,
+            'is_billable' => true,
             'billable_rate' => 10001,
         ]);
 
         // Assert
         $response->assertStatus(201);
         $this->assertDatabaseHas(Project::class, [
-            'name' => $project->name,
-            'color' => $project->color,
-            'organization_id' => $project->organization_id,
+            'name' => $projectFake->name,
+            'color' => $projectFake->color,
+            'is_billable' => true,
             'billable_rate' => 10001,
+            'organization_id' => $projectFake->organization_id,
         ]);
     }
 
@@ -226,6 +233,7 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
         $response = $this->putJson(route('api.v1.projects.update', [$data->organization->getKey(), $project->getKey()]), [
             'name' => $projectFake->name,
             'color' => $projectFake->color,
+            'is_billable' => $projectFake->is_billable,
         ]);
 
         // Assert
@@ -245,6 +253,7 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
         $response = $this->putJson(route('api.v1.projects.update', [$data->organization->getKey(), $project->getKey()]), [
             'name' => $projectFake->name,
             'color' => $projectFake->color,
+            'is_billable' => $projectFake->is_billable,
         ]);
 
         // Assert
@@ -266,6 +275,7 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
         $response = $this->putJson(route('api.v1.projects.update', [$data->organization->getKey(), $project->getKey()]), [
             'name' => $projectFake->name,
             'color' => $projectFake->color,
+            'is_billable' => $projectFake->is_billable,
             'client_id' => $client->getKey(),
         ]);
 
@@ -292,6 +302,7 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
         $response = $this->putJson(route('api.v1.projects.update', [$data->organization->getKey(), $project->getKey()]), [
             'name' => $projectFake->name,
             'color' => $projectFake->color,
+            'is_billable' => $projectFake->is_billable,
             'billable_rate' => 10002,
         ]);
 

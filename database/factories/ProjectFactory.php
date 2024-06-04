@@ -27,11 +27,22 @@ class ProjectFactory extends Factory
         return [
             'name' => $this->faker->company(),
             'color' => app(ColorService::class)->getRandomColor(),
-            'billable_rate' => $this->faker->numberBetween(50, 1000) * 100,
+            'is_billable' => false,
+            'billable_rate' => null,
             'is_public' => false,
             'client_id' => null,
             'organization_id' => Organization::factory(),
         ];
+    }
+
+    public function billable(): self
+    {
+        return $this->state(function (array $attributes): array {
+            return [
+                'is_billable' => true,
+                'billable_rate' => $this->faker->numberBetween(50, 1000) * 100,
+            ];
+        });
     }
 
     public function forOrganization(Organization $organization): self
