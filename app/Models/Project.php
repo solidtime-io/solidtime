@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $organization_id
  * @property string $client_id
  * @property int|null $billable_rate
+ * @property bool $is_billable
  * @property-read Organization $organization
  * @property-read Client|null $client
  * @property-read Collection<int, Task> $tasks
@@ -41,6 +42,15 @@ class Project extends Model
     protected $casts = [
         'name' => 'string',
         'color' => 'string',
+    ];
+
+    /**
+     * Set default values for attributes.
+     *
+     * @var array<string, mixed>
+     */
+    protected $attributes = [
+        'is_billable' => false,
     ];
 
     /**

@@ -121,6 +121,7 @@ class TogglDataImporter extends DefaultImporter
                 ], [
                     'client_id' => $clientId,
                     'color' => $project->color,
+                    'is_billable' => $project->rate !== null,
                     'billable_rate' => $project->rate !== null ? (int) ($project->rate * 100) : null,
                 ], (string) $project->id);
 

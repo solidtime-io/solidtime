@@ -85,6 +85,7 @@ class ProjectController extends Controller
         $project = new Project();
         $project->name = $request->input('name');
         $project->color = $request->input('color');
+        $project->is_billable = (bool) $request->input('is_billable');
         $project->billable_rate = $request->input('billable_rate');
         $project->client_id = $request->input('client_id');
         $project->organization()->associate($organization);
@@ -105,6 +106,7 @@ class ProjectController extends Controller
         $this->checkPermission($organization, 'projects:update', $project);
         $project->name = $request->input('name');
         $project->color = $request->input('color');
+        $project->is_billable = (bool) $request->input('is_billable');
         $project->billable_rate = $request->input('billable_rate');
         $project->client_id = $request->input('client_id');
         $project->save();
