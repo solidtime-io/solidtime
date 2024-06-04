@@ -33,6 +33,7 @@ class TimeEntryFactory extends Factory
             'start' => $start,
             'end' => $this->faker->dateTimeBetween($start, 'now'),
             'billable' => $this->faker->boolean(),
+            'is_imported' => false,
             'tags' => [],
             'user_id' => User::factory(),
             'member_id' => Member::factory(),

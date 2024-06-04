@@ -78,6 +78,7 @@ class TogglTimeEntriesImporter extends DefaultImporter
                         'organization_id' => $this->organization->id,
                     ], [
                         'client_id' => $clientId,
+                        'is_billable' => false,
                         'color' => $this->colorService->getRandomColor(),
                     ]);
                 }
@@ -102,6 +103,7 @@ class TogglTimeEntriesImporter extends DefaultImporter
                 }
                 $timeEntry->billable = $record['Billable'] === 'Yes';
                 $timeEntry->tags = $this->getTags($record['Tags']);
+                $timeEntry->is_imported = true;
                 try {
                     $start = Carbon::createFromFormat('Y-m-d H:i:s', $record['Start date'].' '.$record['Start time'], $timezone);
                 } catch (InvalidFormatException) {

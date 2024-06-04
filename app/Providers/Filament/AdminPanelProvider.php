@@ -6,6 +6,7 @@ namespace App\Providers\Filament;
 
 use App\Filament\Widgets\ActiveUserOverview;
 use App\Filament\Widgets\TimeEntriesCreated;
+use App\Filament\Widgets\TimeEntriesImported;
 use App\Filament\Widgets\UserRegistrations;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -46,6 +47,7 @@ class AdminPanelProvider extends PanelProvider
                 ActiveUserOverview::class,
                 UserRegistrations::class,
                 TimeEntriesCreated::class,
+                TimeEntriesImported::class,
             ])
             ->plugins([
                 EnvironmentIndicatorPlugin::make()
