@@ -46,6 +46,14 @@ export function formatHumanReadableDuration(duration: number): string {
     return `${hours}h ${minutes.toString().padStart(2, '0')}min`;
 }
 
+export function formatDuration(duration: number): string {
+    const dayJsDuration = dayjs.duration(duration, 's');
+    const hours = dayJsDuration.hours() + dayJsDuration.days() * 24;
+    const minutes = dayJsDuration.minutes();
+    const seconds = dayJsDuration.seconds();
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+}
+
 export function calculateDifference(start: string, end: string | null) {
     if (end === null) {
         end = dayjs().utc().format();

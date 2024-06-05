@@ -6,7 +6,7 @@ import dayjs from 'dayjs';
 import parse from 'parse-duration';
 import { useCurrentTimeEntryStore } from '@/utils/useCurrentTimeEntry';
 import { storeToRefs } from 'pinia';
-import { getDayJsInstance } from '@/utils/time';
+import { formatDuration, getDayJsInstance } from '@/utils/time';
 const currentTimeEntryStore = useCurrentTimeEntryStore();
 const { startLiveTimer, stopLiveTimer, updateTimer, startTimer } =
     currentTimeEntryStore;
@@ -34,8 +34,8 @@ const currentTime = computed({
         }
         if (now.value && currentTimeEntry.value.start) {
             const startTime = dayjs(currentTimeEntry.value.start);
-            const diff = now.value.diff(startTime);
-            return dayjs(diff).utc().format('HH:mm:ss');
+            const diff = now.value.diff(startTime, 'seconds');
+            return formatDuration(diff);
         }
         return null;
     },

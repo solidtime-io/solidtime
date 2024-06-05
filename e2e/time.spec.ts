@@ -183,7 +183,7 @@ test('test that adding a new tag to an existing time entry works', async ({
 });
 
 // Test that Start / End Time Update Works
-test('test that updating a the start of an existing time entry in the overview works on blur', async ({
+test('test that updating a the start of an existing time entry in the overview works on enter', async ({
     page,
 }) => {
     await goToTimeOverview(page);
@@ -220,7 +220,7 @@ test('test that updating a the start of an existing time entry in the overview w
         page
             .getByTestId('time_entry_range_end')
             .getByTestId('time_picker_minute')
-            .press('Tab'),
+            .press('Enter'),
     ]);
 });
 

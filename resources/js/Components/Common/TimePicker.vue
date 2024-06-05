@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue';
-import { getDayJsInstance, getLocalizedDayJs } from '@/utils/time';
+import { computed } from 'vue';
+import { getLocalizedDayJs } from '@/utils/time';
 import { twMerge } from 'tailwind-merge';
 
 const model = defineModel<string | null>({
@@ -47,11 +47,6 @@ function updateHours(event: Event) {
 }
 
 const emit = defineEmits(['changed']);
-onMounted(() => {
-    if (!model.value) {
-        model.value = getDayJsInstance().utc().format();
-    }
-});
 </script>
 
 <template>
@@ -86,7 +81,7 @@ onMounted(() => {
                 type="text"
                 :class="
                     twMerge(
-                        'border-none bg-transparent px-1 py-0.5 w-[30px] text-center focus:ring-0 focus:bg-card-background-active',
+                        'border-none bg-transparent px-1 py-1 w-[30px] text-center focus:ring-0 focus:bg-card-background-active',
                         props.size === 'large' ? 'text-base' : 'text-sm'
                     )
                 " />
