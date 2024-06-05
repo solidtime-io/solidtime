@@ -39,7 +39,7 @@ class DatabaseSeeder extends Seeder
             'personal_team' => false,
             'currency' => 'EUR',
         ]);
-        $userRivalManager = User::factory()->withPersonalOrganization()->create([
+        $userAcmeManager = User::factory()->withPersonalOrganization()->create([
             'name' => 'Acme Manager',
             'email' => 'test@example.com',
         ]);
@@ -57,7 +57,7 @@ class DatabaseSeeder extends Seeder
             'password' => null,
         ]);
         $userAcmeOwnerMember = Member::factory()->forUser($userAcmeOwner)->forOrganization($organizationAcme)->role(Role::Owner)->create();
-        $userAcmeManagerMember = Member::factory()->forUser($userRivalManager)->forOrganization($organizationAcme)->role(Role::Manager)->create();
+        $userAcmeManagerMember = Member::factory()->forUser($userAcmeManager)->forOrganization($organizationAcme)->role(Role::Manager)->create();
         $userAcmeAdminMember = Member::factory()->forUser($userAcmeAdmin)->forOrganization($organizationAcme)->role(Role::Admin)->create();
         $userAcmeEmployeeMember = Member::factory()->forUser($userAcmeEmployee)->forOrganization($organizationAcme)->role(Role::Employee)->create();
         $userAcmePlaceholderMember = Member::factory()->forUser($userAcmePlaceholder)->forOrganization($organizationAcme)->role(Role::Placeholder)->create();
@@ -66,6 +66,10 @@ class DatabaseSeeder extends Seeder
         TimeEntry::factory()
             ->count(10)
             ->forMember($userAcmeAdminMember)
+            ->create();
+        TimeEntry::factory()
+            ->count(10)
+            ->forMember($userAcmeManagerMember)
             ->create();
         TimeEntry::factory()
             ->count(10)
