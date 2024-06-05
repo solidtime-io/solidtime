@@ -2,6 +2,7 @@
 import { defineProps, ref, watch } from 'vue';
 import TimePicker from '@/Components/Common/TimePicker.vue';
 import { useFocusWithin } from '@vueuse/core';
+import DatePicker from '@/Components/Common/DatePicker.vue';
 
 const props = defineProps<{
     start: string;
@@ -35,21 +36,32 @@ watch(focused, (newValue, oldValue) => {
 <template>
     <div
         ref="dropdownContent"
-        class="grid grid-cols-2 divide-x divide-card-background-separator text-center py-1">
-        <div>
-            <div class="font-bold text-white text-sm pb-1">Start</div>
-            <TimePicker
-                data-testid="time_entry_range_start"
-                @changed="updateTimeEntry"
-                v-model="tempStart"></TimePicker>
+        class="grid grid-cols-2 divide-x divide-card-background-separator text-center py-2">
+        <div class="px-2">
+            <div class="font-bold text-white text-sm pb-2">Start</div>
+            <div class="space-y-1">
+                <TimePicker
+                    data-testid="time_entry_range_start"
+                    @changed="updateTimeEntry"
+                    v-model="tempStart"></TimePicker>
+                <DatePicker
+                    class="text-sm px-2 py-1"
+                    @changed="updateTimeEntry"
+                    v-model="tempStart"></DatePicker>
+            </div>
         </div>
-        <div>
-            <div class="font-bold text-white text-sm pb-1">End</div>
-            <TimePicker
-                v-if="tempEnd !== null"
-                data-testid="time_entry_range_end"
-                @changed="updateTimeEntry"
-                v-model="tempEnd"></TimePicker>
+        <div class="px-2">
+            <div class="font-bold text-white text-sm pb-2">End</div>
+            <div v-if="tempEnd !== null" class="space-y-1">
+                <TimePicker
+                    data-testid="time_entry_range_end"
+                    @changed="updateTimeEntry"
+                    v-model="tempEnd"></TimePicker>
+                <DatePicker
+                    class="text-sm px-2 py-1"
+                    @changed="updateTimeEntry"
+                    v-model="tempEnd"></DatePicker>
+            </div>
             <div class="text-muted" v-else>-- : --</div>
         </div>
     </div>
