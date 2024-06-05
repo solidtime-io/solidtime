@@ -69,6 +69,10 @@ export function canViewMembers() {
     return currentUserHasPermission('members:view');
 }
 
+export function canUpdateMembers() {
+    return currentUserHasPermission('members:update');
+}
+
 export function canDeleteMembers() {
     return currentUserHasPermission('members:delete');
 }
