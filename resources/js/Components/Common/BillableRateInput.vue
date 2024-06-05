@@ -6,14 +6,19 @@ import {
     getOrganizationCurrencySymbol,
 } from '../../utils/money';
 import { ref, watch } from 'vue';
+import { useFocus } from '@vueuse/core';
 
-defineProps<{
+const props = defineProps<{
     name: string;
+    focus?: boolean;
 }>();
 
 const model = defineModel<number | null>({
     default: null,
 });
+
+const billableRateInput = ref<HTMLInputElement | null>(null);
+useFocus(billableRateInput, { initialValue: props.focus });
 
 function cleanUpDecimalValue(value: string) {
     value = value.replace(/,/g, '');
@@ -67,7 +72,7 @@ const inputValue = ref(formatValue(model.value));
     <div class="relative">
         <TextInput
             :id="name"
-            ref="projectMemberRateInput"
+            ref="billableRateInput"
             v-model="inputValue"
             @blur="updateRate($event.target.value)"
             type="text"
