@@ -1,6 +1,6 @@
 import { defineStore, storeToRefs } from 'pinia';
 import { api } from '../../../openapi.json.client';
-import { computed, ref } from 'vue';
+import { type Component, computed, ref } from 'vue';
 import type {
     AggregatedTimeEntries,
     AggregatedTimeEntriesQueryParams,
@@ -11,6 +11,21 @@ import { useNotificationsStore } from '@/utils/notification';
 import { useProjectsStore } from '@/utils/useProjects';
 import { useMembersStore } from '@/utils/useMembers';
 import { useTasksStore } from '@/utils/useTasks';
+import { useClientsStore } from '@/utils/useClients';
+import {
+    CheckCircleIcon,
+    UserCircleIcon,
+    UserGroupIcon,
+} from '@heroicons/vue/20/solid';
+import { FolderIcon } from '@heroicons/vue/16/solid';
+import BillableIcon from '@/Components/Common/Icons/BillableIcon.vue';
+
+export type GroupingOption =
+    | 'project'
+    | 'task'
+    | 'user'
+    | 'billable'
+    | 'client';
 
 export const useReportingStore = defineStore('reporting', () => {
     const reportingGraphResponse = ref<ReportingResponse | null>(null);
@@ -24,12 +39,13 @@ export const useReportingStore = defineStore('reporting', () => {
         const organization = getCurrentOrganizationId();
         if (organization) {
             reportingGraphResponse.value = await handleApiRequestNotifications(
-                api.getAggregatedTimeEntries({
-                    params: {
-                        organization: organization,
-                    },
-                    queries: params,
-                }),
+                () =>
+                    api.getAggregatedTimeEntries({
+                        params: {
+                            organization: organization,
+                        },
+                        queries: params,
+                    }),
                 undefined,
                 'Failed to fetch reporting data'
             );
@@ -42,12 +58,13 @@ export const useReportingStore = defineStore('reporting', () => {
         const organization = getCurrentOrganizationId();
         if (organization) {
             reportingTableResponse.value = await handleApiRequestNotifications(
-                api.getAggregatedTimeEntries({
-                    params: {
-                        organization: organization,
-                    },
-                    queries: params,
-                }),
+                () =>
+                    api.getAggregatedTimeEntries({
+                        params: {
+                            organization: organization,
+                        },
+                        queries: params,
+                    }),
                 undefined,
                 'Failed to fetch reporting data'
             );
@@ -75,6 +92,7 @@ export const useReportingStore = defineStore('reporting', () => {
                 project: 'No Project',
                 task: 'No Task',
                 billable: 'Non-Billable',
+                client: 'No Client',
             };
 
             return emptyPlaceholder[type as keyof typeof emptyPlaceholder];
@@ -95,6 +113,11 @@ export const useReportingStore = defineStore('reporting', () => {
             const { tasks } = storeToRefs(taskStore);
             return tasks.value.find((task) => task.id === key)?.name;
         }
+        if (type === 'client') {
+            const clientsStore = useClientsStore();
+            const { clients } = storeToRefs(clientsStore);
+            return clients.value.find((client) => client.id === key)?.name;
+        }
         if (type === 'billable') {
             if (key === '0') {
                 return 'Non-Billable';
@@ -105,11 +128,44 @@ export const useReportingStore = defineStore('reporting', () => {
         return key;
     }
 
+    const groupByOptions: {
+        label: string;
+        value: GroupingOption;
+        icon: Component;
+    }[] = [
+        {
+            label: 'Members',
+            value: 'user',
+            icon: UserGroupIcon,
+        },
+        {
+            label: 'Projects',
+            value: 'project',
+            icon: FolderIcon,
+        },
+        {
+            label: 'Tasks',
+            value: 'task',
+            icon: CheckCircleIcon,
+        },
+        {
+            label: 'Clients',
+            value: 'client',
+            icon: UserCircleIcon,
+        },
+        {
+            label: 'Billable',
+            value: 'billable',
+            icon: BillableIcon,
+        },
+    ];
+
     return {
         aggregatedGraphTimeEntries,
         fetchGraphReporting,
         fetchTableReporting,
         aggregatedTableTimeEntries,
         getNameForReportingRowEntry,
+        groupByOptions,
     };
 });

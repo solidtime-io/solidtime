@@ -107,3 +107,5 @@ test('test that creating and deleting a new tag in a new project works', async (
 // Test that project task count is displayed correctly
 
 // Test that active / archive / all filter works (once implemented)
+
+// Test update task name

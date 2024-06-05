@@ -5,15 +5,20 @@ import {
     getOrganizationCurrencyString,
     getOrganizationCurrencySymbol,
 } from '../../utils/money';
+import { ref, watch } from 'vue';
+import { useFocus } from '@vueuse/core';
 
-defineProps<{
+const props = defineProps<{
     name: string;
+    focus?: boolean;
 }>();
 
-const model = defineModel({
+const model = defineModel<number | null>({
     default: null,
-    type: Number,
 });
+
+const billableRateInput = ref<HTMLInputElement | null>(null);
+useFocus(billableRateInput, { initialValue: props.focus });
 
 function cleanUpDecimalValue(value: string) {
     value = value.replace(/,/g, '');
@@ -38,23 +43,37 @@ function updateRate(value: string) {
             value = cleanUpDecimalValue(value);
             model.value = parseInt(value);
         }
+    } else if (value === '') {
+        model.value = 0;
     } else {
         // if it doesn't contain a comma or a dot, it's probably a whole number so let's convert it to cents
-        model.value = parseInt(cleanUpDecimalValue(value)) * 100;
+        const parsedValue = parseInt(cleanUpDecimalValue(value)) * 100;
+        if (parsedValue) {
+            model.value = parsedValue;
+        } else {
+            model.value = 0;
+        }
     }
+    inputValue.value = formatValue(model.value);
 }
-function formatValue(modelValue: number) {
-    const formattedValue = formatCents(modelValue);
+function formatValue(modelValue: number | null) {
+    const formattedValue = formatCents(modelValue ?? 0);
     return formattedValue.replace(getOrganizationCurrencySymbol(), '').trim();
 }
+
+watch(model, (newValue) => {
+    inputValue.value = formatValue(newValue);
+});
+
+const inputValue = ref(formatValue(model.value));
 </script>
 
 <template>
     <div class="relative">
         <TextInput
             :id="name"
-            ref="projectMemberRateInput"
-            :modelValue="formatValue(model)"
+            ref="billableRateInput"
+            v-model="inputValue"
             @blur="updateRate($event.target.value)"
             type="text"
             :name="name"

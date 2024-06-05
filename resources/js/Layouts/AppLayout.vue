@@ -55,14 +55,13 @@ const page = usePage<{
 </script>
 
 <template>
-    <div
-        v-bind="$attrs"
-        class="flex flex-wrap bg-default-background text-muted">
+    <div v-bind="$attrs" class="flex flex-wrap bg-background text-muted">
         <div
             :class="{
-                '!flex bg-default-background w-full z-50': showSidebarMenu,
+                '!flex bg-default-background w-full z-[9999999999]':
+                    showSidebarMenu,
             }"
-            class="flex-shrink-0 h-screen hidden fixed w-[230px] 2xl:w-[270px] px-2.5 2xl:px-4 py-4 sm:flex flex-col justify-between">
+            class="flex-shrink-0 h-screen hidden fixed w-[230px] 2xl:w-[250px] px-2.5 2xl:px-4 py-4 sm:flex flex-col justify-between">
             <div>
                 <div
                     class="border-b border-default-background-separator pb-2 flex justify-between">
@@ -132,6 +131,7 @@ const page = usePage<{
                     </ul>
                 </nav>
                 <div
+                    v-if="canUpdateOrganization()"
                     class="text-text-tertiary text-sm font-semibold pt-5 pb-1.5">
                     Admin
                 </div>
@@ -182,7 +182,7 @@ const page = usePage<{
                 <UserSettingsIcon></UserSettingsIcon>
             </ul>
         </div>
-        <div class="flex-1 sm:ml-[230px] 2xl:ml-[270px]">
+        <div class="flex-1 sm:ml-[230px] 2xl:ml-[250px]">
             <div
                 class="sm:hidden w-full px-3 py-1 border-b border-b-default-background-separator text-muted flex justify-between items-center">
                 <Bars3Icon
@@ -209,7 +209,7 @@ const page = usePage<{
                 </header>
 
                 <!-- Page Content -->
-                <main>
+                <main class="pb-28">
                     <slot />
                 </main>
             </div>

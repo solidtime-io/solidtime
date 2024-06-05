@@ -89,18 +89,19 @@ export const useCurrentTimeEntryStore = defineStore('currentTimeEntry', () => {
                     ? currentTimeEntry.value.start
                     : dayjs().utc().format();
             const response = await handleApiRequestNotifications(
-                api.createTimeEntry(
-                    {
-                        member_id: membership,
-                        start: startTime,
-                        description: currentTimeEntry.value?.description,
-                        project_id: currentTimeEntry.value?.project_id,
-                        task_id: currentTimeEntry.value?.task_id,
-                        billable: currentTimeEntry.value.billable,
-                        tags: currentTimeEntry.value?.tags,
-                    },
-                    { params: { organization: organization } }
-                ),
+                () =>
+                    api.createTimeEntry(
+                        {
+                            member_id: membership,
+                            start: startTime,
+                            description: currentTimeEntry.value?.description,
+                            project_id: currentTimeEntry.value?.project_id,
+                            task_id: currentTimeEntry.value?.task_id,
+                            billable: currentTimeEntry.value.billable,
+                            tags: currentTimeEntry.value?.tags,
+                        },
+                        { params: { organization: organization } }
+                    ),
                 'Timer started!'
             );
             if (response?.data) {
@@ -119,19 +120,20 @@ export const useCurrentTimeEntryStore = defineStore('currentTimeEntry', () => {
         if (organization) {
             const currentDateTime = dayjs().utc().format();
             await handleApiRequestNotifications(
-                api.updateTimeEntry(
-                    {
-                        user_id: user,
-                        start: currentTimeEntry.value.start,
-                        end: currentDateTime,
-                    },
-                    {
-                        params: {
-                            organization: organization,
-                            timeEntry: currentTimeEntry.value.id,
+                () =>
+                    api.updateTimeEntry(
+                        {
+                            user_id: user,
+                            start: currentTimeEntry.value.start,
+                            end: currentDateTime,
                         },
-                    }
-                ),
+                        {
+                            params: {
+                                organization: organization,
+                                timeEntry: currentTimeEntry.value.id,
+                            },
+                        }
+                    ),
                 'Timer stopped!'
             );
             $reset();
@@ -147,24 +149,25 @@ export const useCurrentTimeEntryStore = defineStore('currentTimeEntry', () => {
         const organization = getCurrentOrganizationId();
         if (organization) {
             const response = await handleApiRequestNotifications(
-                api.updateTimeEntry(
-                    {
-                        description: currentTimeEntry.value.description,
-                        user_id: user,
-                        project_id: currentTimeEntry.value.project_id,
-                        task_id: currentTimeEntry.value.task_id,
-                        start: currentTimeEntry.value.start,
-                        billable: currentTimeEntry.value.billable,
-                        end: null,
-                        tags: currentTimeEntry.value.tags,
-                    },
-                    {
-                        params: {
-                            organization: organization,
-                            timeEntry: currentTimeEntry.value.id,
+                () =>
+                    api.updateTimeEntry(
+                        {
+                            description: currentTimeEntry.value.description,
+                            user_id: user,
+                            project_id: currentTimeEntry.value.project_id,
+                            task_id: currentTimeEntry.value.task_id,
+                            start: currentTimeEntry.value.start,
+                            billable: currentTimeEntry.value.billable,
+                            end: null,
+                            tags: currentTimeEntry.value.tags,
                         },
-                    }
-                ),
+                        {
+                            params: {
+                                organization: organization,
+                                timeEntry: currentTimeEntry.value.id,
+                            },
+                        }
+                    ),
                 'Time entry updated!'
             );
             if (response?.data) {

@@ -14,7 +14,7 @@ import ReportingChart from '@/Components/Common/Reporting/ReportingChart.vue';
 import BillableIcon from '@/Components/Common/Icons/BillableIcon.vue';
 import { onMounted, ref } from 'vue';
 import { formatHumanReadableDuration, getDayJsInstance } from '@/utils/time';
-import { useReportingStore } from '@/utils/useReporting';
+import { type GroupingOption, useReportingStore } from '@/utils/useReporting';
 import { storeToRefs } from 'pinia';
 import TagDropdown from '@/Components/Common/Tag/TagDropdown.vue';
 import type { AggregatedTimeEntriesQueryParams } from '@/utils/api';
@@ -28,6 +28,7 @@ import ReportingRow from '@/Components/Common/Reporting/ReportingRow.vue';
 import { formatCents } from '@/utils/money';
 import ReportingPieChart from '@/Components/Common/Reporting/ReportingPieChart.vue';
 import { getCurrentMembershipId, getCurrentRole } from '@/utils/useUser';
+import ClientMultiselectDropdown from '@/Components/Common/Client/ClientMultiselectDropdown.vue';
 
 const startDate = ref<string | null>(
     getDayJsInstance()().subtract(14, 'd').format('YYYY-MM-DD')
@@ -37,48 +38,44 @@ const selectedTags = ref<string[]>([]);
 const selectedProjects = ref<string[]>([]);
 const selectedMembers = ref<string[]>([]);
 const selectedTasks = ref<string[]>([]);
-const billable = ref<'true' | 'false' | null>(null);
+const selectedClients = ref<string[]>([]);
 
-type GroupingOption = 'project' | 'task' | 'user' | 'billable' | 'client';
+const billable = ref<'true' | 'false' | null>(null);
 
 const group = ref<GroupingOption>('project');
 const subGroup = ref<GroupingOption>('task');
+
+const reportingStore = useReportingStore();
+
+const { aggregatedGraphTimeEntries, aggregatedTableTimeEntries } =
+    storeToRefs(reportingStore);
+
+const { groupByOptions } = reportingStore;
 
 function getFilterAttributes() {
     let params: AggregatedTimeEntriesQueryParams = {
         start: getDayJsInstance()(startDate.value).utc().format(),
         end: getDayJsInstance()(endDate.value).endOf('day').utc().format(),
     };
-    if (selectedMembers.value.length > 0) {
-        params = {
-            ...params,
-            member_ids: selectedMembers.value,
-        };
-    }
-    if (selectedProjects.value.length > 0) {
-        params = {
-            ...params,
-            project_ids: selectedProjects.value,
-        };
-    }
-    if (selectedTasks.value.length > 0) {
-        params = {
-            ...params,
-            task_ids: selectedTasks.value,
-        };
-    }
-    if (selectedTags.value.length > 0) {
-        params = {
-            ...params,
-            tag_ids: selectedTags.value,
-        };
-    }
-    if (billable.value !== null) {
-        params = {
-            ...params,
-            billable: billable.value,
-        };
-    }
+    params = {
+        ...params,
+        member_ids:
+            selectedMembers.value.length > 0
+                ? selectedMembers.value
+                : undefined,
+        project_ids:
+            selectedProjects.value.length > 0
+                ? selectedProjects.value
+                : undefined,
+        task_ids:
+            selectedTasks.value.length > 0 ? selectedTasks.value : undefined,
+        client_ids:
+            selectedClients.value.length > 0
+                ? selectedClients.value
+                : undefined,
+        tag_ids: selectedTags.value.length > 0 ? selectedTags.value : undefined,
+        billable: billable.value !== null ? billable.value : undefined,
+    };
     return params;
 }
 
@@ -98,6 +95,14 @@ function updateGraphReporting() {
 
 function updateTableReporting() {
     const params = getFilterAttributes();
+    if (group.value === subGroup.value) {
+        const fallbackOption = groupByOptions.find(
+            (el) => el.value !== group.value
+        );
+        if (fallbackOption?.value) {
+            subGroup.value = fallbackOption.value;
+        }
+    }
     if (getCurrentRole() === 'employee') {
         params.member_id = getCurrentMembershipId();
     }
@@ -110,11 +115,6 @@ function updateReporting() {
     updateGraphReporting();
     updateTableReporting();
 }
-
-const reportingStore = useReportingStore();
-
-const { aggregatedGraphTimeEntries, aggregatedTableTimeEntries } =
-    storeToRefs(reportingStore);
 
 function getOptimalGroupingOption(diff: number): 'day' | 'week' | 'month' {
     if (diff <= 31) {
@@ -179,6 +179,15 @@ onMounted(() => {
                                 :icon="CheckCircleIcon"></ReportingFilterBadge>
                         </template>
                     </TaskMultiselectDropdown>
+                    <ClientMultiselectDropdown
+                        @submit="updateReporting"
+                        v-model="selectedClients">
+                        <template v-slot:trigger>
+                            <ReportingFilterBadge
+                                title="Clients"
+                                :icon="FolderIcon"></ReportingFilterBadge>
+                        </template>
+                    </ClientMultiselectDropdown>
                     <TagDropdown
                         @submit="updateReporting"
                         v-model="selectedTags">
@@ -247,10 +256,16 @@ onMounted(() => {
                         class="text-sm flex text-white items-center space-x-3 font-medium px-6 border-b border-card-background-separator pb-3">
                         <span>Group by</span>
                         <ReportingGroupBySelect
+                            :group-by-options="groupByOptions"
                             @changed="updateTableReporting"
                             v-model="group"></ReportingGroupBySelect>
                         <span>and</span>
                         <ReportingGroupBySelect
+                            :group-by-options="
+                                groupByOptions.filter(
+                                    (el) => el.value !== group
+                                )
+                            "
                             @changed="updateTableReporting"
                             v-model="subGroup"></ReportingGroupBySelect>
                     </div>

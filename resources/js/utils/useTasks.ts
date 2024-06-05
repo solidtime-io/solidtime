@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import { api } from '../../../openapi.json.client';
 import { reactive, ref } from 'vue';
-import type { CreateTaskBody, Task } from '@/utils/api';
+import type { CreateTaskBody, Task, UpdateTaskBody } from '@/utils/api';
 import { useNotificationsStore } from '@/utils/notification';
 
 export const useTasksStore = defineStore('tasks', () => {
@@ -12,7 +12,7 @@ export const useTasksStore = defineStore('tasks', () => {
     async function fetchTasks() {
         const organizationId = getCurrentOrganizationId();
         if (organizationId) {
-            const tasksResponse = await handleApiRequestNotifications(
+            const tasksResponse = await handleApiRequestNotifications(() =>
                 api.getTasks({
                     params: {
                         organization: organizationId,
@@ -25,19 +25,21 @@ export const useTasksStore = defineStore('tasks', () => {
         }
     }
 
-    async function updateTask(task: Task) {
+    async function updateTask(taskId: string, taskBody: UpdateTaskBody) {
         const organizationId = getCurrentOrganizationId();
         if (organizationId) {
             await handleApiRequestNotifications(
-                api.updateTask(task, {
-                    params: {
-                        organization: organizationId,
-                        task: task.id,
-                    },
-                }),
+                () =>
+                    api.updateTask(taskBody, {
+                        params: {
+                            task: taskId,
+                            organization: organizationId,
+                        },
+                    }),
                 'Task updated successfully',
                 'Failed to update task'
             );
+            await fetchTasks();
         }
     }
 
@@ -45,11 +47,12 @@ export const useTasksStore = defineStore('tasks', () => {
         const organizationId = getCurrentOrganizationId();
         if (organizationId) {
             await handleApiRequestNotifications(
-                api.createTask(task, {
-                    params: {
-                        organization: organizationId,
-                    },
-                }),
+                () =>
+                    api.createTask(task, {
+                        params: {
+                            organization: organizationId,
+                        },
+                    }),
                 'Task created successfully',
                 'Failed to create task'
             );
@@ -61,15 +64,16 @@ export const useTasksStore = defineStore('tasks', () => {
         const organizationId = getCurrentOrganizationId();
         if (organizationId) {
             await handleApiRequestNotifications(
-                api.deleteTask(
-                    {},
-                    {
-                        params: {
-                            organization: organizationId,
-                            task: taskId,
-                        },
-                    }
-                ),
+                () =>
+                    api.deleteTask(
+                        {},
+                        {
+                            params: {
+                                organization: organizationId,
+                                task: taskId,
+                            },
+                        }
+                    ),
                 'Task deleted successfully',
                 'Failed to delete task'
             );

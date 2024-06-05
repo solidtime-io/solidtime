@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { getLocalizedDayJs } from '@/utils/time';
+import { twMerge } from 'tailwind-merge';
 
+const props = defineProps<{
+    class?: string;
+}>();
 const model = defineModel<string | null>({
     default: null,
 });
@@ -19,6 +23,7 @@ function updateDate(event: Event) {
             .set('date', newDate.date())
             .utc()
             .format();
+        emit('changed', model.value);
     }
 }
 
@@ -28,6 +33,8 @@ function updateTempValue(event: Event) {
     const target = event.target as HTMLInputElement;
     tempDate.value = target.value;
 }
+
+const emit = defineEmits(['changed']);
 </script>
 
 <template>
@@ -36,7 +43,13 @@ function updateTempValue(event: Event) {
             ref="datePicker"
             @change="updateTempValue"
             @blur="updateDate"
-            class="bg-input-background border text-white border-input-border rounded-md"
+            @keydown.enter="updateDate"
+            :class="
+                twMerge(
+                    'bg-input-background border text-white border-input-border rounded-md',
+                    props.class
+                )
+            "
             type="date"
             id="start"
             name="trip-start"

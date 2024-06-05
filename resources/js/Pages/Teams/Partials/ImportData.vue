@@ -10,6 +10,7 @@ import { getCurrentOrganizationId } from '@/utils/useUser';
 import type { ImportReport, ImportType } from '@/utils/api';
 import DialogModal from '@/Components/DialogModal.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
+import { initializeStores } from '@/utils/init';
 const importTypeOptions = ref<ImportType[]>([]);
 
 const { addNotification } = useNotificationsStore();
@@ -50,19 +51,25 @@ async function importData() {
     if (organizationId !== null) {
         const { handleApiRequestNotifications } = useNotificationsStore();
 
-        reportResult.value = await handleApiRequestNotifications(
-            api.importData(
-                {
-                    type: importType.value.key,
-                    data: base64String,
-                },
-                {
-                    params: {
-                        organization: organizationId,
+        reportResult.value = await handleApiRequestNotifications(() => {
+            if (importType.value) {
+                return api.importData(
+                    {
+                        type: importType.value.key,
+                        data: base64String,
                     },
-                }
-            )
-        );
+                    {
+                        params: {
+                            organization: organizationId,
+                        },
+                    }
+                );
+            }
+            return new Promise((resolve, reject) => {
+                reject('Import type is null');
+            });
+        });
+        initializeStores();
         if (reportResult.value) {
             showResultModal.value = true;
         }

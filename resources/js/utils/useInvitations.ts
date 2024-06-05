@@ -17,11 +17,12 @@ export const useInvitationsStore = defineStore('invitations', () => {
         const organization = getCurrentOrganizationId();
         if (organization) {
             invitationsResponse.value = await handleApiRequestNotifications(
-                api.getInvitations({
-                    params: {
-                        organization: organization,
-                    },
-                }),
+                () =>
+                    api.getInvitations({
+                        params: {
+                            organization: organization,
+                        },
+                    }),
                 undefined,
                 'Failed to fetch invitations'
             );
@@ -34,11 +35,12 @@ export const useInvitationsStore = defineStore('invitations', () => {
         const organization = getCurrentOrganizationId();
         if (organization) {
             await handleApiRequestNotifications(
-                api.invite(inviteBody, {
-                    params: {
-                        organization: organization,
-                    },
-                }),
+                () =>
+                    api.invite(inviteBody, {
+                        params: {
+                            organization: organization,
+                        },
+                    }),
                 'User successfully invited',
                 'Failed to invite user'
             );

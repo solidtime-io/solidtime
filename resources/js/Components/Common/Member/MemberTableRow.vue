@@ -10,10 +10,15 @@ import { getCurrentOrganizationId } from '@/utils/useUser';
 import { useNotificationsStore } from '@/utils/notification';
 import { canInvitePlaceholderMembers } from '@/utils/permissions';
 import { useMembersStore } from '@/utils/useMembers';
+import { ref } from 'vue';
+import MemberEditModal from '@/Components/Common/Member/MemberEditModal.vue';
+import { formatCents } from '../../../utils/money';
 
 const props = defineProps<{
     member: Member;
 }>();
+
+const showEditMemberModal = ref(false);
 
 function removeMember() {
     useMembersStore().removeMember(props.member.id);
@@ -24,15 +29,16 @@ async function invitePlaceholder(id: string) {
     const organizationId = getCurrentOrganizationId();
     if (organizationId) {
         await handleApiRequestNotifications(
-            api.invitePlaceholder(
-                {},
-                {
-                    params: {
-                        organization: organizationId,
-                        member: id,
-                    },
-                }
-            ),
+            () =>
+                api.invitePlaceholder(
+                    {},
+                    {
+                        params: {
+                            organization: organizationId,
+                            member: id,
+                        },
+                    }
+                ),
             'Member invited successfully',
             'Error inviting member'
         );
@@ -55,7 +61,9 @@ async function invitePlaceholder(id: string) {
             {{ capitalizeFirstLetter(member.role) }}
         </div>
         <div class="whitespace-nowrap px-3 py-4 text-sm text-muted">
-            {{ member.billable_rate ?? '--' }}
+            {{
+                member.billable_rate ? formatCents(member.billable_rate) : '--'
+            }}
         </div>
         <div
             class="whitespace-nowrap px-3 py-4 text-sm text-muted flex space-x-1 items-center font-medium">
@@ -81,8 +89,12 @@ async function invitePlaceholder(id: string) {
             >
             <MemberMoreOptionsDropdown
                 :member="member"
+                @edit="showEditMemberModal = true"
                 @delete="removeMember"></MemberMoreOptionsDropdown>
         </div>
+        <MemberEditModal
+            :member="member"
+            v-model:show="showEditMemberModal"></MemberEditModal>
     </TableRow>
 </template>
 

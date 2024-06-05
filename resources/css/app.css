@@ -7,6 +7,7 @@
     --color-bg-secondary: #1b1c20;
     --color-bg-tertiary: #2A2C32;
     --color-bg-quaternary: #141518;
+    --color-bg-background: #080808;
     --color-text-primary: #ffffff;
     --color-text-secondary: #e3e4e6;
     --color-text-tertiary: #969799;
@@ -50,6 +51,27 @@
     -moz-osx-font-smoothing: grayscale;
 }
 
+/* width */
+::-webkit-scrollbar {
+    width: 5px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 2px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
 [x-cloak] {
     display: none;
 }
@@ -60,5 +82,26 @@ body {
 
 @font-face {
     font-family: 'Outfit';
-    src: url('/fonts/Outfit-VariableFont_wght.ttf');
+    src: url('/fonts/Outfit-Regular.ttf');
+    font-weight: 400;
+}
+@font-face {
+    font-family: 'Outfit';
+    src: url('/fonts/Outfit-Medium.ttf');
+    font-weight: 500;
+}
+@font-face {
+    font-family: 'Outfit';
+    src: url('/fonts/Outfit-SemiBold.ttf');
+    font-weight: 600;
+}
+@font-face {
+    font-family: 'Outfit';
+    src: url('/fonts/Outfit-Bold.ttf');
+    font-weight: 700;
+}
+@font-face {
+    font-family: 'Outfit';
+    src: url('/fonts/Outfit-ExtraBold.ttf');
+    font-weight: 800;
 }

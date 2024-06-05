@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { computed, ref } from 'vue';
+
 const value = defineModel();
 const emit = defineEmits(['changed']);
 
@@ -6,60 +8,39 @@ function onChange(event: Event) {
     const target = event.target as HTMLInputElement;
     if (target.value !== value.value) {
         emit('changed', target.value);
+        value.value = target.value;
     }
 }
+
+function onInput(event: Event) {
+    liveDataValue.value = (event.target as HTMLInputElement).value;
+}
+
+const liveDataValue = ref(value.value);
+
+const displaysPlaceholder = computed(() => {
+    return liveDataValue.value === '' || liveDataValue.value === null;
+});
 </script>
 
 <template>
     <div>
-        <label class="input-sizer text-sm font-medium" :data-value="value">
+        <div class="relative text-sm font-medium p">
+            <div
+                :class="[
+                    'opacity-0 py-2 text-base whitespace-pre pl-3 pr-1',
+                    { 'min-w-[150px]': displaysPlaceholder },
+                ]">
+                {{ liveDataValue }}
+            </div>
             <input
                 data-testid="time_entry_description"
-                :value="value"
+                :value="liveDataValue"
                 @blur="onChange"
+                @input="onInput"
                 @keydown.enter="onChange"
                 placeholder="Add a description"
-                class="text-white font-medium bg-transparent focus-visible:ring-0 hover:bg-card-background rounded-lg border border-transparent hover:border-card-border" />
-        </label>
+                class="absolute px-0 h-full pl-3 pr-1 left-0 top-0 w-full text-white font-medium bg-transparent focus-visible:ring-0 rounded-lg border-0" />
+        </div>
     </div>
 </template>
-
-<style scoped lang="postcss">
-.input-sizer {
-    display: inline-grid;
-    vertical-align: top;
-    align-items: center;
-    position: relative;
-
-    &.stacked {
-        align-items: stretch;
-
-        &::after,
-        input,
-        textarea {
-            grid-area: 2 / 1;
-        }
-    }
-
-    &::after,
-    input,
-    textarea {
-        width: auto;
-        min-width: 1em;
-        grid-area: 1 / 2;
-        padding: 0.5rem 0.75rem;
-        margin: 0;
-        font: inherit;
-        resize: none;
-        background: none;
-        appearance: none;
-        border: none;
-    }
-
-    &::after {
-        content: attr(data-value) ' ';
-        visibility: hidden;
-        white-space: pre-wrap;
-    }
-}
-</style>

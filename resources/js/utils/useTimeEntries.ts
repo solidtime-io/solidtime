@@ -21,15 +21,16 @@ export const useTimeEntriesStore = defineStore('timeEntries', () => {
         const organizationId = getCurrentOrganizationId();
         if (organizationId) {
             const timeEntriesResponse = await handleApiRequestNotifications(
-                api.getTimeEntries({
-                    params: {
-                        organization: organizationId,
-                    },
-                    queries: {
-                        only_full_dates: 'true',
-                        member_id: getCurrentMembershipId(),
-                    },
-                }),
+                () =>
+                    api.getTimeEntries({
+                        params: {
+                            organization: organizationId,
+                        },
+                        queries: {
+                            only_full_dates: 'true',
+                            member_id: getCurrentMembershipId(),
+                        },
+                    }),
                 undefined,
                 'Failed to fetch time entries'
             );
@@ -47,16 +48,17 @@ export const useTimeEntriesStore = defineStore('timeEntries', () => {
             dayjs(latestTimeEntry.start).utc().format('YYYY-MM-DD');
 
             const timeEntriesResponse = await handleApiRequestNotifications(
-                api.getTimeEntries({
-                    params: {
-                        organization: organizationId,
-                    },
-                    queries: {
-                        only_full_dates: 'true',
-                        member_id: getCurrentMembershipId(),
-                        end: dayjs(latestTimeEntry.start).utc().format(),
-                    },
-                }),
+                () =>
+                    api.getTimeEntries({
+                        params: {
+                            organization: organizationId,
+                        },
+                        queries: {
+                            only_full_dates: 'true',
+                            member_id: getCurrentMembershipId(),
+                            end: dayjs(latestTimeEntry.start).utc().format(),
+                        },
+                    }),
                 undefined,
                 'Failed to fetch time entries'
             );
@@ -77,12 +79,13 @@ export const useTimeEntriesStore = defineStore('timeEntries', () => {
         const organizationId = getCurrentOrganizationId();
         if (organizationId) {
             await handleApiRequestNotifications(
-                api.updateTimeEntry(timeEntry, {
-                    params: {
-                        organization: organizationId,
-                        timeEntry: timeEntry.id,
-                    },
-                }),
+                () =>
+                    api.updateTimeEntry(timeEntry, {
+                        params: {
+                            organization: organizationId,
+                            timeEntry: timeEntry.id,
+                        },
+                    }),
                 'Time entry updated successfully',
                 'Failed to update time entry'
             );
@@ -100,11 +103,12 @@ export const useTimeEntriesStore = defineStore('timeEntries', () => {
                 member_id: memberId,
             } as CreateTimeEntryBody;
             await handleApiRequestNotifications(
-                api.createTimeEntry(newTimeEntry, {
-                    params: {
-                        organization: organizationId,
-                    },
-                }),
+                () =>
+                    api.createTimeEntry(newTimeEntry, {
+                        params: {
+                            organization: organizationId,
+                        },
+                    }),
                 'Time entry created successfully',
                 'Failed to create time entry'
             );
@@ -116,15 +120,16 @@ export const useTimeEntriesStore = defineStore('timeEntries', () => {
         const organizationId = getCurrentOrganizationId();
         if (organizationId) {
             await handleApiRequestNotifications(
-                api.deleteTimeEntry(
-                    {},
-                    {
-                        params: {
-                            organization: organizationId,
-                            timeEntry: timeEntryId,
-                        },
-                    }
-                ),
+                () =>
+                    api.deleteTimeEntry(
+                        {},
+                        {
+                            params: {
+                                organization: organizationId,
+                                timeEntry: timeEntryId,
+                            },
+                        }
+                    ),
                 'Time entry deleted successfully',
                 'Failed to delete time entry'
             );

@@ -16,9 +16,16 @@ const model = defineModel<string>({
     default: '',
 });
 
-const props = defineProps<{
-    hiddenMembers: ProjectMember[];
-}>();
+const props = withDefaults(
+    defineProps<{
+        hiddenMembers: ProjectMember[];
+        disabled: boolean;
+    }>(),
+    {
+        hiddenMembers: () => [] as ProjectMember[],
+        disabled: false,
+    }
+);
 
 const searchInput = ref<HTMLInputElement | null>(null);
 
@@ -161,6 +168,7 @@ function onUnfocus() {
         </div>
         <TextInput
             :value="currentValue"
+            :disabled="disabled"
             @input="updateSearchValue"
             data-testid="member_dropdown_search"
             @keydown.enter.prevent="updateMember(highlightedItemId)"

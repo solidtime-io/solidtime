@@ -69,3 +69,7 @@ test('test that creating and deleting a new project via the modal works', async 
 // Add Project with billable rate
 
 // Edit Project with billable rate
+
+// Edit Project Member Billable Rate
+
+// Edit Task Name

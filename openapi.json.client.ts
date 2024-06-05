@@ -165,15 +165,16 @@ const v1_time_entries_update_multiple_Body = z
     .passthrough();
 const updateTimeEntry_Body = z
     .object({
-        member_id: z.string().uuid().optional(),
-        project_id: z.union([z.string(), z.null()]).optional(),
-        task_id: z.union([z.string(), z.null()]).optional(),
+        member_id: z.string().uuid(),
+        project_id: z.union([z.string(), z.null()]),
+        task_id: z.union([z.string(), z.null()]),
         start: z.string(),
-        end: z.union([z.string(), z.null()]).optional(),
-        billable: z.boolean().optional(),
-        description: z.union([z.string(), z.null()]).optional(),
-        tags: z.union([z.array(z.string()), z.null()]).optional(),
+        end: z.union([z.string(), z.null()]),
+        billable: z.boolean(),
+        description: z.union([z.string(), z.null()]),
+        tags: z.union([z.array(z.string()), z.null()]),
     })
+    .partial()
     .passthrough();
 
 export const schemas = {
@@ -2111,6 +2112,11 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
             },
             {
                 name: 'project_ids',
+                type: 'Query',
+                schema: z.array(z.string()).min(1).optional(),
+            },
+            {
+                name: 'client_ids',
                 type: 'Query',
                 schema: z.array(z.string()).min(1).optional(),
             },

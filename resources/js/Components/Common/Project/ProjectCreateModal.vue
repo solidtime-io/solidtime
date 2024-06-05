@@ -26,6 +26,7 @@ const project = ref<CreateProjectBody>({
     name: '',
     color: getRandomColor(),
     client_id: null,
+    billable_rate: null,
 });
 
 async function submit() {
@@ -35,6 +36,7 @@ async function submit() {
         name: '',
         color: getRandomColor(),
         client_id: null,
+        billable_rate: null,
     };
 }
 

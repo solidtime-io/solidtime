@@ -5,6 +5,8 @@ import { useTasksStore } from '@/utils/useTasks';
 import TaskMoreOptionsDropdown from '@/Components/Common/Task/TaskMoreOptionsDropdown.vue';
 import TableRow from '@/Components/TableRow.vue';
 import { canDeleteTasks } from '@/utils/permissions';
+import TaskEditModal from '@/Components/Common/Task/TaskEditModal.vue';
+import { ref } from 'vue';
 
 const props = defineProps<{
     task: Task;
@@ -13,6 +15,7 @@ const props = defineProps<{
 function deleteTask() {
     useTasksStore().deleteTask(props.task.id);
 }
+const showTaskEditModal = ref(false);
 </script>
 
 <template>
@@ -33,8 +36,12 @@ function deleteTask() {
             <TaskMoreOptionsDropdown
                 v-if="canDeleteTasks()"
                 :task="task"
+                @edit="showTaskEditModal = true"
                 @delete="deleteTask"></TaskMoreOptionsDropdown>
         </div>
+        <TaskEditModal
+            :task="task"
+            v-model:show="showTaskEditModal"></TaskEditModal>
     </TableRow>
 </template>
 
