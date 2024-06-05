@@ -13,7 +13,6 @@ use App\Models\Task;
 use App\Models\TimeEntry;
 use App\Models\User;
 use App\Service\DashboardService;
-use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Tests\TestCase;
@@ -261,7 +260,7 @@ class DashboardServiceTest extends TestCase
     {
         // Arrange
         // Note: Is a Monday
-        $now = CarbonImmutable::create(2024, 1, 1, 12, 0, 0, 'Europe/Vienna');
+        $now = Carbon::create(2024, 1, 1, 12, 0, 0, 'Europe/Vienna')->toImmutable();
         $this->travelTo($now);
         $user = User::factory()->create([
             'timezone' => 'Europe/Vienna',
@@ -337,7 +336,7 @@ class DashboardServiceTest extends TestCase
     {
         // Arrange
         // Note: Is a Monday
-        $now = CarbonImmutable::create(2024, 1, 1, 12, 0, 0, 'Europe/Vienna');
+        $now = Carbon::create(2024, 1, 1, 12, 0, 0, 'Europe/Vienna')->toImmutable();
         $this->travelTo($now);
         $organization = Organization::factory()->create();
         $user = User::factory()->create([
