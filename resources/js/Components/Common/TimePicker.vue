@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import { getLocalizedDayJs } from '@/utils/time';
+import { computed, onMounted } from 'vue';
+import { getDayJsInstance, getLocalizedDayJs } from '@/utils/time';
 import { twMerge } from 'tailwind-merge';
 
 const model = defineModel<string | null>({
@@ -47,6 +47,11 @@ function updateHours(event: Event) {
 }
 
 const emit = defineEmits(['changed']);
+onMounted(() => {
+    if (!model.value) {
+        model.value = getDayJsInstance().utc().format();
+    }
+});
 </script>
 
 <template>

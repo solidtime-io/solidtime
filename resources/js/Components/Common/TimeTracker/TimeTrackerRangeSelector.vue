@@ -8,7 +8,8 @@ import { useCurrentTimeEntryStore } from '@/utils/useCurrentTimeEntry';
 import { storeToRefs } from 'pinia';
 import { getDayJsInstance } from '@/utils/time';
 const currentTimeEntryStore = useCurrentTimeEntryStore();
-const { startLiveTimer, stopLiveTimer, updateTimer } = currentTimeEntryStore;
+const { startLiveTimer, stopLiveTimer, updateTimer, startTimer } =
+    currentTimeEntryStore;
 const { currentTimeEntry, now } = storeToRefs(currentTimeEntryStore);
 
 defineEmits(['changed']);
@@ -108,10 +109,14 @@ function parseHHMM(value: string): string[] | null {
 const temporaryCustomTimerEntry = ref<string>('');
 
 async function updateTimeRange(newStart: string) {
+    // prohibit updates in the future
     if (getDayJsInstance()(newStart).isBefore(getDayJsInstance()())) {
-        // prohibit updates in the future
         currentTimeEntry.value.start = newStart;
-        await updateTimer();
+        if (currentTimeEntry.value.id) {
+            await updateTimer();
+        } else {
+            await startTimer();
+        }
     }
 }
 </script>
