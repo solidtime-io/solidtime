@@ -7,9 +7,11 @@ namespace App\Actions\Fortify;
 use App\Enums\Weekday;
 use App\Models\User;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use Korridor\LaravelModelValidationRules\Rules\UniqueEloquent;
 use Laravel\Fortify\Contracts\UpdatesUserProfileInformation;
 
 class UpdateUserProfileInformation implements UpdatesUserProfileInformation
@@ -24,11 +26,33 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
     public function update(User $user, array $input): void
     {
         Validator::make($input, [
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
-            'photo' => ['nullable', 'mimes:jpg,jpeg,png', 'max:1024'],
-            'timezone' => ['required', 'timezone:all'],
-            'week_start' => ['required', Rule::enum(Weekday::class)],
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+            ],
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+                (new UniqueEloquent(User::class, 'email'))->ignore($user->id)->query(function (Builder $query) {
+                    /** @var Builder<User> $query */
+                    return $query->where('is_placeholder', '=', false);
+                }),
+            ],
+            'photo' => [
+                'nullable',
+                'mimes:jpg,jpeg,png',
+                'max:1024',
+            ],
+            'timezone' => [
+                'required',
+                'timezone:all',
+            ],
+            'week_start' => [
+                'required',
+                Rule::enum(Weekday::class),
+            ],
         ])->validateWithBag('updateProfileInformation');
 
         if (isset($input['photo'])) {
