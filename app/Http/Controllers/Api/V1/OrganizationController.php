@@ -15,6 +15,7 @@ class OrganizationController extends Controller
      * Get organization
      *
      * @operationId getOrganization
+     *
      * @throws AuthorizationException
      */
     public function show(Organization $organization): OrganizationResource
@@ -28,6 +29,7 @@ class OrganizationController extends Controller
      * Update organization
      *
      * @operationId updateOrganization
+     *
      * @throws AuthorizationException
      */
     public function update(Organization $organization, OrganizationUpdateRequest $request): OrganizationResource
