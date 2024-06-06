@@ -29,7 +29,7 @@ function updateMinutes(event: Event) {
     const newValue = target.value;
     if (!isNaN(parseInt(newValue))) {
         model.value = getLocalizedDayJs(model.value)
-            .set('minutes', parseInt(newValue))
+            .set('minutes', Math.min(parseInt(newValue), 59))
             .utc()
             .format();
     }
@@ -40,7 +40,7 @@ function updateHours(event: Event) {
     const newValue = target.value;
     if (!isNaN(parseInt(newValue))) {
         model.value = getLocalizedDayJs(model.value)
-            .set('hours', parseInt(newValue))
+            .set('hours', Math.min(parseInt(newValue), 23))
             .utc()
             .format();
     }
