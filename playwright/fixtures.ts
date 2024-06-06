@@ -10,7 +10,7 @@ export const test = baseTest.extend<object, { workerStorageState: string }>({
         await page.getByLabel('Name').fill('John Doe');
         await page
             .getByLabel('Email')
-            .fill(`john+${Math.round(Math.random() * 10000)}@doe.com`);
+            .fill(`john+${Math.round(Math.random() * 1000000)}@doe.com`);
         await page
             .getByLabel('Password', { exact: true })
             .fill('amazingpassword123');

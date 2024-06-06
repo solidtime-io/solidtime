@@ -52,11 +52,11 @@ const OrganizationResource = z
     .object({
         id: z.string(),
         name: z.string(),
-        is_personal: z.string(),
+        is_personal: z.boolean(),
         billable_rate: z.union([z.number(), z.null()]),
     })
     .passthrough();
-const v1_organizations_update_Body = z
+const updateOrganization_Body = z
     .object({
         name: z.string(),
         billable_rate: z.union([z.number(), z.null()]).optional(),
@@ -69,12 +69,14 @@ const ProjectResource = z
         color: z.string(),
         client_id: z.union([z.string(), z.null()]),
         billable_rate: z.union([z.number(), z.null()]),
+        is_billable: z.boolean(),
     })
     .passthrough();
 const createProject_Body = z
     .object({
         name: z.string(),
         color: z.string(),
+        is_billable: z.boolean(),
         billable_rate: z.union([z.number(), z.null()]).optional(),
         client_id: z.union([z.string(), z.null()]).optional(),
     })
@@ -188,7 +190,7 @@ export const schemas = {
     updateMember_Body,
     MemberResource,
     OrganizationResource,
-    v1_organizations_update_Body,
+    updateOrganization_Body,
     ProjectResource,
     createProject_Body,
     ProjectMemberResource,
@@ -210,7 +212,7 @@ const endpoints = makeApi([
     {
         method: 'get',
         path: '/v1/organizations/:organization',
-        alias: 'v1.organizations.show',
+        alias: 'getOrganization',
         requestFormat: 'json',
         parameters: [
             {
@@ -236,13 +238,13 @@ const endpoints = makeApi([
     {
         method: 'put',
         path: '/v1/organizations/:organization',
-        alias: 'v1.organizations.update',
+        alias: 'updateOrganization',
         requestFormat: 'json',
         parameters: [
             {
                 name: 'body',
                 type: 'Body',
-                schema: v1_organizations_update_Body,
+                schema: updateOrganization_Body,
             },
             {
                 name: 'organization',

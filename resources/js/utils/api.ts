@@ -108,3 +108,18 @@ export type AggregatedTimeEntriesQueryParams = ZodiosQueryParamsByAlias<
     SolidTimeApi,
     'getAggregatedTimeEntries'
 >;
+
+export type OrganizationResponse = ZodiosResponseByAlias<
+    SolidTimeApi,
+    'getOrganization'
+>;
+
+export type Organization = ZodiosResponseByAlias<
+    SolidTimeApi,
+    'getOrganization'
+>['data'];
+
+export type UpdateOrganizationBody = ZodiosBodyByAlias<
+    SolidTimeApi,
+    'updateOrganization'
+>;

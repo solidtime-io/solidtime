@@ -18,6 +18,7 @@ import { getCurrentOrganizationId } from '@/utils/useUser';
 import { switchOrganization } from '@/utils/useOrganization';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import TimeTrackerRangeSelector from '@/Components/Common/TimeTracker/TimeTrackerRangeSelector.vue';
+import { useProjectsStore } from '@/utils/useProjects';
 
 const page = usePage<{
     auth: {
@@ -47,6 +48,22 @@ onMounted(async () => {
         now.value = dayjs().utc();
     }
 });
+
+function setBillableDefaultForProject() {
+    const projectssStore = useProjectsStore();
+    const { projects } = storeToRefs(projectssStore);
+    const project = projects.value.find(
+        (project) => project.id === currentTimeEntry.value.project_id
+    );
+    if (project) {
+        currentTimeEntry.value.billable = project.is_billable;
+    }
+}
+
+function updateProject() {
+    setBillableDefaultForProject();
+    updateTimeEntry();
+}
 
 function updateTimeEntry() {
     if (currentTimeEntry.value.id) {
@@ -108,7 +125,7 @@ function switchToTimeEntryOrganization() {
                 <div class="flex items-center justify-between pl-2">
                     <div class="flex items-center w-[130px] sm:w-auto">
                         <TimeTrackerProjectTaskDropdown
-                            @changed="updateTimeEntry"
+                            @changed="updateProject"
                             v-model:project="currentTimeEntry.project_id"
                             v-model:task="
                                 currentTimeEntry.task_id

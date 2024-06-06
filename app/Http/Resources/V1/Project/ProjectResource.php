@@ -31,6 +31,8 @@ class ProjectResource extends BaseResource
             'client_id' => $this->resource->client_id,
             /** @var int|null $billable_rate Billable rate in cents per hour */
             'billable_rate' => $this->resource->billable_rate,
+            /** @var bool $is_billable Project time entries billable default */
+            'is_billable' => $this->resource->is_billable,
         ];
     }
 }

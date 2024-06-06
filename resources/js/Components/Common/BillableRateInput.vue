@@ -75,6 +75,7 @@ const inputValue = ref(formatValue(model.value));
             ref="billableRateInput"
             v-model="inputValue"
             @blur="updateRate($event.target.value)"
+            @keydown.enter="updateRate($event.target.value)"
             type="text"
             :name="name"
             placeholder="Billable Rate"
