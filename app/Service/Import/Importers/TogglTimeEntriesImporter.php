@@ -112,7 +112,7 @@ class TogglTimeEntriesImporter extends DefaultImporter
                 if ($start === null) {
                     throw new ImportException('Start date ("'.$record['Start date'].'") or time ("'.$record['Start time'].'") are invalid');
                 }
-                $timeEntry->start = $start;
+                $timeEntry->start = $start->utc();
 
                 try {
                     $end = Carbon::createFromFormat('Y-m-d H:i:s', $record['End date'].' '.$record['End time'], $timezone);
@@ -122,7 +122,7 @@ class TogglTimeEntriesImporter extends DefaultImporter
                 if ($end === null) {
                     throw new ImportException('End date ("'.$record['End date'].'") or time ("'.$record['End time'].'") are invalid');
                 }
-                $timeEntry->end = $end;
+                $timeEntry->end = $end->utc();
                 $timeEntry->setComputedAttributeValue('billable_rate');
                 $timeEntry->save();
                 $this->timeEntriesCreated++;

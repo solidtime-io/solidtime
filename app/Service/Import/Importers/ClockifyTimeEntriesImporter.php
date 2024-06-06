@@ -121,7 +121,7 @@ class ClockifyTimeEntriesImporter extends DefaultImporter
                 if ($start === null) {
                     throw new ImportException('Start date ("'.$record['Start Date'].'") or time ("'.$record['Start Time'].'") are invalid');
                 }
-                $timeEntry->start = $start;
+                $timeEntry->start = $start->utc();
 
                 // End
                 try {
@@ -136,7 +136,7 @@ class ClockifyTimeEntriesImporter extends DefaultImporter
                 if ($end === null) {
                     throw new ImportException('End date ("'.$record['End Date'].'") or time ("'.$record['End Time'].'") are invalid');
                 }
-                $timeEntry->end = $end;
+                $timeEntry->end = $end->utc();
                 $timeEntry->setComputedAttributeValue('billable_rate');
                 $timeEntry->save();
                 $this->timeEntriesCreated++;
