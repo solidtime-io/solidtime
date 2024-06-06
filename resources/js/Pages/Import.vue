@@ -1,13 +1,9 @@
 <script setup lang="ts">
 import MainContainer from '@/Pages/MainContainer.vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
-import { PlusIcon, ArrowsRightLeftIcon } from '@heroicons/vue/16/solid';
-import SecondaryButton from '@/Components/SecondaryButton.vue';
-import { ref } from 'vue';
+import { ArrowsRightLeftIcon } from '@heroicons/vue/16/solid';
 import PageTitle from '@/Components/Common/PageTitle.vue';
-import { canCreateTags } from '@/utils/permissions';
 import ImportData from '@/Pages/Teams/Partials/ImportData.vue';
-const createTag = ref(false);
 </script>
 
 <template>
@@ -18,12 +14,6 @@ const createTag = ref(false);
                 <PageTitle :icon="ArrowsRightLeftIcon" title="Import">
                 </PageTitle>
             </div>
-            <SecondaryButton
-                v-if="canCreateTags()"
-                :icon="PlusIcon"
-                @click="createTag = true"
-                >Create Tag</SecondaryButton
-            >
         </MainContainer>
         <MainContainer class="py-6">
             <ImportData></ImportData>
