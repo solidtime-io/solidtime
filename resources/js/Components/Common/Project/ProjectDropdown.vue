@@ -61,6 +61,7 @@ async function addProjectIfNoneExists() {
             {
                 name: searchValue.value,
                 color: getRandomColor(),
+                is_billable: false,
             },
             { params: { organization: page.props.auth.user.current_team_id } }
         );

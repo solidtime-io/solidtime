@@ -33,6 +33,17 @@ function deleteProject() {
     useProjectsStore().deleteProject(props.project.id);
 }
 
+const billableRateInfo = computed(() => {
+    if (props.project.is_billable) {
+        if (props.project.billable_rate) {
+            return formatCents(props.project.billable_rate);
+        } else {
+            return 'Default Rate';
+        }
+    }
+    return '--';
+});
+
 const showEditProjectModal = ref(false);
 </script>
 
@@ -61,11 +72,7 @@ const showEditProjectModal = ref(false);
             <div v-else>No client</div>
         </div>
         <div class="whitespace-nowrap px-3 py-4 text-sm text-muted">
-            {{
-                project.billable_rate
-                    ? formatCents(project.billable_rate)
-                    : '--'
-            }}
+            {{ billableRateInfo }}
         </div>
         <div
             class="whitespace-nowrap px-3 py-4 text-sm text-muted flex space-x-1 items-center font-medium">

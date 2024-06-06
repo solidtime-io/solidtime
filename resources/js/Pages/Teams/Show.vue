@@ -8,6 +8,7 @@ import type { Organization } from '@/types/models';
 import type { Permissions, Role } from '@/types/jetstream';
 import ImportData from '@/Pages/Teams/Partials/ImportData.vue';
 import { canUpdateOrganization } from '@/utils/permissions';
+import OrganizationBillableRate from '@/Pages/Teams/Partials/OrganizationBillableRate.vue';
 
 defineProps<{
     team: Organization;
@@ -27,6 +28,11 @@ defineProps<{
         <div>
             <div class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8">
                 <UpdateTeamNameForm :team="team" :permissions="permissions" />
+
+                <SectionBorder />
+                <OrganizationBillableRate
+                    v-if="canUpdateOrganization()"
+                    :team="team" />
 
                 <TeamMemberManager
                     class="mt-10 sm:mt-0"

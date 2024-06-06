@@ -12,8 +12,8 @@ import { twMerge } from 'tailwind-merge';
 import Badge from '@/Components/Common/Badge.vue';
 import { useClientsStore } from '@/utils/useClients';
 import { storeToRefs } from 'pinia';
-import BillableRateInput from '@/Components/Common/BillableRateInput.vue';
 import ProjectColorSelector from '@/Components/Common/Project/ProjectColorSelector.vue';
+import ProjectEditBillableSection from '@/Components/Common/Project/ProjectEditBillableSection.vue';
 
 const { updateProject } = useProjectsStore();
 const { clients } = storeToRefs(useClientsStore());
@@ -29,6 +29,7 @@ const project = ref<CreateProjectBody>({
     color: props.originalProject.color,
     client_id: props.originalProject.client_id,
     billable_rate: props.originalProject.billable_rate,
+    is_billable: props.originalProject.is_billable,
 });
 
 async function submit() {
@@ -77,11 +78,6 @@ const currentClientName = computed(() => {
                         required
                         autocomplete="projectName" />
                 </div>
-                <div class="sm:max-w-[120px]">
-                    <BillableRateInput
-                        v-model="project.billable_rate"
-                        name="billable_rate" />
-                </div>
                 <div class="">
                     <ClientDropdown v-model="project.client_id">
                         <template #trigger>
@@ -98,6 +94,11 @@ const currentClientName = computed(() => {
                     </ClientDropdown>
                 </div>
             </div>
+            <ProjectEditBillableSection
+                v-model:isBillable="project.is_billable"
+                v-model:billableRate="
+                    project.billable_rate
+                "></ProjectEditBillableSection>
         </template>
         <template #footer>
             <SecondaryButton @click="show = false"> Cancel</SecondaryButton>

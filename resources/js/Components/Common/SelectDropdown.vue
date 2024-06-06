@@ -115,7 +115,7 @@ watch(open, () => {
 <template>
     <Dropdown v-model="open" align="bottom-start" :closeOnContentClick="false">
         <template #trigger>
-            <slot name="trigger"></slot>
+            <slot name="trigger"> </slot>
         </template>
         <template #content>
             <div ref="dropdownViewport" class="w-60">

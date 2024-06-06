@@ -13,9 +13,9 @@ import Badge from '@/Components/Common/Badge.vue';
 import { useClientsStore } from '@/utils/useClients';
 import { storeToRefs } from 'pinia';
 import ProjectColorSelector from '@/Components/Common/Project/ProjectColorSelector.vue';
-import BillableRateInput from '@/Components/Common/BillableRateInput.vue';
 import { UserCircleIcon } from '@heroicons/vue/20/solid';
 import InputLabel from '@/Components/InputLabel.vue';
+import ProjectEditBillableSection from '@/Components/Common/Project/ProjectEditBillableSection.vue';
 
 const { createProject } = useProjectsStore();
 const { clients } = storeToRefs(useClientsStore());
@@ -27,6 +27,7 @@ const project = ref<CreateProjectBody>({
     color: getRandomColor(),
     client_id: null,
     billable_rate: null,
+    is_billable: false,
 });
 
 async function submit() {
@@ -37,6 +38,7 @@ async function submit() {
         color: getRandomColor(),
         client_id: null,
         billable_rate: null,
+        is_billable: false,
     };
 }
 
@@ -87,12 +89,6 @@ const currentClientName = computed(() => {
                             autocomplete="projectName" />
                     </div>
                 </div>
-                <div class="sm:max-w-[120px]">
-                    <InputLabel for="billableRate" value="Billable Rate" />
-                    <BillableRateInput
-                        v-model="project.billable_rate"
-                        name="billableRate" />
-                </div>
                 <div>
                     <InputLabel for="client" value="Client" />
                     <ClientDropdown class="mt-2" v-model="project.client_id">
@@ -112,10 +108,14 @@ const currentClientName = computed(() => {
                     </ClientDropdown>
                 </div>
             </div>
+            <ProjectEditBillableSection
+                v-model:isBillable="project.is_billable"
+                v-model:billableRate="
+                    project.billable_rate
+                "></ProjectEditBillableSection>
         </template>
         <template #footer>
             <SecondaryButton @click="show = false"> Cancel</SecondaryButton>
-
             <PrimaryButton
                 class="ms-3"
                 :class="{ 'opacity-25': saving }"
