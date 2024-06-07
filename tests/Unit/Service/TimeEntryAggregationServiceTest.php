@@ -11,8 +11,12 @@ use App\Models\Project;
 use App\Models\TimeEntry;
 use App\Service\TimeEntryAggregationService;
 use Illuminate\Support\Carbon;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use Tests\TestCaseWithDatabase;
 
+#[CoversClass(TimeEntryAggregationService::class)]
+#[UsesClass(TimeEntryAggregationService::class)]
 class TimeEntryAggregationServiceTest extends TestCaseWithDatabase
 {
     private TimeEntryAggregationService $service;

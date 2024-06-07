@@ -13,6 +13,11 @@ abstract class ApiException extends Exception
 {
     public const string KEY = 'api_exception';
 
+    public function __construct()
+    {
+        parent::__construct(static::KEY);
+    }
+
     /**
      * Render the exception into an HTTP response.
      */

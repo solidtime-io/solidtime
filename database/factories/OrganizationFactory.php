@@ -22,7 +22,7 @@ class OrganizationFactory extends Factory
     {
         return [
             'name' => $this->faker->unique()->company(),
-            'currency' => $this->faker->currencyCode,
+            'currency' => $this->faker->currencyCode(),
             'billable_rate' => $this->faker->numberBetween(50, 1000) * 100,
             'user_id' => User::factory(),
             'personal_team' => true,

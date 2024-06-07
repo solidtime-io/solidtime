@@ -9,8 +9,12 @@ use App\Models\Project;
 use App\Models\User;
 use App\Service\Import\ImportDatabaseHelper;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use Tests\TestCase;
 
+#[CoversClass(ImportDatabaseHelper::class)]
+#[UsesClass(ImportDatabaseHelper::class)]
 class ImportDatabaseHelperTest extends TestCase
 {
     use RefreshDatabase;

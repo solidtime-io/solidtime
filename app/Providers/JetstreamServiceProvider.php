@@ -12,6 +12,7 @@ use App\Actions\Jetstream\InviteOrganizationMember;
 use App\Actions\Jetstream\RemoveOrganizationMember;
 use App\Actions\Jetstream\UpdateMemberRole;
 use App\Actions\Jetstream\UpdateOrganization;
+use App\Actions\Jetstream\ValidateOrganizationDeletion;
 use App\Enums\Role;
 use App\Enums\Weekday;
 use App\Models\Member;
@@ -26,6 +27,7 @@ use Illuminate\Support\ServiceProvider;
 use Inertia\Inertia;
 use Laravel\Fortify\Fortify;
 use Laravel\Jetstream\Actions\UpdateTeamMemberRole;
+use Laravel\Jetstream\Actions\ValidateTeamDeletion;
 use Laravel\Jetstream\Jetstream;
 
 class JetstreamServiceProvider extends ServiceProvider
@@ -56,6 +58,7 @@ class JetstreamServiceProvider extends ServiceProvider
         Jetstream::useMembershipModel(Member::class);
         Jetstream::useTeamInvitationModel(OrganizationInvitation::class);
         app()->singleton(UpdateTeamMemberRole::class, UpdateMemberRole::class);
+        app()->singleton(ValidateTeamDeletion::class, ValidateOrganizationDeletion::class);
         Fortify::registerView(function () {
             return Inertia::render('Auth/Register', [
                 'terms_url' => config('auth.terms_url'),
@@ -105,6 +108,7 @@ class JetstreamServiceProvider extends ServiceProvider
             'clients:delete',
             'organizations:view',
             'organizations:update',
+            'organizations:delete',
             'import',
             'invitations:view',
             'invitations:create',

@@ -30,6 +30,11 @@ class PermissionStore
             return false;
         }
 
+        return $this->userHas($organization, $user, $permission);
+    }
+
+    public function userHas(Organization $organization, User $user, string $permission): bool
+    {
         if (! isset($this->permissionCache[$user->getKey().'|'.$organization->getKey()])) {
             if (! $user->belongsToTeam($organization)) {
                 return false;

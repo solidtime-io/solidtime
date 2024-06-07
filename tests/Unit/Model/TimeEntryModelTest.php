@@ -11,7 +11,11 @@ use App\Models\Task;
 use App\Models\TimeEntry;
 use App\Models\User;
 use Illuminate\Support\Carbon;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 
+#[CoversClass(TimeEntry::class)]
+#[UsesClass(TimeEntry::class)]
 class TimeEntryModelTest extends ModelTestAbstract
 {
     public function test_it_belongs_to_a_user(): void

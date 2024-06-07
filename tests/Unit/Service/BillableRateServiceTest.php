@@ -12,8 +12,12 @@ use App\Models\TimeEntry;
 use App\Models\User;
 use App\Service\BillableRateService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use Tests\TestCase;
 
+#[CoversClass(BillableRateService::class)]
+#[UsesClass(BillableRateService::class)]
 class BillableRateServiceTest extends TestCase
 {
     use RefreshDatabase;

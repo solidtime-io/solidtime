@@ -4,51 +4,25 @@ declare(strict_types=1);
 
 namespace App\Actions\Jetstream;
 
-use App\Models\Organization;
+use App\Exceptions\Api\ApiException;
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
-use Laravel\Jetstream\Contracts\DeletesTeams;
+use App\Service\DeletionService;
+use Illuminate\Validation\ValidationException;
 use Laravel\Jetstream\Contracts\DeletesUsers;
 
 class DeleteUser implements DeletesUsers
 {
     /**
-     * The team deleter implementation.
-     *
-     * @var \Laravel\Jetstream\Contracts\DeletesTeams
-     */
-    protected $deletesTeams;
-
-    /**
-     * Create a new action instance.
-     */
-    public function __construct(DeletesTeams $deletesTeams)
-    {
-        $this->deletesTeams = $deletesTeams;
-    }
-
-    /**
      * Delete the given user.
      */
     public function delete(User $user): void
     {
-        DB::transaction(function () use ($user) {
-            $this->deleteTeams($user);
-            $user->deleteProfilePhoto();
-            $user->tokens->each->delete();
-            $user->delete();
-        });
-    }
-
-    /**
-     * Delete the teams and team associations attached to the user.
-     */
-    protected function deleteTeams(User $user): void
-    {
-        $user->teams()->detach();
-
-        $user->ownedTeams->each(function (Organization $team) {
-            $this->deletesTeams->delete($team);
-        });
+        try {
+            app(DeletionService::class)->deleteUser($user);
+        } catch (ApiException $exception) {
+            throw ValidationException::withMessages([
+                'password' => $exception->getTranslatedMessage(),
+            ]);
+        }
     }
 }
