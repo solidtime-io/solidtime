@@ -7,8 +7,10 @@ namespace Tests\Unit\Filament;
 use App\Filament\Resources\OrganizationResource;
 use App\Models\Organization;
 use App\Models\User;
+use App\Service\DeletionService;
 use Illuminate\Support\Facades\Config;
 use Livewire\Livewire;
+use Mockery\MockInterface;
 
 class OrganizationResourceTest extends FilamentTestCase
 {
@@ -46,6 +48,25 @@ class OrganizationResourceTest extends FilamentTestCase
 
         // Act
         $response = Livewire::test(OrganizationResource\Pages\EditOrganization::class, ['record' => $organization->getKey()]);
+
+        // Assert
+        $response->assertSuccessful();
+    }
+
+    public function test_can_delete_a_organization(): void
+    {
+        // Arrange
+        $user = $this->createUserWithPermission();
+        $this->mock(DeletionService::class, function (MockInterface $mock) use ($user): void {
+            $mock->shouldReceive('deleteOrganization')
+                ->withArgs(fn (Organization $organizationArg) => $organizationArg->is($user->organization))
+                ->once();
+        });
+
+        // Act
+        $response = Livewire::test(OrganizationResource\Pages\EditOrganization::class, ['record' => $user->organization->getKey()])
+            ->callAction('delete')
+            ->assertHasNoActionErrors();
 
         // Assert
         $response->assertSuccessful();

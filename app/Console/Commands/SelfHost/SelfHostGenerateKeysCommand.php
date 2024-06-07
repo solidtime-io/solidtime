@@ -9,7 +9,7 @@ use Illuminate\Encryption\Encrypter;
 use Illuminate\Support\Str;
 use phpseclib3\Crypt\RSA;
 
-class SelfHostGenerateKeys extends Command
+class SelfHostGenerateKeysCommand extends Command
 {
     /**
      * The name and signature of the console command.

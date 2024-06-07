@@ -8,9 +8,13 @@ use App\Models\User;
 use App\Service\TimezoneService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Log;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use Tests\TestCase;
 use TiMacDonald\Log\LogEntry;
 
+#[CoversClass(TimezoneService::class)]
+#[UsesClass(TimezoneService::class)]
 class TimezoneServiceTest extends TestCase
 {
     use RefreshDatabase;

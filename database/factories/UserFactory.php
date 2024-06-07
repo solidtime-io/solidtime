@@ -9,6 +9,7 @@ use App\Enums\Weekday;
 use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 /**
@@ -83,6 +84,20 @@ class UserFactory extends Factory
     {
         return $this->afterCreating(function (User $user) use ($organization, $pivot) {
             $user->organizations()->attach($organization, $pivot);
+        });
+    }
+
+    public function withProfilePicture(): static
+    {
+        $profilePhoto = $this->faker->image(null, 500, 500);
+        /** @see \Illuminate\Http\FileHelpers::hashName */
+        $path = 'profile-photos/'.Str::random(40).'.png';
+        Storage::disk(config('jetstream.profile_photo_disk', 'public'))->put($path, $profilePhoto);
+
+        return $this->state(function (array $attributes) use ($path): array {
+            return [
+                'profile_photo_path' => $path,
+            ];
         });
     }
 

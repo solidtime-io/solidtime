@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Exceptions\Api\CanNotDeleteUserWhoIsOwnerOfOrganizationWithMultipleMembers;
 use App\Exceptions\Api\CanNotRemoveOwnerFromOrganization;
 use App\Exceptions\Api\EntityStillInUseApiException;
 use App\Exceptions\Api\InactiveUserCanNotBeUsedApiException;
@@ -19,5 +20,7 @@ return [
         UserIsAlreadyMemberOfProjectApiException::KEY => 'User is already a member of the project',
         EntityStillInUseApiException::KEY => 'The :modelToDelete is still used by a :modelInUse and can not be deleted.',
         CanNotRemoveOwnerFromOrganization::KEY => 'Can not remove owner from organization',
+        CanNotDeleteUserWhoIsOwnerOfOrganizationWithMultipleMembers::KEY => 'Can not delete user who is owner of organization with multiple members. Please delete the organization first.',
     ],
+    'unknown_error_in_admin_panel' => 'An unknown error occurred. Please check the logs.',
 ];

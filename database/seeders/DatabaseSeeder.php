@@ -83,10 +83,10 @@ class DatabaseSeeder extends Seeder
             ->count(5)
             ->forMember($userWithMultipleOrganizationsAcmeMember)
             ->create();
-        $client = Client::factory()->forOrganization($organizationAcme)->create([
+        $acmeClient = Client::factory()->forOrganization($organizationAcme)->create([
             'name' => 'Big Company',
         ]);
-        $bigCompanyProject = Project::factory()->forOrganization($organizationAcme)->forClient($client)->create([
+        $bigCompanyProject = Project::factory()->forOrganization($organizationAcme)->forClient($acmeClient)->create([
             'name' => 'Big Company Project',
         ]);
         ProjectMember::factory()->forProject($bigCompanyProject)->forMember($userAcmeEmployeeMember)->create();
@@ -105,11 +105,11 @@ class DatabaseSeeder extends Seeder
             'name' => 'Internal Project',
         ]);
 
-        $organization2Owner = User::factory()->create([
+        $rivalOwner = User::factory()->create([
             'name' => 'Other Owner',
             'email' => 'owner@rival-company.test',
         ]);
-        $organizationRival = Organization::factory()->withOwner($organization2Owner)->create([
+        $organizationRival = Organization::factory()->withOwner($rivalOwner)->create([
             'name' => 'Rival Corp',
             'personal_team' => true,
             'currency' => 'USD',
@@ -120,8 +120,11 @@ class DatabaseSeeder extends Seeder
         ]);
         $userRivalManagerMember = Member::factory()->forUser($userRivalManager)->forOrganization($organizationRival)->role(Role::Admin)->create();
         $userWithMultipleOrganizationsRivalMember = Member::factory()->forUser($userWithMultipleOrganizations)->forOrganization($organizationRival)->role(Role::Employee)->create();
-        $otherCompanyProject = Project::factory()->forOrganization($organizationRival)->forClient($client)->create([
+        $rivalClient = Client::factory()->forOrganization($organizationRival)->create([
             'name' => 'Scale Company',
+        ]);
+        $otherCompanyProject = Project::factory()->forOrganization($organizationRival)->forClient($rivalClient)->create([
+            'name' => 'Scale Company - Project ABC',
         ]);
         ProjectMember::factory()->forProject($otherCompanyProject)->forMember($userRivalManagerMember)->create();
         ProjectMember::factory()->forProject($otherCompanyProject)->forMember($userWithMultipleOrganizationsRivalMember)->create();

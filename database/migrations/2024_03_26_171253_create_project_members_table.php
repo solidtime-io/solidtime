@@ -20,14 +20,14 @@ return new class extends Migration
             $table->foreign('project_id')
                 ->references('id')
                 ->on('projects')
-                ->onDelete('restrict')
-                ->onUpdate('cascade');
+                ->restrictOnDelete()
+                ->cascadeOnUpdate();
             $table->uuid('user_id');
             $table->foreign('user_id')
                 ->references('id')
                 ->on('users')
-                ->onDelete('restrict')
-                ->onUpdate('cascade');
+                ->restrictOnDelete()
+                ->cascadeOnUpdate();
             $table->timestamps();
             $table->unique(['project_id', 'user_id']);
         });

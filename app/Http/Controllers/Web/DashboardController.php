@@ -4,21 +4,21 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Web;
 
-use App\Models\Organization;
-use App\Models\User;
 use App\Service\DashboardService;
 use App\Service\PermissionStore;
+use Illuminate\Auth\Access\AuthorizationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class DashboardController extends Controller
 {
+    /**
+     * @throws AuthorizationException
+     */
     public function dashboard(DashboardService $dashboardService, PermissionStore $permissionStore): Response
     {
-        /** @var User $user */
-        $user = auth()->user();
-        /** @var Organization $organization */
-        $organization = $user->currentTeam;
+        $user = $this->user();
+        $organization = $this->currentOrganization();
         $dailyTrackedHours = $dashboardService->getDailyTrackedHours($user, $organization, 60);
         $weeklyHistory = $dashboardService->getWeeklyHistory($user, $organization);
         $totalWeeklyTime = $dashboardService->totalWeeklyTime($user, $organization);

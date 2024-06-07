@@ -5,11 +5,17 @@ declare(strict_types=1);
 namespace Tests\Unit\Service\Import;
 
 use App\Models\Organization;
+use App\Service\Import\Importers\ImporterProvider;
 use App\Service\Import\ImportService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use Tests\TestCase;
 
+#[CoversClass(ImportService::class)]
+#[CoversClass(ImporterProvider::class)]
+#[UsesClass(ImportService::class)]
 class ImportServiceTest extends TestCase
 {
     use RefreshDatabase;

@@ -10,8 +10,12 @@ use App\Models\User;
 use App\Service\PermissionStore;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Jetstream\Jetstream;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use Tests\TestCase;
 
+#[CoversClass(PermissionStore::class)]
+#[UsesClass(PermissionStore::class)]
 class PermissionStoreTest extends TestCase
 {
     use RefreshDatabase;

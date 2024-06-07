@@ -93,6 +93,9 @@
         "test:coverage:report": [
             "@php vendor/bin/phpunit --coverage-html=coverage"
         ],
+        "coverage-report": [
+            "@test:coverage:report"
+        ],
         "fix": [
             "@php pint"
         ],

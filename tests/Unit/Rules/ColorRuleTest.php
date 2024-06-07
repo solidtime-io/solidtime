@@ -6,8 +6,12 @@ namespace Tests\Unit\Rules;
 
 use App\Rules\ColorRule;
 use Illuminate\Support\Facades\Validator;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use Tests\TestCase;
 
+#[CoversClass(ColorRule::class)]
+#[UsesClass(ColorRule::class)]
 class ColorRuleTest extends TestCase
 {
     public function test_validation_passes_if_value_is_valid_color(): void

@@ -12,7 +12,7 @@ class EntityStillInUseApiException extends ApiException
 
     public function __construct(string $modelToDelete, string $modelInUse)
     {
-        parent::__construct('', 0, null);
+        parent::__construct();
         $this->modelToDelete = $modelToDelete;
         $this->modelInUse = $modelInUse;
     }

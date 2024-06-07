@@ -2,17 +2,24 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit\Service\Import\Importer;
+namespace Tests\Unit\Service\Import\Importers;
 
 use App\Models\Organization;
+use App\Service\Import\Importers\DefaultImporter;
 use App\Service\Import\Importers\ImportException;
 use App\Service\Import\Importers\TogglDataImporter;
 use Exception;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use Spatie\TemporaryDirectory\TemporaryDirectory;
 use ZipArchive;
 
+#[CoversClass(TogglDataImporter::class)]
+#[CoversClass(ImportException::class)]
+#[CoversClass(DefaultImporter::class)]
+#[UsesClass(TogglDataImporter::class)]
 class TogglDataImporterTest extends ImporterTestAbstract
 {
     private function createTestZip(string $folder): string
