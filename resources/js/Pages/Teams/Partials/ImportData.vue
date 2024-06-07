@@ -11,9 +11,12 @@ import type { ImportReport, ImportType } from '@/utils/api';
 import DialogModal from '@/Components/DialogModal.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import { initializeStores } from '@/utils/init';
+
 const importTypeOptions = ref<ImportType[]>([]);
 
 const { addNotification } = useNotificationsStore();
+
+const loading = ref(false);
 
 onMounted(async () => {
     const organizationId = getCurrentOrganizationId();
@@ -50,28 +53,32 @@ async function importData() {
     const organizationId = getCurrentOrganizationId();
     if (organizationId !== null) {
         const { handleApiRequestNotifications } = useNotificationsStore();
-
-        reportResult.value = await handleApiRequestNotifications(() => {
-            if (importType.value) {
-                return api.importData(
-                    {
-                        type: importType.value.key,
-                        data: base64String,
-                    },
-                    {
-                        params: {
-                            organization: organizationId,
+        loading.value = true;
+        try {
+            reportResult.value = await handleApiRequestNotifications(() => {
+                if (importType.value) {
+                    return api.importData(
+                        {
+                            type: importType.value.key,
+                            data: base64String,
                         },
-                    }
-                );
-            }
-            return new Promise((resolve, reject) => {
-                reject('Import type is null');
+                        {
+                            params: {
+                                organization: organizationId,
+                            },
+                        }
+                    );
+                }
+                return new Promise((resolve, reject) => {
+                    reject('Import type is null');
+                });
             });
-        });
-        initializeStores();
-        if (reportResult.value) {
-            showResultModal.value = true;
+            initializeStores();
+            if (reportResult.value) {
+                showResultModal.value = true;
+            }
+        } finally {
+            loading.value = false;
         }
     }
 }
@@ -225,7 +232,9 @@ const showResultModal = ref(false);
             </div>
         </template>
         <template #actions>
-            <PrimaryButton @click="importData">Import Data</PrimaryButton>
+            <PrimaryButton :loading @click="importData"
+                >Import Data</PrimaryButton
+            >
         </template>
     </FormSection>
 </template>

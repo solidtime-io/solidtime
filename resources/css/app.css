@@ -28,7 +28,7 @@
     --theme-color-icon-active: rgb(var(--color-text-tertiary));
     --theme-color-card-background: var(--color-bg-secondary);
     --theme-color-card-background-active: var(--color-bg-tertiary);
-    --theme-color-card-background-separator: var(--color-border-quaternary);
+    --theme-color-card-background-separator: var(--color-border-tertiary);
     --theme-color-card-border: var(--color-border-secondary);
     --theme-color-card-border-active: var(--color-border-tertiary);
     --theme-color-default-background-separator: var(--color-border-primary);
