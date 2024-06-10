@@ -12,6 +12,7 @@ use App\Models\ProjectMember;
 use App\Models\Tag;
 use App\Models\Task;
 use App\Models\User;
+use App\Service\BillableRateService;
 use App\Service\ColorService;
 use App\Service\Import\ImportDatabaseHelper;
 use App\Service\TimezoneService;
@@ -61,6 +62,8 @@ abstract class DefaultImporter implements ImporterContract
      * @var ImportDatabaseHelper<ProjectMember>
      */
     protected ImportDatabaseHelper $projectMemberImportHelper;
+
+    protected BillableRateService $billableRateService;
 
     public function init(Organization $organization): void
     {
@@ -141,6 +144,7 @@ abstract class DefaultImporter implements ImporterContract
         $this->timeEntriesCreated = 0;
         $this->colorService = app(ColorService::class);
         $this->timezoneService = app(TimezoneService::class);
+        $this->billableRateService = app(BillableRateService::class);
     }
 
     #[\Override]
