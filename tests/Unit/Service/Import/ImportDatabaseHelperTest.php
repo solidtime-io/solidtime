@@ -9,6 +9,7 @@ use App\Models\Project;
 use App\Models\User;
 use App\Service\Import\ImportDatabaseHelper;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
 use Tests\TestCase;
@@ -139,5 +140,93 @@ class ImportDatabaseHelperTest extends TestCase
         $this->assertCount(2, $externalKeys);
         $this->assertContains($externalIdentifier1, $externalKeys);
         $this->assertContains($externalIdentifier2, $externalKeys);
+    }
+
+    public function test_get_model_by_identifier_returns_model_for_identifier(): void
+    {
+        // Arrange
+        $user = User::factory()->create();
+        $helper = new ImportDatabaseHelper(User::class, ['email'], true);
+
+        // Act
+        $model = $helper->getModel([
+            'email' => $user->email,
+        ]);
+
+        // Assert
+        $this->assertSame($user->getKey(), $model->getKey());
+    }
+
+    public function test_get_model_by_identifier_returns_null_for_not_existing_identifier(): void
+    {
+        // Arrange
+        $helper = new ImportDatabaseHelper(User::class, ['email'], true);
+
+        // Act
+        $model = $helper->getModel([
+            'email' => '',
+        ]);
+
+        // Assert
+        $this->assertNull($model);
+    }
+
+    public function test_get_model_by_identifier_caches_result(): void
+    {
+        // Arrange
+        $user = User::factory()->create();
+        $helper = new ImportDatabaseHelper(User::class, ['email'], true);
+        $helper->getModel([
+            'email' => $user->email,
+        ]);
+        $user->delete();
+
+        // Act
+        $model1 = $helper->getModel([
+            'email' => $user->email,
+        ]);
+
+        // Assert
+        $this->assertSame($user->getKey(), $model1->getKey());
+    }
+
+    public function test_get_model_by_id_returns_model_for_id(): void
+    {
+        // Arrange
+        $user = User::factory()->create();
+        $helper = new ImportDatabaseHelper(User::class, ['email'], true);
+
+        // Act
+        $model = $helper->getModelById($user->getKey());
+
+        // Assert
+        $this->assertSame($user->getKey(), $model->getKey());
+    }
+
+    public function test_get_model_by_id_returns_null_for_not_existing_id(): void
+    {
+        // Arrange
+        $helper = new ImportDatabaseHelper(User::class, ['email'], true);
+
+        // Act
+        $model = $helper->getModelById(Str::uuid()->toString());
+
+        // Assert
+        $this->assertNull($model);
+    }
+
+    public function test_get_model_by_id_caches_result(): void
+    {
+        // Arrange
+        $user = User::factory()->create();
+        $helper = new ImportDatabaseHelper(User::class, ['email'], true);
+        $helper->getModelById($user->getKey());
+        $user->delete();
+
+        // Act
+        $model1 = $helper->getModelById($user->getKey());
+
+        // Assert
+        $this->assertSame($user->getKey(), $model1->getKey());
     }
 }

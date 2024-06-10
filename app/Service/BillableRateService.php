@@ -12,6 +12,27 @@ use App\Models\TimeEntry;
 
 class BillableRateService
 {
+    public function getBillableRateForTimeEntryWithGivenRelations(TimeEntry $timeEntry, ?ProjectMember $projectMember, ?Project $project, ?Member $member, ?Organization $organization): ?int
+    {
+        if (! $timeEntry->billable) {
+            return null;
+        }
+        if ($projectMember !== null && $projectMember->billable_rate !== null) {
+            return $projectMember->billable_rate;
+        }
+        if ($project !== null && $project->billable_rate !== null) {
+            return $project->billable_rate;
+        }
+        if ($member !== null && $member->billable_rate !== null) {
+            return $member->billable_rate;
+        }
+        if ($organization !== null && $organization->billable_rate !== null) {
+            return $organization->billable_rate;
+        }
+
+        return null;
+    }
+
     public function getBillableRateForTimeEntry(TimeEntry $timeEntry): ?int
     {
         if (! $timeEntry->billable) {

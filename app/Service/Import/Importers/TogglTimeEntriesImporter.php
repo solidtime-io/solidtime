@@ -64,6 +64,7 @@ class TogglTimeEntriesImporter extends DefaultImporter
                 ], [
                     'role' => Role::Placeholder->value,
                 ]);
+                $member = $this->memberImportHelper->getModelById($memberId);
                 $clientId = null;
                 if ($record['Client'] !== '') {
                     $clientId = $this->clientImportHelper->getKey([
@@ -72,6 +73,8 @@ class TogglTimeEntriesImporter extends DefaultImporter
                     ]);
                 }
                 $projectId = null;
+                $project = null;
+                $projectMember = null;
                 if ($record['Project'] !== '') {
                     $projectId = $this->projectImportHelper->getKey([
                         'name' => $record['Project'],
@@ -80,6 +83,11 @@ class TogglTimeEntriesImporter extends DefaultImporter
                         'client_id' => $clientId,
                         'is_billable' => false,
                         'color' => $this->colorService->getRandomColor(),
+                    ]);
+                    $project = $this->projectImportHelper->getModelById($projectId);
+                    $projectMember = $this->projectMemberImportHelper->getModel([
+                        'project_id' => $projectId,
+                        'member_id' => $memberId,
                     ]);
                 }
                 $taskId = null;
@@ -123,7 +131,13 @@ class TogglTimeEntriesImporter extends DefaultImporter
                     throw new ImportException('End date ("'.$record['End date'].'") or time ("'.$record['End time'].'") are invalid');
                 }
                 $timeEntry->end = $end->utc();
-                $timeEntry->setComputedAttributeValue('billable_rate');
+                $timeEntry->billable_rate = $this->billableRateService->getBillableRateForTimeEntryWithGivenRelations(
+                    $timeEntry,
+                    $projectMember,
+                    $project,
+                    $member,
+                    $this->organization
+                );
                 $timeEntry->save();
                 $this->timeEntriesCreated++;
             }

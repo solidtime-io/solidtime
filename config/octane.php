@@ -185,7 +185,7 @@ return [
     'watch' => [
         'app',
         'bootstrap',
-        'config',
+        'config/**/*.php',
         'database/**/*.php',
         'public/**/*.php',
         'resources/**/*.php',

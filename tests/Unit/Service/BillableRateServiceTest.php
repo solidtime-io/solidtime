@@ -257,4 +257,286 @@ class BillableRateServiceTest extends TestCase
         // Assert
         $this->assertSame(null, $billableRate);
     }
+
+    public function test_billable_rate_with_given_relations_returns_null_if_not_billable(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create([
+            'billable_rate' => 1001,
+        ]);
+        $user = User::factory()->create();
+        $member = Member::factory()->forOrganization($organization)->forUser($user)->create([
+            'billable_rate' => 2002,
+        ]);
+        $project = Project::factory()->forOrganization($organization)->create([
+            'billable_rate' => 3003,
+        ]);
+        $projectMember = ProjectMember::factory()->forMember($member)->forProject($project)->create([
+            'billable_rate' => 4004,
+        ]);
+        $timeEntry = TimeEntry::factory()->forProject($project)->forMember($member)->forOrganization($organization)->create([
+            'billable' => false,
+        ]);
+
+        // Act
+        $billableRate = $this->billableRateService->getBillableRateForTimeEntryWithGivenRelations(
+            $timeEntry,
+            $projectMember,
+            $project,
+            $member,
+            $organization
+        );
+
+        // Assert
+        $this->assertSame(null, $billableRate);
+    }
+
+    public function test_billable_rate_with_given_relations_uses_project_member_rate_as_first_priority(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create([
+            'billable_rate' => 1001,
+        ]);
+        $user = User::factory()->create();
+        $member = Member::factory()->forOrganization($organization)->forUser($user)->create([
+            'billable_rate' => 2002,
+        ]);
+        $project = Project::factory()->forOrganization($organization)->create([
+            'billable_rate' => 3003,
+        ]);
+        $projectMember = ProjectMember::factory()->forMember($member)->forProject($project)->create([
+            'billable_rate' => 4004,
+        ]);
+        $timeEntry = TimeEntry::factory()->forProject($project)->forMember($member)->forOrganization($organization)->create([
+            'billable' => true,
+        ]);
+
+        // Act
+        $billableRate = $this->billableRateService->getBillableRateForTimeEntryWithGivenRelations(
+            $timeEntry,
+            $projectMember,
+            $project,
+            $member,
+            $organization
+        );
+
+        // Assert
+        $this->assertSame(4004, $billableRate);
+    }
+
+    public function test_billable_rate_with_given_relations_uses_project_rate_as_second_priority_using_null_values_before(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create([
+            'billable_rate' => 1001,
+        ]);
+        $user = User::factory()->create();
+        $member = Member::factory()->forOrganization($organization)->forUser($user)->create([
+            'billable_rate' => 2002,
+        ]);
+        $project = Project::factory()->forOrganization($organization)->create([
+            'billable_rate' => 3003,
+        ]);
+        $projectMember = ProjectMember::factory()->forMember($member)->forProject($project)->create([
+            'billable_rate' => null,
+        ]);
+        $timeEntry = TimeEntry::factory()->forProject($project)->forMember($member)->forOrganization($organization)->create([
+            'billable' => true,
+        ]);
+
+        // Act
+        $billableRate = $this->billableRateService->getBillableRateForTimeEntryWithGivenRelations(
+            $timeEntry,
+            $projectMember,
+            $project,
+            $member,
+            $organization
+        );
+
+        // Assert
+        $this->assertSame(3003, $billableRate);
+    }
+
+    public function test_billable_rate_with_given_relations_uses_project_rate_as_second_priority_using_non_existing_entities_before(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create([
+            'billable_rate' => 1001,
+        ]);
+        $user = User::factory()->create();
+        $member = Member::factory()->forOrganization($organization)->forUser($user)->create([
+            'billable_rate' => 2002,
+        ]);
+        $project = Project::factory()->forOrganization($organization)->create([
+            'billable_rate' => 3003,
+        ]);
+        $timeEntry = TimeEntry::factory()->forProject($project)->forMember($member)->forOrganization($organization)->create([
+            'billable' => true,
+        ]);
+
+        // Act
+        $billableRate = $this->billableRateService->getBillableRateForTimeEntryWithGivenRelations(
+            $timeEntry,
+            null,
+            $project,
+            $member,
+            $organization
+        );
+
+        // Assert
+        $this->assertSame(3003, $billableRate);
+    }
+
+    public function test_billable_rate_with_given_relations_uses_organization_member_rate_as_third_priority_using_null_values_before(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create([
+            'billable_rate' => 1001,
+        ]);
+        $user = User::factory()->create();
+        $member = Member::factory()->forOrganization($organization)->forUser($user)->create([
+            'billable_rate' => 2002,
+        ]);
+        $project = Project::factory()->forOrganization($organization)->create([
+            'billable_rate' => null,
+        ]);
+        $projectMember = ProjectMember::factory()->forMember($member)->forProject($project)->create([
+            'billable_rate' => null,
+        ]);
+        $timeEntry = TimeEntry::factory()->forProject($project)->forMember($member)->forOrganization($organization)->create([
+            'billable' => true,
+        ]);
+
+        // Act
+        $billableRate = $this->billableRateService->getBillableRateForTimeEntryWithGivenRelations(
+            $timeEntry,
+            $projectMember,
+            $project,
+            $member,
+            $organization
+        );
+
+        // Assert
+        $this->assertSame(2002, $billableRate);
+    }
+
+    public function test_billable_rate_with_given_relations_uses_organization_member_rate_as_third_priority_using_non_existing_entities_before(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create([
+            'billable_rate' => 1001,
+        ]);
+        $user = User::factory()->create();
+        $member = Member::factory()->forOrganization($organization)->forUser($user)->create([
+            'billable_rate' => 2002,
+        ]);
+        $timeEntry = TimeEntry::factory()->forMember($member)->forOrganization($organization)->create([
+            'billable' => true,
+        ]);
+
+        // Act
+        $billableRate = $this->billableRateService->getBillableRateForTimeEntryWithGivenRelations(
+            $timeEntry,
+            null,
+            null,
+            $member,
+            $organization
+        );
+
+        // Assert
+        $this->assertSame(2002, $billableRate);
+    }
+
+    public function test_billable_rate_with_given_relations_uses_organization_rate_as_fourth_priority_using_null_values_before(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create([
+            'billable_rate' => 1001,
+        ]);
+        $user = User::factory()->create();
+        $member = Member::factory()->forOrganization($organization)->forUser($user)->create([
+            'billable_rate' => null,
+        ]);
+        $project = Project::factory()->forOrganization($organization)->create([
+            'billable_rate' => null,
+        ]);
+        $projectMember = ProjectMember::factory()->forMember($member)->forProject($project)->create([
+            'billable_rate' => null,
+        ]);
+        $timeEntry = TimeEntry::factory()->forProject($project)->forMember($member)->forOrganization($organization)->create([
+            'billable' => true,
+        ]);
+
+        // Act
+        $billableRate = $this->billableRateService->getBillableRateForTimeEntryWithGivenRelations(
+            $timeEntry,
+            $projectMember,
+            $project,
+            $member,
+            $organization
+        );
+
+        // Assert
+        $this->assertSame(1001, $billableRate);
+    }
+
+    public function test_billable_rate_with_given_relations_uses_organization_rate_as_fourth_priority_using_non_existing_entities_before(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create([
+            'billable_rate' => 1001,
+        ]);
+        $user = User::factory()->create();
+        $member = Member::factory()->forOrganization($organization)->forUser($user)->create([
+            'billable_rate' => null,
+        ]);
+        $timeEntry = TimeEntry::factory()->forMember($member)->forOrganization($organization)->create([
+            'billable' => true,
+        ]);
+
+        // Act
+        $billableRate = $this->billableRateService->getBillableRateForTimeEntryWithGivenRelations(
+            $timeEntry,
+            null,
+            null,
+            $member,
+            $organization
+        );
+
+        // Assert
+        $this->assertSame(1001, $billableRate);
+    }
+
+    public function test_billable_rate_with_given_relations_is_null_if_billable_rate_on_all_levels_are_null(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create([
+            'billable_rate' => null,
+        ]);
+        $user = User::factory()->create();
+        $member = Member::factory()->forOrganization($organization)->forUser($user)->create([
+            'billable_rate' => null,
+        ]);
+        $project = Project::factory()->forOrganization($organization)->create([
+            'billable_rate' => null,
+        ]);
+        $projectMember = ProjectMember::factory()->forMember($member)->forProject($project)->create([
+            'billable_rate' => null,
+        ]);
+        $timeEntry = TimeEntry::factory()->forProject($project)->forMember($member)->forOrganization($organization)->create([
+            'billable' => true,
+        ]);
+
+        // Act
+        $billableRate = $this->billableRateService->getBillableRateForTimeEntryWithGivenRelations(
+            $timeEntry,
+            $projectMember,
+            $project,
+            $member,
+            $organization
+        );
+
+        // Assert
+        $this->assertSame(null, $billableRate);
+    }
 }

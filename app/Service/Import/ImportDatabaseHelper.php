@@ -31,6 +31,16 @@ class ImportDatabaseHelper
     private ?array $mapIdentifierToKey = null;
 
     /**
+     * @var array<string, TModel|null>|null
+     */
+    private ?array $mapKeyToModel = null;
+
+    /**
+     * @var array<string, TModel|null>|null
+     */
+    private ?array $mapIdentifierToModel = null;
+
+    /**
      * @var array<string, string>
      */
     private array $mapExternalIdentifierToInternalIdentifier = [];
@@ -146,6 +156,47 @@ class ImportDatabaseHelper
         } else {
             throw new \RuntimeException('Not implemented');
         }
+    }
+
+    /**
+     * @return TModel
+     */
+    public function getModelById(string $id): ?Model
+    {
+        if ($this->mapKeyToModel === null) {
+            $this->mapKeyToModel = [];
+        }
+        if (isset($this->mapKeyToModel[$id])) {
+            return $this->mapKeyToModel[$id];
+        }
+        /** @var TModel|null $model */
+        $model = $this->getModelInstance()->find($id);
+        if ($model !== null) {
+            $this->mapKeyToModel[$id] = $model;
+        }
+
+        return $model;
+    }
+
+    /**
+     * @param  array<string, mixed>  $identifierData
+     * @return TModel|null
+     */
+    public function getModel(array $identifierData): ?Model
+    {
+        if ($this->mapIdentifierToModel === null) {
+            $this->mapIdentifierToModel = [];
+        }
+        $hash = $this->getHash($identifierData);
+        if (isset($this->mapIdentifierToModel[$hash])) {
+            return $this->mapIdentifierToModel[$hash];
+        }
+        $model = $this->getModelInstance()->where($identifierData)->first();
+        if ($model !== null) {
+            $this->mapIdentifierToModel[$hash] = $model;
+        }
+
+        return $model;
     }
 
     /**
