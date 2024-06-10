@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ProjectResource\Pages;
+use App\Filament\Resources\ProjectResource\RelationManagers\ProjectMembersRelationManager;
 use App\Models\Project;
 use Filament\Forms;
 use Filament\Forms\Components\ColorPicker;
@@ -37,6 +38,15 @@ class ProjectResource extends Resource
                 ColorPicker::make('color')
                     ->label('Color')
                     ->required(),
+                Forms\Components\TextInput::make('billable_rate')
+                    ->label('Billable rate (in Cents)')
+                    ->nullable()
+                    ->rules([
+                        'nullable',
+                        'integer',
+                        'gt:0',
+                    ])
+                    ->numeric(),
                 Forms\Components\Select::make('organization_id')
                     ->relationship(name: 'organization', titleAttribute: 'name')
                     ->searchable(['name'])
@@ -78,7 +88,7 @@ class ProjectResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            ProjectMembersRelationManager::make(),
         ];
     }
 

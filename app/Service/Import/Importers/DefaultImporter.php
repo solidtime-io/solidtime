@@ -107,7 +107,11 @@ abstract class DefaultImporter implements ImporterContract
                 'nullable',
                 'integer',
             ],
-        ]);
+        ], beforeSave: function (Project $project) {
+            if ($project->billable_rate === 0) {
+                $project->billable_rate = null;
+            }
+        });
         $this->projectMemberImportHelper = new ImportDatabaseHelper(ProjectMember::class, ['project_id', 'member_id'], true, function (Builder $builder) {
             /** @var Builder<ProjectMember> $builder */
             return $builder->whereBelongsToOrganization($this->organization);
@@ -116,7 +120,11 @@ abstract class DefaultImporter implements ImporterContract
                 'nullable',
                 'integer',
             ],
-        ]);
+        ], beforeSave: function (ProjectMember $projectMember) {
+            if ($projectMember->billable_rate === 0) {
+                $projectMember->billable_rate = null;
+            }
+        });
         $this->tagImportHelper = new ImportDatabaseHelper(Tag::class, ['name', 'organization_id'], true, function (Builder $builder) {
             return $builder->where('organization_id', $this->organization->id);
         }, validate: [

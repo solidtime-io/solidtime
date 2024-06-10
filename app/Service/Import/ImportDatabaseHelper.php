@@ -58,12 +58,14 @@ class ImportDatabaseHelper
      */
     private array $validate;
 
+    private ?Closure $beforeSave;
+
     /**
      * @param  class-string<TModel>  $model
      * @param  array<string>  $identifiers
      * @param  array<string, array<int, string>>  $validate
      */
-    public function __construct(string $model, array $identifiers, bool $attachToExisting = false, ?Closure $queryModifier = null, ?Closure $afterCreate = null, array $validate = [])
+    public function __construct(string $model, array $identifiers, bool $attachToExisting = false, ?Closure $queryModifier = null, ?Closure $afterCreate = null, array $validate = [], ?Closure $beforeSave = null)
     {
         $this->model = $model;
         $this->identifiers = $identifiers;
@@ -72,6 +74,7 @@ class ImportDatabaseHelper
         $this->afterCreate = $afterCreate;
         $this->createdCount = 0;
         $this->validate = $validate;
+        $this->beforeSave = $beforeSave;
     }
 
     /**
@@ -98,6 +101,9 @@ class ImportDatabaseHelper
         $model = new $this->model();
         foreach ($data as $key => $value) {
             $model->{$key} = $value;
+        }
+        if ($this->beforeSave !== null) {
+            ($this->beforeSave)($model);
         }
         $model->save();
 
