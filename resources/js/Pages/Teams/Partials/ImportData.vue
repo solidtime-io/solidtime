@@ -196,7 +196,9 @@ const showResultModal = ref(false);
                         <div class="font-semibold text-muted py-1">
                             Instructions:
                         </div>
-                        {{ currentImporterDescription }}
+                        <div
+                            class="max-w-2xl"
+                            v-html="currentImporterDescription"></div>
                     </div>
                 </div>
 

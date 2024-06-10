@@ -119,7 +119,7 @@ function updateReporting() {
 function getOptimalGroupingOption(diff: number): 'day' | 'week' | 'month' {
     if (diff <= 31) {
         return 'day';
-    } else if (diff <= 365) {
+    } else if (diff <= 200) {
         return 'week';
     } else {
         return 'month';
