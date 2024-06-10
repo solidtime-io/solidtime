@@ -71,7 +71,7 @@ class ProjectMemberController extends Controller
         }
 
         $projectMember = new ProjectMember();
-        $projectMember->billable_rate = $request->input('billable_rate');
+        $projectMember->billable_rate = $request->getBillableRate();
         $projectMember->member()->associate($member);
         $projectMember->user()->associate($member->user);
         $projectMember->project()->associate($project);
@@ -90,7 +90,7 @@ class ProjectMemberController extends Controller
     public function update(Organization $organization, ProjectMember $projectMember, ProjectMemberUpdateRequest $request): JsonResource
     {
         $this->checkPermission($organization, 'project-members:update', projectMember: $projectMember);
-        $projectMember->billable_rate = $request->input('billable_rate');
+        $projectMember->billable_rate = $request->getBillableRate();
         $projectMember->save();
 
         return new ProjectMemberResource($projectMember);

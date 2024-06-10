@@ -36,4 +36,11 @@ class MemberUpdateRequest extends FormRequest
             ],
         ];
     }
+
+    public function getBillableRate(): ?int
+    {
+        $input = $this->input('billable_rate');
+
+        return $input !== null && $input !== 0 ? (int) $this->input('billable_rate') : null;
+    }
 }

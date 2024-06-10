@@ -37,7 +37,7 @@ class OrganizationController extends Controller
         $this->checkPermission($organization, 'organizations:update');
 
         $organization->name = $request->input('name');
-        $organization->billable_rate = $request->input('billable_rate');
+        $organization->billable_rate = $request->getBillableRate();
         $organization->save();
 
         return new OrganizationResource($organization);

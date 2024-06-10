@@ -65,6 +65,11 @@ class OrganizationResource extends Resource
                 Forms\Components\TextInput::make('billable_rate')
                     ->label('Billable rate (in Cents)')
                     ->nullable()
+                    ->rules([
+                        'nullable',
+                        'integer',
+                        'gt:0',
+                    ])
                     ->numeric(),
                 Forms\Components\DateTimePicker::make('created_at')
                     ->label('Created At')

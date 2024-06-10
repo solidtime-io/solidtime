@@ -86,7 +86,7 @@ class ProjectController extends Controller
         $project->name = $request->input('name');
         $project->color = $request->input('color');
         $project->is_billable = (bool) $request->input('is_billable');
-        $project->billable_rate = $request->input('billable_rate');
+        $project->billable_rate = $request->getBillableRate();
         $project->client_id = $request->input('client_id');
         $project->organization()->associate($organization);
         $project->save();
@@ -107,7 +107,7 @@ class ProjectController extends Controller
         $project->name = $request->input('name');
         $project->color = $request->input('color');
         $project->is_billable = (bool) $request->input('is_billable');
-        $project->billable_rate = $request->input('billable_rate');
+        $project->billable_rate = $request->getBillableRate();
         $project->client_id = $request->input('client_id');
         $project->save();
 
