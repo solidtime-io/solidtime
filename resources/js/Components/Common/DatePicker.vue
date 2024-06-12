@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { getLocalizedDayJs } from '@/utils/time';
+import { getDayJsInstance, getLocalizedDayJs } from '@/utils/time';
 import { twMerge } from 'tailwind-merge';
 
 const props = defineProps<{
     class?: string;
 }>();
+
+// This has to be a localized timestamp, not UTC
 const model = defineModel<string | null>({
     default: null,
 });
@@ -15,13 +17,12 @@ const tempDate = ref(getLocalizedDayJs(model.value).format('YYYY-MM-DD'));
 function updateDate(event: Event) {
     const target = event.target as HTMLInputElement;
     const newValue = target.value;
-    const newDate = getLocalizedDayJs(newValue);
+    const newDate = getDayJsInstance()(newValue);
     if (newDate) {
         model.value = getLocalizedDayJs(model.value)
             .set('year', newDate.year())
             .set('month', newDate.month())
             .set('date', newDate.date())
-            .utc()
             .format();
         emit('changed', model.value);
     }

@@ -13,7 +13,11 @@ import DateRangePicker from '@/Components/Common/DateRangePicker.vue';
 import ReportingChart from '@/Components/Common/Reporting/ReportingChart.vue';
 import BillableIcon from '@/Components/Common/Icons/BillableIcon.vue';
 import { onMounted, ref } from 'vue';
-import { formatHumanReadableDuration, getDayJsInstance } from '@/utils/time';
+import {
+    formatHumanReadableDuration,
+    getDayJsInstance,
+    getLocalizedDayJs,
+} from '@/utils/time';
 import { type GroupingOption, useReportingStore } from '@/utils/useReporting';
 import { storeToRefs } from 'pinia';
 import TagDropdown from '@/Components/Common/Tag/TagDropdown.vue';
@@ -31,9 +35,11 @@ import { getCurrentMembershipId, getCurrentRole } from '@/utils/useUser';
 import ClientMultiselectDropdown from '@/Components/Common/Client/ClientMultiselectDropdown.vue';
 
 const startDate = ref<string | null>(
-    getDayJsInstance()().subtract(14, 'd').format('YYYY-MM-DD')
+    getLocalizedDayJs(getDayJsInstance()().format()).subtract(2, 'd').format()
 );
-const endDate = ref<string | null>(getDayJsInstance()().format('YYYY-MM-DD'));
+const endDate = ref<string | null>(
+    getLocalizedDayJs(getDayJsInstance()().format()).format()
+);
 const selectedTags = ref<string[]>([]);
 const selectedProjects = ref<string[]>([]);
 const selectedMembers = ref<string[]>([]);
@@ -54,8 +60,8 @@ const { groupByOptions } = reportingStore;
 
 function getFilterAttributes() {
     let params: AggregatedTimeEntriesQueryParams = {
-        start: getDayJsInstance()(startDate.value).utc().format(),
-        end: getDayJsInstance()(endDate.value).endOf('day').utc().format(),
+        start: getLocalizedDayJs(startDate.value).startOf('day').utc().format(),
+        end: getLocalizedDayJs(endDate.value).endOf('day').utc().format(),
     };
     params = {
         ...params,

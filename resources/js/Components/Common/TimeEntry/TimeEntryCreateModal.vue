@@ -2,7 +2,7 @@
 import TextInput from '@/Components/TextInput.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import DialogModal from '@/Components/DialogModal.vue';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import { useFocus } from '@vueuse/core';
 import TimeTrackerTagDropdown from '@/Components/Common/TimeTracker/TimeTrackerTagDropdown.vue';
@@ -13,7 +13,7 @@ import { useTimeEntriesStore } from '@/utils/useTimeEntries';
 import InputLabel from '@/Components/InputLabel.vue';
 import TimePicker from '@/Components/Common/TimePicker.vue';
 import DatePicker from '@/Components/Common/DatePicker.vue';
-import { getDayJsInstance } from '@/utils/time';
+import { getDayJsInstance, getLocalizedDayJs } from '@/utils/time';
 
 const { createTimeEntry } = useTimeEntriesStore();
 const show = defineModel('show', { default: false });
@@ -32,9 +32,25 @@ const timeEntryDefaultValues = {
 
 const timeEntry = ref({ ...timeEntryDefaultValues });
 
+const localStart = ref(
+    getLocalizedDayJs(timeEntryDefaultValues.start).format()
+);
+
+watch(localStart, (value) => {
+    timeEntry.value.start = getLocalizedDayJs(value).utc().format();
+});
+
+const localEnd = ref(getLocalizedDayJs(timeEntryDefaultValues.end).format());
+
+watch(localEnd, (value) => {
+    timeEntry.value.end = getLocalizedDayJs(value).utc().format();
+});
+
 async function submit() {
     await createTimeEntry(timeEntry.value);
     timeEntry.value = { ...timeEntryDefaultValues };
+    localStart.value = getLocalizedDayJs(timeEntryDefaultValues.start).format();
+    localEnd.value = getLocalizedDayJs(timeEntryDefaultValues.end).format();
     show.value = false;
 }
 
@@ -85,19 +101,19 @@ useFocus(projectNameInput, { initialValue: true });
                 <div class="flex-1">
                     <InputLabel>Start</InputLabel>
                     <div class="flex items-center space-x-4 mt-1">
-                        <DatePicker v-model="timeEntry.start"></DatePicker>
+                        <DatePicker v-model="localStart"></DatePicker>
                         <TimePicker
                             size="large"
-                            v-model="timeEntry.start"></TimePicker>
+                            v-model="localStart"></TimePicker>
                     </div>
                 </div>
                 <div class="flex-1">
                     <InputLabel>End</InputLabel>
                     <div class="flex items-center space-x-4 mt-1">
-                        <DatePicker v-model="timeEntry.end"></DatePicker>
+                        <DatePicker v-model="localEnd"></DatePicker>
                         <TimePicker
                             size="large"
-                            v-model="timeEntry.end"></TimePicker>
+                            v-model="localEnd"></TimePicker>
                     </div>
                 </div>
             </div>

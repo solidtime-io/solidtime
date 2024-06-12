@@ -3,23 +3,33 @@ import { defineProps, ref, watch } from 'vue';
 import TimePicker from '@/Components/Common/TimePicker.vue';
 import { useFocusWithin } from '@vueuse/core';
 import DatePicker from '@/Components/Common/DatePicker.vue';
+import { getDayJsInstance, getLocalizedDayJs } from '@/utils/time';
+import dayjs from 'dayjs';
 
 const props = defineProps<{
     start: string;
     end: string | null;
 }>();
 
+// The timestamps for the changed event are UTC
 const emit = defineEmits(['changed']);
-const tempStart = ref(props.start);
-const tempEnd = ref(props.end || null);
+
+const tempStart = ref(
+    props.start ? getLocalizedDayJs(props.start).format() : dayjs().format()
+);
+const tempEnd = ref(props.end ? getLocalizedDayJs(props.end).format() : null);
 
 watch(props, () => {
-    tempStart.value = props.start;
-    tempEnd.value = props.end;
+    tempStart.value = getLocalizedDayJs(props.start).format();
+    tempEnd.value = getLocalizedDayJs(props.end).format();
 });
 function updateTimeEntry() {
     if (tempStart.value !== props.start || tempEnd.value !== props.end) {
-        emit('changed', tempStart.value, tempEnd.value);
+        emit(
+            'changed',
+            getDayJsInstance()(tempStart.value).utc().format(),
+            getDayJsInstance()(tempEnd.value).utc().format()
+        );
     }
 }
 

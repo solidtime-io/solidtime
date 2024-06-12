@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { getLocalizedDayJs } from '@/utils/time';
+import { getDayJsInstance, getLocalizedDayJs } from '@/utils/time';
 import { twMerge } from 'tailwind-merge';
 
+// This has to be a localized timestamp, not UTC
 const model = defineModel<string | null>({
     default: null,
 });
@@ -28,9 +29,8 @@ function updateMinutes(event: Event) {
     const target = event.target as HTMLInputElement;
     const newValue = target.value;
     if (!isNaN(parseInt(newValue))) {
-        model.value = getLocalizedDayJs(model.value)
+        model.value = getDayJsInstance()(model.value)
             .set('minutes', Math.min(parseInt(newValue), 59))
-            .utc()
             .format();
     }
 }
@@ -41,7 +41,6 @@ function updateHours(event: Event) {
     if (!isNaN(parseInt(newValue))) {
         model.value = getLocalizedDayJs(model.value)
             .set('hours', Math.min(parseInt(newValue), 23))
-            .utc()
             .format();
     }
 }
