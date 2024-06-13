@@ -35,7 +35,7 @@ import { getCurrentMembershipId, getCurrentRole } from '@/utils/useUser';
 import ClientMultiselectDropdown from '@/Components/Common/Client/ClientMultiselectDropdown.vue';
 
 const startDate = ref<string | null>(
-    getLocalizedDayJs(getDayJsInstance()().format()).subtract(2, 'd').format()
+    getLocalizedDayJs(getDayJsInstance()().format()).subtract(14, 'd').format()
 );
 const endDate = ref<string | null>(
     getLocalizedDayJs(getDayJsInstance()().format()).format()
