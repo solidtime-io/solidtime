@@ -23,6 +23,9 @@ return new class extends Migration
         DB::table('members')
             ->where('billable_rate', '=', 0)
             ->update(['billable_rate' => null]);
+        DB::table('time_entries')
+            ->where('billable_rate', '=', 0)
+            ->update(['billable_rate' => null]);
     }
 
     /**
