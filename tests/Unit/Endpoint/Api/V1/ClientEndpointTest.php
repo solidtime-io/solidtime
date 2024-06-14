@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Endpoint\Api\V1;
 
+use App\Http\Controllers\Api\V1\ClientController;
 use App\Models\Client;
 use App\Models\Organization;
 use App\Models\Project;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Laravel\Passport\Passport;
+use PHPUnit\Framework\Attributes\UsesClass;
 
+#[UsesClass(ClientController::class)]
 class ClientEndpointTest extends ApiEndpointTestAbstract
 {
     public function test_index_endpoint_fails_if_user_has_no_permission_to_view_clients(): void

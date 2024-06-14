@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Endpoint\Api\V1;
 
 use App\Enums\Role;
+use App\Http\Controllers\Api\V1\MemberController;
 use App\Models\Member;
 use App\Models\Organization;
 use App\Models\Project;
@@ -12,7 +13,9 @@ use App\Models\ProjectMember;
 use App\Models\TimeEntry;
 use App\Models\User;
 use Laravel\Passport\Passport;
+use PHPUnit\Framework\Attributes\UsesClass;
 
+#[UsesClass(MemberController::class)]
 class MemberEndpointTest extends ApiEndpointTestAbstract
 {
     public function test_index_fails_if_user_has_no_permission_to_view_members(): void

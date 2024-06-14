@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Endpoint\Api\V1;
 
+use App\Http\Controllers\Api\V1\OrganizationController;
 use App\Models\Organization;
 use Laravel\Passport\Passport;
+use PHPUnit\Framework\Attributes\UsesClass;
 
+#[UsesClass(OrganizationController::class)]
 class OrganizationEndpointTest extends ApiEndpointTestAbstract
 {
     public function test_show_endpoint_fails_if_user_has_no_permission_to_view_organizations(): void

@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Endpoint\Api\V1;
 
+use App\Http\Controllers\Api\V1\ImportController;
 use App\Models\Organization;
 use App\Service\Import\Importers\ImportException;
 use App\Service\Import\Importers\ReportDto;
 use App\Service\Import\ImportService;
 use Laravel\Passport\Passport;
 use Mockery\MockInterface;
+use PHPUnit\Framework\Attributes\UsesClass;
 
+#[UsesClass(ImportController::class)]
 class ImportEndpointTest extends ApiEndpointTestAbstract
 {
     public function test_index_fails_if_user_does_not_have_permission()

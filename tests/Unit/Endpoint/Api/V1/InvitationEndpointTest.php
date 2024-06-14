@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace Tests\Unit\Endpoint\Api\V1;
 
 use App\Enums\Role;
+use App\Http\Controllers\Api\V1\InvitationController;
 use App\Models\OrganizationInvitation;
 use Illuminate\Support\Facades\Mail;
 use Laravel\Jetstream\Mail\TeamInvitation;
 use Laravel\Passport\Passport;
+use PHPUnit\Framework\Attributes\UsesClass;
 
+#[UsesClass(InvitationController::class)]
 class InvitationEndpointTest extends ApiEndpointTestAbstract
 {
     public function test_index_fails_if_user_has_no_permission_to_view_invitations(): void

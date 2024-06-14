@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Endpoint\Api\V1;
 
+use App\Http\Controllers\Api\V1\TaskController;
 use App\Models\Project;
 use App\Models\ProjectMember;
 use App\Models\Task;
 use App\Models\TimeEntry;
 use Laravel\Passport\Passport;
+use PHPUnit\Framework\Attributes\UsesClass;
 
+#[UsesClass(TaskController::class)]
 class TaskEndpointTest extends ApiEndpointTestAbstract
 {
     public function test_non_valid_uuid_for_organization_id_fails(): void

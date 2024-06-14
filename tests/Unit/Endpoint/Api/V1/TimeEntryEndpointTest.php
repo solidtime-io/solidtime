@@ -6,6 +6,7 @@ namespace Tests\Unit\Endpoint\Api\V1;
 
 use App\Enums\Role;
 use App\Exceptions\Api\TimeEntryCanNotBeRestartedApiException;
+use App\Http\Controllers\Api\V1\TimeEntryController;
 use App\Models\Client;
 use App\Models\Member;
 use App\Models\Project;
@@ -18,8 +19,10 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Laravel\Passport\Passport;
+use PHPUnit\Framework\Attributes\UsesClass;
 use TiMacDonald\Log\LogEntry;
 
+#[UsesClass(TimeEntryController::class)]
 class TimeEntryEndpointTest extends ApiEndpointTestAbstract
 {
     public function test_index_endpoint_fails_if_user_has_no_permission_to_view_time_entries(): void

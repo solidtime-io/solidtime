@@ -4,12 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Console\Commands\Admin;
 
+use App\Console\Commands\Admin\DeleteOrganizationCommand;
 use App\Models\Organization;
 use App\Service\DeletionService;
 use Illuminate\Support\Str;
 use Mockery\MockInterface;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use Tests\TestCaseWithDatabase;
 
+#[CoversClass(DeleteOrganizationCommand::class)]
+#[UsesClass(DeleteOrganizationCommand::class)]
 class DeleteOrganizationCommandTest extends TestCaseWithDatabase
 {
     public function test_it_calls_the_deletion_service_with_the_organization(): void

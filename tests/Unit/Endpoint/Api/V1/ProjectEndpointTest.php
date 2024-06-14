@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Endpoint\Api\V1;
 
+use App\Http\Controllers\Api\V1\ProjectController;
 use App\Models\Client;
 use App\Models\Organization;
 use App\Models\Project;
@@ -11,7 +12,9 @@ use App\Models\ProjectMember;
 use App\Models\Task;
 use App\Models\TimeEntry;
 use Laravel\Passport\Passport;
+use PHPUnit\Framework\Attributes\UsesClass;
 
+#[UsesClass(ProjectController::class)]
 class ProjectEndpointTest extends ApiEndpointTestAbstract
 {
     public function test_index_endpoint_fails_if_user_has_no_permission_to_view_projects(): void

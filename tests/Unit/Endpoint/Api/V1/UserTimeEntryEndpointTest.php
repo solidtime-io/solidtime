@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Endpoint\Api\V1;
 
+use App\Http\Controllers\Api\V1\UserTimeEntryController;
 use App\Models\TimeEntry;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Laravel\Passport\Passport;
+use PHPUnit\Framework\Attributes\UsesClass;
 use TiMacDonald\Log\LogEntry;
 
+#[UsesClass(UserTimeEntryController::class)]
 class UserTimeEntryEndpointTest extends ApiEndpointTestAbstract
 {
     public function test_my_active_endpoint_returns_unauthorized_if_user_is_not_logged_in(): void

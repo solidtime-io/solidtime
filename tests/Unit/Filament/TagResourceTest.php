@@ -9,7 +9,9 @@ use App\Models\Tag;
 use App\Models\User;
 use Illuminate\Support\Facades\Config;
 use Livewire\Livewire;
+use PHPUnit\Framework\Attributes\UsesClass;
 
+#[UsesClass(TagResource::class)]
 class TagResourceTest extends FilamentTestCase
 {
     protected function setUp(): void

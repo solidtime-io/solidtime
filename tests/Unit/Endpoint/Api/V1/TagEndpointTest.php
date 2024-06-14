@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Endpoint\Api\V1;
 
+use App\Http\Controllers\Api\V1\TagController;
 use App\Models\Organization;
 use App\Models\Tag;
 use App\Models\TimeEntry;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Laravel\Passport\Passport;
+use PHPUnit\Framework\Attributes\UsesClass;
 
+#[UsesClass(TagController::class)]
 class TagEndpointTest extends ApiEndpointTestAbstract
 {
     public function test_index_endpoint_fails_if_user_has_no_permission_to_view_tags(): void
