@@ -14,6 +14,7 @@ use App\Models\Member;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Models\ProjectMember;
+use App\Service\BillableRateService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -87,11 +88,15 @@ class ProjectMemberController extends Controller
      *
      * @operationId updateProjectMember
      */
-    public function update(Organization $organization, ProjectMember $projectMember, ProjectMemberUpdateRequest $request): JsonResource
+    public function update(Organization $organization, ProjectMember $projectMember, ProjectMemberUpdateRequest $request, BillableRateService $billableRateService): JsonResource
     {
         $this->checkPermission($organization, 'project-members:update', projectMember: $projectMember);
         $projectMember->billable_rate = $request->getBillableRate();
         $projectMember->save();
+
+        if ($request->getBillableRateUpdateTimeEntries()) {
+            $billableRateService->updateTimeEntriesBillableRateForProjectMember($projectMember);
+        }
 
         return new ProjectMemberResource($projectMember);
     }

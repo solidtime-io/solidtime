@@ -11,7 +11,9 @@ use App\Models\Project;
 use App\Models\ProjectMember;
 use App\Models\Task;
 use App\Models\TimeEntry;
+use App\Service\BillableRateService;
 use Laravel\Passport\Passport;
+use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\UsesClass;
 
 #[UsesClass(ProjectController::class)]
@@ -200,6 +202,7 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
             'projects:create',
         ]);
         $projectFake = Project::factory()->forOrganization($data->organization)->make();
+        $this->assertBillableRateServiceIsUnused();
         Passport::actingAs($data->user);
 
         // Act
@@ -230,6 +233,7 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
         $otherOrganization = Organization::factory()->create();
         $project = Project::factory()->forOrganization($otherOrganization)->create();
         $projectFake = Project::factory()->make();
+        $this->assertBillableRateServiceIsUnused();
         Passport::actingAs($data->user);
 
         // Act
@@ -246,10 +250,10 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
     public function test_update_endpoint_fails_if_user_has_no_permission_to_update_projects(): void
     {
         // Arrange
-        $data = $this->createUserWithPermission([
-        ]);
+        $data = $this->createUserWithPermission();
         $project = Project::factory()->forOrganization($data->organization)->create();
         $projectFake = Project::factory()->make();
+        $this->assertBillableRateServiceIsUnused();
         Passport::actingAs($data->user);
 
         // Act
@@ -272,6 +276,7 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
         $project = Project::factory()->forOrganization($data->organization)->create();
         $projectFake = Project::factory()->make();
         $client = Client::factory()->forOrganization($data->organization)->create();
+        $this->assertBillableRateServiceIsUnused();
         Passport::actingAs($data->user);
 
         // Act
@@ -299,6 +304,7 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
         ]);
         $project = Project::factory()->forOrganization($data->organization)->create();
         $projectFake = Project::factory()->make();
+        $this->assertBillableRateServiceIsUnused();
         Passport::actingAs($data->user);
 
         // Act
@@ -315,6 +321,39 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
             'name' => $projectFake->name,
             'color' => $projectFake->color,
             'billable_rate' => 10002,
+        ]);
+    }
+
+    public function test_update_endpoint_can_update_projects_billable_rate_and_update_time_entries(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'projects:update',
+        ]);
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        $projectFake = Project::factory()->make();
+        $this->mock(BillableRateService::class, function (MockInterface $mock) use ($project): void {
+            $mock->shouldReceive('updateTimeEntriesBillableRateForProject')
+                ->once()
+                ->withArgs(fn (Project $projectArg) => $projectArg->is($project) && $projectArg->billable_rate === 10003);
+        });
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.projects.update', [$data->organization->getKey(), $project->getKey()]), [
+            'name' => $projectFake->name,
+            'color' => $projectFake->color,
+            'is_billable' => $projectFake->is_billable,
+            'billable_rate' => 10003,
+            'billable_rate_update_time_entries' => 'true',
+        ]);
+
+        // Assert
+        $response->assertStatus(200);
+        $this->assertDatabaseHas(Project::class, [
+            'name' => $projectFake->name,
+            'color' => $projectFake->color,
+            'billable_rate' => 10003,
         ]);
     }
 

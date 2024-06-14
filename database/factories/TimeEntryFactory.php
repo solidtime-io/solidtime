@@ -40,7 +40,27 @@ class TimeEntryFactory extends Factory
             'task_id' => null,
             'project_id' => null,
             'organization_id' => Organization::factory(),
+            'billable_rate' => null,
         ];
+    }
+
+    public function notBillable(): self
+    {
+        return $this->state(function (array $attributes): array {
+            return [
+                'billable' => false,
+            ];
+        });
+    }
+
+    public function billableRate(int $billableRate): self
+    {
+        return $this->state(function (array $attributes) use ($billableRate): array {
+            return [
+                'billable' => true,
+                'billable_rate' => $billableRate,
+            ];
+        });
     }
 
     public function withTask(Organization $organization): self

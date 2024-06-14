@@ -23,16 +23,19 @@ class MemberUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'role' => [
+                'string',
+                // TODO: placeholder role should not be allowed
+                Rule::enum(Role::class),
+            ],
             'billable_rate' => [
                 'nullable',
                 'integer',
                 'min:0',
             ],
-            'role' => [
-                'required',
+            'billable_rate_update_time_entries' => [
                 'string',
-                // TODO: placeholder role should not be allowed
-                Rule::enum(Role::class),
+                'in:true,false',
             ],
         ];
     }
@@ -42,5 +45,11 @@ class MemberUpdateRequest extends FormRequest
         $input = $this->input('billable_rate');
 
         return $input !== null && $input !== 0 ? (int) $this->input('billable_rate') : null;
+    }
+
+    public function getBillableRateUpdateTimeEntries(): bool
+    {
+        return $this->has('billable_rate_update_time_entries') &&
+            $this->input('billable_rate_update_time_entries') === 'true';
     }
 }

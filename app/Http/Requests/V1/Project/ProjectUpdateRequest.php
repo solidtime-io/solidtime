@@ -41,17 +41,21 @@ class ProjectUpdateRequest extends FormRequest
                 'required',
                 'boolean',
             ],
-            'billable_rate' => [
-                'nullable',
-                'integer',
-                'min:0',
-            ],
             'client_id' => [
                 'nullable',
                 new ExistsEloquent(Client::class, null, function (Builder $builder): Builder {
                     /** @var Builder<Client> $builder */
                     return $builder->whereBelongsTo($this->organization, 'organization');
                 }),
+            ],
+            'billable_rate' => [
+                'nullable',
+                'integer',
+                'min:0',
+            ],
+            'billable_rate_update_time_entries' => [
+                'string',
+                'in:true,false',
             ],
         ];
     }
@@ -61,5 +65,11 @@ class ProjectUpdateRequest extends FormRequest
         $input = $this->input('billable_rate');
 
         return $input !== null && $input !== 0 ? (int) $this->input('billable_rate') : null;
+    }
+
+    public function getBillableRateUpdateTimeEntries(): bool
+    {
+        return $this->has('billable_rate_update_time_entries') &&
+            $this->input('billable_rate_update_time_entries') === 'true';
     }
 }

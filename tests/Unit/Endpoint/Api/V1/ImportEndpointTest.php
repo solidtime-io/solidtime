@@ -78,6 +78,26 @@ class ImportEndpointTest extends ApiEndpointTestAbstract
         $response->assertForbidden();
     }
 
+    public function test_import_fails_if_data_can_not_be_base64_decoded(): void
+    {
+        $user = $this->createUserWithPermission([
+            'import',
+        ]);
+        Passport::actingAs($user->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.import.import', ['organization' => $user->organization->getKey()]), [
+            'type' => 'toggl_time_entries',
+            'data' => 'some invalid data ...',
+        ]);
+
+        // Assert
+        $response->assertStatus(400);
+        $response->assertExactJson([
+            'message' => 'Invalid base64 encoded data',
+        ]);
+    }
+
     public function test_import_return_error_message_if_import_fails(): void
     {
         $user = $this->createUserWithPermission([

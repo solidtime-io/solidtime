@@ -9,7 +9,9 @@ use App\Models\Member;
 use App\Models\Project;
 use App\Models\ProjectMember;
 use App\Models\User;
+use App\Service\BillableRateService;
 use Laravel\Passport\Passport;
+use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\UsesClass;
 
 #[UsesClass(ProjectMemberController::class)]
@@ -289,20 +291,52 @@ class ProjectMemberEndpointTest extends ApiEndpointTestAbstract
             'project-members:update',
         ]);
         $project = Project::factory()->forOrganization($data->organization)->create();
+        $billableRate = 1001;
         $projectMember = ProjectMember::factory()->forProject($project)->create();
-        $projectMemberFake = ProjectMember::factory()->make();
+        $this->assertBillableRateServiceIsUnused();
         Passport::actingAs($data->user);
 
         // Act
         $response = $this->putJson(route('api.v1.project-members.update', [$data->organization->getKey(), $projectMember->getKey()]), [
-            'billable_rate' => $projectMemberFake->billable_rate,
+            'billable_rate' => $billableRate,
         ]);
 
         // Assert
         $response->assertStatus(200);
         $this->assertDatabaseHas(ProjectMember::class, [
             'id' => $projectMember->getKey(),
-            'billable_rate' => $projectMemberFake->billable_rate,
+            'billable_rate' => $billableRate,
+            'member_id' => $projectMember->member_id,
+        ]);
+    }
+
+    public function test_update_endpoints_can_update_billable_rate_and_update_time_entries(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'project-members:update',
+        ]);
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        $billableRate = 1001;
+        $projectMember = ProjectMember::factory()->forProject($project)->create();
+        $this->mock(BillableRateService::class, function (MockInterface $mock) use ($projectMember, $billableRate): void {
+            $mock->shouldReceive('updateTimeEntriesBillableRateForProjectMember')
+                ->once()
+                ->withArgs(fn (ProjectMember $projectMemberArg) => $projectMemberArg->is($projectMember) && $projectMemberArg->billable_rate === $billableRate);
+        });
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.project-members.update', [$data->organization->getKey(), $projectMember->getKey()]), [
+            'billable_rate' => $billableRate,
+            'billable_rate_update_time_entries' => 'true',
+        ]);
+
+        // Assert
+        $response->assertStatus(200);
+        $this->assertDatabaseHas(ProjectMember::class, [
+            'id' => $projectMember->getKey(),
+            'billable_rate' => $billableRate,
             'member_id' => $projectMember->member_id,
         ]);
     }

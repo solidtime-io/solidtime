@@ -31,6 +31,10 @@ class OrganizationUpdateRequest extends FormRequest
                 'integer',
                 'min:0',
             ],
+            'billable_rate_update_time_entries' => [
+                'string',
+                'in:true,false',
+            ],
         ];
     }
 
@@ -39,5 +43,11 @@ class OrganizationUpdateRequest extends FormRequest
         $input = $this->input('billable_rate');
 
         return $input !== null && $input !== 0 ? (int) $this->input('billable_rate') : null;
+    }
+
+    public function getBillableRateUpdateTimeEntries(): bool
+    {
+        return $this->has('billable_rate_update_time_entries') &&
+            $this->input('billable_rate_update_time_entries') === 'true';
     }
 }

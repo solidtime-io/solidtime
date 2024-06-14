@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Tests;
 
+use App\Service\BillableRateService;
 use App\Service\PermissionStore;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Mail;
+use Mockery\MockInterface;
 use TiMacDonald\Log\LogFake;
 
 abstract class TestCase extends BaseTestCase
@@ -46,5 +48,15 @@ abstract class TestCase extends BaseTestCase
     public function travelTo($date, $callback = null): void
     {
         parent::travelTo($date->utc());
+    }
+
+    protected function assertBillableRateServiceIsUnused(): void
+    {
+        $this->mock(BillableRateService::class, function (MockInterface $mock) {
+            $mock->shouldNotReceive('updateTimeEntriesBillableRateForProjectMember');
+            $mock->shouldNotReceive('updateTimeEntriesBillableRateForProject');
+            $mock->shouldNotReceive('updateTimeEntriesBillableRateForMember');
+            $mock->shouldNotReceive('updateTimeEntriesBillableRateForOrganization');
+        });
     }
 }

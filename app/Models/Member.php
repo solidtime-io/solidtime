@@ -8,6 +8,7 @@ use App\Models\Concerns\HasUuids;
 use Database\Factories\MemberFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Laravel\Jetstream\Membership as JetstreamMembership;
 
 /**
@@ -49,5 +50,13 @@ class Member extends JetstreamMembership
     public function organization(): BelongsTo
     {
         return $this->belongsTo(Organization::class, 'organization_id');
+    }
+
+    /**
+     * @return HasMany<ProjectMember>
+     */
+    public function projectMembers(): HasMany
+    {
+        return $this->hasMany(ProjectMember::class, 'member_id');
     }
 }

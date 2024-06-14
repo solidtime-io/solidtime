@@ -12,7 +12,9 @@ use App\Models\Project;
 use App\Models\ProjectMember;
 use App\Models\TimeEntry;
 use App\Models\User;
+use App\Service\BillableRateService;
 use Laravel\Passport\Passport;
+use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\UsesClass;
 
 #[UsesClass(MemberController::class)]
@@ -91,6 +93,7 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
         $data = $this->createUserWithPermission([
             'members:update',
         ]);
+        $this->assertBillableRateServiceIsUnused();
         Passport::actingAs($data->user);
 
         // Act
@@ -105,6 +108,32 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
         $member->refresh();
         $this->assertSame(10001, $member->billable_rate);
         $this->assertSame(Role::Employee->value, $member->role);
+    }
+
+    public function test_update_member_can_update_billable_rate_of_member_and_update_time_entries(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'members:update',
+        ]);
+        $this->mock(BillableRateService::class, function (MockInterface $mock) use ($data) {
+            $mock->shouldReceive('updateTimeEntriesBillableRateForMember')
+                ->once()
+                ->withArgs(fn (Member $memberArg) => $memberArg->is($data->member) && $memberArg->billable_rate === 10001);
+        });
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.members.update', [$data->organization->getKey(), $data->member]), [
+            'billable_rate' => 10001,
+            'billable_rate_update_time_entries' => 'true',
+        ]);
+
+        // Assert
+        $response->assertStatus(200);
+        $member = $data->member;
+        $member->refresh();
+        $this->assertSame(10001, $member->billable_rate);
     }
 
     public function test_invite_placeholder_succeeds_if_data_is_valid(): void
