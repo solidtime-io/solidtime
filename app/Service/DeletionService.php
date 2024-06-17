@@ -29,7 +29,7 @@ class DeletionService
         $this->userService = $userService;
     }
 
-    public function deleteOrganization(Organization $organization, bool $inTransaction = true): void
+    public function deleteOrganization(Organization $organization, bool $inTransaction = true, ?User $ignoreUser = null): void
     {
         if ($inTransaction) {
             DB::transaction(function () use ($organization) {
@@ -85,8 +85,11 @@ class DeletionService
             ->get();
         $organization->users()->sync([]);
 
-        // Make sure all users have at least one organization
+        // Make sure all users have at least one organization and delete placeholders
         foreach ($users as $user) {
+            if ($ignoreUser !== null && $user->is($ignoreUser)) {
+                continue;
+            }
             if ($user->is_placeholder) {
                 $user->delete();
             } else {
@@ -140,9 +143,7 @@ class DeletionService
         /** @var Member $member */
         foreach ($members as $member) {
             if ($member->role === Role::Owner->value) {
-                // Note: The member needs to be deleted first, otherwise the organization delete function will recreate a new personal organization for the user
-                $member->delete();
-                $this->deleteOrganization($member->organization, false);
+                $this->deleteOrganization($member->organization, false, $user);
             } else {
                 $this->userService->makeMemberToPlaceholder($member);
             }

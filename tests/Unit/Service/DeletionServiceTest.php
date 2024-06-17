@@ -224,7 +224,7 @@ class DeletionServiceTest extends TestCaseWithDatabase
         $memberOwner = Member::factory()->forUser($user)->forOrganization($organization)->role(Role::Owner)->create();
         $otherOrganization = Organization::factory()->create();
 
-        $brokenTimeEntry = TimeEntry::factory()->forOrganization($otherOrganization)->forMember($memberOwner)->create();
+        $brokenTimeEntry = TimeEntry::factory()->forMember($memberOwner)->forOrganization($otherOrganization)->create();
 
         // Act
         try {
@@ -310,6 +310,8 @@ class DeletionServiceTest extends TestCaseWithDatabase
         $organizationNotOwned = Organization::factory()->create();
         $memberOwned = Member::factory()->forUser($user)->forOrganization($organizationOwned)->role(Role::Owner)->create();
         $memberNotOwned = Member::factory()->forUser($user)->forOrganization($organizationNotOwned)->role(Role::Employee)->create();
+        TimeEntry::factory()->forOrganization($organizationOwned)->forMember($memberOwned)->createMany(2);
+        TimeEntry::factory()->forOrganization($organizationNotOwned)->forMember($memberNotOwned)->createMany(2);
 
         // Act
         $this->deletionService->deleteUser($user);
