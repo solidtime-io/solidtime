@@ -50,12 +50,6 @@ const verificationLinkSent = computed(
 
                 <div>
                     <Link
-                        :href="route('profile.show')"
-                        class="underline text-sm text-muted hover:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                        Edit Profile</Link
-                    >
-
-                    <Link
                         :href="route('logout')"
                         method="post"
                         as="button"
