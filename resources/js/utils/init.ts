@@ -8,6 +8,11 @@ import { useTimeEntriesStore } from '@/utils/useTimeEntries';
 import { canViewClients, canViewMembers } from '@/utils/permissions';
 
 export function initializeStores() {
+    refreshStores();
+    useTimeEntriesStore().fetchTimeEntries();
+}
+
+export function refreshStores() {
     useProjectsStore().fetchProjects();
     useTasksStore().fetchTasks();
     useTagsStore().fetchTags();
@@ -18,5 +23,4 @@ export function initializeStores() {
     if (canViewClients()) {
         useClientsStore().fetchClients();
     }
-    useTimeEntriesStore().fetchTimeEntries();
 }

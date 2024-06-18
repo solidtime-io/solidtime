@@ -21,7 +21,7 @@ import UserSettingsIcon from '@/Components/UserSettingsIcon.vue';
 import MainContainer from '@/Pages/MainContainer.vue';
 import { onMounted, ref } from 'vue';
 import NotificationContainer from '@/Components/NotificationContainer.vue';
-import { initializeStores } from '@/utils/init';
+import { initializeStores, refreshStores } from '@/utils/init';
 import {
     canUpdateOrganization,
     canViewClients,
@@ -45,6 +45,9 @@ onMounted(async () => {
         window.initialDataLoaded = true;
         initializeStores();
     }
+    window.onfocus = () => {
+        refreshStores();
+    };
 });
 
 const page = usePage<{
