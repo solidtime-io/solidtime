@@ -78,7 +78,7 @@ export const useTimeEntriesStore = defineStore('timeEntries', () => {
     async function updateTimeEntry(timeEntry: TimeEntry) {
         const organizationId = getCurrentOrganizationId();
         if (organizationId) {
-            await handleApiRequestNotifications(
+            const response = await handleApiRequestNotifications(
                 () =>
                     api.updateTimeEntry(timeEntry, {
                         params: {
@@ -88,6 +88,9 @@ export const useTimeEntriesStore = defineStore('timeEntries', () => {
                     }),
                 'Time entry updated successfully',
                 'Failed to update time entry'
+            );
+            timeEntries.value = timeEntries.value.map((entry) =>
+                entry.id === timeEntry.id ? response.data : entry
             );
         }
     }
