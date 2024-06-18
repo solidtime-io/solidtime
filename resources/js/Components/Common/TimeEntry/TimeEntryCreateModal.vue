@@ -2,9 +2,8 @@
 import TextInput from '@/Components/TextInput.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import DialogModal from '@/Components/DialogModal.vue';
-import { ref, watch } from 'vue';
+import { nextTick, ref, watch } from 'vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
-import { useFocus } from '@vueuse/core';
 import TimeTrackerTagDropdown from '@/Components/Common/TimeTracker/TimeTrackerTagDropdown.vue';
 import TimeTrackerProjectTaskDropdown from '@/Components/Common/TimeTracker/TimeTrackerProjectTaskDropdown.vue';
 import BillableToggleButton from '@/Components/Common/BillableToggleButton.vue';
@@ -18,6 +17,16 @@ import { getDayJsInstance, getLocalizedDayJs } from '@/utils/time';
 const { createTimeEntry } = useTimeEntriesStore();
 const show = defineModel('show', { default: false });
 const saving = ref(false);
+
+const description = ref<HTMLInputElement | null>(null);
+
+watch(show, (value) => {
+    if (value) {
+        nextTick(() => {
+            description.value?.focus();
+        });
+    }
+});
 
 const timeEntryDefaultValues = {
     description: '',
@@ -36,11 +45,14 @@ const localStart = ref(
     getLocalizedDayJs(timeEntryDefaultValues.start).format()
 );
 
+const localEnd = ref(getLocalizedDayJs(timeEntryDefaultValues.end).format());
+
 watch(localStart, (value) => {
     timeEntry.value.start = getLocalizedDayJs(value).utc().format();
+    if (getLocalizedDayJs(localEnd.value).isBefore(getLocalizedDayJs(value))) {
+        localEnd.value = value;
+    }
 });
-
-const localEnd = ref(getLocalizedDayJs(timeEntryDefaultValues.end).format());
 
 watch(localEnd, (value) => {
     timeEntry.value.end = getLocalizedDayJs(value).utc().format();
@@ -53,10 +65,6 @@ async function submit() {
     localEnd.value = getLocalizedDayJs(timeEntryDefaultValues.end).format();
     show.value = false;
 }
-
-const projectNameInput = ref<HTMLInputElement | null>(null);
-
-useFocus(projectNameInput, { initialValue: true });
 </script>
 
 <template>
@@ -73,11 +81,11 @@ useFocus(projectNameInput, { initialValue: true });
                     <InputLabel for="description" value="Description" />
                     <TextInput
                         id="description"
+                        ref="description"
                         v-model="timeEntry.description"
                         @keydown.enter="submit"
                         type="text"
-                        class="mt-1 block w-full"
-                        autofocus />
+                        class="mt-1 block w-full" />
                 </div>
                 <div class="flex items-center justify-between">
                     <div>
