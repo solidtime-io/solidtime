@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { getDayJsInstance, getLocalizedDayJs } from '@/utils/time';
 import { twMerge } from 'tailwind-merge';
 
@@ -13,6 +13,10 @@ const model = defineModel<string | null>({
 });
 
 const tempDate = ref(getLocalizedDayJs(model.value).format('YYYY-MM-DD'));
+
+watch(model, (value) => {
+    tempDate.value = getLocalizedDayJs(value).format('YYYY-MM-DD');
+});
 
 function updateDate(event: Event) {
     const target = event.target as HTMLInputElement;

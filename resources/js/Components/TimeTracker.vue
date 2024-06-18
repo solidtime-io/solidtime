@@ -5,7 +5,7 @@ import BillableToggleButton from '@/Components/Common/BillableToggleButton.vue';
 import TimeTrackerStartStop from '@/Components/Common/TimeTrackerStartStop.vue';
 import { usePage } from '@inertiajs/vue3';
 import { type User } from '@/types/models';
-import { computed, onMounted, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import duration from 'dayjs/plugin/duration';
@@ -31,8 +31,8 @@ dayjs.extend(utc);
 
 const currentTimeEntryStore = useCurrentTimeEntryStore();
 const { currentTimeEntry, isActive, now } = storeToRefs(currentTimeEntryStore);
-const { startLiveTimer, stopLiveTimer, onToggleButtonPress } =
-    currentTimeEntryStore;
+const { startLiveTimer, stopLiveTimer, setActiveState } = currentTimeEntryStore;
+const currentTimeEntryDescriptionInput = ref<HTMLInputElement | null>(null);
 
 watch(isActive, () => {
     if (isActive.value) {
@@ -71,9 +71,16 @@ function updateTimeEntry() {
     }
 }
 
+function onToggleButtonPress(newState: boolean) {
+    setActiveState(newState);
+    if (newState) {
+        currentTimeEntryDescriptionInput.value?.focus();
+    }
+}
+
 function startTimerIfNotActive() {
     if (!isActive.value) {
-        onToggleButtonPress(true);
+        setActiveState(true);
     }
 }
 
@@ -116,6 +123,7 @@ function switchToTimeEntryOrganization() {
                     <input
                         placeholder="What are you working on?"
                         data-testid="time_entry_description"
+                        ref="currentTimeEntryDescriptionInput"
                         v-model="currentTimeEntry.description"
                         @keydown.enter="startTimerIfNotActive"
                         @blur="updateTimeEntry"

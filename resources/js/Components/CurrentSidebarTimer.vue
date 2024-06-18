@@ -8,7 +8,7 @@ import TimeTrackerStartStop from '@/Components/Common/TimeTrackerStartStop.vue';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 const store = useCurrentTimeEntryStore();
 const { currentTimeEntry, now, isActive } = storeToRefs(store);
-const { onToggleButtonPress } = store;
+const { setActiveState } = store;
 
 const currentTime = computed(() => {
     if (now.value && currentTimeEntry.value.start) {
@@ -50,7 +50,7 @@ const isRunningInDifferentOrganization = computed(() => {
         </div>
         <TimeTrackerStartStop
             :active="isActive"
-            @changed="onToggleButtonPress"
+            @changed="setActiveState"
             size="base"></TimeTrackerStartStop>
     </div>
 </template>
