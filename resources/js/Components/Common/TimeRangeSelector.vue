@@ -24,7 +24,11 @@ watch(props, () => {
     tempEnd.value = getLocalizedDayJs(props.end).format();
 });
 function updateTimeEntry() {
-    if (tempStart.value !== props.start || tempEnd.value !== props.end) {
+    const tempStartUtc = getDayJsInstance()(tempStart.value).utc().format();
+    const tempEndUtc = tempEnd.value
+        ? getDayJsInstance()(tempEnd.value).utc().format()
+        : null;
+    if (tempStartUtc !== props.start || tempEndUtc !== props.end) {
         emit(
             'changed',
             getDayJsInstance()(tempStart.value).utc().format(),
@@ -52,6 +56,7 @@ watch(focused, (newValue, oldValue) => {
             <div class="space-y-1">
                 <TimePicker
                     data-testid="time_entry_range_start"
+                    focus
                     @changed="updateTimeEntry"
                     v-model="tempStart"></TimePicker>
                 <DatePicker

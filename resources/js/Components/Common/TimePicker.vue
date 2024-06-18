@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { ref, watch } from 'vue';
 import { getDayJsInstance, getLocalizedDayJs } from '@/utils/time';
 import { twMerge } from 'tailwind-merge';
+import { useFocus } from '@vueuse/core';
 
 // This has to be a localized timestamp, not UTC
 const model = defineModel<string | null>({
@@ -11,19 +12,31 @@ const model = defineModel<string | null>({
 const props = withDefaults(
     defineProps<{
         size: 'base' | 'large';
+        focus: boolean;
     }>(),
     {
         size: 'base',
+        focus: false,
     }
 );
 
-const hours = computed(() => {
-    return model.value ? getLocalizedDayJs(model.value).format('HH') : null;
-});
-
-const minutes = computed(() => {
-    return model.value ? getLocalizedDayJs(model.value).format('mm') : null;
-});
+const hours = ref(
+    model.value ? getLocalizedDayJs(model.value).format('HH') : null
+);
+const minutes = ref(
+    model.value ? getLocalizedDayJs(model.value).format('mm') : null
+);
+watch(
+    () => model.value,
+    () => {
+        hours.value = model.value
+            ? getLocalizedDayJs(model.value).format('HH')
+            : null;
+        minutes.value = model.value
+            ? getLocalizedDayJs(model.value).format('mm')
+            : null;
+    }
+);
 
 function updateMinutes(event: Event) {
     const target = event.target as HTMLInputElement;
@@ -33,19 +46,31 @@ function updateMinutes(event: Event) {
             .set('minutes', Math.min(parseInt(newValue), 59))
             .format();
     }
+    minutes.value = model.value
+        ? getLocalizedDayJs(model.value).format('mm')
+        : null;
 }
 
 function updateHours(event: Event) {
     const target = event.target as HTMLInputElement;
     const newValue = target.value;
-    if (!isNaN(parseInt(newValue))) {
+    if (newValue.endsWith(':')) {
+        minutesInput.value?.focus();
+    } else if (!isNaN(parseInt(newValue))) {
         model.value = getLocalizedDayJs(model.value)
             .set('hours', Math.min(parseInt(newValue), 23))
             .format();
     }
+    hours.value = model.value
+        ? getLocalizedDayJs(model.value).format('HH')
+        : null;
 }
 
+const hoursInput = ref<HTMLInputElement | null>(null);
+const minutesInput = ref<HTMLInputElement | null>(null);
 const emit = defineEmits(['changed']);
+
+useFocus(hoursInput, { initialValue: props.focus });
 </script>
 
 <template>
@@ -58,7 +83,8 @@ const emit = defineEmits(['changed']);
                 )
             ">
             <input
-                :value="hours"
+                v-model="hours"
+                ref="hoursInput"
                 @input="updateHours"
                 @keydown.enter="emit('changed')"
                 @focus="($event.target as HTMLInputElement).select()"
@@ -72,7 +98,8 @@ const emit = defineEmits(['changed']);
                 " />
             <span>:</span>
             <input
-                :value="minutes"
+                v-model="minutes"
+                ref="minutesInput"
                 @keydown.enter="emit('changed')"
                 @input="updateMinutes"
                 @focus="($event.target as HTMLInputElement).select()"
