@@ -8,7 +8,7 @@
     "require": {
         "php": "8.3.*",
         "ext-zip": "*",
-        "brick/money": "^0.8.1",
+        "brick/money": "^0.9.0",
         "dedoc/scramble": "dev-main",
         "filament/filament": "^3.2",
         "flowframe/laravel-trend": "^0.2.0",
@@ -22,12 +22,12 @@
         "laravel/passport": "^12.0",
         "laravel/tinker": "^2.8",
         "league/flysystem-aws-s3-v3": "^3.0",
-        "nwidart/laravel-modules": "dev-feature/fixed_path",
+        "nwidart/laravel-modules": "^11.0.11",
         "pxlrbt/filament-environment-indicator": "^2.0",
         "spatie/temporary-directory": "^2.2",
         "stechstudio/filament-impersonate": "^3.8",
         "tightenco/ziggy": "^2.1.0",
-        "tpetry/laravel-postgresql-enhanced": "^0.38.0",
+        "tpetry/laravel-postgresql-enhanced": "^0.39.0",
         "wikimedia/composer-merge-plugin": "^2.1.0"
     },
     "require-dev": {
@@ -115,10 +115,6 @@
         {
             "type": "vcs",
             "url": "https://github.com/korridor/scramble"
-        },
-        {
-            "type": "vcs",
-            "url": "https://github.com/korridor/laravel-modules"
         }
     ],
     "config": {
