@@ -18,7 +18,7 @@ function updateDate(event: Event) {
     const target = event.target as HTMLInputElement;
     const newValue = target.value;
     const newDate = getDayJsInstance()(newValue);
-    if (newDate) {
+    if (newDate.isValid()) {
         model.value = getLocalizedDayJs(model.value)
             .set('year', newDate.year())
             .set('month', newDate.month())
