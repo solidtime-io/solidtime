@@ -191,7 +191,7 @@ export const useCurrentTimeEntryStore = defineStore('currentTimeEntry', () => {
         return false;
     });
 
-    async function onToggleButtonPress(newState: boolean) {
+    async function setActiveState(newState: boolean) {
         if (newState) {
             startLiveTimer();
             await startTimer();
@@ -214,6 +214,6 @@ export const useCurrentTimeEntryStore = defineStore('currentTimeEntry', () => {
         startLiveTimer,
         stopLiveTimer,
         now,
-        onToggleButtonPress,
+        setActiveState,
     };
 });
