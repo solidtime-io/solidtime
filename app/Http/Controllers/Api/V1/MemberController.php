@@ -68,7 +68,7 @@ class MemberController extends Controller
             $member->billable_rate = $request->getBillableRate();
         }
         if ($request->has('role')) {
-            $member->role = $request->input('role');
+            $member->role = $request->getRole()->value;
         }
         $member->save();
 

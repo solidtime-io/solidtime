@@ -57,8 +57,7 @@ class InvitationEndpointTest extends ApiEndpointTestAbstract
     public function test_store_fails_if_user_has_no_permission_to_create_invitations(): void
     {
         // Arrange
-        $data = $this->createUserWithPermission([
-        ]);
+        $data = $this->createUserWithPermission();
         Passport::actingAs($data->user);
 
         // Act
@@ -69,6 +68,44 @@ class InvitationEndpointTest extends ApiEndpointTestAbstract
 
         // Assert
         $response->assertStatus(403);
+    }
+
+    public function test_store_fails_if_user_invites_with_role_owner(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'invitations:create',
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.invitations.store', $data->organization->getKey()), [
+            'email' => 'test@asdf.at',
+            'role' => Role::Owner->value,
+        ]);
+
+        // Assert
+        $response->assertStatus(422);
+        $response->assertJsonPath('message', 'The selected role is invalid.');
+    }
+
+    public function test_store_fails_if_user_invites_with_role_placeholder(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'invitations:create',
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.invitations.store', $data->organization->getKey()), [
+            'email' => 'test@asdf.at',
+            'role' => Role::Placeholder->value,
+        ]);
+
+        // Assert
+        $response->assertStatus(422);
+        $response->assertJsonPath('message', 'The selected role is invalid.');
     }
 
     public function test_store_invites_user_to_organization(): void

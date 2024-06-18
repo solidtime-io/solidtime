@@ -30,9 +30,14 @@ class InvitationStoreRequest extends FormRequest
             'role' => [
                 'required',
                 'string',
-                // TODO: placeholder role should not be allowed
-                Rule::enum(Role::class),
+                Rule::enum(Role::class)
+                    ->except([Role::Owner, Role::Placeholder]),
             ],
         ];
+    }
+
+    public function getRole(): Role
+    {
+        return Role::from($this->input('role'));
     }
 }

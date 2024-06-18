@@ -25,8 +25,8 @@ class MemberUpdateRequest extends FormRequest
         return [
             'role' => [
                 'string',
-                // TODO: placeholder role should not be allowed
-                Rule::enum(Role::class),
+                Rule::enum(Role::class)
+                    ->except([Role::Owner, Role::Placeholder]),
             ],
             'billable_rate' => [
                 'nullable',
@@ -51,5 +51,10 @@ class MemberUpdateRequest extends FormRequest
     {
         return $this->has('billable_rate_update_time_entries') &&
             $this->input('billable_rate_update_time_entries') === 'true';
+    }
+
+    public function getRole(): Role
+    {
+        return Role::from($this->input('role'));
     }
 }

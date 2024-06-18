@@ -60,7 +60,7 @@ class InvitationController extends Controller
             $this->user(),
             $organization,
             $request->input('email'),
-            $request->input('role')
+            $request->getRole()->value
         );
 
         return response()->json(null, 204);

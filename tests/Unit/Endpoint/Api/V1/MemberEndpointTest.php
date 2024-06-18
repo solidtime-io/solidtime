@@ -136,6 +136,63 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
         $this->assertSame(10001, $member->billable_rate);
     }
 
+    public function test_update_member_can_update_role(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'members:update',
+        ]);
+        $otherUser = User::factory()->create();
+        $otherMember = Member::factory()->forUser($otherUser)->forOrganization($data->organization)->role(Role::Employee)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.members.update', [$data->organization->getKey(), $otherMember->getKey()]), [
+            'role' => Role::Admin->value,
+        ]);
+
+        // Assert
+        $response->assertStatus(200);
+        $otherMember->refresh();
+        $this->assertSame(Role::Admin->value, $otherMember->role);
+    }
+
+    public function test_update_member_role_fails_if_role_is_owner(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'members:update',
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.members.update', [$data->organization->getKey(), $data->member->getKey()]), [
+            'role' => Role::Owner->value,
+        ]);
+
+        // Assert
+        $response->assertStatus(422);
+        $response->assertJsonPath('message', 'The selected role is invalid.');
+    }
+
+    public function test_update_member_role_fails_if_role_is_placeholder(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'members:update',
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.members.update', [$data->organization->getKey(), $data->member->getKey()]), [
+            'role' => Role::Placeholder->value,
+        ]);
+
+        // Assert
+        $response->assertStatus(422);
+        $response->assertJsonPath('message', 'The selected role is invalid.');
+    }
+
     public function test_invite_placeholder_succeeds_if_data_is_valid(): void
     {
         $data = $this->createUserWithPermission([
