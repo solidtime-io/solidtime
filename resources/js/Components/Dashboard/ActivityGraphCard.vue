@@ -111,6 +111,7 @@ const option = ref({
         <div class="px-2">
             <v-chart
                 class="chart"
+                :autoresize="true"
                 :option="option"
                 style="height: 260px; background-color: transparent" />
         </div>
