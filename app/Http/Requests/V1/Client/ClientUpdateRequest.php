@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Requests\V1\Task;
+namespace App\Http\Requests\V1\Client;
 
+use App\Models\Client;
 use App\Models\Organization;
-use App\Models\Task;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Http\FormRequest;
@@ -13,9 +13,9 @@ use Korridor\LaravelModelValidationRules\Rules\UniqueEloquent;
 
 /**
  * @property Organization $organization Organization from model binding
- * @property Task $task Task from model binding
+ * @property Client $client Client from model binding
  */
-class TaskUpdateRequest extends FormRequest
+class ClientUpdateRequest extends FormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -30,10 +30,10 @@ class TaskUpdateRequest extends FormRequest
                 'string',
                 'min:1',
                 'max:255',
-                (new UniqueEloquent(Task::class, 'name', function (Builder $builder): Builder {
-                    /** @var Builder<Task> $builder */
-                    return $builder->where('project_id', '=', $this->task->project_id);
-                }))->ignore($this->task->getKey())->withCustomTranslation('validation.task_name_already_exists'),
+                (new UniqueEloquent(Client::class, 'name', function (Builder $builder): Builder {
+                    /** @var Builder<Client> $builder */
+                    return $builder->whereBelongsTo($this->organization, 'organization');
+                }))->ignore($this->client->getKey())->withCustomTranslation('validation.client_name_already_exists'),
             ],
         ];
     }

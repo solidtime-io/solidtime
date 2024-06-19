@@ -6,11 +6,13 @@ namespace App\Http\Requests\V1\Project;
 
 use App\Models\Client;
 use App\Models\Organization;
+use App\Models\Project;
 use App\Rules\ColorRule;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Http\FormRequest;
 use Korridor\LaravelModelValidationRules\Rules\ExistsEloquent;
+use Korridor\LaravelModelValidationRules\Rules\UniqueEloquent;
 
 /**
  * @property Organization $organization Organization from model binding
@@ -26,11 +28,14 @@ class ProjectStoreRequest extends FormRequest
     {
         return [
             'name' => [
-                // TODO: unique
                 'required',
                 'string',
                 'min:1',
                 'max:255',
+                (new UniqueEloquent(Project::class, 'name', function (Builder $builder): Builder {
+                    /** @var Builder<Project> $builder */
+                    return $builder->whereBelongsTo($this->organization, 'organization');
+                }))->withCustomTranslation('validation.project_name_already_exists'),
             ],
             'color' => [
                 'required',

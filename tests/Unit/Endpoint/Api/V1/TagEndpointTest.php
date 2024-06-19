@@ -18,8 +18,7 @@ class TagEndpointTest extends ApiEndpointTestAbstract
     public function test_index_endpoint_fails_if_user_has_no_permission_to_view_tags(): void
     {
         // Arrange
-        $data = $this->createUserWithPermission([
-        ]);
+        $data = $this->createUserWithPermission();
         $tags = Tag::factory()->forOrganization($data->organization)->createMany(4);
         Passport::actingAs($data->user);
 
@@ -61,8 +60,7 @@ class TagEndpointTest extends ApiEndpointTestAbstract
     public function test_store_endpoint_fails_if_user_has_no_permission_to_create_tags(): void
     {
         // Arrange
-        $data = $this->createUserWithPermission([
-        ]);
+        $data = $this->createUserWithPermission();
         Passport::actingAs($data->user);
 
         // Act
@@ -72,6 +70,55 @@ class TagEndpointTest extends ApiEndpointTestAbstract
 
         // Assert
         $response->assertForbidden();
+    }
+
+    public function test_store_endpoint_fails_if_name_is_already_taken(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'tags:create',
+        ]);
+        $name = 'Test Tag';
+        $tagWithName = Tag::factory()->forOrganization($data->organization)->create([
+            'name' => $name,
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.tags.store', [$data->organization->getKey()]), [
+            'name' => $tagWithName->name,
+        ]);
+
+        // Assert
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors([
+            'name' => 'A tag with the same name already exists in the organization.',
+        ]);
+    }
+
+    public function test_store_endpoint_creates_tag_if_tag_name_is_only_used_in_other_organizations(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'tags:create',
+        ]);
+        $name = 'Test Tag';
+        $tagWithName = Tag::factory()->create([
+            'name' => $name,
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.tags.store', [$data->organization->getKey()]), [
+            'name' => $tagWithName->name,
+        ]);
+
+        // Assert
+        $response->assertStatus(201);
+        $response->assertJson(fn (AssertableJson $json) => $json
+            ->has('data')
+            ->where('data.name', $tagWithName->name)
+        );
     }
 
     public function test_store_endpoint_creates_new_tag(): void
@@ -99,8 +146,7 @@ class TagEndpointTest extends ApiEndpointTestAbstract
     public function test_update_endpoint_fails_if_user_has_no_permission_to_update_tags(): void
     {
         // Arrange
-        $data = $this->createUserWithPermission([
-        ]);
+        $data = $this->createUserWithPermission();
         $tag = Tag::factory()->forOrganization($data->organization)->create();
         $tagFake = Tag::factory()->make();
         Passport::actingAs($data->user);
@@ -139,6 +185,57 @@ class TagEndpointTest extends ApiEndpointTestAbstract
         ]);
     }
 
+    public function test_update_endpoint_fails_if_name_is_already_taken(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'tags:update',
+        ]);
+        $tag = Tag::factory()->forOrganization($data->organization)->create();
+        $tagWithName = Tag::factory()->forOrganization($data->organization)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.tags.update', [$data->organization->getKey(), $tag->getKey()]), [
+            'name' => $tagWithName->name,
+        ]);
+
+        // Assert
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors([
+            'name' => 'A tag with the same name already exists in the organization.',
+        ]);
+    }
+
+    public function test_update_endpoint_updates_tag_if_tag_name_is_only_used_in_other_organizations(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'tags:update',
+        ]);
+        $tag = Tag::factory()->forOrganization($data->organization)->create();
+        $tagWithName = Tag::factory()->create([
+            'name' => 'Test Tag',
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.tags.update', [$data->organization->getKey(), $tag->getKey()]), [
+            'name' => $tagWithName->name,
+        ]);
+
+        // Assert
+        $response->assertStatus(200);
+        $response->assertJson(fn (AssertableJson $json) => $json
+            ->has('data')
+            ->where('data.name', $tagWithName->name)
+        );
+        $this->assertDatabaseHas(Tag::class, [
+            'name' => $tagWithName->name,
+            'organization_id' => $data->organization->getKey(),
+        ]);
+    }
+
     public function test_update_endpoint_updates_tag(): void
     {
         // Arrange
@@ -169,8 +266,7 @@ class TagEndpointTest extends ApiEndpointTestAbstract
     public function test_destroy_endpoint_fails_if_user_has_no_permission_to_delete_tags(): void
     {
         // Arrange
-        $data = $this->createUserWithPermission([
-        ]);
+        $data = $this->createUserWithPermission();
         $tag = Tag::factory()->forOrganization($data->organization)->create();
         Passport::actingAs($data->user);
 

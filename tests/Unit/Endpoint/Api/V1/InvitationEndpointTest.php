@@ -18,8 +18,7 @@ class InvitationEndpointTest extends ApiEndpointTestAbstract
     public function test_index_fails_if_user_has_no_permission_to_view_invitations(): void
     {
         // Arrange
-        $data = $this->createUserWithPermission([
-        ]);
+        $data = $this->createUserWithPermission();
         Passport::actingAs($data->user);
 
         // Act
@@ -133,8 +132,7 @@ class InvitationEndpointTest extends ApiEndpointTestAbstract
     public function test_resend_fails_if_user_has_no_permission_to_resend_the_invitation(): void
     {
         // Arrange
-        $data = $this->createUserWithPermission([
-        ]);
+        $data = $this->createUserWithPermission();
         Passport::actingAs($data->user);
         $invitation = OrganizationInvitation::factory()->forOrganization($data->organization)->create();
 
@@ -192,8 +190,7 @@ class InvitationEndpointTest extends ApiEndpointTestAbstract
     public function test_delete_fails_if_user_has_no_permission_to_remove_invitations(): void
     {
         // Arrange
-        $data = $this->createUserWithPermission([
-        ]);
+        $data = $this->createUserWithPermission();
         Passport::actingAs($data->user);
         $invitation = OrganizationInvitation::factory()->forOrganization($data->organization)->create();
 

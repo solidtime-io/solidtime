@@ -19,8 +19,7 @@ class ImportEndpointTest extends ApiEndpointTestAbstract
     public function test_index_fails_if_user_does_not_have_permission()
     {
         // Arrange
-        $data = $this->createUserWithPermission([
-        ]);
+        $data = $this->createUserWithPermission();
 
         Passport::actingAs($data->user);
 
@@ -62,8 +61,7 @@ class ImportEndpointTest extends ApiEndpointTestAbstract
     public function test_import_fails_if_user_does_not_have_permission()
     {
         // Arrange
-        $data = $this->createUserWithPermission([
-        ]);
+        $data = $this->createUserWithPermission();
 
         Passport::actingAs($data->user);
 

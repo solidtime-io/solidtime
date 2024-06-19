@@ -17,8 +17,7 @@ class OrganizationEndpointTest extends ApiEndpointTestAbstract
     public function test_show_endpoint_fails_if_user_has_no_permission_to_view_organizations(): void
     {
         // Arrange
-        $data = $this->createUserWithPermission([
-        ]);
+        $data = $this->createUserWithPermission();
         Passport::actingAs($data->user);
 
         // Act

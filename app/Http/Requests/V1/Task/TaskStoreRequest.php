@@ -6,10 +6,12 @@ namespace App\Http\Requests\V1\Task;
 
 use App\Models\Organization;
 use App\Models\Project;
+use App\Models\Task;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Http\FormRequest;
 use Korridor\LaravelModelValidationRules\Rules\ExistsEloquent;
+use Korridor\LaravelModelValidationRules\Rules\UniqueEloquent;
 
 /**
  * @property Organization $organization Organization from model binding
@@ -25,11 +27,14 @@ class TaskStoreRequest extends FormRequest
     {
         return [
             'name' => [
-                // TODO: unique
                 'required',
                 'string',
                 'min:1',
                 'max:255',
+                (new UniqueEloquent(Task::class, 'name', function (Builder $builder): Builder {
+                    /** @var Builder<Task> $builder */
+                    return $builder->where('project_id', '=', $this->input('project_id'));
+                }))->withCustomTranslation('validation.task_name_already_exists'),
             ],
             'project_id' => [
                 'required',

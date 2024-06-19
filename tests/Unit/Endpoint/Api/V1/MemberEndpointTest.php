@@ -23,8 +23,7 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
     public function test_index_fails_if_user_has_no_permission_to_view_members(): void
     {
         // Arrange
-        $data = $this->createUserWithPermission([
-        ]);
+        $data = $this->createUserWithPermission();
         Passport::actingAs($data->user);
 
         // Act
@@ -52,8 +51,7 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
     public function test_update_member_fails_if_user_has_no_permission_to_update_members(): void
     {
         // Arrange
-        $data = $this->createUserWithPermission([
-        ]);
+        $data = $this->createUserWithPermission();
         Passport::actingAs($data->user);
 
         // Act
@@ -219,8 +217,7 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
     public function test_destroy_member_fails_if_user_has_no_permission_to_delete_members(): void
     {
         // Arrange
-        $data = $this->createUserWithPermission([
-        ]);
+        $data = $this->createUserWithPermission();
         Passport::actingAs($data->user);
 
         // Act
@@ -327,8 +324,7 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
     public function test_invite_placeholder_fails_if_user_does_not_have_permission(): void
     {
         // Arrange
-        $data = $this->createUserWithPermission([
-        ]);
+        $data = $this->createUserWithPermission();
         $user = User::factory()->create([
             'is_placeholder' => true,
         ]);

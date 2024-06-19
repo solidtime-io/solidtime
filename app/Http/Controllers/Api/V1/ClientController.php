@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1;
 
 use App\Exceptions\Api\EntityStillInUseApiException;
-use App\Http\Requests\V1\Tag\TagStoreRequest;
-use App\Http\Requests\V1\Tag\TagUpdateRequest;
+use App\Http\Requests\V1\Client\ClientStoreRequest;
+use App\Http\Requests\V1\Client\ClientUpdateRequest;
 use App\Http\Resources\V1\Client\ClientCollection;
 use App\Http\Resources\V1\Client\ClientResource;
 use App\Models\Client;
@@ -52,7 +52,7 @@ class ClientController extends Controller
      *
      * @operationId createClient
      */
-    public function store(Organization $organization, TagStoreRequest $request): ClientResource
+    public function store(Organization $organization, ClientStoreRequest $request): ClientResource
     {
         $this->checkPermission($organization, 'clients:create');
 
@@ -71,7 +71,7 @@ class ClientController extends Controller
      *
      * @operationId updateClient
      */
-    public function update(Organization $organization, Client $client, TagUpdateRequest $request): ClientResource
+    public function update(Organization $organization, Client $client, ClientUpdateRequest $request): ClientResource
     {
         $this->checkPermission($organization, 'clients:update', $client);
 

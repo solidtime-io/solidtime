@@ -20,8 +20,7 @@ class ProjectMemberEndpointTest extends ApiEndpointTestAbstract
     public function test_index_endpoint_fails_if_user_has_no_permission_to_view_project_members(): void
     {
         // Arrange
-        $data = $this->createUserWithPermission([
-        ]);
+        $data = $this->createUserWithPermission();
         $project = Project::factory()->forOrganization($data->organization)->create();
         $projectMembers = ProjectMember::factory()->forProject($project)->createMany(4);
         Passport::actingAs($data->user);
@@ -83,8 +82,7 @@ class ProjectMemberEndpointTest extends ApiEndpointTestAbstract
     public function test_store_endpoint_fails_if_user_has_no_permission_to_add_members_to_project(): void
     {
         // Arrange
-        $data = $this->createUserWithPermission([
-        ]);
+        $data = $this->createUserWithPermission();
         $project = Project::factory()->forOrganization($data->organization)->create();
         $projectMemberFake = ProjectMember::factory()->make();
         $user = User::factory()->create();
@@ -268,8 +266,7 @@ class ProjectMemberEndpointTest extends ApiEndpointTestAbstract
     public function test_update_endpoint_fails_if_user_has_no_permission_to_update_projects(): void
     {
         // Arrange
-        $data = $this->createUserWithPermission([
-        ]);
+        $data = $this->createUserWithPermission();
         $project = Project::factory()->forOrganization($data->organization)->create();
         $projectMember = ProjectMember::factory()->forProject($project)->create();
         $projectMemberFake = ProjectMember::factory()->make();
@@ -367,8 +364,7 @@ class ProjectMemberEndpointTest extends ApiEndpointTestAbstract
     public function test_destroy_endpoint_fails_if_user_has_no_permission_to_delete_project_members(): void
     {
         // Arrange
-        $data = $this->createUserWithPermission([
-        ]);
+        $data = $this->createUserWithPermission();
         $project = Project::factory()->forOrganization($data->organization)->create();
         $projectMember = ProjectMember::factory()->forProject($project)->create();
         Passport::actingAs($data->user);

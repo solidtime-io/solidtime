@@ -22,8 +22,7 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
     public function test_index_endpoint_fails_if_user_has_no_permission_to_view_projects(): void
     {
         // Arrange
-        $data = $this->createUserWithPermission([
-        ]);
+        $data = $this->createUserWithPermission();
         $projects = Project::factory()->forOrganization($data->organization)->createMany(4);
         $projectsWithClients = Project::factory()->forOrganization($data->organization)->withClient()->createMany(4);
         Passport::actingAs($data->user);
@@ -92,8 +91,7 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
     public function test_show_endpoint_fails_if_user_has_no_permission_to_view_projects(): void
     {
         // Arrange
-        $data = $this->createUserWithPermission([
-        ]);
+        $data = $this->createUserWithPermission();
         $project = Project::factory()->forOrganization($data->organization)->create();
         Passport::actingAs($data->user);
 
@@ -124,8 +122,7 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
     public function test_store_endpoint_fails_if_user_has_no_permission_to_create_projects(): void
     {
         // Arrange
-        $data = $this->createUserWithPermission([
-        ]);
+        $data = $this->createUserWithPermission();
         $projectFake = Project::factory()->forOrganization($data->organization)->make();
         Passport::actingAs($data->user);
 
@@ -162,6 +159,64 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
             'name' => $projectFake->name,
             'color' => $projectFake->color,
             'organization_id' => $projectFake->organization_id,
+            'is_billable' => $projectFake->is_billable,
+        ]);
+    }
+
+    public function test_store_endpoint_fails_if_name_is_already_used_in_organization(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'projects:create',
+        ]);
+        $name = 'Project Name';
+        $project = Project::factory()->forOrganization($data->organization)->create([
+            'name' => $name,
+        ]);
+        $projectFake = Project::factory()->forOrganization($data->organization)->make();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.projects.store', [$data->organization->getKey()]), [
+            'name' => $name,
+            'color' => $projectFake->color,
+            'is_billable' => $projectFake->is_billable,
+        ]);
+
+        // Assert
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors([
+            'name' => 'A project with the same name already exists in the organization.',
+        ]);
+    }
+
+    public function test_store_endpoint_creates_project_if_name_is_used_in_other_organization(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'projects:create',
+        ]);
+        $name = 'Project Name';
+        $otherOrganization = Organization::factory()->create();
+        $project = Project::factory()->forOrganization($otherOrganization)->create([
+            'name' => $name,
+        ]);
+        $projectFake = Project::factory()->forOrganization($data->organization)->make();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.projects.store', [$data->organization->getKey()]), [
+            'name' => $name,
+            'color' => $projectFake->color,
+            'is_billable' => $projectFake->is_billable,
+        ]);
+
+        // Assert
+        $response->assertStatus(201);
+        $this->assertDatabaseHas(Project::class, [
+            'name' => $name,
+            'color' => $projectFake->color,
+            'organization_id' => $data->organization->getKey(),
             'is_billable' => $projectFake->is_billable,
         ]);
     }
@@ -265,6 +320,68 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
 
         // Assert
         $response->assertForbidden();
+    }
+
+    public function test_update_endpoint_fails_if_name_is_already_used_in_organization(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'projects:update',
+        ]);
+        $name = 'Project Name';
+        $projectWithTheName = Project::factory()->forOrganization($data->organization)->create([
+            'name' => $name,
+        ]);
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        $projectFake = Project::factory()->forOrganization($data->organization)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.projects.update', [$data->organization->getKey(), $project->getKey()]), [
+            'name' => $name,
+            'color' => $projectFake->color,
+            'is_billable' => $projectFake->is_billable,
+        ]);
+
+        // Assert
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors([
+            'name' => 'A project with the same name already exists in the organization.',
+        ]);
+    }
+
+    public function test_update_endpoint_updates_project_if_name_is_used_in_other_organization(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'projects:update',
+        ]);
+        $name = 'Project Name';
+        $otherOrganization = Organization::factory()->create();
+        $otherProject = Project::factory()->forOrganization($otherOrganization)->create([
+            'name' => $name,
+        ]);
+        $project = Project::factory()->forOrganization($data->organization)->create([
+            'name' => $name,
+        ]);
+        $projectFake = Project::factory()->forOrganization($data->organization)->make();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.projects.update', [$data->organization->getKey(), $project->getKey()]), [
+            'name' => $name,
+            'color' => $projectFake->color,
+            'is_billable' => $projectFake->is_billable,
+        ]);
+
+        // Assert
+        $response->assertStatus(200);
+        $this->assertDatabaseHas(Project::class, [
+            'name' => $name,
+            'color' => $projectFake->color,
+            'organization_id' => $data->organization->getKey(),
+            'is_billable' => $projectFake->is_billable,
+        ]);
     }
 
     public function test_update_endpoint_updates_project(): void
@@ -377,8 +494,7 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
     public function test_destroy_endpoint_fails_if_user_has_no_permission_to_delete_projects(): void
     {
         // Arrange
-        $data = $this->createUserWithPermission([
-        ]);
+        $data = $this->createUserWithPermission();
         $project = Project::factory()->forOrganization($data->organization)->create();
         Passport::actingAs($data->user);
 
