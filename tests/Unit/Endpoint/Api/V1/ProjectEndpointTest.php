@@ -556,7 +556,7 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
             'color' => $projectFake->color,
             'is_billable' => $projectFake->is_billable,
             'billable_rate' => 10003,
-            'billable_rate_update_time_entries' => 'true',
+            'billable_rate_update_time_entries' => true,
         ]);
 
         // Assert

@@ -142,7 +142,7 @@ class OrganizationEndpointTest extends ApiEndpointTestAbstract
         $response = $this->withoutExceptionHandling()->putJson(route('api.v1.organizations.update', [$data->organization->getKey()]), [
             'name' => $organizationFake->name,
             'billable_rate' => $organizationFake->billable_rate,
-            'billable_rate_update_time_entries' => 'true',
+            'billable_rate_update_time_entries' => true,
         ]);
 
         // Assert

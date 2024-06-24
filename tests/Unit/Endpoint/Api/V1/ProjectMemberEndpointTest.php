@@ -326,7 +326,7 @@ class ProjectMemberEndpointTest extends ApiEndpointTestAbstract
         // Act
         $response = $this->putJson(route('api.v1.project-members.update', [$data->organization->getKey(), $projectMember->getKey()]), [
             'billable_rate' => $billableRate,
-            'billable_rate_update_time_entries' => 'true',
+            'billable_rate_update_time_entries' => true,
         ]);
 
         // Assert

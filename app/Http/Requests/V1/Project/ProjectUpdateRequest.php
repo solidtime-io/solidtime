@@ -63,8 +63,7 @@ class ProjectUpdateRequest extends FormRequest
                 'min:0',
             ],
             'billable_rate_update_time_entries' => [
-                'string',
-                'in:true,false',
+                'boolean',
             ],
         ];
     }
@@ -86,6 +85,6 @@ class ProjectUpdateRequest extends FormRequest
     public function getBillableRateUpdateTimeEntries(): bool
     {
         return $this->has('billable_rate_update_time_entries') &&
-            $this->input('billable_rate_update_time_entries') === 'true';
+            $this->boolean('billable_rate_update_time_entries');
     }
 }
