@@ -47,6 +47,9 @@ class ProjectUpdateRequest extends FormRequest
                 'required',
                 'boolean',
             ],
+            'is_archived' => [
+                'boolean',
+            ],
             'client_id' => [
                 'nullable',
                 new ExistsEloquent(Client::class, null, function (Builder $builder): Builder {
@@ -64,6 +67,13 @@ class ProjectUpdateRequest extends FormRequest
                 'in:true,false',
             ],
         ];
+    }
+
+    public function getIsArchived(): bool
+    {
+        assert($this->has('is_archived'));
+
+        return (bool) $this->input('is_archived');
     }
 
     public function getBillableRate(): ?int

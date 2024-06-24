@@ -29,6 +29,8 @@ class ProjectResource extends BaseResource
             'color' => $this->resource->color,
             /** @var string|null $client_id ID of client */
             'client_id' => $this->resource->client_id,
+            /** @var bool $is_archived Whether the client is archived */
+            'is_archived' => $this->resource->is_archived,
             /** @var int|null $billable_rate Billable rate in cents per hour */
             'billable_rate' => $this->resource->billable_rate,
             /** @var bool $is_billable Project time entries billable default */

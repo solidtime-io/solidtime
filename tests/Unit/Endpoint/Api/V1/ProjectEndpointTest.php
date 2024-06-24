@@ -12,6 +12,7 @@ use App\Models\ProjectMember;
 use App\Models\Task;
 use App\Models\TimeEntry;
 use App\Service\BillableRateService;
+use Illuminate\Testing\Fluent\AssertableJson;
 use Laravel\Passport\Passport;
 use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\UsesClass;
@@ -46,6 +47,93 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
 
         // Act
         $response = $this->getJson(route('api.v1.projects.index', [$data->organization->getKey()]));
+
+        // Assert
+        $response->assertStatus(200);
+        $response->assertJsonCount(4, 'data');
+    }
+
+    public function test_index_endpoint_without_filter_archived_returns_only_non_archived_projects(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'projects:view',
+            'projects:view:all',
+        ]);
+        $archivedProjects = Project::factory()->forOrganization($data->organization)->archived()->createMany(2);
+        $nonArchivedProjects = Project::factory()->forOrganization($data->organization)->createMany(2);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.projects.index', [$data->organization->getKey()]));
+
+        // Assert
+        $response->assertStatus(200);
+        $response->assertJsonCount(2, 'data');
+        $this->assertEqualsCanonicalizing($nonArchivedProjects->pluck('id')->toArray(), $response->json('data.*.id'));
+    }
+
+    public function test_index_endpoint_with_filter_archived_true_returns_only_archived_projects(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'projects:view',
+            'projects:view:all',
+        ]);
+        $archivedProjects = Project::factory()->forOrganization($data->organization)->archived()->createMany(2);
+        $nonArchivedProjects = Project::factory()->forOrganization($data->organization)->createMany(2);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.projects.index', [
+            $data->organization->getKey(),
+            'archived' => 'true',
+        ]));
+
+        // Assert
+        $response->assertStatus(200);
+        $response->assertJsonCount(2, 'data');
+        $this->assertEqualsCanonicalizing($archivedProjects->pluck('id')->toArray(), $response->json('data.*.id'));
+    }
+
+    public function test_index_endpoint_with_filter_archived_false_returns_only_non_archived_projects(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'projects:view',
+            'projects:view:all',
+        ]);
+        $archivedProjects = Project::factory()->forOrganization($data->organization)->archived()->createMany(2);
+        $nonArchivedProjects = Project::factory()->forOrganization($data->organization)->createMany(2);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.projects.index', [
+            $data->organization->getKey(),
+            'archived' => 'false',
+        ]));
+        // Assert
+        $response->assertStatus(200);
+        $response->assertJsonCount(2, 'data');
+        $this->assertEqualsCanonicalizing($nonArchivedProjects->pluck('id')->toArray(), $response->json('data.*.id'));
+    }
+
+    public function test_index_endpoint_with_filter_archived_all_returns_all_projects(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'projects:view',
+            'projects:view:all',
+        ]);
+        $archivedProjects = Project::factory()->forOrganization($data->organization)->archived()->createMany(2);
+        $nonArchivedProjects = Project::factory()->forOrganization($data->organization)->createMany(2);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.projects.index', [
+            $data->organization->getKey(),
+            'archived' => 'all',
+        ]));
 
         // Assert
         $response->assertStatus(200);
@@ -406,11 +494,17 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
 
         // Assert
         $response->assertStatus(200);
-        $this->assertDatabaseHas(Project::class, [
-            'name' => $projectFake->name,
-            'color' => $projectFake->color,
-            'client_id' => $client->getKey(),
-        ]);
+        $project->refresh();
+        $response->assertJson(fn (AssertableJson $json) => $json
+            ->has('data')
+            ->where('data.name', $projectFake->name)
+            ->where('data.color', $projectFake->color)
+            ->where('data.client_id', $client->getKey())
+        );
+        $this->assertSame($projectFake->name, $project->name);
+        $this->assertSame($projectFake->color, $project->color);
+        $this->assertSame($client->getKey(), $project->client_id);
+        $this->assertFalse($project->is_archived);
     }
 
     public function test_update_endpoint_can_update_projects_billable_rate(): void
@@ -472,6 +566,62 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
             'color' => $projectFake->color,
             'billable_rate' => 10003,
         ]);
+    }
+
+    public function test_update_endpoint_can_archive_a_project(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'projects:update',
+        ]);
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        $projectFake = Project::factory()->make();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.projects.update', [$data->organization->getKey(), $project->getKey()]), [
+            'name' => $projectFake->name,
+            'color' => $projectFake->color,
+            'is_billable' => $projectFake->is_billable,
+            'is_archived' => true,
+        ]);
+
+        // Assert
+        $response->assertStatus(200);
+        $response->assertJson(fn (AssertableJson $json) => $json
+            ->has('data')
+            ->where('data.is_archived', true)
+        );
+        $project->refresh();
+        $this->assertTrue($project->is_archived);
+    }
+
+    public function test_update_endpoint_can_unarchive_a_project(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'projects:update',
+        ]);
+        $project = Project::factory()->forOrganization($data->organization)->archived()->create();
+        $projectFake = Project::factory()->make();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.projects.update', [$data->organization->getKey(), $project->getKey()]), [
+            'name' => $projectFake->name,
+            'color' => $projectFake->color,
+            'is_billable' => $projectFake->is_billable,
+            'is_archived' => false,
+        ]);
+
+        // Assert
+        $response->assertStatus(200);
+        $response->assertJson(fn (AssertableJson $json) => $json
+            ->has('data')
+            ->where('data.is_archived', false)
+        );
+        $project->refresh();
+        $this->assertFalse($project->is_archived);
     }
 
     public function test_destroy_endpoint_fails_if_user_is_not_part_of_project_organization(): void

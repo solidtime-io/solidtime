@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Requests\V1\Project;
+namespace App\Http\Requests\V1\Client;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
-class ProjectIndexRequest extends FormRequest
+class ClientIndexRequest extends FormRequest
 {
     /**
      * Get the validation rules that apply to the request.

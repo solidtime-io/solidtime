@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Models\Concerns\HasUuids;
 use Database\Factories\ClientFactory;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,6 +17,8 @@ use Illuminate\Support\Carbon;
  * @property string $id
  * @property string $name
  * @property string $organization_id
+ * @property-read bool $is_archived
+ * @property Carbon|null $archived_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read Organization $organization
@@ -50,5 +53,15 @@ class Client extends Model
     public function projects(): HasMany
     {
         return $this->hasMany(Project::class, 'client_id');
+    }
+
+    /**
+     * @return Attribute<bool, never>
+     */
+    protected function isArchived(): Attribute
+    {
+        return Attribute::make(
+            get: fn (mixed $value, array $attributes) => isset($attributes['archived_at']),
+        );
     }
 }

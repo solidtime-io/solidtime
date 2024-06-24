@@ -25,6 +25,8 @@ class ClientResource extends BaseResource
             'id' => $this->resource->id,
             /** @var string $name Name */
             'name' => $this->resource->name,
+            /** @var bool $is_archived Whether the client is archived */
+            'is_archived' => $this->resource->is_archived,
             /** @var string $created_at When the tag was created */
             'created_at' => $this->formatDateTime($this->resource->created_at),
             /** @var string $updated_at When the tag was last updated */

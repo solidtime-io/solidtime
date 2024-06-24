@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1;
 
 use App\Exceptions\Api\EntityStillInUseApiException;
+use App\Http\Requests\V1\Client\ClientIndexRequest;
 use App\Http\Requests\V1\Client\ClientStoreRequest;
 use App\Http\Requests\V1\Client\ClientUpdateRequest;
 use App\Http\Resources\V1\Client\ClientCollection;
@@ -13,6 +14,7 @@ use App\Models\Client;
 use App\Models\Organization;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Carbon;
 
 class ClientController extends Controller
 {
@@ -33,14 +35,22 @@ class ClientController extends Controller
      *
      * @operationId getClients
      */
-    public function index(Organization $organization): ClientCollection
+    public function index(Organization $organization, ClientIndexRequest $request): ClientCollection
     {
         $this->checkPermission($organization, 'clients:view');
 
-        $clients = Client::query()
+        $clientsQuery = Client::query()
             ->whereBelongsTo($organization, 'organization')
-            ->orderBy('created_at', 'desc')
-            ->paginate(config('app.pagination_per_page_default'));
+            ->orderBy('created_at', 'desc');
+
+        $filterArchived = $request->getFilterArchived();
+        if ($filterArchived === 'true') {
+            $clientsQuery->whereNotNull('archived_at');
+        } elseif ($filterArchived === 'false') {
+            $clientsQuery->whereNull('archived_at');
+        }
+
+        $clients = $clientsQuery->paginate(config('app.pagination_per_page_default'));
 
         return new ClientCollection($clients);
     }
@@ -76,6 +86,9 @@ class ClientController extends Controller
         $this->checkPermission($organization, 'clients:update', $client);
 
         $client->name = $request->input('name');
+        if ($request->has('is_archived')) {
+            $client->archived_at = $request->getIsArchived() ? Carbon::now() : null;
+        }
         $client->save();
 
         return new ClientResource($client);

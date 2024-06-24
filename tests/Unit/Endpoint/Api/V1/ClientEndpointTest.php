@@ -57,6 +57,91 @@ class ClientEndpointTest extends ApiEndpointTestAbstract
         );
     }
 
+    public function test_index_endpoint_without_filter_archived_returns_only_non_archived_clients(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'clients:view',
+        ]);
+        $archivedClients = Client::factory()->forOrganization($data->organization)->archived()->createMany(2);
+        $nonArchivedClients = Client::factory()->forOrganization($data->organization)->createMany(2);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.clients.index', [$data->organization->getKey()]));
+
+        // Assert
+        $response->assertStatus(200);
+        $response->assertJsonCount(2, 'data');
+        $this->assertEqualsCanonicalizing($nonArchivedClients->pluck('id')->toArray(), $response->json('data.*.id'));
+    }
+
+    public function test_index_endpoint_with_filter_archived_true_returns_only_archived_clients(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'clients:view',
+        ]);
+        $archivedClients = Client::factory()->forOrganization($data->organization)->archived()->createMany(2);
+        $nonArchivedClients = Client::factory()->forOrganization($data->organization)->createMany(2);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.clients.index', [
+            $data->organization->getKey(),
+            'archived' => 'true',
+        ]));
+
+        // Assert
+        $response->assertStatus(200);
+        $response->assertJsonCount(2, 'data');
+        $this->assertEqualsCanonicalizing($archivedClients->pluck('id')->toArray(), $response->json('data.*.id'));
+    }
+
+    public function test_index_endpoint_with_filter_archived_false_returns_only_non_archived_clients(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'clients:view',
+        ]);
+        $archivedClients = Client::factory()->forOrganization($data->organization)->archived()->createMany(2);
+        $nonArchivedClients = Client::factory()->forOrganization($data->organization)->createMany(2);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.clients.index', [
+            $data->organization->getKey(),
+            'archived' => 'false',
+        ]));
+
+        // Assert
+        $response->assertStatus(200);
+        $response->assertJsonCount(2, 'data');
+        $this->assertEqualsCanonicalizing($nonArchivedClients->pluck('id')->toArray(), $response->json('data.*.id'));
+    }
+
+    public function test_index_endpoint_with_filter_archived_all_returns_all_clients(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'clients:view',
+        ]);
+        $archivedClients = Client::factory()->forOrganization($data->organization)->archived()->createMany(2);
+        $nonArchivedClients = Client::factory()->forOrganization($data->organization)->createMany(2);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.clients.index', [
+            $data->organization->getKey(),
+            'archived' => 'all',
+        ]));
+
+        // Assert
+        $response->assertStatus(200);
+        $response->assertJsonCount(4, 'data');
+        $this->assertEqualsCanonicalizing($archivedClients->merge($nonArchivedClients)->pluck('id')->toArray(), $response->json('data.*.id'));
+    }
+
     public function test_store_endpoint_fails_if_user_has_no_permission_to_create_clients(): void
     {
         // Arrange
@@ -255,6 +340,58 @@ class ClientEndpointTest extends ApiEndpointTestAbstract
             'name' => $clientFake->name,
             'organization_id' => $data->organization->getKey(),
         ]);
+    }
+
+    public function test_update_endpoint_can_archive_a_client(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'clients:update',
+        ]);
+        $client = Client::factory()->forOrganization($data->organization)->create();
+        $clientFake = Client::factory()->make();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.clients.update', [$data->organization->getKey(), $client->getKey()]), [
+            'name' => $clientFake->name,
+            'is_archived' => true,
+        ]);
+
+        // Assert
+        $response->assertStatus(200);
+        $response->assertJson(fn (AssertableJson $json) => $json
+            ->has('data')
+            ->where('data.is_archived', true)
+        );
+        $client->refresh();
+        $this->assertTrue($client->is_archived);
+    }
+
+    public function test_update_endpoint_can_unarchive_a_client(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'clients:update',
+        ]);
+        $client = Client::factory()->forOrganization($data->organization)->archived()->create();
+        $clientFake = Client::factory()->make();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.clients.update', [$data->organization->getKey(), $client->getKey()]), [
+            'name' => $clientFake->name,
+            'is_archived' => false,
+        ]);
+
+        // Assert
+        $response->assertStatus(200);
+        $response->assertJson(fn (AssertableJson $json) => $json
+            ->has('data')
+            ->where('data.is_archived', false)
+        );
+        $client->refresh();
+        $this->assertFalse($client->is_archived);
     }
 
     public function test_destroy_endpoint_fails_if_user_has_no_permission_to_delete_clients(): void

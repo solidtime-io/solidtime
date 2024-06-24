@@ -35,6 +35,16 @@ class ClientUpdateRequest extends FormRequest
                     return $builder->whereBelongsTo($this->organization, 'organization');
                 }))->ignore($this->client->getKey())->withCustomTranslation('validation.client_name_already_exists'),
             ],
+            'is_archived' => [
+                'boolean',
+            ],
         ];
+    }
+
+    public function getIsArchived(): bool
+    {
+        assert($this->has('is_archived'));
+
+        return (bool) $this->input('is_archived');
     }
 }
