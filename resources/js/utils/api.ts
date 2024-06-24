@@ -5,6 +5,7 @@ import type {
     ZodiosQueryParamsByAlias,
 } from '@zodios/core';
 import { api } from '../../../openapi.json.client';
+import { router } from '@inertiajs/vue3';
 
 export type SolidTimeApi = ApiOf<typeof api>;
 
@@ -123,3 +124,16 @@ export type UpdateOrganizationBody = ZodiosBodyByAlias<
     SolidTimeApi,
     'updateOrganization'
 >;
+
+export async function fetchToken() {
+    return new Promise((resolve) => {
+        router.reload({
+            onFinish: () => {
+                resolve(null);
+            },
+        });
+    });
+}
+export function isTokenValid() {
+    return window.document.cookie.includes('solidtime_session');
+}

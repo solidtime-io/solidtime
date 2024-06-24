@@ -4,17 +4,17 @@ import Banner from '@/Components/Banner.vue';
 import OrganizationSwitcher from '@/Components/OrganizationSwitcher.vue';
 import CurrentSidebarTimer from '@/Components/CurrentSidebarTimer.vue';
 import {
+    Bars3Icon,
     ChartBarIcon,
     ClockIcon,
     Cog6ToothIcon,
+    CreditCardIcon,
     FolderIcon,
     HomeIcon,
     TagIcon,
     UserCircleIcon,
     UserGroupIcon,
-    Bars3Icon,
     XMarkIcon,
-    CreditCardIcon,
 } from '@heroicons/vue/20/solid';
 import NavigationSidebarItem from '@/Components/NavigationSidebarItem.vue';
 import UserSettingsIcon from '@/Components/UserSettingsIcon.vue';
@@ -32,6 +32,7 @@ import {
 import { isBillingActivated } from '@/utils/billing';
 import type { User } from '@/types/models';
 import { ArrowsRightLeftIcon } from '@heroicons/vue/16/solid';
+import { fetchToken, isTokenValid } from '@/utils/api';
 
 defineProps({
     title: String,
@@ -45,7 +46,10 @@ onMounted(async () => {
         window.initialDataLoaded = true;
         initializeStores();
     }
-    window.onfocus = () => {
+    window.onfocus = async () => {
+        if (!isTokenValid()) {
+            await fetchToken();
+        }
         refreshStores();
     };
 });
