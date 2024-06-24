@@ -116,6 +116,7 @@ class UserFactory extends Factory
                 ->when(is_callable($callback), $callback)
                 ->create();
 
+            $organization->owner()->associate($user);
             $organization->users()->attach($user, ['role' => Role::Owner->value]);
             $user->currentTeam()->associate($organization);
             $user->save();

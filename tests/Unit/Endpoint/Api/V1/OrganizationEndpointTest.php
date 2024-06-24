@@ -14,6 +14,21 @@ use PHPUnit\Framework\Attributes\UsesClass;
 #[UsesClass(OrganizationController::class)]
 class OrganizationEndpointTest extends ApiEndpointTestAbstract
 {
+    public function test_show_endpoint_fails_with_not_found_if_id_is_not_uuid(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'organizations:view',
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.organizations.show', ['not-uuid']));
+
+        // Assert
+        $response->assertNotFound();
+    }
+
     public function test_show_endpoint_fails_if_user_has_no_permission_to_view_organizations(): void
     {
         // Arrange
