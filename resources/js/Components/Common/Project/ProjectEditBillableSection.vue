@@ -46,6 +46,7 @@ const billableOptionInfoTexts: { [key in BillableKey]: string } = {
 const billableOptionInfoText = computed(() => {
     return billableOptionInfoTexts[billableRateSelect.value];
 });
+const emit = defineEmits(['submit']);
 </script>
 
 <template>
@@ -60,7 +61,10 @@ const billableOptionInfoText = computed(() => {
             class="sm:max-w-[120px]"
             v-if="billableRateSelect === 'custom-rate'">
             <InputLabel for="billableRate" value="Billable Rate" />
-            <BillableRateInput v-model="billableRate" name="billableRate" />
+            <BillableRateInput
+                @keydown.enter="emit('submit')"
+                v-model="billableRate"
+                name="billableRate" />
         </div>
     </div>
     <div class="flex items-center text-muted pt-2 pl-1">

@@ -8,12 +8,13 @@ import PrimaryButton from '@/Components/PrimaryButton.vue';
 import { useProjectsStore } from '@/utils/useProjects';
 import { useFocus } from '@vueuse/core';
 import ClientDropdown from '@/Components/Common/Client/ClientDropdown.vue';
-import { twMerge } from 'tailwind-merge';
 import Badge from '@/Components/Common/Badge.vue';
 import { useClientsStore } from '@/utils/useClients';
 import { storeToRefs } from 'pinia';
 import ProjectColorSelector from '@/Components/Common/Project/ProjectColorSelector.vue';
 import ProjectEditBillableSection from '@/Components/Common/Project/ProjectEditBillableSection.vue';
+import { UserCircleIcon } from '@heroicons/vue/20/solid';
+import InputLabel from '@/Components/InputLabel.vue';
 
 const { updateProject } = useProjectsStore();
 const { clients } = storeToRefs(useClientsStore());
@@ -63,10 +64,14 @@ const currentClientName = computed(() => {
             <div
                 class="sm:flex items-center space-y-2 sm:space-y-0 sm:space-x-4">
                 <div class="flex-1 flex items-center">
-                    <div class="px-3">
+                    <div class="text-center pr-5">
+                        <InputLabel for="color" value="Color" />
                         <ProjectColorSelector
                             v-model="project.color"></ProjectColorSelector>
                     </div>
+                </div>
+                <div class="w-full">
+                    <InputLabel for="projectName" value="Project name" />
                     <TextInput
                         id="projectName"
                         ref="projectNameInput"
@@ -79,22 +84,26 @@ const currentClientName = computed(() => {
                         autocomplete="projectName" />
                 </div>
                 <div class="">
-                    <ClientDropdown v-model="project.client_id">
+                    <InputLabel for="client" value="Client" />
+                    <ClientDropdown class="mt-2" v-model="project.client_id">
                         <template #trigger>
-                            <Badge size="large">
-                                <div
-                                    :class="
-                                        twMerge('inline-block rounded-full')
-                                    "></div>
-                                <span>
-                                    {{ currentClientName }}
-                                </span>
+                            <Badge
+                                class="bg-input-background cursor-pointer hover:bg-tertiary"
+                                size="xlarge">
+                                <div class="flex items-center space-x-2">
+                                    <UserCircleIcon
+                                        class="w-5 text-icon-default"></UserCircleIcon>
+                                    <span>
+                                        {{ currentClientName }}
+                                    </span>
+                                </div>
                             </Badge>
                         </template>
                     </ClientDropdown>
                 </div>
             </div>
             <ProjectEditBillableSection
+                @submit="submit"
                 v-model:isBillable="project.is_billable"
                 v-model:billableRate="
                     project.billable_rate
