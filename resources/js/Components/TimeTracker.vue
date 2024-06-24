@@ -152,7 +152,10 @@ function switchToTimeEntryOrganization() {
                             "></BillableToggleButton>
                     </div>
                     <div class="border-l border-card-border">
-                        <TimeTrackerRangeSelector></TimeTrackerRangeSelector>
+                        <TimeTrackerRangeSelector
+                            @keydown.enter="
+                                startTimerIfNotActive
+                            "></TimeTrackerRangeSelector>
                     </div>
                 </div>
             </div>

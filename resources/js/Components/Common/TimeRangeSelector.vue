@@ -9,6 +9,7 @@ import dayjs from 'dayjs';
 const props = defineProps<{
     start: string;
     end: string | null;
+    focus?: boolean;
 }>();
 
 // The timestamps for the changed event are UTC
@@ -56,7 +57,7 @@ watch(focused, (newValue, oldValue) => {
             <div class="space-y-1">
                 <TimePicker
                     data-testid="time_entry_range_start"
-                    focus
+                    :focus
                     @changed="updateTimeEntry"
                     v-model="tempStart"></TimePicker>
                 <DatePicker

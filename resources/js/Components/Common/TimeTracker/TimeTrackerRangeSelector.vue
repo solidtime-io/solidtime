@@ -119,6 +119,13 @@ async function updateTimeRange(newStart: string) {
         }
     }
 }
+
+const startTime = computed(() => {
+    if (currentTimeEntry.value.start && currentTimeEntry.value.start !== '') {
+        return currentTimeEntry.value.start;
+    }
+    return dayjs().utc().format();
+});
 </script>
 
 <template>
@@ -142,7 +149,7 @@ async function updateTimeRange(newStart: string) {
             <template #content>
                 <TimeRangeSelector
                     @changed="updateTimeRange"
-                    :start="currentTimeEntry.start"
+                    :start="startTime"
                     :end="null">
                 </TimeRangeSelector>
             </template>
