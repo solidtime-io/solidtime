@@ -35,6 +35,16 @@ class TaskUpdateRequest extends FormRequest
                     return $builder->where('project_id', '=', $this->task->project_id);
                 }))->ignore($this->task->getKey())->withCustomTranslation('validation.task_name_already_exists'),
             ],
+            'is_done' => [
+                'boolean',
+            ],
         ];
+    }
+
+    public function getIsDone(): bool
+    {
+        assert($this->has('is_done'));
+
+        return $this->boolean('is_done');
     }
 }

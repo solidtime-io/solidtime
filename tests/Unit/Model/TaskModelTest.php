@@ -90,4 +90,28 @@ class TaskModelTest extends ModelTestAbstract
             $taskPrivateButMember->getKey(),
         ], $allTasks);
     }
+
+    public function test_accessor_is_done_is_true_if_done_at_is_not_null(): void
+    {
+        // Arrange
+        $task = Task::factory()->isDone()->create();
+
+        // Act
+        $task->refresh();
+
+        // Assert
+        $this->assertTrue($task->is_done);
+    }
+
+    public function test_accessor_is_done_is_false_if_done_at_is_null(): void
+    {
+        // Arrange
+        $task = Task::factory()->create();
+
+        // Act
+        $task->refresh();
+
+        // Assert
+        $this->assertFalse($task->is_done);
+    }
 }

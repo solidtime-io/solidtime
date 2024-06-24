@@ -15,6 +15,7 @@ use App\Models\Task;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Carbon;
 
 class TaskController extends Controller
 {
@@ -53,6 +54,12 @@ class TaskController extends Controller
         if (! $canViewAllTasks) {
             $query->visibleByEmployee($user);
         }
+        $doneFilter = $request->getFilterDone();
+        if ($doneFilter === 'true') {
+            $query->whereNotNull('done_at');
+        } elseif ($doneFilter === 'false') {
+            $query->whereNull('done_at');
+        }
 
         $tasks = $query->paginate(config('app.pagination_per_page_default'));
 
@@ -89,6 +96,9 @@ class TaskController extends Controller
     {
         $this->checkPermission($organization, 'tasks:update', $task);
         $task->name = $request->input('name');
+        if ($request->has('is_done')) {
+            $task->done_at = $request->getIsDone() ? Carbon::now() : null;
+        }
         $task->save();
 
         return new TaskResource($task);

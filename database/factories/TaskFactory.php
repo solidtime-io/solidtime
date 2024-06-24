@@ -25,6 +25,7 @@ class TaskFactory extends Factory
             'name' => $this->faker->word(),
             'project_id' => Project::factory(),
             'organization_id' => Organization::factory(),
+            'done_at' => null,
         ];
     }
 
@@ -33,6 +34,15 @@ class TaskFactory extends Factory
         return $this->state(function (array $attributes) use ($project) {
             return [
                 'project_id' => $project->getKey(),
+            ];
+        });
+    }
+
+    public function isDone(): self
+    {
+        return $this->state(function (array $attributes) {
+            return [
+                'done_at' => $this->faker->dateTime('now', 'UTC'),
             ];
         });
     }
