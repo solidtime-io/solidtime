@@ -314,7 +314,7 @@ const showCreateProject = ref(false);
             <span>Add new project</span>
         </Badge>
     </div>
-    <Dropdown v-else v-model="open" :closeOnContentClick="true" align="bottom">
+    <Dropdown v-else v-model="open" :closeOnContentClick="false" align="bottom">
         <template #trigger>
             <ProjectBadge
                 ref="projectDropdownTrigger"
@@ -340,6 +340,7 @@ const showCreateProject = ref(false);
                 :value="searchValue"
                 @input="updateSearchValue"
                 @keydown.enter="addClientIfNoneExists"
+                @click.prevent="searchInput?.focus()"
                 data-testid="client_dropdown_search"
                 @keydown.up.prevent="moveHighlightUp"
                 @keydown.down.prevent="moveHighlightDown"

@@ -33,6 +33,7 @@ const open = ref(false);
                     @changed="
                         (newStart, newEnd) => emit('changed', newStart, newEnd)
                     "
+                    focus
                     :start="start"
                     :end="end">
                 </TimeRangeSelector>
