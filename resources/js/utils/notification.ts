@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import axios from 'axios';
 import { router } from '@inertiajs/vue3';
+import { fetchToken } from '@/utils/api';
 
 export type NotificationType = 'success' | 'error';
 
@@ -35,16 +36,6 @@ export const useNotificationsStore = defineStore('notifications', () => {
         if (index !== -1) {
             notifications.value.splice(index, 1);
         }
-    }
-
-    async function fetchToken() {
-        return new Promise((resolve) => {
-            router.reload({
-                onFinish: () => {
-                    resolve(null);
-                },
-            });
-        });
     }
 
     async function handleApiRequestNotifications<T>(
