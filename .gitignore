@@ -34,3 +34,9 @@ yarn-error.log
 /_ide_helper.php
 /.phpstorm.meta.php
 /.rnd
+
+/caddy
+/frankenphp
+/public/frankenphp-worker.php
+/data
+/confif/caddy

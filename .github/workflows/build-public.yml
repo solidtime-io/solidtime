@@ -66,6 +66,8 @@ jobs:
         with:
           context: .
           file: docker/prod/Dockerfile
+          build-args: |
+            DOCKER_FILES_BASE_PATH=docker/prod/
           platforms: linux/amd64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
