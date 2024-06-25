@@ -13,6 +13,8 @@ use App\Models\Tag;
 use App\Models\Task;
 use App\Models\TimeEntry;
 use App\Models\User;
+use App\Service\IpLookup\IpLookupServiceContract;
+use App\Service\IpLookup\NoIpLookupService;
 use App\Service\PermissionStore;
 use Dedoc\Scramble\Scramble;
 use Dedoc\Scramble\Support\Generator\OpenApi;
@@ -84,6 +86,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->scoped(PermissionStore::class, function (Application $app): PermissionStore {
             return new PermissionStore();
         });
+
+        $this->app->bind(IpLookupServiceContract::class, NoIpLookupService::class);
 
         Route::model('member', Member::class);
         Route::model('invitation', OrganizationInvitation::class);
