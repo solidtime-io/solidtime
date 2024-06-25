@@ -69,7 +69,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
-          extensions: mbstring, dom, fileinfo, pgsql, swoole
+          extensions: mbstring, dom, fileinfo, pgsql
 
       - name: "Install dependencies"
         uses: php-actions/composer@v6
@@ -119,6 +119,8 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
+          build-args: |
+            DOCKER_FILES_BASE_PATH=docker/prod/
           file: docker/prod/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}

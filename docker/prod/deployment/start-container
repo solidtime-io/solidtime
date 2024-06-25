@@ -1,7 +1,7 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 set -e
 
-container_mode=${CONTAINER_MODE:-http}
+container_mode=${CONTAINER_MODE:-"http"}
 octane_server=${OCTANE_SERVER}
 auto_db_migrate=${AUTO_DB_MIGRATE:-false}
 echo "Container mode: $container_mode"
@@ -9,7 +9,7 @@ echo "Container mode: $container_mode"
 initialStuff() {
     if [ ${auto_db_migrate} = "true" ]; then
         echo "Auto database migration enabled."
-        php artisan migrate --force
+        php artisan migrate --isolated --force
     fi
     php artisan optimize:clear; \
     php artisan event:cache; \
@@ -22,7 +22,16 @@ if [ "$1" != "" ]; then
 elif [ ${container_mode} = "http" ]; then
     echo "Octane Server: $octane_server"
     initialStuff
-    exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.swoole.conf
+    if [ ${octane_server}  = "frankenphp" ]; then
+        exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.frankenphp.conf
+    elif [ ${octane_server}  = "swoole" ]; then
+        exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.swoole.conf
+    elif [ ${octane_server}  = "roadrunner" ]; then
+        exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.roadrunner.conf
+    else
+        echo "Invalid Octane server supplied."
+        exit 1
+    fi
 elif [ ${container_mode} = "horizon" ]; then
     initialStuff
     exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.horizon.conf
