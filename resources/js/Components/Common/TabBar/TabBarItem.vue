@@ -18,7 +18,7 @@ const activeClass = computed(() => {
     <button
         :class="
             twMerge(
-                'rounded-md transition px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-medium hover:text-white',
+                'rounded-md transition px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-medium hover:text-white focus-visible:outline-none',
                 activeClass
             )
         ">

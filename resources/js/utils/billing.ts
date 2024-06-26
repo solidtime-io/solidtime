@@ -7,3 +7,8 @@ export function isBillingActivated() {
 
     return page.props.has_billing_extension;
 }
+
+export function hasActiveSubscription() {
+    // TODO: Replace with server side check
+    return true;
+}
