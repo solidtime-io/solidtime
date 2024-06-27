@@ -35,7 +35,7 @@ class ProjectUpdateRequest extends FormRequest
                 (new UniqueEloquent(Project::class, 'name', function (Builder $builder): Builder {
                     /** @var Builder<Project> $builder */
                     return $builder->whereBelongsTo($this->organization, 'organization');
-                }))->ignore($this->project->getKey())->withCustomTranslation('validation.project_name_already_exists'),
+                }))->ignore($this->project?->getKey())->withCustomTranslation('validation.project_name_already_exists'),
             ],
             'color' => [
                 'required',

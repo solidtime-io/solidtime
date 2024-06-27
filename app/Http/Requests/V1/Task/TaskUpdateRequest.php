@@ -33,7 +33,7 @@ class TaskUpdateRequest extends FormRequest
                 (new UniqueEloquent(Task::class, 'name', function (Builder $builder): Builder {
                     /** @var Builder<Task> $builder */
                     return $builder->where('project_id', '=', $this->task->project_id);
-                }))->ignore($this->task->getKey())->withCustomTranslation('validation.task_name_already_exists'),
+                }))->ignore($this->task?->getKey())->withCustomTranslation('validation.task_name_already_exists'),
             ],
             'is_done' => [
                 'boolean',

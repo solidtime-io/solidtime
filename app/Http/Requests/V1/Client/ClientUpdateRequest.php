@@ -25,6 +25,7 @@ class ClientUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
+            // Name of the client
             'name' => [
                 'required',
                 'string',
@@ -33,7 +34,7 @@ class ClientUpdateRequest extends FormRequest
                 (new UniqueEloquent(Client::class, 'name', function (Builder $builder): Builder {
                     /** @var Builder<Client> $builder */
                     return $builder->whereBelongsTo($this->organization, 'organization');
-                }))->ignore($this->client->getKey())->withCustomTranslation('validation.client_name_already_exists'),
+                }))->ignore($this->client?->getKey())->withCustomTranslation('validation.client_name_already_exists'),
             ],
             'is_archived' => [
                 'boolean',

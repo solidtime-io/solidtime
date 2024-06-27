@@ -33,7 +33,7 @@ class TagUpdateRequest extends FormRequest
                 (new UniqueEloquent(Tag::class, 'name', function (Builder $builder): Builder {
                     /** @var Builder<Tag> $builder */
                     return $builder->whereBelongsTo($this->organization, 'organization');
-                }))->ignore($this->tag->getKey())->withCustomTranslation('validation.tag_name_already_exists'),
+                }))->ignore($this->tag?->getKey())->withCustomTranslation('validation.tag_name_already_exists'),
             ],
         ];
     }
