@@ -3,7 +3,7 @@
 --
 
 -- Dumped from database version 15.6 (Debian 15.6-1.pgdg120+2)
--- Dumped by pg_dump version 15.6 (Ubuntu 15.6-1.pgdg22.04+1)
+-- Dumped by pg_dump version 15.7 (Ubuntu 15.7-1.pgdg22.04+1)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -947,7 +947,7 @@ ALTER TABLE ONLY public.clients
 --
 
 ALTER TABLE ONLY public.organization_invitations
-    ADD CONSTRAINT organization_invitations_organization_id_foreign FOREIGN KEY (organization_id) REFERENCES public.organizations(id) ON DELETE CASCADE;
+    ADD CONSTRAINT organization_invitations_organization_id_foreign FOREIGN KEY (organization_id) REFERENCES public.organizations(id) ON UPDATE CASCADE ON DELETE RESTRICT;
 
 
 --
@@ -955,7 +955,7 @@ ALTER TABLE ONLY public.organization_invitations
 --
 
 ALTER TABLE ONLY public.project_members
-    ADD CONSTRAINT project_members_member_id_foreign FOREIGN KEY (member_id) REFERENCES public.members(id) ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT project_members_member_id_foreign FOREIGN KEY (member_id) REFERENCES public.members(id) ON UPDATE CASCADE ON DELETE RESTRICT;
 
 
 --
@@ -1019,7 +1019,7 @@ ALTER TABLE ONLY public.tasks
 --
 
 ALTER TABLE ONLY public.time_entries
-    ADD CONSTRAINT time_entries_client_id_foreign FOREIGN KEY (client_id) REFERENCES public.clients(id) ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT time_entries_client_id_foreign FOREIGN KEY (client_id) REFERENCES public.clients(id) ON UPDATE CASCADE ON DELETE RESTRICT;
 
 
 --
@@ -1027,7 +1027,7 @@ ALTER TABLE ONLY public.time_entries
 --
 
 ALTER TABLE ONLY public.time_entries
-    ADD CONSTRAINT time_entries_member_id_foreign FOREIGN KEY (member_id) REFERENCES public.members(id) ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT time_entries_member_id_foreign FOREIGN KEY (member_id) REFERENCES public.members(id) ON UPDATE CASCADE ON DELETE RESTRICT;
 
 
 --
@@ -1071,7 +1071,7 @@ ALTER TABLE ONLY public.time_entries
 --
 
 -- Dumped from database version 15.6 (Debian 15.6-1.pgdg120+2)
--- Dumped by pg_dump version 15.6 (Ubuntu 15.6-1.pgdg22.04+1)
+-- Dumped by pg_dump version 15.7 (Ubuntu 15.7-1.pgdg22.04+1)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -1097,30 +1097,33 @@ COPY public.migrations (id, migration, batch) FROM stdin;
 6	2016_06_01_000003_create_oauth_refresh_tokens_table	1
 7	2016_06_01_000004_create_oauth_clients_table	1
 8	2016_06_01_000005_create_oauth_personal_access_clients_table	1
-9	2019_05_03_000001_create_customers_table	1
-10	2019_05_03_000002_create_subscriptions_table	1
-11	2019_05_03_000003_create_subscription_items_table	1
-12	2019_05_03_000004_create_transactions_table	1
-13	2019_08_19_000000_create_failed_jobs_table	1
-14	2019_12_14_000001_create_personal_access_tokens_table	1
-15	2020_05_21_100000_create_organizations_table	1
-16	2020_05_21_200000_create_organization_user_table	1
-17	2020_05_21_300000_create_organization_invitations_table	1
-18	2024_01_16_161030_create_sessions_table	1
-19	2024_01_20_110218_create_clients_table	1
-20	2024_01_20_110439_create_projects_table	1
-21	2024_01_20_110444_create_tasks_table	1
-22	2024_01_20_110452_create_tags_table	1
-23	2024_01_20_110837_create_time_entries_table	1
-24	2024_03_26_171253_create_project_members_table	1
-25	2024_04_11_150130_create_jobs_table	1
-26	2024_04_12_095010_create_cache_table	1
-27	2024_05_07_134711_move_from_user_id_to_member_id_in_project_members_table	1
-28	2024_05_07_141842_move_from_user_id_to_member_id_in_time_entries_table	1
-29	2024_05_13_171020_rename_table_organization_user_to_members	1
-31	2024_05_22_151226_add_client_id_to_time_entries_table	2
-36	2024_05_30_175801_add_is_billable_column_to_projects_table	3
-37	2024_05_30_175825_add_is_imported_column_to_time_entries_table	3
+9	2018_08_08_100000_create_telescope_entries_table	1
+10	2019_05_03_000001_create_customers_table	1
+11	2019_05_03_000002_create_subscriptions_table	1
+12	2019_05_03_000003_create_subscription_items_table	1
+13	2019_05_03_000004_create_transactions_table	1
+14	2019_08_19_000000_create_failed_jobs_table	1
+15	2019_12_14_000001_create_personal_access_tokens_table	1
+16	2020_05_21_100000_create_organizations_table	1
+17	2020_05_21_200000_create_organization_user_table	1
+18	2020_05_21_300000_create_organization_invitations_table	1
+19	2024_01_16_161030_create_sessions_table	1
+20	2024_01_20_110218_create_clients_table	1
+21	2024_01_20_110439_create_projects_table	1
+22	2024_01_20_110444_create_tasks_table	1
+23	2024_01_20_110452_create_tags_table	1
+24	2024_01_20_110837_create_time_entries_table	1
+25	2024_03_26_171253_create_project_members_table	1
+26	2024_04_11_150130_create_jobs_table	1
+27	2024_04_12_095010_create_cache_table	1
+28	2024_05_07_134711_move_from_user_id_to_member_id_in_project_members_table	1
+29	2024_05_07_141842_move_from_user_id_to_member_id_in_time_entries_table	1
+30	2024_05_13_171020_rename_table_organization_user_to_members	1
+31	2024_05_22_151226_add_client_id_to_time_entries_table	1
+32	2024_05_30_175801_add_is_billable_column_to_projects_table	1
+33	2024_05_30_175825_add_is_imported_column_to_time_entries_table	1
+34	2024_06_07_113443_change_member_id_foreign_keys_to_restrict_on_delete	1
+35	2024_06_10_161831_reset_billable_rates_with_zero_as_value	1
 \.
 
 
@@ -1128,7 +1131,7 @@ COPY public.migrations (id, migration, batch) FROM stdin;
 -- Name: migrations_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.migrations_id_seq', 37, true);
+SELECT pg_catalog.setval('public.migrations_id_seq', 35, true);
 
 
 --

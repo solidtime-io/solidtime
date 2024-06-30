@@ -102,6 +102,9 @@
         "ide-helper": [
             "@php artisan ide-helper:generate",
             "@php artisan ide-helper:meta"
+        ],
+        "refresh-schema-dump": [
+            "@php artisan schema:dump --database=\"pgsql_test\""
         ]
     },
     "extra": {
