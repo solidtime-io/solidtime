@@ -39,4 +39,5 @@ yarn-error.log
 /frankenphp
 /public/frankenphp-worker.php
 /data
-/confif/caddy
+/config/caddy
+/config/composer
