@@ -3,6 +3,7 @@ on: push
 jobs:
   phpunit:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     services:
       pgsql_test:

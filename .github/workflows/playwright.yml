@@ -2,8 +2,9 @@ name: Playwright Tests
 on: [push]
 jobs:
   test:
-    timeout-minutes: 60
     runs-on: ubuntu-latest
+    timeout-minutes: 60
+
     services:
       mailpit:
         image: 'axllent/mailpit:latest'

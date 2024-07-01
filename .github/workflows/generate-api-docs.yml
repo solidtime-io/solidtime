@@ -6,6 +6,7 @@ on:
 jobs:
   api_docs:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     services:
       pgsql_test:
