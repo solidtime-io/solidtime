@@ -76,15 +76,8 @@ test('test that error shows if no role is selected', async ({ page }) => {
     ]);
 });
 
-import { test } from '../playwright/fixtures';
-import { PLAYWRIGHT_BASE_URL } from '../playwright/config';
-
-async function goToMembersSection(page) {
-    await page.goto(PLAYWRIGHT_BASE_URL + '/members');
-}
-
 test('test that member billable rate can be updated', async ({ page }) => {
-    await goToMembersSection(page);
+    await goToMembersPage(page);
     const newBillableRate = Math.round(Math.random() * 10000);
     await page.getByRole('row').first().getByRole('button').click();
     await page.getByRole('button').getByText('Edit').first().click();
@@ -108,20 +101,21 @@ test('test that member billable rate can be updated', async ({ page }) => {
                 request.postDataJSON().billable_rate_update_time_entries ===
                     false
         ),
-        /* page.waitForResponse(
+        page.waitForResponse(
             async (response) =>
-                response.url().includes("/organizations/") &&
-                response.request().method() === "PUT" &&
+                response.url().includes('/organizations/') &&
+                response.request().method() === 'PUT' &&
                 response.status() === 200 &&
-                (await response.json()).data.billable_rate === (newBillableRate * 100)
-        )*/
+                (await response.json()).data.billable_rate ===
+                    newBillableRate * 100
+        ),
     ]);
 });
 
 test('test that organization billable rate can be updated with all existing time entries', async ({
     page,
 }) => {
-    await goToMembersSection(page);
+    await goToMembersPage(page);
     const newBillableRate = Math.round(Math.random() * 10000);
     await page.getByRole('row').first().getByRole('button').click();
     await page.getByRole('button').getByText('Edit').first().click();
@@ -143,12 +137,13 @@ test('test that organization billable rate can be updated with all existing time
                 request.postDataJSON().billable_rate_update_time_entries ===
                     true
         ),
-        /* page.waitForResponse(
+        page.waitForResponse(
             async (response) =>
-                response.url().includes("/organizations/") &&
-                response.request().method() === "PUT" &&
+                response.url().includes('/organizations/') &&
+                response.request().method() === 'PUT' &&
                 response.status() === 200 &&
-                (await response.json()).data.billable_rate === (newBillableRate * 100)
-        )*/
+                (await response.json()).data.billable_rate ===
+                    newBillableRate * 100
+        ),
     ]);
 });
