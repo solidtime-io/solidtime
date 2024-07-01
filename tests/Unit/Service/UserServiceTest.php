@@ -115,54 +115,6 @@ class UserServiceTest extends TestCase
         }
     }
 
-    public function test_make_member_to_placeholder_creates_new_user_based_on_member_and_changes_member_to_placeholder(): void
-    {
-        // Arrange
-        $user = User::factory()->create();
-        $organization = Organization::factory()->create();
-        $member = Member::factory()->forOrganization($organization)->forUser($user)->role(Role::Employee)->create();
-        $timeEntry = TimeEntry::factory()->forOrganization($organization)->forMember($member)->create();
-        $project = Project::factory()->forOrganization($organization)->create();
-        $projectMember = ProjectMember::factory()->forProject($project)->forMember($member)->create();
-        // Note: create other user, organization, member, time entry and project member to check that they are not changed
-        $otherUser = User::factory()->create();
-        $otherOrganization = Organization::factory()->create();
-        $otherMember = Member::factory()->forOrganization($otherOrganization)->forUser($otherUser)->role(Role::Employee)->create();
-        $otherTimeEntry = TimeEntry::factory()->forOrganization($otherOrganization)->forMember($otherMember)->create();
-        $otherProject = Project::factory()->forOrganization($otherOrganization)->create();
-        $otherProjectMember = ProjectMember::factory()->forProject($otherProject)->forMember($otherMember)->create();
-
-        // Act
-        $this->userService->makeMemberToPlaceholder($member);
-
-        // Assert
-        $member->refresh();
-        $timeEntry->refresh();
-        $projectMember->refresh();
-        $placeholderUser = $member->user;
-        $this->assertTrue($placeholderUser->is_placeholder);
-        $this->assertSame(Role::Placeholder->value, $member->role);
-        $this->assertSame($organization->getKey(), $member->organization_id);
-        $this->assertSame($placeholderUser->getKey(), $projectMember->user_id);
-        $this->assertSame($member->getKey(), $projectMember->member_id);
-        $this->assertSame($placeholderUser->getKey(), $timeEntry->user_id);
-        $this->assertSame($member->getKey(), $timeEntry->member_id);
-        $this->assertSame(1, $user->organizations()->count());
-        // Note: check that other user did not change
-        $otherMember->refresh();
-        $otherTimeEntry->refresh();
-        $otherProjectMember->refresh();
-        $otherUser->refresh();
-        $this->assertFalse($otherUser->is_placeholder);
-        $this->assertSame(Role::Employee->value, $otherMember->role);
-        $this->assertSame($otherOrganization->getKey(), $otherMember->organization_id);
-        $this->assertSame($otherUser->getKey(), $otherProjectMember->user_id);
-        $this->assertSame($otherMember->getKey(), $otherProjectMember->member_id);
-        $this->assertSame($otherUser->getKey(), $otherTimeEntry->user_id);
-        $this->assertSame($otherMember->getKey(), $otherTimeEntry->member_id);
-        $this->assertSame(1, $otherUser->organizations()->count());
-    }
-
     public function test_make_sure_user_has_current_organization_sets_current_organization_for_user_if_null(): void
     {
         // Arrange

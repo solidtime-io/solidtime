@@ -27,7 +27,7 @@ class UpdateMemberRole
      */
     public function update(User $actingUser, Organization $organization, string $userId, string $role): void
     {
-        if (! app(PermissionStore::class)->has($organization, 'members:change-role')) {
+        if (! app(PermissionStore::class)->has($organization, 'members:change-ownership')) {
             throw new AuthorizationException();
         }
 

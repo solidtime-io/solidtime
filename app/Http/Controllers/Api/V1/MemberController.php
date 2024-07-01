@@ -6,7 +6,10 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Enums\Role;
 use App\Exceptions\Api\CanNotRemoveOwnerFromOrganization;
+use App\Exceptions\Api\ChangingRoleToPlaceholderIsNotAllowed;
 use App\Exceptions\Api\EntityStillInUseApiException;
+use App\Exceptions\Api\OnlyOwnerCanChangeOwnership;
+use App\Exceptions\Api\OrganizationNeedsAtLeastOneOwner;
 use App\Exceptions\Api\UserNotPlaceholderApiException;
 use App\Http\Requests\V1\Member\MemberIndexRequest;
 use App\Http\Requests\V1\Member\MemberUpdateRequest;
@@ -18,6 +21,7 @@ use App\Models\Organization;
 use App\Models\ProjectMember;
 use App\Models\TimeEntry;
 use App\Service\BillableRateService;
+use App\Service\MemberService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -57,18 +61,37 @@ class MemberController extends Controller
      * Update a member of the organization
      *
      * @throws AuthorizationException
+     * @throws OrganizationNeedsAtLeastOneOwner
+     * @throws OnlyOwnerCanChangeOwnership
+     * @throws ChangingRoleToPlaceholderIsNotAllowed
      *
      * @operationId updateMember
      */
-    public function update(Organization $organization, Member $member, MemberUpdateRequest $request, BillableRateService $billableRateService): JsonResource
+    public function update(Organization $organization, Member $member, MemberUpdateRequest $request, BillableRateService $billableRateService, MemberService $memberService): JsonResource
     {
         $this->checkPermission($organization, 'members:update', $member);
 
         if ($request->has('billable_rate')) {
             $member->billable_rate = $request->getBillableRate();
         }
-        if ($request->has('role')) {
-            $member->role = $request->getRole()->value;
+        if ($request->has('role') && $member->role !== $request->getRole()->value) {
+            $newRole = $request->getRole();
+            $oldRole = Role::from($member->role);
+            if ($oldRole === Role::Owner) {
+                throw new OrganizationNeedsAtLeastOneOwner();
+            }
+            if ($newRole === Role::Placeholder) {
+                throw new ChangingRoleToPlaceholderIsNotAllowed();
+            }
+            if ($newRole === Role::Owner) {
+                if ($this->hasPermission($organization, 'members:change-ownership')) {
+                    $memberService->changeOwnership($organization, $member);
+                } else {
+                    throw new OnlyOwnerCanChangeOwnership();
+                }
+            } else {
+                $member->role = $request->getRole()->value;
+            }
         }
         $member->save();
 

@@ -24,9 +24,12 @@ class DeletionService
 {
     private UserService $userService;
 
-    public function __construct(UserService $userService)
+    private MemberService $memberService;
+
+    public function __construct(UserService $userService, MemberService $memberService)
     {
         $this->userService = $userService;
+        $this->memberService = $memberService;
     }
 
     public function deleteOrganization(Organization $organization, bool $inTransaction = true, ?User $ignoreUser = null): void
@@ -145,7 +148,7 @@ class DeletionService
             if ($member->role === Role::Owner->value) {
                 $this->deleteOrganization($member->organization, false, $user);
             } else {
-                $this->userService->makeMemberToPlaceholder($member);
+                $this->memberService->makeMemberToPlaceholder($member);
             }
         }
 

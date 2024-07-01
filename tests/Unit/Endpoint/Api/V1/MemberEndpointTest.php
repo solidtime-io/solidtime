@@ -91,18 +91,18 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
         $data = $this->createUserWithPermission([
             'members:update',
         ]);
+        $member = Member::factory()->forOrganization($data->organization)->role(Role::Admin)->create();
         $this->assertBillableRateServiceIsUnused();
         Passport::actingAs($data->user);
 
         // Act
-        $response = $this->putJson(route('api.v1.members.update', [$data->organization->id, $data->member]), [
+        $response = $this->putJson(route('api.v1.members.update', [$data->organization->id, $member]), [
             'billable_rate' => 10001,
             'role' => Role::Employee->value,
         ]);
 
         // Assert
         $response->assertStatus(200);
-        $member = $data->member;
         $member->refresh();
         $this->assertSame(10001, $member->billable_rate);
         $this->assertSame(Role::Employee->value, $member->role);
@@ -155,7 +155,7 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
         $this->assertSame(Role::Admin->value, $otherMember->role);
     }
 
-    public function test_update_member_role_fails_if_role_is_owner(): void
+    public function test_update_member_allows_role_owner_in_request_if_that_would_not_the_role(): void
     {
         // Arrange
         $data = $this->createUserWithPermission([
@@ -164,13 +164,97 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
         Passport::actingAs($data->user);
 
         // Act
-        $response = $this->putJson(route('api.v1.members.update', [$data->organization->getKey(), $data->member->getKey()]), [
+        $response = $this->putJson(route('api.v1.members.update', [$data->organization->getKey(), $data->ownerMember->getKey()]), [
             'role' => Role::Owner->value,
         ]);
 
         // Assert
-        $response->assertStatus(422);
-        $response->assertJsonPath('message', 'The selected role is invalid.');
+        $response->assertStatus(200);
+    }
+
+    public function test_update_member_fails_if_user_tries_to_change_role_to_owner(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'members:update',
+        ]);
+        $member = Member::factory()->forOrganization($data->organization)->role(Role::Employee)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.members.update', [$data->organization->getKey(), $member->getKey()]), [
+            'role' => Role::Owner->value,
+        ]);
+
+        // Assert
+        $response->assertStatus(400);
+        $response->assertJsonPath('message', 'Only owner can change ownership');
+    }
+
+    public function test_update_member_fails_if_user_tries_to_change_role_of_the_current_owner(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'members:update',
+            'members:change-ownership',
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.members.update', [$data->organization->getKey(), $data->ownerMember->getKey()]), [
+            'role' => Role::Admin->value,
+        ]);
+
+        // Assert
+        $response->assertStatus(400);
+        $response->assertJsonPath('message', 'Organization needs at least one owner');
+    }
+
+    public function test_update_member_can_change_role_to_everything_expect_owner_with_the_member_update_permission(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'members:update',
+        ]);
+        $member = Member::factory()->forOrganization($data->organization)->role(Role::Employee)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.members.update', [$data->organization->getKey(), $member->getKey()]), [
+            'role' => Role::Admin->value,
+        ]);
+
+        // Assert
+        $response->assertStatus(200);
+        $member->refresh();
+        $this->assertSame(Role::Admin->value, $member->role);
+    }
+
+    public function test_update_member_can_change_role_to_owner_if_auth_user_has_change_ownership_permission(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'members:update',
+            'members:change-ownership',
+        ]);
+        $oldOwner = $data->ownerMember;
+        $organization = $data->organization;
+        $member = Member::factory()->forOrganization($data->organization)->role(Role::Employee)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.members.update', [$data->organization->getKey(), $member->getKey()]), [
+            'role' => Role::Owner->value,
+        ]);
+
+        // Assert
+        $response->assertStatus(200);
+        $member->refresh();
+        $organization->refresh();
+        $oldOwner->refresh();
+        $this->assertSame(Role::Owner->value, $member->role);
+        $this->assertSame($member->user_id, $organization->user_id);
+        $this->assertSame(Role::Admin->value, $oldOwner->role);
     }
 
     public function test_update_member_role_fails_if_role_is_placeholder(): void
@@ -179,16 +263,17 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
         $data = $this->createUserWithPermission([
             'members:update',
         ]);
+        $member = Member::factory()->forOrganization($data->organization)->role(Role::Employee)->create();
         Passport::actingAs($data->user);
 
         // Act
-        $response = $this->putJson(route('api.v1.members.update', [$data->organization->getKey(), $data->member->getKey()]), [
+        $response = $this->putJson(route('api.v1.members.update', [$data->organization->getKey(), $member->getKey()]), [
             'role' => Role::Placeholder->value,
         ]);
 
         // Assert
-        $response->assertStatus(422);
-        $response->assertJsonPath('message', 'The selected role is invalid.');
+        $response->assertStatus(400);
+        $response->assertJsonPath('message', 'Changing role to placeholder is not allowed');
     }
 
     public function test_invite_placeholder_succeeds_if_data_is_valid(): void

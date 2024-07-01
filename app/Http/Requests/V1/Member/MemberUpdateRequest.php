@@ -25,8 +25,7 @@ class MemberUpdateRequest extends FormRequest
         return [
             'role' => [
                 'string',
-                Rule::enum(Role::class)
-                    ->except([Role::Owner, Role::Placeholder]),
+                Rule::enum(Role::class),
             ],
             'billable_rate' => [
                 'nullable',
