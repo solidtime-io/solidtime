@@ -11,6 +11,7 @@ defineProps<{
     <Component
         :is="href ? Link : 'div'"
         :href="href"
+        role="row"
         :class="
             twMerge(
                 'contents group [&>*]:transition [&>*]:border-row-separator [&>*]:border-b',

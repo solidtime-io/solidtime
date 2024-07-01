@@ -5,11 +5,15 @@ const ClientResource = z
     .object({
         id: z.string(),
         name: z.string(),
+        is_archived: z.boolean(),
         created_at: z.string(),
         updated_at: z.string(),
     })
     .passthrough();
 const ClientCollection = z.array(ClientResource);
+const updateClient_Body = z
+    .object({ name: z.string(), is_archived: z.boolean().optional() })
+    .passthrough();
 const importData_Body = z
     .object({ type: z.string(), data: z.string() })
     .passthrough();
@@ -33,9 +37,11 @@ const MemberPivotResource = z
     .passthrough();
 const updateMember_Body = z
     .object({
-        billable_rate: z.union([z.number(), z.null()]).optional(),
         role: Role,
+        billable_rate: z.union([z.number(), z.null()]),
+        billable_rate_update_time_entries: z.boolean(),
     })
+    .partial()
     .passthrough();
 const MemberResource = z
     .object({
@@ -60,6 +66,7 @@ const updateOrganization_Body = z
     .object({
         name: z.string(),
         billable_rate: z.union([z.number(), z.null()]).optional(),
+        billable_rate_update_time_entries: z.boolean().optional(),
     })
     .passthrough();
 const ProjectResource = z
@@ -68,6 +75,7 @@ const ProjectResource = z
         name: z.string(),
         color: z.string(),
         client_id: z.union([z.string(), z.null()]),
+        is_archived: z.boolean(),
         billable_rate: z.union([z.number(), z.null()]),
         is_billable: z.boolean(),
     })
@@ -79,6 +87,17 @@ const createProject_Body = z
         is_billable: z.boolean(),
         billable_rate: z.union([z.number(), z.null()]).optional(),
         client_id: z.union([z.string(), z.null()]).optional(),
+    })
+    .passthrough();
+const updateProject_Body = z
+    .object({
+        name: z.string(),
+        color: z.string(),
+        is_billable: z.boolean(),
+        is_archived: z.boolean().optional(),
+        client_id: z.union([z.string(), z.null()]).optional(),
+        billable_rate: z.union([z.number(), z.null()]).optional(),
+        billable_rate_update_time_entries: z.boolean().optional(),
     })
     .passthrough();
 const ProjectMemberResource = z
@@ -96,7 +115,10 @@ const createProjectMember_Body = z
     })
     .passthrough();
 const updateProjectMember_Body = z
-    .object({ billable_rate: z.union([z.number(), z.null()]) })
+    .object({
+        billable_rate: z.union([z.number(), z.null()]),
+        billable_rate_update_time_entries: z.boolean(),
+    })
     .partial()
     .passthrough();
 const TagResource = z
@@ -112,6 +134,7 @@ const TaskResource = z
     .object({
         id: z.string(),
         name: z.string(),
+        is_done: z.boolean(),
         project_id: z.string(),
         created_at: z.string(),
         updated_at: z.string(),
@@ -119,6 +142,9 @@ const TaskResource = z
     .passthrough();
 const createTask_Body = z
     .object({ name: z.string(), project_id: z.string() })
+    .passthrough();
+const updateTask_Body = z
+    .object({ name: z.string(), is_done: z.boolean().optional() })
     .passthrough();
 const start = z.union([z.string(), z.null()]).optional();
 const TimeEntryResource = z
@@ -149,7 +175,7 @@ const createTimeEntry_Body = z
         tags: z.union([z.array(z.string()), z.null()]).optional(),
     })
     .passthrough();
-const v1_time_entries_update_multiple_Body = z
+const updateMultipleTimeEntries_Body = z
     .object({
         ids: z.array(z.string()),
         changes: z
@@ -182,6 +208,7 @@ const updateTimeEntry_Body = z
 export const schemas = {
     ClientResource,
     ClientCollection,
+    updateClient_Body,
     importData_Body,
     InvitationResource,
     Role,
@@ -193,6 +220,7 @@ export const schemas = {
     updateOrganization_Body,
     ProjectResource,
     createProject_Body,
+    updateProject_Body,
     ProjectMemberResource,
     createProjectMember_Body,
     updateProjectMember_Body,
@@ -200,11 +228,12 @@ export const schemas = {
     TagCollection,
     TaskResource,
     createTask_Body,
+    updateTask_Body,
     start,
     TimeEntryResource,
     TimeEntryCollection,
     createTimeEntry_Body,
-    v1_time_entries_update_multiple_Body,
+    updateMultipleTimeEntries_Body,
     updateTimeEntry_Body,
 };
 
@@ -287,6 +316,16 @@ const endpoints = makeApi([
                 type: 'Path',
                 schema: z.string(),
             },
+            {
+                name: 'page',
+                type: 'Query',
+                schema: z.number().int().gte(1).optional(),
+            },
+            {
+                name: 'archived',
+                type: 'Query',
+                schema: z.enum(['true', 'false', 'all']).optional(),
+            },
         ],
         response: z.object({ data: ClientCollection }).passthrough(),
         errors: [
@@ -299,6 +338,16 @@ const endpoints = makeApi([
                 status: 404,
                 description: `Not found`,
                 schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 422,
+                description: `Validation error`,
+                schema: z
+                    .object({
+                        message: z.string(),
+                        errors: z.record(z.array(z.string())),
+                    })
+                    .passthrough(),
             },
         ],
     },
@@ -352,7 +401,7 @@ const endpoints = makeApi([
             {
                 name: 'body',
                 type: 'Body',
-                schema: z.object({ name: z.string() }).passthrough(),
+                schema: updateClient_Body,
             },
             {
                 name: 'organization',
@@ -1034,6 +1083,11 @@ const endpoints = makeApi([
                 type: 'Query',
                 schema: z.number().int().gte(1).optional(),
             },
+            {
+                name: 'archived',
+                type: 'Query',
+                schema: z.enum(['true', 'false', 'all']).optional(),
+            },
         ],
         response: z
             .object({
@@ -1172,7 +1226,7 @@ const endpoints = makeApi([
             {
                 name: 'body',
                 type: 'Body',
-                schema: createProject_Body,
+                schema: updateProject_Body,
             },
             {
                 name: 'organization',
@@ -1552,6 +1606,11 @@ const endpoints = makeApi([
                 type: 'Query',
                 schema: z.string().uuid().optional(),
             },
+            {
+                name: 'done',
+                type: 'Query',
+                schema: z.enum(['true', 'false', 'all']).optional(),
+            },
         ],
         response: z
             .object({
@@ -1659,7 +1718,7 @@ const endpoints = makeApi([
             {
                 name: 'body',
                 type: 'Body',
-                schema: z.object({ name: z.string() }).passthrough(),
+                schema: updateTask_Body,
             },
             {
                 name: 'organization',
@@ -1891,13 +1950,13 @@ Users with the permission &#x60;time-entries:view:own&#x60; can only use this en
     {
         method: 'patch',
         path: '/v1/organizations/:organization/time-entries',
-        alias: 'v1.time-entries.update-multiple',
+        alias: 'updateMultipleTimeEntries',
         requestFormat: 'json',
         parameters: [
             {
                 name: 'body',
                 type: 'Body',
-                schema: v1_time_entries_update_multiple_Body,
+                schema: updateMultipleTimeEntries_Body,
             },
             {
                 name: 'organization',

@@ -9,6 +9,8 @@ import type {
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import { useNotificationsStore } from '@/utils/notification';
 
+export type MemberBillableKey = 'default-rate' | 'custom-rate';
+
 export const useMembersStore = defineStore('members', () => {
     const membersResponse = ref<MemberIndexResponse | null>(null);
     const { handleApiRequestNotifications } = useNotificationsStore();

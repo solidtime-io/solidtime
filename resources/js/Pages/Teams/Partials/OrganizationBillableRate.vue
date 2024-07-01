@@ -7,14 +7,15 @@ import type { UpdateOrganizationBody } from '@/utils/api';
 import BillableRateInput from '@/Components/Common/BillableRateInput.vue';
 import { useOrganizationStore } from '@/utils/useOrganization';
 import { storeToRefs } from 'pinia';
+import OrganizationBillableRateModal from '@/Components/Common/Organization/OrganizationBillableRateModal.vue';
 
 const store = useOrganizationStore();
 const { fetchOrganization, updateOrganization } = store;
 const { organization } = storeToRefs(store);
-
+const saving = ref(false);
 const organizationBody = ref<UpdateOrganizationBody>({
     name: '',
-    billable_rate: null,
+    billable_rate: null as number | null,
 });
 
 onMounted(async () => {
@@ -24,9 +25,15 @@ onMounted(async () => {
         billable_rate: organization.value?.billable_rate,
     };
 });
+const showConfirmationModal = ref(false);
 
-function submit() {
-    updateOrganization(organizationBody.value);
+async function submit(billableRateUpdateTimeEntries: boolean) {
+    saving.value = true;
+    organizationBody.value.billable_rate_update_time_entries =
+        billableRateUpdateTimeEntries;
+    await updateOrganization(organizationBody.value);
+    saving.value = false;
+    showConfirmationModal.value = false;
 }
 </script>
 
@@ -39,6 +46,12 @@ function submit() {
         </template>
 
         <template #form>
+            <OrganizationBillableRateModal
+                v-model:show="showConfirmationModal"
+                @submit="submit"
+                :new-billable-rate="
+                    organizationBody.billable_rate
+                "></OrganizationBillableRateModal>
             <!-- Organization Owner Information -->
             <div class="col-span-6">
                 <div class="col-span-6 sm:col-span-4">
@@ -53,7 +66,9 @@ function submit() {
             </div>
         </template>
         <template #actions>
-            <PrimaryButton @click="submit">Save</PrimaryButton>
+            <PrimaryButton @click="showConfirmationModal = true"
+                >Save</PrimaryButton
+            >
         </template>
     </FormSection>
 </template>
