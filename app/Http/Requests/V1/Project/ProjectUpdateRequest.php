@@ -16,7 +16,7 @@ use Korridor\LaravelModelValidationRules\Rules\UniqueEloquent;
 
 /**
  * @property Organization $organization Organization from model binding
- * @property Project $project Project from model binding
+ * @property Project|null $project Project from model binding
  */
 class ProjectUpdateRequest extends FormRequest
 {

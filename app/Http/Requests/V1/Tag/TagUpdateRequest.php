@@ -13,7 +13,7 @@ use Korridor\LaravelModelValidationRules\Rules\UniqueEloquent;
 
 /**
  * @property Organization $organization Organization from model binding
- * @property Tag $tag Tag from model binding
+ * @property Tag|null $tag Tag from model binding
  */
 class TagUpdateRequest extends FormRequest
 {

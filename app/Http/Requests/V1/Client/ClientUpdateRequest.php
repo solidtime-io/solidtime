@@ -13,7 +13,7 @@ use Korridor\LaravelModelValidationRules\Rules\UniqueEloquent;
 
 /**
  * @property Organization $organization Organization from model binding
- * @property Client $client Client from model binding
+ * @property Client|null $client Client from model binding
  */
 class ClientUpdateRequest extends FormRequest
 {

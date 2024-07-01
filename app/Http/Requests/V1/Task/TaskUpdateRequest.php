@@ -13,7 +13,7 @@ use Korridor\LaravelModelValidationRules\Rules\UniqueEloquent;
 
 /**
  * @property Organization $organization Organization from model binding
- * @property Task $task Task from model binding
+ * @property Task|null $task Task from model binding
  */
 class TaskUpdateRequest extends FormRequest
 {
