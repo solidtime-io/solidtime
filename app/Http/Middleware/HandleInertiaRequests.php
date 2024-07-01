@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
+use App\Service\BillingContract;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 use Nwidart\Modules\Facades\Module;
@@ -38,8 +39,20 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $hasBilling = Module::has('Billing') && Module::isEnabled('Billing');
+        $billing = null;
+        if ($hasBilling) {
+            /** @var BillingContract $billing */
+            $billing = app(BillingContract::class);
+        }
+
+        $currentOrganization = $request->user()?->currentTeam;
+
         return array_merge(parent::share($request), [
-            'has_billing_extension' => Module::has('Billing'),
+            'has_billing_extension' => $hasBilling,
+            'billing' => $billing !== null ? [
+                'has_subscription' => $currentOrganization !== null ? $billing->hasSubscription($currentOrganization) : null,
+            ] : null,
             'flash' => [
                 'message' => fn () => $request->session()->get('message'),
             ],

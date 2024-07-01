@@ -13,6 +13,7 @@ use App\Models\Tag;
 use App\Models\Task;
 use App\Models\TimeEntry;
 use App\Models\User;
+use App\Service\BillingContract;
 use App\Service\IpLookup\IpLookupServiceContract;
 use App\Service\IpLookup\NoIpLookupService;
 use App\Service\PermissionStore;
@@ -87,7 +88,9 @@ class AppServiceProvider extends ServiceProvider
             return new PermissionStore();
         });
 
+        // Extensions
         $this->app->bind(IpLookupServiceContract::class, NoIpLookupService::class);
+        $this->app->bind(BillingContract::class);
 
         Route::model('member', Member::class);
         Route::model('invitation', OrganizationInvitation::class);
