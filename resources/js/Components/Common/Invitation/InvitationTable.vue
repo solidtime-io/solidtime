@@ -18,7 +18,7 @@ onMounted(async () => {
             <div
                 data-testid="client_table"
                 class="grid min-w-full"
-                style="grid-template-columns: 1fr 1fr">
+                style="grid-template-columns: 1fr 1fr 80px">
                 <InvitationTableHeading></InvitationTableHeading>
                 <template
                     v-for="invitation in invitations"
