@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Requests\V1\Organization\OrganizationUpdateRequest;
 use App\Http\Resources\V1\Organization\OrganizationResource;
 use App\Models\Organization;
+use App\Service\BillableRateService;
 use Illuminate\Auth\Access\AuthorizationException;
 
 class OrganizationController extends Controller
@@ -32,13 +33,17 @@ class OrganizationController extends Controller
      *
      * @throws AuthorizationException
      */
-    public function update(Organization $organization, OrganizationUpdateRequest $request): OrganizationResource
+    public function update(Organization $organization, OrganizationUpdateRequest $request, BillableRateService $billableRateService): OrganizationResource
     {
         $this->checkPermission($organization, 'organizations:update');
 
         $organization->name = $request->input('name');
         $organization->billable_rate = $request->getBillableRate();
         $organization->save();
+
+        if ($request->getBillableRateUpdateTimeEntries()) {
+            $billableRateService->updateTimeEntriesBillableRateForOrganization($organization);
+        }
 
         return new OrganizationResource($organization);
     }

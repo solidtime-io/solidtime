@@ -23,6 +23,7 @@ class MemberFactory extends Factory
     public function definition(): array
     {
         return [
+            'billable_rate' => null,
             'role' => Role::Employee,
             'organization_id' => Organization::factory(),
             'user_id' => User::factory(),
@@ -66,6 +67,20 @@ class MemberFactory extends Factory
                 'email_verified_at' => null,
             ];
         });
+    }
+
+    public function billableRate(?int $billableRate): self
+    {
+        return $this->state(fn (array $attributes) => [
+            'billable_rate' => $billableRate,
+        ]);
+    }
+
+    public function withBillableRate(): self
+    {
+        return $this->state(fn (array $attributes) => [
+            'billable_rate' => $this->faker->numberBetween(50, 1000) * 100,
+        ]);
     }
 
     public function attachToOrganization(Organization $organization, array $pivot = []): static

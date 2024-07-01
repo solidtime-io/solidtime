@@ -116,4 +116,30 @@ class ProjectModelTest extends ModelTestAbstract
             $projectPrivateButMember->getKey(),
         ], $allProjects);
     }
+
+    public function test_accessor_is_archived_is_true_if_archived_at_is_not_null(): void
+    {
+        // Arrange
+        $project = Project::factory()->archived()->create();
+
+        // Act
+        $project->refresh();
+        $isArchived = $project->is_archived;
+
+        // Assert
+        $this->assertTrue($isArchived);
+    }
+
+    public function test_accessor_is_archived_is_false_if_archived_at_is_null(): void
+    {
+        // Arrange
+        $project = Project::factory()->create();
+
+        // Act
+        $project->refresh();
+        $isArchived = $project->is_archived;
+
+        // Assert
+        $this->assertFalse($isArchived);
+    }
 }

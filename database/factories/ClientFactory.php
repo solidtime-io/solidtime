@@ -22,6 +22,7 @@ class ClientFactory extends Factory
     {
         return [
             'name' => $this->faker->company(),
+            'archived_at' => null,
             'organization_id' => Organization::factory(),
         ];
     }
@@ -40,6 +41,15 @@ class ClientFactory extends Factory
         return $this->state(function (array $attributes): array {
             return [
                 'created_at' => $this->faker->dateTimeBetween('-1 day', 'now'),
+            ];
+        });
+    }
+
+    public function archived(): self
+    {
+        return $this->state(function (array $attributes): array {
+            return [
+                'archived_at' => $this->faker->dateTime(),
             ];
         });
     }

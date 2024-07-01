@@ -41,12 +41,16 @@ export const useNotificationsStore = defineStore('notifications', () => {
     async function handleApiRequestNotifications<T>(
         apiRequest: () => Promise<T>,
         successMessage?: string,
-        errorMessage?: string
+        errorMessage?: string,
+        onSuccess?: (response: T) => void
     ) {
         try {
             const response = await apiRequest();
             if (successMessage) {
                 addNotification('success', successMessage);
+            }
+            if (onSuccess) {
+                onSuccess(response);
             }
             return response;
         } catch (error) {
@@ -71,6 +75,9 @@ export const useNotificationsStore = defineStore('notifications', () => {
                         const response = await apiRequest();
                         if (successMessage) {
                             addNotification('success', successMessage);
+                        }
+                        if (onSuccess) {
+                            onSuccess(response);
                         }
                         return response;
                     } catch (error) {

@@ -11,7 +11,9 @@ use App\Service\DeletionService;
 use Illuminate\Support\Facades\Config;
 use Livewire\Livewire;
 use Mockery\MockInterface;
+use PHPUnit\Framework\Attributes\UsesClass;
 
+#[UsesClass(OrganizationResource::class)]
 class OrganizationResourceTest extends FilamentTestCase
 {
     protected function setUp(): void

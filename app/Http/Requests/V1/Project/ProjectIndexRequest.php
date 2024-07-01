@@ -21,6 +21,15 @@ class ProjectIndexRequest extends FormRequest
                 'integer',
                 'min:1',
             ],
+            'archived' => [
+                'string',
+                'in:true,false,all',
+            ],
         ];
+    }
+
+    public function getFilterArchived(): string
+    {
+        return $this->input('archived', 'false');
     }
 }

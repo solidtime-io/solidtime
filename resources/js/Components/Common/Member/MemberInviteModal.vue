@@ -8,9 +8,16 @@ import { useFocus } from '@vueuse/core';
 import InputLabel from '@/Components/InputLabel.vue';
 import InputError from '@/Components/InputError.vue';
 import type { Role } from '@/types/jetstream';
-import { useForm } from '@inertiajs/vue3';
+import { Link, useForm } from '@inertiajs/vue3';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import { filterRoles } from '@/utils/roles';
+import { hasActiveSubscription, isBillingActivated } from '@/utils/billing';
+import { CreditCardIcon, UserGroupIcon } from '@heroicons/vue/20/solid';
+import { canUpdateOrganization } from '@/utils/permissions';
+import { api } from '../../../../../openapi.json.client';
+import type { MemberRole } from '@/utils/api';
+import { z } from 'zod';
+import { useNotificationsStore } from '@/utils/notification';
 
 const show = defineModel('show', { default: false });
 const saving = ref(false);
@@ -19,25 +26,55 @@ defineProps<{
     availableRoles: Role[];
 }>();
 
+const errors = ref({
+    email: '',
+    role: '',
+});
+
 const addTeamMemberForm = useForm({
     email: '',
     role: null as string | null,
 });
 
 const emit = defineEmits(['close']);
+const { handleApiRequestNotifications } = useNotificationsStore();
 
 async function submit() {
+    if (addTeamMemberForm.role === null || addTeamMemberForm.email === '') {
+        errors.value.email = z
+            .string()
+            .email()
+            .safeParse(addTeamMemberForm.email).success
+            ? ''
+            : 'Please enter a valid email address';
+        errors.value.role =
+            addTeamMemberForm.role === null ? 'Please select a role' : '';
+        return;
+    }
+
     const organizationId = getCurrentOrganizationId();
     if (organizationId) {
-        addTeamMemberForm.post(route('team-members.store', organizationId), {
-            errorBag: 'addTeamMember',
-            preserveScroll: true,
-            onSuccess: () => {
+        await handleApiRequestNotifications(
+            () =>
+                api.invite(
+                    {
+                        email: addTeamMemberForm.email,
+                        role: addTeamMemberForm.role as MemberRole,
+                    },
+                    {
+                        params: {
+                            organization: organizationId,
+                        },
+                    }
+                ),
+            'Member invited',
+            'Failed to invite member',
+            () => {
                 addTeamMemberForm.reset();
                 emit('close');
                 show.value = false;
-            },
-        });
+            }
+        );
     }
 }
 
@@ -54,7 +91,34 @@ useFocus(clientNameInput, { initialValue: true });
         </template>
 
         <template #content>
-            <div class="space-y-4">
+            <div v-if="isBillingActivated() && !hasActiveSubscription()">
+                <div
+                    class="rounded-full flex items-center justify-center w-20 h-20 mx-auto border border-border-tertiary bg-secondary">
+                    <UserGroupIcon class="w-12"></UserGroupIcon>
+                </div>
+                <div class="max-w-sm text-center mx-auto py-4 text-base">
+                    <p class="py-1">
+                        The Free plan is <strong>limited to one member</strong>
+                    </p>
+                    <p class="py-1">
+                        To add new team members to your organization you,
+                        <strong>please upgrade to a paid plan</strong>.
+                    </p>
+
+                    <Link href="/billing">
+                        <PrimaryButton
+                            type="button"
+                            class="mt-6"
+                            v-if="
+                                isBillingActivated() && canUpdateOrganization()
+                            ">
+                            <CreditCardIcon class="w-5 h-5 me-2" />
+                            Go to Billing
+                        </PrimaryButton>
+                    </Link>
+                </div>
+            </div>
+            <div v-else class="space-y-4">
                 <div class="col-span-6 sm:col-span-4 flex-1">
                     <InputLabel for="email" value="Email" />
                     <TextInput
@@ -68,16 +132,12 @@ useFocus(clientNameInput, { initialValue: true });
                         class="mt-1 block w-full"
                         required
                         autocomplete="memberName" />
-                    <InputError
-                        :message="addTeamMemberForm.errors.email"
-                        class="mt-2" />
+                    <InputError :message="errors.email" class="mt-2" />
                 </div>
 
                 <div v-if="availableRoles.length > 0">
                     <InputLabel for="roles" value="Role" />
-                    <InputError
-                        :message="addTeamMemberForm.errors.role"
-                        class="mt-2" />
+                    <InputError :message="errors.role" class="mt-2" />
 
                     <div
                         class="relative z-0 mt-1 border border-card-border rounded-lg cursor-pointer">
@@ -140,8 +200,8 @@ useFocus(clientNameInput, { initialValue: true });
         </template>
         <template #footer>
             <SecondaryButton @click="show = false"> Cancel</SecondaryButton>
-
             <PrimaryButton
+                v-if="!isBillingActivated() || hasActiveSubscription()"
                 class="ms-3"
                 :class="{ 'opacity-25': saving }"
                 :disabled="saving"

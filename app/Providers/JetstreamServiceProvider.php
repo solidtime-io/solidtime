@@ -116,7 +116,7 @@ class JetstreamServiceProvider extends ServiceProvider
             'invitations:remove',
             'members:view',
             'members:invite-placeholder',
-            'members:change-role',
+            'members:change-ownership',
             'members:update',
             'members:delete',
         ])->description('Owner users can perform any action. There is only one owner per organization.');
@@ -160,6 +160,7 @@ class JetstreamServiceProvider extends ServiceProvider
             'invitations:resend',
             'invitations:remove',
             'members:view',
+            'members:update',
             'members:invite-placeholder',
         ])->description('Administrator users can perform any action, except accessing the billing dashboard.');
 

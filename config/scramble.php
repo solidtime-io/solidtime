@@ -68,7 +68,7 @@ return [
     'servers' => [
         'Production' => 'https://app.solidtime.io/api',
         'Staging' => 'https://app.staging.solidtime.io/api',
-        'Local' => 'https://soldtime.test/api',
+        'Local' => 'https://solidtime.test/api',
     ],
 
     'middleware' => [

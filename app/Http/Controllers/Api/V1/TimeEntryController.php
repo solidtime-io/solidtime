@@ -263,6 +263,10 @@ class TimeEntryController extends Controller
     }
 
     /**
+     * Update multiple time entries
+     *
+     * @operationId updateMultipleTimeEntries
+     *
      * @throws AuthorizationException
      */
     public function updateMultiple(Organization $organization, TimeEntryUpdateMultipleRequest $request): JsonResponse

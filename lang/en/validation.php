@@ -202,6 +202,10 @@ return [
     'currency' => 'The :attribute field must be a valid currency code (ISO 4217).',
     'organization' => 'The :attribute does not exist.',
     'task_belongs_to_project' => 'The :attribute is not part of the given project.',
+    'project_name_already_exists' => 'A project with the same name already exists in the organization.',
+    'tag_name_already_exists' => 'A tag with the same name already exists in the organization.',
+    'client_name_already_exists' => 'A client with the same name already exists in the organization.',
+    'task_name_already_exists' => 'A task with the same name already exists in the project.',
 
     'entities' => [
         'organization' => 'organization',

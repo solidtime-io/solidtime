@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Endpoint\Api\V1;
 
+use App\Http\Controllers\Api\V1\TaskController;
 use App\Models\Project;
 use App\Models\ProjectMember;
 use App\Models\Task;
 use App\Models\TimeEntry;
+use Illuminate\Support\Carbon;
 use Laravel\Passport\Passport;
+use PHPUnit\Framework\Attributes\UsesClass;
 
+#[UsesClass(TaskController::class)]
 class TaskEndpointTest extends ApiEndpointTestAbstract
 {
     public function test_non_valid_uuid_for_organization_id_fails(): void
@@ -30,8 +34,7 @@ class TaskEndpointTest extends ApiEndpointTestAbstract
     public function test_index_endpoint_fails_if_user_has_no_permission_to_view_tasks(): void
     {
         // Arrange
-        $data = $this->createUserWithPermission([
-        ]);
+        $data = $this->createUserWithPermission();
         Task::factory()->forOrganization($data->organization)->createMany(4);
         Passport::actingAs($data->user);
 
@@ -45,8 +48,7 @@ class TaskEndpointTest extends ApiEndpointTestAbstract
     public function test_index_endpoint_validation_fails_if_project_id_is_not_pat(): void
     {
         // Arrange
-        $data = $this->createUserWithPermission([
-        ]);
+        $data = $this->createUserWithPermission();
         Task::factory()->forOrganization($data->organization)->createMany(4);
         Passport::actingAs($data->user);
 
@@ -69,6 +71,85 @@ class TaskEndpointTest extends ApiEndpointTestAbstract
 
         // Act
         $response = $this->getJson(route('api.v1.tasks.index', [$data->organization->getKey()]));
+
+        // Assert
+        $response->assertStatus(200);
+        $response->assertJsonCount(4, 'data');
+    }
+
+    public function test_index_endpoint_without_filter_done_returns_list_of_all_tasks_of_organization(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'tasks:view',
+            'tasks:view:all',
+        ]);
+        $notDoneTasks = Task::factory()->forOrganization($data->organization)->createMany(2);
+        $doneTasks = Task::factory()->forOrganization($data->organization)->isDone()->createMany(2);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.tasks.index', [$data->organization->getKey()]));
+
+        // Assert
+        $response->assertStatus(200);
+        $response->assertJsonCount(2, 'data');
+        $this->assertEqualsCanonicalizing($notDoneTasks->pluck('id')->toArray(), $response->json('data.*.id'));
+    }
+
+    public function test_index_endpoint_with_filter_done_true_returns_list_of_all_done_tasks_of_organization(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'tasks:view',
+            'tasks:view:all',
+        ]);
+        $notDoneTasks = Task::factory()->forOrganization($data->organization)->createMany(2);
+        $doneTasks = Task::factory()->forOrganization($data->organization)->isDone()->createMany(2);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.tasks.index', [$data->organization->getKey(), 'done' => 'true']));
+
+        // Assert
+        $response->assertStatus(200);
+        $response->assertJsonCount(2, 'data');
+        $this->assertEqualsCanonicalizing($doneTasks->pluck('id')->toArray(), $response->json('data.*.id'));
+    }
+
+    public function test_index_endpoint_with_filter_done_false_returns_list_of_all_not_done_tasks_of_organization(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'tasks:view',
+            'tasks:view:all',
+        ]);
+        $notDoneTasks = Task::factory()->forOrganization($data->organization)->createMany(2);
+        $doneTasks = Task::factory()->forOrganization($data->organization)->isDone()->createMany(2);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.tasks.index', [$data->organization->getKey(), 'done' => 'false']));
+
+        // Assert
+        $response->assertStatus(200);
+        $response->assertJsonCount(2, 'data');
+        $this->assertEqualsCanonicalizing($notDoneTasks->pluck('id')->toArray(), $response->json('data.*.id'));
+    }
+
+    public function test_index_endpoint_with_filter_done_all_returns_list_of_all_tasks_of_organization(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'tasks:view',
+            'tasks:view:all',
+        ]);
+        $notDoneTasks = Task::factory()->forOrganization($data->organization)->createMany(2);
+        $doneTasks = Task::factory()->forOrganization($data->organization)->isDone()->createMany(2);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.tasks.index', [$data->organization->getKey(), 'done' => 'all']));
 
         // Assert
         $response->assertStatus(200);
@@ -196,8 +277,7 @@ class TaskEndpointTest extends ApiEndpointTestAbstract
     public function test_store_endpoint_fails_if_user_has_no_permission_to_create_tasks()
     {
         // Arrange
-        $data = $this->createUserWithPermission([
-        ]);
+        $data = $this->createUserWithPermission();
         $project = Project::factory()->forOrganization($data->organization)->create();
         Passport::actingAs($data->user);
 
@@ -211,6 +291,59 @@ class TaskEndpointTest extends ApiEndpointTestAbstract
         $response->assertForbidden();
         $this->assertDatabaseMissing(Task::class, [
             'name' => 'Task 1',
+        ]);
+    }
+
+    public function test_store_endpoint_fails_if_task_with_same_name_already_exists_in_same_project(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'tasks:create',
+        ]);
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        $task = Task::factory()->forOrganization($data->organization)->forProject($project)->create([
+            'name' => 'Task 1',
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.tasks.store', [$data->organization->getKey()]), [
+            'name' => $task->name,
+            'project_id' => $project->getKey(),
+        ]);
+
+        // Assert
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors([
+            'name' => 'A task with the same name already exists in the project.',
+        ]);
+    }
+
+    public function test_store_endpoint_creates_new_task_even_if_task_with_same_name_already_exists_in_other_project(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'tasks:create',
+        ]);
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        $otherProject = Project::factory()->forOrganization($data->organization)->create();
+        $task = Task::factory()->forOrganization($data->organization)->forProject($otherProject)->create([
+            'name' => 'Task 1',
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.tasks.store', [$data->organization->getKey()]), [
+            'name' => $task->name,
+            'project_id' => $project->getKey(),
+        ]);
+
+        // Assert
+        $response->assertStatus(201);
+        $this->assertDatabaseHas(Task::class, [
+            'name' => $task->name,
+            'project_id' => $project->getKey(),
+            'organization_id' => $data->organization->getKey(),
         ]);
     }
 
@@ -241,8 +374,7 @@ class TaskEndpointTest extends ApiEndpointTestAbstract
     public function test_update_endpoint_fails_if_user_has_no_permission(): void
     {
         // Arrange
-        $data = $this->createUserWithPermission([
-        ]);
+        $data = $this->createUserWithPermission();
         $task = Task::factory()->forOrganization($data->organization)->create();
         Passport::actingAs($data->user);
 
@@ -260,6 +392,64 @@ class TaskEndpointTest extends ApiEndpointTestAbstract
         $this->assertDatabaseMissing(Task::class, [
             'id' => $task->getKey(),
             'name' => 'Updated Task',
+        ]);
+    }
+
+    public function test_update_endpoint_fails_if_task_with_same_name_already_exists_in_same_project(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'tasks:update',
+        ]);
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        $name = 'Task 1';
+        $task = Task::factory()->forProject($project)->forOrganization($data->organization)->create([
+            'name' => $name,
+        ]);
+        $otherTask = Task::factory()->forProject($project)->forOrganization($data->organization)->create([
+            'name' => $name,
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.tasks.update', [$data->organization->getKey(), $task->getKey()]), [
+            'name' => $name,
+        ]);
+
+        // Assert
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors([
+            'name' => 'A task with the same name already exists in the project.',
+        ]);
+    }
+
+    public function test_update_endpoint_updates_task_if_task_with_same_name_already_exists_in_other_project(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'tasks:update',
+        ]);
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        $otherProject = Project::factory()->forOrganization($data->organization)->create();
+        $name = 'Task 1';
+        $task = Task::factory()->forProject($project)->forOrganization($data->organization)->create([
+            'name' => $name,
+        ]);
+        $otherTask = Task::factory()->forProject($otherProject)->forOrganization($data->organization)->create([
+            'name' => $name,
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.tasks.update', [$data->organization->getKey(), $task->getKey()]), [
+            'name' => $name,
+        ]);
+
+        // Assert
+        $response->assertStatus(200);
+        $this->assertDatabaseHas(Task::class, [
+            'id' => $task->getKey(),
+            'name' => $name,
         ]);
     }
 
@@ -282,6 +472,54 @@ class TaskEndpointTest extends ApiEndpointTestAbstract
         $this->assertDatabaseHas(Task::class, [
             'id' => $task->getKey(),
             'name' => 'Updated Task',
+        ]);
+    }
+
+    public function test_update_endpoint_can_set_task_to_done(): void
+    {
+        // Arrange
+        $now = Carbon::now();
+        $this->travelTo($now);
+        $data = $this->createUserWithPermission([
+            'tasks:update',
+        ]);
+        $task = Task::factory()->forOrganization($data->organization)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.tasks.update', [$data->organization->getKey(), $task->getKey()]), [
+            'name' => $task->name,
+            'is_done' => true,
+        ]);
+
+        // Assert
+        $response->assertStatus(200);
+        $this->assertDatabaseHas(Task::class, [
+            'id' => $task->getKey(),
+            'done_at' => $now->toDateTimeString(),
+        ]);
+    }
+
+    public function test_update_endpoint_can_set_task_to_not_done(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'tasks:update',
+        ]);
+        $task = Task::factory()->forOrganization($data->organization)->isDone()->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.tasks.update', [$data->organization->getKey(), $task->getKey()]), [
+            'name' => $task->name,
+            'is_done' => false,
+        ]);
+
+        // Assert
+        $response->assertStatus(200);
+        $this->assertDatabaseHas(Task::class, [
+            'id' => $task->getKey(),
+            'done_at' => null,
         ]);
     }
 
@@ -328,8 +566,7 @@ class TaskEndpointTest extends ApiEndpointTestAbstract
     public function test_delete_endpoint_fails_if_user_has_no_permission_to_delete_tasks(): void
     {
         // Arrange
-        $data = $this->createUserWithPermission([
-        ]);
+        $data = $this->createUserWithPermission();
         $task = Task::factory()->forOrganization($data->organization)->create();
         Passport::actingAs($data->user);
 

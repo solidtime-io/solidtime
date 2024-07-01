@@ -89,6 +89,7 @@ const filteredProjects = computed(() => {
                     value: '',
                     client_id: null,
                     billable_rate: null,
+                    is_archived: false,
                     is_billable: false,
                 },
                 tasks: [],

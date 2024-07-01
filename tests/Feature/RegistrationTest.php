@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Enums\Role;
+use App\Enums\Weekday;
 use App\Events\NewsletterRegistered;
 use App\Models\Member;
 use App\Models\User;
 use App\Providers\RouteServiceProvider;
+use App\Service\IpLookup\IpLookupResponseDto;
+use App\Service\IpLookup\IpLookupServiceContract;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Laravel\Fortify\Features;
@@ -100,6 +103,7 @@ class RegistrationTest extends TestCase
 
     public function test_new_users_can_register_and_frontend_can_send_timezone_for_user(): void
     {
+        // Act
         $response = $this->post('/register', [
             'name' => 'Test User',
             'email' => 'test@example.com',
@@ -109,10 +113,104 @@ class RegistrationTest extends TestCase
             'timezone' => 'Europe/Berlin',
         ]);
 
+        // Assert
         $this->assertAuthenticated();
         $response->assertRedirect(RouteServiceProvider::HOME);
         $user = User::where('email', 'test@example.com')->firstOrFail();
         $this->assertSame('Europe/Berlin', $user->timezone);
+    }
+
+    public function test_new_users_can_register_and_uses_ip_lookup_service_to_get_information_about_currency_and_start_of_week(): void
+    {
+        // Arrange
+        $this->mock(IpLookupServiceContract::class, function ($mock) {
+            $mock->shouldReceive('lookup')->andReturn(new IpLookupResponseDto(
+                'America/New_York',
+                Weekday::Sunday,
+                'USD',
+            ));
+        });
+
+        // Act
+        $response = $this->post('/register', [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+            'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature(),
+            'timezone' => 'Europe/Berlin',
+        ]);
+
+        // Assert
+        $this->assertAuthenticated();
+        $response->assertRedirect(RouteServiceProvider::HOME);
+        /** @var User $user */
+        $user = User::where('email', 'test@example.com')->firstOrFail();
+        $this->assertSame('Europe/Berlin', $user->timezone);
+        $this->assertSame(Weekday::Sunday, $user->week_start);
+        $this->assertSame('USD', $user->organizations->first()->currency);
+    }
+
+    public function test_new_users_can_register_and_uses_ip_lookup_service_to_get_information_about_timezone_if_client_did_not_send_one(): void
+    {
+        // Arrange
+        $this->mock(IpLookupServiceContract::class, function ($mock) {
+            $mock->shouldReceive('lookup')->andReturn(new IpLookupResponseDto(
+                'America/New_York',
+                Weekday::Sunday,
+                'USD',
+            ));
+        });
+
+        // Act
+        $response = $this->post('/register', [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+            'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature(),
+            'timezone' => null,
+        ]);
+
+        // Assert
+        $this->assertAuthenticated();
+        $response->assertRedirect(RouteServiceProvider::HOME);
+        /** @var User $user */
+        $user = User::where('email', 'test@example.com')->firstOrFail();
+        $this->assertSame('America/New_York', $user->timezone);
+        $this->assertSame(Weekday::Sunday, $user->week_start);
+        $this->assertSame('USD', $user->organizations->first()->currency);
+    }
+
+    public function test_new_users_can_register_and_uses_ip_lookup_service_to_get_information_about_timezone_if_client_sends_invalid_one(): void
+    {
+        // Arrange
+        $this->mock(IpLookupServiceContract::class, function ($mock) {
+            $mock->shouldReceive('lookup')->andReturn(new IpLookupResponseDto(
+                'America/New_York',
+                Weekday::Sunday,
+                'USD',
+            ));
+        });
+
+        // Act
+        $response = $this->post('/register', [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+            'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature(),
+            'timezone' => 'Unknown timezone',
+        ]);
+
+        // Assert
+        $this->assertAuthenticated();
+        $response->assertRedirect(RouteServiceProvider::HOME);
+        /** @var User $user */
+        $user = User::where('email', 'test@example.com')->firstOrFail();
+        $this->assertSame('America/New_York', $user->timezone);
+        $this->assertSame(Weekday::Sunday, $user->week_start);
+        $this->assertSame('USD', $user->organizations->first()->currency);
     }
 
     public function test_new_users_can_register_and_ignores_invalid_timezones_from_frontend(): void

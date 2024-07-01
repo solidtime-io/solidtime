@@ -6,14 +6,17 @@ namespace App\Http\Requests\V1\Project;
 
 use App\Models\Client;
 use App\Models\Organization;
+use App\Models\Project;
 use App\Rules\ColorRule;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Http\FormRequest;
 use Korridor\LaravelModelValidationRules\Rules\ExistsEloquent;
+use Korridor\LaravelModelValidationRules\Rules\UniqueEloquent;
 
 /**
  * @property Organization $organization Organization from model binding
+ * @property Project|null $project Project from model binding
  */
 class ProjectUpdateRequest extends FormRequest
 {
@@ -26,10 +29,13 @@ class ProjectUpdateRequest extends FormRequest
     {
         return [
             'name' => [
-                // TODO: unique
                 'required',
                 'string',
                 'max:255',
+                (new UniqueEloquent(Project::class, 'name', function (Builder $builder): Builder {
+                    /** @var Builder<Project> $builder */
+                    return $builder->whereBelongsTo($this->organization, 'organization');
+                }))->ignore($this->project?->getKey())->withCustomTranslation('validation.project_name_already_exists'),
             ],
             'color' => [
                 'required',
@@ -41,10 +47,8 @@ class ProjectUpdateRequest extends FormRequest
                 'required',
                 'boolean',
             ],
-            'billable_rate' => [
-                'nullable',
-                'integer',
-                'min:0',
+            'is_archived' => [
+                'boolean',
             ],
             'client_id' => [
                 'nullable',
@@ -53,7 +57,22 @@ class ProjectUpdateRequest extends FormRequest
                     return $builder->whereBelongsTo($this->organization, 'organization');
                 }),
             ],
+            'billable_rate' => [
+                'nullable',
+                'integer',
+                'min:0',
+            ],
+            'billable_rate_update_time_entries' => [
+                'boolean',
+            ],
         ];
+    }
+
+    public function getIsArchived(): bool
+    {
+        assert($this->has('is_archived'));
+
+        return (bool) $this->input('is_archived');
     }
 
     public function getBillableRate(): ?int
@@ -61,5 +80,11 @@ class ProjectUpdateRequest extends FormRequest
         $input = $this->input('billable_rate');
 
         return $input !== null && $input !== 0 ? (int) $this->input('billable_rate') : null;
+    }
+
+    public function getBillableRateUpdateTimeEntries(): bool
+    {
+        return $this->has('billable_rate_update_time_entries') &&
+            $this->boolean('billable_rate_update_time_entries');
     }
 }

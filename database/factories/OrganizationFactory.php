@@ -23,10 +23,24 @@ class OrganizationFactory extends Factory
         return [
             'name' => $this->faker->unique()->company(),
             'currency' => $this->faker->currencyCode(),
-            'billable_rate' => $this->faker->numberBetween(50, 1000) * 100,
+            'billable_rate' => null,
             'user_id' => User::factory(),
             'personal_team' => true,
         ];
+    }
+
+    public function billableRate(?int $billableRate): self
+    {
+        return $this->state(fn (array $attributes) => [
+            'billable_rate' => $billableRate,
+        ]);
+    }
+
+    public function withBillableRate(): self
+    {
+        return $this->state(fn (array $attributes) => [
+            'billable_rate' => $this->faker->numberBetween(50, 1000) * 100,
+        ]);
     }
 
     public function withOwner(?User $owner = null): self

@@ -31,7 +31,7 @@ class UserService
         $this->assignOrganizationEntitiesToDifferentMember($organization, $fromUser, $toUser, $toMember);
     }
 
-    private function assignOrganizationEntitiesToDifferentMember(Organization $organization, User $fromUser, User $toUser, Member $toMember): void
+    public function assignOrganizationEntitiesToDifferentMember(Organization $organization, User $fromUser, User $toUser, Member $toMember): void
     {
         // Time entries
         TimeEntry::query()
@@ -50,21 +50,6 @@ class UserService
                 'user_id' => $toUser->getKey(),
                 'member_id' => $toMember->getKey(),
             ]);
-    }
-
-    public function makeMemberToPlaceholder(Member $member): void
-    {
-        $user = $member->user;
-        $placeholderUser = $user->replicate();
-        $placeholderUser->is_placeholder = true;
-        $placeholderUser->save();
-
-        $member->user()->associate($placeholderUser);
-        $member->role = Role::Placeholder->value;
-        $member->save();
-
-        $this->assignOrganizationEntitiesToDifferentMember($member->organization, $user, $placeholderUser, $member);
-        $this->makeSureUserHasAtLeastOneOrganization($user);
     }
 
     public function makeSureUserHasAtLeastOneOrganization(User $user): void

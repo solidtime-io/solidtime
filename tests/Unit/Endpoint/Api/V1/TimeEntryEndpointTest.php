@@ -6,6 +6,7 @@ namespace Tests\Unit\Endpoint\Api\V1;
 
 use App\Enums\Role;
 use App\Exceptions\Api\TimeEntryCanNotBeRestartedApiException;
+use App\Http\Controllers\Api\V1\TimeEntryController;
 use App\Models\Client;
 use App\Models\Member;
 use App\Models\Project;
@@ -18,15 +19,16 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Laravel\Passport\Passport;
+use PHPUnit\Framework\Attributes\UsesClass;
 use TiMacDonald\Log\LogEntry;
 
+#[UsesClass(TimeEntryController::class)]
 class TimeEntryEndpointTest extends ApiEndpointTestAbstract
 {
     public function test_index_endpoint_fails_if_user_has_no_permission_to_view_time_entries(): void
     {
         // Arrange
-        $data = $this->createUserWithPermission([
-        ]);
+        $data = $this->createUserWithPermission();
         Passport::actingAs($data->user);
 
         // Act
@@ -454,8 +456,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
     public function test_aggregate_endpoint_fails_if_user_has_no_permission_to_view_time_entries(): void
     {
         // Arrange
-        $data = $this->createUserWithPermission([
-        ]);
+        $data = $this->createUserWithPermission();
         Passport::actingAs($data->user);
 
         // Act
@@ -771,8 +772,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
     public function test_store_endpoint_fails_if_user_has_no_permission_to_create_time_entries(): void
     {
         // Arrange
-        $data = $this->createUserWithPermission([
-        ]);
+        $data = $this->createUserWithPermission();
         $timeEntryFake = TimeEntry::factory()->forOrganization($data->organization)->withTags($data->organization)->make();
         Passport::actingAs($data->user);
 
@@ -1023,8 +1023,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
     public function test_update_endpoint_fails_if_user_has_no_permission_to_update_own_time_entries(): void
     {
         // Arrange
-        $data = $this->createUserWithPermission([
-        ]);
+        $data = $this->createUserWithPermission();
         $timeEntry = TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)->create();
         $timeEntryFake = TimeEntry::factory()->forOrganization($data->organization)->make();
         Passport::actingAs($data->user);
@@ -1362,8 +1361,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
     public function test_destroy_endpoint_fails_if_user_has_no_permission_to_delete_own_time_entries(): void
     {
         // Arrange
-        $data = $this->createUserWithPermission([
-        ]);
+        $data = $this->createUserWithPermission();
         $timeEntry = TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)->create();
         Passport::actingAs($data->user);
 

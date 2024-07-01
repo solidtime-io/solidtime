@@ -9,7 +9,9 @@ use App\Models\Client;
 use App\Models\User;
 use Illuminate\Support\Facades\Config;
 use Livewire\Livewire;
+use PHPUnit\Framework\Attributes\UsesClass;
 
+#[UsesClass(ClientResource::class)]
 class ClientResourceTest extends FilamentTestCase
 {
     protected function setUp(): void

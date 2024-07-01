@@ -8,9 +8,11 @@ use App\Models\Concerns\HasUuids;
 use Database\Factories\OrganizationFactory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 use Laravel\Jetstream\Events\TeamCreated;
 use Laravel\Jetstream\Events\TeamDeleted;
 use Laravel\Jetstream\Events\TeamUpdated;
@@ -122,5 +124,22 @@ class Organization extends JetstreamTeam
     {
         return $this->users()
             ->where('is_placeholder', false);
+    }
+
+    /**
+     * This method prevents an unhandled exception when the ID is not a UUID.
+     * Normally this can be fixed with a route pattern, but Jetstream does not use route model binding.
+     *
+     * @param  array<string>  $columns
+     */
+    public function findOrFail(string $id, array $columns = ['*']): \Laravel\Jetstream\Team
+    {
+        if (! Str::isUuid($id)) {
+            throw (new ModelNotFoundException)->setModel(
+                self::class, $id
+            );
+        }
+
+        return parent::findOrFail($id, $columns);
     }
 }

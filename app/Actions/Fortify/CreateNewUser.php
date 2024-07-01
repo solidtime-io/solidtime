@@ -9,6 +9,7 @@ use App\Enums\Weekday;
 use App\Events\NewsletterRegistered;
 use App\Models\Organization;
 use App\Models\User;
+use App\Service\IpLookup\IpLookupServiceContract;
 use App\Service\TimezoneService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
@@ -18,6 +19,7 @@ use Illuminate\Validation\ValidationException;
 use Korridor\LaravelModelValidationRules\Rules\UniqueEloquent;
 use Laravel\Fortify\Contracts\CreatesNewUsers;
 use Laravel\Jetstream\Jetstream;
+use Log;
 
 class CreateNewUser implements CreatesNewUsers
 {
@@ -55,20 +57,49 @@ class CreateNewUser implements CreatesNewUsers
             ],
         ])->validate();
 
-        $timezone = 'UTC';
-        if (array_key_exists('timezone', $input) && is_string($input['timezone']) && app(TimezoneService::class)->isValid($input['timezone'])) {
-            $timezone = $input['timezone'];
+        $timezone = null;
+        if (array_key_exists('timezone', $input) && is_string($input['timezone'])) {
+            if (app(TimezoneService::class)->isValid($input['timezone'])) {
+                $timezone = $input['timezone'];
+            } else {
+                Log::debug('Invalid timezone', ['timezone' => $input['timezone']]);
+            }
         }
 
-        $user = DB::transaction(function () use ($input, $timezone) {
+        $ipLookupResponse = app(IpLookupServiceContract::class)->lookup(request()->ip());
+
+        $startOfWeek = Weekday::Monday;
+        $currency = null;
+        if ($ipLookupResponse !== null) {
+            $startOfWeek = $ipLookupResponse->startOfWeek ?? Weekday::Monday;
+            if ($timezone === null) {
+                $timezone = $ipLookupResponse->timezone;
+            }
+            $currency = $ipLookupResponse->currency;
+        }
+
+        $user = DB::transaction(function () use ($input, $timezone, $startOfWeek, $currency) {
             return tap(User::create([
                 'name' => $input['name'],
                 'email' => $input['email'],
                 'password' => Hash::make($input['password']),
-                'timezone' => $timezone,
-                'week_start' => Weekday::Monday,
-            ]), function (User $user) {
-                $this->createTeam($user);
+                'timezone' => $timezone ?? 'UTC',
+                'week_start' => $startOfWeek,
+            ]), function (User $user) use ($currency): void {
+                $organization = new Organization();
+                $organization->name = explode(' ', $user->name, 2)[0]."'s Organization";
+                $organization->personal_team = true;
+                $organization->currency = $currency ?? 'EUR';
+                $organization->owner()->associate($user);
+                $organization->save();
+
+                $organization->users()->attach(
+                    $user, [
+                        'role' => Role::Owner->value,
+                    ]
+                );
+
+                $user->ownedTeams()->save($organization);
             });
         });
 
@@ -78,25 +109,5 @@ class CreateNewUser implements CreatesNewUsers
         }
 
         return $user;
-    }
-
-    /**
-     * Create a personal team for the user.
-     */
-    protected function createTeam(User $user): void
-    {
-        $organization = new Organization();
-        $organization->name = explode(' ', $user->name, 2)[0]."'s Organization";
-        $organization->personal_team = true;
-        $organization->owner()->associate($user);
-        $organization->save();
-
-        $organization->users()->attach(
-            $user, [
-                'role' => Role::Owner->value,
-            ]
-        );
-
-        $user->ownedTeams()->save($organization);
     }
 }

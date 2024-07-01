@@ -30,6 +30,7 @@ class ProjectFactory extends Factory
             'is_billable' => false,
             'billable_rate' => null,
             'is_public' => false,
+            'archived_at' => null,
             'client_id' => null,
             'organization_id' => Organization::factory(),
         ];
@@ -41,6 +42,15 @@ class ProjectFactory extends Factory
             return [
                 'is_billable' => true,
                 'billable_rate' => $this->faker->numberBetween(50, 1000) * 100,
+            ];
+        });
+    }
+
+    public function archived(): self
+    {
+        return $this->state(function (array $attributes): array {
+            return [
+                'archived_at' => $this->faker->dateTime(),
             ];
         });
     }

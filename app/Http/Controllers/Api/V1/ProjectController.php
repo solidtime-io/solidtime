@@ -13,10 +13,11 @@ use App\Http\Resources\V1\Project\ProjectResource;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Models\ProjectMember;
-use App\Models\User;
+use App\Service\BillableRateService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class ProjectController extends Controller
@@ -49,6 +50,12 @@ class ProjectController extends Controller
 
         if (! $canViewAllProjects) {
             $projectsQuery->visibleByEmployee($user);
+        }
+        $filterArchived = $request->getFilterArchived();
+        if ($filterArchived === 'true') {
+            $projectsQuery->whereNotNull('archived_at');
+        } elseif ($filterArchived === 'false') {
+            $projectsQuery->whereNull('archived_at');
         }
 
         $projects = $projectsQuery->paginate(config('app.pagination_per_page_default'));
@@ -101,15 +108,22 @@ class ProjectController extends Controller
      *
      * @operationId updateProject
      */
-    public function update(Organization $organization, Project $project, ProjectUpdateRequest $request): JsonResource
+    public function update(Organization $organization, Project $project, ProjectUpdateRequest $request, BillableRateService $billableRateService): JsonResource
     {
         $this->checkPermission($organization, 'projects:update', $project);
         $project->name = $request->input('name');
         $project->color = $request->input('color');
         $project->is_billable = (bool) $request->input('is_billable');
+        if ($request->has('is_archived')) {
+            $project->archived_at = $request->getIsArchived() ? Carbon::now() : null;
+        }
         $project->billable_rate = $request->getBillableRate();
         $project->client_id = $request->input('client_id');
         $project->save();
+
+        if ($request->getBillableRateUpdateTimeEntries()) {
+            $billableRateService->updateTimeEntriesBillableRateForProject($project);
+        }
 
         return new ProjectResource($project);
     }

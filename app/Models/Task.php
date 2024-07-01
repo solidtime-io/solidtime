@@ -7,6 +7,7 @@ namespace App\Models;
 use App\Models\Concerns\HasUuids;
 use Database\Factories\TaskFactory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -19,11 +20,13 @@ use Illuminate\Support\Carbon;
  * @property string $name
  * @property string $project_id
  * @property string $organization_id
+ * @property Carbon|null $done_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read Project $project
  * @property-read Organization $organization
  * @property-read Collection<int, TimeEntry> $timeEntries
+ * @property-read bool $is_done
  *
  * @method static TaskFactory factory()
  */
@@ -75,5 +78,15 @@ class Task extends Model
             /** @var Builder<Project> $builder */
             return $builder->visibleByEmployee($user);
         });
+    }
+
+    /**
+     * @return Attribute<bool, never>
+     */
+    public function isDone(): Attribute
+    {
+        return Attribute::make(
+            get: fn (mixed $value, array $attributes) => isset($attributes['done_at']),
+        );
     }
 }

@@ -7,11 +7,13 @@ namespace App\Models;
 use App\Models\Concerns\HasUuids;
 use Database\Factories\ProjectFactory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -21,6 +23,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $client_id
  * @property int|null $billable_rate
  * @property bool $is_billable
+ * @property-read bool $is_archived
+ * @property Carbon|null $archived_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  * @property-read Organization $organization
  * @property-read Client|null $client
  * @property-read Collection<int, Task> $tasks
@@ -104,5 +110,15 @@ class Project extends Model
                     return $builder->whereBelongsTo($user, 'user');
                 });
         });
+    }
+
+    /**
+     * @return Attribute<bool, never>
+     */
+    protected function isArchived(): Attribute
+    {
+        return Attribute::make(
+            get: fn (mixed $value, array $attributes) => isset($attributes['archived_at']),
+        );
     }
 }

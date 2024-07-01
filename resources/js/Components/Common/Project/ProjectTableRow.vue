@@ -80,7 +80,7 @@ const showEditProjectModal = ref(false);
             <span>Active</span>
         </div>
         <div
-            class="relative whitespace-nowrap flex items-center pl-3 text-right text-sm font-medium sm:pr-0 pr-4 sm:pr-6 lg:pr-8 3xl:pr-12">
+            class="relative whitespace-nowrap flex items-center pl-3 text-right text-sm font-medium pr-4 sm:pr-6 lg:pr-8 3xl:pr-12">
             <ProjectMoreOptionsDropdown
                 :project="project"
                 @edit="showEditProjectModal = true"

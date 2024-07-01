@@ -39,6 +39,15 @@ class TaskIndexRequest extends FormRequest
                     return $builder;
                 }),
             ],
+            'done' => [
+                'string',
+                'in:true,false,all',
+            ],
         ];
+    }
+
+    public function getFilterDone(): string
+    {
+        return $this->input('done', 'false');
     }
 }

@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Tests;
 
+use App\Enums\Role;
 use App\Models\Member;
 use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Laravel\Jetstream\Jetstream;
 
@@ -17,7 +19,7 @@ abstract class TestCaseWithDatabase extends TestCase
 
     /**
      * @param  array<string>  $permissions
-     * @return object{user: User, organization: Organization, member: Member}
+     * @return object{user: User, organization: Organization, member: Member, owner: User, ownerMember: Member}
      */
     protected function createUserWithPermission(array $permissions = [], bool $isOwner = false): object
     {
@@ -28,7 +30,11 @@ abstract class TestCaseWithDatabase extends TestCase
         if ($isOwner) {
             $organization = Organization::factory()->withOwner($user)->create();
         } else {
-            $organization = Organization::factory()->create();
+            $owner = User::factory()->create();
+            $organization = Organization::factory()->withOwner($owner)->create();
+            $ownerMember = Member::factory()->forUser($owner)->forOrganization($organization)->create([
+                'role' => Role::Owner->value,
+            ]);
         }
         $member = Member::factory()->forUser($user)->forOrganization($organization)->create([
             'role' => $roleName,
@@ -38,6 +44,29 @@ abstract class TestCaseWithDatabase extends TestCase
             'user' => $user,
             'organization' => $organization,
             'member' => $member,
+            'owner' => $isOwner ? $user : $owner,
+            'ownerMember' => $isOwner ? $member : $ownerMember,
         ];
+    }
+
+    protected function enableQueryLog(): void
+    {
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+    }
+
+    protected function getQueryLog(): array
+    {
+        if (! DB::logging()) {
+            throw new \LogicException('Query log is not enabled. Call enableQueryLog() before calling getQueryLog()');
+        }
+
+        return DB::getQueryLog();
+    }
+
+    protected function assertQueryCount(int $count, string $message = ''): void
+    {
+        $queryLog = $this->getQueryLog();
+        $this->assertCount($count, $queryLog, $message);
     }
 }

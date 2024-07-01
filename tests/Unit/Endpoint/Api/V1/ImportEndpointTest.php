@@ -4,20 +4,22 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Endpoint\Api\V1;
 
+use App\Http\Controllers\Api\V1\ImportController;
 use App\Models\Organization;
 use App\Service\Import\Importers\ImportException;
 use App\Service\Import\Importers\ReportDto;
 use App\Service\Import\ImportService;
 use Laravel\Passport\Passport;
 use Mockery\MockInterface;
+use PHPUnit\Framework\Attributes\UsesClass;
 
+#[UsesClass(ImportController::class)]
 class ImportEndpointTest extends ApiEndpointTestAbstract
 {
     public function test_index_fails_if_user_does_not_have_permission()
     {
         // Arrange
-        $data = $this->createUserWithPermission([
-        ]);
+        $data = $this->createUserWithPermission();
 
         Passport::actingAs($data->user);
 
@@ -59,8 +61,7 @@ class ImportEndpointTest extends ApiEndpointTestAbstract
     public function test_import_fails_if_user_does_not_have_permission()
     {
         // Arrange
-        $data = $this->createUserWithPermission([
-        ]);
+        $data = $this->createUserWithPermission();
 
         Passport::actingAs($data->user);
 
@@ -73,6 +74,26 @@ class ImportEndpointTest extends ApiEndpointTestAbstract
 
         // Assert
         $response->assertForbidden();
+    }
+
+    public function test_import_fails_if_data_can_not_be_base64_decoded(): void
+    {
+        $user = $this->createUserWithPermission([
+            'import',
+        ]);
+        Passport::actingAs($user->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.import.import', ['organization' => $user->organization->getKey()]), [
+            'type' => 'toggl_time_entries',
+            'data' => 'some invalid data ...',
+        ]);
+
+        // Assert
+        $response->assertStatus(400);
+        $response->assertExactJson([
+            'message' => 'Invalid base64 encoded data',
+        ]);
     }
 
     public function test_import_return_error_message_if_import_fails(): void

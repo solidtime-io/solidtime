@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 use App\Exceptions\Api\CanNotDeleteUserWhoIsOwnerOfOrganizationWithMultipleMembers;
 use App\Exceptions\Api\CanNotRemoveOwnerFromOrganization;
+use App\Exceptions\Api\ChangingRoleToPlaceholderIsNotAllowed;
 use App\Exceptions\Api\EntityStillInUseApiException;
 use App\Exceptions\Api\InactiveUserCanNotBeUsedApiException;
+use App\Exceptions\Api\OnlyOwnerCanChangeOwnership;
+use App\Exceptions\Api\OrganizationNeedsAtLeastOneOwner;
 use App\Exceptions\Api\TimeEntryCanNotBeRestartedApiException;
 use App\Exceptions\Api\TimeEntryStillRunningApiException;
 use App\Exceptions\Api\UserIsAlreadyMemberOfProjectApiException;
@@ -21,6 +24,9 @@ return [
         EntityStillInUseApiException::KEY => 'The :modelToDelete is still used by a :modelInUse and can not be deleted.',
         CanNotRemoveOwnerFromOrganization::KEY => 'Can not remove owner from organization',
         CanNotDeleteUserWhoIsOwnerOfOrganizationWithMultipleMembers::KEY => 'Can not delete user who is owner of organization with multiple members. Please delete the organization first.',
+        OnlyOwnerCanChangeOwnership::KEY => 'Only owner can change ownership',
+        OrganizationNeedsAtLeastOneOwner::KEY => 'Organization needs at least one owner',
+        ChangingRoleToPlaceholderIsNotAllowed::KEY => 'Changing role to placeholder is not allowed',
     ],
     'unknown_error_in_admin_panel' => 'An unknown error occurred. Please check the logs.',
 ];
