@@ -9,6 +9,11 @@ export function isBillingActivated() {
 }
 
 export function hasActiveSubscription() {
-    // TODO: Replace with server side check
-    return true;
+    const page = usePage<{
+        billing: {
+            has_subscription: boolean;
+        };
+    }>();
+
+    return page.props.billing.has_subscription;
 }
