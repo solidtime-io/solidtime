@@ -72,11 +72,21 @@ abstract class TestCase extends BaseTestCase
 
     protected function assertBillableRateServiceIsUnused(): void
     {
-        $this->mock(BillableRateService::class, function (MockInterface $mock) {
+        $this->mock(BillableRateService::class, function (MockInterface $mock): void {
             $mock->shouldNotReceive('updateTimeEntriesBillableRateForProjectMember');
             $mock->shouldNotReceive('updateTimeEntriesBillableRateForProject');
             $mock->shouldNotReceive('updateTimeEntriesBillableRateForMember');
             $mock->shouldNotReceive('updateTimeEntriesBillableRateForOrganization');
+        });
+    }
+
+    protected function actAsOrganizationWithSubscription(): void
+    {
+        $this->mock(BillingContract::class, function (MockInterface $mock): void {
+            $mock->shouldReceive('hasSubscription')->andReturn(true);
+            $mock->shouldReceive('hasTrial')->andReturn(false);
+            $mock->shouldReceive('getTrialUntil')->andReturn(null);
+            $mock->shouldReceive('isBlocked')->andReturn(false);
         });
     }
 }

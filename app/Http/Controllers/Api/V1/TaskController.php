@@ -79,6 +79,9 @@ class TaskController extends Controller
         $task = new Task;
         $task->name = $request->input('name');
         $task->project_id = $request->input('project_id');
+        if ($this->canAccessPremiumFeatures($organization) && $request->has('estimated_time')) {
+            $task->estimated_time = $request->getEstimatedTime();
+        }
         $task->organization()->associate($organization);
         $task->save();
 
@@ -96,6 +99,9 @@ class TaskController extends Controller
     {
         $this->checkPermission($organization, 'tasks:update', $task);
         $task->name = $request->input('name');
+        if ($this->canAccessPremiumFeatures($organization) && $request->has('estimated_time')) {
+            $task->estimated_time = $request->getEstimatedTime();
+        }
         if ($request->has('is_done')) {
             $task->done_at = $request->getIsDone() ? Carbon::now() : null;
         }

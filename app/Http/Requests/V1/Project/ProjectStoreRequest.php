@@ -52,12 +52,19 @@ class ProjectStoreRequest extends FormRequest
                 'integer',
                 'min:0',
             ],
+            // ID of the client
             'client_id' => [
                 'nullable',
                 new ExistsEloquent(Client::class, null, function (Builder $builder): Builder {
                     /** @var Builder<Client> $builder */
                     return $builder->whereBelongsTo($this->organization, 'organization');
                 }),
+            ],
+            // Estimated time in seconds
+            'estimated_time' => [
+                'nullable',
+                'integer',
+                'min:0',
             ],
         ];
     }
@@ -67,5 +74,12 @@ class ProjectStoreRequest extends FormRequest
         $input = $this->input('billable_rate');
 
         return $input !== null && $input !== 0 ? (int) $this->input('billable_rate') : null;
+    }
+
+    public function getEstimatedTime(): ?int
+    {
+        $input = $this->input('estimated_time');
+
+        return $input !== null && $input !== 0 ? (int) $this->input('estimated_time') : null;
     }
 }
