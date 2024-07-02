@@ -2,23 +2,17 @@
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import { PlusCircleIcon } from '@heroicons/vue/24/solid';
 import { PlusIcon } from '@heroicons/vue/16/solid';
-import { computed, ref } from 'vue';
-import { storeToRefs } from 'pinia';
-import { useTasksStore } from '@/utils/useTasks';
+import { ref } from 'vue';
 import TaskTableRow from '@/Components/Common/Task/TaskTableRow.vue';
 import TaskTableHeading from '@/Components/Common/Task/TaskTableHeading.vue';
 import TaskCreateModal from '@/Components/Common/Task/TaskCreateModal.vue';
 import { canCreateTasks } from '@/utils/permissions';
-
-const { tasks } = storeToRefs(useTasksStore());
+import type { Task } from '@/utils/api';
 
 const props = defineProps<{
     projectId: string;
+    tasks: Task[];
 }>();
-
-const projectTasks = computed(() => {
-    return tasks.value.filter((task) => task.project_id === props.projectId);
-});
 
 const createTask = ref(false);
 </script>
@@ -31,12 +25,13 @@ const createTask = ref(false);
         <div class="inline-block min-w-full align-middle">
             <div
                 data-testid="task_table"
+                role="table"
                 class="grid min-w-full"
                 style="grid-template-columns: 1fr 150px 80px">
                 <TaskTableHeading></TaskTableHeading>
                 <div
                     class="col-span-5 py-24 text-center"
-                    v-if="projectTasks.length === 0">
+                    v-if="tasks.length === 0">
                     <PlusCircleIcon
                         class="w-8 text-icon-default inline pb-2"></PlusCircleIcon>
                     <h3 class="text-white font-semibold">No tasks found</h3>
@@ -50,7 +45,7 @@ const createTask = ref(false);
                         >Create your First Task
                     </SecondaryButton>
                 </div>
-                <template v-for="task in projectTasks" :key="task.id">
+                <template v-for="task in tasks" :key="task.id">
                     <TaskTableRow :task="task"></TaskTableRow>
                 </template>
             </div>

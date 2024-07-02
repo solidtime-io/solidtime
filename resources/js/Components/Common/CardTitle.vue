@@ -19,7 +19,7 @@ defineProps<{
                 {{ title }}
             </span>
         </h3>
-        <div>
+        <div class="flex-1 flex justify-end items-center">
             <slot name="actions"></slot>
         </div>
     </div>

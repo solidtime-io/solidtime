@@ -98,6 +98,47 @@ test('test that creating and deleting a new tag in a new project works', async (
     );
 });
 
+test('test that archiving and unarchiving tasks works', async ({ page }) => {
+    const newProjectName =
+        'New Project ' + Math.floor(1 + Math.random() * 10000);
+    const newTaskName = 'New Project ' + Math.floor(1 + Math.random() * 10000);
+
+    await goToProjectsOverview(page);
+    await page.getByRole('button', { name: 'Create Project' }).click();
+    await page.getByLabel('Project Name').fill(newProjectName);
+
+    await page.getByRole('button', { name: 'Create Project' }).nth(1).click();
+    await expect(page.getByText(newProjectName)).toBeVisible();
+
+    await page.getByText(newProjectName).click();
+
+    await page.getByRole('button', { name: 'Create Task' }).click();
+    await page.getByPlaceholder('Task Name').fill(newTaskName);
+    await page.getByRole('button', { name: 'Create Task' }).nth(1).click();
+
+    await expect(page.getByRole('table')).toContainText(newTaskName);
+
+    await page.getByRole('row').first().getByRole('button').click();
+    await Promise.all([
+        page.getByRole('button').getByText('Mark as done').first().click(),
+        expect(page.getByText(newTaskName)).not.toBeVisible(),
+    ]);
+    await Promise.all([
+        page.getByRole('tab', { name: 'Done' }).click(),
+        expect(page.getByText(newTaskName)).toBeVisible(),
+    ]);
+
+    await page.getByRole('row').first().getByRole('button').click();
+    await Promise.all([
+        page.getByRole('button').getByText('Mark as active').first().click(),
+        expect(page.getByText(newTaskName)).not.toBeVisible(),
+    ]);
+    await Promise.all([
+        page.getByRole('tab', { name: 'Active' }).click(),
+        expect(page.getByText(newTaskName)).toBeVisible(),
+    ]);
+});
+
 // Create new project with new Client
 
 // Create new project with existing Client

@@ -15,6 +15,14 @@ const props = defineProps<{
 function deleteTask() {
     useTasksStore().deleteTask(props.task.id);
 }
+
+function markTaskAsDone() {
+    useTasksStore().updateTask(props.task.id, {
+        ...props.task,
+        is_done: !props.task.is_done,
+    });
+}
+
 const showTaskEditModal = ref(false);
 </script>
 
@@ -28,14 +36,20 @@ const showTaskEditModal = ref(false);
         </div>
         <div
             class="whitespace-nowrap px-3 py-4 text-sm text-muted flex space-x-1 items-center font-medium">
-            <CheckCircleIcon class="w-5"></CheckCircleIcon>
-            <span>Active</span>
+            <template v-if="task.is_done">
+                <CheckCircleIcon class="w-5"></CheckCircleIcon>
+                <span>Done</span>
+            </template>
+            <template v-else>
+                <span>Active</span>
+            </template>
         </div>
         <div
             class="relative whitespace-nowrap flex items-center pl-3 text-right text-sm font-medium sm:pr-0 pr-4 sm:pr-6 lg:pr-8 3xl:pr-12">
             <TaskMoreOptionsDropdown
                 v-if="canDeleteTasks()"
                 :task="task"
+                @done="markTaskAsDone"
                 @edit="showTaskEditModal = true"
                 @delete="deleteTask"></TaskMoreOptionsDropdown>
         </div>

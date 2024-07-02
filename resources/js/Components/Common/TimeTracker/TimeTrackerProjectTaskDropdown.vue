@@ -58,24 +58,33 @@ withDefaults(
 
 const filteredProjects = computed(() => {
     return projects.value.reduce(
-        (filtered: ProjectWithTasks[], project) => {
-            const projectNameIncludesSearchTerm = project.name
+        (filtered: ProjectWithTasks[], filterProject) => {
+            const projectNameIncludesSearchTerm = filterProject.name
                 .toLowerCase()
                 .includes(searchValue.value?.toLowerCase()?.trim() || '');
 
             // check if one of the project tasks
             const projectTasks = tasks.value.filter((task) => {
-                return task.project_id === project.id;
+                return task.project_id === filterProject.id;
             });
 
-            const filteredTasks = projectTasks.filter((task) => {
-                return task.name
-                    .toLowerCase()
-                    .includes(searchValue.value?.toLowerCase()?.trim() || '');
+            const filteredTasks = projectTasks.filter((filterTask) => {
+                return (
+                    filterTask.name
+                        .toLowerCase()
+                        .includes(
+                            searchValue.value?.toLowerCase()?.trim() || ''
+                        ) &&
+                    (!filterTask.is_done || filterTask.id === task.value)
+                );
             });
 
-            if (projectNameIncludesSearchTerm || filteredTasks.length > 0) {
-                filtered.push({ project: project, tasks: filteredTasks });
+            if (
+                (projectNameIncludesSearchTerm || filteredTasks.length > 0) &&
+                (!filterProject.is_archived ||
+                    project.value === filterProject.id)
+            ) {
+                filtered.push({ project: filterProject, tasks: filteredTasks });
             }
 
             return filtered;

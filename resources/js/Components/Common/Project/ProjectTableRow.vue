@@ -33,6 +33,13 @@ function deleteProject() {
     useProjectsStore().deleteProject(props.project.id);
 }
 
+function archiveProject() {
+    useProjectsStore().updateProject(props.project.id, {
+        ...props.project,
+        is_archived: !props.project.is_archived,
+    });
+}
+
 const billableRateInfo = computed(() => {
     if (props.project.is_billable) {
         if (props.project.billable_rate) {
@@ -84,6 +91,7 @@ const showEditProjectModal = ref(false);
             <ProjectMoreOptionsDropdown
                 :project="project"
                 @edit="showEditProjectModal = true"
+                @archive="archiveProject"
                 @delete="deleteProject"></ProjectMoreOptionsDropdown>
         </div>
     </TableRow>

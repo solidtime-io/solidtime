@@ -17,6 +17,9 @@ export const useTasksStore = defineStore('tasks', () => {
                     params: {
                         organization: organizationId,
                     },
+                    queries: {
+                        done: 'all',
+                    },
                 })
             );
             if (tasksResponse?.data) {

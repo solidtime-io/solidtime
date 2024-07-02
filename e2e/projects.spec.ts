@@ -54,6 +54,37 @@ test('test that creating and deleting a new project via the modal works', async 
     );
 });
 
+test('test that archiving and unarchiving projects works', async ({ page }) => {
+    const newProjectName =
+        'New Project ' + Math.floor(1 + Math.random() * 10000);
+    await goToProjectsOverview(page);
+    await page.getByRole('button', { name: 'Create Project' }).click();
+    await page.getByLabel('Project Name').fill(newProjectName);
+
+    await page.getByRole('button', { name: 'Create Project' }).nth(1).click();
+    await expect(page.getByText(newProjectName)).toBeVisible();
+
+    await page.getByRole('row').first().getByRole('button').click();
+    await Promise.all([
+        page.getByRole('button').getByText('Archive').first().click(),
+        expect(page.getByText(newProjectName)).not.toBeVisible(),
+    ]);
+    await Promise.all([
+        page.getByRole('tab', { name: 'Archived' }).click(),
+        expect(page.getByText(newProjectName)).toBeVisible(),
+    ]);
+
+    await page.getByRole('row').first().getByRole('button').click();
+    await Promise.all([
+        page.getByRole('button').getByText('Unarchive').first().click(),
+        expect(page.getByText(newProjectName)).not.toBeVisible(),
+    ]);
+    await Promise.all([
+        page.getByRole('tab', { name: 'Active' }).click(),
+        expect(page.getByText(newProjectName)).toBeVisible(),
+    ]);
+});
+
 // Create new project with new Client
 
 // Create new project with existing Client

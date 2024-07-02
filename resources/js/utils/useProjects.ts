@@ -24,6 +24,9 @@ export const useProjectsStore = defineStore('projects', () => {
                         params: {
                             organization: organization,
                         },
+                        queries: {
+                            archived: 'all',
+                        },
                     }),
                 undefined,
                 'Failed to fetch projects'

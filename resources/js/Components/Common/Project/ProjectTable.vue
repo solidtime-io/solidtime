@@ -1,16 +1,17 @@
 <script setup lang="ts">
-import { useProjectsStore } from '@/utils/useProjects';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import { FolderPlusIcon } from '@heroicons/vue/24/solid';
 import { PlusIcon } from '@heroicons/vue/16/solid';
 import { ref } from 'vue';
 import ProjectCreateModal from '@/Components/Common/Project/ProjectCreateModal.vue';
-import { storeToRefs } from 'pinia';
 import ProjectTableHeading from '@/Components/Common/Project/ProjectTableHeading.vue';
 import ProjectTableRow from '@/Components/Common/Project/ProjectTableRow.vue';
 import { canCreateProjects } from '@/utils/permissions';
+import type { Project } from '@/utils/api';
 
-const { projects } = storeToRefs(useProjectsStore());
+defineProps<{
+    projects: Project[];
+}>();
 
 const createProject = ref(false);
 </script>

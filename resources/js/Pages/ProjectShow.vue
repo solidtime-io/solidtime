@@ -20,6 +20,9 @@ import ProjectMemberTable from '@/Components/Common/ProjectMember/ProjectMemberT
 import ProjectMemberCreateModal from '@/Components/Common/ProjectMember/ProjectMemberCreateModal.vue';
 import { useProjectMembersStore } from '@/utils/useProjectMembers';
 import { canCreateTasks, canViewProjectMembers } from '@/utils/permissions';
+import TabBarItem from '@/Components/Common/TabBar/TabBarItem.vue';
+import TabBar from '@/Components/Common/TabBar/TabBar.vue';
+import { useTasksStore } from '@/utils/useTasks';
 
 const { projects } = storeToRefs(useProjectsStore());
 
@@ -40,6 +43,23 @@ onMounted(() => {
     if (canViewProjectMembers()) {
         useProjectMembersStore().fetchProjectMembers(projectId);
     }
+});
+
+const activeTab = ref<'active' | 'done'>('active');
+
+function isActiveTab(tab: string) {
+    return activeTab.value === tab;
+}
+
+const { tasks } = storeToRefs(useTasksStore());
+
+const shownTasks = computed(() => {
+    return tasks.value.filter((task) => {
+        if (activeTab.value === 'active') {
+            return task.project_id === projectId && !task.is_done;
+        }
+        return task.project_id === projectId && task.is_done;
+    });
 });
 </script>
 
@@ -85,19 +105,38 @@ onMounted(() => {
                 <div>
                     <CardTitle title="Tasks" :icon="CheckCircleIcon">
                         <template #actions>
-                            <SecondaryButton
-                                v-if="canCreateTasks()"
-                                :icon="PlusIcon"
-                                @click="createTask = true"
-                                >Create Task
-                            </SecondaryButton>
-                            <TaskCreateModal
-                                :project-id="projectId"
-                                v-model:show="createTask"></TaskCreateModal>
+                            <div
+                                class="w-full items-center flex justify-between">
+                                <div class="pl-6">
+                                    <TabBar>
+                                        <TabBarItem
+                                            :active="isActiveTab('active')"
+                                            @click="activeTab = 'active'"
+                                            >Active
+                                        </TabBarItem>
+                                        <TabBarItem
+                                            :active="isActiveTab('done')"
+                                            @click="activeTab = 'done'"
+                                            >Done
+                                        </TabBarItem>
+                                    </TabBar>
+                                </div>
+                                <SecondaryButton
+                                    v-if="canCreateTasks()"
+                                    :icon="PlusIcon"
+                                    @click="createTask = true"
+                                    >Create Task
+                                </SecondaryButton>
+                                <TaskCreateModal
+                                    :project-id="projectId"
+                                    v-model:show="createTask"></TaskCreateModal>
+                            </div>
                         </template>
                     </CardTitle>
                     <Card>
-                        <TaskTable :project-id="projectId"></TaskTable>
+                        <TaskTable
+                            :tasks="shownTasks"
+                            :project-id="projectId"></TaskTable>
                     </Card>
                 </div>
                 <div v-if="canViewProjectMembers()">
