@@ -81,10 +81,10 @@ class AppServiceProvider extends ServiceProvider
         });
 
         // Scramble
-        Scramble::extendOpenApi(function (OpenApi $openApi) {
+        Scramble::extendOpenApi(function (OpenApi $openApi): void {
             $openApi->secure(
                 SecurityScheme::oauth2()
-                    ->flow('authorizationCode', function (OAuthFlow $flow) {
+                    ->flow('authorizationCode', function (OAuthFlow $flow): void {
                         $flow
                             ->authorizationUrl('https://solidtime.test/oauth/authorize');
                     })

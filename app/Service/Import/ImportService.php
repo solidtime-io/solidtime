@@ -31,7 +31,7 @@ class ImportService
         $lock = Cache::lock('import:'.$organization->getKey(), config('octane.max_execution_time', 60) + 1);
 
         if ($lock->get()) {
-            DB::transaction(function () use (&$importer, &$data, &$timezone) {
+            DB::transaction(function () use (&$importer, &$data, &$timezone): void {
                 $importer->importData($data, $timezone);
             });
             $lock->release();

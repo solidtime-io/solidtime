@@ -37,9 +37,9 @@ class RouteServiceProvider extends ServiceProvider
                 : Limit::perMinute(60)->by($request->ip());
         });
 
-        $this->routes(function () {
+        $this->routes(function (): void {
             Route::middleware('health-check')
-                ->group(function () {
+                ->group(function (): void {
                     Route::get('health-check/up', [HealthCheckController::class, 'up']);
                     Route::get('health-check/debug', [HealthCheckController::class, 'debug']);
                 });

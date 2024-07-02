@@ -42,7 +42,7 @@ class CheckOrganizationBlockedMiddlewareTest extends MiddlewareTestAbstract
         // Arrange
         $user = $this->createUserWithPermission();
         $this->createTestRoute();
-        $this->mock(BillingContract::class, function (MockInterface $mock) {
+        $this->mock(BillingContract::class, function (MockInterface $mock): void {
             $mock->shouldReceive('isBlocked')->andReturn(true)->once();
         });
         Passport::actingAs($user->user);
@@ -60,7 +60,7 @@ class CheckOrganizationBlockedMiddlewareTest extends MiddlewareTestAbstract
         // Arrange
         $user = $this->createUserWithPermission();
         $this->createTestRoute();
-        $this->mock(BillingContract::class, function (MockInterface $mock) {
+        $this->mock(BillingContract::class, function (MockInterface $mock): void {
             $mock->shouldReceive('isBlocked')->never();
         });
         Passport::actingAs($user->user);
@@ -77,7 +77,7 @@ class CheckOrganizationBlockedMiddlewareTest extends MiddlewareTestAbstract
         // Arrange
         $user = $this->createUserWithPermission();
         $route = $this->createTestRouteNoModelBinding();
-        $this->mock(BillingContract::class, function (MockInterface $mock) {
+        $this->mock(BillingContract::class, function (MockInterface $mock): void {
             $mock->shouldReceive('isBlocked')->never();
         });
         Passport::actingAs($user->user);
@@ -94,7 +94,7 @@ class CheckOrganizationBlockedMiddlewareTest extends MiddlewareTestAbstract
         // Arrange
         $user = $this->createUserWithPermission();
         $this->createTestRoute();
-        $this->mock(BillingContract::class, function (MockInterface $mock) {
+        $this->mock(BillingContract::class, function (MockInterface $mock): void {
             $mock->shouldReceive('isBlocked')->andReturn(false)->once();
         });
         Passport::actingAs($user->user);

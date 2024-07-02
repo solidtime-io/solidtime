@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('oauth_refresh_tokens', function (Blueprint $table) {
+        Schema::create('oauth_refresh_tokens', function (Blueprint $table): void {
             $table->string('id', 100)->primary();
             $table->string('access_token_id', 100)->index();
             $table->boolean('revoked');

@@ -118,7 +118,7 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
         $data = $this->createUserWithPermission([
             'members:update',
         ]);
-        $this->mock(BillableRateService::class, function (MockInterface $mock) use ($data) {
+        $this->mock(BillableRateService::class, function (MockInterface $mock) use ($data): void {
             $mock->shouldReceive('updateTimeEntriesBillableRateForMember')
                 ->once()
                 ->withArgs(fn (Member $memberArg) => $memberArg->is($data->member) && $memberArg->billable_rate === 10001);

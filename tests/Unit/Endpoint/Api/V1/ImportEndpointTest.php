@@ -16,7 +16,7 @@ use PHPUnit\Framework\Attributes\UsesClass;
 #[UsesClass(ImportController::class)]
 class ImportEndpointTest extends ApiEndpointTestAbstract
 {
-    public function test_index_fails_if_user_does_not_have_permission()
+    public function test_index_fails_if_user_does_not_have_permission(): void
     {
         // Arrange
         $data = $this->createUserWithPermission();
@@ -30,7 +30,7 @@ class ImportEndpointTest extends ApiEndpointTestAbstract
         $response->assertForbidden();
     }
 
-    public function test_index_returns_importers_if_user_has_permission()
+    public function test_index_returns_importers_if_user_has_permission(): void
     {
         // Arrange
         $data = $this->createUserWithPermission([
@@ -58,7 +58,7 @@ class ImportEndpointTest extends ApiEndpointTestAbstract
         $this->assertSame(__('importer.toggl_time_entries.description'), $toggleTimeEntries['description']);
     }
 
-    public function test_import_fails_if_user_does_not_have_permission()
+    public function test_import_fails_if_user_does_not_have_permission(): void
     {
         // Arrange
         $data = $this->createUserWithPermission();

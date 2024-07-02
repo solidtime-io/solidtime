@@ -28,9 +28,9 @@ class BillableRateService
             ->where('billable', '=', true)
             ->where('organization_id', '=', $project->organization_id)
             ->whereBelongsTo($project, 'project')
-            ->whereDoesntHave('member', function (Builder $query) use ($project) {
+            ->whereDoesntHave('member', function (Builder $query) use ($project): void {
                 /** @var Builder<Member> $query */
-                $query->whereHas('projectMembers', function (Builder $query) use ($project) {
+                $query->whereHas('projectMembers', function (Builder $query) use ($project): void {
                     /** @var Builder<ProjectMember> $query */
                     $query->whereBelongsTo($project, 'project')
                         ->whereNotNull('billable_rate');
@@ -62,7 +62,7 @@ class BillableRateService
         TimeEntry::query()
             ->where('billable', '=', true)
             ->where('organization_id', '=', $organization->getKey())
-            ->whereDoesntHave('member', function (Builder $builder) {
+            ->whereDoesntHave('member', function (Builder $builder): void {
                 /** @var Builder<Member> $builder */
                 $builder->whereNotNull('billable_rate');
             })

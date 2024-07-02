@@ -112,7 +112,7 @@ class RegistrationTest extends TestCase
     public function test_new_users_can_register_and_uses_ip_lookup_service_to_get_information_about_currency_and_start_of_week(): void
     {
         // Arrange
-        $this->mock(IpLookupServiceContract::class, function ($mock) {
+        $this->mock(IpLookupServiceContract::class, function ($mock): void {
             $mock->shouldReceive('lookup')->andReturn(new IpLookupResponseDto(
                 'America/New_York',
                 Weekday::Sunday,
@@ -143,7 +143,7 @@ class RegistrationTest extends TestCase
     public function test_new_users_can_register_and_uses_ip_lookup_service_to_get_information_about_timezone_if_client_did_not_send_one(): void
     {
         // Arrange
-        $this->mock(IpLookupServiceContract::class, function ($mock) {
+        $this->mock(IpLookupServiceContract::class, function ($mock): void {
             $mock->shouldReceive('lookup')->andReturn(new IpLookupResponseDto(
                 'America/New_York',
                 Weekday::Sunday,
@@ -174,7 +174,7 @@ class RegistrationTest extends TestCase
     public function test_new_users_can_register_and_uses_ip_lookup_service_to_get_information_about_timezone_if_client_sends_invalid_one(): void
     {
         // Arrange
-        $this->mock(IpLookupServiceContract::class, function ($mock) {
+        $this->mock(IpLookupServiceContract::class, function ($mock): void {
             $mock->shouldReceive('lookup')->andReturn(new IpLookupResponseDto(
                 'America/New_York',
                 Weekday::Sunday,
@@ -205,7 +205,7 @@ class RegistrationTest extends TestCase
     public function test_new_users_can_register_and_legacy_timezone_from_client_is_mapped_to_new_timezone(): void
     {
         // Arrange
-        $this->mock(IpLookupServiceContract::class, function ($mock) {
+        $this->mock(IpLookupServiceContract::class, function ($mock): void {
             $mock->shouldReceive('lookup')->andReturn(new IpLookupResponseDto(
                 'America/New_York',
                 Weekday::Sunday,

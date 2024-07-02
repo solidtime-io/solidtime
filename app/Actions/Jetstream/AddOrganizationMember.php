@@ -38,7 +38,7 @@ class AddOrganizationMember implements AddsTeamMembers
 
         AddingTeamMember::dispatch($organization, $newOrganizationMember);
 
-        DB::transaction(function () use ($organization, $newOrganizationMember, $role) {
+        DB::transaction(function () use ($organization, $newOrganizationMember, $role): void {
             $organization->users()->attach(
                 $newOrganizationMember, ['role' => $role]
             );
@@ -93,7 +93,7 @@ class AddOrganizationMember implements AddsTeamMembers
      */
     protected function ensureUserIsNotAlreadyOnTeam(Organization $team, string $email): Closure
     {
-        return function ($validator) use ($team, $email) {
+        return function ($validator) use ($team, $email): void {
             $validator->errors()->addIf(
                 $team->hasRealUserWithEmail($email),
                 'email',

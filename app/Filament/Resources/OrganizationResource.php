@@ -122,7 +122,7 @@ class OrganizationResource extends Resource
                                 ->persistent()
                                 ->send();
 
-                            return response()->streamDownload(function () use ($file) {
+                            return response()->streamDownload(function () use ($file): void {
                                 echo Storage::disk(config('filesystems.private'))->get($file);
                             }, 'export.zip');
                         } catch (\Exception $exception) {
@@ -137,7 +137,7 @@ class OrganizationResource extends Resource
                     }),
                 Action::make('Import')
                     ->icon('heroicon-o-inbox-arrow-down')
-                    ->action(function (Organization $record, array $data) {
+                    ->action(function (Organization $record, array $data): void {
                         try {
                             $file = Storage::disk(config('filament.default_filesystem_disk'))->get($data['file']);
                             if ($file === null) {

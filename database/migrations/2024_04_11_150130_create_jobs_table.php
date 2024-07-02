@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('jobs', function (Blueprint $table) {
+        Schema::create('jobs', function (Blueprint $table): void {
             $table->bigIncrements('id');
             $table->string('queue')->index();
             $table->longText('payload');
