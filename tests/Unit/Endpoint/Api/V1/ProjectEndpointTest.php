@@ -251,6 +251,75 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
         ]);
     }
 
+    public function test_store_endpoint_ignores_estimated_time_if_pro_features_are_disabled(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'projects:create',
+        ]);
+        $projectFake = Project::factory()->forOrganization($data->organization)->make();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.projects.store', [$data->organization->getKey()]), [
+            'name' => $projectFake->name,
+            'color' => $projectFake->color,
+            'is_billable' => $projectFake->is_billable,
+            'estimated_time' => 10000,
+        ]);
+
+        // Assert
+        $response->assertStatus(201);
+        $response->assertJson(fn (AssertableJson $json) => $json
+            ->has('data')
+            ->where('data.name', $projectFake->name)
+            ->where('data.color', $projectFake->color)
+            ->where('data.estimated_time', null)
+        );
+        $this->assertDatabaseHas(Project::class, [
+            'name' => $projectFake->name,
+            'color' => $projectFake->color,
+            'organization_id' => $projectFake->organization_id,
+            'is_billable' => $projectFake->is_billable,
+            'estimated_time' => null,
+        ]);
+    }
+
+    public function test_store_endpoint_can_store_project_with_estimated_time_with_pro_features_enabled(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'projects:create',
+        ]);
+        $projectFake = Project::factory()->forOrganization($data->organization)->make();
+        Passport::actingAs($data->user);
+        $this->actAsOrganizationWithSubscription();
+
+        // Act
+        $response = $this->postJson(route('api.v1.projects.store', [$data->organization->getKey()]), [
+            'name' => $projectFake->name,
+            'color' => $projectFake->color,
+            'is_billable' => $projectFake->is_billable,
+            'estimated_time' => 10000,
+        ]);
+
+        // Assert
+        $response->assertStatus(201);
+        $response->assertJson(fn (AssertableJson $json) => $json
+            ->has('data')
+            ->where('data.name', $projectFake->name)
+            ->where('data.color', $projectFake->color)
+            ->where('data.estimated_time', 10000)
+        );
+        $this->assertDatabaseHas(Project::class, [
+            'name' => $projectFake->name,
+            'color' => $projectFake->color,
+            'organization_id' => $projectFake->organization_id,
+            'is_billable' => $projectFake->is_billable,
+            'estimated_time' => 10000,
+        ]);
+    }
+
     public function test_store_endpoint_fails_if_name_is_already_used_in_organization(): void
     {
         // Arrange
@@ -505,6 +574,71 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
         $this->assertSame($projectFake->color, $project->color);
         $this->assertSame($client->getKey(), $project->client_id);
         $this->assertFalse($project->is_archived);
+    }
+
+    public function test_update_endpoint_ignores_estimated_time_if_pro_features_are_disabled(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'projects:update',
+        ]);
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        $projectFake = Project::factory()->make();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.projects.update', [$data->organization->getKey(), $project->getKey()]), [
+            'name' => $projectFake->name,
+            'color' => $projectFake->color,
+            'is_billable' => $projectFake->is_billable,
+            'estimated_time' => 10000,
+        ]);
+
+        // Assert
+        $response->assertStatus(200);
+        $project->refresh();
+        $response->assertJson(fn (AssertableJson $json) => $json
+            ->has('data')
+            ->where('data.name', $projectFake->name)
+            ->where('data.color', $projectFake->color)
+            ->where('data.estimated_time', null)
+        );
+        $this->assertSame($projectFake->name, $project->name);
+        $this->assertSame($projectFake->color, $project->color);
+        $this->assertNull($project->estimated_time);
+    }
+
+    public function test_update_endpoint_can_store_project_with_estimated_time_with_pro_features_enabled(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'projects:update',
+        ]);
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        $projectFake = Project::factory()->make();
+        Passport::actingAs($data->user);
+        $this->actAsOrganizationWithSubscription();
+
+        // Act
+        $response = $this->putJson(route('api.v1.projects.update', [$data->organization->getKey(), $project->getKey()]), [
+            'name' => $projectFake->name,
+            'color' => $projectFake->color,
+            'is_billable' => $projectFake->is_billable,
+            'estimated_time' => 10000,
+        ]);
+
+        // Assert
+        $response->assertStatus(200);
+        $project->refresh();
+        $response->assertJson(fn (AssertableJson $json) => $json
+            ->has('data')
+            ->where('data.name', $projectFake->name)
+            ->where('data.color', $projectFake->color)
+            ->where('data.estimated_time', 10000)
+        );
+        $this->assertSame($projectFake->name, $project->name);
+        $this->assertSame($projectFake->color, $project->color);
+        $this->assertSame(10000, $project->estimated_time);
     }
 
     public function test_update_endpoint_does_not_update_billable_rates_of_time_entries_if_billable_rate_is_unchanged(): void

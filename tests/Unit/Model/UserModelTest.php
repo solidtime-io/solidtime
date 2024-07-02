@@ -92,7 +92,10 @@ class UserModelTest extends ModelTestAbstract
         // Assert
         $this->assertNotNull($timeEntriesRel);
         $this->assertCount(3, $timeEntriesRel);
-        $this->assertTrue($timeEntriesRel->first()->is($timeEntries->first()));
+        $this->assertEqualsCanonicalizing(
+            $timeEntries->pluck('id')->toArray(),
+            $timeEntriesRel->pluck('id')->toArray()
+        );
     }
 
     public function test_it_has_many_project_members(): void

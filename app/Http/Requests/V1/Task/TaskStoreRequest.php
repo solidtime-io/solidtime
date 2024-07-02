@@ -43,6 +43,19 @@ class TaskStoreRequest extends FormRequest
                     return $builder->whereBelongsTo($this->organization, 'organization');
                 }),
             ],
+            // Estimated time in seconds
+            'estimated_time' => [
+                'nullable',
+                'integer',
+                'min:0',
+            ],
         ];
+    }
+
+    public function getEstimatedTime(): ?int
+    {
+        $input = $this->input('estimated_time');
+
+        return $input !== null && $input !== 0 ? (int) $this->input('estimated_time') : null;
     }
 }

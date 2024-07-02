@@ -33,7 +33,17 @@ class ProjectFactory extends Factory
             'archived_at' => null,
             'client_id' => null,
             'organization_id' => Organization::factory(),
+            'estimated_time' => null,
         ];
+    }
+
+    public function withEstimatedTime(): self
+    {
+        return $this->state(function (array $attributes): array {
+            return [
+                'estimated_time' => $this->faker->randomNumber(3),
+            ];
+        });
     }
 
     public function billable(): self

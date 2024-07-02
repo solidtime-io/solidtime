@@ -95,6 +95,9 @@ class ProjectController extends Controller
         $project->is_billable = (bool) $request->input('is_billable');
         $project->billable_rate = $request->getBillableRate();
         $project->client_id = $request->input('client_id');
+        if ($this->canAccessPremiumFeatures($organization) && $request->has('estimated_time')) {
+            $project->estimated_time = $request->getEstimatedTime();
+        }
         $project->organization()->associate($organization);
         $project->save();
 
@@ -116,6 +119,9 @@ class ProjectController extends Controller
         $project->is_billable = (bool) $request->input('is_billable');
         if ($request->has('is_archived')) {
             $project->archived_at = $request->getIsArchived() ? Carbon::now() : null;
+        }
+        if ($this->canAccessPremiumFeatures($organization) && $request->has('estimated_time')) {
+            $project->estimated_time = $request->getEstimatedTime();
         }
         $oldBillableRate = $project->billable_rate;
         $project->billable_rate = $request->getBillableRate();
@@ -147,8 +153,8 @@ class ProjectController extends Controller
             throw new EntityStillInUseApiException('project', 'time_entry');
         }
 
-        DB::transaction(function () use (&$project) {
-            $project->members->each(function (ProjectMember $member) {
+        DB::transaction(function () use (&$project): void {
+            $project->members->each(function (ProjectMember $member): void {
                 $member->delete();
             });
 

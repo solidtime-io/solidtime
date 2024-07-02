@@ -62,6 +62,12 @@ class ProjectUpdateRequest extends FormRequest
                 'integer',
                 'min:0',
             ],
+            // Estimated time in seconds
+            'estimated_time' => [
+                'nullable',
+                'integer',
+                'min:0',
+            ],
         ];
     }
 
@@ -77,5 +83,12 @@ class ProjectUpdateRequest extends FormRequest
         $input = $this->input('billable_rate');
 
         return $input !== null && $input !== 0 ? (int) $this->input('billable_rate') : null;
+    }
+
+    public function getEstimatedTime(): ?int
+    {
+        $input = $this->input('estimated_time');
+
+        return $input !== null && $input !== 0 ? (int) $this->input('estimated_time') : null;
     }
 }

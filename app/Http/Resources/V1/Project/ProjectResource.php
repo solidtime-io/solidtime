@@ -35,6 +35,8 @@ class ProjectResource extends BaseResource
             'billable_rate' => $this->resource->billable_rate,
             /** @var bool $is_billable Project time entries billable default */
             'is_billable' => $this->resource->is_billable,
+            /** @var int|null $estimated_time Estimated time in seconds */
+            'estimated_time' => $this->resource->estimated_time,
         ];
     }
 }

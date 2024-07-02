@@ -10,6 +10,7 @@ use App\Models\ProjectMember;
 use App\Models\Task;
 use App\Models\TimeEntry;
 use Illuminate\Support\Carbon;
+use Illuminate\Testing\Fluent\AssertableJson;
 use Laravel\Passport\Passport;
 use PHPUnit\Framework\Attributes\UsesClass;
 
@@ -274,7 +275,7 @@ class TaskEndpointTest extends ApiEndpointTestAbstract
         $response->assertJsonCount(2, 'data');
     }
 
-    public function test_store_endpoint_fails_if_user_has_no_permission_to_create_tasks()
+    public function test_store_endpoint_fails_if_user_has_no_permission_to_create_tasks(): void
     {
         // Arrange
         $data = $this->createUserWithPermission();
@@ -347,7 +348,7 @@ class TaskEndpointTest extends ApiEndpointTestAbstract
         ]);
     }
 
-    public function test_store_endpoint_creates_new_task_if_user_has_permission_to_create_tasks()
+    public function test_store_endpoint_creates_new_task_if_user_has_permission_to_create_tasks(): void
     {
         // Arrange
         $data = $this->createUserWithPermission([
@@ -368,6 +369,71 @@ class TaskEndpointTest extends ApiEndpointTestAbstract
             'name' => 'Task 1',
             'project_id' => $project->getKey(),
             'organization_id' => $data->organization->getKey(),
+        ]);
+    }
+
+    public function test_store_endpoint_ignores_estimated_time_if_pro_features_are_disabled(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'tasks:create',
+        ]);
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.tasks.store', [$data->organization->getKey()]), [
+            'name' => 'Task 1',
+            'project_id' => $project->getKey(),
+            'estimated_time' => 3600,
+        ]);
+
+        // Assert
+        $response->assertStatus(201);
+        $response->assertJson(fn (AssertableJson $json) => $json
+            ->has('data')
+            ->where('data.name', 'Task 1')
+            ->where('data.project_id', $project->getKey())
+            ->where('data.estimated_time', null)
+        );
+        $this->assertDatabaseHas(Task::class, [
+            'name' => 'Task 1',
+            'project_id' => $project->getKey(),
+            'organization_id' => $data->organization->getKey(),
+            'estimated_time' => null,
+        ]);
+    }
+
+    public function test_store_endpoint_can_store_with_estimated_time_with_pro_features_enabled(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'tasks:create',
+        ]);
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        Passport::actingAs($data->user);
+        $this->actAsOrganizationWithSubscription();
+
+        // Act
+        $response = $this->postJson(route('api.v1.tasks.store', [$data->organization->getKey()]), [
+            'name' => 'Task 1',
+            'project_id' => $project->getKey(),
+            'estimated_time' => 3600,
+        ]);
+
+        // Assert
+        $response->assertStatus(201);
+        $response->assertJson(fn (AssertableJson $json) => $json
+            ->has('data')
+            ->where('data.name', 'Task 1')
+            ->where('data.project_id', $project->getKey())
+            ->where('data.estimated_time', 3600)
+        );
+        $this->assertDatabaseHas(Task::class, [
+            'name' => 'Task 1',
+            'project_id' => $project->getKey(),
+            'organization_id' => $data->organization->getKey(),
+            'estimated_time' => 3600,
         ]);
     }
 
@@ -520,6 +586,63 @@ class TaskEndpointTest extends ApiEndpointTestAbstract
         $this->assertDatabaseHas(Task::class, [
             'id' => $task->getKey(),
             'done_at' => null,
+        ]);
+    }
+
+    public function test_update_endpoint_ignores_estimated_time_if_pro_features_are_disabled(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'tasks:update',
+        ]);
+        $task = Task::factory()->forOrganization($data->organization)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.tasks.update', [$data->organization->getKey(), $task->getKey()]), [
+            'name' => $task->name,
+            'estimated_time' => 3600,
+        ]);
+
+        // Assert
+        $response->assertStatus(200);
+        $response->assertJson(fn (AssertableJson $json) => $json
+            ->has('data')
+            ->where('data.name', $task->name)
+            ->where('data.estimated_time', null)
+        );
+        $this->assertDatabaseHas(Task::class, [
+            'id' => $task->getKey(),
+            'estimated_time' => null,
+        ]);
+    }
+
+    public function test_update_endpoint_can_update_estimated_time_with_pro_features_enabled(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'tasks:update',
+        ]);
+        $task = Task::factory()->forOrganization($data->organization)->create();
+        Passport::actingAs($data->user);
+        $this->actAsOrganizationWithSubscription();
+
+        // Act
+        $response = $this->putJson(route('api.v1.tasks.update', [$data->organization->getKey(), $task->getKey()]), [
+            'name' => $task->name,
+            'estimated_time' => 3600,
+        ]);
+
+        // Assert
+        $response->assertStatus(200);
+        $response->assertJson(fn (AssertableJson $json) => $json
+            ->has('data')
+            ->where('data.name', $task->name)
+            ->where('data.estimated_time', 3600)
+        );
+        $this->assertDatabaseHas(Task::class, [
+            'id' => $task->getKey(),
+            'estimated_time' => 3600,
         ]);
     }
 
