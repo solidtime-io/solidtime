@@ -95,7 +95,7 @@ class InviteOrganizationMember implements InvitesTeamMembers
      */
     protected function ensureUserIsNotAlreadyOnTeam(Organization $organization, string $email): Closure
     {
-        return function ($validator) use ($organization, $email) {
+        return function ($validator) use ($organization, $email): void {
             $validator->errors()->addIf(
                 $organization->hasRealUserWithEmail($email),
                 'email',

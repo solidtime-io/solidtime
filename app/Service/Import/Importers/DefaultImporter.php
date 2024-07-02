@@ -107,7 +107,7 @@ abstract class DefaultImporter implements ImporterContract
                 'nullable',
                 'integer',
             ],
-        ], beforeSave: function (Project $project) {
+        ], beforeSave: function (Project $project): void {
             if ($project->billable_rate === 0) {
                 $project->billable_rate = null;
             }
@@ -120,7 +120,7 @@ abstract class DefaultImporter implements ImporterContract
                 'nullable',
                 'integer',
             ],
-        ], beforeSave: function (ProjectMember $projectMember) {
+        ], beforeSave: function (ProjectMember $projectMember): void {
             if ($projectMember->billable_rate === 0) {
                 $projectMember->billable_rate = null;
             }

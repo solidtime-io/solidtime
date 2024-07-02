@@ -52,7 +52,7 @@ class UpdateMemberRole
             ],
         ])->validate();
 
-        DB::transaction(function () use ($organization, $userId, $role, $user) {
+        DB::transaction(function () use ($organization, $userId, $role, $user): void {
             $organization->users()->updateExistingPivot($userId, [
                 'role' => $role,
             ]);

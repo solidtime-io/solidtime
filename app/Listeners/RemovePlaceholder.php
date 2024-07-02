@@ -19,7 +19,7 @@ class RemovePlaceholder
         /** @var UserService $userService */
         $userService = app(UserService::class);
         $placeholders = Member::query()
-            ->whereHas('user', function (Builder $query) use ($event) {
+            ->whereHas('user', function (Builder $query) use ($event): void {
                 $query->where('is_placeholder', '=', true)
                     ->where('email', '=', $event->user->email);
             })

@@ -30,15 +30,15 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 Route::middleware([
     'auth:api',
     'verified',
-])->prefix('v1')->name('v1.')->group(static function () {
+])->prefix('v1')->name('v1.')->group(static function (): void {
     // Organization routes
-    Route::name('organizations.')->group(static function () {
+    Route::name('organizations.')->group(static function (): void {
         Route::get('/organizations/{organization}', [OrganizationController::class, 'show'])->name('show');
         Route::put('/organizations/{organization}', [OrganizationController::class, 'update'])->name('update');
     });
 
     // Member routes
-    Route::name('members.')->group(static function () {
+    Route::name('members.')->group(static function (): void {
         Route::get('/organizations/{organization}/members', [MemberController::class, 'index'])->name('index');
         Route::put('/organizations/{organization}/members/{member}', [MemberController::class, 'update'])->name('update');
         Route::delete('/organizations/{organization}/members/{member}', [MemberController::class, 'destroy'])->name('destroy');
@@ -46,7 +46,7 @@ Route::middleware([
     });
 
     // Invitation routes
-    Route::name('invitations.')->group(static function () {
+    Route::name('invitations.')->group(static function (): void {
         Route::get('/organizations/{organization}/invitations', [InvitationController::class, 'index'])->name('index');
         Route::post('/organizations/{organization}/invitations', [InvitationController::class, 'store'])->name('store');
         Route::post('/organizations/{organization}/invitations/{invitation}/resend', [InvitationController::class, 'resend'])->name('resend');
@@ -54,7 +54,7 @@ Route::middleware([
     });
 
     // Project routes
-    Route::name('projects.')->group(static function () {
+    Route::name('projects.')->group(static function (): void {
         Route::get('/organizations/{organization}/projects', [ProjectController::class, 'index'])->name('index');
         Route::get('/organizations/{organization}/projects/{project}', [ProjectController::class, 'show'])->name('show');
         Route::post('/organizations/{organization}/projects', [ProjectController::class, 'store'])->name('store');
@@ -63,7 +63,7 @@ Route::middleware([
     });
 
     // Project member routes
-    Route::name('project-members.')->group(static function () {
+    Route::name('project-members.')->group(static function (): void {
         Route::get('/organizations/{organization}/projects/{project}/project-members', [ProjectMemberController::class, 'index'])->name('index');
         Route::post('/organizations/{organization}/projects/{project}/project-members', [ProjectMemberController::class, 'store'])->name('store');
         Route::put('/organizations/{organization}/project-members/{projectMember}', [ProjectMemberController::class, 'update'])->name('update');
@@ -71,7 +71,7 @@ Route::middleware([
     });
 
     // Time entry routes
-    Route::name('time-entries.')->group(static function () {
+    Route::name('time-entries.')->group(static function (): void {
         Route::get('/organizations/{organization}/time-entries', [TimeEntryController::class, 'index'])->name('index');
         Route::get('/organizations/{organization}/time-entries/aggregate', [TimeEntryController::class, 'aggregate'])->name('aggregate');
         Route::post('/organizations/{organization}/time-entries', [TimeEntryController::class, 'store'])->name('store');
@@ -80,12 +80,12 @@ Route::middleware([
         Route::delete('/organizations/{organization}/time-entries/{timeEntry}', [TimeEntryController::class, 'destroy'])->name('destroy');
     });
 
-    Route::name('users.time-entries.')->group(static function () {
+    Route::name('users.time-entries.')->group(static function (): void {
         Route::get('/users/me/time-entries/active', [UserTimeEntryController::class, 'myActive'])->name('my-active');
     });
 
     // Tag routes
-    Route::name('tags.')->group(static function () {
+    Route::name('tags.')->group(static function (): void {
         Route::get('/organizations/{organization}/tags', [TagController::class, 'index'])->name('index');
         Route::post('/organizations/{organization}/tags', [TagController::class, 'store'])->name('store');
         Route::put('/organizations/{organization}/tags/{tag}', [TagController::class, 'update'])->name('update');
@@ -93,7 +93,7 @@ Route::middleware([
     });
 
     // Client routes
-    Route::name('clients.')->group(static function () {
+    Route::name('clients.')->group(static function (): void {
         Route::get('/organizations/{organization}/clients', [ClientController::class, 'index'])->name('index');
         Route::post('/organizations/{organization}/clients', [ClientController::class, 'store'])->name('store');
         Route::put('/organizations/{organization}/clients/{client}', [ClientController::class, 'update'])->name('update');
@@ -101,7 +101,7 @@ Route::middleware([
     });
 
     // Task routes
-    Route::name('tasks.')->group(static function () {
+    Route::name('tasks.')->group(static function (): void {
         Route::get('/organizations/{organization}/tasks', [TaskController::class, 'index'])->name('index');
         Route::post('/organizations/{organization}/tasks', [TaskController::class, 'store'])->name('store');
         Route::put('/organizations/{organization}/tasks/{task}', [TaskController::class, 'update'])->name('update');
@@ -109,7 +109,7 @@ Route::middleware([
     });
 
     // Import routes
-    Route::name('import.')->group(static function () {
+    Route::name('import.')->group(static function (): void {
         Route::get('/organizations/{organization}/importers', [ImportController::class, 'index'])->name('index');
         Route::post('/organizations/{organization}/import', [ImportController::class, 'import'])->name('import');
     });

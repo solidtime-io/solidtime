@@ -112,7 +112,7 @@ class OrganizationResource extends Resource
                 Tables\Actions\EditAction::make(),
                 Action::make('Import')
                     ->icon('heroicon-o-inbox-arrow-down')
-                    ->action(function (Organization $record, array $data) {
+                    ->action(function (Organization $record, array $data): void {
                         try {
                             $file = Storage::disk(config('filament.default_filesystem_disk'))->get($data['file']);
                             if ($file === null) {

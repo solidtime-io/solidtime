@@ -27,7 +27,7 @@ class ImportService
         Storage::disk(config('filesystems.default'))
             ->put('import/'.Carbon::now()->toDateString().'-'.$organization->getKey().'-'.Str::uuid(), $data);
 
-        DB::transaction(function () use (&$importer, &$data, &$timezone) {
+        DB::transaction(function () use (&$importer, &$data, &$timezone): void {
             $importer->importData($data, $timezone);
         });
 

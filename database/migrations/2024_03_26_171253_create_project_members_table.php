@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('project_members', function (Blueprint $table) {
+        Schema::create('project_members', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->integer('billable_rate')->unsigned()->nullable();
             $table->uuid('project_id');
