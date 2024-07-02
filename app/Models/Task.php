@@ -21,6 +21,7 @@ use Illuminate\Support\Carbon;
  * @property string $project_id
  * @property string $organization_id
  * @property Carbon|null $done_at
+ * @property int|null $estimated_time
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read Project $project
@@ -42,6 +43,7 @@ class Task extends Model
      */
     protected $casts = [
         'name' => 'string',
+        'estimated_time' => 'integer',
     ];
 
     /**

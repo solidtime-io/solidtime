@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests;
 
 use App\Service\BillableRateService;
+use App\Service\BillingContract;
 use App\Service\PermissionStore;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
@@ -52,11 +53,18 @@ abstract class TestCase extends BaseTestCase
 
     protected function assertBillableRateServiceIsUnused(): void
     {
-        $this->mock(BillableRateService::class, function (MockInterface $mock) {
+        $this->mock(BillableRateService::class, function (MockInterface $mock): void {
             $mock->shouldNotReceive('updateTimeEntriesBillableRateForProjectMember');
             $mock->shouldNotReceive('updateTimeEntriesBillableRateForProject');
             $mock->shouldNotReceive('updateTimeEntriesBillableRateForMember');
             $mock->shouldNotReceive('updateTimeEntriesBillableRateForOrganization');
+        });
+    }
+
+    protected function actAsOrganizationWithSubscription(): void
+    {
+        $this->mock(BillingContract::class, function (MockInterface $mock): void {
+            $mock->shouldReceive('hasSubscription')->andReturn(true);
         });
     }
 }

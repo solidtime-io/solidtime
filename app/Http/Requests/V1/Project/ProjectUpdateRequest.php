@@ -65,6 +65,12 @@ class ProjectUpdateRequest extends FormRequest
             'billable_rate_update_time_entries' => [
                 'boolean',
             ],
+            // Estimated time in seconds
+            'estimated_time' => [
+                'nullable',
+                'integer',
+                'min:0',
+            ],
         ];
     }
 
@@ -86,5 +92,12 @@ class ProjectUpdateRequest extends FormRequest
     {
         return $this->has('billable_rate_update_time_entries') &&
             $this->boolean('billable_rate_update_time_entries');
+    }
+
+    public function getEstimatedTime(): ?int
+    {
+        $input = $this->input('estimated_time');
+
+        return $input !== null && $input !== 0 ? (int) $this->input('estimated_time') : null;
     }
 }
