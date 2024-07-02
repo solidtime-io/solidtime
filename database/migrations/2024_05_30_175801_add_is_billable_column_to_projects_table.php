@@ -14,7 +14,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('projects', function (Blueprint $table) {
+        Schema::table('projects', function (Blueprint $table): void {
             $table->boolean('is_billable')->default(false);
         });
         DB::statement('
@@ -22,7 +22,7 @@ return new class extends Migration
             set is_billable = true
             where projects.billable_rate is not null and projects.billable_rate > 0
         ');
-        Schema::table('projects', function (Blueprint $table) {
+        Schema::table('projects', function (Blueprint $table): void {
             $table->boolean('is_billable')->default(null)->change();
         });
     }
@@ -32,7 +32,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('projects', function (Blueprint $table) {
+        Schema::table('projects', function (Blueprint $table): void {
             $table->dropColumn('is_billable');
         });
     }

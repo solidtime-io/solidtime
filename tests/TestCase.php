@@ -25,7 +25,7 @@ abstract class TestCase extends BaseTestCase
         parent::setUp();
         Mail::fake();
         LogFake::bind();
-        $this->mock(BillingContract::class, function (MockInterface $mock) {
+        $this->mock(BillingContract::class, function (MockInterface $mock): void {
             $mock->shouldReceive('hasSubscription')->andReturn(false);
             $mock->shouldReceive('hasTrial')->andReturn(false);
             $mock->shouldReceive('getTrialUntil')->andReturn(null);

@@ -54,7 +54,7 @@ class TimeEntrySendStillRunningMailsCommand extends Command
                 $query->where('is_placeholder', '=', false);
             })
             ->orderBy('created_at', 'asc')
-            ->chunk(500, function (Collection $timeEntries) use ($dryRun, &$sentMails) {
+            ->chunk(500, function (Collection $timeEntries) use ($dryRun, &$sentMails): void {
                 /** @var Collection<int, TimeEntry> $timeEntries */
                 foreach ($timeEntries as $timeEntry) {
                     $user = $timeEntry->user;

@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('time_entries', function (Blueprint $table) {
+        Schema::table('time_entries', function (Blueprint $table): void {
             $table->dropForeign(['member_id']);
             $table->foreign('member_id')
                 ->references('id')
@@ -27,7 +27,7 @@ return new class extends Migration
                 ->restrictOnDelete()
                 ->cascadeOnUpdate();
         });
-        Schema::table('project_members', function (Blueprint $table) {
+        Schema::table('project_members', function (Blueprint $table): void {
             $table->dropForeign(['member_id']);
             $table->foreign('member_id')
                 ->references('id')
@@ -35,7 +35,7 @@ return new class extends Migration
                 ->restrictOnDelete()
                 ->cascadeOnUpdate();
         });
-        Schema::table('organization_invitations', function (Blueprint $table) {
+        Schema::table('organization_invitations', function (Blueprint $table): void {
             $table->dropForeign(['organization_id']);
             $table->foreign('organization_id')
                 ->references('id')
@@ -50,7 +50,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('time_entries', function (Blueprint $table) {
+        Schema::table('time_entries', function (Blueprint $table): void {
             $table->dropForeign(['member_id']);
             $table->foreign('member_id')
                 ->references('id')
@@ -64,7 +64,7 @@ return new class extends Migration
                 ->cascadeOnDelete()
                 ->cascadeOnUpdate();
         });
-        Schema::table('project_members', function (Blueprint $table) {
+        Schema::table('project_members', function (Blueprint $table): void {
             $table->dropForeign(['member_id']);
             $table->foreign('member_id')
                 ->references('id')
@@ -72,7 +72,7 @@ return new class extends Migration
                 ->cascadeOnDelete()
                 ->cascadeOnUpdate();
         });
-        Schema::table('organization_invitations', function (Blueprint $table) {
+        Schema::table('organization_invitations', function (Blueprint $table): void {
             $table->dropForeign(['organization_id']);
             $table->foreign('organization_id')
                 ->references('id')

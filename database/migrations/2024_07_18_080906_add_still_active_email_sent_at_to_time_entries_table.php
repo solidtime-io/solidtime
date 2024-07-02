@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('time_entries', function (Blueprint $table) {
+        Schema::table('time_entries', function (Blueprint $table): void {
             $table->dateTime('still_active_email_sent_at')->nullable();
         });
     }
@@ -23,7 +23,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('time_entries', function (Blueprint $table) {
+        Schema::table('time_entries', function (Blueprint $table): void {
             $table->dropColumn('still_active_email_sent_at');
         });
     }

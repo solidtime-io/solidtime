@@ -25,7 +25,7 @@ Route::middleware([
     'auth:web',
     config('jetstream.auth_session'),
     'verified',
-])->group(function () {
+])->group(function (): void {
     Route::get('/dashboard', [DashboardController::class, 'dashboard'])->name('dashboard');
 
     Route::get('/time', function () {

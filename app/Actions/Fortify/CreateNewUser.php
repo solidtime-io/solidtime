@@ -82,7 +82,7 @@ class CreateNewUser implements CreatesNewUsers
         }
         $user = null;
         $organization = null;
-        DB::transaction(function () use (&$user, &$organization, $input, $timezone, $startOfWeek, $currency) {
+        DB::transaction(function () use (&$user, &$organization, $input, $timezone, $startOfWeek, $currency): void {
             $user = User::create([
                 'name' => $input['name'],
                 'email' => $input['email'],
