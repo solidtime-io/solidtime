@@ -36,7 +36,7 @@ billableRateSelect.value = 'non-billable';
 
 const billableOptionInfoTexts: { [key in BillableKey]: string } = {
     'non-billable':
-        'New time entries for this project not be marked billable by default.',
+        'New time entries for this project will not be marked billable by default.',
     'default-rate':
         'New time entries for this project will be billable at the default rate by default.',
     'custom-rate':
