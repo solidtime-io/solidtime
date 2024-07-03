@@ -30,7 +30,7 @@ async function submit(billableRateUpdateTimeEntries: boolean) {
         billableRateUpdateTimeEntries;
     await updateMember(props.member.id, memberBody.value);
     show.value = false;
-    showBillableRateModal.value = true;
+    showBillableRateModal.value = false;
 }
 
 const showBillableRateModal = ref(false);
