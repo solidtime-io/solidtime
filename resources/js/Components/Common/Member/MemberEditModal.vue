@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import DialogModal from '@/Components/DialogModal.vue';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import type { Member, UpdateMemberBody } from '@/utils/api';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import { type MemberBillableKey, useMembersStore } from '@/utils/useMembers';
@@ -10,6 +10,8 @@ import InputLabel from '@/Components/InputLabel.vue';
 import MemberBillableRateModal from '@/Components/Common/Member/MemberBillableRateModal.vue';
 import MemberBillableSelect from '@/Components/Common/Member/MemberBillableSelect.vue';
 import { onMounted, watch } from 'vue';
+import MemberRoleSelect from '@/Components/Common/Member/MemberRoleSelect.vue';
+import MemberOwnershipTransferConfirmModal from '@/Components/Common/Member/MemberOwnershipTransferConfirmModal.vue';
 
 const { updateMember } = useMembersStore();
 const show = defineModel('show', { default: false });
@@ -25,21 +27,39 @@ const memberBody = ref<UpdateMemberBody>({
     billable_rate: props.member.billable_rate,
 });
 
-async function submit(billableRateUpdateTimeEntries: boolean) {
+async function submitBillableRate(billableRateUpdateTimeEntries: boolean) {
     memberBody.value.billable_rate_update_time_entries =
         billableRateUpdateTimeEntries;
+    if (memberBody.value.role === 'owner' && props.member.role !== 'owner') {
+        show.value = false;
+        showOwnershipTransferConfirmModal.value = true;
+    } else {
+        await submit();
+    }
+}
+
+async function submit() {
     await updateMember(props.member.id, memberBody.value);
     show.value = false;
     showBillableRateModal.value = false;
+    showOwnershipTransferConfirmModal.value = false;
 }
 
 const showBillableRateModal = ref(false);
-function openBillableRateModalIfNeeded() {
+const showOwnershipTransferConfirmModal = ref(false);
+
+function saveWithChecks() {
     if (memberBody.value.billable_rate !== props.member.billable_rate) {
         showBillableRateModal.value = true;
         show.value = false;
+    } else if (
+        memberBody.value.role === 'owner' &&
+        props.member.role !== 'owner'
+    ) {
+        show.value = false;
+        showOwnershipTransferConfirmModal.value = true;
     } else {
-        submit(false);
+        submitBillableRate(false);
     }
 }
 
@@ -59,6 +79,29 @@ watch(billableRateSelect, () => {
         memberBody.value.billable_rate = props.member.billable_rate ?? 0;
     }
 });
+
+const roleDescriptionTexts = {
+    'owner':
+        'The owner has full access of the organization. The owner is the only role that can: delete the organization, transfer the ownership to another user and access to the billing settings',
+    'admin':
+        'The admin has full access to the organization, except for the stuff that only the owner can do.',
+    'manager':
+        'The manager has full access to projects, clients, tags, time entries, and reports, but can not manage the organization or the users.',
+    'employee':
+        'An employee is a user that is only using the application to track time, but has no administrative rights.',
+    'placeholder':
+        'Placeholder users can not do anything in the organization. They are not billed and can be used to remove users from the organization without deleting their time entries.',
+};
+
+const roleDescription = computed(() => {
+    if (
+        memberBody.value.role &&
+        memberBody.value.role in roleDescriptionTexts
+    ) {
+        return roleDescriptionTexts[memberBody.value.role];
+    }
+    return '';
+});
 </script>
 
 <template>
@@ -67,7 +110,11 @@ watch(billableRateSelect, () => {
         v-model:show="showBillableRateModal"
         :member-name="member.name"
         :newBillableRate="memberBody.billable_rate"
-        @submit="submit"></MemberBillableRateModal>
+        @submit="submitBillableRate"></MemberBillableRateModal>
+    <MemberOwnershipTransferConfirmModal
+        :member-name="member.name"
+        v-model:show="showOwnershipTransferConfirmModal"
+        @submit="submit"></MemberOwnershipTransferConfirmModal>
     <DialogModal closeable :show="show" @close="show = false">
         <template #title>
             <div class="flex space-x-2">
@@ -76,41 +123,57 @@ watch(billableRateSelect, () => {
         </template>
 
         <template #content>
-            <div class="flex items-center space-x-4">
-                <div class="col-span-6 sm:col-span-4 flex-1 flex space-x-5">
+            <div class="pb-5 pt-2 divide-y divide-border-secondary">
+                <div class="pb-5 flex space-x-6">
                     <div>
-                        <InputLabel for="billableType" value="Billable" />
-                        <MemberBillableSelect
+                        <InputLabel for="role" value="Role" />
+                        <MemberRoleSelect
                             class="mt-2"
-                            name="billableType"
-                            v-model="billableRateSelect"></MemberBillableSelect>
+                            name="role"
+                            v-model="memberBody.role"></MemberRoleSelect>
                     </div>
-                    <div
-                        class="flex-1"
-                        v-if="billableRateSelect === 'custom-rate'">
-                        <InputLabel
-                            for="memberBillableRate"
-                            value="Billable Rate" />
-                        <BillableRateInput
-                            focus
-                            class="w-full"
-                            @keydown.enter="openBillableRateModalIfNeeded()"
-                            name="memberBillableRate"
-                            v-model="
-                                memberBody.billable_rate
-                            "></BillableRateInput>
+                    <div class="flex-1 text-xs flex items-center pt-6">
+                        <p>{{ roleDescription }}</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4 pt-5">
+                    <div class="col-span-6 sm:col-span-4 flex-1 flex space-x-5">
+                        <div>
+                            <InputLabel for="billableType" value="Billable" />
+                            <MemberBillableSelect
+                                class="mt-2"
+                                name="billableType"
+                                v-model="
+                                    billableRateSelect
+                                "></MemberBillableSelect>
+                        </div>
+                        <div
+                            class="flex-1"
+                            v-if="billableRateSelect === 'custom-rate'">
+                            <InputLabel
+                                for="memberBillableRate"
+                                value="Billable Rate" />
+                            <BillableRateInput
+                                focus
+                                class="w-full"
+                                @keydown.enter="saveWithChecks()"
+                                name="memberBillableRate"
+                                v-model="
+                                    memberBody.billable_rate
+                                "></BillableRateInput>
+                        </div>
                     </div>
                 </div>
             </div>
         </template>
         <template #footer>
-            <SecondaryButton @click="show = false"> Cancel </SecondaryButton>
+            <SecondaryButton @click="show = false"> Cancel</SecondaryButton>
 
             <PrimaryButton
                 class="ms-3"
                 :class="{ 'opacity-25': saving }"
                 :disabled="saving"
-                @click="openBillableRateModalIfNeeded()">
+                @click="saveWithChecks()">
                 Update Member
             </PrimaryButton>
         </template>
