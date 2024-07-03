@@ -15,7 +15,7 @@ class TestJobCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'test:job';
+    protected $signature = 'test:job {--fail}';
 
     /**
      * The console command description.
@@ -30,7 +30,9 @@ class TestJobCommand extends Command
     public function handle(): int
     {
         $user = User::firstOrFail();
-        TestJob::dispatch($user, 'Test job message.');
+        $fail = (bool) $this->option('fail');
+
+        TestJob::dispatch($user, 'Test job message.', $fail);
 
         return self::SUCCESS;
     }
