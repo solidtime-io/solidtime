@@ -14,7 +14,9 @@ const props = defineProps<{
 </script>
 
 <template>
-    <Dropdown align="bottom-end">
+    <Dropdown
+        v-if="canUpdateMembers() || canDeleteMembers()"
+        align="bottom-end">
         <template #trigger>
             <button
                 class="focus-visible:outline-none focus-visible:bg-card-background rounded-full focus-visible:ring-1 focus-visible:ring-input-border-active focus-visible:opacity-100 hover:bg-card-background group-hover:opacity-100 opacity-20 transition-opacity"
