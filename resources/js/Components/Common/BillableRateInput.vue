@@ -56,6 +56,7 @@ function updateRate(value: string) {
     }
     inputValue.value = formatValue(model.value);
 }
+
 function formatValue(modelValue: number | null) {
     const formattedValue = formatCents(modelValue ?? 0);
     return formattedValue.replace(getOrganizationCurrencySymbol(), '').trim();
@@ -81,14 +82,12 @@ const inputValue = ref(formatValue(model.value));
             placeholder="Billable Rate"
             class="mt-2 block w-full"
             autocomplete="teamMemberRate" />
-        <span>
-            <div
-                class="absolute top-0 right-0 h-full flex items-center px-4 font-medium">
-                <span>
-                    {{ getOrganizationCurrencyString() }}
-                </span>
-            </div>
-        </span>
+        <div
+            class="absolute top-0 right-0 h-full flex items-center px-4 font-medium pointer-events-none">
+            <span>
+                {{ getOrganizationCurrencyString() }}
+            </span>
+        </div>
     </div>
 </template>
 

@@ -10,6 +10,7 @@ const saving = defineModel('saving', { default: false });
 
 defineProps<{
     newBillableRate?: number | null;
+    projectName: string;
 }>();
 
 const emit = defineEmits<{
@@ -21,25 +22,27 @@ const emit = defineEmits<{
     <DialogModal closeable :show="show" @close="show = false">
         <template #title>
             <div class="flex justify-center">
-                <span> Update Organization Billable Rate </span>
+                <span> Update Project Billable Rate </span>
             </div>
         </template>
         <template #content>
             <div class="flex items-center space-x-4">
                 <div class="col-span-6 sm:col-span-4 flex-1">
-                    <p class="py-0.5 text-center">
-                        The organization billable rate will be updated to
+                    <p class="py-1 text-center">
+                        The billable rate of {{ projectName }} will be updated
+                        to
                         <strong>{{
                             newBillableRate
                                 ? formatCents(newBillableRate)
-                                : ' none.'
+                                : ' the default rate of the organization'
                         }}</strong
                         >.
                     </p>
-                    <p class="py-0.5 text-center font-semibold">
+                    <p class="py-1 text-center font-semibold max-w-md mx-auto">
                         Do you want to update all existing time entries, where
-                        the organization billable rate applies as well?
+                        the project billable rate applies as well?
                     </p>
+
                     <div class="space-x-3 pt-5 pb-2 flex justify-center">
                         <PrimaryButton
                             :class="{ 'opacity-25': saving }"

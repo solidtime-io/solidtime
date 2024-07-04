@@ -15,7 +15,7 @@ const model = defineModel<string>({ default: '' });
                         :style="{
                             backgroundColor: model,
                         }"
-                        class="w-5 h-5 rounded-full cursor-pointer"></div>
+                        class="w-6 h-6 rounded-full cursor-pointer"></div>
                 </button>
             </template>
             <template #content>

@@ -15,12 +15,13 @@ import ProjectColorSelector from '@/Components/Common/Project/ProjectColorSelect
 import ProjectEditBillableSection from '@/Components/Common/Project/ProjectEditBillableSection.vue';
 import { UserCircleIcon } from '@heroicons/vue/20/solid';
 import InputLabel from '@/Components/InputLabel.vue';
+import ProjectBillableRateModal from '@/Components/Common/Project/ProjectBillableRateModal.vue';
 
 const { updateProject } = useProjectsStore();
 const { clients } = storeToRefs(useClientsStore());
 const show = defineModel('show', { default: false });
 const saving = ref(false);
-
+const showBillableRateModal = ref(false);
 const props = defineProps<{
     originalProject: Project;
 }>();
@@ -34,6 +35,10 @@ const project = ref<CreateProjectBody>({
 });
 
 async function submit() {
+    if (props.originalProject.billable_rate !== project.value.billable_rate) {
+        showBillableRateModal.value = true;
+        return;
+    }
     await updateProject(props.originalProject.id, project.value);
     show.value = false;
 }
@@ -50,6 +55,14 @@ const currentClientName = computed(() => {
     }
     return 'No Client';
 });
+
+async function submitBillableRate(billableRateUpdateTimeEntries: boolean) {
+    project.value.billable_rate_update_time_entries =
+        billableRateUpdateTimeEntries;
+    await updateProject(props.originalProject.id, project.value);
+    show.value = false;
+    showBillableRateModal.value = false;
+}
 </script>
 
 <template>
@@ -62,11 +75,12 @@ const currentClientName = computed(() => {
 
         <template #content>
             <div
-                class="sm:flex items-center space-y-2 sm:space-y-0 sm:space-x-4">
+                class="sm:flex items-center space-y-2 sm:space-y-0 sm:space-x-5">
                 <div class="flex-1 flex items-center">
-                    <div class="text-center pr-5">
+                    <div class="text-center">
                         <InputLabel for="color" value="Color" />
                         <ProjectColorSelector
+                            class="mt-1"
                             v-model="project.color"></ProjectColorSelector>
                     </div>
                 </div>
@@ -85,7 +99,7 @@ const currentClientName = computed(() => {
                 </div>
                 <div class="">
                     <InputLabel for="client" value="Client" />
-                    <ClientDropdown class="mt-2" v-model="project.client_id">
+                    <ClientDropdown class="mt-1" v-model="project.client_id">
                         <template #trigger>
                             <Badge
                                 class="bg-input-background cursor-pointer hover:bg-tertiary"
@@ -93,7 +107,7 @@ const currentClientName = computed(() => {
                                 <div class="flex items-center space-x-2">
                                     <UserCircleIcon
                                         class="w-5 text-icon-default"></UserCircleIcon>
-                                    <span>
+                                    <span class="whitespace-nowrap">
                                         {{ currentClientName }}
                                     </span>
                                 </div>
@@ -121,6 +135,11 @@ const currentClientName = computed(() => {
             </PrimaryButton>
         </template>
     </DialogModal>
+    <ProjectBillableRateModal
+        v-model:show="showBillableRateModal"
+        @submit="submitBillableRate"
+        :new-billable-rate="project.billable_rate"
+        :project-name="project.name"></ProjectBillableRateModal>
 </template>
 
 <style scoped></style>

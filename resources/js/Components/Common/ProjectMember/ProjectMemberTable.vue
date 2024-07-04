@@ -24,7 +24,7 @@ const createProjectMember = ref(false);
     <div class="flow-root">
         <div class="inline-block min-w-full align-middle">
             <div
-                data-testid="project_table"
+                data-testid="project_member_table"
                 class="grid min-w-full"
                 style="grid-template-columns: 1fr 150px 150px 80px">
                 <ProjectMemberTableHeading></ProjectMemberTableHeading>
