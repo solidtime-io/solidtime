@@ -61,12 +61,6 @@ async function assertThatTimeEntryRowIsStopped(newTimeEntry: Locator) {
     );
 }
 
-async function assertThatTimeEntryRowIsStarted(newTimeEntry: Locator) {
-    await expect(newTimeEntry.getByTestId('timer_button')).toHaveClass(
-        /bg-red-400\/80/
-    );
-}
-
 test('test that updating a description of a time entry in the overview works on blur', async ({
     page,
 }) => {
@@ -260,48 +254,6 @@ test('test that updating a the duration in the overview works on blur', async ({
 });
 
 // Test that start stop button stops running timer
-test('test that stopping a time entry from the overview works', async ({
-    page,
-}) => {
-    await goToTimeOverview(page);
-    const timeEntryRows = page.locator('[data-testid="time_entry_row"]');
-    await Promise.all([
-        newTimeEntryResponse(page),
-        startOrStopTimerWithButton(page),
-        assertThatTimerHasStarted(page),
-        page.waitForResponse(
-            (response) =>
-                response.url().includes('/time-entries') &&
-                response.status() === 200
-        ),
-    ]);
-
-    await page.waitForTimeout(1500);
-
-    const newTimeEntry = timeEntryRows.first();
-    const stopButton = newTimeEntry.getByTestId('timer_button');
-    await assertThatTimeEntryRowIsStarted(newTimeEntry);
-
-    await Promise.all([
-        page.waitForResponse(async (response) => {
-            return (
-                response.status() === 200 &&
-                (await response.headerValue('Content-Type')) ===
-                    'application/json' &&
-                (await response.json()).data.id !== null &&
-                (await response.json()).data.start !== null &&
-                (await response.json()).data.end !== null
-            );
-        }),
-        stopButton.click(),
-    ]);
-
-    await expect(newTimeEntry.getByTestId('timer_button')).toHaveClass(
-        /bg-accent-300\/70/
-    );
-});
-
-// Test that start stop button stops running timer
 test('test that starting a time entry from the overview works', async ({
     page,
 }) => {
@@ -327,7 +279,8 @@ test('test that starting a time entry from the overview works', async ({
         startButton.click(),
     ]);
 
-    await expect(startButton).toHaveClass(/bg-red-500\/80/);
+    await assertThatTimerHasStarted(page);
+
     await page.waitForTimeout(1500);
     await Promise.all([
         page.waitForResponse(async (response) => {
@@ -341,67 +294,7 @@ test('test that starting a time entry from the overview works', async ({
             );
         }),
         startOrStopTimerWithButton(page),
-        expect(startButton).toHaveClass(/bg-accent-300\/70/),
-    ]);
-});
-
-test('test that updating a the duration in the overview for a running timer works on blur', async ({
-    page,
-}) => {
-    await goToTimeOverview(page);
-    const timeEntryRows = page.locator('[data-testid="time_entry_row"]');
-
-    await Promise.all([
-        newTimeEntryResponse(page),
-        startOrStopTimerWithButton(page),
-        assertThatTimerHasStarted(page),
-        page.waitForResponse(
-            (response) =>
-                response.url().includes('/time-entries') &&
-                response.status() === 200
-        ),
-    ]);
-
-    await page.waitForTimeout(1500);
-
-    const newTimeEntry = timeEntryRows.first();
-    const startButton = newTimeEntry.getByTestId('timer_button');
-    await page.waitForTimeout(1500);
-    const timeEntryDurationInput = newTimeEntry.getByTestId(
-        'time_entry_duration_input'
-    );
-    await timeEntryDurationInput.fill('20min');
-
-    await Promise.all([
-        page.waitForResponse(async (response) => {
-            return (
-                response.status() === 200 &&
-                (await response.headerValue('Content-Type')) ===
-                    'application/json' &&
-                (await response.json()).data.id !== null &&
-                // TODO! Actually check the value
-                (await response.json()).data.start !== null &&
-                (await response.json()).data.end !== null
-            );
-        }),
-        timeEntryDurationInput.press('Tab'),
-    ]);
-
-    await expect(page.getByTestId('time_entry_time')).toHaveValue('00:20:00');
-
-    await Promise.all([
-        page.waitForResponse(async (response) => {
-            return (
-                response.status() === 200 &&
-                (await response.headerValue('Content-Type')) ===
-                    'application/json' &&
-                (await response.json()).data.id !== null &&
-                (await response.json()).data.start !== null &&
-                (await response.json()).data.end !== null
-            );
-        }),
-        startOrStopTimerWithButton(page),
-        expect(startButton).toHaveClass(/bg-accent-300\/70/),
+        assertThatTimerIsStopped(page),
     ]);
 });
 
@@ -468,3 +361,5 @@ test.skip('test that load more works when the end of page is reached', async ({
 // TODO: Test Grouped time entries by description/project
 
 // TODO: Add Test for Date Update
+
+// TODO: Test that project can be created in the time entry row

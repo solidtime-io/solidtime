@@ -2,80 +2,45 @@
 import MainContainer from '@/Pages/MainContainer.vue';
 import TimeTrackerStartStop from '@/Components/Common/TimeTrackerStartStop.vue';
 import TimeEntryRangeSelector from '@/Components/Common/TimeEntry/TimeEntryRangeSelector.vue';
-import type { TimeEntry } from '@/utils/api';
-import { storeToRefs } from 'pinia';
+import type { Project, Task, TimeEntry } from '@/utils/api';
 import TimeEntryDescriptionInput from '@/Components/Common/TimeEntry/TimeEntryDescriptionInput.vue';
-import { useTimeEntriesStore } from '@/utils/useTimeEntries';
 import TimeEntryRowTagDropdown from '@/Components/Common/TimeEntry/TimeEntryRowTagDropdown.vue';
 import TimeEntryRowDurationInput from '@/Components/Common/TimeEntry/TimeEntryRowDurationInput.vue';
-import dayjs from 'dayjs';
-import { useCurrentTimeEntryStore } from '@/utils/useCurrentTimeEntry';
 import TimeEntryMoreOptionsDropdown from '@/Components/Common/TimeEntry/TimeEntryMoreOptionsDropdown.vue';
 import TimeTrackerProjectTaskDropdown from '@/Components/Common/TimeTracker/TimeTrackerProjectTaskDropdown.vue';
 import BillableToggleButton from '@/Components/Common/BillableToggleButton.vue';
 
-const currentTimeEntryStore = useCurrentTimeEntryStore();
-const { stopTimer, updateTimer } = currentTimeEntryStore;
-const { currentTimeEntry } = storeToRefs(currentTimeEntryStore);
-
 const props = defineProps<{
     timeEntry: TimeEntry;
     indent?: boolean;
+    projects: Project[];
+    tasks: Task[];
 }>();
 
-const { updateTimeEntry, createTimeEntry, fetchTimeEntries } =
-    useTimeEntriesStore();
-
-async function updateStartEndTime(start: string, end: string | null) {
-    if (currentTimeEntry.value.id === props.timeEntry.id) {
-        currentTimeEntry.value.start = start;
-        currentTimeEntry.value.end = end;
-        await updateTimer();
-    } else {
-        await updateTimeEntry({ ...props.timeEntry, start, end });
-    }
-    await fetchTimeEntries();
-}
-
-async function onStartStopClick() {
-    if (props.timeEntry.start && !props.timeEntry.end) {
-        await updateTimeEntry({
-            ...props.timeEntry,
-            end: dayjs().utc().format(),
-        });
-    } else {
-        if (currentTimeEntry.value.id) {
-            await stopTimer();
-        }
-        await createTimeEntry({
-            ...props.timeEntry,
-            start: dayjs().utc().format(),
-            end: null,
-        });
-    }
-    useCurrentTimeEntryStore().fetchCurrentTimeEntry();
-    fetchTimeEntries();
-}
-
-function deleteTimeEntry() {
-    useTimeEntriesStore().deleteTimeEntry(props.timeEntry.id);
-    fetchTimeEntries();
-}
+const emit = defineEmits<{
+    onStartStopClick: [];
+    deleteTimeEntry: [];
+    updateTimeEntry: [timeEntry: TimeEntry];
+}>();
 
 function updateTimeEntryDescription(description: string) {
-    updateTimeEntry({ ...props.timeEntry, description });
+    emit('updateTimeEntry', { ...props.timeEntry, description });
 }
 
 function updateTimeEntryTags(tags: string[]) {
-    updateTimeEntry({ ...props.timeEntry, tags });
+    emit('updateTimeEntry', { ...props.timeEntry, tags });
 }
 
 function updateTimeEntryBillable(billable: boolean) {
-    updateTimeEntry({ ...props.timeEntry, billable });
+    emit('updateTimeEntry', { ...props.timeEntry, billable });
+}
+
+function updateStartEndTime(start: string, end: string | null) {
+    emit('updateTimeEntry', { ...props.timeEntry, start, end });
 }
 
 function updateProjectAndTask(projectId: string, taskId: string) {
-    updateTimeEntry({
+    emit('updateTimeEntry', {
         ...props.timeEntry,
         project_id: projectId,
         task_id: taskId,
@@ -100,6 +65,8 @@ function updateProjectAndTask(projectId: string, taskId: string) {
                             timeEntry.description
                         "></TimeEntryDescriptionInput>
                     <TimeTrackerProjectTaskDropdown
+                        :projects="projects"
+                        :tasks="tasks"
                         :showBadgeBorder="false"
                         @changed="updateProjectAndTask"
                         :project="timeEntry.project_id"
@@ -132,12 +99,12 @@ function updateProjectAndTask(projectId: string, taskId: string) {
                             updateStartEndTime
                         "></TimeEntryRowDurationInput>
                     <TimeTrackerStartStop
-                        @changed="onStartStopClick"
+                        @changed="emit('onStartStopClick')"
                         :active="!!(timeEntry.start && !timeEntry.end)"
                         class="opacity-20 hidden sm:flex group-hover:opacity-100"></TimeTrackerStartStop>
                     <TimeEntryMoreOptionsDropdown
                         @delete="
-                            deleteTimeEntry
+                            emit('deleteTimeEntry')
                         "></TimeEntryMoreOptionsDropdown>
                 </div>
             </div>

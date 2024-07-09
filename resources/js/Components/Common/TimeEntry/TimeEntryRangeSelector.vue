@@ -9,7 +9,9 @@ defineProps<{
     end: string | null;
 }>();
 
-const emit = defineEmits(['changed']);
+const emit = defineEmits<{
+    changed: [start: string, end: string | null];
+}>();
 
 const open = ref(false);
 </script>

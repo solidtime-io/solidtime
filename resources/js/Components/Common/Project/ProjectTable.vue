@@ -7,17 +7,28 @@ import ProjectCreateModal from '@/Components/Common/Project/ProjectCreateModal.v
 import ProjectTableHeading from '@/Components/Common/Project/ProjectTableHeading.vue';
 import ProjectTableRow from '@/Components/Common/Project/ProjectTableRow.vue';
 import { canCreateProjects } from '@/utils/permissions';
-import type { Project } from '@/utils/api';
+import type { CreateProjectBody, Project } from '@/utils/api';
+import { useProjectsStore } from '@/utils/useProjects';
+import { useClientsStore } from '@/utils/useClients';
+import { storeToRefs } from 'pinia';
 
 defineProps<{
     projects: Project[];
 }>();
 
-const createProject = ref(false);
+const showCreateProjectModal = ref(false);
+async function createProject(project: CreateProjectBody, callback: () => void) {
+    await useProjectsStore().createProject(project);
+    callback();
+}
+const { clients } = storeToRefs(useClientsStore());
 </script>
 
 <template>
-    <ProjectCreateModal v-model:show="createProject"></ProjectCreateModal>
+    <ProjectCreateModal
+        :clients="clients"
+        @submit="createProject"
+        v-model:show="showCreateProjectModal"></ProjectCreateModal>
     <div class="flow-root max-w-[100vw] overflow-x-auto">
         <div class="inline-block min-w-full align-middle">
             <div
@@ -36,7 +47,7 @@ const createProject = ref(false);
                     </p>
                     <SecondaryButton
                         v-if="canCreateProjects()"
-                        @click="createProject = true"
+                        @click="showCreateProjectModal = true"
                         :icon="PlusIcon"
                         >Create your First Project
                     </SecondaryButton>

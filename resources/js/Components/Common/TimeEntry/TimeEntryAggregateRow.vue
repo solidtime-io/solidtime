@@ -1,16 +1,10 @@
 <script setup lang="ts">
 import MainContainer from '@/Pages/MainContainer.vue';
 import TimeTrackerStartStop from '@/Components/Common/TimeTrackerStartStop.vue';
-import type { TimeEntry } from '@/utils/api';
-import { storeToRefs } from 'pinia';
+import type { Project, Task, TimeEntry } from '@/utils/api';
 import TimeEntryDescriptionInput from '@/Components/Common/TimeEntry/TimeEntryDescriptionInput.vue';
-import {
-    type TimeEntriesGroupedByType,
-    useTimeEntriesStore,
-} from '@/utils/useTimeEntries';
+import { type TimeEntriesGroupedByType } from '@/utils/useTimeEntries';
 import TimeEntryRowTagDropdown from '@/Components/Common/TimeEntry/TimeEntryRowTagDropdown.vue';
-import dayjs from 'dayjs';
-import { useCurrentTimeEntryStore } from '@/utils/useCurrentTimeEntry';
 import TimeEntryMoreOptionsDropdown from '@/Components/Common/TimeEntry/TimeEntryMoreOptionsDropdown.vue';
 import TimeTrackerProjectTaskDropdown from '@/Components/Common/TimeTracker/TimeTrackerProjectTaskDropdown.vue';
 import BillableToggleButton from '@/Components/Common/BillableToggleButton.vue';
@@ -22,80 +16,49 @@ import {
 import TimeEntryRow from '@/Components/Common/TimeEntry/TimeEntryRow.vue';
 import GroupedItemsCountButton from '@/Components/Common/GroupedItemsCountButton.vue';
 
-const currentTimeEntryStore = useCurrentTimeEntryStore();
-const { stopTimer } = currentTimeEntryStore;
-const { currentTimeEntry } = storeToRefs(currentTimeEntryStore);
-
 const props = defineProps<{
     timeEntry: TimeEntriesGroupedByType;
+    projects: Project[];
+    tasks: Task[];
 }>();
 
-const { updateTimeEntry, createTimeEntry, fetchTimeEntries } =
-    useTimeEntriesStore();
-
-async function onStartStopClick() {
-    if (props.timeEntry.start && !props.timeEntry.end) {
-        await updateTimeEntry({
-            ...props.timeEntry,
-            end: dayjs().utc().format(),
-        });
-    } else {
-        if (currentTimeEntry.value.id) {
-            await stopTimer();
-        }
-        await createTimeEntry({
-            ...props.timeEntry,
-            start: dayjs().utc().format(),
-            end: null,
-        });
-    }
-    useCurrentTimeEntryStore().fetchCurrentTimeEntry();
-    fetchTimeEntries();
-}
-
-function deleteTimeEntry() {
-    const timeEntries = props.timeEntry.timeEntries;
-    timeEntries.forEach((entry) => {
-        useTimeEntriesStore().deleteTimeEntry(entry.id);
-    });
-    fetchTimeEntries();
-}
+const emit = defineEmits<{
+    onStartStopClick: [timeEntry: TimeEntry];
+    updateTimeEntries: [timeEntries: TimeEntry[]];
+    deleteTimeEntries: [timeEntries: TimeEntry[]];
+}>();
 
 function updateTimeEntryDescription(description: string) {
     const timeEntries = props.timeEntry.timeEntries;
     timeEntries.forEach((entry) => {
-        updateTimeEntry({ ...entry, description });
         entry.description = description;
     });
+    emit('updateTimeEntries', timeEntries);
 }
 
 function updateTimeEntryTags(tags: string[]) {
     const timeEntries = props.timeEntry.timeEntries as TimeEntry[];
     timeEntries.forEach((entry) => {
-        updateTimeEntry({ ...entry, tags });
         entry.tags = tags;
     });
+    emit('updateTimeEntries', timeEntries);
 }
 
 function updateTimeEntryBillable(billable: boolean) {
     const timeEntries = props.timeEntry.timeEntries as TimeEntry[];
     timeEntries.forEach((entry) => {
-        updateTimeEntry({ ...entry, billable });
         entry.billable = billable;
     });
+    emit('updateTimeEntries', timeEntries);
 }
 
 function updateProjectAndTask(projectId: string, taskId: string) {
     const timeEntries = props.timeEntry.timeEntries as TimeEntry[];
     timeEntries.forEach((entry) => {
-        updateTimeEntry({
-            ...entry,
-            project_id: projectId,
-            task_id: taskId,
-        });
         entry.project_id = projectId;
         entry.task_id = taskId;
     });
+    emit('updateTimeEntries', timeEntries);
 }
 
 const expanded = ref(false);
@@ -124,6 +87,8 @@ const expanded = ref(false);
                             "></TimeEntryDescriptionInput>
                     </div>
                     <TimeTrackerProjectTaskDropdown
+                        :projects="projects"
+                        :tasks="tasks"
                         :showBadgeBorder="false"
                         @changed="updateProjectAndTask"
                         :project="timeEntry.project_id"
@@ -157,12 +122,12 @@ const expanded = ref(false);
                     </button>
 
                     <TimeTrackerStartStop
-                        @changed="onStartStopClick"
+                        @changed="emit('onStartStopClick', timeEntry)"
                         :active="!!(timeEntry.start && !timeEntry.end)"
                         class="opacity-20 hidden sm:flex group-hover:opacity-100"></TimeTrackerStartStop>
                     <TimeEntryMoreOptionsDropdown
                         @delete="
-                            deleteTimeEntry
+                            emit('deleteTimeEntries', timeEntry.timeEntries)
                         "></TimeEntryMoreOptionsDropdown>
                 </div>
             </div>
@@ -171,7 +136,14 @@ const expanded = ref(false);
             v-if="expanded"
             class="w-full border-t border-default-background-separator bg-black/15">
             <TimeEntryRow
+                :projects="projects"
+                :tasks="tasks"
                 indent
+                @updateTimeEntry="
+                    (timeEntry) => emit('updateTimeEntries', [timeEntry])
+                "
+                @onStartStopClick="emit('onStartStopClick', subEntry)"
+                @deleteTimeEntry="emit('deleteTimeEntries', [subEntry])"
                 :key="subEntry.id"
                 v-for="subEntry in timeEntry.timeEntries"
                 :time-entry="subEntry"></TimeEntryRow>

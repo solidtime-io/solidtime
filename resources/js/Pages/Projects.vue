@@ -12,17 +12,24 @@ import { canCreateProjects } from '@/utils/permissions';
 import TabBarItem from '@/Components/Common/TabBar/TabBarItem.vue';
 import TabBar from '@/Components/Common/TabBar/TabBar.vue';
 import { storeToRefs } from 'pinia';
+import { useClientsStore } from '@/utils/useClients';
+import type { CreateProjectBody } from '@/utils/api';
 
 onMounted(() => {
     useProjectsStore().fetchProjects();
 });
-
-const createProject = ref(false);
+const { clients } = storeToRefs(useClientsStore());
+const showCreateProjectModal = ref(false);
 
 const activeTab = ref<'active' | 'archived'>('active');
 
 function isActiveTab(tab: string) {
     return activeTab.value === tab;
+}
+
+async function createProject(project: CreateProjectBody, callback: () => void) {
+    await useProjectsStore().createProject(project);
+    callback();
 }
 
 const { projects } = storeToRefs(useProjectsStore());
@@ -59,11 +66,13 @@ const shownProjects = computed(() => {
             <SecondaryButton
                 v-if="canCreateProjects()"
                 :icon="PlusIcon"
-                @click="createProject = true"
+                @click="showCreateProjectModal = true"
                 >Create Project
             </SecondaryButton>
             <ProjectCreateModal
-                v-model:show="createProject"></ProjectCreateModal>
+                :clients="clients"
+                @submit="createProject"
+                v-model:show="showCreateProjectModal"></ProjectCreateModal>
         </MainContainer>
         <ProjectTable :projects="shownProjects"></ProjectTable>
     </AppLayout>

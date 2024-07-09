@@ -13,6 +13,13 @@ import InputLabel from '@/Components/InputLabel.vue';
 import TimePicker from '@/Components/Common/TimePicker.vue';
 import DatePicker from '@/Components/Common/DatePicker.vue';
 import { getDayJsInstance, getLocalizedDayJs } from '@/utils/time';
+import { storeToRefs } from 'pinia';
+import { useTasksStore } from '@/utils/useTasks';
+import { useProjectsStore } from '@/utils/useProjects';
+const projectStore = useProjectsStore();
+const { projects } = storeToRefs(projectStore);
+const taskStore = useTasksStore();
+const { tasks } = storeToRefs(taskStore);
 
 const { createTimeEntry } = useTimeEntriesStore();
 const show = defineModel('show', { default: false });
@@ -92,6 +99,8 @@ async function submit() {
                         <TimeTrackerProjectTaskDropdown
                             class="mt-1"
                             size="xlarge"
+                            :projects="projects"
+                            :tasks="tasks"
                             v-model:project="timeEntry.project_id"
                             v-model:task="
                                 timeEntry.task_id
