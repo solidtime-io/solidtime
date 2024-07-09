@@ -35,7 +35,7 @@ function isMemberSelected(id: string) {
     return model.value === id;
 }
 
-const { focused } = useFocus(searchInput, { initialValue: true });
+useFocus(searchInput, { initialValue: true });
 
 const filteredMembers = computed(() => {
     return members.value.filter((member) => {
@@ -142,49 +142,40 @@ const hasMemberSelected = computed(() => {
 });
 
 const showMembersDropdown = ref(true);
-
-function onUnfocus() {
-    // TODO this is a hack to prevent the dropdown from closing when clicking on the dropdown
-    setTimeout(() => {
-        if (!focused.value) {
-            showMembersDropdown.value = false;
-        }
-    }, 100);
-}
 </script>
 
 <template>
-    <div class="flex relative">
-        <div
-            ref="reference"
-            class="absolute h-full items-center px-3 w-full flex justify-between">
-            <UserIcon class="relative z-10 w-4 text-muted"></UserIcon>
-            <button
-                v-if="hasMemberSelected"
-                @click="model = ''"
-                class="focus:text-accent-200 focus:bg-card-background text-muted">
-                <XMarkIcon class="relative z-10 w-4"></XMarkIcon>
-            </button>
-        </div>
-        <TextInput
-            :value="currentValue"
-            :disabled="disabled"
-            @input="updateSearchValue"
-            data-testid="member_dropdown_search"
-            @keydown.enter.prevent="updateMember(highlightedItemId)"
-            @keydown.up.prevent="moveHighlightUp"
-            class="relative w-full pl-10"
-            @keydown.down.prevent="moveHighlightDown"
-            @focusin="showMembersDropdown = true"
-            @blur="onUnfocus"
-            placeholder="Search for a member..."
-            ref="searchInput" />
-    </div>
     <Dropdown
         align="bottom-start"
         width="300"
         v-model="showMembersDropdown"
         :closeOnContentClick="true">
+        <template #trigger>
+            <div class="flex relative">
+                <div
+                    ref="reference"
+                    class="absolute h-full items-center px-3 w-full flex justify-between">
+                    <UserIcon class="relative z-10 w-4 text-muted"></UserIcon>
+                    <button
+                        v-if="hasMemberSelected"
+                        @click="model = ''"
+                        class="focus:text-accent-200 focus:bg-card-background text-muted">
+                        <XMarkIcon class="relative z-10 w-4"></XMarkIcon>
+                    </button>
+                </div>
+                <TextInput
+                    :value="currentValue"
+                    :disabled="disabled"
+                    @input="updateSearchValue"
+                    data-testid="member_dropdown_search"
+                    @keydown.enter.prevent="updateMember(highlightedItemId)"
+                    @keydown.up.prevent="moveHighlightUp"
+                    class="relative w-full pl-10"
+                    @keydown.down.prevent="moveHighlightDown"
+                    placeholder="Search for a member..."
+                    ref="searchInput" />
+            </div>
+        </template>
         <template #content>
             <div
                 class="py-2 text-white px-3"
