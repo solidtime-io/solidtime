@@ -19,13 +19,50 @@ import { PlusIcon } from '@heroicons/vue/16/solid';
 import TimeEntryCreateModal from '@/Components/Common/TimeEntry/TimeEntryCreateModal.vue';
 import TimeEntryAggregateRow from '@/Components/Common/TimeEntry/TimeEntryAggregateRow.vue';
 import LoadingSpinner from '@/Components/LoadingSpinner.vue';
+import dayjs from 'dayjs';
+import { useCurrentTimeEntryStore } from '@/utils/useCurrentTimeEntry';
+import { useTasksStore } from '@/utils/useTasks';
+import { useProjectsStore } from '@/utils/useProjects';
 
 const timeEntriesStore = useTimeEntriesStore();
 const { timeEntries, allTimeEntriesLoaded } = storeToRefs(timeEntriesStore);
+const { updateTimeEntry, fetchTimeEntries, createTimeEntry } =
+    useTimeEntriesStore();
+
+function updateTimeEntries(timeEntries: TimeEntry[]) {
+    timeEntries.forEach((entry) => {
+        useTimeEntriesStore().updateTimeEntry(entry);
+    });
+    fetchTimeEntries();
+}
 
 const loading = ref(false);
 const loadMoreContainer = ref<HTMLDivElement | null>(null);
 const isLoadMoreVisible = useElementVisibility(loadMoreContainer);
+
+async function onStartStopClick(timeEntry: TimeEntry) {
+    if (timeEntry.start && !timeEntry.end) {
+        await updateTimeEntry({
+            ...timeEntry,
+            end: dayjs().utc().format(),
+        });
+    } else {
+        await createTimeEntry({
+            ...timeEntry,
+            start: dayjs().utc().format(),
+            end: null,
+        });
+    }
+    fetchTimeEntries();
+    useCurrentTimeEntryStore().fetchCurrentTimeEntry();
+}
+
+function deleteTimeEntries(timeEntries: TimeEntry[]) {
+    timeEntries.forEach((entry) => {
+        useTimeEntriesStore().deleteTimeEntry(entry.id);
+    });
+    fetchTimeEntries();
+}
 
 watch(isLoadMoreVisible, async (isVisible) => {
     if (
@@ -45,6 +82,10 @@ onMounted(async () => {
 const groupedTimeEntries = computed(() => {
     const groupedEntriesByDay: Record<string, TimeEntry[]> = {};
     for (const entry of timeEntries.value) {
+        // skip current time entry
+        if (entry.end === null) {
+            continue;
+        }
         const oldEntries =
             groupedEntriesByDay[getLocalizedDateFromTimestamp(entry.start)];
         groupedEntriesByDay[getLocalizedDateFromTimestamp(entry.start)] = [
@@ -104,6 +145,10 @@ const groupedTimeEntries = computed(() => {
     return groupedEntriesByDayAndType;
 });
 const showManualTimeEntryModal = ref(false);
+const projectStore = useProjectsStore();
+const { projects } = storeToRefs(projectStore);
+const taskStore = useTasksStore();
+const { tasks } = storeToRefs(taskStore);
 </script>
 
 <template>
@@ -131,11 +176,23 @@ const showManualTimeEntryModal = ref(false);
             <TimeEntryRowHeading :date="key"></TimeEntryRowHeading>
             <template v-for="entry in value" :key="entry.id">
                 <TimeEntryAggregateRow
+                    :projects="projects"
+                    :tasks="tasks"
+                    @onStartStopClick="onStartStopClick"
+                    @updateTimeEntries="updateTimeEntries"
+                    @deleteTimeEntries="deleteTimeEntries"
                     v-if="
                         'timeEntries' in entry && entry.timeEntries.length > 1
                     "
                     :time-entry="entry"></TimeEntryAggregateRow>
-                <TimeEntryRow v-else :time-entry="entry"></TimeEntryRow>
+                <TimeEntryRow
+                    :projects="projects"
+                    :tasks="tasks"
+                    @updateTimeEntry="updateTimeEntry"
+                    @onStartStopClick="onStartStopClick(entry)"
+                    @deleteTimeEntry="deleteTimeEntries([entry])"
+                    v-else
+                    :time-entry="entry"></TimeEntryRow>
             </template>
         </div>
         <div

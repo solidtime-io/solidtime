@@ -2,20 +2,15 @@
 import { ChevronRightIcon } from '@heroicons/vue/16/solid';
 import Dropdown from '@/Components/Dropdown.vue';
 import { type Component, computed, nextTick, ref, watch } from 'vue';
-import { storeToRefs } from 'pinia';
-import { useProjectsStore } from '@/utils/useProjects';
-import { useTasksStore } from '@/utils/useTasks';
 import ProjectDropdownItem from '@/Components/Common/Project/ProjectDropdownItem.vue';
-import type { Project, Task } from '@/utils/api';
+import type { CreateProjectBody, Project, Task } from '@/utils/api';
 import ProjectBadge from '@/Components/Common/Project/ProjectBadge.vue';
 import Badge from '@/Components/Common/Badge.vue';
 import { PlusIcon, PlusCircleIcon } from '@heroicons/vue/16/solid';
 import ProjectCreateModal from '@/Components/Common/Project/ProjectCreateModal.vue';
-
-const projectStore = useProjectsStore();
-const { projects } = storeToRefs(projectStore);
-const taskStore = useTasksStore();
-const { tasks } = storeToRefs(taskStore);
+import { useClientsStore } from '@/utils/useClients';
+import { storeToRefs } from 'pinia';
+import { useProjectsStore } from '@/utils/useProjects';
 
 const task = defineModel<string | null>('task', {
     default: null,
@@ -45,10 +40,12 @@ type ProjectWithTasks = {
     tasks: Task[];
 };
 
-withDefaults(
+const props = withDefaults(
     defineProps<{
         showBadgeBorder: boolean;
         size: 'base' | 'large' | 'xlarge';
+        projects: Project[];
+        tasks: Task[];
     }>(),
     {
         showBadgeBorder: true,
@@ -57,14 +54,14 @@ withDefaults(
 );
 
 const filteredProjects = computed(() => {
-    return projects.value.reduce(
+    return props.projects.reduce(
         (filtered: ProjectWithTasks[], filterProject) => {
             const projectNameIncludesSearchTerm = filterProject.name
                 .toLowerCase()
                 .includes(searchValue.value?.toLowerCase()?.trim() || '');
 
             // check if one of the project tasks
-            const projectTasks = tasks.value.filter((task) => {
+            const projectTasks = props.tasks.filter((task) => {
                 return task.project_id === filterProject.id;
             });
 
@@ -277,13 +274,13 @@ function moveHighlightDown() {
 const highlightedItemId = ref<string | null>(null);
 
 const currentProject = computed(() => {
-    return projects.value.find(
+    return props.projects.find(
         (iteratingProject) => iteratingProject.id === project.value
     );
 });
 
 const currentTask = computed(() => {
-    return tasks.value.find(
+    return props.tasks.find(
         (iteratingTasks) => iteratingTasks.id === task.value
     );
 });
@@ -299,7 +296,7 @@ const selectedProjectColor = computed(() => {
 function selectTask(taskId: string) {
     task.value = taskId;
     project.value =
-        tasks.value.find((task) => task.id === taskId)?.project_id || null;
+        props.tasks.find((task) => task.id === taskId)?.project_id || null;
     open.value = false;
     emit('changed', project.value, task.value);
 }
@@ -312,6 +309,14 @@ function selectProject(projectId: string) {
 }
 
 const showCreateProject = ref(false);
+
+const clientsStore = useClientsStore();
+const { clients } = storeToRefs(clientsStore);
+
+async function createProject(project: CreateProjectBody, callback: () => void) {
+    await useProjectsStore().createProject(project);
+    callback();
+}
 </script>
 
 <template>
@@ -412,7 +417,10 @@ const showCreateProject = ref(false);
             </div>
         </template>
     </Dropdown>
-    <ProjectCreateModal v-model:show="showCreateProject"></ProjectCreateModal>
+    <ProjectCreateModal
+        :clients="clients"
+        @submit="createProject"
+        v-model:show="showCreateProject"></ProjectCreateModal>
 </template>
 
 <style scoped></style>

@@ -19,6 +19,7 @@ import { switchOrganization } from '@/utils/useOrganization';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import TimeTrackerRangeSelector from '@/Components/Common/TimeTracker/TimeTrackerRangeSelector.vue';
 import { useProjectsStore } from '@/utils/useProjects';
+import { useTasksStore } from '@/utils/useTasks';
 
 const page = usePage<{
     auth: {
@@ -33,6 +34,11 @@ const currentTimeEntryStore = useCurrentTimeEntryStore();
 const { currentTimeEntry, isActive, now } = storeToRefs(currentTimeEntryStore);
 const { startLiveTimer, stopLiveTimer, setActiveState } = currentTimeEntryStore;
 const currentTimeEntryDescriptionInput = ref<HTMLInputElement | null>(null);
+
+const projectStore = useProjectsStore();
+const { projects } = storeToRefs(projectStore);
+const taskStore = useTasksStore();
+const { tasks } = storeToRefs(taskStore);
 
 watch(isActive, () => {
     if (isActive.value) {
@@ -133,6 +139,8 @@ function switchToTimeEntryOrganization() {
                 <div class="flex items-center justify-between pl-2">
                     <div class="flex items-center w-[130px] sm:w-auto">
                         <TimeTrackerProjectTaskDropdown
+                            :projects="projects"
+                            :tasks="tasks"
                             @changed="updateProject"
                             v-model:project="currentTimeEntry.project_id"
                             v-model:task="

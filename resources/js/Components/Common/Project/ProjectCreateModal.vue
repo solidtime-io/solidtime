@@ -6,21 +6,25 @@ import { computed, ref } from 'vue';
 import type { CreateProjectBody } from '@/utils/api';
 import { getRandomColor } from '@/utils/color';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
-import { useProjectsStore } from '@/utils/useProjects';
 import { useFocus } from '@vueuse/core';
 import ClientDropdown from '@/Components/Common/Client/ClientDropdown.vue';
 import Badge from '@/Components/Common/Badge.vue';
-import { useClientsStore } from '@/utils/useClients';
-import { storeToRefs } from 'pinia';
 import ProjectColorSelector from '@/Components/Common/Project/ProjectColorSelector.vue';
 import { UserCircleIcon } from '@heroicons/vue/20/solid';
 import InputLabel from '@/Components/InputLabel.vue';
 import ProjectEditBillableSection from '@/Components/Common/Project/ProjectEditBillableSection.vue';
+import type { Client } from '@/utils/api';
 
-const { createProject } = useProjectsStore();
-const { clients } = storeToRefs(useClientsStore());
 const show = defineModel('show', { default: false });
 const saving = ref(false);
+
+const props = defineProps<{
+    clients: Client[];
+}>();
+
+const emit = defineEmits<{
+    submit: [project: CreateProjectBody, callback: () => void];
+}>();
 
 const project = ref<CreateProjectBody>({
     name: '',
@@ -31,15 +35,16 @@ const project = ref<CreateProjectBody>({
 });
 
 async function submit() {
-    await createProject(project.value);
-    show.value = false;
-    project.value = {
-        name: '',
-        color: getRandomColor(),
-        client_id: null,
-        billable_rate: null,
-        is_billable: false,
-    };
+    emit('submit', project.value, () => {
+        show.value = false;
+        project.value = {
+            name: '',
+            color: getRandomColor(),
+            client_id: null,
+            billable_rate: null,
+            is_billable: false,
+        };
+    });
 }
 
 const projectNameInput = ref<HTMLInputElement | null>(null);
@@ -48,7 +53,7 @@ useFocus(projectNameInput, { initialValue: true });
 
 const currentClientName = computed(() => {
     if (project.value.client_id) {
-        return clients.value.find(
+        return props.clients.find(
             (client) => client.id === project.value.client_id
         )?.name;
     }
