@@ -1,28 +1,22 @@
 <script setup lang="ts">
 import AppLayout from '@/Layouts/AppLayout.vue';
 import TimeTracker from '@/Components/TimeTracker.vue';
-import { computed, onMounted, ref, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import MainContainer from '@/Pages/MainContainer.vue';
-import {
-    type TimeEntriesGroupedByType,
-    useTimeEntriesStore,
-} from '@/utils/useTimeEntries';
+import { useTimeEntriesStore } from '@/utils/useTimeEntries';
 import { storeToRefs } from 'pinia';
 import type { TimeEntry } from '@/utils/api';
-import TimeEntryRowHeading from '@/Components/Common/TimeEntry/TimeEntryRowHeading.vue';
-import TimeEntryRow from '@/Components/Common/TimeEntry/TimeEntryRow.vue';
 import { useElementVisibility } from '@vueuse/core';
 import { ClockIcon } from '@heroicons/vue/20/solid';
-import { getDayJsInstance, getLocalizedDateFromTimestamp } from '@/utils/time';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import { PlusIcon } from '@heroicons/vue/16/solid';
 import TimeEntryCreateModal from '@/Components/Common/TimeEntry/TimeEntryCreateModal.vue';
-import TimeEntryAggregateRow from '@/Components/Common/TimeEntry/TimeEntryAggregateRow.vue';
 import LoadingSpinner from '@/Components/LoadingSpinner.vue';
 import dayjs from 'dayjs';
 import { useCurrentTimeEntryStore } from '@/utils/useCurrentTimeEntry';
 import { useTasksStore } from '@/utils/useTasks';
 import { useProjectsStore } from '@/utils/useProjects';
+import TimeEntryGroupedTable from '@/Components/Common/TimeEntry/TimeEntryGroupedTable.vue';
 
 const timeEntriesStore = useTimeEntriesStore();
 const { timeEntries, allTimeEntriesLoaded } = storeToRefs(timeEntriesStore);
@@ -79,71 +73,6 @@ onMounted(async () => {
     await timeEntriesStore.fetchTimeEntries();
 });
 
-const groupedTimeEntries = computed(() => {
-    const groupedEntriesByDay: Record<string, TimeEntry[]> = {};
-    for (const entry of timeEntries.value) {
-        // skip current time entry
-        if (entry.end === null) {
-            continue;
-        }
-        const oldEntries =
-            groupedEntriesByDay[getLocalizedDateFromTimestamp(entry.start)];
-        groupedEntriesByDay[getLocalizedDateFromTimestamp(entry.start)] = [
-            ...(oldEntries ?? []),
-            entry,
-        ];
-    }
-    const groupedEntriesByDayAndType: Record<
-        string,
-        TimeEntriesGroupedByType[]
-    > = {};
-    for (const dailyEntriesKey in groupedEntriesByDay) {
-        const dailyEntries = groupedEntriesByDay[dailyEntriesKey];
-        const newDailyEntries: TimeEntriesGroupedByType[] = [];
-
-        for (const entry of dailyEntries) {
-            // check if same entry already exists
-            const oldEntriesIndex = newDailyEntries.findIndex(
-                (e) =>
-                    e.project_id === entry.project_id &&
-                    e.task_id === entry.task_id &&
-                    e.billable === entry.billable &&
-                    e.description === entry.description
-            );
-            if (oldEntriesIndex !== -1 && newDailyEntries[oldEntriesIndex]) {
-                newDailyEntries[oldEntriesIndex].timeEntries.push(entry);
-
-                // Add up durations for time entries of the same type
-                newDailyEntries[oldEntriesIndex].duration =
-                    (newDailyEntries[oldEntriesIndex].duration ?? 0) +
-                    (entry?.duration ?? 0);
-
-                // adapt start end times so they show the earliest start and latest end time
-                if (
-                    getDayJsInstance()(entry.start).isBefore(
-                        getDayJsInstance()(
-                            newDailyEntries[oldEntriesIndex].start
-                        )
-                    )
-                ) {
-                    newDailyEntries[oldEntriesIndex].start = entry.start;
-                }
-                if (
-                    getDayJsInstance()(entry.end).isAfter(
-                        getDayJsInstance()(newDailyEntries[oldEntriesIndex].end)
-                    )
-                ) {
-                    newDailyEntries[oldEntriesIndex].end = entry.end;
-                }
-            } else {
-                newDailyEntries.push({ ...entry, timeEntries: [entry] });
-            }
-        }
-
-        groupedEntriesByDayAndType[dailyEntriesKey] = newDailyEntries;
-    }
-    return groupedEntriesByDayAndType;
-});
 const showManualTimeEntryModal = ref(false);
 const projectStore = useProjectsStore();
 const { projects } = storeToRefs(projectStore);
@@ -172,32 +101,15 @@ const { tasks } = storeToRefs(taskStore);
                 </div>
             </div>
         </MainContainer>
-        <div v-for="(value, key) in groupedTimeEntries" :key="key">
-            <TimeEntryRowHeading :date="key"></TimeEntryRowHeading>
-            <template v-for="entry in value" :key="entry.id">
-                <TimeEntryAggregateRow
-                    :projects="projects"
-                    :tasks="tasks"
-                    @onStartStopClick="onStartStopClick"
-                    @updateTimeEntries="updateTimeEntries"
-                    @deleteTimeEntries="deleteTimeEntries"
-                    v-if="
-                        'timeEntries' in entry && entry.timeEntries.length > 1
-                    "
-                    :time-entry="entry"></TimeEntryAggregateRow>
-                <TimeEntryRow
-                    :projects="projects"
-                    :tasks="tasks"
-                    @updateTimeEntry="updateTimeEntry"
-                    @onStartStopClick="onStartStopClick(entry)"
-                    @deleteTimeEntry="deleteTimeEntries([entry])"
-                    v-else
-                    :time-entry="entry"></TimeEntryRow>
-            </template>
-        </div>
-        <div
-            v-if="Object.keys(groupedTimeEntries).length === 0"
-            class="text-center pt-12">
+        <TimeEntryGroupedTable
+            @updateTimeEntry="updateTimeEntry"
+            @updateTimeEntries="updateTimeEntries"
+            @deleteTimeEntries="deleteTimeEntries"
+            @onStartStopClick="onStartStopClick"
+            :projects="projects"
+            :tasks="tasks"
+            :timeEntries="timeEntries"></TimeEntryGroupedTable>
+        <div v-if="timeEntries.length === 0" class="text-center pt-12">
             <ClockIcon class="w-8 text-icon-default inline pb-2"></ClockIcon>
             <h3 class="text-white font-semibold">No time entries found</h3>
             <p class="pb-5">Create your first time entry now!</p>
