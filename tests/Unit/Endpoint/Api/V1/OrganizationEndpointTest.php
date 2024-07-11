@@ -131,7 +131,7 @@ class OrganizationEndpointTest extends ApiEndpointTestAbstract
         ]);
         $billableRate = 111;
         $organizationFake = Organization::factory()->billableRate($billableRate)->make();
-        $this->mock(BillableRateService::class, function (MockInterface $mock) use ($data, $billableRate) {
+        $this->mock(BillableRateService::class, function (MockInterface $mock) use ($data, $billableRate): void {
             $mock->shouldReceive('updateTimeEntriesBillableRateForOrganization')
                 ->once()
                 ->withArgs(fn (Organization $organization) => $organization->is($data->organization) && $organization->billable_rate === $billableRate);

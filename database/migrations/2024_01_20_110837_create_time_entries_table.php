@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('time_entries', function (Blueprint $table) {
+        Schema::create('time_entries', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->string('description', 500);
             $table->dateTime('start');

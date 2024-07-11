@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('time_entries', function (Blueprint $table) {
+        Schema::table('time_entries', function (Blueprint $table): void {
             $table->boolean('is_imported')->default(false);
         });
     }
@@ -23,7 +23,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('time_entries', function (Blueprint $table) {
+        Schema::table('time_entries', function (Blueprint $table): void {
             $table->dropColumn('is_imported');
         });
     }

@@ -35,7 +35,7 @@ class DeletionService
     public function deleteOrganization(Organization $organization, bool $inTransaction = true, ?User $ignoreUser = null): void
     {
         if ($inTransaction) {
-            DB::transaction(function () use ($organization) {
+            DB::transaction(function () use ($organization): void {
                 $this->deleteOrganization($organization, false);
             });
 
@@ -117,7 +117,7 @@ class DeletionService
     public function deleteUser(User $user, bool $inTransaction = true): void
     {
         if ($inTransaction) {
-            DB::transaction(function () use ($user) {
+            DB::transaction(function () use ($user): void {
                 $this->deleteUser($user, false);
             });
 

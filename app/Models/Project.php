@@ -24,6 +24,7 @@ use Illuminate\Support\Carbon;
  * @property int|null $billable_rate
  * @property bool $is_billable
  * @property-read bool $is_archived
+ * @property int|null $estimated_time
  * @property Carbon|null $archived_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -48,6 +49,7 @@ class Project extends Model
     protected $casts = [
         'name' => 'string',
         'color' => 'string',
+        'estimated_time' => 'integer',
     ];
 
     /**

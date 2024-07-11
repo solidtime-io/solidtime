@@ -38,6 +38,12 @@ class TaskUpdateRequest extends FormRequest
             'is_done' => [
                 'boolean',
             ],
+            // Estimated time in seconds
+            'estimated_time' => [
+                'nullable',
+                'integer',
+                'min:0',
+            ],
         ];
     }
 
@@ -46,5 +52,12 @@ class TaskUpdateRequest extends FormRequest
         assert($this->has('is_done'));
 
         return $this->boolean('is_done');
+    }
+
+    public function getEstimatedTime(): ?int
+    {
+        $input = $this->input('estimated_time');
+
+        return $input !== null && $input !== 0 ? (int) $this->input('estimated_time') : null;
     }
 }

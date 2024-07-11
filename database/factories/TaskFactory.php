@@ -26,6 +26,7 @@ class TaskFactory extends Factory
             'project_id' => Project::factory(),
             'organization_id' => Organization::factory(),
             'done_at' => null,
+            'estimated_time' => null,
         ];
     }
 
