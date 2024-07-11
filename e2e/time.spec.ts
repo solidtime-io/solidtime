@@ -307,9 +307,11 @@ test('test that deleting a time entry from the overview works', async ({
     const timeEntryCount = await timeEntryRows.count();
 
     const newTimeEntry = timeEntryRows.first();
-    const actionsDropdown = newTimeEntry.getByTestId('time_entry_actions');
+    const actionsDropdown = newTimeEntry
+        .getByRole('button', { name: 'Actions for the time entry' })
+        .first();
     await actionsDropdown.click();
-    const deleteButton = page.getByTestId('time_entry_delete');
+    const deleteButton = page.getByText('Delete');
     await deleteButton.click();
     await expect(timeEntryRows).toHaveCount(timeEntryCount - 1);
 });
