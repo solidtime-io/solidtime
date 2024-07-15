@@ -280,12 +280,11 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
     {
         $data = $this->createUserWithPermission([
             'members:invite-placeholder',
-            'invitations:create',
         ]);
         $user = User::factory()->create([
             'is_placeholder' => true,
         ]);
-        $member = Member::factory()->forUser($user)->forOrganization($data->organization)->create();
+        $member = Member::factory()->forUser($user)->forOrganization($data->organization)->role(Role::Placeholder)->create();
         Passport::actingAs($data->user);
 
         // Act

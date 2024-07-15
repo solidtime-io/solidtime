@@ -14,6 +14,8 @@ class DeleteUser implements DeletesUsers
 {
     /**
      * Delete the given user.
+     *
+     * @throws ValidationException
      */
     public function delete(User $user): void
     {

@@ -6,9 +6,11 @@ namespace Tests\Unit\Endpoint\Api\V1;
 
 use App\Enums\Role;
 use App\Http\Controllers\Api\V1\InvitationController;
+use App\Mail\OrganizationInvitationMail;
+use App\Models\Member;
 use App\Models\OrganizationInvitation;
+use App\Models\User;
 use Illuminate\Support\Facades\Mail;
-use Laravel\Jetstream\Mail\TeamInvitation;
 use Laravel\Passport\Passport;
 use PHPUnit\Framework\Attributes\UsesClass;
 
@@ -107,6 +109,74 @@ class InvitationEndpointTest extends ApiEndpointTestAbstract
         $response->assertJsonPath('message', 'The selected role is invalid.');
     }
 
+    public function test_store_fails_if_user_invites_user_who_is_already_member_of_organization(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'invitations:create',
+        ]);
+        Passport::actingAs($data->user);
+        $member = Member::factory()->forOrganization($data->organization)->create();
+
+        // Act
+        $response = $this->postJson(route('api.v1.invitations.store', $data->organization->getKey()), [
+            'email' => $member->user->email,
+            'role' => Role::Employee->value,
+        ]);
+
+        // Assert
+        $response->assertStatus(400);
+        $response->assertJsonPath('message', 'User is already a member of the organization');
+    }
+
+    public function test_store_fails_if_user_invites_user_who_is_already_invited_to_organization(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'invitations:create',
+        ]);
+        Passport::actingAs($data->user);
+        $invitation = OrganizationInvitation::factory()->forOrganization($data->organization)->create();
+
+        // Act
+        $response = $this->postJson(route('api.v1.invitations.store', $data->organization->getKey()), [
+            'email' => $invitation->email,
+            'role' => Role::Employee->value,
+        ]);
+
+        // Assert
+        $response->assertInvalid([
+            'email' => 'The email has already been invited to the organization. Please wait for the user to accept the invitation or resend the invitation email.',
+        ]);
+        $response->assertStatus(422);
+    }
+
+    public function test_store_works_if_user_invites_user_who_is_also_a_placeholder(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'invitations:create',
+        ]);
+        $user = User::factory()->placeholder()->create();
+        $member = Member::factory()->forOrganization($data->organization)->forUser($user)->role(Role::Placeholder)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.invitations.store', $data->organization->getKey()), [
+            'email' => $user->email,
+            'role' => Role::Employee->value,
+        ]);
+
+        // Assert
+        $response->assertStatus(204);
+        $invitation = OrganizationInvitation::first();
+        $this->assertNotNull($invitation);
+        $this->assertEquals($user->email, $invitation->email);
+        $this->assertEquals(Role::Employee->value, $invitation->role);
+        Mail::assertQueued(fn (OrganizationInvitationMail $mail): bool => $mail->invitation->is($invitation));
+        Mail::assertNothingSent();
+    }
+
     public function test_store_invites_user_to_organization(): void
     {
         // Arrange
@@ -127,6 +197,8 @@ class InvitationEndpointTest extends ApiEndpointTestAbstract
         $this->assertNotNull($invitation);
         $this->assertEquals('test@asdf.at', $invitation->email);
         $this->assertEquals(Role::Employee->value, $invitation->role);
+        Mail::assertQueued(fn (OrganizationInvitationMail $mail): bool => $mail->invitation->is($invitation));
+        Mail::assertNothingSent();
     }
 
     public function test_resend_fails_if_user_has_no_permission_to_resend_the_invitation(): void
@@ -182,9 +254,9 @@ class InvitationEndpointTest extends ApiEndpointTestAbstract
         ]));
 
         // Assert
-        Mail::assertSent(fn (TeamInvitation $mail): bool => $mail->invitation->is($invitation));
-        Mail::assertNothingQueued();
         $response->assertStatus(204);
+        Mail::assertQueued(fn (OrganizationInvitationMail $mail): bool => $mail->invitation->is($invitation));
+        Mail::assertNothingSent();
     }
 
     public function test_delete_fails_if_user_has_no_permission_to_remove_invitations(): void

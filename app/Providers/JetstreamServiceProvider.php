@@ -23,6 +23,7 @@ use App\Service\TimezoneService;
 use Brick\Money\Currency;
 use Brick\Money\ISOCurrencyProvider;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Inertia\Inertia;
 use Laravel\Fortify\Fortify;
@@ -65,6 +66,9 @@ class JetstreamServiceProvider extends ServiceProvider
                 'privacy_policy_url' => config('auth.privacy_policy_url'),
                 'newsletter_consent' => config('auth.newsletter_consent'),
             ]);
+        });
+        Gate::define('removeTeamMember', function (User $user, Organization $team) {
+            return false;
         });
     }
 

@@ -7,7 +7,6 @@ namespace App\Actions\Jetstream;
 use App\Enums\Role;
 use App\Models\Organization;
 use App\Models\User;
-use App\Service\UserService;
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Builder;
@@ -43,10 +42,6 @@ class AddOrganizationMember implements AddsTeamMembers
             $organization->users()->attach(
                 $newOrganizationMember, ['role' => $role]
             );
-
-            if ($role === Role::Owner->value) {
-                app(UserService::class)->changeOwnership($organization, $newOrganizationMember);
-            }
         });
 
         TeamMemberAdded::dispatch($organization, $newOrganizationMember);
@@ -84,7 +79,6 @@ class AddOrganizationMember implements AddsTeamMembers
                 'required',
                 'string',
                 Rule::in([
-                    Role::Owner->value,
                     Role::Admin->value,
                     Role::Manager->value,
                     Role::Employee->value,
