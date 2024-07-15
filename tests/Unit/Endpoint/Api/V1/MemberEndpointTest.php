@@ -91,20 +91,21 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
         $data = $this->createUserWithPermission([
             'members:update',
         ]);
-        $member = Member::factory()->forOrganization($data->organization)->role(Role::Admin)->create();
+        $member = Member::factory()->forOrganization($data->organization)->withBillableRate()->role(Role::Admin)->create();
         $this->assertBillableRateServiceIsUnused();
         Passport::actingAs($data->user);
 
         // Act
         $response = $this->putJson(route('api.v1.members.update', [$data->organization->id, $member]), [
-            'billable_rate' => 10001,
+            'billable_rate' => $member->billable_rate,
             'role' => Role::Employee->value,
         ]);
 
         // Assert
         $response->assertStatus(200);
+        $oldBillableRate = $member->billable_rate;
         $member->refresh();
-        $this->assertSame(10001, $member->billable_rate);
+        $this->assertSame($oldBillableRate, $member->billable_rate);
         $this->assertSame(Role::Employee->value, $member->role);
     }
 
@@ -124,7 +125,6 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
         // Act
         $response = $this->putJson(route('api.v1.members.update', [$data->organization->getKey(), $data->member]), [
             'billable_rate' => 10001,
-            'billable_rate_update_time_entries' => true,
         ]);
 
         // Assert

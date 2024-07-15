@@ -38,10 +38,11 @@ class OrganizationController extends Controller
         $this->checkPermission($organization, 'organizations:update');
 
         $organization->name = $request->input('name');
+        $oldBillableRate = $organization->billable_rate;
         $organization->billable_rate = $request->getBillableRate();
         $organization->save();
 
-        if ($request->getBillableRateUpdateTimeEntries()) {
+        if ($oldBillableRate !== $request->getBillableRate()) {
             $billableRateService->updateTimeEntriesBillableRateForOrganization($organization);
         }
 
