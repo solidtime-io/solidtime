@@ -906,6 +906,36 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         ]);
     }
 
+    public function test_store_endpoints_sets_billable_rate(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:create:own',
+        ]);
+        $timeEntryFake = TimeEntry::factory()->withTask($data->organization)->forOrganization($data->organization)->make();
+        $project = Project::factory()->forOrganization($data->organization)->billable()->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.time-entries.store', [$data->organization->getKey()]), [
+            'billable' => true,
+            'start' => $timeEntryFake->start->toIso8601ZuluString(),
+            'end' => $timeEntryFake->end->toIso8601ZuluString(),
+            'member_id' => $data->member->getKey(),
+            'project_id' => $project->getKey(),
+        ]);
+
+        // Assert
+        $response->assertStatus(201);
+        $this->assertDatabaseHas(TimeEntry::class, [
+            'id' => $response->json('data.id'),
+            'member_id' => $data->member->getKey(),
+            'task_id' => null,
+            'project_id' => $project->getKey(),
+            'billable_rate' => $project->billable_rate,
+        ]);
+    }
+
     public function test_store_endpoint_creates_new_time_entry_with_minimal_fields(): void
     {
         // Arrange
@@ -1177,6 +1207,37 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
             'id' => $timeEntry->getKey(),
             'member_id' => $data->member->getKey(),
             'task_id' => $timeEntryFake->task_id,
+        ]);
+    }
+
+    public function test_update_endpoints_sets_billable_rate(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:update:own',
+        ]);
+        $timeEntry = TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)->create();
+        $timeEntryFake = TimeEntry::factory()->withTags($data->organization)->forOrganization($data->organization)->make();
+        $project = Project::factory()->forOrganization($data->organization)->billable()->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.time-entries.update', [$data->organization->getKey(), $timeEntry->getKey()]), [
+            'billable' => true,
+            'start' => $timeEntryFake->start->toIso8601ZuluString(),
+            'end' => $timeEntryFake->end->toIso8601ZuluString(),
+            'member_id' => $data->member->getKey(),
+            'project_id' => $project->getKey(),
+        ]);
+
+        // Assert
+        $response->assertStatus(200);
+        $this->assertDatabaseHas(TimeEntry::class, [
+            'id' => $timeEntry->getKey(),
+            'member_id' => $data->member->getKey(),
+            'task_id' => null,
+            'project_id' => $project->getKey(),
+            'billable_rate' => $project->billable_rate,
         ]);
     }
 
