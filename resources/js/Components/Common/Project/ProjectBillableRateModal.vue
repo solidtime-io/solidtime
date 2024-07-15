@@ -11,13 +11,13 @@ defineProps<{
 }>();
 
 defineEmits<{
-    submit: [billable_rate_update_time_entries: boolean];
+    submit: [];
 }>();
 </script>
 
 <template>
     <BillableRateModal
-        @submit="(...args) => $emit('submit', ...args)"
+        @submit="$emit('submit')"
         v-model:show="show"
         v-model:saving="saving"
         title="Update Project Billable Rate">

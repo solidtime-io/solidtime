@@ -27,9 +27,7 @@ const memberBody = ref<UpdateMemberBody>({
     billable_rate: props.member.billable_rate,
 });
 
-async function submitBillableRate(billableRateUpdateTimeEntries: boolean) {
-    memberBody.value.billable_rate_update_time_entries =
-        billableRateUpdateTimeEntries;
+async function submitBillableRate() {
     if (memberBody.value.role === 'owner' && props.member.role !== 'owner') {
         show.value = false;
         showOwnershipTransferConfirmModal.value = true;
@@ -59,7 +57,7 @@ function saveWithChecks() {
         show.value = false;
         showOwnershipTransferConfirmModal.value = true;
     } else {
-        submitBillableRate(false);
+        submitBillableRate();
     }
 }
 

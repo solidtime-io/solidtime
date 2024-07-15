@@ -8,7 +8,7 @@ const show = defineModel('show', { default: false });
 const saving = defineModel('saving', { default: false });
 
 const emit = defineEmits<{
-    submit: [billable_rate_update_time_entries: boolean];
+    submit: [];
 }>();
 
 defineProps<{
@@ -31,14 +31,8 @@ defineProps<{
                         <PrimaryButton
                             :class="{ 'opacity-25': saving }"
                             :disabled="saving"
-                            @click="emit('submit', true)">
+                            @click="emit('submit')">
                             Yes, update existing time entries
-                        </PrimaryButton>
-                        <PrimaryButton
-                            :class="{ 'opacity-25': saving }"
-                            :disabled="saving"
-                            @click="emit('submit', false)">
-                            No, only for new time entries
                         </PrimaryButton>
                     </div>
                     <p class="text-center pt-3 pb-1">

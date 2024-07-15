@@ -86,56 +86,6 @@ test('test that archiving and unarchiving projects works', async ({ page }) => {
     ]);
 });
 
-test('test that updating billable rate works', async ({ page }) => {
-    const newProjectName =
-        'New Project ' + Math.floor(1 + Math.random() * 10000);
-    const newBillableRate = Math.round(Math.random() * 10000);
-    await goToProjectsOverview(page);
-    await page.getByRole('button', { name: 'Create Project' }).click();
-    await page.getByLabel('Project Name').fill(newProjectName);
-
-    await page.getByRole('button', { name: 'Create Project' }).nth(1).click();
-    await expect(page.getByText(newProjectName)).toBeVisible();
-
-    await page.getByRole('row').first().getByRole('button').click();
-    await page.getByRole('button').getByText('Edit').first().click(),
-        await page.getByText('Non-Billable').click();
-    await page.getByText('Custom Rate').click();
-    await page
-        .getByPlaceholder('Billable Rate')
-        .fill(newBillableRate.toString());
-    await page.getByRole('button', { name: 'Update Project' }).click();
-
-    await Promise.all([
-        page
-            .getByRole('button', { name: 'No, only for new time entries' })
-            .click(),
-        page.waitForRequest(
-            async (request) =>
-                request.url().includes('/projects/') &&
-                request.method() === 'PUT' &&
-                request.postDataJSON().billable_rate ===
-                    newBillableRate * 100 &&
-                request.postDataJSON().billable_rate_update_time_entries ===
-                    false
-        ),
-        page.waitForResponse(
-            async (response) =>
-                response.url().includes('/projects/') &&
-                response.request().method() === 'PUT' &&
-                response.status() === 200 &&
-                (await response.json()).data.billable_rate ===
-                    newBillableRate * 100
-        ),
-    ]);
-    await expect(
-        page
-            .getByRole('row')
-            .first()
-            .getByText(formatCents(newBillableRate * 100))
-    ).toBeVisible();
-});
-
 test('test that updating billable rate works with existing time entries', async ({
     page,
 }) => {
@@ -166,10 +116,7 @@ test('test that updating billable rate works with existing time entries', async 
             async (request) =>
                 request.url().includes('/projects/') &&
                 request.method() === 'PUT' &&
-                request.postDataJSON().billable_rate ===
-                    newBillableRate * 100 &&
-                request.postDataJSON().billable_rate_update_time_entries ===
-                    true
+                request.postDataJSON().billable_rate === newBillableRate * 100
         ),
         page.waitForResponse(
             async (response) =>
