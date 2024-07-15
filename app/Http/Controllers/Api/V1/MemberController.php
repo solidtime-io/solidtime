@@ -71,8 +71,10 @@ class MemberController extends Controller
     {
         $this->checkPermission($organization, 'members:update', $member);
 
-        if ($request->has('billable_rate')) {
+        if ($request->has('billable_rate') && $member->billable_rate !== $request->getBillableRate()) {
             $member->billable_rate = $request->getBillableRate();
+
+            $billableRateService->updateTimeEntriesBillableRateForMember($member);
         }
         if ($request->has('role') && $member->role !== $request->getRole()->value) {
             $newRole = $request->getRole();
@@ -94,10 +96,6 @@ class MemberController extends Controller
             }
         }
         $member->save();
-
-        if ($request->getBillableRateUpdateTimeEntries()) {
-            $billableRateService->updateTimeEntriesBillableRateForMember($member);
-        }
 
         return new MemberResource($member);
     }

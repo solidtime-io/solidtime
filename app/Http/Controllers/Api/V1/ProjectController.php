@@ -117,11 +117,12 @@ class ProjectController extends Controller
         if ($request->has('is_archived')) {
             $project->archived_at = $request->getIsArchived() ? Carbon::now() : null;
         }
+        $oldBillableRate = $project->billable_rate;
         $project->billable_rate = $request->getBillableRate();
         $project->client_id = $request->input('client_id');
         $project->save();
 
-        if ($request->getBillableRateUpdateTimeEntries()) {
+        if ($oldBillableRate !== $request->getBillableRate()) {
             $billableRateService->updateTimeEntriesBillableRateForProject($project);
         }
 

@@ -257,6 +257,7 @@ class TimeEntryController extends Controller
 
         $timeEntry->fill($request->validated());
         $timeEntry->description = $request->input('description', $timeEntry->description) ?? '';
+        $timeEntry->setComputedAttributeValue('billable_rate');
         $timeEntry->save();
 
         return new TimeEntryResource($timeEntry);

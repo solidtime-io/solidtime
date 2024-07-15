@@ -91,10 +91,11 @@ class ProjectMemberController extends Controller
     public function update(Organization $organization, ProjectMember $projectMember, ProjectMemberUpdateRequest $request, BillableRateService $billableRateService): JsonResource
     {
         $this->checkPermission($organization, 'project-members:update', projectMember: $projectMember);
+        $oldBillableRate = $projectMember->billable_rate;
         $projectMember->billable_rate = $request->getBillableRate();
         $projectMember->save();
 
-        if ($request->getBillableRateUpdateTimeEntries()) {
+        if ($oldBillableRate !== $request->getBillableRate()) {
             $billableRateService->updateTimeEntriesBillableRateForProjectMember($projectMember);
         }
 

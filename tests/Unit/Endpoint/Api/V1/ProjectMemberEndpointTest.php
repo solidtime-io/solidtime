@@ -281,28 +281,27 @@ class ProjectMemberEndpointTest extends ApiEndpointTestAbstract
         $response->assertForbidden();
     }
 
-    public function test_update_endpoint_updates_project_member(): void
+    public function test_update_endpoint_updates_project_member_with_unchanged_billable_rate(): void
     {
         // Arrange
         $data = $this->createUserWithPermission([
             'project-members:update',
         ]);
         $project = Project::factory()->forOrganization($data->organization)->create();
-        $billableRate = 1001;
         $projectMember = ProjectMember::factory()->forProject($project)->create();
         $this->assertBillableRateServiceIsUnused();
         Passport::actingAs($data->user);
 
         // Act
         $response = $this->putJson(route('api.v1.project-members.update', [$data->organization->getKey(), $projectMember->getKey()]), [
-            'billable_rate' => $billableRate,
+            'billable_rate' => $projectMember->billable_rate,
         ]);
 
         // Assert
         $response->assertStatus(200);
         $this->assertDatabaseHas(ProjectMember::class, [
             'id' => $projectMember->getKey(),
-            'billable_rate' => $billableRate,
+            'billable_rate' => $projectMember->billable_rate,
             'member_id' => $projectMember->member_id,
         ]);
     }
@@ -326,7 +325,6 @@ class ProjectMemberEndpointTest extends ApiEndpointTestAbstract
         // Act
         $response = $this->putJson(route('api.v1.project-members.update', [$data->organization->getKey(), $projectMember->getKey()]), [
             'billable_rate' => $billableRate,
-            'billable_rate_update_time_entries' => true,
         ]);
 
         // Assert

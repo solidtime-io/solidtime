@@ -23,6 +23,7 @@ class TestJob implements ShouldQueue
     private User $user;
 
     private string $message;
+
     private bool $fail;
 
     /**
@@ -37,6 +38,7 @@ class TestJob implements ShouldQueue
 
     /**
      * Execute the job.
+     *
      * @throws Exception
      */
     public function handle(): void
