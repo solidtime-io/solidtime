@@ -206,6 +206,7 @@ return [
     'tag_name_already_exists' => 'A tag with the same name already exists in the organization.',
     'client_name_already_exists' => 'A client with the same name already exists in the organization.',
     'task_name_already_exists' => 'A task with the same name already exists in the project.',
+    'invitation_already_exists' => 'The email has already been invited to the organization. Please wait for the user to accept the invitation or resend the invitation email.',
 
     'entities' => [
         'organization' => 'organization',

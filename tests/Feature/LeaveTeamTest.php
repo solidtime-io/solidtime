@@ -12,8 +12,9 @@ class LeaveTeamTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_users_can_leave_teams(): void
+    public function test_users_can_no_longer_leave_team_over_jetstream(): void
     {
+        // Arrange
         $user = User::factory()->withPersonalOrganization()->create();
 
         $user->currentTeam->users()->attach(
@@ -22,19 +23,11 @@ class LeaveTeamTest extends TestCase
 
         $this->actingAs($otherUser);
 
+        // Act
         $response = $this->delete('/teams/'.$user->currentTeam->id.'/members/'.$otherUser->id);
 
-        $this->assertCount(1, $user->currentTeam->fresh()->users);
-    }
-
-    public function test_team_owners_cant_leave_their_own_team(): void
-    {
-        $this->actingAs($user = User::factory()->withPersonalOrganization()->create());
-
-        $response = $this->delete('/teams/'.$user->currentTeam->id.'/members/'.$user->id);
-
-        $response->assertSessionHasErrorsIn('removeTeamMember', ['team']);
-
-        $this->assertNotNull($user->currentTeam->fresh());
+        // Assert
+        $response->assertStatus(403);
+        $this->assertCount(2, $user->currentTeam->fresh()->users);
     }
 }

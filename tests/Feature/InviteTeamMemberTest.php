@@ -11,14 +11,13 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
-use Laravel\Jetstream\Mail\TeamInvitation;
 use Tests\TestCase;
 
 class InviteTeamMemberTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_team_members_can_be_invited_to_team(): void
+    public function test_team_members_can_no_longer_be_invited_to_team_over_jetstream(): void
     {
         // Arrange
         Mail::fake();
@@ -31,54 +30,12 @@ class InviteTeamMemberTest extends TestCase
         ]);
 
         // Assert
-        Mail::assertSent(TeamInvitation::class);
-        $this->assertCount(1, $user->currentTeam->fresh()->teamInvitations);
+        $response->assertStatus(403);
+        $response->assertSee('Moved to API');
+        Mail::assertNothingSent();
     }
 
-    public function test_team_member_can_not_be_invited_to_team_if_already_on_team(): void
-    {
-        // Arrange
-        Mail::fake();
-        $user = User::factory()->withPersonalOrganization()->create();
-        $existingUser = User::factory()->create();
-        $user->currentTeam->users()->attach($existingUser, ['role' => 'admin']);
-        $this->actingAs($user);
-
-        // Act
-        $response = $this->post('/teams/'.$user->currentTeam->id.'/members', [
-            'email' => $existingUser->email,
-            'role' => 'admin',
-        ]);
-
-        // Assert
-        $response->assertInvalid(['email'], 'addTeamMember');
-        Mail::assertNotSent(TeamInvitation::class);
-        $this->assertCount(0, $user->currentTeam->fresh()->teamInvitations);
-    }
-
-    public function test_team_member_can_be_invited_to_team_if_already_on_team_as_placeholder(): void
-    {
-        // Arrange
-        Mail::fake();
-        $user = User::factory()->withPersonalOrganization()->create();
-        $existingUser = User::factory()->create([
-            'is_placeholder' => true,
-        ]);
-        $user->currentTeam->users()->attach($existingUser, ['role' => Role::Employee->value]);
-        $this->actingAs($user);
-
-        // Act
-        $response = $this->post('/teams/'.$user->currentTeam->id.'/members', [
-            'email' => $existingUser->email,
-            'role' => Role::Employee->value,
-        ]);
-
-        // Assert
-        Mail::assertSent(TeamInvitation::class);
-        $this->assertCount(1, $user->currentTeam->fresh()->teamInvitations);
-    }
-
-    public function test_team_member_invitations_can_be_cancelled(): void
+    public function test_team_member_invitations_can_no_longer_be_cancelled_over_jetstream(): void
     {
         // Arrange
         Mail::fake();
@@ -94,7 +51,8 @@ class InviteTeamMemberTest extends TestCase
         $response = $this->delete('/team-invitations/'.$invitation->id);
 
         // Assert
-        $this->assertCount(0, $user->currentTeam->fresh()->teamInvitations);
+        $response->assertStatus(403);
+        $this->assertCount(1, $user->currentTeam->fresh()->teamInvitations);
     }
 
     public function test_team_member_invitations_can_be_accepted(): void
@@ -153,6 +111,7 @@ class InviteTeamMemberTest extends TestCase
         $response = $this->get($acceptUrl);
 
         // Assert
+        $response->assertRedirect();
         $user->refresh();
         $this->assertDatabaseMissing(User::class, ['id' => $placeholder->id]);
         $this->assertCount(0, $owner->currentTeam->fresh()->teamInvitations);

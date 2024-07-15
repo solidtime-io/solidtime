@@ -11,6 +11,7 @@ use App\Exceptions\Api\OnlyOwnerCanChangeOwnership;
 use App\Exceptions\Api\OrganizationNeedsAtLeastOneOwner;
 use App\Exceptions\Api\TimeEntryCanNotBeRestartedApiException;
 use App\Exceptions\Api\TimeEntryStillRunningApiException;
+use App\Exceptions\Api\UserIsAlreadyMemberOfOrganizationApiException;
 use App\Exceptions\Api\UserIsAlreadyMemberOfProjectApiException;
 use App\Exceptions\Api\UserNotPlaceholderApiException;
 
@@ -20,6 +21,7 @@ return [
         UserNotPlaceholderApiException::KEY => 'The given user is not a placeholder',
         TimeEntryCanNotBeRestartedApiException::KEY => 'Time entry is already stopped and can not be restarted',
         InactiveUserCanNotBeUsedApiException::KEY => 'Inactive user can not be used',
+        UserIsAlreadyMemberOfOrganizationApiException::KEY => 'User is already a member of the organization',
         UserIsAlreadyMemberOfProjectApiException::KEY => 'User is already a member of the project',
         EntityStillInUseApiException::KEY => 'The :modelToDelete is still used by a :modelInUse and can not be deleted.',
         CanNotRemoveOwnerFromOrganization::KEY => 'Can not remove owner from organization',

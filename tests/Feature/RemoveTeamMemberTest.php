@@ -12,31 +12,20 @@ class RemoveTeamMemberTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_team_members_can_be_removed_from_teams(): void
+    public function test_team_members_can_no_longer_be_removed_from_teams_over_jetstream_endpoints(): void
     {
+        // Arrange
         $this->actingAs($user = User::factory()->withPersonalOrganization()->create());
 
         $user->currentTeam->users()->attach(
             $otherUser = User::factory()->create(), ['role' => 'admin']
         );
 
-        $response = $this->withoutExceptionHandling()->delete('/teams/'.$user->currentTeam->id.'/members/'.$otherUser->id);
+        // Act
+        $response = $this->delete('/teams/'.$user->currentTeam->id.'/members/'.$otherUser->id);
 
-        $this->assertCount(1, $user->currentTeam->fresh()->users);
-    }
-
-    public function test_only_team_owner_can_remove_team_members(): void
-    {
-        $user = User::factory()->withPersonalOrganization()->create();
-
-        $user->currentTeam->users()->attach(
-            $otherUser = User::factory()->create(), ['role' => 'admin']
-        );
-
-        $this->actingAs($otherUser);
-
-        $response = $this->delete('/teams/'.$user->currentTeam->id.'/members/'.$user->id);
-
-        $response->assertForbidden();
+        // Assert
+        $response->assertStatus(403);
+        $response->assertSee('Moved to API');
     }
 }

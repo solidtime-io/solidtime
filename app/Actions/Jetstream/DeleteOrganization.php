@@ -15,6 +15,7 @@ class DeleteOrganization implements DeletesTeams
      */
     public function delete(Organization $organization): void
     {
+        /** @see ValidateOrganizationDeletion */
         app(DeletionService::class)->deleteOrganization($organization);
     }
 }

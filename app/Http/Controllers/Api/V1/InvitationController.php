@@ -4,17 +4,18 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Exceptions\Api\UserIsAlreadyMemberOfOrganizationApiException;
 use App\Http\Requests\V1\Invitation\InvitationIndexRequest;
 use App\Http\Requests\V1\Invitation\InvitationStoreRequest;
 use App\Http\Resources\V1\Invitation\InvitationCollection;
 use App\Http\Resources\V1\Invitation\InvitationResource;
+use App\Mail\OrganizationInvitationMail;
 use App\Models\Organization;
 use App\Models\OrganizationInvitation;
+use App\Service\InvitationService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Mail;
-use Laravel\Jetstream\Contracts\InvitesTeamMembers;
-use Laravel\Jetstream\Mail\TeamInvitation;
 
 class InvitationController extends Controller
 {
@@ -49,19 +50,18 @@ class InvitationController extends Controller
      * Invite a user to the organization
      *
      * @throws AuthorizationException
+     * @throws UserIsAlreadyMemberOfOrganizationApiException
      *
      * @operationId invite
      */
-    public function store(Organization $organization, InvitationStoreRequest $request): JsonResponse
+    public function store(Organization $organization, InvitationStoreRequest $request, InvitationService $invitationService): JsonResponse
     {
         $this->checkPermission($organization, 'invitations:create');
 
-        app(InvitesTeamMembers::class)->invite(
-            $this->user(),
-            $organization,
-            $request->input('email'),
-            $request->getRole()->value
-        );
+        $email = $request->getEmail();
+        $role = $request->getRole();
+
+        $invitationService->inviteUser($organization, $email, $role);
 
         return response()->json(null, 204);
     }
@@ -77,7 +77,8 @@ class InvitationController extends Controller
     {
         $this->checkPermission($organization, 'invitations:resend', $invitation);
 
-        Mail::to($invitation->email)->send(new TeamInvitation($invitation));
+        Mail::to($invitation->email)
+            ->queue(new OrganizationInvitationMail($invitation));
 
         return response()->json(null, 204);
     }

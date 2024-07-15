@@ -21,12 +21,11 @@ use App\Models\Organization;
 use App\Models\ProjectMember;
 use App\Models\TimeEntry;
 use App\Service\BillableRateService;
+use App\Service\InvitationService;
 use App\Service\MemberService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Laravel\Jetstream\Contracts\InvitesTeamMembers;
 
 class MemberController extends Controller
 {
@@ -136,7 +135,7 @@ class MemberController extends Controller
      *
      * @operationId invitePlaceholder
      */
-    public function invitePlaceholder(Organization $organization, Member $member, Request $request): JsonResponse
+    public function invitePlaceholder(Organization $organization, Member $member, InvitationService $invitationService): JsonResponse
     {
         $this->checkPermission($organization, 'members:invite-placeholder', $member);
         $user = $member->user;
@@ -145,12 +144,7 @@ class MemberController extends Controller
             throw new UserNotPlaceholderApiException();
         }
 
-        app(InvitesTeamMembers::class)->invite(
-            $this->user(),
-            $organization,
-            $user->email,
-            Role::Employee->value,
-        );
+        $invitationService->inviteUser($organization, $user->email, Role::Employee);
 
         return response()->json(null, 204);
     }

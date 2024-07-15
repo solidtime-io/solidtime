@@ -70,7 +70,7 @@ class OrganizationPolicy
             return true;
         }
 
-        return $user->ownsTeam($organization);
+        return true;
     }
 
     /**
@@ -82,7 +82,8 @@ class OrganizationPolicy
             return true;
         }
 
-        return $user->ownsTeam($organization);
+        // Note: since this policy is only used for jetstream endpoints, we can return false here
+        return false;
     }
 
     /**
@@ -94,7 +95,8 @@ class OrganizationPolicy
             return true;
         }
 
-        return $user->ownsTeam($organization);
+        // Note: since this policy is only used for jetstream endpoints that are no longer in use, we can return false here
+        return false;
     }
 
     /**
