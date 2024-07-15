@@ -39,9 +39,7 @@ async function submit() {
     };
 }
 
-async function submitBillableRate(billableRateUpdateTimeEntries: boolean) {
-    projectMemberBody.value.billable_rate_update_time_entries =
-        billableRateUpdateTimeEntries;
+async function submitBillableRate() {
     await updateProjectMember(props.projectMember.id, projectMemberBody.value);
     show.value = false;
     showBillableRateModal.value = false;
@@ -73,7 +71,7 @@ useFocus(projectNameInput, { initialValue: true });
 
         <template #content>
             <ProjectMemberBillableRateModal
-                member-name="props.name"
+                :member-name="props.name"
                 v-model:show="showBillableRateModal"
                 @close="showBillableRateModal = false"
                 @submit="submitBillableRate"></ProjectMemberBillableRateModal>

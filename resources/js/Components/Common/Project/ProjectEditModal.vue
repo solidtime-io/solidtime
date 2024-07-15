@@ -56,9 +56,7 @@ const currentClientName = computed(() => {
     return 'No Client';
 });
 
-async function submitBillableRate(billableRateUpdateTimeEntries: boolean) {
-    project.value.billable_rate_update_time_entries =
-        billableRateUpdateTimeEntries;
+async function submitBillableRate() {
     await updateProject(props.originalProject.id, project.value);
     show.value = false;
     showBillableRateModal.value = false;

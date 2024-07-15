@@ -76,42 +76,6 @@ test('test that error shows if no role is selected', async ({ page }) => {
     ]);
 });
 
-test('test that member billable rate can be updated', async ({ page }) => {
-    await goToMembersPage(page);
-    const newBillableRate = Math.round(Math.random() * 10000);
-    await page.getByRole('row').first().getByRole('button').click();
-    await page.getByRole('button').getByText('Edit').first().click();
-    await page.getByText('Organization Default Rate').click();
-    await page.getByText('Custom Rate').click();
-    await page
-        .getByPlaceholder('Billable Rate')
-        .fill(newBillableRate.toString());
-    await page.getByRole('button', { name: 'Update Member' }).click();
-
-    await Promise.all([
-        page
-            .getByRole('button', { name: 'No, only for new time entries' })
-            .click(),
-        page.waitForRequest(
-            async (request) =>
-                request.url().includes('/members/') &&
-                request.method() === 'PUT' &&
-                request.postDataJSON().billable_rate ===
-                    newBillableRate * 100 &&
-                request.postDataJSON().billable_rate_update_time_entries ===
-                    false
-        ),
-        page.waitForResponse(
-            async (response) =>
-                response.url().includes('/organizations/') &&
-                response.request().method() === 'PUT' &&
-                response.status() === 200 &&
-                (await response.json()).data.billable_rate ===
-                    newBillableRate * 100
-        ),
-    ]);
-});
-
 test('test that organization billable rate can be updated with all existing time entries', async ({
     page,
 }) => {
@@ -132,10 +96,7 @@ test('test that organization billable rate can be updated with all existing time
             async (request) =>
                 request.url().includes('/members/') &&
                 request.method() === 'PUT' &&
-                request.postDataJSON().billable_rate ===
-                    newBillableRate * 100 &&
-                request.postDataJSON().billable_rate_update_time_entries ===
-                    true
+                request.postDataJSON().billable_rate === newBillableRate * 100
         ),
         page.waitForResponse(
             async (response) =>

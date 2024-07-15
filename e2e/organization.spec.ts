@@ -17,43 +17,6 @@ test('test that organization name can be updated', async ({ page }) => {
     ).toContainText('NEW ORG NAME');
 });
 
-test('test that organization billable rate can be updated', async ({
-    page,
-}) => {
-    await goToOrganizationSettings(page);
-    const newBillableRate = Math.round(Math.random() * 10000);
-    await page.getByLabel('Organization Billable Rate').click();
-    await page
-        .getByLabel('Organization Billable Rate')
-        .fill(newBillableRate.toString());
-    await page
-        .locator('button')
-        .filter({ hasText: /^Save$/ })
-        .click();
-    await Promise.all([
-        page
-            .getByRole('button', { name: 'No, only for new time entries' })
-            .click(),
-        page.waitForRequest(
-            async (request) =>
-                request.url().includes('/organizations/') &&
-                request.method() === 'PUT' &&
-                request.postDataJSON().billable_rate ===
-                    newBillableRate * 100 &&
-                request.postDataJSON().billable_rate_update_time_entries ===
-                    false
-        ),
-        page.waitForResponse(
-            async (response) =>
-                response.url().includes('/organizations/') &&
-                response.request().method() === 'PUT' &&
-                response.status() === 200 &&
-                (await response.json()).data.billable_rate ===
-                    newBillableRate * 100
-        ),
-    ]);
-});
-
 test('test that organization billable rate can be updated with all existing time entries', async ({
     page,
 }) => {
@@ -75,10 +38,7 @@ test('test that organization billable rate can be updated with all existing time
             async (request) =>
                 request.url().includes('/organizations/') &&
                 request.method() === 'PUT' &&
-                request.postDataJSON().billable_rate ===
-                    newBillableRate * 100 &&
-                request.postDataJSON().billable_rate_update_time_entries ===
-                    true
+                request.postDataJSON().billable_rate === newBillableRate * 100
         ),
         page.waitForResponse(
             async (response) =>

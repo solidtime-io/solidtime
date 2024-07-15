@@ -27,10 +27,8 @@ onMounted(async () => {
 });
 const showConfirmationModal = ref(false);
 
-async function submit(billableRateUpdateTimeEntries: boolean) {
+async function submit() {
     saving.value = true;
-    organizationBody.value.billable_rate_update_time_entries =
-        billableRateUpdateTimeEntries;
     await updateOrganization(organizationBody.value);
     saving.value = false;
     showConfirmationModal.value = false;

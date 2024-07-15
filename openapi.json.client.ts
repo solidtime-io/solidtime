@@ -36,11 +36,7 @@ const MemberPivotResource = z
     })
     .passthrough();
 const updateMember_Body = z
-    .object({
-        role: Role,
-        billable_rate: z.union([z.number(), z.null()]),
-        billable_rate_update_time_entries: z.boolean(),
-    })
+    .object({ role: Role, billable_rate: z.union([z.number(), z.null()]) })
     .partial()
     .passthrough();
 const MemberResource = z
@@ -66,7 +62,6 @@ const updateOrganization_Body = z
     .object({
         name: z.string(),
         billable_rate: z.union([z.number(), z.null()]).optional(),
-        billable_rate_update_time_entries: z.boolean().optional(),
     })
     .passthrough();
 const ProjectResource = z
@@ -97,7 +92,6 @@ const updateProject_Body = z
         is_archived: z.boolean().optional(),
         client_id: z.union([z.string(), z.null()]).optional(),
         billable_rate: z.union([z.number(), z.null()]).optional(),
-        billable_rate_update_time_entries: z.boolean().optional(),
     })
     .passthrough();
 const ProjectMemberResource = z
@@ -115,10 +109,7 @@ const createProjectMember_Body = z
     })
     .passthrough();
 const updateProjectMember_Body = z
-    .object({
-        billable_rate: z.union([z.number(), z.null()]),
-        billable_rate_update_time_entries: z.boolean(),
-    })
+    .object({ billable_rate: z.union([z.number(), z.null()]) })
     .partial()
     .passthrough();
 const TagResource = z
@@ -869,6 +860,17 @@ const endpoints = makeApi([
         ],
         response: z.object({ data: MemberResource }).passthrough(),
         errors: [
+            {
+                status: 400,
+                description: `API exception`,
+                schema: z
+                    .object({
+                        error: z.boolean(),
+                        key: z.string(),
+                        message: z.string(),
+                    })
+                    .passthrough(),
+            },
             {
                 status: 403,
                 description: `Authorization error`,
