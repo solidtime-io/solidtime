@@ -15,7 +15,7 @@ name: Build - Private
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
 
     steps:
       - name: "Check out code"
@@ -114,6 +114,9 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
             type=sha,format=long
 
+      - name: "Set up QEMU"
+        uses: docker/setup-qemu-action@v3
+
       - name: "Set up Docker Buildx"
         uses: docker/setup-buildx-action@v3
 
@@ -125,6 +128,7 @@ jobs:
             DOCKER_FILES_BASE_PATH=docker/prod/
           file: docker/prod/Dockerfile
           push: true
+          platforms: linux/amd64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
