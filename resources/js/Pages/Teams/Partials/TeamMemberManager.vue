@@ -254,7 +254,7 @@ const displayableRole = (role: string) => {
 
             <!-- Organization Member Invitations -->
             <ActionSection class="mt-10 sm:mt-0">
-                <template #title> Pending Team Invitations</template>
+                <template #title> Pending Organization Invitations</template>
 
                 <template #description>
                     These people have been invited to your organization and have
@@ -468,7 +468,7 @@ const displayableRole = (role: string) => {
         <ConfirmationModal
             :show="!!teamMemberBeingRemoved"
             @close="teamMemberBeingRemoved = null">
-            <template #title> Remove Team Member</template>
+            <template #title> Remove Organization Member</template>
 
             <template #content>
                 Are you sure you would like to remove this person from the
