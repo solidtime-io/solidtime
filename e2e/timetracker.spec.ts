@@ -226,15 +226,17 @@ test('test that entering a time starts the timer on enter', async ({
 test('test that adding a new tag works', async ({ page }) => {
     const newTagName = 'New Tag' + Math.floor(Math.random() * 10000);
     await goToDashboard(page);
+
     await page.getByTestId('tag_dropdown').click();
-    await page.getByTestId('tag_dropdown_search').fill(newTagName);
+    await page.getByText('Create new tag').click();
+    await page.getByPlaceholder('Tag Name').fill(newTagName);
 
     await Promise.all([
         newTagResponse(page, { name: newTagName }),
-        page.getByTestId('tag_dropdown_search').press('Enter'),
+        page.getByRole('button', { name: 'Create Tag' }).click(),
     ]);
 
-    await expect(page.getByTestId('tag_dropdown_search')).toHaveValue('');
+    await page.getByTestId('tag_dropdown').click();
     await expect(page.getByRole('option', { name: newTagName })).toBeVisible();
 });
 
@@ -249,14 +251,16 @@ test('test that adding a new tag when the timer is running', async ({
     ]);
     await assertThatTimerHasStarted(page);
     await page.getByTestId('tag_dropdown').click();
-    await page.getByTestId('tag_dropdown_search').fill(newTagName);
+    await page.getByText('Create new tag').click();
+    await page.getByPlaceholder('Tag Name').fill(newTagName);
+
     const [tagCreateResponse] = await Promise.all([
         newTagResponse(page, { name: newTagName }),
-        page.getByTestId('tag_dropdown_search').press('Enter'),
+        page.getByRole('button', { name: 'Create Tag' }).click(),
     ]);
     const tagId = (await tagCreateResponse.json()).data.id;
     await newTimeEntryResponse(page, { status: 200, tags: [tagId] });
-    await expect(page.getByTestId('tag_dropdown_search')).toHaveValue('');
+    await page.getByTestId('tag_dropdown').click();
     await expect(page.getByRole('option', { name: newTagName })).toBeVisible();
     await page.getByTestId('tag_dropdown_search').press('Escape');
     await page.waitForTimeout(1000);

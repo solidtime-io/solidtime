@@ -11,7 +11,6 @@ import {
     TitleComponent,
     TooltipComponent,
 } from 'echarts/components';
-import { useCssVar } from '@vueuse/core';
 import { formatHumanReadableDuration } from '@/utils/time';
 
 use([
@@ -24,8 +23,6 @@ use([
 ]);
 
 provide(THEME_KEY, 'dark');
-
-const backgroundColor = useCssVar('--theme-color-default-background');
 
 function hexToRGBA(hex: string, opacity = 1) {
     // Remove the hash at the start if it's there
@@ -62,10 +59,6 @@ const seriesData = props.weeklyProjectOverview.map((el) => {
         ...el,
         ...{
             itemStyle: {
-                borderRadius: 15,
-                // TODO: Fix dynamic color
-                borderColor: backgroundColor.value,
-                borderWidth: 18,
                 color: new LinearGradient(0, 0, 0, 1, [
                     {
                         offset: 0,

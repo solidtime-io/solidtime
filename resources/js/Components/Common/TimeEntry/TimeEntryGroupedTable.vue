@@ -1,23 +1,32 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { Project, Task, TimeEntry } from '@/utils/api';
+import type {
+    CreateTimeEntryBody,
+    Project,
+    Tag,
+    Task,
+    TimeEntry,
+} from '@/utils/api';
 import { getDayJsInstance, getLocalizedDateFromTimestamp } from '@/utils/time';
 import type { TimeEntriesGroupedByType } from '@/utils/useTimeEntries';
 import TimeEntryAggregateRow from '@/Components/Common/TimeEntry/TimeEntryAggregateRow.vue';
 import TimeEntryRowHeading from '@/Components/Common/TimeEntry/TimeEntryRowHeading.vue';
 import TimeEntryRow from '@/Components/Common/TimeEntry/TimeEntryRow.vue';
+import dayjs from 'dayjs';
 
 const props = defineProps<{
     timeEntries: TimeEntry[];
     projects: Project[];
     tasks: Task[];
+    tags: Tag[];
 }>();
 
 const emit = defineEmits<{
     updateTimeEntry: [entry: TimeEntry];
     updateTimeEntries: [entries: TimeEntry[]];
     deleteTimeEntries: [entries: TimeEntry[]];
-    onStartStopClick: [entry: TimeEntry];
+    createTimeEntry: [entry: Omit<CreateTimeEntryBody, 'member_id'>];
+    createTag: [name: string, callback: (tag: Tag) => void];
 }>();
 
 const groupedTimeEntries = computed(() => {
@@ -85,6 +94,17 @@ const groupedTimeEntries = computed(() => {
     }
     return groupedEntriesByDayAndType;
 });
+
+function startTimeEntryFromExisting(entry: TimeEntry) {
+    emit('createTimeEntry', {
+        project_id: entry.project_id,
+        task_id: entry.task_id,
+        start: dayjs().utc().format(),
+        end: null,
+        billable: entry.billable,
+        description: entry.description,
+    });
+}
 </script>
 
 <template>
@@ -94,16 +114,20 @@ const groupedTimeEntries = computed(() => {
             <TimeEntryAggregateRow
                 :projects="projects"
                 :tasks="tasks"
-                @onStartStopClick="(arg) => emit('onStartStopClick', arg)"
+                :tags="tags"
+                @onStartStopClick="startTimeEntryFromExisting(entry)"
                 @updateTimeEntries="(arg) => emit('updateTimeEntries', arg)"
                 @deleteTimeEntries="(arg) => emit('deleteTimeEntries', arg)"
+                @createTag="(...args) => emit('createTag', ...args)"
                 v-if="'timeEntries' in entry && entry.timeEntries.length > 1"
                 :time-entry="entry"></TimeEntryAggregateRow>
             <TimeEntryRow
                 :projects="projects"
                 :tasks="tasks"
+                :tags="tags"
+                @createTag="(...args) => emit('createTag', ...args)"
                 @updateTimeEntry="(arg) => emit('updateTimeEntry', arg)"
-                @onStartStopClick="() => emit('onStartStopClick', entry)"
+                @onStartStopClick="startTimeEntryFromExisting(entry)"
                 @deleteTimeEntry="() => emit('deleteTimeEntries', [entry])"
                 v-else
                 :time-entry="entry"></TimeEntryRow>

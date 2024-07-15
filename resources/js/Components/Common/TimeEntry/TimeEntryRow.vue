@@ -2,7 +2,7 @@
 import MainContainer from '@/Pages/MainContainer.vue';
 import TimeTrackerStartStop from '@/Components/Common/TimeTrackerStartStop.vue';
 import TimeEntryRangeSelector from '@/Components/Common/TimeEntry/TimeEntryRangeSelector.vue';
-import type { Project, Task, TimeEntry } from '@/utils/api';
+import type { Project, Tag, Task, TimeEntry } from '@/utils/api';
 import TimeEntryDescriptionInput from '@/Components/Common/TimeEntry/TimeEntryDescriptionInput.vue';
 import TimeEntryRowTagDropdown from '@/Components/Common/TimeEntry/TimeEntryRowTagDropdown.vue';
 import TimeEntryRowDurationInput from '@/Components/Common/TimeEntry/TimeEntryRowDurationInput.vue';
@@ -15,12 +15,14 @@ const props = defineProps<{
     indent?: boolean;
     projects: Project[];
     tasks: Task[];
+    tags: Tag[];
 }>();
 
 const emit = defineEmits<{
     onStartStopClick: [];
     deleteTimeEntry: [];
     updateTimeEntry: [timeEntry: TimeEntry];
+    createTag: [name: string, callback: (tag: Tag) => void];
 }>();
 
 function updateTimeEntryDescription(description: string) {
@@ -53,13 +55,15 @@ function updateProjectAndTask(projectId: string, taskId: string) {
         class="border-b border-default-background-separator transition"
         data-testid="time_entry_row">
         <MainContainer>
-            <div class="sm:flex py-1.5 items-center justify-between group">
+            <div
+                class="sm:flex py-1 lg:py-1.5 items-center justify-between group">
                 <div class="flex space-x-1 items-center">
                     <input
                         type="checkbox"
                         class="h-4 w-4 rounded bg-card-background border-input-border text-accent-500/80 focus:ring-accent-500/80" />
                     <div class="w-7 h-7" v-if="indent === true"></div>
                     <TimeEntryDescriptionInput
+                        class="flex-1 max-w-[220px] md:max-w-[400px] text-ellipsis overflow-ellipsis"
                         @changed="updateTimeEntryDescription"
                         :modelValue="
                             timeEntry.description
@@ -74,9 +78,11 @@ function updateProjectAndTask(projectId: string, taskId: string) {
                             timeEntry.task_id
                         "></TimeTrackerProjectTaskDropdown>
                 </div>
-                <div class="flex items-center font-medium space-x-2">
+                <div class="flex items-center font-medium lg:space-x-2">
                     <TimeEntryRowTagDropdown
                         @changed="updateTimeEntryTags"
+                        @createTag="(...args) => emit('createTag', ...args)"
+                        :tags="tags"
                         :modelValue="timeEntry.tags"></TimeEntryRowTagDropdown>
                     <BillableToggleButton
                         :modelValue="timeEntry.billable"
@@ -86,6 +92,7 @@ function updateProjectAndTask(projectId: string, taskId: string) {
                         "></BillableToggleButton>
                     <div class="flex-1">
                         <TimeEntryRangeSelector
+                            class="hidden lg:block"
                             :start="timeEntry.start"
                             :end="timeEntry.end"
                             @changed="

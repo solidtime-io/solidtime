@@ -16,6 +16,8 @@ import { getDayJsInstance, getLocalizedDayJs } from '@/utils/time';
 import { storeToRefs } from 'pinia';
 import { useTasksStore } from '@/utils/useTasks';
 import { useProjectsStore } from '@/utils/useProjects';
+import { useTagsStore } from '@/utils/useTags';
+import type { Tag } from '@/utils/api';
 const projectStore = useProjectsStore();
 const { projects } = storeToRefs(projectStore);
 const taskStore = useTasksStore();
@@ -72,6 +74,13 @@ async function submit() {
     localEnd.value = getLocalizedDayJs(timeEntryDefaultValues.end).format();
     show.value = false;
 }
+const { tags } = storeToRefs(useTagsStore());
+async function createTag(tag: string, callback: (tag: Tag) => void) {
+    const newTag = await useTagsStore().createTag(tag);
+    if (newTag !== undefined) {
+        callback(newTag);
+    }
+}
 </script>
 
 <template>
@@ -108,6 +117,8 @@ async function submit() {
                     </div>
                     <div class="flex items-center space-x-2 px-4">
                         <TimeTrackerTagDropdown
+                            :tags="tags"
+                            @createTag="createTag"
                             v-model="timeEntry.tags"></TimeTrackerTagDropdown>
                         <BillableToggleButton
                             v-model="timeEntry.billable"></BillableToggleButton>

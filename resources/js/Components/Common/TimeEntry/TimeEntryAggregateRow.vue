@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import MainContainer from '@/Pages/MainContainer.vue';
 import TimeTrackerStartStop from '@/Components/Common/TimeTrackerStartStop.vue';
-import type { Project, Task, TimeEntry } from '@/utils/api';
+import type { Project, Tag, Task, TimeEntry } from '@/utils/api';
 import TimeEntryDescriptionInput from '@/Components/Common/TimeEntry/TimeEntryDescriptionInput.vue';
 import { type TimeEntriesGroupedByType } from '@/utils/useTimeEntries';
 import TimeEntryRowTagDropdown from '@/Components/Common/TimeEntry/TimeEntryRowTagDropdown.vue';
@@ -20,45 +20,42 @@ const props = defineProps<{
     timeEntry: TimeEntriesGroupedByType;
     projects: Project[];
     tasks: Task[];
+    tags: Tag[];
 }>();
 
 const emit = defineEmits<{
     onStartStopClick: [timeEntry: TimeEntry];
     updateTimeEntries: [timeEntries: TimeEntry[]];
     deleteTimeEntries: [timeEntries: TimeEntry[]];
+    createTag: [name: string, callback: (tag: Tag) => void];
 }>();
 
 function updateTimeEntryDescription(description: string) {
-    const timeEntries = props.timeEntry.timeEntries;
-    timeEntries.forEach((entry) => {
-        entry.description = description;
+    const updatedTimeEntries = props.timeEntry.timeEntries.map((entry) => {
+        return { ...entry, description };
     });
-    emit('updateTimeEntries', timeEntries);
+    emit('updateTimeEntries', updatedTimeEntries);
 }
 
 function updateTimeEntryTags(tags: string[]) {
-    const timeEntries = props.timeEntry.timeEntries as TimeEntry[];
-    timeEntries.forEach((entry) => {
-        entry.tags = tags;
+    const updatedTimeEntries = props.timeEntry.timeEntries.map((entry) => {
+        return { ...entry, tags };
     });
-    emit('updateTimeEntries', timeEntries);
+    emit('updateTimeEntries', updatedTimeEntries);
 }
 
 function updateTimeEntryBillable(billable: boolean) {
-    const timeEntries = props.timeEntry.timeEntries as TimeEntry[];
-    timeEntries.forEach((entry) => {
-        entry.billable = billable;
+    const updatedTimeEntries = props.timeEntry.timeEntries.map((entry) => {
+        return { ...entry, billable };
     });
-    emit('updateTimeEntries', timeEntries);
+    emit('updateTimeEntries', updatedTimeEntries);
 }
 
 function updateProjectAndTask(projectId: string, taskId: string) {
-    const timeEntries = props.timeEntry.timeEntries as TimeEntry[];
-    timeEntries.forEach((entry) => {
-        entry.project_id = projectId;
-        entry.task_id = taskId;
+    const updatedTimeEntries = props.timeEntry.timeEntries.map((entry) => {
+        return { ...entry, project_id: projectId, task_id: taskId };
     });
-    emit('updateTimeEntries', timeEntries);
+    emit('updateTimeEntries', updatedTimeEntries);
 }
 
 const expanded = ref(false);
@@ -96,8 +93,10 @@ const expanded = ref(false);
                             timeEntry.task_id
                         "></TimeTrackerProjectTaskDropdown>
                 </div>
-                <div class="flex items-center font-medium space-x-2">
+                <div class="flex items-center font-medium lg:space-x-2">
                     <TimeEntryRowTagDropdown
+                        @createTag="(...args) => emit('createTag', ...args)"
+                        :tags="tags"
                         @changed="updateTimeEntryTags"
                         :modelValue="timeEntry.tags"></TimeEntryRowTagDropdown>
                     <BillableToggleButton
@@ -109,7 +108,7 @@ const expanded = ref(false);
                     <div class="flex-1">
                         <button
                             @click="expanded = !expanded"
-                            class="text-muted w-[110px] px-2 py-2 bg-transparent text-center hover:bg-card-background rounded-lg border border-transparent hover:border-card-border text-sm font-medium">
+                            class="hidden lg:block text-muted w-[110px] px-2 py-2 bg-transparent text-center hover:bg-card-background rounded-lg border border-transparent hover:border-card-border text-sm font-medium">
                             {{ formatStartEnd(timeEntry.start, timeEntry.end) }}
                         </button>
                     </div>
@@ -138,12 +137,12 @@ const expanded = ref(false);
             <TimeEntryRow
                 :projects="projects"
                 :tasks="tasks"
+                :tags="tags"
                 indent
-                @updateTimeEntry="
-                    (timeEntry) => emit('updateTimeEntries', [timeEntry])
-                "
+                @updateTimeEntry="(arg) => emit('updateTimeEntries', [arg])"
                 @onStartStopClick="emit('onStartStopClick', subEntry)"
                 @deleteTimeEntry="emit('deleteTimeEntries', [subEntry])"
+                @createTag="(...args) => emit('createTag', ...args)"
                 :key="subEntry.id"
                 v-for="subEntry in timeEntry.timeEntries"
                 :time-entry="subEntry"></TimeEntryRow>

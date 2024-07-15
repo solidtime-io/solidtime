@@ -11,7 +11,6 @@ import {
     TitleComponent,
     TooltipComponent,
 } from 'echarts/components';
-import { useCssVar } from '@vueuse/core';
 import { formatHumanReadableDuration } from '@/utils/time';
 import { getRandomColorWithSeed } from '@/utils/color';
 import type { GroupedDataEntries } from '@/utils/api';
@@ -27,8 +26,6 @@ use([
 ]);
 
 provide(THEME_KEY, 'dark');
-
-const backgroundColor = useCssVar('--theme-color-default-background');
 
 function hexToRGBA(hex: string, opacity = 1) {
     // Remove the hash at the start if it's there
@@ -76,10 +73,6 @@ const seriesData = computed(() => {
             ...el,
             ...{
                 itemStyle: {
-                    borderRadius: 15,
-                    // TODO: Fix dynamic color
-                    borderColor: backgroundColor.value,
-                    borderWidth: 18,
                     color: new LinearGradient(0, 0, 0, 1, [
                         {
                             offset: 0,

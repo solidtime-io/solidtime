@@ -3,8 +3,13 @@ import TagDropdown from '@/Components/Common/Tag/TagDropdown.vue';
 import { twMerge } from 'tailwind-merge';
 import { TagIcon } from '@heroicons/vue/20/solid';
 import { computed } from 'vue';
+import type { Tag } from '@/utils/api';
 
-const emit = defineEmits(['changed']);
+const emit = defineEmits<{
+    changed: [];
+    createTag: [name: string, callback: (tag: Tag) => void];
+}>();
+
 const model = defineModel({
     default: [],
 });
@@ -15,10 +20,17 @@ const iconColorClasses = computed(() => {
         return 'text-icon-default hover:text-icon-active focus:text-icon-active';
     }
 });
+defineProps<{
+    tags: Tag[];
+}>();
 </script>
 
 <template>
-    <TagDropdown @changed="emit('changed')" v-model="model">
+    <TagDropdown
+        @createTag="(...args) => $emit('createTag', ...args)"
+        @changed="emit('changed')"
+        v-model="model"
+        :tags="tags">
         <template #trigger>
             <button
                 data-testid="tag_dropdown"

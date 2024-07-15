@@ -11,7 +11,14 @@ function getCurrentUserId() {
 }
 
 function getWeekStart() {
-    return page.props.auth.user.week_start;
+    const weekStart = window?.getWeekStartSetting() as string;
+
+    if (!weekStart) {
+        throw new Error(
+            'Please make sure to provide the current user week start setting as a vue inject (week_start)'
+        );
+    }
+    return weekStart;
 }
 
 function getCurrentOrganizationId() {
@@ -31,7 +38,13 @@ function getCurrentRole() {
 }
 
 function getUserTimezone() {
-    return page.props.auth.user.timezone;
+    const timezone = window?.getTimezoneSetting() as string;
+    if (!timezone) {
+        throw new Error(
+            'Please make sure to provide the current user timezone as a vue inject (timezone)'
+        );
+    }
+    return timezone;
 }
 
 export {

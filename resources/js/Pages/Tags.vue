@@ -8,7 +8,15 @@ import TagTable from '@/Components/Common/Tag/TagTable.vue';
 import TagCreateModal from '@/Components/Common/Tag/TagCreateModal.vue';
 import PageTitle from '@/Components/Common/PageTitle.vue';
 import { canCreateTags } from '@/utils/permissions';
-const createTag = ref(false);
+import { useTagsStore } from '@/utils/useTags';
+import type { Tag } from '@/utils/api';
+const showCreateTagModal = ref(false);
+async function createTag(tag: string, callback: (tag: Tag) => void) {
+    const newTag = await useTagsStore().createTag(tag);
+    if (newTag !== undefined) {
+        callback(newTag);
+    }
+}
 </script>
 
 <template>
@@ -21,10 +29,12 @@ const createTag = ref(false);
             <SecondaryButton
                 v-if="canCreateTags()"
                 :icon="PlusIcon"
-                @click="createTag = true"
+                @click="showCreateTagModal = true"
                 >Create Tag</SecondaryButton
             >
-            <TagCreateModal v-model:show="createTag"></TagCreateModal>
+            <TagCreateModal
+                @createTag="createTag"
+                v-model:show="showCreateTagModal"></TagCreateModal>
         </MainContainer>
         <TagTable></TagTable>
     </AppLayout>

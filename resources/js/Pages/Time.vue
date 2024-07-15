@@ -5,18 +5,18 @@ import { onMounted, ref, watch } from 'vue';
 import MainContainer from '@/Pages/MainContainer.vue';
 import { useTimeEntriesStore } from '@/utils/useTimeEntries';
 import { storeToRefs } from 'pinia';
-import type { TimeEntry } from '@/utils/api';
+import type { CreateTimeEntryBody, Tag, TimeEntry } from '@/utils/api';
 import { useElementVisibility } from '@vueuse/core';
 import { ClockIcon } from '@heroicons/vue/20/solid';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import { PlusIcon } from '@heroicons/vue/16/solid';
 import TimeEntryCreateModal from '@/Components/Common/TimeEntry/TimeEntryCreateModal.vue';
 import LoadingSpinner from '@/Components/LoadingSpinner.vue';
-import dayjs from 'dayjs';
 import { useCurrentTimeEntryStore } from '@/utils/useCurrentTimeEntry';
 import { useTasksStore } from '@/utils/useTasks';
 import { useProjectsStore } from '@/utils/useProjects';
 import TimeEntryGroupedTable from '@/Components/Common/TimeEntry/TimeEntryGroupedTable.vue';
+import { useTagsStore } from '@/utils/useTags';
 
 const timeEntriesStore = useTimeEntriesStore();
 const { timeEntries, allTimeEntriesLoaded } = storeToRefs(timeEntriesStore);
@@ -33,20 +33,18 @@ function updateTimeEntries(timeEntries: TimeEntry[]) {
 const loading = ref(false);
 const loadMoreContainer = ref<HTMLDivElement | null>(null);
 const isLoadMoreVisible = useElementVisibility(loadMoreContainer);
+const currentTimeEntryStore = useCurrentTimeEntryStore();
+const { currentTimeEntry } = storeToRefs(currentTimeEntryStore);
+const { stopTimer } = currentTimeEntryStore;
+const { tags } = storeToRefs(useTagsStore());
 
-async function onStartStopClick(timeEntry: TimeEntry) {
-    if (timeEntry.start && !timeEntry.end) {
-        await updateTimeEntry({
-            ...timeEntry,
-            end: dayjs().utc().format(),
-        });
-    } else {
-        await createTimeEntry({
-            ...timeEntry,
-            start: dayjs().utc().format(),
-            end: null,
-        });
+async function startTimeEntry(
+    timeEntry: Omit<CreateTimeEntryBody, 'member_id'>
+) {
+    if (currentTimeEntry.value.id) {
+        await stopTimer();
     }
+    await createTimeEntry(timeEntry);
     fetchTimeEntries();
     useCurrentTimeEntryStore().fetchCurrentTimeEntry();
 }
@@ -78,6 +76,13 @@ const projectStore = useProjectsStore();
 const { projects } = storeToRefs(projectStore);
 const taskStore = useTasksStore();
 const { tasks } = storeToRefs(taskStore);
+
+async function createTag(name: string, callback: (tag: Tag) => void) {
+    const newTag = await useTagsStore().createTag(name);
+    if (newTag !== undefined) {
+        callback(newTag);
+    }
+}
 </script>
 
 <template>
@@ -105,10 +110,12 @@ const { tasks } = storeToRefs(taskStore);
             @updateTimeEntry="updateTimeEntry"
             @updateTimeEntries="updateTimeEntries"
             @deleteTimeEntries="deleteTimeEntries"
-            @onStartStopClick="onStartStopClick"
+            @createTimeEntry="startTimeEntry"
+            @createTag="createTag"
             :projects="projects"
             :tasks="tasks"
-            :timeEntries="timeEntries"></TimeEntryGroupedTable>
+            :timeEntries="timeEntries"
+            :tags="tags"></TimeEntryGroupedTable>
         <div v-if="timeEntries.length === 0" class="text-center pt-12">
             <ClockIcon class="w-8 text-icon-default inline pb-2"></ClockIcon>
             <h3 class="text-white font-semibold">No time entries found</h3>
