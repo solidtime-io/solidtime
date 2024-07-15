@@ -6,10 +6,10 @@ import type { Tag } from '@/utils/api';
 
 const props = defineProps<{
     tags: Tag[];
+    createTag: (name: string) => Promise<Tag | undefined>;
 }>();
 
 const emit = defineEmits<{
-    createTag: [name: string, callback: (tag: Tag) => void];
     changed: [model: string[]];
 }>();
 
@@ -24,7 +24,7 @@ const timeEntryTags = computed<Tag[]>(() => {
 <template>
     <TagDropdown
         :tags="tags"
-        @createTag="(...args) => emit('createTag', ...args)"
+        :createTag
         @changed="emit('changed', model)"
         v-model="model">
         <template #trigger>

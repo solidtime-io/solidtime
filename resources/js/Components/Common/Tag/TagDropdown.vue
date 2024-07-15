@@ -8,6 +8,7 @@ import type { Tag } from '@/utils/api';
 
 const props = defineProps<{
     tags: Tag[];
+    createTag: (name: string) => Promise<Tag | undefined>;
 }>();
 
 const model = defineModel<string[]>({
@@ -66,14 +67,13 @@ const filteredTags = computed(() => {
     });
 });
 
-function createTag(name: string, callback: (tag: Tag) => void) {
-    emit('createTag', name, (newTag: Tag) => {
-        if (newTag) {
-            addOrRemoveTagFromSelection(newTag.id);
-        }
-        searchValue.value = '';
-        callback(newTag);
-    });
+async function createAndAddTag(name: string) {
+    const newTag = await props.createTag(name);
+    if (newTag) {
+        addOrRemoveTagFromSelection(newTag.id);
+    }
+    searchValue.value = '';
+    return newTag;
 }
 
 async function addTagIfNoneExists() {
@@ -109,7 +109,6 @@ function updateSearchValue(event: Event) {
 const emit = defineEmits<{
     changed: [];
     submit: [];
-    createTag: [name: string, callback: (tag: Tag) => void];
 }>();
 
 function toggleTag(newValue: string) {
@@ -160,7 +159,7 @@ const showCreateTagModal = ref(false);
 
 <template>
     <TagCreateModal
-        @createTag="createTag"
+        :createTag="createAndAddTag"
         v-model:show="showCreateTagModal"></TagCreateModal>
     <Dropdown
         @submit="emit('submit')"

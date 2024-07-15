@@ -7,7 +7,6 @@ import type { Tag } from '@/utils/api';
 
 const emit = defineEmits<{
     changed: [];
-    createTag: [name: string, callback: (tag: Tag) => void];
 }>();
 
 const model = defineModel({
@@ -22,12 +21,13 @@ const iconColorClasses = computed(() => {
 });
 defineProps<{
     tags: Tag[];
+    createTag: (name: string) => Promise<Tag | undefined>;
 }>();
 </script>
 
 <template>
     <TagDropdown
-        @createTag="(...args) => $emit('createTag', ...args)"
+        :createTag
         @changed="emit('changed')"
         v-model="model"
         :tags="tags">

@@ -9,13 +9,11 @@ import TagCreateModal from '@/Components/Common/Tag/TagCreateModal.vue';
 import PageTitle from '@/Components/Common/PageTitle.vue';
 import { canCreateTags } from '@/utils/permissions';
 import { useTagsStore } from '@/utils/useTags';
-import type { Tag } from '@/utils/api';
+
 const showCreateTagModal = ref(false);
-async function createTag(tag: string, callback: (tag: Tag) => void) {
-    const newTag = await useTagsStore().createTag(tag);
-    if (newTag !== undefined) {
-        callback(newTag);
-    }
+
+async function createTag(tag: string) {
+    return await useTagsStore().createTag(tag);
 }
 </script>
 
@@ -24,18 +22,18 @@ async function createTag(tag: string, callback: (tag: Tag) => void) {
         <MainContainer
             class="py-5 border-b border-default-background-separator flex justify-between items-center">
             <div class="flex items-center space-x-6">
-                <PageTitle :icon="TagIcon" title="Tags"> </PageTitle>
+                <PageTitle :icon="TagIcon" title="Tags"></PageTitle>
             </div>
             <SecondaryButton
                 v-if="canCreateTags()"
                 :icon="PlusIcon"
                 @click="showCreateTagModal = true"
-                >Create Tag</SecondaryButton
-            >
+                >Create Tag
+            </SecondaryButton>
             <TagCreateModal
-                @createTag="createTag"
+                :createTag="createTag"
                 v-model:show="showCreateTagModal"></TagCreateModal>
         </MainContainer>
-        <TagTable></TagTable>
+        <TagTable :createTag="createTag"></TagTable>
     </AppLayout>
 </template>

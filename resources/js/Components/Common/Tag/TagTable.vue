@@ -9,13 +9,18 @@ import TagTableRow from '@/Components/Common/Tag/TagTableRow.vue';
 import TagCreateModal from '@/Components/Common/Tag/TagCreateModal.vue';
 import TagTableHeading from '@/Components/Common/Tag/TagTableHeading.vue';
 import { canCreateTags } from '@/utils/permissions';
-
+import type { Tag } from '@/utils/api';
+defineProps<{
+    createTag: (name: string) => Promise<Tag | undefined>;
+}>();
 const { tags } = storeToRefs(useTagsStore());
-const createTag = ref(false);
+const showCreateTagModal = ref(false);
 </script>
 
 <template>
-    <TagCreateModal v-model:show="createTag"></TagCreateModal>
+    <TagCreateModal
+        :createTag
+        v-model:show="showCreateTagModal"></TagCreateModal>
     <div class="flow-root">
         <div class="inline-block min-w-full align-middle">
             <div
@@ -34,7 +39,7 @@ const createTag = ref(false);
                     </p>
                     <SecondaryButton
                         v-if="canCreateTags()"
-                        @click="createTag = true"
+                        @click="showCreateTagModal = true"
                         :icon="PlusIcon"
                         >Create your First Tag</SecondaryButton
                     >

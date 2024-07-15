@@ -16,13 +16,13 @@ const props = defineProps<{
     projects: Project[];
     tasks: Task[];
     tags: Tag[];
+    createTag: (name: string) => Promise<Tag | undefined>;
 }>();
 
 const emit = defineEmits<{
     onStartStopClick: [];
     deleteTimeEntry: [];
     updateTimeEntry: [timeEntry: TimeEntry];
-    createTag: [name: string, callback: (tag: Tag) => void];
 }>();
 
 function updateTimeEntryDescription(description: string) {
@@ -81,7 +81,7 @@ function updateProjectAndTask(projectId: string, taskId: string) {
                 <div class="flex items-center font-medium lg:space-x-2">
                     <TimeEntryRowTagDropdown
                         @changed="updateTimeEntryTags"
-                        @createTag="(...args) => emit('createTag', ...args)"
+                        :createTag
                         :tags="tags"
                         :modelValue="timeEntry.tags"></TimeEntryRowTagDropdown>
                     <BillableToggleButton

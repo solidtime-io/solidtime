@@ -21,7 +21,6 @@ import TimeTrackerRangeSelector from '@/Components/Common/TimeTracker/TimeTracke
 import { useProjectsStore } from '@/utils/useProjects';
 import { useTasksStore } from '@/utils/useTasks';
 import { useTagsStore } from '@/utils/useTags';
-import type { Tag } from '@/utils/api';
 
 const page = usePage<{
     auth: {
@@ -105,11 +104,8 @@ function switchToTimeEntryOrganization() {
         switchOrganization(currentTimeEntry.value.organization_id);
     }
 }
-async function createTag(tag: string, callback: (tag: Tag) => void) {
-    const newTag = await useTagsStore().createTag(tag);
-    if (newTag !== undefined) {
-        callback(newTag);
-    }
+async function createTag(tag: string) {
+    return await useTagsStore().createTag(tag);
 }
 
 const { tags } = storeToRefs(useTagsStore());
@@ -160,7 +156,7 @@ const { tags } = storeToRefs(useTagsStore());
                     <div class="flex items-center space-x-2 px-4">
                         <TimeTrackerTagDropdown
                             @changed="updateTimeEntry"
-                            @createTag="createTag"
+                            :createTag
                             :tags="tags"
                             v-model="
                                 currentTimeEntry.tags

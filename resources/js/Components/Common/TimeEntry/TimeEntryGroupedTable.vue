@@ -19,6 +19,7 @@ const props = defineProps<{
     projects: Project[];
     tasks: Task[];
     tags: Tag[];
+    createTag: (name: string) => Promise<Tag | undefined>;
 }>();
 
 const emit = defineEmits<{
@@ -26,7 +27,6 @@ const emit = defineEmits<{
     updateTimeEntries: [entries: TimeEntry[]];
     deleteTimeEntries: [entries: TimeEntry[]];
     createTimeEntry: [entry: Omit<CreateTimeEntryBody, 'member_id'>];
-    createTag: [name: string, callback: (tag: Tag) => void];
 }>();
 
 const groupedTimeEntries = computed(() => {
@@ -118,14 +118,14 @@ function startTimeEntryFromExisting(entry: TimeEntry) {
                 @onStartStopClick="startTimeEntryFromExisting(entry)"
                 @updateTimeEntries="(arg) => emit('updateTimeEntries', arg)"
                 @deleteTimeEntries="(arg) => emit('deleteTimeEntries', arg)"
-                @createTag="(...args) => emit('createTag', ...args)"
+                :createTag
                 v-if="'timeEntries' in entry && entry.timeEntries.length > 1"
                 :time-entry="entry"></TimeEntryAggregateRow>
             <TimeEntryRow
                 :projects="projects"
                 :tasks="tasks"
                 :tags="tags"
-                @createTag="(...args) => emit('createTag', ...args)"
+                :createTag
                 @updateTimeEntry="(arg) => emit('updateTimeEntry', arg)"
                 @onStartStopClick="startTimeEntryFromExisting(entry)"
                 @deleteTimeEntry="() => emit('deleteTimeEntries', [entry])"
