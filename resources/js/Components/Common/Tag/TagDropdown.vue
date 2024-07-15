@@ -2,13 +2,13 @@
 import { PlusCircleIcon } from '@heroicons/vue/20/solid';
 import Dropdown from '@/Components/Dropdown.vue';
 import { type Component, computed, nextTick, ref, watch } from 'vue';
-import { useTagsStore } from '@/utils/useTags';
-import { storeToRefs } from 'pinia';
 import TagCreateModal from '@/Components/Common/Tag/TagCreateModal.vue';
 import MultiselectDropdownItem from '@/Components/Common/MultiselectDropdownItem.vue';
+import type { Tag } from '@/utils/api';
 
-const tagsStore = useTagsStore();
-const { tags } = storeToRefs(tagsStore);
+const props = defineProps<{
+    tags: Tag[];
+}>();
 
 const model = defineModel<string[]>({
     default: [],
@@ -33,6 +33,8 @@ function addOrRemoveTagFromSelection(id: string) {
     emit('changed');
 }
 
+const sortedTags = ref(props.tags);
+
 watch(open, (isOpen) => {
     if (isOpen) {
         nextTick(() => {
@@ -40,7 +42,7 @@ watch(open, (isOpen) => {
         });
 
         // sort tags alphabetically
-        tags.value.sort((a, b) => {
+        sortedTags.value = [...props.tags].sort((a, b) => {
             const aIsSelected = model.value.includes(a.id);
             const bIsSelected = model.value.includes(b.id);
             if (aIsSelected === bIsSelected) {
@@ -57,24 +59,26 @@ watch(open, (isOpen) => {
 });
 
 const filteredTags = computed(() => {
-    return tags.value.filter((tag) => {
+    return sortedTags.value.filter((tag) => {
         return tag.name
             .toLowerCase()
             .includes(searchValue.value?.toLowerCase()?.trim() || '');
     });
 });
 
-async function addTagIfNoneExists() {
-    if (searchValue.value.length > 0 && filteredTags.value.length === 0) {
-        const newTag = await tagsStore.createTag(searchValue.value);
+function createTag(name: string, callback: (tag: Tag) => void) {
+    emit('createTag', name, (newTag: Tag) => {
         if (newTag) {
             addOrRemoveTagFromSelection(newTag.id);
         }
         searchValue.value = '';
-    } else {
-        if (highlightedItemId.value) {
-            addOrRemoveTagFromSelection(highlightedItemId.value);
-        }
+        callback(newTag);
+    });
+}
+
+async function addTagIfNoneExists() {
+    if (highlightedItemId.value) {
+        addOrRemoveTagFromSelection(highlightedItemId.value);
     }
 }
 
@@ -90,7 +94,7 @@ function updateSearchValue(event: Event) {
         searchValue.value = '';
         const highlightedTagId = highlightedItemId.value;
         if (highlightedTagId) {
-            const highlightedTag = tags.value.find(
+            const highlightedTag = props.tags.find(
                 (tag) => tag.id === highlightedTagId
             );
             if (highlightedTag) {
@@ -102,7 +106,11 @@ function updateSearchValue(event: Event) {
     }
 }
 
-const emit = defineEmits(['update:modelValue', 'changed', 'submit']);
+const emit = defineEmits<{
+    changed: [];
+    submit: [];
+    createTag: [name: string, callback: (tag: Tag) => void];
+}>();
 
 function toggleTag(newValue: string) {
     if (model.value.includes(newValue)) {
@@ -144,14 +152,16 @@ function moveHighlightDown() {
 
 const highlightedItemId = ref<string | null>(null);
 const highlightedItem = computed(() => {
-    return tags.value.find((tag) => tag.id === highlightedItemId.value);
+    return props.tags.find((tag) => tag.id === highlightedItemId.value);
 });
 
 const showCreateTagModal = ref(false);
 </script>
 
 <template>
-    <TagCreateModal v-model:show="showCreateTagModal"></TagCreateModal>
+    <TagCreateModal
+        @createTag="createTag"
+        v-model:show="showCreateTagModal"></TagCreateModal>
     <Dropdown
         @submit="emit('submit')"
         v-model="open"
@@ -172,18 +182,6 @@ const showCreateTagModal = ref(false);
                 class="bg-card-background border-0 placeholder-muted text-sm text-white py-2.5 focus:ring-0 border-b border-card-background-separator focus:border-card-background-separator w-full"
                 placeholder="Search for a Tag..." />
             <div ref="dropdownViewport" class="w-60">
-                <div
-                    v-if="searchValue.length > 0 && filteredTags.length === 0"
-                    class="bg-card-background-active rounded-b-lg">
-                    <div
-                        @click="addTagIfNoneExists"
-                        class="text-white flex space-x-3 items-center px-4 py-3 text-xs font-medium border-t border-card-background-separator">
-                        <PlusCircleIcon
-                            class="w-5 flex-shrink-0"></PlusCircleIcon>
-                        <span>Add "{{ searchValue }}" as a new Tag</span>
-                    </div>
-                </div>
-
                 <div
                     v-for="tag in filteredTags"
                     :key="tag.id"

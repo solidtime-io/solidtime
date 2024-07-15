@@ -9,6 +9,8 @@ declare global {
         axios: AxiosInstance;
         initialDataLoaded: boolean;
         vueAppSetupHook?: (app: App) => void;
+        getWeekStartSetting: () => string;
+        getTimezoneSetting: () => string;
     }
 
     let route: typeof ziggyRoute;

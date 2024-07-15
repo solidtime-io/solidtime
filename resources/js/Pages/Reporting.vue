@@ -21,7 +21,7 @@ import {
 import { type GroupingOption, useReportingStore } from '@/utils/useReporting';
 import { storeToRefs } from 'pinia';
 import TagDropdown from '@/Components/Common/Tag/TagDropdown.vue';
-import type { AggregatedTimeEntriesQueryParams } from '@/utils/api';
+import type { AggregatedTimeEntriesQueryParams, Tag } from '@/utils/api';
 import ReportingFilterBadge from '@/Components/Common/Reporting/ReportingFilterBadge.vue';
 import ProjectMultiselectDropdown from '@/Components/Common/Project/ProjectMultiselectDropdown.vue';
 import MemberMultiselectDropdown from '@/Components/Common/Member/MemberMultiselectDropdown.vue';
@@ -33,6 +33,7 @@ import { formatCents } from '@/utils/money';
 import ReportingPieChart from '@/Components/Common/Reporting/ReportingPieChart.vue';
 import { getCurrentMembershipId, getCurrentRole } from '@/utils/useUser';
 import ClientMultiselectDropdown from '@/Components/Common/Client/ClientMultiselectDropdown.vue';
+import { useTagsStore } from '@/utils/useTags';
 
 const startDate = ref<string | null>(
     getLocalizedDayJs(getDayJsInstance()().format()).subtract(14, 'd').format()
@@ -136,6 +137,14 @@ onMounted(() => {
     updateGraphReporting();
     updateTableReporting();
 });
+
+const { tags } = storeToRefs(useTagsStore());
+async function createTag(tag: string, callback: (tag: Tag) => void) {
+    const newTag = await useTagsStore().createTag(tag);
+    if (newTag !== undefined) {
+        callback(newTag);
+    }
+}
 </script>
 
 <template>
@@ -196,7 +205,9 @@ onMounted(() => {
                     </ClientMultiselectDropdown>
                     <TagDropdown
                         @submit="updateReporting"
-                        v-model="selectedTags">
+                        @createTag="createTag"
+                        v-model="selectedTags"
+                        :tags="tags">
                         <template v-slot:trigger>
                             <ReportingFilterBadge
                                 :count="selectedTags.length"

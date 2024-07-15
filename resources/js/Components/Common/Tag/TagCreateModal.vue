@@ -5,20 +5,22 @@ import DialogModal from '@/Components/DialogModal.vue';
 import { ref } from 'vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import { useFocus } from '@vueuse/core';
-import type { CreateTagBody } from '@/utils/api';
-import { useTagsStore } from '@/utils/useTags';
+import type { CreateTagBody, Tag } from '@/utils/api';
 const show = defineModel('show', { default: false });
 const saving = ref(false);
-
-const { createTag } = useTagsStore();
 
 const tag = ref<CreateTagBody>({
     name: '',
 });
 
+const emit = defineEmits<{
+    createTag: [name: string, callback: (tag: Tag) => void];
+}>();
+
 async function submit() {
-    await createTag(tag.value.name);
-    show.value = false;
+    emit('createTag', tag.value.name, () => {
+        show.value = false;
+    });
 }
 
 const tagNameInput = ref<HTMLInputElement | null>(null);

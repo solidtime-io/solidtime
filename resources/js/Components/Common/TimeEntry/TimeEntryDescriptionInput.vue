@@ -25,7 +25,7 @@ const displaysPlaceholder = computed(() => {
 
 <template>
     <div>
-        <div class="relative text-sm font-medium p">
+        <div class="relative text-sm font-medium">
             <div
                 :class="[
                     'opacity-0 py-2 text-base whitespace-pre pl-3 pr-1',
@@ -40,7 +40,7 @@ const displaysPlaceholder = computed(() => {
                 @input="onInput"
                 @keydown.enter="onChange"
                 placeholder="Add a description"
-                class="absolute px-0 h-full pl-3 pr-1 left-0 top-0 w-full text-white font-medium bg-transparent focus-visible:ring-0 rounded-lg border-0" />
+                class="absolute px-0 h-full pl-3 pr-1 left-0 top-0 w-full text-sm lg:text-base text-white font-medium bg-transparent focus-visible:ring-0 rounded-lg border-0" />
         </div>
     </div>
 </template>

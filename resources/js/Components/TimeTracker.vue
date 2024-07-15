@@ -20,6 +20,8 @@ import SecondaryButton from '@/Components/SecondaryButton.vue';
 import TimeTrackerRangeSelector from '@/Components/Common/TimeTracker/TimeTrackerRangeSelector.vue';
 import { useProjectsStore } from '@/utils/useProjects';
 import { useTasksStore } from '@/utils/useTasks';
+import { useTagsStore } from '@/utils/useTags';
+import type { Tag } from '@/utils/api';
 
 const page = usePage<{
     auth: {
@@ -103,6 +105,14 @@ function switchToTimeEntryOrganization() {
         switchOrganization(currentTimeEntry.value.organization_id);
     }
 }
+async function createTag(tag: string, callback: (tag: Tag) => void) {
+    const newTag = await useTagsStore().createTag(tag);
+    if (newTag !== undefined) {
+        callback(newTag);
+    }
+}
+
+const { tags } = storeToRefs(useTagsStore());
 </script>
 
 <template>
@@ -150,6 +160,8 @@ function switchToTimeEntryOrganization() {
                     <div class="flex items-center space-x-2 px-4">
                         <TimeTrackerTagDropdown
                             @changed="updateTimeEntry"
+                            @createTag="createTag"
+                            :tags="tags"
                             v-model="
                                 currentTimeEntry.tags
                             "></TimeTrackerTagDropdown>

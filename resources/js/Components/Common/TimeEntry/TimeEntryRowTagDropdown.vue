@@ -3,23 +3,30 @@ import TagDropdown from '@/Components/Common/Tag/TagDropdown.vue';
 import { computed } from 'vue';
 import TagBadge from '@/Components/Common/Tag/TagBadge.vue';
 import type { Tag } from '@/utils/api';
-import { useTagsStore } from '@/utils/useTags';
-import { storeToRefs } from 'pinia';
 
-const tagsStore = useTagsStore();
-const { tags } = storeToRefs(tagsStore);
-const emit = defineEmits(['changed']);
+const props = defineProps<{
+    tags: Tag[];
+}>();
+
+const emit = defineEmits<{
+    createTag: [name: string, callback: (tag: Tag) => void];
+    changed: [model: string[]];
+}>();
+
 const model = defineModel<string[]>({
     default: [],
 });
 
 const timeEntryTags = computed<Tag[]>(() => {
-    return tags.value.filter((tag) => model.value.includes(tag.id));
+    return props.tags.filter((tag) => model.value.includes(tag.id));
 });
 </script>
-
 <template>
-    <TagDropdown @changed="emit('changed', model)" v-model="model">
+    <TagDropdown
+        :tags="tags"
+        @createTag="(...args) => emit('createTag', ...args)"
+        @changed="emit('changed', model)"
+        v-model="model">
         <template #trigger>
             <button
                 data-testid="time_entry_tag_dropdown"

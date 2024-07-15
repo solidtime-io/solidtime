@@ -10,7 +10,7 @@ defineProps<{
     <Dropdown align="bottom-end">
         <template #trigger>
             <button
-                class="focus-visible:outline-none focus-visible:bg-card-background rounded-full focus-visible:ring-1 focus-visible:ring-input-border-active focus-visible:opacity-100 hover:bg-card-background group-hover:opacity-100 opacity-20 transition-opacity"
+                class="focus-visible:outline-none focus-visible:bg-card-background rounded-full focus-visible:ring-1 focus-visible:ring-input-border-active focus-visible:opacity-100 hover:bg-card-background group-hover:opacity-100 opacity-20 transition-opacity text-muted"
                 :aria-label="label">
                 <svg
                     class="h-10 w-10 p-2 rounded-full"

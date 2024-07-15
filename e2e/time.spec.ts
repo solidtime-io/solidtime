@@ -145,7 +145,8 @@ test('test that adding a new tag to an existing time entry works', async ({
     const newTagName = Math.floor(Math.random() * 1000000).toString();
 
     await newTimeEntry.getByTestId('time_entry_tag_dropdown').click();
-    await page.getByTestId('tag_dropdown_search').fill(newTagName);
+    await page.getByText('Create new tag').click();
+    await page.getByPlaceholder('Tag Name').fill(newTagName);
 
     const [tagReponse] = await Promise.all([
         page.waitForResponse(async (response) => {
@@ -156,7 +157,7 @@ test('test that adding a new tag to an existing time entry works', async ({
                 (await response.json()).data.name === newTagName
             );
         }),
-        page.getByTestId('tag_dropdown_search').press('Enter'),
+        page.getByRole('button', { name: 'Create Tag' }).click(),
     ]);
 
     await page.waitForResponse(async (response) => {
@@ -172,8 +173,7 @@ test('test that adding a new tag to an existing time entry works', async ({
         );
     });
 
-    await expect(page.getByTestId('tag_dropdown_search')).toHaveValue('');
-    await expect(page.getByRole('option', { name: newTagName })).toBeVisible();
+    await expect(newTimeEntry.getByText(newTagName)).toBeVisible();
 });
 
 // Test that Start / End Time Update Works

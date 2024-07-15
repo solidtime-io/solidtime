@@ -339,8 +339,8 @@ async function createProject(project: CreateProjectBody, callback: () => void) {
                 tag="button"
                 :name="selectedProjectName"
                 class="focus:border-border-tertiary focus:outline-0 focus:bg-card-background-separator hover:bg-card-background-separator">
-                <div class="flex items-center space-x-1">
-                    <span>
+                <div class="flex nowrap items-center space-x-1">
+                    <span class="whitespace-nowrap text-xs lg:text-sm">
                         {{ selectedProjectName }}
                     </span>
                     <ChevronRightIcon
