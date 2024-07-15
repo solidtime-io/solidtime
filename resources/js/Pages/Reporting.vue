@@ -21,7 +21,7 @@ import {
 import { type GroupingOption, useReportingStore } from '@/utils/useReporting';
 import { storeToRefs } from 'pinia';
 import TagDropdown from '@/Components/Common/Tag/TagDropdown.vue';
-import type { AggregatedTimeEntriesQueryParams, Tag } from '@/utils/api';
+import type { AggregatedTimeEntriesQueryParams } from '@/utils/api';
 import ReportingFilterBadge from '@/Components/Common/Reporting/ReportingFilterBadge.vue';
 import ProjectMultiselectDropdown from '@/Components/Common/Project/ProjectMultiselectDropdown.vue';
 import MemberMultiselectDropdown from '@/Components/Common/Member/MemberMultiselectDropdown.vue';
@@ -139,11 +139,8 @@ onMounted(() => {
 });
 
 const { tags } = storeToRefs(useTagsStore());
-async function createTag(tag: string, callback: (tag: Tag) => void) {
-    const newTag = await useTagsStore().createTag(tag);
-    if (newTag !== undefined) {
-        callback(newTag);
-    }
+async function createTag(tag: string) {
+    return await useTagsStore().createTag(tag);
 }
 </script>
 
@@ -205,7 +202,7 @@ async function createTag(tag: string, callback: (tag: Tag) => void) {
                     </ClientMultiselectDropdown>
                     <TagDropdown
                         @submit="updateReporting"
-                        @createTag="createTag"
+                        :createTag
                         v-model="selectedTags"
                         :tags="tags">
                         <template v-slot:trigger>

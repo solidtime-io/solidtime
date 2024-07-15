@@ -13,14 +13,15 @@ const tag = ref<CreateTagBody>({
     name: '',
 });
 
-const emit = defineEmits<{
-    createTag: [name: string, callback: (tag: Tag) => void];
+const props = defineProps<{
+    createTag: (name: string) => Promise<Tag | undefined>;
 }>();
 
 async function submit() {
-    emit('createTag', tag.value.name, () => {
+    const newTag = props.createTag(tag.value.name);
+    if (newTag !== undefined) {
         show.value = false;
-    });
+    }
 }
 
 const tagNameInput = ref<HTMLInputElement | null>(null);

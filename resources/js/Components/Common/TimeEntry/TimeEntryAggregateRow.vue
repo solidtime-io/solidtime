@@ -21,13 +21,13 @@ const props = defineProps<{
     projects: Project[];
     tasks: Task[];
     tags: Tag[];
+    createTag: (name: string) => Promise<Tag | undefined>;
 }>();
 
 const emit = defineEmits<{
     onStartStopClick: [timeEntry: TimeEntry];
     updateTimeEntries: [timeEntries: TimeEntry[]];
     deleteTimeEntries: [timeEntries: TimeEntry[]];
-    createTag: [name: string, callback: (tag: Tag) => void];
 }>();
 
 function updateTimeEntryDescription(description: string) {
@@ -95,7 +95,7 @@ const expanded = ref(false);
                 </div>
                 <div class="flex items-center font-medium lg:space-x-2">
                     <TimeEntryRowTagDropdown
-                        @createTag="(...args) => emit('createTag', ...args)"
+                        :createTag
                         :tags="tags"
                         @changed="updateTimeEntryTags"
                         :modelValue="timeEntry.tags"></TimeEntryRowTagDropdown>
@@ -142,7 +142,7 @@ const expanded = ref(false);
                 @updateTimeEntry="(arg) => emit('updateTimeEntries', [arg])"
                 @onStartStopClick="emit('onStartStopClick', subEntry)"
                 @deleteTimeEntry="emit('deleteTimeEntries', [subEntry])"
-                @createTag="(...args) => emit('createTag', ...args)"
+                :createTag
                 :key="subEntry.id"
                 v-for="subEntry in timeEntry.timeEntries"
                 :time-entry="subEntry"></TimeEntryRow>

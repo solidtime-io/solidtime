@@ -304,7 +304,7 @@ test('test that deleting a time entry from the overview works', async ({
     await goToTimeOverview(page);
     const timeEntryRows = page.locator('[data-testid="time_entry_row"]');
     await createEmptyTimeEntry(page);
-    const timeEntryCount = await timeEntryRows.count();
+    await expect(timeEntryRows).toHaveCount(1);
 
     const newTimeEntry = timeEntryRows.first();
     const actionsDropdown = newTimeEntry
@@ -313,7 +313,7 @@ test('test that deleting a time entry from the overview works', async ({
     await actionsDropdown.click();
     const deleteButton = page.getByText('Delete');
     await deleteButton.click();
-    await expect(timeEntryRows).toHaveCount(timeEntryCount - 1);
+    await expect(timeEntryRows).toHaveCount(0);
 });
 
 test.skip('test that load more works when the end of page is reached', async ({

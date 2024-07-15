@@ -5,7 +5,7 @@ import { onMounted, ref, watch } from 'vue';
 import MainContainer from '@/Pages/MainContainer.vue';
 import { useTimeEntriesStore } from '@/utils/useTimeEntries';
 import { storeToRefs } from 'pinia';
-import type { CreateTimeEntryBody, Tag, TimeEntry } from '@/utils/api';
+import type { CreateTimeEntryBody, TimeEntry } from '@/utils/api';
 import { useElementVisibility } from '@vueuse/core';
 import { ClockIcon } from '@heroicons/vue/20/solid';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
@@ -77,11 +77,8 @@ const { projects } = storeToRefs(projectStore);
 const taskStore = useTasksStore();
 const { tasks } = storeToRefs(taskStore);
 
-async function createTag(name: string, callback: (tag: Tag) => void) {
-    const newTag = await useTagsStore().createTag(name);
-    if (newTag !== undefined) {
-        callback(newTag);
-    }
+async function createTag(name: string) {
+    return await useTagsStore().createTag(name);
 }
 </script>
 
@@ -111,7 +108,7 @@ async function createTag(name: string, callback: (tag: Tag) => void) {
             @updateTimeEntries="updateTimeEntries"
             @deleteTimeEntries="deleteTimeEntries"
             @createTimeEntry="startTimeEntry"
-            @createTag="createTag"
+            :createTag
             :projects="projects"
             :tasks="tasks"
             :timeEntries="timeEntries"
