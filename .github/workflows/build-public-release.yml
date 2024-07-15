@@ -1,15 +1,14 @@
 on:
   push:
-    branches:
-      - main
-      - develop
+    tags:
+      - '*'
   pull_request:
     paths:
       - '.github/workflows/build-public.yml'
       - 'docker/prod/**'
   workflow_dispatch:
 
-name: Build - Public
+name: Build - Public (Release)
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -18,7 +17,7 @@ jobs:
       contents: read
       attestations: write
       id-token: write
-    timeout-minutes: 10
+    timeout-minutes: 90
 
     steps:
       - name: "Check out code"
