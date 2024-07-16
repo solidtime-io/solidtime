@@ -22,40 +22,37 @@ const props = defineProps<{
     tasks: Task[];
     tags: Tag[];
     createTag: (name: string) => Promise<Tag | undefined>;
-}>();
-
-const emit = defineEmits<{
-    onStartStopClick: [timeEntry: TimeEntry];
-    updateTimeEntries: [timeEntries: TimeEntry[]];
-    deleteTimeEntries: [timeEntries: TimeEntry[]];
+    onStartStopClick: (timeEntry: TimeEntry) => void;
+    updateTimeEntries: (timeEntries: TimeEntry[]) => void;
+    deleteTimeEntries: (timeEntries: TimeEntry[]) => void;
 }>();
 
 function updateTimeEntryDescription(description: string) {
     const updatedTimeEntries = props.timeEntry.timeEntries.map((entry) => {
         return { ...entry, description };
     });
-    emit('updateTimeEntries', updatedTimeEntries);
+    props.updateTimeEntries(updatedTimeEntries);
 }
 
 function updateTimeEntryTags(tags: string[]) {
     const updatedTimeEntries = props.timeEntry.timeEntries.map((entry) => {
         return { ...entry, tags };
     });
-    emit('updateTimeEntries', updatedTimeEntries);
+    props.updateTimeEntries(updatedTimeEntries);
 }
 
 function updateTimeEntryBillable(billable: boolean) {
     const updatedTimeEntries = props.timeEntry.timeEntries.map((entry) => {
         return { ...entry, billable };
     });
-    emit('updateTimeEntries', updatedTimeEntries);
+    props.updateTimeEntries(updatedTimeEntries);
 }
 
 function updateProjectAndTask(projectId: string, taskId: string) {
     const updatedTimeEntries = props.timeEntry.timeEntries.map((entry) => {
         return { ...entry, project_id: projectId, task_id: taskId };
     });
-    emit('updateTimeEntries', updatedTimeEntries);
+    props.updateTimeEntries(updatedTimeEntries);
 }
 
 const expanded = ref(false);
@@ -121,12 +118,12 @@ const expanded = ref(false);
                     </button>
 
                     <TimeTrackerStartStop
-                        @changed="emit('onStartStopClick', timeEntry)"
+                        @changed="onStartStopClick(timeEntry)"
                         :active="!!(timeEntry.start && !timeEntry.end)"
                         class="opacity-20 hidden sm:flex group-hover:opacity-100"></TimeTrackerStartStop>
                     <TimeEntryMoreOptionsDropdown
                         @delete="
-                            emit('deleteTimeEntries', timeEntry.timeEntries)
+                            deleteTimeEntries([timeEntry])
                         "></TimeEntryMoreOptionsDropdown>
                 </div>
             </div>
@@ -139,9 +136,9 @@ const expanded = ref(false);
                 :tasks="tasks"
                 :tags="tags"
                 indent
-                @updateTimeEntry="(arg) => emit('updateTimeEntries', [arg])"
-                @onStartStopClick="emit('onStartStopClick', subEntry)"
-                @deleteTimeEntry="emit('deleteTimeEntries', [subEntry])"
+                :updateTimeEntry="(arg) => updateTimeEntries([arg])"
+                :onStartStopClick="() => onStartStopClick(subEntry)"
+                :deleteTimeEntry="() => deleteTimeEntries([subEntry])"
                 :createTag
                 :key="subEntry.id"
                 v-for="subEntry in timeEntry.timeEntries"

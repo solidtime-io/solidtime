@@ -17,32 +17,29 @@ const props = defineProps<{
     tasks: Task[];
     tags: Tag[];
     createTag: (name: string) => Promise<Tag | undefined>;
-}>();
-
-const emit = defineEmits<{
-    onStartStopClick: [];
-    deleteTimeEntry: [];
-    updateTimeEntry: [timeEntry: TimeEntry];
+    onStartStopClick: () => void;
+    deleteTimeEntry: () => void;
+    updateTimeEntry: (timeEntry: TimeEntry) => void;
 }>();
 
 function updateTimeEntryDescription(description: string) {
-    emit('updateTimeEntry', { ...props.timeEntry, description });
+    props.updateTimeEntry({ ...props.timeEntry, description });
 }
 
 function updateTimeEntryTags(tags: string[]) {
-    emit('updateTimeEntry', { ...props.timeEntry, tags });
+    props.updateTimeEntry({ ...props.timeEntry, tags });
 }
 
 function updateTimeEntryBillable(billable: boolean) {
-    emit('updateTimeEntry', { ...props.timeEntry, billable });
+    props.updateTimeEntry({ ...props.timeEntry, billable });
 }
 
 function updateStartEndTime(start: string, end: string | null) {
-    emit('updateTimeEntry', { ...props.timeEntry, start, end });
+    props.updateTimeEntry({ ...props.timeEntry, start, end });
 }
 
 function updateProjectAndTask(projectId: string, taskId: string) {
-    emit('updateTimeEntry', {
+    props.updateTimeEntry({
         ...props.timeEntry,
         project_id: projectId,
         task_id: taskId,
@@ -106,12 +103,12 @@ function updateProjectAndTask(projectId: string, taskId: string) {
                             updateStartEndTime
                         "></TimeEntryRowDurationInput>
                     <TimeTrackerStartStop
-                        @changed="emit('onStartStopClick')"
+                        @changed="onStartStopClick"
                         :active="!!(timeEntry.start && !timeEntry.end)"
                         class="opacity-20 hidden sm:flex group-hover:opacity-100"></TimeTrackerStartStop>
                     <TimeEntryMoreOptionsDropdown
                         @delete="
-                            emit('deleteTimeEntry')
+                            deleteTimeEntry
                         "></TimeEntryMoreOptionsDropdown>
                 </div>
             </div>
