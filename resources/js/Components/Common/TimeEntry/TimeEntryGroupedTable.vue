@@ -20,13 +20,10 @@ const props = defineProps<{
     tasks: Task[];
     tags: Tag[];
     createTag: (name: string) => Promise<Tag | undefined>;
-}>();
-
-const emit = defineEmits<{
-    updateTimeEntry: [entry: TimeEntry];
-    updateTimeEntries: [entries: TimeEntry[]];
-    deleteTimeEntries: [entries: TimeEntry[]];
-    createTimeEntry: [entry: Omit<CreateTimeEntryBody, 'member_id'>];
+    updateTimeEntry: (entry: TimeEntry) => void;
+    updateTimeEntries: (entries: TimeEntry[]) => void;
+    deleteTimeEntries: (entries: TimeEntry[]) => void;
+    createTimeEntry: (entry: Omit<CreateTimeEntryBody, 'member_id'>) => void;
 }>();
 
 const groupedTimeEntries = computed(() => {
@@ -96,7 +93,7 @@ const groupedTimeEntries = computed(() => {
 });
 
 function startTimeEntryFromExisting(entry: TimeEntry) {
-    emit('createTimeEntry', {
+    props.createTimeEntry({
         project_id: entry.project_id,
         task_id: entry.task_id,
         start: dayjs().utc().format(),
@@ -115,9 +112,9 @@ function startTimeEntryFromExisting(entry: TimeEntry) {
                 :projects="projects"
                 :tasks="tasks"
                 :tags="tags"
-                @onStartStopClick="startTimeEntryFromExisting(entry)"
-                @updateTimeEntries="(arg) => emit('updateTimeEntries', arg)"
-                @deleteTimeEntries="(arg) => emit('deleteTimeEntries', arg)"
+                :onStartStopClick="startTimeEntryFromExisting"
+                :updateTimeEntries
+                :deleteTimeEntries
                 :createTag
                 v-if="'timeEntries' in entry && entry.timeEntries.length > 1"
                 :time-entry="entry"></TimeEntryAggregateRow>
@@ -126,9 +123,9 @@ function startTimeEntryFromExisting(entry: TimeEntry) {
                 :tasks="tasks"
                 :tags="tags"
                 :createTag
-                @updateTimeEntry="(arg) => emit('updateTimeEntry', arg)"
-                @onStartStopClick="startTimeEntryFromExisting(entry)"
-                @deleteTimeEntry="() => emit('deleteTimeEntries', [entry])"
+                :updateTimeEntry
+                :onStartStopClick="() => startTimeEntryFromExisting(entry)"
+                :deleteTimeEntry="() => deleteTimeEntries([entry])"
                 v-else
                 :time-entry="entry"></TimeEntryRow>
         </template>

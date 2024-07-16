@@ -104,10 +104,10 @@ async function createTag(name: string) {
             </div>
         </MainContainer>
         <TimeEntryGroupedTable
-            @updateTimeEntry="updateTimeEntry"
-            @updateTimeEntries="updateTimeEntries"
-            @deleteTimeEntries="deleteTimeEntries"
-            @createTimeEntry="startTimeEntry"
+            :updateTimeEntry
+            :updateTimeEntries
+            :deleteTimeEntries
+            :createTimeEntry="startTimeEntry"
             :createTag
             :projects="projects"
             :tasks="tasks"
