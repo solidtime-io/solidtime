@@ -27,13 +27,10 @@ class PaginatedResourceCollectionTypeToSchema extends TypeToSchemaExtension
             && $type->isInstanceOf(PaginatedResourceCollection::class);
     }
 
-    /**
-     * @param  Generic  $type
-     */
-    public function toResponse(Type $type): ?Response
+    public function toSchema(Type $type): ?OpenApiObjectType
     {
         /** @var Type|null $collectingClassType */
-        $collectingClassType = $type->templateTypes[0];
+        $collectingClassType = $type->templateTypes[0] ?? null;
 
         if (! $collectingClassType instanceof ObjectType) {
             return null;
@@ -78,6 +75,21 @@ class PaginatedResourceCollectionTypeToSchema extends TypeToSchemaExtension
                 ->setRequired(['current_page', 'from', 'last_page', 'links', 'path', 'per_page', 'to', 'total'])
         );
         $type->setRequired(['data', 'links', 'meta']);
+
+        return $type;
+    }
+
+    /**
+     * @param  Generic  $type
+     */
+    public function toResponse(Type $type): ?Response
+    {
+        /** @var ObjectType|null $collectingClassType */
+        $collectingClassType = $type->templateTypes[0] ?? null;
+        if (! $collectingClassType instanceof ObjectType) {
+            return null;
+        }
+        $type = $this->toSchema($type);
 
         return Response::make(200)
             ->description('Paginated set of `'.$this->components->uniqueSchemaName($collectingClassType->name).'`')
