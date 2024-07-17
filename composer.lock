@@ -1403,12 +1403,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/korridor/scramble.git",
-                "reference": "78b2a5a5eb8071b006bddc95e34e0620c8bf3b7d"
+                "reference": "ff692e60e3827ee395007d19ae377fc0d7274fe3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/korridor/scramble/zipball/78b2a5a5eb8071b006bddc95e34e0620c8bf3b7d",
-                "reference": "78b2a5a5eb8071b006bddc95e34e0620c8bf3b7d",
+                "url": "https://api.github.com/repos/korridor/scramble/zipball/ff692e60e3827ee395007d19ae377fc0d7274fe3",
+                "reference": "ff692e60e3827ee395007d19ae377fc0d7274fe3",
                 "shasum": ""
             },
             "require": {
@@ -1487,7 +1487,7 @@
                     "url": "https://github.com/romalytvynenko"
                 }
             ],
-            "time": "2024-03-19T15:56:18+00:00"
+            "time": "2024-07-17T11:33:15+00:00"
         },
         {
             "name": "defuse/php-encryption",
