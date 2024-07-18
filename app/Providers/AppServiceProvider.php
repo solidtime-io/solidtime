@@ -22,6 +22,7 @@ use Dedoc\Scramble\Support\Generator\OpenApi;
 use Dedoc\Scramble\Support\Generator\SecurityScheme;
 use Dedoc\Scramble\Support\Generator\SecuritySchemes\OAuthFlow;
 use Filament\Forms\Components\Section;
+use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Foundation\Application;
@@ -50,6 +51,7 @@ class AppServiceProvider extends ServiceProvider
             $this->app->register(TelescopeServiceProvider::class);
         }
 
+        // Eloquent
         Model::preventLazyLoading(! $this->app->isProduction());
         Model::preventSilentlyDiscardingAttributes(! $this->app->isProduction());
         Model::preventAccessingMissingAttributes(! $this->app->isProduction());
@@ -65,10 +67,16 @@ class AppServiceProvider extends ServiceProvider
             'tag' => Tag::class,
         ]);
         Model::unguard();
+
+        // Filament
         Section::configureUsing(function (Section $section): void {
             $section->columns(1);
         }, null, true);
+        Table::configureUsing(function (Table $table): void {
+            $table->paginated([10, 25, 50, 100]);
+        });
 
+        // Scramble
         Scramble::extendOpenApi(function (OpenApi $openApi) {
             $openApi->secure(
                 SecurityScheme::oauth2()
@@ -92,6 +100,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(IpLookupServiceContract::class, NoIpLookupService::class);
         $this->app->bind(BillingContract::class);
 
+        // Routing
         Route::model('member', Member::class);
         Route::model('invitation', OrganizationInvitation::class);
     }
