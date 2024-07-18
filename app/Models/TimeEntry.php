@@ -26,6 +26,7 @@ use Korridor\LaravelComputedAttributes\ComputedAttributes;
  * @property string $user_id
  * @property string $member_id
  * @property bool $is_imported
+ * @property Carbon|null $still_active_email_sent_at
  * @property-read User $user
  * @property-read Member $member
  * @property string $organization_id
@@ -59,6 +60,7 @@ class TimeEntry extends Model
         'tags' => 'array',
         'billable_rate' => 'int',
         'is_imported' => 'bool',
+        'still_active_email_sent_at' => 'datetime',
     ];
 
     /**
