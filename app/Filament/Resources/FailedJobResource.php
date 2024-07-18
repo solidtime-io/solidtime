@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\FailedJobsResource\ListFailedJobs;
+use App\Filament\Resources\FailedJobResource\Pages\ListFailedJobs;
+use App\Filament\Resources\FailedJobResource\Pages\ViewFailedJobs;
 use App\Models\FailedJob;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -24,7 +25,7 @@ use Novadaemon\FilamentPrettyJson\PrettyJson;
 /**
  * @source https://gitlab.com/amvisor/filament-failed-jobs
  */
-class FailedJobsResource extends Resource
+class FailedJobResource extends Resource
 {
     protected static ?string $model = FailedJob::class;
 
@@ -107,6 +108,8 @@ class FailedJobsResource extends Resource
     {
         return [
             'index' => ListFailedJobs::route('/'),
+            'view' => ViewFailedJobs::route('/{record}'),
+
         ];
     }
 }
