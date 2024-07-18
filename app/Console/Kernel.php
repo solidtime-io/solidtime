@@ -14,7 +14,9 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
+        $schedule->command('time-entry:send-still-running-mails')
+            ->when(fn (): bool => config('scheduling.tasks.time_entry_send_still_running_mails'))
+            ->everyTenMinutes();
     }
 
     /**
