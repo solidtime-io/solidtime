@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Filament\Resources\FailedJobsResource;
+namespace App\Filament\Resources\FailedJobResource\Pages;
 
-use App\Filament\Resources\FailedJobsResource;
+use App\Filament\Resources\FailedJobResource;
 use App\Models\FailedJob;
 use Filament\Notifications\Notification;
 use Filament\Pages\Actions\Action;
@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Artisan;
 
 class ListFailedJobs extends ListRecords
 {
-    protected static string $resource = FailedJobsResource::class;
+    protected static string $resource = FailedJobResource::class;
 
     public function getHeaderActions(): array
     {
