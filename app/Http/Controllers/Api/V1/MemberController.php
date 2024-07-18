@@ -14,7 +14,6 @@ use App\Exceptions\Api\UserNotPlaceholderApiException;
 use App\Http\Requests\V1\Member\MemberIndexRequest;
 use App\Http\Requests\V1\Member\MemberUpdateRequest;
 use App\Http\Resources\V1\Member\MemberCollection;
-use App\Http\Resources\V1\Member\MemberPivotResource;
 use App\Http\Resources\V1\Member\MemberResource;
 use App\Models\Member;
 use App\Models\Organization;
@@ -40,7 +39,7 @@ class MemberController extends Controller
     /**
      * List all members of an organization
      *
-     * @return MemberCollection<MemberPivotResource>>
+     * @return MemberCollection<MemberResource>
      *
      * @throws AuthorizationException
      *
@@ -50,7 +49,9 @@ class MemberController extends Controller
     {
         $this->checkPermission($organization, 'members:view');
 
-        $members = $organization->users()
+        $members = Member::query()
+            ->whereBelongsTo($organization, 'organization')
+            ->with(['user'])
             ->paginate(config('app.pagination_per_page_default'));
 
         return MemberCollection::make($members);

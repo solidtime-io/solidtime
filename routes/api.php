@@ -12,6 +12,8 @@ use App\Http\Controllers\Api\V1\ProjectMemberController;
 use App\Http\Controllers\Api\V1\TagController;
 use App\Http\Controllers\Api\V1\TaskController;
 use App\Http\Controllers\Api\V1\TimeEntryController;
+use App\Http\Controllers\Api\V1\UserController;
+use App\Http\Controllers\Api\V1\UserMemberController;
 use App\Http\Controllers\Api\V1\UserTimeEntryController;
 use Illuminate\Support\Facades\Route;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -43,6 +45,16 @@ Route::middleware([
         Route::put('/organizations/{organization}/members/{member}', [MemberController::class, 'update'])->name('update');
         Route::delete('/organizations/{organization}/members/{member}', [MemberController::class, 'destroy'])->name('destroy');
         Route::post('/organizations/{organization}/members/{member}/invite-placeholder', [MemberController::class, 'invitePlaceholder'])->name('invite-placeholder');
+    });
+
+    // User routes
+    Route::name('users.')->group(static function () {
+        Route::get('/users/me', [UserController::class, 'me'])->name('me');
+    });
+
+    // User Member routes
+    Route::name('users.members.')->group(static function () {
+        Route::get('/users/me/members', [UserMemberController::class, 'myMembers'])->name('my-members');
     });
 
     // Invitation routes
