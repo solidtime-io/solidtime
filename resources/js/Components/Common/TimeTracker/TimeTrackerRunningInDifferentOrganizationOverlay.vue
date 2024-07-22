@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import SecondaryButton from '../../../../../extensions/Billing/vendor/laravel/spark-paddle/resources/js/Components/SecondaryButton.vue';
+import SecondaryButton from '@/Components/SecondaryButton.vue';
 
 defineEmits<{
     switchOrganization: [];
