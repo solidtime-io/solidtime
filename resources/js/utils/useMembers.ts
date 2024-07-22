@@ -36,15 +36,12 @@ export const useMembersStore = defineStore('members', () => {
         if (organization) {
             await handleApiRequestNotifications(
                 () =>
-                    api.removeMember(
-                        {},
-                        {
-                            params: {
-                                organization: organization,
-                                member: membershipId,
-                            },
-                        }
-                    ),
+                    api.removeMember(undefined, {
+                        params: {
+                            organization: organization,
+                            member: membershipId,
+                        },
+                    }),
                 'Member deleted successfully',
                 'Failed to delete member'
             );

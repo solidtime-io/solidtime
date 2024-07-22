@@ -37,10 +37,10 @@ defineProps<{
                 :class="
                     twMerge(
                         iconColorClasses,
-                        'flex-shrink-0 ring-0 focus:outline-none focus:ring-0 transition focus-visible:bg-card-background-separator hover:bg-card-background-separator rounded-full w-7 sm:w-10 h-7 sm:h-10 flex items-center justify-center'
+                        'flex-shrink-0 ring-0 focus:outline-none focus:ring-0 transition focus-visible:bg-card-background-separator hover:bg-card-background-separator rounded-full w-11 h-11 flex items-center justify-center'
                     )
                 ">
-                <TagIcon class="w-5 sm:w-6 h-5 sm:h-6"></TagIcon>
+                <TagIcon class="w-5 h-5 lg:h-6 lg:w-6"></TagIcon>
                 <span
                     v-if="model.length > 1"
                     class="font-extrabold absolute rounded-full text-xs w-3 h-3 block top-[15px] rotate-[45deg] right-[14px] text-card-background">

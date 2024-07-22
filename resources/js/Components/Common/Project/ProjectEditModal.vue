@@ -3,7 +3,7 @@ import TextInput from '@/Components/TextInput.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import DialogModal from '@/Components/DialogModal.vue';
 import { computed, ref } from 'vue';
-import type { CreateProjectBody, Project } from '@/utils/api';
+import type { CreateClientBody, CreateProjectBody, Project } from '@/utils/api';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import { useProjectsStore } from '@/utils/useProjects';
 import { useFocus } from '@vueuse/core';
@@ -25,6 +25,10 @@ const showBillableRateModal = ref(false);
 const props = defineProps<{
     originalProject: Project;
 }>();
+
+async function createClient(body: CreateClientBody) {
+    return await useClientsStore().createClient(body);
+}
 
 const project = ref<CreateProjectBody>({
     name: props.originalProject.name,
@@ -97,7 +101,11 @@ async function submitBillableRate() {
                 </div>
                 <div class="">
                     <InputLabel for="client" value="Client" />
-                    <ClientDropdown class="mt-1" v-model="project.client_id">
+                    <ClientDropdown
+                        :createClient
+                        :clients="clients"
+                        class="mt-1"
+                        v-model="project.client_id">
                         <template #trigger>
                             <Badge
                                 class="bg-input-background cursor-pointer hover:bg-tertiary"

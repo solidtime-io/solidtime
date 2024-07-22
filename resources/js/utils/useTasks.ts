@@ -68,15 +68,12 @@ export const useTasksStore = defineStore('tasks', () => {
         if (organizationId) {
             await handleApiRequestNotifications(
                 () =>
-                    api.deleteTask(
-                        {},
-                        {
-                            params: {
-                                organization: organizationId,
-                                task: taskId,
-                            },
-                        }
-                    ),
+                    api.deleteTask(undefined, {
+                        params: {
+                            organization: organizationId,
+                            task: taskId,
+                        },
+                    }),
                 'Task deleted successfully',
                 'Failed to delete task'
             );

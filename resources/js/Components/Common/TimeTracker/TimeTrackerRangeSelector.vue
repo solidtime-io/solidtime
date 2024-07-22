@@ -2,23 +2,28 @@
 import Dropdown from '@/Components/Dropdown.vue';
 import { computed, ref } from 'vue';
 import TimeRangeSelector from '@/Components/Common/TimeRangeSelector.vue';
-import dayjs from 'dayjs';
+import dayjs, { Dayjs } from 'dayjs';
 import parse from 'parse-duration';
-import { useCurrentTimeEntryStore } from '@/utils/useCurrentTimeEntry';
-import { storeToRefs } from 'pinia';
 import { formatDuration, getDayJsInstance } from '@/utils/time';
-const currentTimeEntryStore = useCurrentTimeEntryStore();
-const { startLiveTimer, stopLiveTimer, updateTimer, startTimer } =
-    currentTimeEntryStore;
-const { currentTimeEntry, now } = storeToRefs(currentTimeEntryStore);
+import type { TimeEntry } from '@/utils/api';
 
-defineEmits(['changed']);
+const currentTimeEntry = defineModel<TimeEntry>('currentTimeEntry', {
+    required: true,
+});
+const now = defineModel<null | Dayjs>('liveTimer');
+
+const emit = defineEmits<{
+    startLiveTimer: [];
+    stopLiveTimer: [];
+    updateTimer: [];
+    startTimer: [];
+}>();
 
 const open = ref(false);
 
 function pauseLiveTimerUpdate(event: FocusEvent) {
     (event.target as HTMLInputElement).select();
-    stopLiveTimer();
+    emit('stopLiveTimer');
 }
 
 function onTimeEntryEnterPress() {
@@ -59,9 +64,9 @@ function updateTimerAndStartLiveTimerUpdate() {
         );
         currentTimeEntry.value.start = newStartDate.utc().format();
         if (currentTimeEntry.value.id !== '') {
-            currentTimeEntryStore.updateTimer();
+            emit('updateTimer');
         } else {
-            currentTimeEntryStore.startTimer();
+            emit('startTimer');
         }
     } else if (isHHMM(temporaryCustomTimerEntry.value)) {
         const results = parseHHMM(temporaryCustomTimerEntry.value);
@@ -71,9 +76,9 @@ function updateTimerAndStartLiveTimerUpdate() {
                 .subtract(parseInt(results[2]), 'm');
             currentTimeEntry.value.start = newStartDate.utc().format();
             if (currentTimeEntry.value.id !== '') {
-                currentTimeEntryStore.updateTimer();
+                emit('updateTimer');
             } else {
-                currentTimeEntryStore.startTimer();
+                emit('startTimer');
             }
         }
     }
@@ -82,15 +87,15 @@ function updateTimerAndStartLiveTimerUpdate() {
         const newStartDate = dayjs().subtract(time, 's');
         currentTimeEntry.value.start = newStartDate.utc().format();
         if (currentTimeEntry.value.id !== '') {
-            currentTimeEntryStore.updateTimer();
+            emit('updateTimer');
         } else {
-            currentTimeEntryStore.startTimer();
+            emit('startTimer');
         }
     }
     // fallback to minutes if just a number is given
     now.value = dayjs().utc();
     temporaryCustomTimerEntry.value = '';
-    startLiveTimer();
+    emit('startLiveTimer');
 }
 
 function isNumeric(value: string) {
@@ -113,9 +118,9 @@ async function updateTimeRange(newStart: string) {
     if (getDayJsInstance()(newStart).isBefore(getDayJsInstance()())) {
         currentTimeEntry.value.start = newStart;
         if (currentTimeEntry.value.id) {
-            await updateTimer();
+            emit('updateTimer');
         } else {
-            await startTimer();
+            emit('startTimer');
         }
     }
 }
@@ -143,7 +148,7 @@ const startTime = computed(() => {
                     @blur="updateTimerAndStartLiveTimerUpdate"
                     @keydown.enter="onTimeEntryEnterPress"
                     v-model="currentTime"
-                    class="w-[110px] sm:w-[130px] h-full text-white py-2.5 rounded-r-lg text-center px-4 text-sm sm:text-lg font-bold bg-card-background border-none placeholder-muted focus:ring-0 transition"
+                    class="w-[110px] lg:w-[130px] h-full text-white py-2.5 rounded-r-lg text-center px-4 text-base lg:text-lg font-bold bg-card-background border-none placeholder-muted focus:ring-0 transition"
                     type="text" />
             </template>
             <template #content>

@@ -3,7 +3,7 @@ import TextInput from '@/Components/TextInput.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import DialogModal from '@/Components/DialogModal.vue';
 import { computed, ref } from 'vue';
-import type { CreateProjectBody } from '@/utils/api';
+import type { CreateClientBody, CreateProjectBody, Project } from '@/utils/api';
 import { getRandomColor } from '@/utils/color';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import { useFocus } from '@vueuse/core';
@@ -20,10 +20,8 @@ const saving = ref(false);
 
 const props = defineProps<{
     clients: Client[];
-}>();
-
-const emit = defineEmits<{
-    submit: [project: CreateProjectBody, callback: () => void];
+    createProject: (project: CreateProjectBody) => Promise<Project | undefined>;
+    createClient: (client: CreateClientBody) => Promise<Client | undefined>;
 }>();
 
 const project = ref<CreateProjectBody>({
@@ -35,16 +33,15 @@ const project = ref<CreateProjectBody>({
 });
 
 async function submit() {
-    emit('submit', project.value, () => {
-        show.value = false;
-        project.value = {
-            name: '',
-            color: getRandomColor(),
-            client_id: null,
-            billable_rate: null,
-            is_billable: false,
-        };
-    });
+    await props.createProject(project.value);
+    show.value = false;
+    project.value = {
+        name: '',
+        color: getRandomColor(),
+        client_id: null,
+        billable_rate: null,
+        is_billable: false,
+    };
 }
 
 const projectNameInput = ref<HTMLInputElement | null>(null);
@@ -96,7 +93,11 @@ const currentClientName = computed(() => {
                 </div>
                 <div>
                     <InputLabel for="client" value="Client" />
-                    <ClientDropdown class="mt-2" v-model="project.client_id">
+                    <ClientDropdown
+                        :createClient="createClient"
+                        :clients="clients"
+                        class="mt-2"
+                        v-model="project.client_id">
                         <template #trigger>
                             <Badge
                                 class="bg-input-background cursor-pointer hover:bg-tertiary"

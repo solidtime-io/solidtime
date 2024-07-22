@@ -81,15 +81,12 @@ export const useProjectMembersStore = defineStore('project-members', () => {
         if (organizationId) {
             await handleApiRequestNotifications(
                 () =>
-                    api.deleteProjectMember(
-                        {},
-                        {
-                            params: {
-                                organization: organizationId,
-                                projectMember: projectMemberId,
-                            },
-                        }
-                    ),
+                    api.deleteProjectMember(undefined, {
+                        params: {
+                            organization: organizationId,
+                            projectMember: projectMemberId,
+                        },
+                    }),
                 'Project member removed successfully',
                 'Failed to remove project member'
             );

@@ -5,7 +5,14 @@ import { onMounted, ref, watch } from 'vue';
 import MainContainer from '@/Pages/MainContainer.vue';
 import { useTimeEntriesStore } from '@/utils/useTimeEntries';
 import { storeToRefs } from 'pinia';
-import type { CreateTimeEntryBody, TimeEntry } from '@/utils/api';
+import type {
+    CreateClientBody,
+    CreateProjectBody,
+    CreateTimeEntryBody,
+    Project,
+    TimeEntry,
+    Client,
+} from '@/utils/api';
 import { useElementVisibility } from '@vueuse/core';
 import { ClockIcon } from '@heroicons/vue/20/solid';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
@@ -17,6 +24,7 @@ import { useTasksStore } from '@/utils/useTasks';
 import { useProjectsStore } from '@/utils/useProjects';
 import TimeEntryGroupedTable from '@/Components/Common/TimeEntry/TimeEntryGroupedTable.vue';
 import { useTagsStore } from '@/utils/useTags';
+import { useClientsStore } from '@/utils/useClients';
 
 const timeEntriesStore = useTimeEntriesStore();
 const { timeEntries, allTimeEntriesLoaded } = storeToRefs(timeEntriesStore);
@@ -76,9 +84,21 @@ const projectStore = useProjectsStore();
 const { projects } = storeToRefs(projectStore);
 const taskStore = useTasksStore();
 const { tasks } = storeToRefs(taskStore);
+const clientStore = useClientsStore();
+const { clients } = storeToRefs(clientStore);
 
 async function createTag(name: string) {
     return await useTagsStore().createTag(name);
+}
+async function createProject(
+    project: CreateProjectBody
+): Promise<Project | undefined> {
+    return await useProjectsStore().createProject(project);
+}
+async function createClient(
+    body: CreateClientBody
+): Promise<Client | undefined> {
+    return await useClientsStore().createClient(body);
 }
 </script>
 
@@ -104,6 +124,9 @@ async function createTag(name: string) {
             </div>
         </MainContainer>
         <TimeEntryGroupedTable
+            :createProject
+            :clients
+            :createClient
             :updateTimeEntry
             :updateTimeEntries
             :deleteTimeEntries

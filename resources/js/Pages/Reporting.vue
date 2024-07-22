@@ -35,10 +35,10 @@ import { getCurrentMembershipId, getCurrentRole } from '@/utils/useUser';
 import ClientMultiselectDropdown from '@/Components/Common/Client/ClientMultiselectDropdown.vue';
 import { useTagsStore } from '@/utils/useTags';
 
-const startDate = ref<string | null>(
+const startDate = ref<string>(
     getLocalizedDayJs(getDayJsInstance()().format()).subtract(14, 'd').format()
 );
-const endDate = ref<string | null>(
+const endDate = ref<string>(
     getLocalizedDayJs(getDayJsInstance()().format()).format()
 );
 const selectedTags = ref<string[]>([]);

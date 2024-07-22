@@ -2,16 +2,17 @@
 import { PlusCircleIcon } from '@heroicons/vue/20/solid';
 import Dropdown from '@/Components/Dropdown.vue';
 import { type Component, computed, nextTick, ref, watch } from 'vue';
-import { storeToRefs } from 'pinia';
-import { useClientsStore } from '@/utils/useClients';
 import ClientDropdownItem from '@/Components/Common/Client/ClientDropdownItem.vue';
-
-const clientsStore = useClientsStore();
-const { clients } = storeToRefs(clientsStore);
+import type { CreateClientBody, Client } from '@/utils/api';
 
 const model = defineModel<string | null>({
     default: null,
 });
+
+const props = defineProps<{
+    clients: Client[];
+    createClient: (client: CreateClientBody) => Promise<Client | undefined>;
+}>();
 
 const searchInput = ref<HTMLInputElement | null>(null);
 const open = ref(false);
@@ -32,7 +33,7 @@ watch(open, (isOpen) => {
 });
 
 const filteredClients = computed(() => {
-    return clients.value.filter((client) => {
+    return props.clients.filter((client) => {
         return client.name
             .toLowerCase()
             .includes(searchValue.value?.toLowerCase()?.trim() || '');
@@ -41,7 +42,7 @@ const filteredClients = computed(() => {
 
 async function addClientIfNoneExists() {
     if (searchValue.value.length > 0 && filteredClients.value.length === 0) {
-        const newClient = await clientsStore.createClient({
+        const newClient = await props.createClient({
             name: searchValue.value,
         });
         if (newClient) {
@@ -67,7 +68,7 @@ function updateSearchValue(event: Event) {
         searchValue.value = '';
         const highlightedClientId = highlightedItemId.value;
         if (highlightedClientId) {
-            const highlightedClient = clients.value.find(
+            const highlightedClient = props.clients.find(
                 (client) => client.id === highlightedClientId
             );
             if (highlightedClient) {
@@ -119,7 +120,7 @@ function moveHighlightDown() {
 
 const highlightedItemId = ref<string | null>(null);
 const highlightedItem = computed(() => {
-    return clients.value.find(
+    return props.clients.find(
         (client) => client.id === highlightedItemId.value
     );
 });
