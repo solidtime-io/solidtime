@@ -3,16 +3,23 @@ import Dropdown from '@/Components/Dropdown.vue';
 import { type Component, computed, ref, watch } from 'vue';
 import SelectDropdownItem from '@/Components/Common/SelectDropdownItem.vue';
 import { onKeyStroke } from '@vueuse/core';
+import { type Placement } from '@floating-ui/vue';
 
 const model = defineModel<string | null>({
     default: null,
 });
 
-const props = defineProps<{
-    items: T[];
-    getKeyFromItem: (item: T) => string | null;
-    getNameForItem: (item: T) => string;
-}>();
+const props = withDefaults(
+    defineProps<{
+        items: T[];
+        getKeyFromItem: (item: T) => string | null;
+        getNameForItem: (item: T) => string;
+        align?: Placement;
+    }>(),
+    {
+        align: 'bottom-start',
+    }
+);
 
 const open = ref(false);
 const dropdownViewport = ref<Component | null>(null);
@@ -113,7 +120,7 @@ watch(open, () => {
 </script>
 
 <template>
-    <Dropdown v-model="open" align="bottom-start" :closeOnContentClick="false">
+    <Dropdown v-model="open" :align="align" :closeOnContentClick="false">
         <template #trigger>
             <slot name="trigger"> </slot>
         </template>

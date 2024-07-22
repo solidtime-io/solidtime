@@ -3,14 +3,17 @@ import { ChevronRightIcon } from '@heroicons/vue/16/solid';
 import Dropdown from '@/Components/Dropdown.vue';
 import { type Component, computed, nextTick, ref, watch } from 'vue';
 import ProjectDropdownItem from '@/Components/Common/Project/ProjectDropdownItem.vue';
-import type { CreateProjectBody, Project, Task } from '@/utils/api';
+import type {
+    CreateClientBody,
+    CreateProjectBody,
+    Project,
+    Task,
+    Client,
+} from '@/utils/api';
 import ProjectBadge from '@/Components/Common/Project/ProjectBadge.vue';
 import Badge from '@/Components/Common/Badge.vue';
 import { PlusIcon, PlusCircleIcon } from '@heroicons/vue/16/solid';
 import ProjectCreateModal from '@/Components/Common/Project/ProjectCreateModal.vue';
-import { useClientsStore } from '@/utils/useClients';
-import { storeToRefs } from 'pinia';
-import { useProjectsStore } from '@/utils/useProjects';
 
 const task = defineModel<string | null>('task', {
     default: null,
@@ -46,6 +49,11 @@ const props = withDefaults(
         size: 'base' | 'large' | 'xlarge';
         projects: Project[];
         tasks: Task[];
+        clients: Client[];
+        createProject: (
+            project: CreateProjectBody
+        ) => Promise<Project | undefined>;
+        createClient: (client: CreateClientBody) => Promise<Client | undefined>;
     }>(),
     {
         showBadgeBorder: true,
@@ -309,14 +317,6 @@ function selectProject(projectId: string) {
 }
 
 const showCreateProject = ref(false);
-
-const clientsStore = useClientsStore();
-const { clients } = storeToRefs(clientsStore);
-
-async function createProject(project: CreateProjectBody, callback: () => void) {
-    await useProjectsStore().createProject(project);
-    callback();
-}
 </script>
 
 <template>
@@ -338,15 +338,19 @@ async function createProject(project: CreateProjectBody, callback: () => void) {
                 :border="showBadgeBorder"
                 tag="button"
                 :name="selectedProjectName"
-                class="focus:border-border-tertiary focus:outline-0 focus:bg-card-background-separator hover:bg-card-background-separator">
-                <div class="flex nowrap items-center space-x-1">
+                class="focus:border-border-tertiary w-full focus:outline-0 focus:bg-card-background-separator min-w-0 hover:bg-card-background-separator">
+                <div class="flex items-center lg:space-x-1 min-w-0">
                     <span class="whitespace-nowrap text-xs lg:text-sm">
                         {{ selectedProjectName }}
                     </span>
                     <ChevronRightIcon
                         v-if="currentTask"
-                        class="w-5 text-muted"></ChevronRightIcon>
-                    <span v-if="currentTask">{{ currentTask.name }}</span>
+                        class="w-4 lg:w-5 text-muted shrink-0"></ChevronRightIcon>
+                    <div
+                        class="min-w-0 shrink text-xs lg:text-sm truncate"
+                        v-if="currentTask">
+                        {{ currentTask.name }}
+                    </div>
                 </div>
             </ProjectBadge>
         </template>
@@ -418,8 +422,9 @@ async function createProject(project: CreateProjectBody, callback: () => void) {
         </template>
     </Dropdown>
     <ProjectCreateModal
+        :createClient
         :clients="clients"
-        @submit="createProject"
+        :createProject
         v-model:show="showCreateProject"></ProjectCreateModal>
 </template>
 

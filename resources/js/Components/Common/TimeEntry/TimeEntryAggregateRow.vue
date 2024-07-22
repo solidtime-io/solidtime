@@ -1,9 +1,16 @@
 <script setup lang="ts">
 import MainContainer from '@/Pages/MainContainer.vue';
 import TimeTrackerStartStop from '@/Components/Common/TimeTrackerStartStop.vue';
-import type { Project, Tag, Task, TimeEntry } from '@/utils/api';
+import type {
+    CreateClientBody,
+    CreateProjectBody,
+    Project,
+    Tag,
+    Task,
+    TimeEntry,
+    Client,
+} from '@/utils/api';
 import TimeEntryDescriptionInput from '@/Components/Common/TimeEntry/TimeEntryDescriptionInput.vue';
-import { type TimeEntriesGroupedByType } from '@/utils/useTimeEntries';
 import TimeEntryRowTagDropdown from '@/Components/Common/TimeEntry/TimeEntryRowTagDropdown.vue';
 import TimeEntryMoreOptionsDropdown from '@/Components/Common/TimeEntry/TimeEntryMoreOptionsDropdown.vue';
 import TimeTrackerProjectTaskDropdown from '@/Components/Common/TimeTracker/TimeTrackerProjectTaskDropdown.vue';
@@ -15,13 +22,17 @@ import {
 } from '../../../utils/time';
 import TimeEntryRow from '@/Components/Common/TimeEntry/TimeEntryRow.vue';
 import GroupedItemsCountButton from '@/Components/Common/GroupedItemsCountButton.vue';
+import type { TimeEntriesGroupedByType } from '@/types/time-entries';
 
 const props = defineProps<{
     timeEntry: TimeEntriesGroupedByType;
     projects: Project[];
     tasks: Task[];
     tags: Tag[];
+    clients: Client[];
     createTag: (name: string) => Promise<Tag | undefined>;
+    createProject: (project: CreateProjectBody) => Promise<Project | undefined>;
+    createClient: (client: CreateClientBody) => Promise<Client | undefined>;
     onStartStopClick: (timeEntry: TimeEntry) => void;
     updateTimeEntries: (timeEntries: TimeEntry[]) => void;
     deleteTimeEntries: (timeEntries: TimeEntry[]) => void;
@@ -64,7 +75,7 @@ const expanded = ref(false);
         data-testid="time_entry_row">
         <MainContainer>
             <div class="sm:flex py-1.5 items-center justify-between group">
-                <div class="flex space-x-3 items-center">
+                <div class="flex space-x-3 items-center min-w-0">
                     <input
                         type="checkbox"
                         class="h-4 w-4 rounded bg-card-background border-input-border text-accent-500/80 focus:ring-accent-500/80" />
@@ -81,6 +92,9 @@ const expanded = ref(false);
                             "></TimeEntryDescriptionInput>
                     </div>
                     <TimeTrackerProjectTaskDropdown
+                        :clients
+                        :createProject
+                        :createClient
                         :projects="projects"
                         :tasks="tasks"
                         :showBadgeBorder="false"
@@ -134,6 +148,9 @@ const expanded = ref(false);
             <TimeEntryRow
                 :projects="projects"
                 :tasks="tasks"
+                :createClient
+                :clients
+                :createProject
                 :tags="tags"
                 indent
                 :updateTimeEntry="(arg) => updateTimeEntries([arg])"

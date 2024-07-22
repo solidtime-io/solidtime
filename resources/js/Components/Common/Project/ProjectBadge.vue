@@ -32,9 +32,12 @@ const indicatorClasses = {
         <div
             :style="{ backgroundColor: props.color }"
             :class="
-                twMerge(indicatorClasses[size], 'inline-block rounded-full')
+                twMerge(
+                    indicatorClasses[size],
+                    'inline-block rounded-full shrink-0'
+                )
             "></div>
-        <div>
+        <div class="min-w-0">
             <slot>
                 {{ name }}
             </slot>

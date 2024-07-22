@@ -128,6 +128,13 @@ export type UpdateOrganizationBody = ZodiosBodyByAlias<
     'updateOrganization'
 >;
 
+export type MyMemberships = ZodiosResponseByAlias<
+    SolidTimeApi,
+    'getMyMemberships'
+>['data'];
+
+export type MyMembership = MyMemberships[0];
+
 export async function fetchToken() {
     return new Promise((resolve) => {
         router.reload({

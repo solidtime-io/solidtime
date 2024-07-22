@@ -7,7 +7,12 @@ import ProjectCreateModal from '@/Components/Common/Project/ProjectCreateModal.v
 import ProjectTableHeading from '@/Components/Common/Project/ProjectTableHeading.vue';
 import ProjectTableRow from '@/Components/Common/Project/ProjectTableRow.vue';
 import { canCreateProjects } from '@/utils/permissions';
-import type { CreateProjectBody, Project } from '@/utils/api';
+import type {
+    CreateProjectBody,
+    Project,
+    Client,
+    CreateClientBody,
+} from '@/utils/api';
 import { useProjectsStore } from '@/utils/useProjects';
 import { useClientsStore } from '@/utils/useClients';
 import { storeToRefs } from 'pinia';
@@ -17,17 +22,25 @@ defineProps<{
 }>();
 
 const showCreateProjectModal = ref(false);
-async function createProject(project: CreateProjectBody, callback: () => void) {
-    await useProjectsStore().createProject(project);
-    callback();
+async function createProject(
+    project: CreateProjectBody
+): Promise<Project | undefined> {
+    return await useProjectsStore().createProject(project);
+}
+
+async function createClient(
+    client: CreateClientBody
+): Promise<Client | undefined> {
+    return await useClientsStore().createClient(client);
 }
 const { clients } = storeToRefs(useClientsStore());
 </script>
 
 <template>
     <ProjectCreateModal
+        :createProject
+        :createClient
         :clients="clients"
-        @submit="createProject"
         v-model:show="showCreateProjectModal"></ProjectCreateModal>
     <div class="flow-root max-w-[100vw] overflow-x-auto">
         <div class="inline-block min-w-full align-middle">

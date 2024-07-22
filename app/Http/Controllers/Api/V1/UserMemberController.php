@@ -30,7 +30,7 @@ class UserMemberController extends Controller
         $members = Member::query()
             ->whereBelongsTo($user, 'user')
             ->with(['organization'])
-            ->get();
+            ->paginate(config('app.pagination_per_page_default'));
 
         return new PersonalMemberCollection($members);
     }

@@ -11,33 +11,24 @@ const ClientResource = z
     })
     .passthrough();
 const ClientCollection = z.array(ClientResource);
-const updateClient_Body = z
-    .object({ name: z.string(), is_archived: z.boolean().optional() })
+const ClientStoreRequest = z
+    .object({ name: z.string().min(1).max(255) })
     .passthrough();
-const importData_Body = z
+const ClientUpdateRequest = z
+    .object({
+        name: z.string().min(1).max(255),
+        is_archived: z.boolean().optional(),
+    })
+    .passthrough();
+const ImportRequest = z
     .object({ type: z.string(), data: z.string() })
     .passthrough();
 const InvitationResource = z
     .object({ id: z.string(), email: z.string(), role: z.string() })
     .passthrough();
 const Role = z.enum(['owner', 'admin', 'manager', 'employee', 'placeholder']);
-const invite_Body = z
+const InvitationStoreRequest = z
     .object({ email: z.string().email(), role: Role })
-    .passthrough();
-const MemberPivotResource = z
-    .object({
-        id: z.string(),
-        user_id: z.string(),
-        name: z.string(),
-        email: z.string(),
-        role: z.string(),
-        is_placeholder: z.boolean(),
-        billable_rate: z.union([z.number(), z.null()]),
-    })
-    .passthrough();
-const updateMember_Body = z
-    .object({ role: Role, billable_rate: z.union([z.number(), z.null()]) })
-    .partial()
     .passthrough();
 const MemberResource = z
     .object({
@@ -50,6 +41,10 @@ const MemberResource = z
         billable_rate: z.union([z.number(), z.null()]),
     })
     .passthrough();
+const MemberUpdateRequest = z
+    .object({ role: Role, billable_rate: z.union([z.number(), z.null()]) })
+    .partial()
+    .passthrough();
 const OrganizationResource = z
     .object({
         id: z.string(),
@@ -58,9 +53,9 @@ const OrganizationResource = z
         billable_rate: z.union([z.number(), z.null()]),
     })
     .passthrough();
-const updateOrganization_Body = z
+const OrganizationUpdateRequest = z
     .object({
-        name: z.string(),
+        name: z.string().max(255),
         billable_rate: z.union([z.number(), z.null()]).optional(),
     })
     .passthrough();
@@ -75,19 +70,19 @@ const ProjectResource = z
         is_billable: z.boolean(),
     })
     .passthrough();
-const createProject_Body = z
+const ProjectStoreRequest = z
     .object({
-        name: z.string(),
-        color: z.string(),
+        name: z.string().min(1).max(255),
+        color: z.string().max(255),
         is_billable: z.boolean(),
         billable_rate: z.union([z.number(), z.null()]).optional(),
         client_id: z.union([z.string(), z.null()]).optional(),
     })
     .passthrough();
-const updateProject_Body = z
+const ProjectUpdateRequest = z
     .object({
-        name: z.string(),
-        color: z.string(),
+        name: z.string().max(255),
+        color: z.string().max(255),
         is_billable: z.boolean(),
         is_archived: z.boolean().optional(),
         client_id: z.union([z.string(), z.null()]).optional(),
@@ -102,13 +97,13 @@ const ProjectMemberResource = z
         project_id: z.string(),
     })
     .passthrough();
-const createProjectMember_Body = z
+const ProjectMemberStoreRequest = z
     .object({
         member_id: z.string().uuid(),
         billable_rate: z.union([z.number(), z.null()]).optional(),
     })
     .passthrough();
-const updateProjectMember_Body = z
+const ProjectMemberUpdateRequest = z
     .object({ billable_rate: z.union([z.number(), z.null()]) })
     .partial()
     .passthrough();
@@ -121,6 +116,12 @@ const TagResource = z
     })
     .passthrough();
 const TagCollection = z.array(TagResource);
+const TagStoreRequest = z
+    .object({ name: z.string().min(1).max(255) })
+    .passthrough();
+const TagUpdateRequest = z
+    .object({ name: z.string().min(1).max(255) })
+    .passthrough();
 const TaskResource = z
     .object({
         id: z.string(),
@@ -131,11 +132,14 @@ const TaskResource = z
         updated_at: z.string(),
     })
     .passthrough();
-const createTask_Body = z
-    .object({ name: z.string(), project_id: z.string() })
+const TaskStoreRequest = z
+    .object({ name: z.string().min(1).max(255), project_id: z.string() })
     .passthrough();
-const updateTask_Body = z
-    .object({ name: z.string(), is_done: z.boolean().optional() })
+const TaskUpdateRequest = z
+    .object({
+        name: z.string().min(1).max(255),
+        is_done: z.boolean().optional(),
+    })
     .passthrough();
 const start = z.union([z.string(), z.null()]).optional();
 const TimeEntryResource = z
@@ -154,7 +158,7 @@ const TimeEntryResource = z
     })
     .passthrough();
 const TimeEntryCollection = z.array(TimeEntryResource);
-const createTimeEntry_Body = z
+const TimeEntryStoreRequest = z
     .object({
         member_id: z.string().uuid(),
         project_id: z.union([z.string(), z.null()]).optional(),
@@ -166,7 +170,7 @@ const createTimeEntry_Body = z
         tags: z.union([z.array(z.string()), z.null()]).optional(),
     })
     .passthrough();
-const updateMultipleTimeEntries_Body = z
+const TimeEntryUpdateMultipleRequest = z
     .object({
         ids: z.array(z.string()),
         changes: z
@@ -182,7 +186,7 @@ const updateMultipleTimeEntries_Body = z
             .passthrough(),
     })
     .passthrough();
-const updateTimeEntry_Body = z
+const TimeEntryUpdateRequest = z
     .object({
         member_id: z.string().uuid(),
         project_id: z.union([z.string(), z.null()]),
@@ -195,37 +199,70 @@ const updateTimeEntry_Body = z
     })
     .partial()
     .passthrough();
+const Weekday = z.enum([
+    'monday',
+    'tuesday',
+    'wednesday',
+    'thursday',
+    'friday',
+    'saturday',
+    'sunday',
+]);
+const UserResource = z
+    .object({
+        id: z.string(),
+        name: z.string(),
+        email: z.string(),
+        profile_photo_url: z.string(),
+        timezone: z.string(),
+        week_start: Weekday,
+    })
+    .passthrough();
+const PersonalMemberResource = z
+    .object({
+        id: z.string(),
+        organization: z
+            .object({ id: z.string(), name: z.string() })
+            .passthrough(),
+        role: z.string(),
+    })
+    .passthrough();
 
 export const schemas = {
     ClientResource,
     ClientCollection,
-    updateClient_Body,
-    importData_Body,
+    ClientStoreRequest,
+    ClientUpdateRequest,
+    ImportRequest,
     InvitationResource,
     Role,
-    invite_Body,
-    MemberPivotResource,
-    updateMember_Body,
+    InvitationStoreRequest,
     MemberResource,
+    MemberUpdateRequest,
     OrganizationResource,
-    updateOrganization_Body,
+    OrganizationUpdateRequest,
     ProjectResource,
-    createProject_Body,
-    updateProject_Body,
+    ProjectStoreRequest,
+    ProjectUpdateRequest,
     ProjectMemberResource,
-    createProjectMember_Body,
-    updateProjectMember_Body,
+    ProjectMemberStoreRequest,
+    ProjectMemberUpdateRequest,
     TagResource,
     TagCollection,
+    TagStoreRequest,
+    TagUpdateRequest,
     TaskResource,
-    createTask_Body,
-    updateTask_Body,
+    TaskStoreRequest,
+    TaskUpdateRequest,
     start,
     TimeEntryResource,
     TimeEntryCollection,
-    createTimeEntry_Body,
-    updateMultipleTimeEntries_Body,
-    updateTimeEntry_Body,
+    TimeEntryStoreRequest,
+    TimeEntryUpdateMultipleRequest,
+    TimeEntryUpdateRequest,
+    Weekday,
+    UserResource,
+    PersonalMemberResource,
 };
 
 const endpoints = makeApi([
@@ -243,6 +280,11 @@ const endpoints = makeApi([
         ],
         response: z.object({ data: OrganizationResource }).passthrough(),
         errors: [
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
             {
                 status: 403,
                 description: `Authorization error`,
@@ -264,7 +306,7 @@ const endpoints = makeApi([
             {
                 name: 'body',
                 type: 'Body',
-                schema: updateOrganization_Body,
+                schema: OrganizationUpdateRequest,
             },
             {
                 name: 'organization',
@@ -274,6 +316,11 @@ const endpoints = makeApi([
         ],
         response: z.object({ data: OrganizationResource }).passthrough(),
         errors: [
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
             {
                 status: 403,
                 description: `Authorization error`,
@@ -321,6 +368,11 @@ const endpoints = makeApi([
         response: z.object({ data: ClientCollection }).passthrough(),
         errors: [
             {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
                 status: 403,
                 description: `Authorization error`,
                 schema: z.object({ message: z.string() }).passthrough(),
@@ -351,7 +403,9 @@ const endpoints = makeApi([
             {
                 name: 'body',
                 type: 'Body',
-                schema: z.object({ name: z.string() }).passthrough(),
+                schema: z
+                    .object({ name: z.string().min(1).max(255) })
+                    .passthrough(),
             },
             {
                 name: 'organization',
@@ -361,6 +415,11 @@ const endpoints = makeApi([
         ],
         response: z.object({ data: ClientResource }).passthrough(),
         errors: [
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
             {
                 status: 403,
                 description: `Authorization error`,
@@ -392,7 +451,7 @@ const endpoints = makeApi([
             {
                 name: 'body',
                 type: 'Body',
-                schema: updateClient_Body,
+                schema: ClientUpdateRequest,
             },
             {
                 name: 'organization',
@@ -407,6 +466,11 @@ const endpoints = makeApi([
         ],
         response: z.object({ data: ClientResource }).passthrough(),
         errors: [
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
             {
                 status: 403,
                 description: `Authorization error`,
@@ -436,11 +500,6 @@ const endpoints = makeApi([
         requestFormat: 'json',
         parameters: [
             {
-                name: 'body',
-                type: 'Body',
-                schema: z.object({}).partial().passthrough(),
-            },
-            {
                 name: 'organization',
                 type: 'Path',
                 schema: z.string(),
@@ -465,6 +524,11 @@ const endpoints = makeApi([
                     .passthrough(),
             },
             {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
                 status: 403,
                 description: `Authorization error`,
                 schema: z.object({ message: z.string() }).passthrough(),
@@ -485,7 +549,7 @@ const endpoints = makeApi([
             {
                 name: 'body',
                 type: 'Body',
-                schema: importData_Body,
+                schema: ImportRequest,
             },
             {
                 name: 'organization',
@@ -526,6 +590,11 @@ const endpoints = makeApi([
                     z.object({ message: z.string() }).passthrough(),
                     z.object({ message: z.string() }).passthrough(),
                 ]),
+            },
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
             },
             {
                 status: 403,
@@ -575,6 +644,11 @@ const endpoints = makeApi([
             })
             .passthrough(),
         errors: [
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
             {
                 status: 403,
                 description: `Authorization error`,
@@ -634,6 +708,11 @@ const endpoints = makeApi([
             .passthrough(),
         errors: [
             {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
                 status: 403,
                 description: `Authorization error`,
                 schema: z.object({ message: z.string() }).passthrough(),
@@ -664,7 +743,7 @@ const endpoints = makeApi([
             {
                 name: 'body',
                 type: 'Body',
-                schema: invite_Body,
+                schema: InvitationStoreRequest,
             },
             {
                 name: 'organization',
@@ -674,6 +753,22 @@ const endpoints = makeApi([
         ],
         response: z.null(),
         errors: [
+            {
+                status: 400,
+                description: `API exception`,
+                schema: z
+                    .object({
+                        error: z.boolean(),
+                        key: z.string(),
+                        message: z.string(),
+                    })
+                    .passthrough(),
+            },
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
             {
                 status: 403,
                 description: `Authorization error`,
@@ -703,11 +798,6 @@ const endpoints = makeApi([
         requestFormat: 'json',
         parameters: [
             {
-                name: 'body',
-                type: 'Body',
-                schema: z.object({}).partial().passthrough(),
-            },
-            {
                 name: 'organization',
                 type: 'Path',
                 schema: z.string(),
@@ -720,6 +810,11 @@ const endpoints = makeApi([
         ],
         response: z.null(),
         errors: [
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
             {
                 status: 403,
                 description: `Authorization error`,
@@ -757,6 +852,11 @@ const endpoints = makeApi([
         response: z.null(),
         errors: [
             {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
                 status: 403,
                 description: `Authorization error`,
                 schema: z.object({ message: z.string() }).passthrough(),
@@ -782,7 +882,7 @@ const endpoints = makeApi([
         ],
         response: z
             .object({
-                data: z.array(MemberPivotResource),
+                data: z.array(MemberResource),
                 links: z
                     .object({
                         first: z.union([z.string(), z.null()]),
@@ -815,6 +915,11 @@ const endpoints = makeApi([
             .passthrough(),
         errors: [
             {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
                 status: 403,
                 description: `Authorization error`,
                 schema: z.object({ message: z.string() }).passthrough(),
@@ -845,7 +950,7 @@ const endpoints = makeApi([
             {
                 name: 'body',
                 type: 'Body',
-                schema: updateMember_Body,
+                schema: MemberUpdateRequest,
             },
             {
                 name: 'organization',
@@ -870,6 +975,11 @@ const endpoints = makeApi([
                         message: z.string(),
                     })
                     .passthrough(),
+            },
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
             },
             {
                 status: 403,
@@ -900,11 +1010,6 @@ const endpoints = makeApi([
         requestFormat: 'json',
         parameters: [
             {
-                name: 'body',
-                type: 'Body',
-                schema: z.object({}).partial().passthrough(),
-            },
-            {
                 name: 'organization',
                 type: 'Path',
                 schema: z.string(),
@@ -927,6 +1032,11 @@ const endpoints = makeApi([
                         message: z.string(),
                     })
                     .passthrough(),
+            },
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
             },
             {
                 status: 403,
@@ -976,6 +1086,11 @@ const endpoints = makeApi([
                     .passthrough(),
             },
             {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
                 status: 403,
                 description: `Authorization error`,
                 schema: z.object({ message: z.string() }).passthrough(),
@@ -996,7 +1111,7 @@ const endpoints = makeApi([
             {
                 name: 'body',
                 type: 'Body',
-                schema: updateProjectMember_Body,
+                schema: ProjectMemberUpdateRequest,
             },
             {
                 name: 'organization',
@@ -1011,6 +1126,11 @@ const endpoints = makeApi([
         ],
         response: z.object({ data: ProjectMemberResource }).passthrough(),
         errors: [
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
             {
                 status: 403,
                 description: `Authorization error`,
@@ -1040,11 +1160,6 @@ const endpoints = makeApi([
         requestFormat: 'json',
         parameters: [
             {
-                name: 'body',
-                type: 'Body',
-                schema: z.object({}).partial().passthrough(),
-            },
-            {
                 name: 'organization',
                 type: 'Path',
                 schema: z.string(),
@@ -1057,6 +1172,11 @@ const endpoints = makeApi([
         ],
         response: z.null(),
         errors: [
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
             {
                 status: 403,
                 description: `Authorization error`,
@@ -1126,6 +1246,11 @@ const endpoints = makeApi([
             .passthrough(),
         errors: [
             {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
                 status: 403,
                 description: `Authorization error`,
                 schema: z.object({ message: z.string() }).passthrough(),
@@ -1156,7 +1281,7 @@ const endpoints = makeApi([
             {
                 name: 'body',
                 type: 'Body',
-                schema: createProject_Body,
+                schema: ProjectStoreRequest,
             },
             {
                 name: 'organization',
@@ -1166,6 +1291,11 @@ const endpoints = makeApi([
         ],
         response: z.object({ data: ProjectResource }).passthrough(),
         errors: [
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
             {
                 status: 403,
                 description: `Authorization error`,
@@ -1208,6 +1338,11 @@ const endpoints = makeApi([
         response: z.object({ data: ProjectResource }).passthrough(),
         errors: [
             {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
                 status: 403,
                 description: `Authorization error`,
                 schema: z.object({ message: z.string() }).passthrough(),
@@ -1228,7 +1363,7 @@ const endpoints = makeApi([
             {
                 name: 'body',
                 type: 'Body',
-                schema: updateProject_Body,
+                schema: ProjectUpdateRequest,
             },
             {
                 name: 'organization',
@@ -1243,6 +1378,11 @@ const endpoints = makeApi([
         ],
         response: z.object({ data: ProjectResource }).passthrough(),
         errors: [
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
             {
                 status: 403,
                 description: `Authorization error`,
@@ -1272,11 +1412,6 @@ const endpoints = makeApi([
         requestFormat: 'json',
         parameters: [
             {
-                name: 'body',
-                type: 'Body',
-                schema: z.object({}).partial().passthrough(),
-            },
-            {
                 name: 'organization',
                 type: 'Path',
                 schema: z.string(),
@@ -1299,6 +1434,11 @@ const endpoints = makeApi([
                         message: z.string(),
                     })
                     .passthrough(),
+            },
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
             },
             {
                 status: 403,
@@ -1364,6 +1504,11 @@ const endpoints = makeApi([
             .passthrough(),
         errors: [
             {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
                 status: 403,
                 description: `Authorization error`,
                 schema: z.object({ message: z.string() }).passthrough(),
@@ -1384,7 +1529,7 @@ const endpoints = makeApi([
             {
                 name: 'body',
                 type: 'Body',
-                schema: createProjectMember_Body,
+                schema: ProjectMemberStoreRequest,
             },
             {
                 name: 'organization',
@@ -1409,6 +1554,11 @@ const endpoints = makeApi([
                         message: z.string(),
                     })
                     .passthrough(),
+            },
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
             },
             {
                 status: 403,
@@ -1447,6 +1597,11 @@ const endpoints = makeApi([
         response: z.object({ data: TagCollection }).passthrough(),
         errors: [
             {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
                 status: 403,
                 description: `Authorization error`,
                 schema: z.object({ message: z.string() }).passthrough(),
@@ -1467,7 +1622,9 @@ const endpoints = makeApi([
             {
                 name: 'body',
                 type: 'Body',
-                schema: z.object({ name: z.string() }).passthrough(),
+                schema: z
+                    .object({ name: z.string().min(1).max(255) })
+                    .passthrough(),
             },
             {
                 name: 'organization',
@@ -1477,6 +1634,11 @@ const endpoints = makeApi([
         ],
         response: z.object({ data: TagResource }).passthrough(),
         errors: [
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
             {
                 status: 403,
                 description: `Authorization error`,
@@ -1508,7 +1670,9 @@ const endpoints = makeApi([
             {
                 name: 'body',
                 type: 'Body',
-                schema: z.object({ name: z.string() }).passthrough(),
+                schema: z
+                    .object({ name: z.string().min(1).max(255) })
+                    .passthrough(),
             },
             {
                 name: 'organization',
@@ -1523,6 +1687,11 @@ const endpoints = makeApi([
         ],
         response: z.object({ data: TagResource }).passthrough(),
         errors: [
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
             {
                 status: 403,
                 description: `Authorization error`,
@@ -1552,11 +1721,6 @@ const endpoints = makeApi([
         requestFormat: 'json',
         parameters: [
             {
-                name: 'body',
-                type: 'Body',
-                schema: z.object({}).partial().passthrough(),
-            },
-            {
                 name: 'organization',
                 type: 'Path',
                 schema: z.string(),
@@ -1579,6 +1743,11 @@ const endpoints = makeApi([
                         message: z.string(),
                     })
                     .passthrough(),
+            },
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
             },
             {
                 status: 403,
@@ -1649,6 +1818,11 @@ const endpoints = makeApi([
             .passthrough(),
         errors: [
             {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
                 status: 403,
                 description: `Authorization error`,
                 schema: z.object({ message: z.string() }).passthrough(),
@@ -1679,7 +1853,7 @@ const endpoints = makeApi([
             {
                 name: 'body',
                 type: 'Body',
-                schema: createTask_Body,
+                schema: TaskStoreRequest,
             },
             {
                 name: 'organization',
@@ -1689,6 +1863,11 @@ const endpoints = makeApi([
         ],
         response: z.object({ data: TaskResource }).passthrough(),
         errors: [
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
             {
                 status: 403,
                 description: `Authorization error`,
@@ -1720,7 +1899,7 @@ const endpoints = makeApi([
             {
                 name: 'body',
                 type: 'Body',
-                schema: updateTask_Body,
+                schema: TaskUpdateRequest,
             },
             {
                 name: 'organization',
@@ -1735,6 +1914,11 @@ const endpoints = makeApi([
         ],
         response: z.object({ data: TaskResource }).passthrough(),
         errors: [
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
             {
                 status: 403,
                 description: `Authorization error`,
@@ -1764,11 +1948,6 @@ const endpoints = makeApi([
         requestFormat: 'json',
         parameters: [
             {
-                name: 'body',
-                type: 'Body',
-                schema: z.object({}).partial().passthrough(),
-            },
-            {
                 name: 'organization',
                 type: 'Path',
                 schema: z.string(),
@@ -1791,6 +1970,11 @@ const endpoints = makeApi([
                         message: z.string(),
                     })
                     .passthrough(),
+            },
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
             },
             {
                 status: 403,
@@ -1872,9 +2056,24 @@ Users with the permission &#x60;time-entries:view:own&#x60; can only use this en
                 type: 'Query',
                 schema: z.array(z.string()).min(1).optional(),
             },
+            {
+                name: 'client_ids',
+                type: 'Query',
+                schema: z.string().optional(),
+            },
+            {
+                name: 'user_id',
+                type: 'Query',
+                schema: z.string().optional(),
+            },
         ],
         response: z.object({ data: TimeEntryCollection }).passthrough(),
         errors: [
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
             {
                 status: 403,
                 description: `Authorization error`,
@@ -1906,7 +2105,7 @@ Users with the permission &#x60;time-entries:view:own&#x60; can only use this en
             {
                 name: 'body',
                 type: 'Body',
-                schema: createTimeEntry_Body,
+                schema: TimeEntryStoreRequest,
             },
             {
                 name: 'organization',
@@ -1926,6 +2125,11 @@ Users with the permission &#x60;time-entries:view:own&#x60; can only use this en
                         message: z.string(),
                     })
                     .passthrough(),
+            },
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
             },
             {
                 status: 403,
@@ -1958,7 +2162,7 @@ Users with the permission &#x60;time-entries:view:own&#x60; can only use this en
             {
                 name: 'body',
                 type: 'Body',
-                schema: updateMultipleTimeEntries_Body,
+                schema: TimeEntryUpdateMultipleRequest,
             },
             {
                 name: 'organization',
@@ -1970,6 +2174,11 @@ Users with the permission &#x60;time-entries:view:own&#x60; can only use this en
             .object({ success: z.string(), error: z.string() })
             .passthrough(),
         errors: [
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
             {
                 status: 403,
                 description: `Authorization error`,
@@ -2001,7 +2210,7 @@ Users with the permission &#x60;time-entries:view:own&#x60; can only use this en
             {
                 name: 'body',
                 type: 'Body',
-                schema: updateTimeEntry_Body,
+                schema: TimeEntryUpdateRequest,
             },
             {
                 name: 'organization',
@@ -2026,6 +2235,11 @@ Users with the permission &#x60;time-entries:view:own&#x60; can only use this en
                         message: z.string(),
                     })
                     .passthrough(),
+            },
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
             },
             {
                 status: 403,
@@ -2056,11 +2270,6 @@ Users with the permission &#x60;time-entries:view:own&#x60; can only use this en
         requestFormat: 'json',
         parameters: [
             {
-                name: 'body',
-                type: 'Body',
-                schema: z.object({}).partial().passthrough(),
-            },
-            {
                 name: 'organization',
                 type: 'Path',
                 schema: z.string(),
@@ -2073,6 +2282,11 @@ Users with the permission &#x60;time-entries:view:own&#x60; can only use this en
         ],
         response: z.null(),
         errors: [
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
             {
                 status: 403,
                 description: `Authorization error`,
@@ -2242,6 +2456,11 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
             .passthrough(),
         errors: [
             {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
                 status: 403,
                 description: `Authorization error`,
                 schema: z.object({ message: z.string() }).passthrough(),
@@ -2265,12 +2484,89 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
     },
     {
         method: 'get',
+        path: '/v1/users/me',
+        alias: 'getMe',
+        description: `This endpoint is independent of organization.`,
+        requestFormat: 'json',
+        response: z.object({ data: UserResource }).passthrough(),
+        errors: [
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 403,
+                description: `Authorization error`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+        ],
+    },
+    {
+        method: 'get',
+        path: '/v1/users/me/members',
+        alias: 'getMyMemberships',
+        description: `This endpoint is independent of organization.`,
+        requestFormat: 'json',
+        response: z
+            .object({
+                data: z.array(PersonalMemberResource),
+                links: z
+                    .object({
+                        first: z.union([z.string(), z.null()]),
+                        last: z.union([z.string(), z.null()]),
+                        prev: z.union([z.string(), z.null()]),
+                        next: z.union([z.string(), z.null()]),
+                    })
+                    .passthrough(),
+                meta: z
+                    .object({
+                        current_page: z.number().int(),
+                        from: z.union([z.number(), z.null()]),
+                        last_page: z.number().int(),
+                        links: z.array(
+                            z
+                                .object({
+                                    url: z.union([z.string(), z.null()]),
+                                    label: z.string(),
+                                    active: z.boolean(),
+                                })
+                                .passthrough()
+                        ),
+                        path: z.union([z.string(), z.null()]),
+                        per_page: z.number().int(),
+                        to: z.union([z.number(), z.null()]),
+                        total: z.number().int(),
+                    })
+                    .passthrough(),
+            })
+            .passthrough(),
+        errors: [
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 403,
+                description: `Authorization error`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+        ],
+    },
+    {
+        method: 'get',
         path: '/v1/users/me/time-entries/active',
         alias: 'getMyActiveTimeEntry',
         description: `This endpoint is independent of organization.`,
         requestFormat: 'json',
         response: z.object({ data: TimeEntryResource }).passthrough(),
         errors: [
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
             {
                 status: 404,
                 description: `Not found`,

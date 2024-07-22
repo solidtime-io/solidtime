@@ -9,8 +9,6 @@ import type { CreateTimeEntryBody, TimeEntry } from '@/utils/api';
 import dayjs from 'dayjs';
 import { useNotificationsStore } from '@/utils/notification';
 
-export type TimeEntriesGroupedByType = TimeEntry & { timeEntries: TimeEntry[] };
-
 export const useTimeEntriesStore = defineStore('timeEntries', () => {
     const timeEntries = ref<TimeEntry[]>(reactive([]));
 
@@ -124,15 +122,12 @@ export const useTimeEntriesStore = defineStore('timeEntries', () => {
         if (organizationId) {
             await handleApiRequestNotifications(
                 () =>
-                    api.deleteTimeEntry(
-                        {},
-                        {
-                            params: {
-                                organization: organizationId,
-                                timeEntry: timeEntryId,
-                            },
-                        }
-                    ),
+                    api.deleteTimeEntry(undefined, {
+                        params: {
+                            organization: organizationId,
+                            timeEntry: timeEntryId,
+                        },
+                    }),
                 'Time entry deleted successfully',
                 'Failed to delete time entry'
             );

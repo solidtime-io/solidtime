@@ -18,15 +18,12 @@ async function deleteInvitation() {
     if (organizationId) {
         await handleApiRequestNotifications(
             () =>
-                api.removeInvitation(
-                    {},
-                    {
-                        params: {
-                            invitation: props.invitation.id,
-                            organization: organizationId,
-                        },
-                    }
-                ),
+                api.removeInvitation(undefined, {
+                    params: {
+                        invitation: props.invitation.id,
+                        organization: organizationId,
+                    },
+                }),
             'Invitation removed successfully',
             'Error removing invitation',
             () => {

@@ -29,7 +29,7 @@ function addOrRemoveTagFromSelection(id: string) {
     if (model.value.includes(id)) {
         model.value = model.value.filter((tagId) => tagId !== id);
     } else {
-        model.value.push(id);
+        model.value = [...model.value, id];
     }
     emit('changed');
 }

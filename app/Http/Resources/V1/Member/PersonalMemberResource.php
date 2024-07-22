@@ -24,7 +24,7 @@ class PersonalMemberResource extends BaseResource
             /** @var string $id ID of membership */
             'id' => $this->resource->id,
             'organization' => [
-                /** @var int $id ID of organization */
+                /** @var string $id ID of organization */
                 'id' => $this->resource->organization->id,
                 /** @var string $name Name of organization */
                 'name' => $this->resource->organization->name,

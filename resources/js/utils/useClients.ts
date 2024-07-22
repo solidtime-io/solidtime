@@ -76,15 +76,12 @@ export const useClientsStore = defineStore('clients', () => {
         if (organization) {
             await handleApiRequestNotifications(
                 () =>
-                    api.deleteClient(
-                        {},
-                        {
-                            params: {
-                                organization: organization,
-                                client: clientId,
-                            },
-                        }
-                    ),
+                    api.deleteClient(undefined, {
+                        params: {
+                            organization: organization,
+                            client: clientId,
+                        },
+                    }),
                 'Client deleted successfully',
                 'Failed to delete client'
             );

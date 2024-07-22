@@ -36,15 +36,12 @@ export const useTagsStore = defineStore('tags', () => {
         if (organizationId) {
             await handleApiRequestNotifications(
                 () =>
-                    api.deleteTag(
-                        {},
-                        {
-                            params: {
-                                organization: organizationId,
-                                tag: tagId,
-                            },
-                        }
-                    ),
+                    api.deleteTag(undefined, {
+                        params: {
+                            organization: organizationId,
+                            tag: tagId,
+                        },
+                    }),
                 'Tag deleted successfully',
                 'Failed to delete tag'
             );

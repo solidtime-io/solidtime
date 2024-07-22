@@ -17,14 +17,35 @@ import { storeToRefs } from 'pinia';
 import { useTasksStore } from '@/utils/useTasks';
 import { useProjectsStore } from '@/utils/useProjects';
 import { useTagsStore } from '@/utils/useTags';
+import type {
+    CreateClientBody,
+    CreateProjectBody,
+    Project,
+    Client,
+} from '@/utils/api';
+import { useClientsStore } from '@/utils/useClients';
 const projectStore = useProjectsStore();
 const { projects } = storeToRefs(projectStore);
 const taskStore = useTasksStore();
 const { tasks } = storeToRefs(taskStore);
+const clientStore = useClientsStore();
+const { clients } = storeToRefs(clientStore);
 
 const { createTimeEntry } = useTimeEntriesStore();
 const show = defineModel('show', { default: false });
 const saving = ref(false);
+
+async function createProject(
+    project: CreateProjectBody
+): Promise<Project | undefined> {
+    return await useProjectsStore().createProject(project);
+}
+
+async function createClient(
+    body: CreateClientBody
+): Promise<Client | undefined> {
+    return await useClientsStore().createClient(body);
+}
 
 const description = ref<HTMLInputElement | null>(null);
 
@@ -102,6 +123,9 @@ async function createTag(tag: string) {
                 <div class="flex items-center justify-between">
                     <div>
                         <TimeTrackerProjectTaskDropdown
+                            :clients
+                            :createProject
+                            :createClient
                             class="mt-1"
                             size="xlarge"
                             :projects="projects"

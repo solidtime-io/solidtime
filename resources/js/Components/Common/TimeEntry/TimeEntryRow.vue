@@ -2,7 +2,15 @@
 import MainContainer from '@/Pages/MainContainer.vue';
 import TimeTrackerStartStop from '@/Components/Common/TimeTrackerStartStop.vue';
 import TimeEntryRangeSelector from '@/Components/Common/TimeEntry/TimeEntryRangeSelector.vue';
-import type { Project, Tag, Task, TimeEntry } from '@/utils/api';
+import type {
+    Client,
+    CreateClientBody,
+    CreateProjectBody,
+    Project,
+    Tag,
+    Task,
+    TimeEntry,
+} from '@/utils/api';
 import TimeEntryDescriptionInput from '@/Components/Common/TimeEntry/TimeEntryDescriptionInput.vue';
 import TimeEntryRowTagDropdown from '@/Components/Common/TimeEntry/TimeEntryRowTagDropdown.vue';
 import TimeEntryRowDurationInput from '@/Components/Common/TimeEntry/TimeEntryRowDurationInput.vue';
@@ -16,7 +24,10 @@ const props = defineProps<{
     projects: Project[];
     tasks: Task[];
     tags: Tag[];
+    clients: Client[];
     createTag: (name: string) => Promise<Tag | undefined>;
+    createProject: (project: CreateProjectBody) => Promise<Project | undefined>;
+    createClient: (client: CreateClientBody) => Promise<Client | undefined>;
     onStartStopClick: () => void;
     deleteTimeEntry: () => void;
     updateTimeEntry: (timeEntry: TimeEntry) => void;
@@ -54,7 +65,7 @@ function updateProjectAndTask(projectId: string, taskId: string) {
         <MainContainer>
             <div
                 class="sm:flex py-1 lg:py-1.5 items-center justify-between group">
-                <div class="flex space-x-1 items-center">
+                <div class="flex space-x-1 items-center min-w-0">
                     <input
                         type="checkbox"
                         class="h-4 w-4 rounded bg-card-background border-input-border text-accent-500/80 focus:ring-accent-500/80" />
@@ -66,6 +77,9 @@ function updateProjectAndTask(projectId: string, taskId: string) {
                             timeEntry.description
                         "></TimeEntryDescriptionInput>
                     <TimeTrackerProjectTaskDropdown
+                        :createProject
+                        :createClient
+                        :clients
                         :projects="projects"
                         :tasks="tasks"
                         :showBadgeBorder="false"

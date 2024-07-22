@@ -1,29 +1,35 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import type {
+    CreateClientBody,
+    CreateProjectBody,
     CreateTimeEntryBody,
     Project,
     Tag,
     Task,
     TimeEntry,
+    Client,
 } from '@/utils/api';
 import { getDayJsInstance, getLocalizedDateFromTimestamp } from '@/utils/time';
-import type { TimeEntriesGroupedByType } from '@/utils/useTimeEntries';
 import TimeEntryAggregateRow from '@/Components/Common/TimeEntry/TimeEntryAggregateRow.vue';
 import TimeEntryRowHeading from '@/Components/Common/TimeEntry/TimeEntryRowHeading.vue';
 import TimeEntryRow from '@/Components/Common/TimeEntry/TimeEntryRow.vue';
 import dayjs from 'dayjs';
+import type { TimeEntriesGroupedByType } from '@/types/time-entries';
 
 const props = defineProps<{
     timeEntries: TimeEntry[];
     projects: Project[];
     tasks: Task[];
     tags: Tag[];
+    clients: Client[];
     createTag: (name: string) => Promise<Tag | undefined>;
     updateTimeEntry: (entry: TimeEntry) => void;
     updateTimeEntries: (entries: TimeEntry[]) => void;
     deleteTimeEntries: (entries: TimeEntry[]) => void;
     createTimeEntry: (entry: Omit<CreateTimeEntryBody, 'member_id'>) => void;
+    createProject: (project: CreateProjectBody) => Promise<Project | undefined>;
+    createClient: (client: CreateClientBody) => Promise<Client | undefined>;
 }>();
 
 const groupedTimeEntries = computed(() => {
@@ -109,9 +115,12 @@ function startTimeEntryFromExisting(entry: TimeEntry) {
         <TimeEntryRowHeading :date="key"></TimeEntryRowHeading>
         <template v-for="entry in value" :key="entry.id">
             <TimeEntryAggregateRow
+                :createProject
+                :createClient
                 :projects="projects"
                 :tasks="tasks"
                 :tags="tags"
+                :clients
                 :onStartStopClick="startTimeEntryFromExisting"
                 :updateTimeEntries
                 :deleteTimeEntries
@@ -119,9 +128,12 @@ function startTimeEntryFromExisting(entry: TimeEntry) {
                 v-if="'timeEntries' in entry && entry.timeEntries.length > 1"
                 :time-entry="entry"></TimeEntryAggregateRow>
             <TimeEntryRow
+                :createClient
+                :createProject
                 :projects="projects"
                 :tasks="tasks"
                 :tags="tags"
+                :clients
                 :createTag
                 :updateTimeEntry
                 :onStartStopClick="() => startTimeEntryFromExisting(entry)"

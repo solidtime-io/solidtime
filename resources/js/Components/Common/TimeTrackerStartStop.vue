@@ -6,7 +6,7 @@ const emit = defineEmits(['changed']);
 
 const props = withDefaults(
     defineProps<{
-        size: 'base' | 'large';
+        size: 'base' | 'large' | 'small';
         active: boolean;
     }>(),
     {
@@ -15,10 +15,12 @@ const props = withDefaults(
     }
 );
 const buttonSizeClasses = {
+    small: 'w-6 h-6 bg-accent-200/40 hover:bg-accent-300/70',
     base: 'w-8 h-8 bg-accent-200/40 hover:scale-110 hover:bg-accent-300/70 ring-accent-200/10 focus:ring-accent-200/10 hover:ring-4',
     large: 'w-11 h-11 ring-accent-200/10 focus:ring-accent-200/20 ring-4 sm:ring-8 hover:scale-110',
 };
 const iconClass = {
+    small: 'w-2.5 h-2.5',
     base: 'w-3.5 h-3.5',
     large: 'w-4 h-4',
 };

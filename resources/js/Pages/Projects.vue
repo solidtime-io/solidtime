@@ -13,7 +13,12 @@ import TabBarItem from '@/Components/Common/TabBar/TabBarItem.vue';
 import TabBar from '@/Components/Common/TabBar/TabBar.vue';
 import { storeToRefs } from 'pinia';
 import { useClientsStore } from '@/utils/useClients';
-import type { CreateProjectBody } from '@/utils/api';
+import type {
+    CreateClientBody,
+    Client,
+    CreateProjectBody,
+    Project,
+} from '@/utils/api';
 
 onMounted(() => {
     useProjectsStore().fetchProjects();
@@ -27,11 +32,6 @@ function isActiveTab(tab: string) {
     return activeTab.value === tab;
 }
 
-async function createProject(project: CreateProjectBody, callback: () => void) {
-    await useProjectsStore().createProject(project);
-    callback();
-}
-
 const { projects } = storeToRefs(useProjectsStore());
 
 const shownProjects = computed(() => {
@@ -42,6 +42,16 @@ const shownProjects = computed(() => {
         return project.is_archived;
     });
 });
+async function createProject(
+    project: CreateProjectBody
+): Promise<Project | undefined> {
+    return await useProjectsStore().createProject(project);
+}
+async function createClient(
+    client: CreateClientBody
+): Promise<Client | undefined> {
+    return await useClientsStore().createClient(client);
+}
 </script>
 
 <template>
@@ -70,6 +80,8 @@ const shownProjects = computed(() => {
                 >Create Project
             </SecondaryButton>
             <ProjectCreateModal
+                :createProject
+                :createClient
                 :clients="clients"
                 @submit="createProject"
                 v-model:show="showCreateProjectModal"></ProjectCreateModal>

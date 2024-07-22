@@ -30,14 +30,12 @@ const iconSizeClasses = computed(() => {
     if (props.size === 'small') {
         return 'w-5 h-5';
     } else {
-        return 'w-5 sm:w-6 h-5 sm:h-6';
+        return 'w-5 lg:w-6 h-5 lg:h-6';
     }
 });
 
 const iconSizeWrapperClasses =
-    props.size === 'small'
-        ? 'w-6 sm:w-8 h-6 sm:h-8'
-        : 'w-7 sm:w-10 h-7 sm:h-10';
+    props.size === 'small' ? 'w-6 sm:w-8 h-6 sm:h-8' : 'w-11 h-11';
 </script>
 
 <template>
