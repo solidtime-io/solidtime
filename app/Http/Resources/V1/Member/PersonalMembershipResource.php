@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
 /**
  * @property Member $resource
  */
-class PersonalMemberResource extends BaseResource
+class PersonalMembershipResource extends BaseResource
 {
     /**
      * Transform the resource into an array.

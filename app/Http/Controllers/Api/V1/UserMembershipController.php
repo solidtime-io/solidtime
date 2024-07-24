@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1;
 
-use App\Http\Resources\V1\Member\PersonalMemberCollection;
-use App\Http\Resources\V1\Member\PersonalMemberResource;
+use App\Http\Resources\V1\Member\PersonalMembershipCollection;
 use App\Models\Member;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class UserMemberController extends Controller
+class UserMembershipController extends Controller
 {
     /**
      * Get the memberships of the current user
@@ -19,19 +18,19 @@ class UserMemberController extends Controller
      *
      * @operationId getMyMemberships
      *
-     * @return PersonalMemberCollection<PersonalMemberResource>
+     * @return PersonalMembershipCollection
      *
      * @throws AuthorizationException
      */
-    public function myMembers(): JsonResource
+    public function myMemberships(): JsonResource
     {
         $user = $this->user();
 
         $members = Member::query()
             ->whereBelongsTo($user, 'user')
             ->with(['organization'])
-            ->paginate(config('app.pagination_per_page_default'));
+            ->get();
 
-        return new PersonalMemberCollection($members);
+        return new PersonalMembershipCollection($members);
     }
 }

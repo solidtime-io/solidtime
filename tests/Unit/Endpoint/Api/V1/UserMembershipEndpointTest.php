@@ -8,12 +8,12 @@ use App\Models\Member;
 use App\Models\Organization;
 use Laravel\Passport\Passport;
 
-class UserMemberEndpointTest extends ApiEndpointTestAbstract
+class UserMembershipEndpointTest extends ApiEndpointTestAbstract
 {
     public function test_my_members_fails_when_not_authenticated(): void
     {
         // Act
-        $response = $this->getJson(route('api.v1.users.members.my-members'));
+        $response = $this->getJson(route('api.v1.users.memberships.my-memberships'));
 
         // Assert
         $response->assertUnauthorized();
@@ -29,7 +29,7 @@ class UserMemberEndpointTest extends ApiEndpointTestAbstract
         Passport::actingAs($data->user);
 
         // Act
-        $response = $this->getJson(route('api.v1.users.members.my-members'));
+        $response = $this->getJson(route('api.v1.users.memberships.my-memberships'));
 
         // Assert
         $response->assertSuccessful();
