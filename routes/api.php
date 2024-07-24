@@ -13,7 +13,7 @@ use App\Http\Controllers\Api\V1\TagController;
 use App\Http\Controllers\Api\V1\TaskController;
 use App\Http\Controllers\Api\V1\TimeEntryController;
 use App\Http\Controllers\Api\V1\UserController;
-use App\Http\Controllers\Api\V1\UserMemberController;
+use App\Http\Controllers\Api\V1\UserMembershipController;
 use App\Http\Controllers\Api\V1\UserTimeEntryController;
 use Illuminate\Support\Facades\Route;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -53,8 +53,8 @@ Route::middleware([
     });
 
     // User Member routes
-    Route::name('users.members.')->group(static function () {
-        Route::get('/users/me/members', [UserMemberController::class, 'myMembers'])->name('my-members');
+    Route::name('users.memberships.')->group(static function () {
+        Route::get('/users/me/memberships', [UserMembershipController::class, 'myMemberships'])->name('my-memberships');
     });
 
     // Invitation routes
