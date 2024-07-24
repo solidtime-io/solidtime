@@ -170,6 +170,10 @@ COPY --chown=${USER}:${USER} ${DOCKER_FILES_BASE_PATH}deployment/php.ini /lib/ph
 #    --no-dev \
 #    && composer clear-cache
 
+RUN cat .env
+RUN php artisan env
+RUN php artisan storage:link
+
 RUN chmod +x /usr/local/bin/start-container
 
 RUN cat ${DOCKER_FILES_BASE_PATH}deployment/utilities.sh >> ~/.bashrc
