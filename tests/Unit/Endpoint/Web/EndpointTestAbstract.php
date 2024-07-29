@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Endpoint\Web;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
+use Tests\TestCaseWithDatabase;
 
-abstract class EndpointTestAbstract extends TestCase
+abstract class EndpointTestAbstract extends TestCaseWithDatabase
 {
-    use RefreshDatabase;
 }

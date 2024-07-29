@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Tests\Unit\Endpoint\Api\V1;
 
 use App\Enums\Role;
+use App\Events\MemberMadeToPlaceholder;
+use App\Events\MemberRemoved;
 use App\Http\Controllers\Api\V1\MemberController;
 use App\Models\Member;
 use App\Models\Organization;
@@ -13,6 +15,7 @@ use App\Models\ProjectMember;
 use App\Models\TimeEntry;
 use App\Models\User;
 use App\Service\BillableRateService;
+use Illuminate\Support\Facades\Event;
 use Laravel\Passport\Passport;
 use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\UsesClass;
@@ -303,12 +306,16 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
         // Arrange
         $data = $this->createUserWithPermission();
         Passport::actingAs($data->user);
+        Event::fake([
+            MemberRemoved::class,
+        ]);
 
         // Act
         $response = $this->deleteJson(route('api.v1.members.destroy', [$data->organization->getKey(), $data->member->getKey()]));
 
         // Assert
         $response->assertStatus(403);
+        Event::assertNotDispatched(MemberRemoved::class);
     }
 
     public function test_destroy_member_fails_if_member_is_owner(): void
@@ -319,6 +326,9 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
         ]);
         $memberToDelete = Member::factory()->forOrganization($data->organization)->role(Role::Owner)->create();
         Passport::actingAs($data->user);
+        Event::fake([
+            MemberRemoved::class,
+        ]);
 
         // Act
         $response = $this->deleteJson(route('api.v1.members.destroy', [$data->organization->getKey(), $memberToDelete->getKey()]));
@@ -326,6 +336,7 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
         // Assert
         $response->assertStatus(400);
         $response->assertJsonPath('message', 'Can not remove owner from organization');
+        Event::assertNotDispatched(MemberRemoved::class);
     }
 
     public function test_destroy_member_fails_if_member_is_not_part_of_org(): void
@@ -338,12 +349,16 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
             'members:delete',
         ]);
         Passport::actingAs($data->user);
+        Event::fake([
+            MemberRemoved::class,
+        ]);
 
         // Act
         $response = $this->deleteJson(route('api.v1.members.destroy', [$data->organization->getKey(), $otherData->member->getKey()]));
 
         // Assert
         $response->assertStatus(403);
+        Event::assertNotDispatched(MemberRemoved::class);
     }
 
     public function test_destroy_endpoint_fails_if_member_is_still_in_use_by_a_time_entry(): void
@@ -354,6 +369,9 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
         ]);
         TimeEntry::factory()->forMember($data->member)->forOrganization($data->organization)->create();
         Passport::actingAs($data->user);
+        Event::fake([
+            MemberRemoved::class,
+        ]);
 
         // Act
         $response = $this->deleteJson(route('api.v1.members.destroy', [$data->organization->getKey(), $data->member->getKey()]));
@@ -364,6 +382,7 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
         $this->assertDatabaseHas(Member::class, [
             'id' => $data->member->getKey(),
         ]);
+        Event::assertNotDispatched(MemberRemoved::class);
     }
 
     public function test_destroy_endpoint_fails_if_member_is_still_in_use_by_a_project_member(): void
@@ -375,6 +394,9 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
         $project = Project::factory()->forOrganization($data->organization)->create();
         ProjectMember::factory()->forProject($project)->forMember($data->member)->create();
         Passport::actingAs($data->user);
+        Event::fake([
+            MemberRemoved::class,
+        ]);
 
         // Act
         $response = $this->deleteJson(route('api.v1.members.destroy', [$data->organization->getKey(), $data->member->getKey()]));
@@ -385,6 +407,7 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
         $this->assertDatabaseHas(Member::class, [
             'id' => $data->member->getKey(),
         ]);
+        Event::assertNotDispatched(MemberRemoved::class);
     }
 
     public function test_destroy_member_succeeds_if_data_is_valid(): void
@@ -394,6 +417,9 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
             'members:delete',
         ]);
         Passport::actingAs($data->user);
+        Event::fake([
+            MemberRemoved::class,
+        ]);
 
         // Act
         $response = $this->deleteJson(route('api.v1.members.destroy', [$data->organization->getKey(), $data->member->getKey()]));
@@ -403,6 +429,118 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
         $this->assertDatabaseMissing(Member::class, [
             'id' => $data->member->getKey(),
         ]);
+        Event::assertDispatched(function (MemberRemoved $event) use ($data): bool {
+            return $event->organization->is($data->organization) &&
+                $event->member->is($data->member);
+        }, 1);
+    }
+
+    public function test_make_placeholder_fails_if_user_has_no_permission(): void
+    {
+        // Arrange
+        Event::fake([
+            MemberMadeToPlaceholder::class,
+        ]);
+        $data = $this->createUserWithPermission();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.members.make-placeholder', [
+            'organization' => $data->organization->getKey(),
+            'member' => $data->member->getKey(),
+        ]));
+
+        // Assert
+        $response->assertForbidden();
+        Event::assertNotDispatched(MemberMadeToPlaceholder::class);
+    }
+
+    public function test_make_placeholder_fails_if_member_is_owner(): void
+    {
+        // Arrange
+        Event::fake([
+            MemberMadeToPlaceholder::class,
+        ]);
+        $data = $this->createUserWithPermission([
+            'members:make-placeholder',
+        ]);
+        $member = Member::factory()->forOrganization($data->organization)->role(Role::Owner)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.members.make-placeholder', [
+            'organization' => $data->organization->getKey(),
+            'member' => $member->getKey(),
+        ]));
+
+        // Assert
+        $response->assertStatus(400);
+        $response->assertJsonPath('message', 'Can not remove owner from organization');
+        Event::assertNotDispatched(MemberMadeToPlaceholder::class);
+    }
+
+    public function test_make_placeholder_fails_if_member_is_not_part_of_org(): void
+    {
+        // Arrange
+        Event::fake([
+            MemberMadeToPlaceholder::class,
+        ]);
+        $data = $this->createUserWithPermission([
+            'members:make-placeholder',
+        ]);
+        $otherData = $this->createUserWithPermission([
+            'members:make-placeholder',
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.members.make-placeholder', [
+            'organization' => $data->organization->getKey(),
+            'member' => $otherData->member->getKey(),
+        ]));
+
+        // Assert
+        $response->assertStatus(403);
+    }
+
+    public function test_make_placeholder_creates_placeholder_and_attaches_resources_to_the_new_user(): void
+    {
+        // Arrange
+        Event::fake([
+            MemberMadeToPlaceholder::class,
+        ]);
+        $data = $this->createUserWithPermission([
+            'members:make-placeholder',
+        ]);
+        $user = User::factory()->create();
+        $member = Member::factory()->forOrganization($data->organization)->forUser($user)->role(Role::Admin)->create();
+        $timeEntry = TimeEntry::factory()->forMember($member)->forOrganization($data->organization)->create();
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        $projectMember = ProjectMember::factory()->forProject($project)->forMember($member)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.members.make-placeholder', [
+            'organization' => $data->organization->getKey(),
+            'member' => $member->getKey(),
+        ]));
+
+        // Assert
+        $response->assertStatus(204);
+        $member->refresh();
+        $this->assertSame(Role::Placeholder->value, $member->role);
+        $this->assertTrue($member->user->is_placeholder);
+        $this->assertCount(1, $user->organizations);
+        $this->assertCount(1, $member->user->organizations);
+        $this->assertNotEquals($user->getKey(), $member->user->getKey());
+        $timeEntry->refresh();
+        $this->assertSame($member->user_id, $timeEntry->user_id);
+        $projectMember->refresh();
+        $this->assertSame($member->user_id, $projectMember->user_id);
+        Event::assertDispatched(function (MemberMadeToPlaceholder $event) use ($data, $member): bool {
+            return $event->organization->is($data->organization) &&
+                $event->member->is($member);
+        }, 1);
     }
 
     public function test_invite_placeholder_fails_if_user_does_not_have_permission(): void

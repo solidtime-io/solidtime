@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests;
 
 use App\Service\BillableRateService;
+use App\Service\BillingContract;
 use App\Service\PermissionStore;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
@@ -24,6 +25,11 @@ abstract class TestCase extends BaseTestCase
         parent::setUp();
         Mail::fake();
         LogFake::bind();
+        $this->mock(BillingContract::class, function (MockInterface $mock) {
+            $mock->shouldReceive('hasSubscription')->andReturn(false);
+            $mock->shouldReceive('hasTrial')->andReturn(false);
+            $mock->shouldReceive('isBlocked')->andReturn(false);
+        });
     }
 
     protected function mockPrivateStorage(): void

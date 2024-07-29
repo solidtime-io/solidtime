@@ -40,18 +40,18 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         $hasBilling = Module::has('Billing') && Module::isEnabled('Billing');
-        $billing = null;
-        if ($hasBilling) {
-            /** @var BillingContract $billing */
-            $billing = app(BillingContract::class);
-        }
+
+        /** @var BillingContract $billing */
+        $billing = app(BillingContract::class);
 
         $currentOrganization = $request->user()?->currentTeam;
 
         return array_merge(parent::share($request), [
             'has_billing_extension' => $hasBilling,
-            'billing' => $billing !== null ? [
-                'has_subscription' => $currentOrganization !== null ? $billing->hasSubscription($currentOrganization) : null,
+            'billing' => $billing !== null && $currentOrganization !== null ? [
+                'has_subscription' => $billing->hasSubscription($currentOrganization),
+                'has_trial' => $billing->hasTrial($currentOrganization),
+                'is_blocked' => $billing->isBlocked($currentOrganization),
             ] : null,
             'flash' => [
                 'message' => fn () => $request->session()->get('message'),

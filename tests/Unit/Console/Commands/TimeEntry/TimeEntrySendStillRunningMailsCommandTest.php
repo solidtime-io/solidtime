@@ -137,4 +137,28 @@ class TimeEntrySendStillRunningMailsCommandTest extends TestCaseWithDatabase
             'Start sending email to user "'.$user->user->email.'" ('.$user->user->getKey().') for time entry '.$timeEntryRunningLongerThanThreshold->getKey()."\n".
             "Finished sending 1 still running time entry emails...\n", $output);
     }
+
+    public function test_does_not_send_emails_for_placeholder_users(): void
+    {
+        // Arrange
+        $user = $this->createUserWithPermission();
+        $user->user->is_placeholder = true;
+        $user->user->save();
+        $timeEntryRunningLongerThanThreshold = TimeEntry::factory()->forMember($user->member)->create([
+            'start' => Carbon::now()->subHours(8)->subSecond(),
+            'end' => null,
+        ]);
+
+        // Act
+        $exitCode = $this->withoutMockingConsoleOutput()->artisan('time-entry:send-still-running-mails');
+
+        // Assert
+        Mail::assertNothingOutgoing();
+        $timeEntryRunningLongerThanThreshold->refresh();
+        $this->assertNull($timeEntryRunningLongerThanThreshold->still_active_email_sent_at);
+        $this->assertSame(Command::SUCCESS, $exitCode);
+        $output = Artisan::output();
+        $this->assertSame("Sending still running time entry emails...\n".
+            "Finished sending 0 still running time entry emails...\n", $output);
+    }
 }

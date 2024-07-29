@@ -121,6 +121,14 @@ class Organization extends JetstreamTeam implements AuditableContract
     }
 
     /**
+     * @return HasMany<Member>
+     */
+    public function members(): HasMany
+    {
+        return $this->hasMany(Member::class);
+    }
+
+    /**
      * @return BelongsToMany<User>
      */
     public function realUsers(): BelongsToMany
