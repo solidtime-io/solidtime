@@ -122,6 +122,7 @@ class JetstreamServiceProvider extends ServiceProvider
             'members:view',
             'members:invite-placeholder',
             'members:change-ownership',
+            'members:make-placeholder',
             'members:update',
             'members:delete',
         ])->description('Owner users can perform any action. There is only one owner per organization.');

@@ -35,10 +35,14 @@ abstract class TestCaseWithDatabase extends TestCase
             $ownerMember = Member::factory()->forUser($owner)->forOrganization($organization)->create([
                 'role' => Role::Owner->value,
             ]);
+            $owner->currentOrganization()->associate($organization);
+            $owner->save();
         }
         $member = Member::factory()->forUser($user)->forOrganization($organization)->create([
             'role' => $roleName,
         ]);
+        $user->currentOrganization()->associate($organization);
+        $user->save();
 
         return (object) [
             'user' => $user,

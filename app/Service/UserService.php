@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Enums\Role;
+use App\Events\AfterCreateOrganization;
 use App\Models\Member;
 use App\Models\Organization;
 use App\Models\ProjectMember;
@@ -71,6 +72,8 @@ class UserService
         // Set the organization as the user's current organization
         $user->currentOrganization()->associate($organization);
         $user->save();
+
+        AfterCreateOrganization::dispatch($organization);
     }
 
     public function makeSureUserHasCurrentOrganization(User $user): void
