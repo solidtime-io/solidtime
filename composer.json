@@ -28,7 +28,7 @@
         "spatie/temporary-directory": "^2.2",
         "stechstudio/filament-impersonate": "^3.8",
         "tightenco/ziggy": "^2.1.0",
-        "tpetry/laravel-postgresql-enhanced": "^0.39.0",
+        "tpetry/laravel-postgresql-enhanced": "^0.40.2",
         "wikimedia/composer-merge-plugin": "^2.1.0"
     },
     "require-dev": {
