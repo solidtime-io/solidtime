@@ -8,6 +8,7 @@ use App\Enums\Role;
 use App\Models\Client;
 use App\Models\Member;
 use App\Models\Organization;
+use App\Models\OrganizationInvitation;
 use App\Models\Project;
 use App\Models\ProjectMember;
 use App\Models\Tag;
@@ -147,6 +148,7 @@ class DatabaseSeeder extends Seeder
         DB::table((new Project())->getTable())->delete();
         DB::table((new Client())->getTable())->delete();
         DB::table((new User())->getTable())->delete();
+        DB::table((new OrganizationInvitation())->getTable())->delete();
         DB::table((new Organization())->getTable())->delete();
     }
 }

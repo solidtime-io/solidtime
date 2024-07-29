@@ -77,30 +77,31 @@ class CreateNewUser implements CreatesNewUsers
             }
             $currency = $ipLookupResponse->currency;
         }
-
-        $user = DB::transaction(function () use ($input, $timezone, $startOfWeek, $currency) {
-            return tap(User::create([
+        $user = null;
+        $organization = null;
+        DB::transaction(function () use (&$user, &$organization, $input, $timezone, $startOfWeek, $currency) {
+            $user = User::create([
                 'name' => $input['name'],
                 'email' => $input['email'],
                 'password' => Hash::make($input['password']),
                 'timezone' => $timezone ?? 'UTC',
                 'week_start' => $startOfWeek,
-            ]), function (User $user) use ($currency): void {
-                $organization = new Organization();
-                $organization->name = explode(' ', $user->name, 2)[0]."'s Organization";
-                $organization->personal_team = true;
-                $organization->currency = $currency ?? 'EUR';
-                $organization->owner()->associate($user);
-                $organization->save();
+            ]);
 
-                $organization->users()->attach(
-                    $user, [
-                        'role' => Role::Owner->value,
-                    ]
-                );
+            $organization = new Organization();
+            $organization->name = explode(' ', $user->name, 2)[0]."'s Organization";
+            $organization->personal_team = true;
+            $organization->currency = $currency ?? 'EUR';
+            $organization->owner()->associate($user);
+            $organization->save();
 
-                $user->ownedTeams()->save($organization);
-            });
+            $organization->users()->attach(
+                $user, [
+                    'role' => Role::Owner->value,
+                ]
+            );
+
+            $user->ownedTeams()->save($organization);
         });
 
         $newsletterConsent = isset($input['newsletter_consent']) && (bool) $input['newsletter_consent'];

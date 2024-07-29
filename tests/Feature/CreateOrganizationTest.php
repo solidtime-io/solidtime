@@ -5,22 +5,26 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Enums\Role;
+use App\Events\AfterCreateOrganization;
 use App\Models\Member;
 use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Event;
 use Tests\TestCase;
 
-class CreateTeamTest extends TestCase
+class CreateOrganizationTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_teams_can_be_created(): void
+    public function test_organizations_can_be_created(): void
     {
         // Arrange
         $user = User::factory()->withPersonalOrganization()->create();
         $this->actingAs($user);
-        sleep(1);
+        Event::fake([
+            AfterCreateOrganization::class,
+        ]);
 
         // Act
         $response = $this->post('/teams', [
@@ -28,6 +32,7 @@ class CreateTeamTest extends TestCase
         ]);
 
         // Assert
+        $response->assertStatus(302);
         /** @var Organization|null $newOrganization */
         $ownedTeams = $user->fresh()->ownedTeams;
         $this->assertCount(2, $ownedTeams);
@@ -36,5 +41,8 @@ class CreateTeamTest extends TestCase
         /** @var Member $member */
         $member = Member::query()->whereBelongsTo($user, 'user')->whereBelongsTo($newOrganization, 'organization')->firstOrFail();
         $this->assertSame(Role::Owner->value, $member->role);
+        Event::assertDispatched(AfterCreateOrganization::class, function (AfterCreateOrganization $event) use ($newOrganization): bool {
+            return $event->organization->is($newOrganization);
+        });
     }
 }

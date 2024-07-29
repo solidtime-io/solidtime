@@ -8,6 +8,7 @@ use App\Exceptions\Api\ChangingRoleToPlaceholderIsNotAllowed;
 use App\Exceptions\Api\EntityStillInUseApiException;
 use App\Exceptions\Api\InactiveUserCanNotBeUsedApiException;
 use App\Exceptions\Api\OnlyOwnerCanChangeOwnership;
+use App\Exceptions\Api\OrganizationHasNoSubscriptionButMultipleMembersException;
 use App\Exceptions\Api\OrganizationNeedsAtLeastOneOwner;
 use App\Exceptions\Api\TimeEntryCanNotBeRestartedApiException;
 use App\Exceptions\Api\TimeEntryStillRunningApiException;
@@ -29,6 +30,7 @@ return [
         OnlyOwnerCanChangeOwnership::KEY => 'Only owner can change ownership',
         OrganizationNeedsAtLeastOneOwner::KEY => 'Organization needs at least one owner',
         ChangingRoleToPlaceholderIsNotAllowed::KEY => 'Changing role to placeholder is not allowed',
+        OrganizationHasNoSubscriptionButMultipleMembersException::KEY => 'Organization has no subscription but multiple members',
     ],
     'unknown_error_in_admin_panel' => 'An unknown error occurred. Please check the logs.',
 ];

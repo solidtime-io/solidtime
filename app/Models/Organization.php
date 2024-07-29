@@ -118,6 +118,14 @@ class Organization extends JetstreamTeam
     }
 
     /**
+     * @return HasMany<Member>
+     */
+    public function members(): HasMany
+    {
+        return $this->hasMany(Member::class);
+    }
+
+    /**
      * @return BelongsToMany<User>
      */
     public function realUsers(): BelongsToMany
