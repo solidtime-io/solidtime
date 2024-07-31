@@ -19,6 +19,6 @@ class RemoveOrganizationMember implements RemovesTeamMembers
      */
     public function remove(User $user, Organization $organization, User $teamMember): void
     {
-        throw new MovedToApiException();
+        throw new MovedToApiException;
     }
 }

@@ -111,9 +111,18 @@ class UserResource extends Resource
             ->filters([
                 TernaryFilter::make('real_user')
                     ->queries(
-                        true: fn (Builder $query) => $query->where('is_placeholder', '=', false),
-                        false: fn (Builder $query) => $query->where('is_placeholder', '=', true),
-                        blank: fn (Builder $query) => $query,
+                        true: function (Builder $query): Builder {
+                            /** @var Builder<User> $query */
+                            return $query->where('is_placeholder', '=', false);
+                        },
+                        false: function (Builder $query): Builder {
+                            /** @var Builder<User> $query */
+                            return $query->where('is_placeholder', '=', true);
+                        },
+                        blank: function (Builder $query): Builder {
+                            /** @var Builder<User> $query */
+                            return $query;
+                        },
                     )
                     ->label('Real User?'),
                 TernaryFilter::make('email_verified')

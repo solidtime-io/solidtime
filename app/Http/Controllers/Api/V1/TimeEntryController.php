@@ -212,12 +212,12 @@ class TimeEntryController extends Controller
         }
 
         if ($request->input('end') === null && TimeEntry::query()->whereBelongsTo($member, 'member')->where('end', null)->exists()) {
-            throw new TimeEntryStillRunningApiException();
+            throw new TimeEntryStillRunningApiException;
         }
 
         $client = $request->input('project_id') !== null ? Project::findOrFail((string) $request->input('project_id'))->client : null;
 
-        $timeEntry = new TimeEntry();
+        $timeEntry = new TimeEntry;
         $timeEntry->fill($request->validated());
         $timeEntry->client()->associate($client);
         $timeEntry->user_id = $member->user_id;
@@ -247,7 +247,7 @@ class TimeEntryController extends Controller
         }
 
         if ($timeEntry->end !== null && $request->has('end') && $request->input('end') === null) {
-            throw new TimeEntryCanNotBeRestartedApiException();
+            throw new TimeEntryCanNotBeRestartedApiException;
         }
 
         if ($request->has('project_id')) {
@@ -285,7 +285,7 @@ class TimeEntryController extends Controller
         $changes = $request->input('changes');
 
         if (isset($changes['member_id']) && ! $canAccessAll && $this->member($organization)->getKey() !== $changes['member_id']) {
-            throw new AuthorizationException();
+            throw new AuthorizationException;
         }
 
         $client = null;
@@ -295,8 +295,8 @@ class TimeEntryController extends Controller
             $overwriteClient = true;
         }
 
-        $success = new Collection();
-        $error = new Collection();
+        $success = new Collection;
+        $error = new Collection;
 
         foreach ($ids as $id) {
             $timeEntry = $timeEntries->firstWhere('id', $id);

@@ -11,11 +11,11 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-class DeleteTeamTest extends TestCase
+class DeleteOrganizationTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_teams_can_be_deleted_and_users_of_the_organization_that_have_no_organization_get_a_new_one(): void
+    public function test_organizations_can_be_deleted_and_users_of_the_organization_that_have_no_organization_get_a_new_one(): void
     {
         // Arrange
         $user = User::factory()->withPersonalOrganization()->create();
@@ -40,7 +40,7 @@ class DeleteTeamTest extends TestCase
         $this->assertFalse($otherUser->fresh()->teams->first()->is($organization));
     }
 
-    public function test_personal_teams_can_be_deleted_but_user_gets_an_new_one_if_this_is_the_only_one_left(): void
+    public function test_personal_organizations_can_be_deleted_but_user_gets_an_new_one_if_this_is_the_only_one_left(): void
     {
         // Arrange
         $user = User::factory()->withPersonalOrganization()->create();

@@ -66,7 +66,7 @@ class ClientController extends Controller
     {
         $this->checkPermission($organization, 'clients:create');
 
-        $client = new Client();
+        $client = new Client;
         $client->name = $request->input('name');
         $client->organization()->associate($organization);
         $client->save();

@@ -19,7 +19,7 @@ class TogglDataImporter extends DefaultImporter
     public function importData(string $data, string $timezone): void
     {
         try {
-            $zip = new ZipArchive();
+            $zip = new ZipArchive;
             $temporaryDirectory = TemporaryDirectory::make();
             file_put_contents($temporaryDirectory->path('import.zip'), $data);
             $res = $zip->open($temporaryDirectory->path('import.zip'), ZipArchive::RDONLY);

@@ -26,7 +26,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class ProjectMember extends Model
 {
+    /** @use HasFactory<ProjectMemberFactory> */
     use HasFactory;
+
     use HasUuids;
 
     /**

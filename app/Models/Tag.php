@@ -23,7 +23,9 @@ use Illuminate\Support\Carbon;
  */
 class Tag extends Model
 {
+    /** @use HasFactory<TagFactory> */
     use HasFactory;
+
     use HasUuids;
 
     /**

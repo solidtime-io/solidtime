@@ -28,7 +28,7 @@ class Controller extends BaseController
         $user = Auth::user();
         if ($user === null) {
             Log::error('This function should only be called in authenticated context');
-            throw new AuthorizationException();
+            throw new AuthorizationException;
         }
 
         return $user;
@@ -44,7 +44,7 @@ class Controller extends BaseController
         $member = Member::query()->whereBelongsTo($organization, 'organization')->whereBelongsTo($user, 'user')->first();
         if ($member === null) {
             Log::error('This function should only be called in authenticated context after checking the user is a member of the organization');
-            throw new AuthorizationException();
+            throw new AuthorizationException;
         }
 
         return $member;

@@ -139,7 +139,7 @@ class DeletionService
 
         foreach ($members as $member) {
             if ($member->role === Role::Owner->value && $member->organization->users()->count() > 1) {
-                throw new CanNotDeleteUserWhoIsOwnerOfOrganizationWithMultipleMembers();
+                throw new CanNotDeleteUserWhoIsOwnerOfOrganizationWithMultipleMembers;
             }
         }
 

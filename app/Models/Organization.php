@@ -9,6 +9,7 @@ use Database\Factories\OrganizationFactory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
@@ -39,7 +40,9 @@ use Laravel\Jetstream\Team as JetstreamTeam;
  */
 class Organization extends JetstreamTeam
 {
+    /** @use HasFactory<OrganizationFactory> */
     use HasFactory;
+
     use HasUuids;
 
     /**
@@ -107,7 +110,7 @@ class Organization extends JetstreamTeam
      */
     public function users(): BelongsToMany
     {
-        return $this->belongsToMany(Jetstream::userModel(), Jetstream::membershipModel())
+        return $this->belongsToMany(User::class, Member::class)
             ->withPivot([
                 'id',
                 'role',
@@ -115,6 +118,24 @@ class Organization extends JetstreamTeam
             ])
             ->withTimestamps()
             ->as('membership');
+    }
+
+    /**
+     * Get the owner of the team.
+     *
+     * @return BelongsTo<User, Organization>
+     */
+    public function owner(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    /**
+     * @return HasMany<Member>
+     */
+    public function members(): HasMany
+    {
+        return $this->hasMany(Member::class);
     }
 
     /**

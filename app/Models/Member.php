@@ -26,7 +26,9 @@ use Laravel\Jetstream\Membership as JetstreamMembership;
  */
 class Member extends JetstreamMembership
 {
+    /** @use HasFactory<MemberFactory> */
     use HasFactory;
+
     use HasUuids;
 
     /**

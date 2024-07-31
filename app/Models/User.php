@@ -56,7 +56,10 @@ use Laravel\Passport\HasApiTokens;
 class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 {
     use HasApiTokens;
+
+    /** @use HasFactory<UserFactory> */
     use HasFactory;
+
     use HasProfilePhoto;
     use HasTeams;
     use HasUuids;

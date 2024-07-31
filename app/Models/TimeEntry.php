@@ -44,7 +44,10 @@ use Korridor\LaravelComputedAttributes\ComputedAttributes;
 class TimeEntry extends Model
 {
     use ComputedAttributes;
+
+    /** @use HasFactory<TimeEntryFactory> */
     use HasFactory;
+
     use HasUuids;
 
     /**

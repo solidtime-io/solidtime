@@ -26,7 +26,7 @@ class PermissionStoreTest extends TestCase
         $organization = Organization::factory()->create();
         $user = User::factory()->create();
         $organization->users()->attach($user, ['role' => Role::Employee->value]);
-        $permissionStore = new PermissionStore();
+        $permissionStore = new PermissionStore;
 
         // Act
         $result = $permissionStore->has($organization, 'permission');
@@ -40,7 +40,7 @@ class PermissionStoreTest extends TestCase
         // Arrange
         $organization = Organization::factory()->create();
         $user = User::factory()->create();
-        $permissionStore = new PermissionStore();
+        $permissionStore = new PermissionStore;
         $this->actingAs($user);
 
         // Act
@@ -56,7 +56,7 @@ class PermissionStoreTest extends TestCase
         $organization = Organization::factory()->create();
         $user = User::factory()->create();
         $organization->users()->attach($user, ['role' => Role::Employee->value]);
-        $permissionStore = new PermissionStore();
+        $permissionStore = new PermissionStore;
         $this->actingAs($user);
 
         // Act
@@ -72,7 +72,7 @@ class PermissionStoreTest extends TestCase
         $organization = Organization::factory()->create();
         $user = User::factory()->create();
         $organization->users()->attach($user, ['role' => Role::Employee->value]);
-        $permissionStore = new PermissionStore();
+        $permissionStore = new PermissionStore;
         $this->actingAs($user);
 
         // Act
@@ -88,7 +88,7 @@ class PermissionStoreTest extends TestCase
         $organization = Organization::factory()->create();
         $user = User::factory()->create();
         $organization->users()->attach($user, ['role' => Role::Employee->value]);
-        $permissionStore = new PermissionStore();
+        $permissionStore = new PermissionStore;
 
         // Act
         $result = $permissionStore->getPermissions($organization);
@@ -101,7 +101,7 @@ class PermissionStoreTest extends TestCase
     {
         $organization = Organization::factory()->create();
         $user = User::factory()->create();
-        $permissionStore = new PermissionStore();
+        $permissionStore = new PermissionStore;
         $this->actingAs($user);
 
         // Act
@@ -117,7 +117,7 @@ class PermissionStoreTest extends TestCase
         $organization = Organization::factory()->create();
         $user = User::factory()->create();
         $organization->users()->attach($user, ['role' => Role::Employee->value]);
-        $permissionStore = new PermissionStore();
+        $permissionStore = new PermissionStore;
         $this->actingAs($user);
 
         // Act
