@@ -26,7 +26,7 @@ class TogglDataImporterTest extends ImporterTestAbstract
     {
         $tempDir = TemporaryDirectory::make();
         $zipPath = $tempDir->path('test.zip');
-        $zip = new ZipArchive();
+        $zip = new ZipArchive;
         $zip->open($zipPath, ZipArchive::CREATE);
         foreach (Storage::disk('testfiles')->allFiles($folder) as $file) {
             $zip->addFile(Storage::disk('testfiles')->path($file), Str::of($file)->after($folder.'/')->value());
@@ -41,7 +41,7 @@ class TogglDataImporterTest extends ImporterTestAbstract
         // Arrange
         $organization = Organization::factory()->create();
         $timezone = 'Europe/Vienna';
-        $importer = new TogglDataImporter();
+        $importer = new TogglDataImporter;
         $importer->init($organization);
 
         // Act
@@ -62,7 +62,7 @@ class TogglDataImporterTest extends ImporterTestAbstract
         $zipPath = $this->createTestZip('toggl_data_import_test_1');
         $timezone = 'Europe/Vienna';
         $organization = Organization::factory()->create();
-        $importer = new TogglDataImporter();
+        $importer = new TogglDataImporter;
         $importer->init($organization);
         $data = file_get_contents($zipPath);
 
@@ -86,11 +86,11 @@ class TogglDataImporterTest extends ImporterTestAbstract
         $zipPath = $this->createTestZip('toggl_data_import_test_1');
         $timezone = 'Europe/Vienna';
         $organization = Organization::factory()->create();
-        $importer = new TogglDataImporter();
+        $importer = new TogglDataImporter;
         $importer->init($organization);
         $data = file_get_contents($zipPath);
         $importer->importData($data, $timezone);
-        $importer = new TogglDataImporter();
+        $importer = new TogglDataImporter;
         $importer->init($organization);
 
         // Act

@@ -88,7 +88,7 @@ class CreateNewUser implements CreatesNewUsers
                 'week_start' => $startOfWeek,
             ]);
 
-            $organization = new Organization();
+            $organization = new Organization;
             $organization->name = explode(' ', $user->name, 2)[0]."'s Organization";
             $organization->personal_team = true;
             $organization->currency = $currency ?? 'EUR';

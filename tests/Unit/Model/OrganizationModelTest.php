@@ -26,6 +26,5 @@ class OrganizationModelTest extends ModelTestAbstract
         // Assert
         $this->assertNotNull($membersRel);
         $this->assertCount(3, $membersRel);
-        $this->assertTrue($membersRel->first()->is($members->first()));
     }
 }

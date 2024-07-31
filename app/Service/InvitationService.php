@@ -25,12 +25,12 @@ class InvitationService
             ->whereRelation('user', 'email', '=', $email)
             ->where('role', '!=', Role::Placeholder->value)
             ->exists()) {
-            throw new UserIsAlreadyMemberOfOrganizationApiException();
+            throw new UserIsAlreadyMemberOfOrganizationApiException;
         }
 
         InvitingTeamMember::dispatch($organization, $email, $role->value);
 
-        $invitation = new OrganizationInvitation();
+        $invitation = new OrganizationInvitation;
         $invitation->email = $email;
         $invitation->role = $role->value;
         $invitation->organization()->associate($organization);

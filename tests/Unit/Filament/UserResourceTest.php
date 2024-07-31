@@ -79,7 +79,7 @@ class UserResourceTest extends FilamentTestCase
         $this->mock(DeletionService::class, function (MockInterface $mock) use ($user): void {
             $mock->shouldReceive('deleteUser')
                 ->withArgs(fn (User $userArg) => $userArg->is($user->user))
-                ->andThrow(new CanNotDeleteUserWhoIsOwnerOfOrganizationWithMultipleMembers());
+                ->andThrow(new CanNotDeleteUserWhoIsOwnerOfOrganizationWithMultipleMembers);
         });
 
         // Act

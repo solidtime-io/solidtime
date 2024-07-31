@@ -32,7 +32,9 @@ use Illuminate\Support\Carbon;
  */
 class Task extends Model
 {
+    /** @use HasFactory<TaskFactory> */
     use HasFactory;
+
     use HasUuids;
 
     /**

@@ -98,7 +98,7 @@ class ClockifyTimeEntriesImporter extends DefaultImporter
                         'organization_id' => $this->organization->id,
                     ]);
                 }
-                $timeEntry = new TimeEntry();
+                $timeEntry = new TimeEntry;
                 $timeEntry->user_id = $userId;
                 $timeEntry->member_id = $memberId;
                 $timeEntry->task_id = $taskId;

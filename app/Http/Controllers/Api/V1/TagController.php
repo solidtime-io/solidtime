@@ -57,7 +57,7 @@ class TagController extends Controller
     {
         $this->checkPermission($organization, 'tags:create');
 
-        $tag = new Tag();
+        $tag = new Tag;
         $tag->name = $request->input('name');
         $tag->organization()->associate($organization);
         $tag->save();

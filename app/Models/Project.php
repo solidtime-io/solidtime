@@ -37,7 +37,9 @@ use Illuminate\Support\Carbon;
  */
 class Project extends Model
 {
+    /** @use HasFactory<ProjectFactory> */
     use HasFactory;
+
     use HasUuids;
 
     /**

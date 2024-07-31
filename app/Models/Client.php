@@ -27,7 +27,9 @@ use Illuminate\Support\Carbon;
  */
 class Client extends Model
 {
+    /** @use HasFactory<ClientFactory> */
     use HasFactory;
+
     use HasUuids;
 
     /**

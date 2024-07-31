@@ -85,7 +85,7 @@ class AppServiceProvider extends ServiceProvider
         }
 
         $this->app->scoped(PermissionStore::class, function (Application $app): PermissionStore {
-            return new PermissionStore();
+            return new PermissionStore;
         });
 
         // Extensions

@@ -12,8 +12,7 @@ class Controller extends \App\Http\Controllers\Controller
 {
     public function __construct(
         protected PermissionStore $permissionStore,
-    ) {
-    }
+    ) {}
 
     /**
      * @throws AuthorizationException
@@ -21,7 +20,7 @@ class Controller extends \App\Http\Controllers\Controller
     protected function checkPermission(Organization $organization, string $permission): void
     {
         if (! $this->permissionStore->has($organization, $permission)) {
-            throw new AuthorizationException();
+            throw new AuthorizationException;
         }
     }
 
@@ -37,7 +36,7 @@ class Controller extends \App\Http\Controllers\Controller
                 return;
             }
         }
-        throw new AuthorizationException();
+        throw new AuthorizationException;
     }
 
     protected function hasPermission(Organization $organization, string $permission): bool

@@ -20,6 +20,6 @@ class UpdateMemberRole
      */
     public function update(User $actingUser, Organization $organization, string $userId, string $role): void
     {
-        throw new MovedToApiException();
+        throw new MovedToApiException;
     }
 }
