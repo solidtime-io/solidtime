@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Listeners;
 
 use App\Models\Member;
+use App\Models\User;
 use App\Service\UserService;
 use Illuminate\Database\Eloquent\Builder;
 use Laravel\Jetstream\Events\TeamMemberAdded;
@@ -19,7 +20,8 @@ class RemovePlaceholder
         /** @var UserService $userService */
         $userService = app(UserService::class);
         $placeholders = Member::query()
-            ->whereHas('user', function (Builder $query) use ($event) {
+            ->whereHas('user', function (Builder $query) use ($event): void {
+                /** @var Builder<User> $query */
                 $query->where('is_placeholder', '=', true)
                     ->where('email', '=', $event->user->email);
             })

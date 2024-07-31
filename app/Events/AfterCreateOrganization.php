@@ -6,6 +6,7 @@ namespace App\Events;
 
 use App\Models\Organization;
 use Illuminate\Foundation\Events\Dispatchable;
+use Illuminate\Queue\SerializesModels;
 
 /**
  * This event is fired after an organization has been created.
@@ -14,6 +15,7 @@ use Illuminate\Foundation\Events\Dispatchable;
 class AfterCreateOrganization
 {
     use Dispatchable;
+    use SerializesModels;
 
     public Organization $organization;
 

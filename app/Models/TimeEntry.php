@@ -49,7 +49,10 @@ class TimeEntry extends Model implements AuditableContract
 {
     use Auditable;
     use ComputedAttributes;
+
+    /** @use HasFactory<TimeEntryFactory> */
     use HasFactory;
+
     use HasUuids;
 
     /**

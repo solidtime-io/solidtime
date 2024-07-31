@@ -98,7 +98,7 @@ class ImportDatabaseHelper
             throw new ImportException('Invalid data: '.implode(', ', $validator->errors()->all()));
         }
 
-        $model = new $this->model();
+        $model = new $this->model;
         foreach ($data as $key => $value) {
             $model->{$key} = $value;
         }
@@ -240,7 +240,7 @@ class ImportDatabaseHelper
     {
         if ($this->mapIdentifierToKey === null) {
             $select = $this->identifiers;
-            $select[] = (new $this->model())->getKeyName();
+            $select[] = (new $this->model)->getKeyName();
             $builder = $this->getModelInstance();
 
             if ($this->queryModifier !== null) {

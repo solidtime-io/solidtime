@@ -319,7 +319,7 @@ class ExportService
 
             // Create ZIP file
             $temporaryDirectoryZip = TemporaryDirectory::make();
-            $zip = new ZipArchive();
+            $zip = new ZipArchive;
             if ($zip->open($temporaryDirectoryZip->path('export.zip'), ZipArchive::CREATE) !== true) {
                 throw new Exception('Cannot create ZIP file');
             }
@@ -356,7 +356,7 @@ class ExportService
         } catch (UnavailableStream|CannotInsertRecord|Exception|LeagueCsvException $exception) {
             report($exception);
 
-            throw new ExportException();
+            throw new ExportException;
         }
     }
 }

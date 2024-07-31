@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Widgets;
 
+use App\Models\TimeEntry;
 use App\Models\User;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
@@ -21,7 +22,8 @@ class ActiveUserOverview extends BaseWidget
         $placeholderUserCount = User::query()->where('is_placeholder', '=', true)->count();
         $activeInLastWeek = User::query()
             ->where('is_placeholder', '=', false)
-            ->whereHas('timeEntries', function (Builder $query) {
+            ->whereHas('timeEntries', function (Builder $query): void {
+                /** @var Builder<TimeEntry> $query */
                 $query->where('created_at', '>=', now()->subWeek())
                     ->orWhere('updated_at', '>=', now()->subWeek());
             })

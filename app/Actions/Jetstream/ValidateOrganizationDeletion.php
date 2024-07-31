@@ -22,7 +22,7 @@ class ValidateOrganizationDeletion
     public function validate(User $user, Organization $organization): void
     {
         if (! app(PermissionStore::class)->userHas($organization, $user, 'organizations:delete')) {
-            throw new AuthorizationException();
+            throw new AuthorizationException;
         }
     }
 }

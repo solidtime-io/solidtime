@@ -35,7 +35,7 @@ class ImportController extends Controller
 
         foreach ($importers as $key => $importerClass) {
             /** @var ImporterContract $importer */
-            $importer = new $importerClass();
+            $importer = new $importerClass;
             $importersResponse[] = [
                 'key' => $key,
                 'name' => $importer->getName(),

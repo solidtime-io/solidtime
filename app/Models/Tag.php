@@ -26,7 +26,10 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 class Tag extends Model implements AuditableContract
 {
     use Auditable;
+
+    /** @use HasFactory<TagFactory> */
     use HasFactory;
+
     use HasUuids;
 
     /**

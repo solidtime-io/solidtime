@@ -20,7 +20,7 @@ class ColorRuleTest extends TestCase
         $validator = Validator::make([
             'color' => '#ef5350',
         ], [
-            'color' => [new ColorRule()],
+            'color' => [new ColorRule],
         ]);
 
         // Act
@@ -38,7 +38,7 @@ class ColorRuleTest extends TestCase
         $validator = Validator::make([
             'color' => true,
         ], [
-            'color' => [new ColorRule()],
+            'color' => [new ColorRule],
         ]);
 
         // Act
@@ -56,7 +56,7 @@ class ColorRuleTest extends TestCase
         $validator = Validator::make([
             'color' => 'rgb(0,0,0)',
         ], [
-            'color' => [new ColorRule()],
+            'color' => [new ColorRule],
         ]);
 
         // Act

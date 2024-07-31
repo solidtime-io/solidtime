@@ -6,10 +6,11 @@ namespace App\Console\Commands\TimeEntry;
 
 use App\Mail\TimeEntryStillRunningMail;
 use App\Models\TimeEntry;
+use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Mail;
 
 class TimeEntrySendStillRunningMailsCommand extends Command
@@ -48,7 +49,8 @@ class TimeEntrySendStillRunningMailsCommand extends Command
             ->with([
                 'user',
             ])
-            ->whereHas('user', function (Builder $query) {
+            ->whereHas('user', function (Builder $query): void {
+                /** @var Builder<User> $query */
                 $query->where('is_placeholder', '=', false);
             })
             ->orderBy('created_at', 'asc')

@@ -32,7 +32,7 @@ class CheckOrganizationBlocked
         $billing = app(BillingContract::class);
 
         if ($billing->isBlocked($organization)) {
-            throw new OrganizationHasNoSubscriptionButMultipleMembersException();
+            throw new OrganizationHasNoSubscriptionButMultipleMembersException;
         }
 
         return $next($request);

@@ -118,7 +118,7 @@ abstract class DefaultImporter implements ImporterContract
                 $project->billable_rate = null;
             }
         });
-        $this->projectMemberImportHelper = new ImportDatabaseHelper(ProjectMember::class, ['project_id', 'member_id'], true, function (Builder $builder) {
+        $this->projectMemberImportHelper = new ImportDatabaseHelper(ProjectMember::class, ['project_id', 'member_id'], true, function (Builder $builder): Builder {
             /** @var Builder<ProjectMember> $builder */
             return $builder->whereBelongsToOrganization($this->organization);
         }, validate: [
@@ -131,7 +131,8 @@ abstract class DefaultImporter implements ImporterContract
                 $projectMember->billable_rate = null;
             }
         });
-        $this->tagImportHelper = new ImportDatabaseHelper(Tag::class, ['name', 'organization_id'], true, function (Builder $builder) {
+        $this->tagImportHelper = new ImportDatabaseHelper(Tag::class, ['name', 'organization_id'], true, function (Builder $builder): Builder {
+            /** @var Builder<Tag> $builder */
             return $builder->where('organization_id', $this->organization->id);
         }, validate: [
             'name' => [
@@ -139,7 +140,8 @@ abstract class DefaultImporter implements ImporterContract
                 'max:255',
             ],
         ]);
-        $this->clientImportHelper = new ImportDatabaseHelper(Client::class, ['name', 'organization_id'], true, function (Builder $builder) {
+        $this->clientImportHelper = new ImportDatabaseHelper(Client::class, ['name', 'organization_id'], true, function (Builder $builder): Builder {
+            /** @var Builder<Client> $builder */
             return $builder->where('organization_id', $this->organization->id);
         }, validate: [
             'name' => [
@@ -147,7 +149,8 @@ abstract class DefaultImporter implements ImporterContract
                 'max:255',
             ],
         ]);
-        $this->taskImportHelper = new ImportDatabaseHelper(Task::class, ['name', 'project_id', 'organization_id'], true, function (Builder $builder) {
+        $this->taskImportHelper = new ImportDatabaseHelper(Task::class, ['name', 'project_id', 'organization_id'], true, function (Builder $builder): Builder {
+            /** @var Builder<Task> $builder */
             return $builder->where('organization_id', $this->organization->id);
         }, validate: [
             'name' => [

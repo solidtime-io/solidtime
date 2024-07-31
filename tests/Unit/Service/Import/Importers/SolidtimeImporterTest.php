@@ -23,7 +23,7 @@ class SolidtimeImporterTest extends ImporterTestAbstract
         // Arrange
         $organization = Organization::factory()->create();
         $timezone = 'Europe/Vienna';
-        $importer = new SolidtimeImporter();
+        $importer = new SolidtimeImporter;
         $importer->init($organization);
 
         // Act
@@ -44,7 +44,7 @@ class SolidtimeImporterTest extends ImporterTestAbstract
         $zipPath = $this->createTestZip('solidtime_import_test_1');
         $timezone = 'Europe/Vienna';
         $organization = Organization::factory()->create();
-        $importer = new SolidtimeImporter();
+        $importer = new SolidtimeImporter;
         $importer->init($organization);
         $data = file_get_contents($zipPath);
 
@@ -69,11 +69,11 @@ class SolidtimeImporterTest extends ImporterTestAbstract
         $zipPath = $this->createTestZip('solidtime_import_test_1');
         $timezone = 'Europe/Vienna';
         $organization = Organization::factory()->create();
-        $importer = new SolidtimeImporter();
+        $importer = new SolidtimeImporter;
         $importer->init($organization);
         $data = file_get_contents($zipPath);
         $importer->importData($data, $timezone);
-        $importer = new SolidtimeImporter();
+        $importer = new SolidtimeImporter;
         $importer->init($organization);
 
         // Act

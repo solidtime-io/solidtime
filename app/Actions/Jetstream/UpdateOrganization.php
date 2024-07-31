@@ -36,7 +36,7 @@ class UpdateOrganization implements UpdatesTeamNames
             'currency' => [
                 'required',
                 'string',
-                new CurrencyRule(),
+                new CurrencyRule,
             ],
         ])->validateWithBag('updateTeamName');
 

@@ -29,5 +29,6 @@ use OwenIt\Auditing\Models\Audit as PackageAuditModel;
  */
 class Audit extends PackageAuditModel
 {
+    /** @use HasFactory<AuditFactory> */
     use HasFactory;
 }

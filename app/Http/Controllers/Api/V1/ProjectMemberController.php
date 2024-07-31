@@ -65,13 +65,13 @@ class ProjectMemberController extends Controller
 
         $member = Member::findOrFail((string) $request->input('member_id'));
         if ($member->user->is_placeholder) {
-            throw new InactiveUserCanNotBeUsedApiException();
+            throw new InactiveUserCanNotBeUsedApiException;
         }
         if (ProjectMember::whereBelongsTo($project, 'project')->whereBelongsTo($member, 'member')->exists()) {
-            throw new UserIsAlreadyMemberOfProjectApiException();
+            throw new UserIsAlreadyMemberOfProjectApiException;
         }
 
-        $projectMember = new ProjectMember();
+        $projectMember = new ProjectMember;
         $projectMember->billable_rate = $request->getBillableRate();
         $projectMember->member()->associate($member);
         $projectMember->user()->associate($member->user);

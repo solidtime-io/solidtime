@@ -49,4 +49,11 @@ class OrganizationFactory extends Factory
             'user_id' => $owner === null ? User::factory() : $owner->getKey(),
         ]);
     }
+
+    public function withFakeId(): self
+    {
+        return $this->state(fn (array $attributes) => [
+            'id' => $this->faker->uuid(),
+        ]);
+    }
 }

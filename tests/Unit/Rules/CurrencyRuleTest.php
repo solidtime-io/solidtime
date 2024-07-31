@@ -20,7 +20,7 @@ class CurrencyRuleTest extends TestCase
         $validator = Validator::make([
             'currency' => 'EUR',
         ], [
-            'currency' => [new CurrencyRule()],
+            'currency' => [new CurrencyRule],
         ]);
 
         // Act
@@ -38,7 +38,7 @@ class CurrencyRuleTest extends TestCase
         $validator = Validator::make([
             'currency' => true,
         ], [
-            'currency' => [new CurrencyRule()],
+            'currency' => [new CurrencyRule],
         ]);
 
         // Act
@@ -56,7 +56,7 @@ class CurrencyRuleTest extends TestCase
         $validator = Validator::make([
             'currency' => 'XXX',
         ], [
-            'currency' => [new CurrencyRule()],
+            'currency' => [new CurrencyRule],
         ]);
 
         // Act
@@ -74,7 +74,7 @@ class CurrencyRuleTest extends TestCase
         $validator = Validator::make([
             'currency' => 'eur',
         ], [
-            'currency' => [new CurrencyRule()],
+            'currency' => [new CurrencyRule],
         ]);
 
         // Act

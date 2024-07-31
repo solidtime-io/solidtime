@@ -33,7 +33,7 @@ class CreateOrganization implements CreatesTeams
             'name' => ['required', 'string', 'max:255'],
         ])->validateWithBag('createTeam');
 
-        $organization = new Organization();
+        $organization = new Organization;
         $organization->name = $input['name'];
         $organization->personal_team = false;
         $organization->owner()->associate($user);
@@ -45,10 +45,10 @@ class CreateOrganization implements CreatesTeams
             ]
         );
 
-        $user->ownedTeams()->save($organization);
-
         $user->switchTeam($organization);
 
+        // Note: The refresh is necessary for currently unknown reasons. Do not remove it.
+        $organization = $organization->refresh();
         AfterCreateOrganization::dispatch($organization);
 
         return $organization;

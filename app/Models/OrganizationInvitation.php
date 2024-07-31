@@ -9,7 +9,6 @@ use Database\Factories\OrganizationInvitationFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
-use Laravel\Jetstream\Jetstream;
 use Laravel\Jetstream\TeamInvitation as JetstreamTeamInvitation;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
@@ -28,7 +27,10 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 class OrganizationInvitation extends JetstreamTeamInvitation implements AuditableContract
 {
     use Auditable;
+
+    /** @use HasFactory<OrganizationInvitationFactory> */
     use HasFactory;
+
     use HasUuids;
 
     /**
@@ -55,7 +57,7 @@ class OrganizationInvitation extends JetstreamTeamInvitation implements Auditabl
      */
     public function organization(): BelongsTo
     {
-        return $this->belongsTo(Jetstream::teamModel(), 'organization_id');
+        return $this->belongsTo(Organization::class, 'organization_id');
     }
 
     /**
@@ -65,6 +67,6 @@ class OrganizationInvitation extends JetstreamTeamInvitation implements Auditabl
      */
     public function team(): BelongsTo
     {
-        return $this->belongsTo(Jetstream::teamModel(), 'organization_id');
+        return $this->belongsTo(Organization::class, 'organization_id');
     }
 }

@@ -24,20 +24,20 @@ class ApiExceptionTypeToSchema extends ExceptionToResponseExtension
 
     public function toResponse(Type $type): Response
     {
-        $validationResponseBodyType = (new OpenApiTypes\ObjectType())
+        $validationResponseBodyType = (new OpenApiTypes\ObjectType)
             ->addProperty(
                 'error',
-                (new OpenApiTypes\BooleanType())
+                (new OpenApiTypes\BooleanType)
                     ->setDescription('Whether the response is an error.')
             )
             ->addProperty(
                 'key',
-                (new OpenApiTypes\StringType())
+                (new OpenApiTypes\StringType)
                     ->setDescription('Error key.')
             )
             ->addProperty(
                 'message',
-                (new OpenApiTypes\StringType())
+                (new OpenApiTypes\StringType)
                     ->setDescription('Error message.')
             )
             ->setRequired(['error', 'key', 'message']);

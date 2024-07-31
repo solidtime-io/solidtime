@@ -82,16 +82,16 @@ class MemberController extends Controller
             $newRole = $request->getRole();
             $oldRole = Role::from($member->role);
             if ($oldRole === Role::Owner) {
-                throw new OrganizationNeedsAtLeastOneOwner();
+                throw new OrganizationNeedsAtLeastOneOwner;
             }
             if ($newRole === Role::Placeholder) {
-                throw new ChangingRoleToPlaceholderIsNotAllowed();
+                throw new ChangingRoleToPlaceholderIsNotAllowed;
             }
             if ($newRole === Role::Owner) {
                 if ($this->hasPermission($organization, 'members:change-ownership')) {
                     $memberService->changeOwnership($organization, $member);
                 } else {
-                    throw new OnlyOwnerCanChangeOwnership();
+                    throw new OnlyOwnerCanChangeOwnership;
                 }
             } else {
                 $member->role = $request->getRole()->value;
@@ -120,7 +120,7 @@ class MemberController extends Controller
             throw new EntityStillInUseApiException('member', 'project_member');
         }
         if ($member->role === Role::Owner->value) {
-            throw new CanNotRemoveOwnerFromOrganization();
+            throw new CanNotRemoveOwnerFromOrganization;
         }
 
         $member->delete();
@@ -138,7 +138,7 @@ class MemberController extends Controller
         $this->checkPermission($organization, 'members:make-placeholder', $member);
 
         if ($member->role === Role::Owner->value) {
-            throw new CanNotRemoveOwnerFromOrganization();
+            throw new CanNotRemoveOwnerFromOrganization;
         }
 
         $memberService->makeMemberToPlaceholder($member);
@@ -161,7 +161,7 @@ class MemberController extends Controller
         $user = $member->user;
 
         if (! $user->is_placeholder) {
-            throw new UserNotPlaceholderApiException();
+            throw new UserNotPlaceholderApiException;
         }
 
         $invitationService->inviteUser($organization, $user->email, Role::Employee);
