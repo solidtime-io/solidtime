@@ -154,15 +154,15 @@ class DatabaseSeeder extends Seeder
 
     private function deleteAll(): void
     {
-        DB::table((new Audit())->getTable())->delete();
-        DB::table((new TimeEntry())->getTable())->delete();
-        DB::table((new Task())->getTable())->delete();
-        DB::table((new Tag())->getTable())->delete();
-        DB::table((new ProjectMember())->getTable())->delete();
-        DB::table((new Project())->getTable())->delete();
-        DB::table((new Client())->getTable())->delete();
-        DB::table((new User())->getTable())->delete();
-        DB::table((new OrganizationInvitation())->getTable())->delete();
-        DB::table((new Organization())->getTable())->delete();
+        DB::table((new Audit)->getTable())->delete();
+        DB::table((new TimeEntry)->getTable())->delete();
+        DB::table((new Task)->getTable())->delete();
+        DB::table((new Tag)->getTable())->delete();
+        DB::table((new ProjectMember)->getTable())->delete();
+        DB::table((new Project)->getTable())->delete();
+        DB::table((new Client)->getTable())->delete();
+        DB::table((new User)->getTable())->delete();
+        DB::table((new OrganizationInvitation)->getTable())->delete();
+        DB::table((new Organization)->getTable())->delete();
     }
 }

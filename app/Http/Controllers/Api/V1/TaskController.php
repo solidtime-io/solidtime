@@ -76,7 +76,7 @@ class TaskController extends Controller
     public function store(Organization $organization, TaskStoreRequest $request): JsonResource
     {
         $this->checkPermission($organization, 'tasks:create');
-        $task = new Task();
+        $task = new Task;
         $task->name = $request->input('name');
         $task->project_id = $request->input('project_id');
         $task->organization()->associate($organization);

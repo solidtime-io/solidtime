@@ -29,14 +29,14 @@ class AuditFactory extends Factory
                 return User::factory()->create()->id;
             },
             $morphPrefix.'_type' => function () {
-                return (new User())->getMorphClass();
+                return (new User)->getMorphClass();
             },
             'event' => 'updated',
             'auditable_id' => function () {
                 return User::factory()->create()->getKey();
             },
             'auditable_type' => function () {
-                return (new User())->getMorphClass();
+                return (new User)->getMorphClass();
             },
             'old_values' => [],
             'new_values' => [],

@@ -41,7 +41,10 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 class Project extends Model implements AuditableContract
 {
     use Auditable;
+
+    /** @use HasFactory<ProjectFactory> */
     use HasFactory;
+
     use HasUuids;
 
     /**

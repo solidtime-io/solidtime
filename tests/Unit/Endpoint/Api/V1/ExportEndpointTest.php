@@ -43,7 +43,7 @@ class ExportEndpointTest extends ApiEndpointTestAbstract
                 ->withArgs(function (Organization $organization) use (&$user): bool {
                     return $organization->is($user->organization);
                 })
-                ->andThrow(new ExportException())
+                ->andThrow(new ExportException)
                 ->once();
         });
         Passport::actingAs($user->user);

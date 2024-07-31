@@ -59,7 +59,10 @@ class User extends Authenticatable implements AuditableContract, FilamentUser, M
 {
     use Auditable;
     use HasApiTokens;
+
+    /** @use HasFactory<UserFactory> */
     use HasFactory;
+
     use HasProfilePhoto;
     use HasTeams;
     use HasUuids;

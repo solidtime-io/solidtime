@@ -23,7 +23,7 @@ class TogglDataImporterTest extends ImporterTestAbstract
         // Arrange
         $organization = Organization::factory()->create();
         $timezone = 'Europe/Vienna';
-        $importer = new TogglDataImporter();
+        $importer = new TogglDataImporter;
         $importer->init($organization);
 
         // Act
@@ -44,7 +44,7 @@ class TogglDataImporterTest extends ImporterTestAbstract
         $zipPath = $this->createTestZip('toggl_data_import_test_1');
         $timezone = 'Europe/Vienna';
         $organization = Organization::factory()->create();
-        $importer = new TogglDataImporter();
+        $importer = new TogglDataImporter;
         $importer->init($organization);
         $data = file_get_contents($zipPath);
 
@@ -68,11 +68,11 @@ class TogglDataImporterTest extends ImporterTestAbstract
         $zipPath = $this->createTestZip('toggl_data_import_test_1');
         $timezone = 'Europe/Vienna';
         $organization = Organization::factory()->create();
-        $importer = new TogglDataImporter();
+        $importer = new TogglDataImporter;
         $importer->init($organization);
         $data = file_get_contents($zipPath);
         $importer->importData($data, $timezone);
-        $importer = new TogglDataImporter();
+        $importer = new TogglDataImporter;
         $importer->init($organization);
 
         // Act

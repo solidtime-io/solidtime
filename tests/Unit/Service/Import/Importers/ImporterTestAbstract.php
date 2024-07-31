@@ -204,7 +204,7 @@ class ImporterTestAbstract extends TestCase
     {
         $tempDir = TemporaryDirectory::make();
         $zipPath = $tempDir->path('test.zip');
-        $zip = new ZipArchive();
+        $zip = new ZipArchive;
         $zip->open($zipPath, ZipArchive::CREATE);
         foreach (Storage::disk('testfiles')->allFiles($folder) as $file) {
             $zip->addFile(Storage::disk('testfiles')->path($file), Str::of($file)->after($folder.'/')->value());

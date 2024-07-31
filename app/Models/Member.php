@@ -30,7 +30,10 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 class Member extends JetstreamMembership implements AuditableContract
 {
     use Auditable;
+
+    /** @use HasFactory<MemberFactory> */
     use HasFactory;
+
     use HasUuids;
 
     /**

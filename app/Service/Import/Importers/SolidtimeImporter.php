@@ -31,7 +31,7 @@ class SolidtimeImporter extends DefaultImporter
         $temporaryDirectoryZip = null;
         $temporaryDirectory = null;
         try {
-            $zip = new ZipArchive();
+            $zip = new ZipArchive;
             $temporaryDirectoryZip = TemporaryDirectory::make();
             file_put_contents($temporaryDirectoryZip->path('import.zip'), $data);
             $res = $zip->open($temporaryDirectoryZip->path('import.zip'), ZipArchive::RDONLY);
@@ -220,7 +220,7 @@ class SolidtimeImporter extends DefaultImporter
                 if ($timeEntryRow['task_id'] !== '') {
                     $taskId = $this->taskImportHelper->getKeyByExternalIdentifier($timeEntryRow['task_id']);
                 }
-                $timeEntry = new TimeEntry();
+                $timeEntry = new TimeEntry;
                 $timeEntry->user_id = $userId;
                 $timeEntry->member_id = $memberId;
                 $timeEntry->task_id = $taskId;

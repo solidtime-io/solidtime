@@ -89,7 +89,7 @@ class ProjectController extends Controller
     public function store(Organization $organization, ProjectStoreRequest $request): JsonResource
     {
         $this->checkPermission($organization, 'projects:create');
-        $project = new Project();
+        $project = new Project;
         $project->name = $request->input('name');
         $project->color = $request->input('color');
         $project->is_billable = (bool) $request->input('is_billable');
