@@ -3,7 +3,7 @@ import InputLabel from '@/Components/InputLabel.vue';
 import BillableRateInput from '@/Components/Common/BillableRateInput.vue';
 import ProjectBillableSelect from '@/Components/Common/Project/ProjectBillableSelect.vue';
 import { computed, onMounted, ref, watch } from 'vue';
-import type { BillableKey } from '@/utils/useProjects';
+import type { BillableKey } from '@/types/projects';
 
 const billableRateSelect = ref<BillableKey>('non-billable');
 

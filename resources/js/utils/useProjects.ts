@@ -10,8 +10,6 @@ import type {
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import { useNotificationsStore } from '@/utils/notification';
 
-export type BillableKey = 'non-billable' | 'default-rate' | 'custom-rate';
-
 export const useProjectsStore = defineStore('projects', () => {
     const projectResponse = ref<ProjectResponse | null>(null);
     const { handleApiRequestNotifications } = useNotificationsStore();

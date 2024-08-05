@@ -78,7 +78,7 @@ function onToggleButtonPress(newState: boolean) {
         data-testid="dashboard_timer">
         <div
             class="flex flex-col sm:flex-row w-full justify-between rounded-lg bg-card-background border-card-border border transition shadow-card">
-            <div class="flex items-center pr-6">
+            <div class="flex flex-1 items-center pr-6">
                 <input
                     placeholder="What are you working on?"
                     data-testid="time_entry_description"
