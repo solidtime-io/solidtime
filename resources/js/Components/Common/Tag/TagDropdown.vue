@@ -5,11 +5,18 @@ import { type Component, computed, nextTick, ref, watch } from 'vue';
 import TagCreateModal from '@/Components/Common/Tag/TagCreateModal.vue';
 import MultiselectDropdownItem from '@/Components/Common/MultiselectDropdownItem.vue';
 import type { Tag } from '@/utils/api';
+import type { Placement } from '@floating-ui/vue';
 
-const props = defineProps<{
-    tags: Tag[];
-    createTag: (name: string) => Promise<Tag | undefined>;
-}>();
+const props = withDefaults(
+    defineProps<{
+        tags: Tag[];
+        createTag: (name: string) => Promise<Tag | undefined>;
+        align: Placement;
+    }>(),
+    {
+        align: 'bottom-start',
+    }
+);
 
 const model = defineModel<string[]>({
     default: [],
@@ -164,7 +171,7 @@ const showCreateTagModal = ref(false);
     <Dropdown
         @submit="emit('submit')"
         v-model="open"
-        align="bottom-start"
+        :align="align"
         :closeOnContentClick="false">
         <template #trigger>
             <slot name="trigger"></slot>
@@ -180,7 +187,7 @@ const showCreateTagModal = ref(false);
                 ref="searchInput"
                 class="bg-card-background border-0 placeholder-muted text-sm text-white py-2.5 focus:ring-0 border-b border-card-background-separator focus:border-card-background-separator w-full"
                 placeholder="Search for a Tag..." />
-            <div ref="dropdownViewport" class="w-60">
+            <div ref="dropdownViewport" class="w-60 max-h-48 overflow-y-scroll">
                 <div
                     v-for="tag in filteredTags"
                     :key="tag.id"
@@ -197,18 +204,18 @@ const showCreateTagModal = ref(false);
                         @click="toggleTag(tag.id)"
                         :name="tag.name"></MultiselectDropdownItem>
                 </div>
-                <div class="hover:bg-card-background-active rounded-b-lg">
-                    <button
-                        @click="
-                            open = false;
-                            showCreateTagModal = true;
-                        "
-                        class="text-white flex space-x-3 items-center px-4 py-3 text-xs font-semibold border-t border-card-background-separator">
-                        <PlusCircleIcon
-                            class="w-5 flex-shrink-0 text-icon-default"></PlusCircleIcon>
-                        <span>Create new Tag</span>
-                    </button>
-                </div>
+            </div>
+            <div class="hover:bg-card-background-active rounded-b-lg">
+                <button
+                    @click="
+                        open = false;
+                        showCreateTagModal = true;
+                    "
+                    class="text-white w-full flex space-x-3 items-center px-4 py-3 text-xs font-semibold border-t border-card-background-separator">
+                    <PlusCircleIcon
+                        class="w-5 flex-shrink-0 text-icon-default"></PlusCircleIcon>
+                    <span>Create new Tag</span>
+                </button>
             </div>
         </template>
     </Dropdown>

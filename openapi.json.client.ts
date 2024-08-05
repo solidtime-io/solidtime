@@ -218,7 +218,7 @@ const UserResource = z
         week_start: Weekday,
     })
     .passthrough();
-const PersonalMemberResource = z
+const PersonalMembershipResource = z
     .object({
         id: z.string(),
         organization: z
@@ -227,6 +227,7 @@ const PersonalMemberResource = z
         role: z.string(),
     })
     .passthrough();
+const PersonalMembershipCollection = z.array(PersonalMembershipResource);
 
 export const schemas = {
     ClientResource,
@@ -262,7 +263,8 @@ export const schemas = {
     TimeEntryUpdateRequest,
     Weekday,
     UserResource,
-    PersonalMemberResource,
+    PersonalMembershipResource,
+    PersonalMembershipCollection,
 };
 
 const endpoints = makeApi([
@@ -2504,42 +2506,12 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
     },
     {
         method: 'get',
-        path: '/v1/users/me/members',
+        path: '/v1/users/me/memberships',
         alias: 'getMyMemberships',
         description: `This endpoint is independent of organization.`,
         requestFormat: 'json',
         response: z
-            .object({
-                data: z.array(PersonalMemberResource),
-                links: z
-                    .object({
-                        first: z.union([z.string(), z.null()]),
-                        last: z.union([z.string(), z.null()]),
-                        prev: z.union([z.string(), z.null()]),
-                        next: z.union([z.string(), z.null()]),
-                    })
-                    .passthrough(),
-                meta: z
-                    .object({
-                        current_page: z.number().int(),
-                        from: z.union([z.number(), z.null()]),
-                        last_page: z.number().int(),
-                        links: z.array(
-                            z
-                                .object({
-                                    url: z.union([z.string(), z.null()]),
-                                    label: z.string(),
-                                    active: z.boolean(),
-                                })
-                                .passthrough()
-                        ),
-                        path: z.union([z.string(), z.null()]),
-                        per_page: z.number().int(),
-                        to: z.union([z.number(), z.null()]),
-                        total: z.number().int(),
-                    })
-                    .passthrough(),
-            })
+            .object({ data: PersonalMembershipCollection })
             .passthrough(),
         errors: [
             {
