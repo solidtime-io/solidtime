@@ -9,7 +9,7 @@ import type {
 } from '@/utils/api';
 import { useNotificationsStore } from '@/utils/notification';
 import { getCurrentOrganizationId } from '@/utils/useUser';
-import { api } from '../../../openapi.json.client';
+import { api } from '@/utils/api';
 
 export function switchOrganization(organizationId: string) {
     router.put(

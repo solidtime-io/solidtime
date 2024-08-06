@@ -5,7 +5,7 @@ import MemberMoreOptionsDropdown from '@/Components/Common/Member/MemberMoreOpti
 import TableRow from '@/Components/TableRow.vue';
 import { capitalizeFirstLetter } from '../../../utils/format';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
-import { api } from '../../../../../openapi.json.client';
+import { api } from '@/utils/api';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import { useNotificationsStore } from '@/utils/notification';
 import { canInvitePlaceholderMembers } from '@/utils/permissions';

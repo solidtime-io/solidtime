@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import type { Tag } from '@/utils/api';
 import { getCurrentOrganizationId } from '@/utils/useUser';
-import { api } from '../../../openapi.json.client';
+import { api } from '@/utils/api';
 import { useNotificationsStore } from '@/utils/notification';
 
 export const useTagsStore = defineStore('tags', () => {

@@ -3,7 +3,7 @@ import FormSection from '@/Components/FormSection.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import { computed, onMounted, ref } from 'vue';
 import { useNotificationsStore } from '@/utils/notification';
-import { api } from '../../../../../openapi.json.client';
+import { api } from '@/utils/api';
 import InputLabel from '@/Components/InputLabel.vue';
 import { DocumentIcon } from '@heroicons/vue/24/solid';
 import { getCurrentOrganizationId } from '@/utils/useUser';

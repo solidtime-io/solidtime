@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { api } from '../../../openapi.json.client';
+import { api } from '@/utils/api';
 import { computed, ref } from 'vue';
 import type {
     Member,
