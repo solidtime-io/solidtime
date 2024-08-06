@@ -14,7 +14,7 @@ import { filterRoles } from '@/utils/roles';
 import { hasActiveSubscription, isBillingActivated } from '@/utils/billing';
 import { CreditCardIcon, UserGroupIcon } from '@heroicons/vue/20/solid';
 import { canUpdateOrganization } from '@/utils/permissions';
-import { api } from '../../../../../openapi.json.client';
+import { api } from '@/utils/api';
 import type { MemberRole } from '@/utils/api';
 import { z } from 'zod';
 import { useNotificationsStore } from '@/utils/notification';

@@ -3,9 +3,9 @@ import {
     getCurrentMembershipId,
     getCurrentOrganizationId,
 } from '@/utils/useUser';
-import { api } from '../../../openapi.json.client';
+
 import { reactive, ref } from 'vue';
-import type { CreateTimeEntryBody, TimeEntry } from '@/utils/api';
+import { api, type CreateTimeEntryBody, type TimeEntry } from '@/utils/api';
 import dayjs from 'dayjs';
 import { useNotificationsStore } from '@/utils/notification';
 

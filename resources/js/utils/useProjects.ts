@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { api } from '../../../openapi.json.client';
+import { api } from '@/utils/api';
 import { computed, ref } from 'vue';
 import type {
     CreateProjectBody,
@@ -34,6 +34,7 @@ export const useProjectsStore = defineStore('projects', () => {
 
     async function createProject(projectBody: CreateProjectBody) {
         const organization = getCurrentOrganizationId();
+
         if (organization) {
             const response = await handleApiRequestNotifications(
                 () =>

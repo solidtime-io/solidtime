@@ -53,9 +53,9 @@ const deleteTeam = () => {
                 <template #title> Delete Organization </template>
 
                 <template #content>
-                    Are you sure you want to delete this organization? Once a organization is
-                    deleted, all of its resources and data will be permanently
-                    deleted.
+                    Are you sure you want to delete this organization? Once a
+                    organization is deleted, all of its resources and data will
+                    be permanently deleted.
                 </template>
 
                 <template #footer>

@@ -1,5 +1,5 @@
 import { defineStore, storeToRefs } from 'pinia';
-import { api } from '../../../openapi.json.client';
+import { api } from '@/utils/api';
 import { type Component, computed, ref } from 'vue';
 import type {
     AggregatedTimeEntries,

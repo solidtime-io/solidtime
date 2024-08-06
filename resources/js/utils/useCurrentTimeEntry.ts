@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { computed, reactive, ref } from 'vue';
-import { api } from '../../../openapi.json.client';
+import { api } from '@/utils/api';
 import type { TimeEntry } from '@/utils/api';
 import dayjs, { Dayjs } from 'dayjs';
 import utc from 'dayjs/plugin/utc';

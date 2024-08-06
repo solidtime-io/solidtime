@@ -4,7 +4,7 @@ import type {
     ZodiosBodyByAlias,
     ZodiosQueryParamsByAlias,
 } from '@zodios/core';
-import { api } from '../../../openapi.json.client';
+import { createApiClient } from '../../../openapi.json.client';
 import { router } from '@inertiajs/vue3';
 
 export type SolidTimeApi = ApiOf<typeof api>;
@@ -147,3 +147,5 @@ export async function fetchToken() {
 export function isTokenValid() {
     return window.document.cookie.includes('solidtime_session');
 }
+
+export const api = createApiClient('/api', { validate: 'none' });

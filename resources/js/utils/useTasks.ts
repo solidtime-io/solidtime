@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { getCurrentOrganizationId } from '@/utils/useUser';
-import { api } from '../../../openapi.json.client';
+import { api } from '@/utils/api';
 import { reactive, ref } from 'vue';
 import type { CreateTaskBody, Task, UpdateTaskBody } from '@/utils/api';
 import { useNotificationsStore } from '@/utils/notification';

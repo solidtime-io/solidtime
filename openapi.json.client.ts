@@ -167,12 +167,12 @@ const TimeEntryStoreRequest = z
         end: z.union([z.string(), z.null()]).optional(),
         billable: z.boolean(),
         description: z.union([z.string(), z.null()]).optional(),
-        tags: z.union([z.array(z.string()), z.null()]).optional(),
+        tags: z.union([z.array(z.string().uuid()), z.null()]).optional(),
     })
     .passthrough();
 const TimeEntryUpdateMultipleRequest = z
     .object({
-        ids: z.array(z.string()),
+        ids: z.array(z.string().uuid()),
         changes: z
             .object({
                 member_id: z.string().uuid(),
@@ -180,7 +180,7 @@ const TimeEntryUpdateMultipleRequest = z
                 task_id: z.union([z.string(), z.null()]),
                 billable: z.boolean(),
                 description: z.union([z.string(), z.null()]),
-                tags: z.union([z.array(z.string()), z.null()]),
+                tags: z.union([z.array(z.string().uuid()), z.null()]),
             })
             .partial()
             .passthrough(),
@@ -195,7 +195,7 @@ const TimeEntryUpdateRequest = z
         end: z.union([z.string(), z.null()]),
         billable: z.boolean(),
         description: z.union([z.string(), z.null()]),
-        tags: z.union([z.array(z.string()), z.null()]),
+        tags: z.union([z.array(z.string().uuid()), z.null()]),
     })
     .partial()
     .passthrough();
@@ -2041,22 +2041,22 @@ Users with the permission &#x60;time-entries:view:own&#x60; can only use this en
             {
                 name: 'member_ids',
                 type: 'Query',
-                schema: z.array(z.string()).min(1).optional(),
+                schema: z.array(z.string().uuid()).min(1).optional(),
             },
             {
                 name: 'project_ids',
                 type: 'Query',
-                schema: z.array(z.string()).min(1).optional(),
+                schema: z.array(z.string().uuid()).min(1).optional(),
             },
             {
                 name: 'tag_ids',
                 type: 'Query',
-                schema: z.array(z.string()).min(1).optional(),
+                schema: z.array(z.string().uuid()).min(1).optional(),
             },
             {
                 name: 'task_ids',
                 type: 'Query',
-                schema: z.array(z.string()).min(1).optional(),
+                schema: z.array(z.string().uuid()).min(1).optional(),
             },
             {
                 name: 'client_ids',
@@ -2387,27 +2387,27 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
             {
                 name: 'member_ids',
                 type: 'Query',
-                schema: z.array(z.string()).min(1).optional(),
+                schema: z.array(z.string().uuid()).min(1).optional(),
             },
             {
                 name: 'project_ids',
                 type: 'Query',
-                schema: z.array(z.string()).min(1).optional(),
+                schema: z.array(z.string().uuid()).min(1).optional(),
             },
             {
                 name: 'client_ids',
                 type: 'Query',
-                schema: z.array(z.string()).min(1).optional(),
+                schema: z.array(z.string().uuid()).min(1).optional(),
             },
             {
                 name: 'tag_ids',
                 type: 'Query',
-                schema: z.array(z.string()).min(1).optional(),
+                schema: z.array(z.string().uuid()).min(1).optional(),
             },
             {
                 name: 'task_ids',
                 type: 'Query',
-                schema: z.array(z.string()).min(1).optional(),
+                schema: z.array(z.string().uuid()).min(1).optional(),
             },
         ],
         response: z

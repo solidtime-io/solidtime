@@ -14,7 +14,7 @@ import {
 import { PlusCircleIcon } from '@heroicons/vue/20/solid';
 import ProjectDropdownItem from '@/Components/Common/Project/ProjectDropdownItem.vue';
 import { storeToRefs } from 'pinia';
-import { api } from '../../../../../openapi.json.client';
+import { api } from '@/utils/api';
 import { usePage } from '@inertiajs/vue3';
 import { getRandomColor } from '@/utils/color';
 import type { Project } from '@/utils/api';
