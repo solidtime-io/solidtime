@@ -6,6 +6,7 @@ namespace Tests\Unit\Endpoint\Api\V1;
 
 use App\Http\Controllers\Api\V1\ProjectMemberController;
 use App\Models\Member;
+use App\Models\Organization;
 use App\Models\Project;
 use App\Models\ProjectMember;
 use App\Models\User;
@@ -213,16 +214,23 @@ class ProjectMemberEndpointTest extends ApiEndpointTestAbstract
         ]);
     }
 
-    public function test_store_endpoint_creates_new_project_member(): void
+    public function test_store_endpoint_creates_new_project_member_and_updates_billable_rate(): void
     {
         // Arrange
         $data = $this->createUserWithPermission([
             'project-members:create',
         ]);
         $project = Project::factory()->forOrganization($data->organization)->create();
-        $projectMemberFake = ProjectMember::factory()->make();
+        $projectMemberFake = ProjectMember::factory()->make([
+            'billable_rate' => 1200,
+        ]);
         $user = User::factory()->create();
         $member = Member::factory()->forOrganization($data->organization)->forUser($user)->create();
+        $this->mock(BillableRateService::class, function (MockInterface $mock) use ($projectMemberFake): void {
+            $mock->shouldReceive('updateTimeEntriesBillableRateForProjectMember')
+                ->once()
+                ->withArgs(fn (ProjectMember $projectMemberArg) => $projectMemberArg->billable_rate === $projectMemberFake->billable_rate);
+        });
         Passport::actingAs($data->user);
 
         // Act
@@ -235,6 +243,36 @@ class ProjectMemberEndpointTest extends ApiEndpointTestAbstract
         $response->assertStatus(201);
         $this->assertDatabaseHas(ProjectMember::class, [
             'billable_rate' => $projectMemberFake->billable_rate,
+            'member_id' => $member->getKey(),
+            'project_id' => $project->getKey(),
+        ]);
+    }
+
+    public function test_store_endpoint_creates_new_project_member_and_does_not_update_billable_rate_if_it_is_null(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'project-members:create',
+        ]);
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        $projectMemberFake = ProjectMember::factory()->make([
+            'billable_rate' => null,
+        ]);
+        $user = User::factory()->create();
+        $member = Member::factory()->forOrganization($data->organization)->forUser($user)->create();
+        $this->assertBillableRateServiceIsUnused();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.project-members.store', [$data->organization->getKey(), $project->getKey()]), [
+            'billable_rate' => $projectMemberFake->billable_rate,
+            'member_id' => $member->getKey(),
+        ]);
+
+        // Assert
+        $response->assertStatus(201);
+        $this->assertDatabaseHas(ProjectMember::class, [
+            'billable_rate' => null,
             'member_id' => $member->getKey(),
             'project_id' => $project->getKey(),
         ]);
@@ -384,7 +422,43 @@ class ProjectMemberEndpointTest extends ApiEndpointTestAbstract
             'project-members:delete',
         ]);
         $project = Project::factory()->forOrganization($data->organization)->create();
-        $projectMember = ProjectMember::factory()->forProject($project)->forMember($data->member)->create();
+        $projectMember = ProjectMember::factory()->forProject($project)->forMember($data->member)->create([
+            'billable_rate' => null,
+        ]);
+        $this->assertBillableRateServiceIsUnused();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->deleteJson(route('api.v1.project-members.destroy', [$data->organization->getKey(), $projectMember->getKey()]));
+
+        // Assert
+        $response->assertStatus(204);
+        $response->assertNoContent();
+        $this->assertDatabaseMissing(ProjectMember::class, [
+            'id' => $projectMember->getKey(),
+        ]);
+    }
+
+    public function test_destroy_endpoint_updates_billable_rate_of_time_entries_if_project_member_had_billable_rate(): void
+    {
+        $data = $this->createUserWithPermission([
+            'project-members:delete',
+        ]);
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        $projectMember = ProjectMember::factory()->forProject($project)->forMember($data->member)->create([
+            'billable_rate' => 1200,
+        ]);
+        $this->mock(BillableRateService::class, function (MockInterface $mock) use ($projectMember): void {
+            $mock->shouldReceive('updateTimeEntriesBillableRateForMember')
+                ->once()
+                ->withArgs(fn (Member $memberArg) => $memberArg->is($projectMember->member));
+            $mock->shouldReceive('updateTimeEntriesBillableRateForProject')
+                ->once()
+                ->withArgs(fn (Project $projectArg) => $projectArg->is($projectMember->project));
+            $mock->shouldReceive('updateTimeEntriesBillableRateForOrganization')
+                ->once()
+                ->withArgs(fn (Organization $organizationArg) => $organizationArg->is($projectMember->project->organization));
+        });
         Passport::actingAs($data->user);
 
         // Act
