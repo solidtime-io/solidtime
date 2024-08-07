@@ -59,7 +59,7 @@ class ProjectMemberController extends Controller
      *
      * @operationId createProjectMember
      */
-    public function store(Organization $organization, Project $project, ProjectMemberStoreRequest $request): JsonResource
+    public function store(Organization $organization, Project $project, ProjectMemberStoreRequest $request, BillableRateService $billableRateService): JsonResource
     {
         $this->checkPermission($organization, 'project-members:create', $project);
 
@@ -77,6 +77,10 @@ class ProjectMemberController extends Controller
         $projectMember->user()->associate($member->user);
         $projectMember->project()->associate($project);
         $projectMember->save();
+
+        if ($request->getBillableRate() !== null) {
+            $billableRateService->updateTimeEntriesBillableRateForProjectMember($projectMember);
+        }
 
         return new ProjectMemberResource($projectMember);
     }
@@ -109,11 +113,21 @@ class ProjectMemberController extends Controller
      *
      * @operationId deleteProjectMember
      */
-    public function destroy(Organization $organization, ProjectMember $projectMember): JsonResponse
+    public function destroy(Organization $organization, ProjectMember $projectMember, BillableRateService $billableRateService): JsonResponse
     {
         $this->checkPermission($organization, 'project-members:delete', projectMember: $projectMember);
 
+        $hadBillableRate = $projectMember->billable_rate !== null;
+        $project = $projectMember->project;
+        $member = $projectMember->member;
+
         $projectMember->delete();
+
+        if ($hadBillableRate) {
+            $billableRateService->updateTimeEntriesBillableRateForMember($member);
+            $billableRateService->updateTimeEntriesBillableRateForProject($project);
+            $billableRateService->updateTimeEntriesBillableRateForOrganization($organization);
+        }
 
         return response()
             ->json(null, 204);
