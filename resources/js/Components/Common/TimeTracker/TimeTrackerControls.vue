@@ -13,7 +13,7 @@ import type {
     TimeEntry,
     Client,
 } from '@/utils/api';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import type { Dayjs } from 'dayjs';
 
 const currentTimeEntry = defineModel<TimeEntry>('currentTimeEntry', {
@@ -70,6 +70,19 @@ function onToggleButtonPress(newState: boolean) {
         emit('stopTimer');
     }
 }
+const tempDescription = ref(currentTimeEntry.value.description);
+watch(
+    () => currentTimeEntry.value.description,
+    () => {
+        tempDescription.value = currentTimeEntry.value.description;
+    }
+);
+function updateTimeEntryDescription() {
+    if (currentTimeEntry.value.description !== tempDescription.value) {
+        currentTimeEntry.value.description = tempDescription.value;
+        emit('updateTimeEntry');
+    }
+}
 </script>
 
 <template>
@@ -83,9 +96,9 @@ function onToggleButtonPress(newState: boolean) {
                     placeholder="What are you working on?"
                     data-testid="time_entry_description"
                     ref="currentTimeEntryDescriptionInput"
-                    v-model="currentTimeEntry.description"
+                    v-model="tempDescription"
                     @keydown.enter="startTimerIfNotActive"
-                    @blur="$emit('updateTimeEntry')"
+                    @blur="updateTimeEntryDescription"
                     class="w-full rounded-l-lg py-4 sm:py-2.5 px-3.5 border-b border-b-card-background-separator lg:px-4 text-base @4xl:text-lg text-white font-medium bg-transparent border-none placeholder-muted focus:ring-0 transition"
                     type="text" />
             </div>
