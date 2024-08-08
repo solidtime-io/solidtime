@@ -44,7 +44,7 @@ const filteredMembers = computed(() => {
                 .toLowerCase()
                 .includes(searchValue.value?.toLowerCase()?.trim() || '') &&
             !props.hiddenMembers.some(
-                (hiddenMember) => hiddenMember.id === member.id
+                (hiddenMember) => hiddenMember.member_id === member.id
             ) &&
             member.is_placeholder === false
         );
