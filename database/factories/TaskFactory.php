@@ -32,28 +32,22 @@ class TaskFactory extends Factory
 
     public function forProject(Project $project): self
     {
-        return $this->state(function (array $attributes) use ($project) {
-            return [
-                'project_id' => $project->getKey(),
-            ];
-        });
+        return $this->state(fn (array $attributes) => [
+            'project_id' => $project->getKey(),
+        ]);
     }
 
     public function isDone(): self
     {
-        return $this->state(function (array $attributes) {
-            return [
-                'done_at' => $this->faker->dateTime('now', 'UTC'),
-            ];
-        });
+        return $this->state(fn (array $attributes) => [
+            'done_at' => $this->faker->dateTime('now', 'UTC'),
+        ]);
     }
 
     public function forOrganization(Organization $organization): self
     {
-        return $this->state(function (array $attributes) use ($organization) {
-            return [
-                'organization_id' => $organization->getKey(),
-            ];
-        });
+        return $this->state(fn (array $attributes) => [
+            'organization_id' => $organization->getKey(),
+        ]);
     }
 }
