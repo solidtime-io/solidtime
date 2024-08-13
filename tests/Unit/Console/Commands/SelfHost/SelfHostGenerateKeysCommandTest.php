@@ -59,4 +59,17 @@ class SelfHostGenerateKeysCommandTest extends TestCase
         $this->assertStringContainsString("PASSPORT_PRIVATE_KEY: |\n  -----BEGIN PRIVATE KEY-----", $output);
         $this->assertStringContainsString("PASSPORT_PUBLIC_KEY: |\n  -----BEGIN PUBLIC KEY-----", $output);
     }
+
+    public function test_generates_app_fail_if_attribute_format_is_invalid(): void
+    {
+        // Arrange
+
+        // Act
+        $exitCode = $this->withoutMockingConsoleOutput()->artisan('self-host:generate-keys --format=invalid');
+
+        // Assert
+        $this->assertSame(Command::FAILURE, $exitCode);
+        $output = Artisan::output();
+        $this->assertSame("Invalid format\n", $output);
+    }
 }

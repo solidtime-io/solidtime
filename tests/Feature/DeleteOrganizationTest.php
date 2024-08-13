@@ -32,7 +32,7 @@ class DeleteOrganizationTest extends TestCase
         );
 
         // Act
-        $response = $this->withoutExceptionHandling()->delete('/teams/'.$organization->getKey());
+        $response = $this->delete('/teams/'.$organization->getKey());
 
         // Assert
         $this->assertNull($organization->fresh());

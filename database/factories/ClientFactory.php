@@ -29,11 +29,9 @@ class ClientFactory extends Factory
 
     public function forOrganization(Organization $organization): self
     {
-        return $this->state(function (array $attributes) use ($organization) {
-            return [
-                'organization_id' => $organization->getKey(),
-            ];
-        });
+        return $this->state(fn (array $attributes) => [
+            'organization_id' => $organization->getKey(),
+        ]);
     }
 
     public function randomCreatedAt(): self
