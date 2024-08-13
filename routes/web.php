@@ -25,6 +25,10 @@ use Laravel\Jetstream\Jetstream;
 
 Route::get('/', [HomeController::class, 'index']);
 
+Route::get('/shared-report', function () {
+    return Inertia::render('SharedReport');
+})->name('shared-report');
+
 Route::middleware([
     'auth:web',
     config('jetstream.auth_session'),

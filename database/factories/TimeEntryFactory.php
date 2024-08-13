@@ -173,22 +173,18 @@ class TimeEntryFactory extends Factory
 
     public function forProject(?Project $project): self
     {
-        return $this->state(function (array $attributes) use ($project) {
-            return [
-                'project_id' => $project?->getKey(),
-                'client_id' => $project?->client_id,
-            ];
-        });
+        return $this->state(fn (array $attributes) => [
+            'project_id' => $project?->getKey(),
+            'client_id' => $project?->client_id,
+        ]);
     }
 
     public function forTask(?Task $task): self
     {
-        return $this->state(function (array $attributes) use ($task) {
-            return [
-                'task_id' => $task?->getKey(),
-                'project_id' => $task?->project?->getKey(),
-                'client_id' => $task?->project?->client?->getKey(),
-            ];
-        });
+        return $this->state(fn (array $attributes) => [
+            'task_id' => $task?->getKey(),
+            'project_id' => $task?->project?->getKey(),
+            'client_id' => $task?->project?->client?->getKey(),
+        ]);
     }
 }
