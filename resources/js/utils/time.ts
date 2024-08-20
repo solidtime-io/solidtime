@@ -41,14 +41,14 @@ export const firstDayIndex = computed(() => {
 
 export function formatHumanReadableDuration(duration: number): string {
     const dayJsDuration = dayjs.duration(duration, 's');
-    const hours = dayJsDuration.hours() + dayJsDuration.days() * 24;
+    const hours = Math.floor(dayJsDuration.asHours());
     const minutes = dayJsDuration.minutes();
     return `${hours}h ${minutes.toString().padStart(2, '0')}min`;
 }
 
 export function formatDuration(duration: number): string {
     const dayJsDuration = dayjs.duration(duration, 's');
-    const hours = dayJsDuration.hours() + dayJsDuration.days() * 24;
+    const hours = Math.floor(dayJsDuration.asHours());
     const minutes = dayJsDuration.minutes();
     const seconds = dayJsDuration.seconds();
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
