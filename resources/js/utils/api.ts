@@ -145,7 +145,7 @@ export async function fetchToken() {
     });
 }
 export function isTokenValid() {
-    return window.document.cookie.includes('solidtime_session');
+    return window.document.cookie.includes('XSRF-TOKEN');
 }
 
 export const api = createApiClient('/api', { validate: 'none' });
