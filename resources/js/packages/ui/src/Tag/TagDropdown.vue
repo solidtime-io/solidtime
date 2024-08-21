@@ -3,7 +3,7 @@ import { PlusCircleIcon } from '@heroicons/vue/20/solid';
 import Dropdown from '@/packages/ui/src/Input/Dropdown.vue';
 import { type Component, computed, nextTick, ref, watch } from 'vue';
 import TagCreateModal from '@/packages/ui/src/Tag/TagCreateModal.vue';
-import MultiselectDropdownItem from '@/Components/Common/MultiselectDropdownItem.vue';
+import MultiselectDropdownItem from '@/packages/ui/src/Input/MultiselectDropdownItem.vue';
 import type { Tag } from '@/packages/api/src';
 import type { Placement } from '@floating-ui/vue';
 
@@ -67,7 +67,7 @@ watch(open, (isOpen) => {
 });
 
 const filteredTags = computed(() => {
-    return sortedTags.value.filter((tag) => {
+    return sortedTags.value.filter((tag: Tag) => {
         return tag.name
             .toLowerCase()
             .includes(searchValue.value?.toLowerCase()?.trim() || '');

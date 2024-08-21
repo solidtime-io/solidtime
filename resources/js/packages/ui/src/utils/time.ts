@@ -6,7 +6,7 @@ import isYesterday from 'dayjs/plugin/isYesterday';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import weekOfYear from 'dayjs/plugin/weekOfYear';
-import { getUserTimezone, getWeekStart } from '@/utils/useUser';
+import { getUserTimezone, getWeekStart } from './settings';
 import updateLocale from 'dayjs/plugin/updateLocale';
 import { computed } from 'vue';
 

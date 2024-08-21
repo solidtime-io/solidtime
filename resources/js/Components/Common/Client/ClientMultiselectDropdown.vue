@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import MultiselectDropdown from '@/Components/Common/MultiselectDropdown.vue';
+import MultiselectDropdown from '@/packages/ui/src/Input/MultiselectDropdown.vue';
 import { storeToRefs } from 'pinia';
 import type { Client } from '@/packages/api/src';
 import { useClientsStore } from '@/utils/useClients';
