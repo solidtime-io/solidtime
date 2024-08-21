@@ -4,6 +4,11 @@
     "description": "Package containing the solidtime ui components",
     "main": "./dist/solidtime-ui-lib.umd.cjs",
     "module": "./dist/solidtime-ui-lib.js",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/solidtime-io/solidtime.git",
+        "directory": "resources/js/packages/ui"
+    },
     "exports": {
         ".": {
             "import": "./dist/solidtime-ui-lib.js",

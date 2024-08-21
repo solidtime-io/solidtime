@@ -3,6 +3,11 @@
     "version": "0.0.1",
     "description": "Package containing the solidtime api client and type declarations",
     "main": "dist/index.js",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/solidtime-io/solidtime.git",
+        "directory": "resources/js/packages/api"
+    },
     "scripts": {
         "build": "npx ncc build src/index.ts",
         "test": "echo \"Error: no test specified\" && exit 1"
