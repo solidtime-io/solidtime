@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import MainContainer from '@/Pages/MainContainer.vue';
+import MainContainer from '@/packages/ui/src/MainContainer.vue';
 import TimeTrackerStartStop from '../TimeTrackerStartStop.vue';
 import type {
     CreateClientBody,

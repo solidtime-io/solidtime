@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import DaySectionHeader from '@/packages/ui/src/DaySectionHeader.vue';
-import MainContainer from '@/Pages/MainContainer.vue';
+import MainContainer from '@/packages/ui/src/MainContainer.vue';
 defineProps<{
     date: string;
 }>();
