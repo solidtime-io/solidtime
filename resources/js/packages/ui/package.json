@@ -43,6 +43,8 @@
     "devDependencies": {
         "@types/node": "^22.4.1",
         "@vitejs/plugin-vue": "^5.1.2",
+        "@vue/tsconfig": "^0.5.1",
+        "dayjs": "^1.11.13",
         "typescript": "^5.5.4",
         "vite": "^5.4.1",
         "vue": "^3.4.38",
