@@ -40,28 +40,28 @@ const props = defineProps<{
 }>();
 
 function updateTimeEntryDescription(description: string) {
-    const updatedTimeEntries = props.timeEntry.timeEntries.map((entry) => {
+    const updatedTimeEntries = props.timeEntry.timeEntries.map((entry: TimeEntry) => {
         return { ...entry, description };
     });
     props.updateTimeEntries(updatedTimeEntries);
 }
 
 function updateTimeEntryTags(tags: string[]) {
-    const updatedTimeEntries = props.timeEntry.timeEntries.map((entry) => {
+    const updatedTimeEntries = props.timeEntry.timeEntries.map((entry: TimeEntry) => {
         return { ...entry, tags };
     });
     props.updateTimeEntries(updatedTimeEntries);
 }
 
 function updateTimeEntryBillable(billable: boolean) {
-    const updatedTimeEntries = props.timeEntry.timeEntries.map((entry) => {
+    const updatedTimeEntries = props.timeEntry.timeEntries.map((entry: TimeEntry) => {
         return { ...entry, billable };
     });
     props.updateTimeEntries(updatedTimeEntries);
 }
 
 function updateProjectAndTask(projectId: string, taskId: string) {
-    const updatedTimeEntries = props.timeEntry.timeEntries.map((entry) => {
+    const updatedTimeEntries = props.timeEntry.timeEntries.map((entry: TimeEntry) => {
         return { ...entry, project_id: projectId, task_id: taskId };
     });
     props.updateTimeEntries(updatedTimeEntries);

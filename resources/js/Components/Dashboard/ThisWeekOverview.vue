@@ -17,7 +17,7 @@ import LinearGradient from 'zrender/lib/graphic/LinearGradient';
 import ProjectsChartCard from '@/Components/Dashboard/ProjectsChartCard.vue';
 import { formatHumanReadableDuration } from '@/packages/ui/src/utils/time';
 import { formatCents } from '@/packages/ui/src/utils/money';
-import { getWeekStart } from '@/utils/useUser';
+import { getWeekStart } from '@/packages/ui/src/utils/settings';
 import { useCssVar } from '@vueuse/core';
 import { getOrganizationCurrencyString } from '@/utils/money';
 

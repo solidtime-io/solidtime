@@ -1,7 +1,7 @@
 <script setup lang="ts" generic="T">
 import Dropdown from '@/packages/ui/src/Input/Dropdown.vue';
 import { type Component, computed, nextTick, ref, watch } from 'vue';
-import MultiselectDropdownItem from '@/Components/Common/MultiselectDropdownItem.vue';
+import MultiselectDropdownItem from '@/packages/ui/src/Input/MultiselectDropdownItem.vue';
 
 const model = defineModel<string[]>({
     default: [],
