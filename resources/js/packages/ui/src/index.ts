@@ -24,6 +24,7 @@ import CardTitle from './TimeTracker/TimeTrackerControls.vue';
 import SelectDropdown from './TimeTracker/TimeTrackerControls.vue';
 import Badge from './Badge.vue';
 import Checkbox from './Input/Checkbox.vue';
+import TimeEntryGroupedTable from './TimeEntry/TimeEntryGroupedTable.vue';
 
 export {
     money,
@@ -43,5 +44,6 @@ export {
     CardTitle,
     SelectDropdown,
     Badge,
-    Checkbox
+    Checkbox,
+    TimeEntryGroupedTable
 };
