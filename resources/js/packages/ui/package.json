@@ -36,11 +36,10 @@
     "type": "module",
     "author": "solidtime",
     "license": "AGPL-3.0",
-    "dependencies": {
+    "peerDependencies": {
         "@floating-ui/vue": "^1.1.4",
-        "tailwind-merge": "^2.5.2"
-    },
-    "devDependencies": {
+        "tailwind-merge": "^2.5.2",
+        "@heroicons/vue": "^2.1.5",
         "@types/node": "^22.4.1",
         "@vitejs/plugin-vue": "^5.1.2",
         "@vue/tsconfig": "^0.5.1",
