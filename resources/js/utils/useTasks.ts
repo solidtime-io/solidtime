@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia';
 import { getCurrentOrganizationId } from '@/utils/useUser';
-import { api } from '@/utils/api';
+import { api } from '@/packages/api/src';
 import { reactive, ref } from 'vue';
-import type { CreateTaskBody, Task, UpdateTaskBody } from '@/utils/api';
+import type { CreateTaskBody, Task, UpdateTaskBody } from '@/packages/api/src';
 import { useNotificationsStore } from '@/utils/notification';
 
 export const useTasksStore = defineStore('tasks', () => {

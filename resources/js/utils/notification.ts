@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import axios from 'axios';
 import { router } from '@inertiajs/vue3';
-import { fetchToken } from '@/utils/api';
+import { fetchToken } from '@/utils/session';
 
 export type NotificationType = 'success' | 'error';
 

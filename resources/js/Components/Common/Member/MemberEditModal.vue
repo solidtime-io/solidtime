@@ -1,17 +1,18 @@
 <script setup lang="ts">
-import SecondaryButton from '@/Components/SecondaryButton.vue';
-import DialogModal from '@/Components/DialogModal.vue';
+import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
+import DialogModal from '@/packages/ui/src/DialogModal.vue';
 import { computed, ref } from 'vue';
-import type { Member, UpdateMemberBody } from '@/utils/api';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
+import type { Member, UpdateMemberBody } from '@/packages/api/src';
+import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import { type MemberBillableKey, useMembersStore } from '@/utils/useMembers';
-import BillableRateInput from '@/Components/Common/BillableRateInput.vue';
-import InputLabel from '@/Components/InputLabel.vue';
+import BillableRateInput from '@/packages/ui/src/Input/BillableRateInput.vue';
+import InputLabel from '@/packages/ui/src/Input/InputLabel.vue';
 import MemberBillableRateModal from '@/Components/Common/Member/MemberBillableRateModal.vue';
 import MemberBillableSelect from '@/Components/Common/Member/MemberBillableSelect.vue';
 import { onMounted, watch } from 'vue';
 import MemberRoleSelect from '@/Components/Common/Member/MemberRoleSelect.vue';
 import MemberOwnershipTransferConfirmModal from '@/Components/Common/Member/MemberOwnershipTransferConfirmModal.vue';
+import { getOrganizationCurrencyString } from '@/utils/money';
 
 const { updateMember } = useMembersStore();
 const show = defineModel('show', { default: false });
@@ -154,6 +155,7 @@ const roleDescription = computed(() => {
                             <BillableRateInput
                                 focus
                                 class="w-full"
+                                :currency="getOrganizationCurrencyString()"
                                 @keydown.enter="saveWithChecks()"
                                 name="memberBillableRate"
                                 v-model="

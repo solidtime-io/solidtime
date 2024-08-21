@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import SelectDropdown from '@/Components/Common/SelectDropdown.vue';
-import Badge from '@/Components/Common/Badge.vue';
+import SelectDropdown from '@/packages/ui/src/Input/SelectDropdown.vue';
+import Badge from '@/packages/ui/src/Badge.vue';
 import { type Component, computed } from 'vue';
 
 const model = defineModel<string | null>({ default: null });

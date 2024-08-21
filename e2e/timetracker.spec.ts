@@ -285,3 +285,5 @@ test('test that adding a new tag when the timer is running', async ({
 // test billable toggle
 
 // TODO: Test that project can be created in the time tracker row
+
+// Add Test that time tracker starts on enter with description

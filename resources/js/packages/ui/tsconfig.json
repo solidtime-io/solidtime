@@ -1,0 +1,31 @@
+{
+    "compilerOptions": {
+        "module": "ESNext",
+        "moduleResolution": "Node",
+        "resolveJsonModule": true,
+        "noImplicitThis": true,
+        "strict": true,
+        "verbatimModuleSyntax": true,
+        "target": "ESNext",
+        "useDefineForClassFields": true,
+        "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
+        "skipLibCheck": true,
+        "outDir": "./dist",
+        "rootDir": "../../",
+        "declaration": true,
+        "paths": {
+            "@/*": ["../../*"],
+        }
+    },
+    "include": [
+        "src/**/*.ts"
+    ],
+
+    "exclude": [
+        "./dist",
+        "./node_modules",
+        "./__tests__",
+        "./coverage"
+    ],
+}

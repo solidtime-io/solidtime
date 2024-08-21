@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import ProjectBadge from '@/Components/Common/Project/ProjectBadge.vue';
+import ProjectBadge from '@/packages/ui/src/Project/ProjectBadge.vue';
 import { computed, nextTick, ref, watch } from 'vue';
 import { useProjectsStore } from '@/utils/useProjects';
-import Dropdown from '@/Components/Dropdown.vue';
+import Dropdown from '@/packages/ui/src/Input/Dropdown.vue';
 import {
     ComboboxAnchor,
     ComboboxContent,
@@ -12,12 +12,12 @@ import {
     ComboboxViewport,
 } from 'radix-vue';
 import { PlusCircleIcon } from '@heroicons/vue/20/solid';
-import ProjectDropdownItem from '@/Components/Common/Project/ProjectDropdownItem.vue';
 import { storeToRefs } from 'pinia';
-import { api } from '@/utils/api';
+import { api } from '@/packages/api/src';
 import { usePage } from '@inertiajs/vue3';
-import { getRandomColor } from '@/utils/color';
-import type { Project } from '@/utils/api';
+import { getRandomColor } from '@/packages/ui/src/utils/color';
+import type { Project } from '@/packages/api/src';
+import ProjectDropdownItem from '@/packages/ui/src/Project/ProjectDropdownItem.vue';
 
 const searchValue = ref('');
 const searchInput = ref<HTMLElement | null>(null);

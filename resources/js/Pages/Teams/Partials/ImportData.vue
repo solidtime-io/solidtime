@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import FormSection from '@/Components/FormSection.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
+import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import { computed, onMounted, ref } from 'vue';
 import { useNotificationsStore } from '@/utils/notification';
-import { api } from '@/utils/api';
-import InputLabel from '@/Components/InputLabel.vue';
+import { api } from '@/packages/api/src';
+import InputLabel from '@/packages/ui/src/Input/InputLabel.vue';
 import { DocumentIcon } from '@heroicons/vue/24/solid';
 import { getCurrentOrganizationId } from '@/utils/useUser';
-import type { ImportReport, ImportType } from '@/utils/api';
-import DialogModal from '@/Components/DialogModal.vue';
-import SecondaryButton from '@/Components/SecondaryButton.vue';
+import type { ImportReport, ImportType } from '@/packages/api/src';
+import DialogModal from '@/packages/ui/src/DialogModal.vue';
+import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
 import { initializeStores } from '@/utils/init';
 
 const importTypeOptions = ref<ImportType[]>([]);

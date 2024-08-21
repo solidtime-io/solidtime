@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ClockIcon } from '@heroicons/vue/20/solid';
-import CardTitle from '@/Components/Common/CardTitle.vue';
+import CardTitle from '@/packages/ui/src/CardTitle.vue';
 import { usePage } from '@inertiajs/vue3';
 import { type User } from '@/types/models';
 import { computed, onMounted, watch } from 'vue';
@@ -15,10 +15,15 @@ import { switchOrganization } from '@/utils/useOrganization';
 import { useProjectsStore } from '@/utils/useProjects';
 import { useTasksStore } from '@/utils/useTasks';
 import { useTagsStore } from '@/utils/useTags';
-import TimeTrackerControls from '@/Components/Common/TimeTracker/TimeTrackerControls.vue';
-import type { CreateClientBody, CreateProjectBody, Project } from '@/utils/api';
-import TimeTrackerRunningInDifferentOrganizationOverlay from '@/Components/Common/TimeTracker/TimeTrackerRunningInDifferentOrganizationOverlay.vue';
+import TimeTrackerControls from '@/packages/ui/src/TimeTracker/TimeTrackerControls.vue';
+import type {
+    CreateClientBody,
+    CreateProjectBody,
+    Project,
+} from '@/packages/api/src';
+import TimeTrackerRunningInDifferentOrganizationOverlay from '@/packages/ui/src/TimeTracker/TimeTrackerRunningInDifferentOrganizationOverlay.vue';
 import { useClientsStore } from '@/utils/useClients';
+import { getOrganizationCurrencyString } from '@/utils/money';
 
 const page = usePage<{
     auth: {
@@ -108,6 +113,7 @@ const { tags } = storeToRefs(useTagsStore());
             :projects
             :createTag
             :isActive
+            :currency="getOrganizationCurrencyString()"
             v-model:currentTimeEntry="currentTimeEntry"
             v-model:liveTimer="now"
             @startLiveTimer="startLiveTimer"

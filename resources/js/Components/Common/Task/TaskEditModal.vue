@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import TextInput from '@/Components/TextInput.vue';
-import SecondaryButton from '@/Components/SecondaryButton.vue';
-import DialogModal from '@/Components/DialogModal.vue';
+import TextInput from '@/packages/ui/src/Input/TextInput.vue';
+import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
+import DialogModal from '@/packages/ui/src/DialogModal.vue';
 import { ref } from 'vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
+import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import { useFocus } from '@vueuse/core';
 import { useTasksStore } from '@/utils/useTasks';
-import type { Task, UpdateTaskBody } from '@/utils/api';
+import type { Task, UpdateTaskBody } from '@/packages/api/src';
 
 const { updateTask } = useTasksStore();
 const show = defineModel('show', { default: false });

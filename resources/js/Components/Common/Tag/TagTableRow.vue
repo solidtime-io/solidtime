@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Tag } from '@/utils/api';
+import type { Tag } from '@/packages/api/src';
 import { useTagsStore } from '@/utils/useTags';
 import TagMoreOptionsDropdown from '@/Components/Common/Tag/TagMoreOptionsDropdown.vue';
 import TableRow from '@/Components/TableRow.vue';

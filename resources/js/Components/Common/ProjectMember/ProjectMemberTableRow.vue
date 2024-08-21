@@ -1,14 +1,15 @@
 <script setup lang="ts">
-import type { ProjectMember } from '@/utils/api';
+import type { ProjectMember } from '@/packages/api/src';
 import { computed, ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import TableRow from '@/Components/TableRow.vue';
 import { useMembersStore } from '@/utils/useMembers';
 import { useProjectMembersStore } from '@/utils/useProjectMembers';
 import ProjectMemberMoreOptionsDropdown from '@/Components/Common/ProjectMember/ProjectMemberMoreOptionsDropdown.vue';
-import { formatCents } from '@/utils/money';
+import { formatCents } from '@/packages/ui/src/utils/money';
 import { capitalizeFirstLetter } from '@/utils/format';
 import ProjectMemberEditModal from '@/Components/Common/ProjectMember/ProjectMemberEditModal.vue';
+import { getOrganizationCurrencyString } from '@/utils/money';
 
 const props = defineProps<{
     projectMember: ProjectMember;
@@ -48,7 +49,10 @@ const showEditModal = ref(false);
         <div class="whitespace-nowrap px-3 py-4 text-sm text-muted">
             {{
                 projectMember.billable_rate
-                    ? formatCents(projectMember.billable_rate)
+                    ? formatCents(
+                          projectMember.billable_rate,
+                          getOrganizationCurrencyString()
+                      )
                     : '--'
             }}
         </div>

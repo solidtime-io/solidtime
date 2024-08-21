@@ -1,21 +1,26 @@
 <script setup lang="ts">
-import TextInput from '@/Components/TextInput.vue';
-import SecondaryButton from '@/Components/SecondaryButton.vue';
-import DialogModal from '@/Components/DialogModal.vue';
+import TextInput from '@/packages/ui/src/Input/TextInput.vue';
+import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
+import DialogModal from '@/packages/ui/src/DialogModal.vue';
 import { computed, ref } from 'vue';
-import type { CreateClientBody, CreateProjectBody, Project } from '@/utils/api';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
+import type {
+    CreateClientBody,
+    CreateProjectBody,
+    Project,
+} from '@/packages/api/src';
+import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import { useProjectsStore } from '@/utils/useProjects';
 import { useFocus } from '@vueuse/core';
-import ClientDropdown from '@/Components/Common/Client/ClientDropdown.vue';
-import Badge from '@/Components/Common/Badge.vue';
+import ClientDropdown from '@/packages/ui/src/Client/ClientDropdown.vue';
+import Badge from '@/packages/ui/src/Badge.vue';
 import { useClientsStore } from '@/utils/useClients';
 import { storeToRefs } from 'pinia';
-import ProjectColorSelector from '@/Components/Common/Project/ProjectColorSelector.vue';
-import ProjectEditBillableSection from '@/Components/Common/Project/ProjectEditBillableSection.vue';
+import ProjectColorSelector from '@/packages/ui/src/Project/ProjectColorSelector.vue';
 import { UserCircleIcon } from '@heroicons/vue/20/solid';
-import InputLabel from '@/Components/InputLabel.vue';
-import ProjectBillableRateModal from '@/Components/Common/Project/ProjectBillableRateModal.vue';
+import InputLabel from '@/packages/ui/src/Input/InputLabel.vue';
+import ProjectBillableRateModal from '@/packages/ui/src/Project/ProjectBillableRateModal.vue';
+import { getOrganizationCurrencyString } from '@/utils/money';
+import ProjectEditBillableSection from '@/packages/ui/src/Project/ProjectEditBillableSection.vue';
 
 const { updateProject } = useProjectsStore();
 const { clients } = storeToRefs(useClientsStore());
@@ -124,6 +129,7 @@ async function submitBillableRate() {
             </div>
             <ProjectEditBillableSection
                 @submit="submit"
+                :currency="getOrganizationCurrencyString()"
                 v-model:isBillable="project.is_billable"
                 v-model:billableRate="
                     project.billable_rate
@@ -143,6 +149,7 @@ async function submitBillableRate() {
     </DialogModal>
     <ProjectBillableRateModal
         v-model:show="showBillableRateModal"
+        :currency="getOrganizationCurrencyString()"
         @submit="submitBillableRate"
         :new-billable-rate="project.billable_rate"
         :project-name="project.name"></ProjectBillableRateModal>

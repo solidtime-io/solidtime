@@ -11,7 +11,7 @@
   "skipLibCheck": true,
   "typeRoots": [
     "./node_modules/@types",
-    "resources/js/types"
+    "resources/js/types",
   ],
   "include": [
     "resources/js/**/*.ts",

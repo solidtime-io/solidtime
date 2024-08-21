@@ -1,18 +1,20 @@
 <script setup lang="ts">
-import TextInput from '@/Components/TextInput.vue';
-import SecondaryButton from '@/Components/SecondaryButton.vue';
-import DialogModal from '@/Components/DialogModal.vue';
+import TextInput from '@/packages/ui/src/Input/TextInput.vue';
+import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
+import DialogModal from '@/packages/ui/src/DialogModal.vue';
 import { nextTick, ref, watch } from 'vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
-import TimeTrackerTagDropdown from '@/Components/Common/TimeTracker/TimeTrackerTagDropdown.vue';
-import TimeTrackerProjectTaskDropdown from '@/Components/Common/TimeTracker/TimeTrackerProjectTaskDropdown.vue';
-import BillableToggleButton from '@/Components/Common/BillableToggleButton.vue';
+import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
+import TimeTrackerTagDropdown from '@/packages/ui/src/TimeTracker/TimeTrackerTagDropdown.vue';
+import TimeTrackerProjectTaskDropdown from '@/packages/ui/src/TimeTracker/TimeTrackerProjectTaskDropdown.vue';
+import BillableToggleButton from '@/packages/ui/src/Input/BillableToggleButton.vue';
 import { getCurrentUserId } from '@/utils/useUser';
 import { useTimeEntriesStore } from '@/utils/useTimeEntries';
-import InputLabel from '@/Components/InputLabel.vue';
-import TimePicker from '@/Components/Common/TimePicker.vue';
-import DatePicker from '@/Components/Common/DatePicker.vue';
-import { getDayJsInstance, getLocalizedDayJs } from '@/utils/time';
+import InputLabel from '@/packages/ui/src/Input/InputLabel.vue';
+import DatePicker from '@/packages/ui/src/Input/DatePicker.vue';
+import {
+    getDayJsInstance,
+    getLocalizedDayJs,
+} from '@/packages/ui/src/utils/time';
 import { storeToRefs } from 'pinia';
 import { useTasksStore } from '@/utils/useTasks';
 import { useProjectsStore } from '@/utils/useProjects';
@@ -22,8 +24,10 @@ import type {
     CreateProjectBody,
     Project,
     Client,
-} from '@/utils/api';
+} from '@/packages/api/src';
 import { useClientsStore } from '@/utils/useClients';
+import TimePicker from '@/packages/ui/src/Input/TimePicker.vue';
+import { getOrganizationCurrencyString } from '@/utils/money';
 const projectStore = useProjectsStore();
 const { projects } = storeToRefs(projectStore);
 const taskStore = useTasksStore();
@@ -126,6 +130,7 @@ async function createTag(tag: string) {
                             :clients
                             :createProject
                             :createClient
+                            :currency="getOrganizationCurrencyString()"
                             class="mt-1"
                             size="xlarge"
                             :projects="projects"

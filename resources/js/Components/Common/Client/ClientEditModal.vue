@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import TextInput from '@/Components/TextInput.vue';
-import SecondaryButton from '@/Components/SecondaryButton.vue';
-import DialogModal from '@/Components/DialogModal.vue';
+import TextInput from '@/packages/ui/src/Input/TextInput.vue';
+import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
+import DialogModal from '@/packages/ui/src/DialogModal.vue';
 import { ref } from 'vue';
-import type { Client, UpdateClientBody } from '@/utils/api';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
+import type { Client, UpdateClientBody } from '@/packages/api/src';
+import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import { useFocus } from '@vueuse/core';
 import { useClientsStore } from '@/utils/useClients';
 

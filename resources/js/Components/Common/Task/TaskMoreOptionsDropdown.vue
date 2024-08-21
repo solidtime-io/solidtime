@@ -4,9 +4,9 @@ import {
     PencilSquareIcon,
     CheckCircleIcon,
 } from '@heroicons/vue/20/solid';
-import type { Task } from '@/utils/api';
+import type { Task } from '@/packages/api/src';
 import { canDeleteTasks, canUpdateTasks } from '@/utils/permissions';
-import MoreOptionsDropdown from '@/Components/MoreOptionsDropdown.vue';
+import MoreOptionsDropdown from '@/packages/ui/src/MoreOptionsDropdown.vue';
 const emit = defineEmits<{
     delete: [];
     edit: [];

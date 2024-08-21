@@ -2,7 +2,7 @@
 import { router, usePage } from '@inertiajs/vue3';
 import type { Organization, User } from '@/types/models';
 import DropdownLink from '@/Components/DropdownLink.vue';
-import Dropdown from '@/Components/Dropdown.vue';
+import Dropdown from '@/packages/ui/src/Input/Dropdown.vue';
 
 const page = usePage<{
     jetstream: {

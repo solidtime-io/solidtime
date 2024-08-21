@@ -2,7 +2,7 @@
 import MultiselectDropdown from '@/Components/Common/MultiselectDropdown.vue';
 import { useMembersStore } from '@/utils/useMembers';
 import { storeToRefs } from 'pinia';
-import type { Member } from '@/utils/api';
+import type { Member } from '@/packages/api/src';
 
 const membersStore = useMembersStore();
 const { members } = storeToRefs(membersStore);

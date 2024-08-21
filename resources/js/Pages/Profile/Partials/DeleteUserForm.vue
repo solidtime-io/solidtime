@@ -2,11 +2,11 @@
 import { ref } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import ActionSection from '@/Components/ActionSection.vue';
-import DangerButton from '@/Components/DangerButton.vue';
-import DialogModal from '@/Components/DialogModal.vue';
-import InputError from '@/Components/InputError.vue';
-import SecondaryButton from '@/Components/SecondaryButton.vue';
-import TextInput from '@/Components/TextInput.vue';
+import DangerButton from '@/packages/ui/src/Buttons/DangerButton.vue';
+import DialogModal from '@/packages/ui/src/DialogModal.vue';
+import InputError from '@/packages/ui/src/Input/InputError.vue';
+import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
+import TextInput from '@/packages/ui/src/Input/TextInput.vue';
 
 const confirmingUserDeletion = ref(false);
 const passwordInput = ref<HTMLElement | null>(null);

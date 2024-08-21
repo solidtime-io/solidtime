@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import SecondaryButton from '@/Components/SecondaryButton.vue';
+import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
 import { UserCircleIcon } from '@heroicons/vue/24/solid';
 import { PlusIcon } from '@heroicons/vue/16/solid';
-import { ref } from 'vue';
+import { type Component, ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useClientsStore } from '@/utils/useClients';
 import ClientTableRow from '@/Components/Common/Client/ClientTableRow.vue';
@@ -36,7 +36,7 @@ const createClient = ref(false);
                     <SecondaryButton
                         v-if="canCreateClients()"
                         @click="createClient = true"
-                        :icon="PlusIcon"
+                        :icon="PlusIcon as Component"
                         >Create your First Client
                     </SecondaryButton>
                 </div>

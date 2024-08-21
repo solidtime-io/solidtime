@@ -6,7 +6,7 @@ import {
     formatDate,
     formatHumanReadableDuration,
     formatWeek,
-} from '@/utils/time';
+} from '@/packages/ui/src/utils/time';
 import { use } from 'echarts/core';
 import { CanvasRenderer } from 'echarts/renderers';
 import { BarChart } from 'echarts/charts';
@@ -16,7 +16,7 @@ import {
     TitleComponent,
     TooltipComponent,
 } from 'echarts/components';
-import type { AggregatedTimeEntries } from '@/utils/api';
+import type { AggregatedTimeEntries } from '@/packages/api/src';
 import { useCssVar } from '@vueuse/core';
 
 use([

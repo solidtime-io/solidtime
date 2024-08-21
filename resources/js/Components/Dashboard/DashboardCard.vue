@@ -12,7 +12,7 @@
 
 <script setup lang="ts">
 import type { Component } from 'vue';
-import CardTitle from '@/Components/Common/CardTitle.vue';
+import CardTitle from '@/packages/ui/src/CardTitle.vue';
 
 defineProps<{
     title: string;

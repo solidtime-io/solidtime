@@ -1,18 +1,19 @@
 <script setup lang="ts">
-import type { Member } from '@/utils/api';
+import type { Member } from '@/packages/api/src';
 import { CheckCircleIcon, UserCircleIcon } from '@heroicons/vue/20/solid';
 import MemberMoreOptionsDropdown from '@/Components/Common/Member/MemberMoreOptionsDropdown.vue';
 import TableRow from '@/Components/TableRow.vue';
 import { capitalizeFirstLetter } from '../../../utils/format';
-import SecondaryButton from '@/Components/SecondaryButton.vue';
-import { api } from '@/utils/api';
+import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
+import { api } from '@/packages/api/src';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import { useNotificationsStore } from '@/utils/notification';
 import { canInvitePlaceholderMembers } from '@/utils/permissions';
 import { useMembersStore } from '@/utils/useMembers';
 import { ref } from 'vue';
 import MemberEditModal from '@/Components/Common/Member/MemberEditModal.vue';
-import { formatCents } from '../../../utils/money';
+import { getOrganizationCurrencyString } from '@/utils/money';
+import { formatCents } from '@/packages/ui/src/utils/money';
 
 const props = defineProps<{
     member: Member;
@@ -62,7 +63,12 @@ async function invitePlaceholder(id: string) {
         </div>
         <div class="whitespace-nowrap px-3 py-4 text-sm text-muted">
             {{
-                member.billable_rate ? formatCents(member.billable_rate) : '--'
+                member.billable_rate
+                    ? formatCents(
+                          member.billable_rate,
+                          getOrganizationCurrencyString()
+                      )
+                    : '--'
             }}
         </div>
         <div

@@ -1,15 +1,19 @@
 <script setup lang="ts">
-import SecondaryButton from '@/Components/SecondaryButton.vue';
-import DialogModal from '@/Components/DialogModal.vue';
+import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
+import DialogModal from '@/packages/ui/src/DialogModal.vue';
 import { ref, watch } from 'vue';
-import type { ProjectMember, UpdateProjectMemberBody } from '@/utils/api';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
+import type {
+    ProjectMember,
+    UpdateProjectMemberBody,
+} from '@/packages/api/src';
+import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import { useFocus } from '@vueuse/core';
 import { useProjectMembersStore } from '@/utils/useProjectMembers';
-import BillableRateInput from '@/Components/Common/BillableRateInput.vue';
+import BillableRateInput from '@/packages/ui/src/Input/BillableRateInput.vue';
 import { UserIcon } from '@heroicons/vue/24/solid';
 import ProjectMemberBillableRateModal from '@/Components/Common/ProjectMember/ProjectMemberBillableRateModal.vue';
-import InputLabel from '@/Components/InputLabel.vue';
+import InputLabel from '@/packages/ui/src/Input/InputLabel.vue';
+import { getOrganizationCurrencyString } from '@/utils/money';
 const { updateProjectMember } = useProjectMembersStore();
 
 const show = defineModel('show', { default: false });
@@ -87,6 +91,7 @@ useFocus(projectNameInput, { initialValue: true });
                         value="Billable Rate"></InputLabel>
                     <BillableRateInput
                         @keydown.enter="submit"
+                        :currency="getOrganizationCurrencyString()"
                         name="billable_rate"
                         v-model="
                             projectMemberBody.billable_rate

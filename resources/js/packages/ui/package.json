@@ -1,0 +1,46 @@
+{
+    "name": "@solidtime/ui",
+    "version": "0.0.1",
+    "description": "Package containing the solidtime ui components",
+    "main": "./dist/solidtime-ui-lib.umd.cjs",
+    "module": "./dist/solidtime-ui-lib.js",
+    "exports": {
+        ".": {
+            "import": "./dist/solidtime-ui-lib.js",
+            "require": "./dist/solidtime-ui-lib.umd.cjs"
+        },
+        "./style.css": "./dist/style.css"
+    },
+    "types": "./dist/index.d.ts",
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build && vue-tsc --emitDeclarationOnly",
+        "types": "vue-tsc ",
+        "preview": "vite preview"
+    },
+    "files": [
+        "dist"
+    ],
+    "keywords": [
+        "solidtime",
+        "timetracker",
+        "timetracking",
+        "api",
+        "client"
+    ],
+    "type": "module",
+    "author": "solidtime",
+    "license": "AGPL-3.0",
+    "dependencies": {
+        "@floating-ui/vue": "^1.1.4",
+        "tailwind-merge": "^2.5.2"
+    },
+    "devDependencies": {
+        "@types/node": "^22.4.1",
+        "@vitejs/plugin-vue": "^5.1.2",
+        "typescript": "^5.5.4",
+        "vite": "^5.4.1",
+        "vue": "^3.4.38",
+        "vue-tsc": "^2.0.29"
+    }
+}

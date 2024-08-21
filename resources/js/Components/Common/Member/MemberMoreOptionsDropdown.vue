@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { TrashIcon, PencilSquareIcon } from '@heroicons/vue/20/solid';
-import type { Member } from '@/utils/api';
+import type { Member } from '@/packages/api/src';
 import { canDeleteMembers, canUpdateMembers } from '@/utils/permissions';
-import MoreOptionsDropdown from '@/Components/MoreOptionsDropdown.vue';
+import MoreOptionsDropdown from '@/packages/ui/src/MoreOptionsDropdown.vue';
 
 const emit = defineEmits<{
     delete: [];

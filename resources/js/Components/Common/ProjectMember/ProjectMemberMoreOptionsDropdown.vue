@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { TrashIcon, PencilSquareIcon } from '@heroicons/vue/20/solid';
-import type { ProjectMember } from '@/utils/api';
+import type { ProjectMember } from '@/packages/api/src';
 import { useMembersStore } from '@/utils/useMembers';
 import { storeToRefs } from 'pinia';
 import { computed } from 'vue';
-import MoreOptionsDropdown from '@/Components/MoreOptionsDropdown.vue';
+import MoreOptionsDropdown from '@/packages/ui/src/MoreOptionsDropdown.vue';
 
 const emit = defineEmits<{
     delete: [];

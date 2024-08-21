@@ -9,31 +9,32 @@ import {
     CheckCircleIcon,
     TagIcon,
 } from '@heroicons/vue/20/solid';
-import DateRangePicker from '@/Components/Common/DateRangePicker.vue';
+import DateRangePicker from '@/packages/ui/src/Input/DateRangePicker.vue';
 import ReportingChart from '@/Components/Common/Reporting/ReportingChart.vue';
-import BillableIcon from '@/Components/Common/Icons/BillableIcon.vue';
+import BillableIcon from '@/packages/ui/src/Icons/BillableIcon.vue';
 import { onMounted, ref } from 'vue';
 import {
     formatHumanReadableDuration,
     getDayJsInstance,
     getLocalizedDayJs,
-} from '@/utils/time';
+} from '@/packages/ui/src/utils/time';
 import { type GroupingOption, useReportingStore } from '@/utils/useReporting';
 import { storeToRefs } from 'pinia';
-import TagDropdown from '@/Components/Common/Tag/TagDropdown.vue';
-import type { AggregatedTimeEntriesQueryParams } from '@/utils/api';
+import TagDropdown from '@/packages/ui/src/Tag/TagDropdown.vue';
+import type { AggregatedTimeEntriesQueryParams } from '@/packages/api/src';
 import ReportingFilterBadge from '@/Components/Common/Reporting/ReportingFilterBadge.vue';
 import ProjectMultiselectDropdown from '@/Components/Common/Project/ProjectMultiselectDropdown.vue';
 import MemberMultiselectDropdown from '@/Components/Common/Member/MemberMultiselectDropdown.vue';
 import TaskMultiselectDropdown from '@/Components/Common/Task/TaskMultiselectDropdown.vue';
-import SelectDropdown from '@/Components/Common/SelectDropdown.vue';
+import SelectDropdown from '@/packages/ui/src/Input/SelectDropdown.vue';
 import ReportingGroupBySelect from '@/Components/Common/Reporting/ReportingGroupBySelect.vue';
 import ReportingRow from '@/Components/Common/Reporting/ReportingRow.vue';
-import { formatCents } from '@/utils/money';
+import { getOrganizationCurrencyString } from '@/utils/money';
 import ReportingPieChart from '@/Components/Common/Reporting/ReportingPieChart.vue';
 import { getCurrentMembershipId, getCurrentRole } from '@/utils/useUser';
 import ClientMultiselectDropdown from '@/Components/Common/Client/ClientMultiselectDropdown.vue';
 import { useTagsStore } from '@/utils/useTags';
+import { formatCents } from '@/packages/ui/src/utils/money';
 
 const startDate = ref<string>(
     getLocalizedDayJs(getDayJsInstance()().format()).subtract(14, 'd').format()
@@ -322,7 +323,8 @@ async function createTag(tag: string) {
                                     class="justify-end pr-6 flex items-center font-medium">
                                     {{
                                         formatCents(
-                                            aggregatedTableTimeEntries.cost
+                                            aggregatedTableTimeEntries.cost,
+                                            getOrganizationCurrencyString()
                                         )
                                     }}
                                 </div>

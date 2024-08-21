@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { TrashIcon, ArrowPathIcon } from '@heroicons/vue/20/solid';
-import MoreOptionsDropdown from '@/Components/MoreOptionsDropdown.vue';
+import MoreOptionsDropdown from '@/packages/ui/src/MoreOptionsDropdown.vue';
 const emit = defineEmits<{
     delete: [];
     resend: [];

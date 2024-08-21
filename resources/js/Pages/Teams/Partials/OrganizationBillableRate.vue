@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import FormSection from '@/Components/FormSection.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
+import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import { onMounted, ref } from 'vue';
-import InputLabel from '@/Components/InputLabel.vue';
-import type { UpdateOrganizationBody } from '@/utils/api';
-import BillableRateInput from '@/Components/Common/BillableRateInput.vue';
+import InputLabel from '@/packages/ui/src/Input/InputLabel.vue';
+import type { UpdateOrganizationBody } from '@/packages/api/src';
+import BillableRateInput from '@/packages/ui/src/Input/BillableRateInput.vue';
 import { useOrganizationStore } from '@/utils/useOrganization';
 import { storeToRefs } from 'pinia';
 import OrganizationBillableRateModal from '@/Components/Common/Organization/OrganizationBillableRateModal.vue';
+import { getOrganizationCurrencyString } from '@/utils/money';
 
 const store = useOrganizationStore();
 const { fetchOrganization, updateOrganization } = store;
@@ -58,6 +59,7 @@ async function submit() {
                         value="Organization Billable Rate" />
                     <BillableRateInput
                         v-if="organization"
+                        :currency="getOrganizationCurrencyString()"
                         v-model="organizationBody.billable_rate"
                         name="organizationBillableRate"></BillableRateInput>
                 </div>

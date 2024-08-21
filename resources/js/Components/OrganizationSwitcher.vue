@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ChevronDownIcon } from '@heroicons/vue/20/solid';
-import Dropdown from '@/Components/Dropdown.vue';
+import Dropdown from '@/packages/ui/src/Input/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
 import { usePage } from '@inertiajs/vue3';
 import type { Organization, User } from '@/types/models';

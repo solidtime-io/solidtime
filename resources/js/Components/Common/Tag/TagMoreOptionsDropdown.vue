@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { TrashIcon } from '@heroicons/vue/20/solid';
-import type { Tag } from '@/utils/api';
-import MoreOptionsDropdown from '@/Components/MoreOptionsDropdown.vue';
+import type { Tag } from '@/packages/api/src';
+import MoreOptionsDropdown from '@/packages/ui/src/MoreOptionsDropdown.vue';
 
 const emit = defineEmits<{
     delete: [];
