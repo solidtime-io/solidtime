@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { useForm, usePage } from '@inertiajs/vue3';
 import FormSection from '@/Components/FormSection.vue';
-import InputError from '@/Components/InputError.vue';
-import InputLabel from '@/Components/InputLabel.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
-import TextInput from '@/Components/TextInput.vue';
+import InputError from '@/packages/ui/src/Input/InputError.vue';
+import InputLabel from '@/packages/ui/src/Input/InputLabel.vue';
+import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
+import TextInput from '@/packages/ui/src/Input/TextInput.vue';
 import type { User } from '@/types/models';
 import { initializeStores } from '@/utils/init';
 

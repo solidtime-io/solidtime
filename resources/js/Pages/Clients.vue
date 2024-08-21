@@ -2,7 +2,7 @@
 import MainContainer from '@/Pages/MainContainer.vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { PlusIcon } from '@heroicons/vue/16/solid';
-import SecondaryButton from '@/Components/SecondaryButton.vue';
+import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
 import { UserCircleIcon } from '@heroicons/vue/20/solid';
 import { onMounted, ref } from 'vue';
 import { useClientsStore } from '@/utils/useClients';

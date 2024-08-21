@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import type { Tag } from '@/utils/api';
+import type { Tag } from '@/packages/api/src';
 import { getCurrentOrganizationId } from '@/utils/useUser';
-import { api } from '@/utils/api';
+import { api } from '@/packages/api/src';
 import { useNotificationsStore } from '@/utils/notification';
 
 export const useTagsStore = defineStore('tags', () => {

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import type { Invitation } from '@/utils/api';
+import type { Invitation } from '@/packages/api/src';
 import TableRow from '@/Components/TableRow.vue';
 import { capitalizeFirstLetter } from '../../../utils/format';
 import InvitationMoreOptionsDropdown from '@/Components/Common/Invitation/InvitationMoreOptionsDropdown.vue';
-import { api } from '@/utils/api';
+import { api } from '@/packages/api/src';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import { useNotificationsStore } from '@/utils/notification';
 import { useInvitationsStore } from '@/utils/useInvitations';

@@ -1,11 +1,11 @@
 import { defineStore } from 'pinia';
-import { api } from '@/utils/api';
+import { api } from '@/packages/api/src';
 import { computed, ref } from 'vue';
 import type {
     Member,
     MemberIndexResponse,
     UpdateMemberBody,
-} from '@/utils/api';
+} from '@/packages/api/src';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import { useNotificationsStore } from '@/utils/notification';
 

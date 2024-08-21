@@ -6,10 +6,10 @@ import type {
     Organization,
     OrganizationResponse,
     UpdateOrganizationBody,
-} from '@/utils/api';
+} from '@/packages/api/src';
 import { useNotificationsStore } from '@/utils/notification';
 import { getCurrentOrganizationId } from '@/utils/useUser';
-import { api } from '@/utils/api';
+import { api } from '@/packages/api/src';
 
 export function switchOrganization(organizationId: string) {
     router.put(

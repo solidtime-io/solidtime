@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import SelectDropdown from '@/Components/Common/SelectDropdown.vue';
-import Badge from '@/Components/Common/Badge.vue';
+import SelectDropdown from '@/packages/ui/src/Input/SelectDropdown.vue';
+import Badge from '@/packages/ui/src/Badge.vue';
 import { ChevronDownIcon } from '@heroicons/vue/20/solid';
 import type { BillableKey } from '@/types/projects';
 

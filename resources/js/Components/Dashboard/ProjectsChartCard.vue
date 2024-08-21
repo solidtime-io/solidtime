@@ -11,7 +11,7 @@ import {
     TitleComponent,
     TooltipComponent,
 } from 'echarts/components';
-import { formatHumanReadableDuration } from '@/utils/time';
+import { formatHumanReadableDuration } from '@/packages/ui/src/utils/time';
 
 use([
     CanvasRenderer,

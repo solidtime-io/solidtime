@@ -2,11 +2,11 @@
 import MainContainer from '@/Pages/MainContainer.vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { FolderIcon, PlusIcon } from '@heroicons/vue/16/solid';
-import SecondaryButton from '@/Components/SecondaryButton.vue';
+import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
 import ProjectTable from '@/Components/Common/Project/ProjectTable.vue';
 import { computed, onMounted, ref } from 'vue';
 import { useProjectsStore } from '@/utils/useProjects';
-import ProjectCreateModal from '@/Components/Common/Project/ProjectCreateModal.vue';
+import ProjectCreateModal from '@/packages/ui/src/Project/ProjectCreateModal.vue';
 import PageTitle from '@/Components/Common/PageTitle.vue';
 import { canCreateProjects } from '@/utils/permissions';
 import TabBarItem from '@/Components/Common/TabBar/TabBarItem.vue';
@@ -18,7 +18,8 @@ import type {
     Client,
     CreateProjectBody,
     Project,
-} from '@/utils/api';
+} from '@/packages/api/src';
+import { getOrganizationCurrencyString } from '@/utils/money';
 
 onMounted(() => {
     useProjectsStore().fetchProjects();
@@ -82,6 +83,7 @@ async function createClient(
             <ProjectCreateModal
                 :createProject
                 :createClient
+                :currency="getOrganizationCurrencyString()"
                 :clients="clients"
                 @submit="createProject"
                 v-model:show="showCreateProjectModal"></ProjectCreateModal>

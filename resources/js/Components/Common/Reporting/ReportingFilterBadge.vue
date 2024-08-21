@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import Badge from '@/Components/Common/Badge.vue';
+import Badge from '@/packages/ui/src/Badge.vue';
 
 const props = defineProps<{
     icon: Component;

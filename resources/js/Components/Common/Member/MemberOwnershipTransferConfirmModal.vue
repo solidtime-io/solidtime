@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import SecondaryButton from '@/Components/SecondaryButton.vue';
-import DialogModal from '@/Components/DialogModal.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
+import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
+import DialogModal from '@/packages/ui/src/DialogModal.vue';
+import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 
 const show = defineModel('show', { default: false });
 const saving = defineModel('saving', { default: false });

@@ -3,7 +3,7 @@ import DashboardCard from '@/Components/Dashboard/DashboardCard.vue';
 import TeamActivityCardEntry from '@/Components/Dashboard/TeamActivityCardEntry.vue';
 import { UserGroupIcon } from '@heroicons/vue/20/solid';
 import { router } from '@inertiajs/vue3';
-import SecondaryButton from '@/Components/SecondaryButton.vue';
+import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
 
 defineProps<{
     latestTeamActivity: {

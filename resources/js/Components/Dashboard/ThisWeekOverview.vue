@@ -12,13 +12,14 @@ import VChart, { THEME_KEY } from 'vue-echarts';
 import { computed, provide, ref } from 'vue';
 import StatCard from '@/Components/Common/StatCard.vue';
 import { ClockIcon } from '@heroicons/vue/20/solid';
-import CardTitle from '@/Components/Common/CardTitle.vue';
+import CardTitle from '@/packages/ui/src/CardTitle.vue';
 import LinearGradient from 'zrender/lib/graphic/LinearGradient';
 import ProjectsChartCard from '@/Components/Dashboard/ProjectsChartCard.vue';
-import { formatHumanReadableDuration } from '@/utils/time';
-import { formatCents } from '@/utils/money';
+import { formatHumanReadableDuration } from '@/packages/ui/src/utils/time';
+import { formatCents } from '@/packages/ui/src/utils/money';
 import { getWeekStart } from '@/utils/useUser';
 import { useCssVar } from '@vueuse/core';
+import { getOrganizationCurrencyString } from '@/utils/money';
 
 use([
     CanvasRenderer,
@@ -195,7 +196,12 @@ const option = ref({
                 " />
             <StatCard
                 title="Billable Amount"
-                :value="formatCents(props.totalWeeklyBillableAmount.value)" />
+                :value="
+                    formatCents(
+                        props.totalWeeklyBillableAmount.value,
+                        getOrganizationCurrencyString()
+                    )
+                " />
             <ProjectsChartCard
                 :weekly-project-overview="
                     props.weeklyProjectOverview

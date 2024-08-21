@@ -1,5 +1,5 @@
 <script setup lang="ts" generic="T">
-import Dropdown from '@/Components/Dropdown.vue';
+import Dropdown from '@/packages/ui/src/Input/Dropdown.vue';
 import { type Component, computed, nextTick, ref, watch } from 'vue';
 import MultiselectDropdownItem from '@/Components/Common/MultiselectDropdownItem.vue';
 

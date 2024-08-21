@@ -53,13 +53,13 @@
         <div class="card card-default">
             <div class="text-base text-muted">
                 <!-- Introduction -->
-                <p class="text-center"><strong class="text-white">{{ $client->name }}</strong> is requesting permission
+                <p class="text-center pb-4"><strong class="text-white">{{ $client->name }}</strong> is requesting permission
                     to access your
                     account.</p>
 
                 <!-- Scope List -->
                 @if (count($scopes) > 0)
-                    <div class="py-4">
+                    <div class="pb-4">
                         <p><strong>This application will be able to:</strong></p>
 
                         <ul class="list-disc pl-5 py-2">

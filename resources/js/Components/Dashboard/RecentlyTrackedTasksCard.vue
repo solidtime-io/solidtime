@@ -2,7 +2,7 @@
 import RecentlyTrackedTasksCardEntry from '@/Components/Dashboard/RecentlyTrackedTasksCardEntry.vue';
 import DashboardCard from '@/Components/Dashboard/DashboardCard.vue';
 import { CheckCircleIcon } from '@heroicons/vue/20/solid';
-import SecondaryButton from '@/Components/SecondaryButton.vue';
+import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
 import { PlusCircleIcon } from '@heroicons/vue/24/solid';
 import { router } from '@inertiajs/vue3';
 

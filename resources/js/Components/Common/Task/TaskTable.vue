@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import SecondaryButton from '@/Components/SecondaryButton.vue';
+import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
 import { PlusCircleIcon } from '@heroicons/vue/24/solid';
 import { PlusIcon } from '@heroicons/vue/16/solid';
 import { ref } from 'vue';
@@ -7,7 +7,7 @@ import TaskTableRow from '@/Components/Common/Task/TaskTableRow.vue';
 import TaskTableHeading from '@/Components/Common/Task/TaskTableHeading.vue';
 import TaskCreateModal from '@/Components/Common/Task/TaskCreateModal.vue';
 import { canCreateTasks } from '@/utils/permissions';
-import type { Task } from '@/utils/api';
+import type { Task } from '@/packages/api/src';
 
 const props = defineProps<{
     projectId: string;

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { PencilSquareIcon, TrashIcon } from '@heroicons/vue/20/solid';
-import type { Client } from '@/utils/api';
+import type { Client } from '@/packages/api/src';
 import { canDeleteClients, canUpdateClients } from '@/utils/permissions';
-import MoreOptionsDropdown from '@/Components/MoreOptionsDropdown.vue';
+import MoreOptionsDropdown from '@/packages/ui/src/MoreOptionsDropdown.vue';
 
 const emit = defineEmits<{
     delete: [];

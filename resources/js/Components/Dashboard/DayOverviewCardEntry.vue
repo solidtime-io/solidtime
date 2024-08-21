@@ -9,7 +9,7 @@ defineProps<{
 import {
     formatHumanReadableDate,
     formatHumanReadableDuration,
-} from '@/utils/time';
+} from '@/packages/ui/src/utils/time';
 </script>
 
 <template>

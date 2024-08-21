@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import TextInput from '@/Components/TextInput.vue';
-import SecondaryButton from '@/Components/SecondaryButton.vue';
-import DialogModal from '@/Components/DialogModal.vue';
+import TextInput from '@/packages/ui/src/Input/TextInput.vue';
+import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
+import DialogModal from '@/packages/ui/src/DialogModal.vue';
 import { ref } from 'vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
+import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import { useFocus } from '@vueuse/core';
-import InputLabel from '@/Components/InputLabel.vue';
-import InputError from '@/Components/InputError.vue';
+import InputLabel from '@/packages/ui/src/Input/InputLabel.vue';
+import InputError from '@/packages/ui/src/Input/InputError.vue';
 import type { Role } from '@/types/jetstream';
 import { Link, useForm } from '@inertiajs/vue3';
 import { getCurrentOrganizationId } from '@/utils/useUser';
@@ -14,8 +14,8 @@ import { filterRoles } from '@/utils/roles';
 import { hasActiveSubscription, isBillingActivated } from '@/utils/billing';
 import { CreditCardIcon, UserGroupIcon } from '@heroicons/vue/20/solid';
 import { canUpdateOrganization } from '@/utils/permissions';
-import { api } from '@/utils/api';
-import type { MemberRole } from '@/utils/api';
+import { api } from '@/packages/api/src';
+import type { MemberRole } from '@/packages/api/src';
 import { z } from 'zod';
 import { useNotificationsStore } from '@/utils/notification';
 

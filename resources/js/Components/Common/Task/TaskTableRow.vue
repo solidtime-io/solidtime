@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Task } from '@/utils/api';
+import type { Task } from '@/packages/api/src';
 import { CheckCircleIcon } from '@heroicons/vue/20/solid';
 import { useTasksStore } from '@/utils/useTasks';
 import TaskMoreOptionsDropdown from '@/Components/Common/Task/TaskMoreOptionsDropdown.vue';

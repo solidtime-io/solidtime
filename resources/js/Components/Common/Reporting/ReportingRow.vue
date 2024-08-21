@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { formatHumanReadableDuration } from '@/utils/time';
-import { formatCents } from '@/utils/money';
-import GroupedItemsCountButton from '@/Components/Common/GroupedItemsCountButton.vue';
+import { formatHumanReadableDuration } from '@/packages/ui/src/utils/time';
+import { formatCents } from '@/packages/ui/src/utils/money';
+import GroupedItemsCountButton from '@/packages/ui/src/GroupedItemsCountButton.vue';
 import { ref } from 'vue';
 import { twMerge } from 'tailwind-merge';
 import { useReportingStore } from '@/utils/useReporting';
+import { getOrganizationCurrencyString } from '@/utils/money';
 const { getNameForReportingRowEntry } = useReportingStore();
 
 type AggregatedGroupedData = GroupedData & {
@@ -54,7 +55,7 @@ const expanded = ref(false);
             {{ formatHumanReadableDuration(entry.seconds) }}
         </div>
         <div class="justify-end pr-6 flex items-center">
-            {{ formatCents(entry.cost) }}
+            {{ formatCents(entry.cost, getOrganizationCurrencyString()) }}
         </div>
     </div>
     <div

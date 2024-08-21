@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import MultiselectDropdown from '@/Components/Common/MultiselectDropdown.vue';
 import { storeToRefs } from 'pinia';
-import type { Task } from '@/utils/api';
+import type { Task } from '@/packages/api/src';
 import { useTasksStore } from '@/utils/useTasks';
 
 const tasksStore = useTasksStore();

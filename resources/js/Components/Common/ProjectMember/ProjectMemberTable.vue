@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import SecondaryButton from '@/Components/SecondaryButton.vue';
+import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
 import { PlusIcon } from '@heroicons/vue/16/solid';
 import { ref } from 'vue';
 import ProjectMemberTableRow from '@/Components/Common/ProjectMember/ProjectMemberTableRow.vue';
 import { UserGroupIcon } from '@heroicons/vue/24/solid';
 import ProjectMemberTableHeading from '@/Components/Common/ProjectMember/ProjectMemberTableHeading.vue';
 import ProjectMemberCreateModal from '@/Components/Common/ProjectMember/ProjectMemberCreateModal.vue';
-import type { ProjectMember } from '@/utils/api';
+import type { ProjectMember } from '@/packages/api/src';
 
 defineProps<{
     projectId: string;

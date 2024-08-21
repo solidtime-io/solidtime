@@ -4,9 +4,9 @@ import {
     PencilSquareIcon,
     ArchiveBoxIcon,
 } from '@heroicons/vue/20/solid';
-import type { Project } from '@/utils/api';
+import type { Project } from '@/packages/api/src';
 import { canDeleteProjects, canUpdateProjects } from '@/utils/permissions';
-import MoreOptionsDropdown from '@/Components/MoreOptionsDropdown.vue';
+import MoreOptionsDropdown from '@/packages/ui/src/MoreOptionsDropdown.vue';
 const emit = defineEmits<{
     delete: [];
     edit: [];

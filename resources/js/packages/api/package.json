@@ -1,0 +1,31 @@
+{
+    "name": "@solidtime/api",
+    "version": "0.0.1",
+    "description": "Package containing the solidtime api client and type declarations",
+    "main": "dist/index.js",
+    "scripts": {
+        "build": "npx ncc build src/index.ts",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "files": [
+        "dist"
+    ],
+    "keywords": [
+        "solidtime",
+        "timetracker",
+        "timetracking",
+        "api",
+        "client"
+    ],
+    "type": "module",
+    "author": "solidtime",
+    "license": "AGPL-3.0",
+    "dependencies": {
+        "@zodios/core": "^10.9.6",
+        "typescript": "^5.5.4",
+        "zod": "^3.23.8"
+    },
+    "devDependencies": {
+        "@vercel/ncc": "^0.38.1"
+    }
+}

@@ -5,7 +5,11 @@ import {
 } from '@/utils/useUser';
 
 import { reactive, ref } from 'vue';
-import { api, type CreateTimeEntryBody, type TimeEntry } from '@/utils/api';
+import {
+    api,
+    type CreateTimeEntryBody,
+    type TimeEntry,
+} from '@/packages/api/src';
 import dayjs from 'dayjs';
 import { useNotificationsStore } from '@/utils/notification';
 

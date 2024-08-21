@@ -1,13 +1,17 @@
 <script setup lang="ts">
-import SecondaryButton from '@/Components/SecondaryButton.vue';
-import DialogModal from '@/Components/DialogModal.vue';
+import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
+import DialogModal from '@/packages/ui/src/DialogModal.vue';
 import { ref } from 'vue';
-import type { CreateProjectMemberBody, ProjectMember } from '@/utils/api';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
+import type {
+    CreateProjectMemberBody,
+    ProjectMember,
+} from '@/packages/api/src';
+import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import { useFocus } from '@vueuse/core';
 import { useProjectMembersStore } from '@/utils/useProjectMembers';
 import MemberCombobox from '@/Components/Common/Member/MemberCombobox.vue';
-import BillableRateInput from '@/Components/Common/BillableRateInput.vue';
+import BillableRateInput from '@/packages/ui/src/Input/BillableRateInput.vue';
+import { getOrganizationCurrencyString } from '@/utils/money';
 const { createProjectMember } = useProjectMembersStore();
 const show = defineModel('show', { default: false });
 const saving = ref(false);
@@ -54,6 +58,7 @@ useFocus(projectNameInput, { initialValue: true });
                 <div class="col-span-3 sm:col-span-1 flex-1">
                     <BillableRateInput
                         name="billable_rate"
+                        :currency="getOrganizationCurrencyString()"
                         v-model="
                             projectMember.billable_rate
                         "></BillableRateInput>

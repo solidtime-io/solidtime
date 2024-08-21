@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import ProjectBadge from '@/Components/Common/Project/ProjectBadge.vue';
-import TimeTrackerStartStop from '@/Components/Common/TimeTrackerStartStop.vue';
+import ProjectBadge from '@/packages/ui/src/Project/ProjectBadge.vue';
+import TimeTrackerStartStop from '@/packages/ui/src/TimeTrackerStartStop.vue';
 import { useProjectsStore } from '@/utils/useProjects';
 import { storeToRefs } from 'pinia';
 import { computed } from 'vue';

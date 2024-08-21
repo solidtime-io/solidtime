@@ -11,9 +11,9 @@ import {
     TitleComponent,
     TooltipComponent,
 } from 'echarts/components';
-import { formatHumanReadableDuration } from '@/utils/time';
-import { getRandomColorWithSeed } from '@/utils/color';
-import type { GroupedDataEntries } from '@/utils/api';
+import { formatHumanReadableDuration } from '@/packages/ui/src/utils/time';
+import { getRandomColorWithSeed } from '@/packages/ui/src/utils/color';
+import type { GroupedDataEntries } from '@/packages/api/src';
 import { useReportingStore } from '@/utils/useReporting';
 
 use([

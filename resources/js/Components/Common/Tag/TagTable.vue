@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import SecondaryButton from '@/Components/SecondaryButton.vue';
+import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
 import { FolderPlusIcon } from '@heroicons/vue/24/solid';
 import { PlusIcon } from '@heroicons/vue/16/solid';
 import { ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useTagsStore } from '@/utils/useTags';
 import TagTableRow from '@/Components/Common/Tag/TagTableRow.vue';
-import TagCreateModal from '@/Components/Common/Tag/TagCreateModal.vue';
+import TagCreateModal from '@/packages/ui/src/Tag/TagCreateModal.vue';
 import TagTableHeading from '@/Components/Common/Tag/TagTableHeading.vue';
 import { canCreateTags } from '@/utils/permissions';
-import type { Tag } from '@/utils/api';
+import type { Tag } from '@/packages/api/src';
 defineProps<{
     createTag: (name: string) => Promise<Tag | undefined>;
 }>();

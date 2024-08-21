@@ -32,7 +32,7 @@ import {
 import { isBillingActivated } from '@/utils/billing';
 import type { User } from '@/types/models';
 import { ArrowsRightLeftIcon } from '@heroicons/vue/16/solid';
-import { fetchToken, isTokenValid } from '@/utils/api';
+import { fetchToken, isTokenValid } from '@/utils/session';
 
 defineProps({
     title: String,

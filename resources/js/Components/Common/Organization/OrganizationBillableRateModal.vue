@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { formatCents } from '../../../utils/money';
-import BillableRateModal from '@/Components/Common/BillableRateModal.vue';
+import { getOrganizationCurrencyString } from '@/utils/money';
+import BillableRateModal from '@/packages/ui/src/BillableRateModal.vue';
+import { formatCents } from '@/packages/ui/src/utils/money';
 
 const show = defineModel('show', { default: false });
 const saving = defineModel('saving', { default: false });
@@ -23,7 +24,12 @@ defineEmits<{
         <p class="py-0.5 text-center">
             The organization billable rate will be updated to
             <strong>{{
-                newBillableRate ? formatCents(newBillableRate) : ' none.'
+                newBillableRate
+                    ? formatCents(
+                          newBillableRate,
+                          getOrganizationCurrencyString()
+                      )
+                    : ' none.'
             }}</strong
             >.
         </p>

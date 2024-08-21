@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { storeToRefs } from 'pinia';
-import ClientDropdownItem from '@/Components/Common/Client/ClientDropdownItem.vue';
+import ClientDropdownItem from '@/packages/ui/src/Client/ClientDropdownItem.vue';
 import { useMembersStore } from '@/utils/useMembers';
 import { UserIcon, XMarkIcon } from '@heroicons/vue/24/solid';
-import TextInput from '@/Components/TextInput.vue';
+import TextInput from '@/packages/ui/src/Input/TextInput.vue';
 import { useFocus } from '@vueuse/core';
-import type { ProjectMember } from '@/utils/api';
-import Dropdown from '@/Components/Dropdown.vue';
+import type { ProjectMember } from '@/packages/api/src';
+import Dropdown from '@/packages/ui/src/Input/Dropdown.vue';
 
 const membersStore = useMembersStore();
 const { members } = storeToRefs(membersStore);

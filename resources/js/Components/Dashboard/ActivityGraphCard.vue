@@ -18,7 +18,7 @@ import {
     formatDate,
     formatHumanReadableDuration,
     getDayJsInstance,
-} from '@/utils/time';
+} from '@/packages/ui/src/utils/time';
 import { useCssVar } from '@vueuse/core';
 
 const props = defineProps<{

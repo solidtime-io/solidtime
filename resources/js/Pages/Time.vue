@@ -12,19 +12,20 @@ import type {
     Project,
     TimeEntry,
     Client,
-} from '@/utils/api';
+} from '@/packages/api/src';
 import { useElementVisibility } from '@vueuse/core';
 import { ClockIcon } from '@heroicons/vue/20/solid';
-import SecondaryButton from '@/Components/SecondaryButton.vue';
+import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
 import { PlusIcon } from '@heroicons/vue/16/solid';
-import TimeEntryCreateModal from '@/Components/Common/TimeEntry/TimeEntryCreateModal.vue';
-import LoadingSpinner from '@/Components/LoadingSpinner.vue';
+import LoadingSpinner from '@/packages/ui/src/LoadingSpinner.vue';
 import { useCurrentTimeEntryStore } from '@/utils/useCurrentTimeEntry';
 import { useTasksStore } from '@/utils/useTasks';
 import { useProjectsStore } from '@/utils/useProjects';
-import TimeEntryGroupedTable from '@/Components/Common/TimeEntry/TimeEntryGroupedTable.vue';
+import TimeEntryGroupedTable from '@/packages/ui/src/TimeEntry/TimeEntryGroupedTable.vue';
 import { useTagsStore } from '@/utils/useTags';
 import { useClientsStore } from '@/utils/useClients';
+import TimeEntryCreateModal from '@/Components/Common/TimeEntry/TimeEntryCreateModal.vue';
+import { getOrganizationCurrencyString } from '@/utils/money';
 
 const timeEntriesStore = useTimeEntriesStore();
 const { timeEntries, allTimeEntriesLoaded } = storeToRefs(timeEntriesStore);
@@ -134,6 +135,7 @@ async function createClient(
             :createTag
             :projects="projects"
             :tasks="tasks"
+            :currency="getOrganizationCurrencyString()"
             :timeEntries="timeEntries"
             :tags="tags"></TimeEntryGroupedTable>
         <div v-if="timeEntries.length === 0" class="text-center pt-12">

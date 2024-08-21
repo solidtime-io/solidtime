@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import ProjectMoreOptionsDropdown from '@/Components/Common/Project/ProjectMoreOptionsDropdown.vue';
-import type { Project } from '@/utils/api';
+import type { Project } from '@/packages/api/src';
 import { computed, ref } from 'vue';
 import { CheckCircleIcon } from '@heroicons/vue/20/solid';
 import { useClientsStore } from '@/utils/useClients';
@@ -9,7 +9,8 @@ import { useTasksStore } from '@/utils/useTasks';
 import { useProjectsStore } from '@/utils/useProjects';
 import TableRow from '@/Components/TableRow.vue';
 import ProjectEditModal from '@/Components/Common/Project/ProjectEditModal.vue';
-import { formatCents } from '@/utils/money';
+import { formatCents } from '@/packages/ui/src/utils/money';
+import { getOrganizationCurrencyString } from '@/utils/money';
 
 const { clients } = storeToRefs(useClientsStore());
 const { tasks } = storeToRefs(useTasksStore());
@@ -43,7 +44,10 @@ function archiveProject() {
 const billableRateInfo = computed(() => {
     if (props.project.is_billable) {
         if (props.project.billable_rate) {
-            return formatCents(props.project.billable_rate);
+            return formatCents(
+                props.project.billable_rate,
+                getOrganizationCurrencyString()
+            );
         } else {
             return 'Default Rate';
         }

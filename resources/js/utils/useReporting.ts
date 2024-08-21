@@ -1,11 +1,11 @@
 import { defineStore, storeToRefs } from 'pinia';
-import { api } from '@/utils/api';
+import { api } from '@/packages/api/src';
 import { type Component, computed, ref } from 'vue';
 import type {
     AggregatedTimeEntries,
     AggregatedTimeEntriesQueryParams,
     ReportingResponse,
-} from '@/utils/api';
+} from '@/packages/api/src';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import { useNotificationsStore } from '@/utils/notification';
 import { useProjectsStore } from '@/utils/useProjects';
@@ -18,7 +18,7 @@ import {
     UserGroupIcon,
 } from '@heroicons/vue/20/solid';
 import { FolderIcon } from '@heroicons/vue/16/solid';
-import BillableIcon from '@/Components/Common/Icons/BillableIcon.vue';
+import BillableIcon from '@/packages/ui/src/Icons/BillableIcon.vue';
 
 export type GroupingOption =
     | 'project'

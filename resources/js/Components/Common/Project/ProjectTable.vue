@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import SecondaryButton from '@/Components/SecondaryButton.vue';
+import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
 import { FolderPlusIcon } from '@heroicons/vue/24/solid';
 import { PlusIcon } from '@heroicons/vue/16/solid';
 import { ref } from 'vue';
-import ProjectCreateModal from '@/Components/Common/Project/ProjectCreateModal.vue';
+import ProjectCreateModal from '@/packages/ui/src/Project/ProjectCreateModal.vue';
 import ProjectTableHeading from '@/Components/Common/Project/ProjectTableHeading.vue';
 import ProjectTableRow from '@/Components/Common/Project/ProjectTableRow.vue';
 import { canCreateProjects } from '@/utils/permissions';
@@ -12,10 +12,11 @@ import type {
     Project,
     Client,
     CreateClientBody,
-} from '@/utils/api';
+} from '@/packages/api/src';
 import { useProjectsStore } from '@/utils/useProjects';
 import { useClientsStore } from '@/utils/useClients';
 import { storeToRefs } from 'pinia';
+import { getOrganizationCurrencyString } from '@/utils/money';
 
 defineProps<{
     projects: Project[];
@@ -40,6 +41,7 @@ const { clients } = storeToRefs(useClientsStore());
     <ProjectCreateModal
         :createProject
         :createClient
+        :currency="getOrganizationCurrencyString()"
         :clients="clients"
         v-model:show="showCreateProjectModal"></ProjectCreateModal>
     <div class="flow-root max-w-[100vw] overflow-x-auto">
