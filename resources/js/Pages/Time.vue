@@ -2,7 +2,7 @@
 import AppLayout from '@/Layouts/AppLayout.vue';
 import TimeTracker from '@/Components/TimeTracker.vue';
 import { onMounted, ref, watch } from 'vue';
-import MainContainer from '@/Pages/MainContainer.vue';
+import MainContainer from '@/packages/ui/src/MainContainer.vue';
 import { useTimeEntriesStore } from '@/utils/useTimeEntries';
 import { storeToRefs } from 'pinia';
 import type {

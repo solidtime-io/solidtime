@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import MainContainer from '@/Pages/MainContainer.vue';
+import MainContainer from '@/packages/ui/src/MainContainer.vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { TagIcon, PlusIcon } from '@heroicons/vue/16/solid';
 import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';

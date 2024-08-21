@@ -6,7 +6,7 @@ import LastSevenDaysCard from '@/Components/Dashboard/LastSevenDaysCard.vue';
 import TeamActivityCard from '@/Components/Dashboard/TeamActivityCard.vue';
 import ThisWeekOverview from '@/Components/Dashboard/ThisWeekOverview.vue';
 import ActivityGraphCard from '@/Components/Dashboard/ActivityGraphCard.vue';
-import MainContainer from '@/Pages/MainContainer.vue';
+import MainContainer from '@/packages/ui/src/MainContainer.vue';
 import { canViewMembers } from '@/utils/permissions';
 
 const props = defineProps<{
