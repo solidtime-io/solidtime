@@ -77,6 +77,31 @@ export const useTimeEntriesStore = defineStore('timeEntries', () => {
         }
     }
 
+    async function updateTimeEntries(
+        ids: string[],
+        changes: Partial<TimeEntry>
+    ) {
+        const organizationId = getCurrentOrganizationId();
+        if (organizationId) {
+            await handleApiRequestNotifications(
+                () =>
+                    api.updateMultipleTimeEntries(
+                        {
+                            ids: ids,
+                            changes: changes,
+                        },
+                        {
+                            params: {
+                                organization: organizationId,
+                            },
+                        }
+                    ),
+                'Time entries updated successfully',
+                'Failed to update time entries'
+            );
+        }
+    }
+
     async function updateTimeEntry(timeEntry: TimeEntry) {
         const organizationId = getCurrentOrganizationId();
         if (organizationId) {
@@ -147,5 +172,6 @@ export const useTimeEntriesStore = defineStore('timeEntries', () => {
         deleteTimeEntry,
         fetchMoreTimeEntries,
         allTimeEntriesLoaded,
+        updateTimeEntries,
     };
 });
