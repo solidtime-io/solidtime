@@ -7,6 +7,7 @@ namespace App\Service\Import\Importers;
 use App\Models\Client;
 use App\Models\Member;
 use App\Models\Organization;
+use App\Models\OrganizationInvitation;
 use App\Models\Project;
 use App\Models\ProjectMember;
 use App\Models\Tag;
@@ -62,6 +63,11 @@ abstract class DefaultImporter implements ImporterContract
      * @var ImportDatabaseHelper<ProjectMember>
      */
     protected ImportDatabaseHelper $projectMemberImportHelper;
+
+    /**
+     * @var ImportDatabaseHelper<OrganizationInvitation>
+     */
+    protected ImportDatabaseHelper $organizationInvitationsImportHelper;
 
     protected BillableRateService $billableRateService;
 
@@ -147,6 +153,15 @@ abstract class DefaultImporter implements ImporterContract
             'name' => [
                 'required',
                 'max:500',
+            ],
+        ]);
+        $this->organizationInvitationsImportHelper = new ImportDatabaseHelper(OrganizationInvitation::class, ['email', 'organization_id'], true, function (Builder $builder) {
+            return $builder->where('organization_id', $this->organization->id);
+        }, validate: [
+            'email' => [
+                'required',
+                'email',
+                'max:255',
             ],
         ]);
         $this->timeEntriesCreated = 0;

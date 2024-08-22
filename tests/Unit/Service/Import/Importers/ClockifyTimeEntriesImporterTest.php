@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Unit\Service\Import\Importers;
 
 use App\Models\Organization;
-use App\Models\TimeEntry;
 use App\Service\Import\Importers\ClockifyTimeEntriesImporter;
 use App\Service\Import\Importers\DefaultImporter;
 use App\Service\Import\Importers\ImportException;
@@ -30,27 +29,17 @@ class ClockifyTimeEntriesImporterTest extends ImporterTestAbstract
 
         // Act
         $importer->importData($data, $timezone);
+        $report = $importer->getReport();
 
         // Assert
         $testScenario = $this->checkTestScenarioAfterImportExcludingTimeEntries();
-        $timeEntries = TimeEntry::all();
-        $this->assertCount(2, $timeEntries);
-        $timeEntry1 = $timeEntries->firstWhere('description', '');
-        $this->assertNotNull($timeEntry1);
-        $this->assertSame('', $timeEntry1->description);
-        $this->assertSame('2024-03-04 09:23:52', $timeEntry1->start->toDateTimeString());
-        $this->assertSame('2024-03-04 09:23:52', $timeEntry1->end->toDateTimeString());
-        $this->assertFalse($timeEntry1->billable);
-        $this->assertTrue($timeEntry1->is_imported);
-        $this->assertSame([$testScenario->tag1->getKey(), $testScenario->tag2->getKey()], $timeEntry1->tags);
-        $timeEntry2 = $timeEntries->firstWhere('description', 'Working hard');
-        $this->assertNotNull($timeEntry2);
-        $this->assertSame('Working hard', $timeEntry2->description);
-        $this->assertSame('2024-03-04 09:23:00', $timeEntry2->start->toDateTimeString());
-        $this->assertSame('2024-03-04 10:23:01', $timeEntry2->end->toDateTimeString());
-        $this->assertTrue($timeEntry2->billable);
-        $this->assertTrue($timeEntry2->is_imported);
-        $this->assertSame([], $timeEntry2->tags);
+        $this->checkTimeEntries($testScenario);
+        $this->assertSame(2, $report->timeEntriesCreated);
+        $this->assertSame(2, $report->tagsCreated);
+        $this->assertSame(1, $report->tasksCreated);
+        $this->assertSame(1, $report->usersCreated);
+        $this->assertSame(2, $report->projectsCreated);
+        $this->assertSame(1, $report->clientsCreated);
     }
 
     public function test_import_of_test_file_twice_succeeds(): void
@@ -67,26 +56,16 @@ class ClockifyTimeEntriesImporterTest extends ImporterTestAbstract
 
         // Act
         $importer->importData($data, $timezone);
+        $report = $importer->getReport();
 
         // Assert
         $testScenario = $this->checkTestScenarioAfterImportExcludingTimeEntries();
-        $timeEntries = TimeEntry::all();
-        $this->assertCount(4, $timeEntries);
-        $timeEntry1 = $timeEntries->firstWhere('description', '');
-        $this->assertNotNull($timeEntry1);
-        $this->assertSame('', $timeEntry1->description);
-        $this->assertSame('2024-03-04 09:23:52', $timeEntry1->start->toDateTimeString());
-        $this->assertSame('2024-03-04 09:23:52', $timeEntry1->end->toDateTimeString());
-        $this->assertFalse($timeEntry1->billable);
-        $this->assertTrue($timeEntry1->is_imported);
-        $this->assertSame([$testScenario->tag1->getKey(), $testScenario->tag2->getKey()], $timeEntry1->tags);
-        $timeEntry2 = $timeEntries->firstWhere('description', 'Working hard');
-        $this->assertNotNull($timeEntry2);
-        $this->assertSame('Working hard', $timeEntry2->description);
-        $this->assertSame('2024-03-04 09:23:00', $timeEntry2->start->toDateTimeString());
-        $this->assertSame('2024-03-04 10:23:01', $timeEntry2->end->toDateTimeString());
-        $this->assertTrue($timeEntry2->billable);
-        $this->assertTrue($timeEntry2->is_imported);
-        $this->assertSame([], $timeEntry2->tags);
+        $this->checkTimeEntries($testScenario, true);
+        $this->assertSame(2, $report->timeEntriesCreated);
+        $this->assertSame(0, $report->tagsCreated);
+        $this->assertSame(0, $report->tasksCreated);
+        $this->assertSame(0, $report->usersCreated);
+        $this->assertSame(0, $report->projectsCreated);
+        $this->assertSame(0, $report->clientsCreated);
     }
 }

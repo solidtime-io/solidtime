@@ -14,6 +14,7 @@ use App\Exceptions\Api\TimeEntryStillRunningApiException;
 use App\Exceptions\Api\UserIsAlreadyMemberOfOrganizationApiException;
 use App\Exceptions\Api\UserIsAlreadyMemberOfProjectApiException;
 use App\Exceptions\Api\UserNotPlaceholderApiException;
+use App\Service\Export\ExportException;
 
 return [
     'api' => [
@@ -29,6 +30,7 @@ return [
         OnlyOwnerCanChangeOwnership::KEY => 'Only owner can change ownership',
         OrganizationNeedsAtLeastOneOwner::KEY => 'Organization needs at least one owner',
         ChangingRoleToPlaceholderIsNotAllowed::KEY => 'Changing role to placeholder is not allowed',
+        ExportException::KEY => 'Export failed, please try again later or contact support',
     ],
     'unknown_error_in_admin_panel' => 'An unknown error occurred. Please check the logs.',
 ];

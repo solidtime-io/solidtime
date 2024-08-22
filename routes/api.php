@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Api\V1\ClientController;
+use App\Http\Controllers\Api\V1\ExportController;
 use App\Http\Controllers\Api\V1\ImportController;
 use App\Http\Controllers\Api\V1\InvitationController;
 use App\Http\Controllers\Api\V1\MemberController;
@@ -124,6 +125,11 @@ Route::middleware([
     Route::name('import.')->group(static function () {
         Route::get('/organizations/{organization}/importers', [ImportController::class, 'index'])->name('index');
         Route::post('/organizations/{organization}/import', [ImportController::class, 'import'])->name('import');
+    });
+
+    // Export routes
+    Route::name('export.')->prefix('/organizations/{organization}')->group(static function () {
+        Route::post('/export', [ExportController::class, 'export'])->name('export');
     });
 });
 

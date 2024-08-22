@@ -32,4 +32,8 @@ return [
             '<br><br>1. Go to Admin -> Settings -> Data export. <br>2. Under "Time entries" select the year you want to export and click on "Export time entries". <br><br>You can export all years one after another and import them one after another. '.
             ' <br>Before you import make sure that the Timezone settings in Toggl are the same as in solidtime.',
     ],
+    'solidtime_importer' => [
+        'name' => 'Solidtime',
+        'description' => '1. Choose the organization you want to export in dropdown in the left top corner<br>2. Click on "Export" in the left navigation under "Admin" (You need to be Admin or Owner of the organization to see this)<br>3. Click on "Export". <br>4. Save the file and upload it here.',
+    ],
 ];

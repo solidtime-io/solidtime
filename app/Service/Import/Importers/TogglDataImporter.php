@@ -6,6 +6,8 @@ namespace App\Service\Import\Importers;
 
 use App\Enums\Role;
 use Exception;
+use Illuminate\Support\Carbon;
+use Override;
 use Spatie\TemporaryDirectory\TemporaryDirectory;
 use ValueError;
 use ZipArchive;
@@ -15,14 +17,16 @@ class TogglDataImporter extends DefaultImporter
     /**
      * @throws ImportException
      */
-    #[\Override]
+    #[Override]
     public function importData(string $data, string $timezone): void
     {
+        $temporaryDirectoryZip = null;
+        $temporaryDirectory = null;
         try {
             $zip = new ZipArchive();
-            $temporaryDirectory = TemporaryDirectory::make();
-            file_put_contents($temporaryDirectory->path('import.zip'), $data);
-            $res = $zip->open($temporaryDirectory->path('import.zip'), ZipArchive::RDONLY);
+            $temporaryDirectoryZip = TemporaryDirectory::make();
+            file_put_contents($temporaryDirectoryZip->path('import.zip'), $data);
+            $res = $zip->open($temporaryDirectoryZip->path('import.zip'), ZipArchive::RDONLY);
             if ($res !== true) {
                 throw new ImportException('Invalid ZIP, error code: '.$res);
             }
@@ -77,7 +81,9 @@ class TogglDataImporter extends DefaultImporter
                 $this->clientImportHelper->getKey([
                     'name' => $client->name,
                     'organization_id' => $this->organization->id,
-                ], [], (string) $client->id);
+                ], [
+                    'archived_at' => $client->archived === true ? Carbon::now() : null,
+                ], (string) $client->id);
             }
             foreach ($tags as $tag) {
                 $this->tagImportHelper->getKey([
@@ -121,7 +127,8 @@ class TogglDataImporter extends DefaultImporter
                 ], [
                     'client_id' => $clientId,
                     'color' => $project->color,
-                    'is_billable' => $project->rate !== null,
+                    'is_billable' => $project->billable,
+                    'is_public' => ! $project->is_private,
                     'billable_rate' => $project->rate !== null ? (int) ($project->rate * 100) : null,
                 ], (string) $project->id);
 
@@ -170,7 +177,9 @@ class TogglDataImporter extends DefaultImporter
                         'name' => $task->name,
                         'project_id' => $projectId,
                         'organization_id' => $this->organization->getKey(),
-                    ], [], (string) $task->id);
+                    ], [
+                        'done_at' => $task->active === false ? Carbon::now() : null,
+                    ], (string) $task->id);
                 }
             }
         } catch (ValueError $exception) {
@@ -180,16 +189,19 @@ class TogglDataImporter extends DefaultImporter
         } catch (Exception $exception) {
             report($exception);
             throw new ImportException('Unknown error');
+        } finally {
+            $temporaryDirectory?->delete();
+            $temporaryDirectoryZip?->delete();
         }
     }
 
-    #[\Override]
+    #[Override]
     public function getName(): string
     {
         return __('importer.toggl_data_importer.name');
     }
 
-    #[\Override]
+    #[Override]
     public function getDescription(): string
     {
         return __('importer.toggl_data_importer.description');
