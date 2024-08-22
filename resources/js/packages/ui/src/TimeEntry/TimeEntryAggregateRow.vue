@@ -34,45 +34,37 @@ const props = defineProps<{
     createProject: (project: CreateProjectBody) => Promise<Project | undefined>;
     createClient: (client: CreateClientBody) => Promise<Client | undefined>;
     onStartStopClick: (timeEntry: TimeEntry) => void;
-    updateTimeEntries: (timeEntries: TimeEntry[]) => void;
+    updateTimeEntries: (ids: string[], changes: Partial<TimeEntry>) => void;
     deleteTimeEntries: (timeEntries: TimeEntry[]) => void;
     currency: string;
 }>();
 
 function updateTimeEntryDescription(description: string) {
-    const updatedTimeEntries = props.timeEntry.timeEntries.map(
-        (entry: TimeEntry) => {
-            return { ...entry, description };
-        }
+    props.updateTimeEntries(
+        props.timeEntry.timeEntries.map((timeEntry: TimeEntry) => timeEntry.id),
+        { description: description }
     );
-    props.updateTimeEntries(updatedTimeEntries);
 }
 
 function updateTimeEntryTags(tags: string[]) {
-    const updatedTimeEntries = props.timeEntry.timeEntries.map(
-        (entry: TimeEntry) => {
-            return { ...entry, tags };
-        }
+    props.updateTimeEntries(
+        props.timeEntry.timeEntries.map((timeEntry: TimeEntry) => timeEntry.id),
+        { tags: tags }
     );
-    props.updateTimeEntries(updatedTimeEntries);
 }
 
 function updateTimeEntryBillable(billable: boolean) {
-    const updatedTimeEntries = props.timeEntry.timeEntries.map(
-        (entry: TimeEntry) => {
-            return { ...entry, billable };
-        }
+    props.updateTimeEntries(
+        props.timeEntry.timeEntries.map((timeEntry: TimeEntry) => timeEntry.id),
+        { billable: billable }
     );
-    props.updateTimeEntries(updatedTimeEntries);
 }
 
 function updateProjectAndTask(projectId: string, taskId: string) {
-    const updatedTimeEntries = props.timeEntry.timeEntries.map(
-        (entry: TimeEntry) => {
-            return { ...entry, project_id: projectId, task_id: taskId };
-        }
+    props.updateTimeEntries(
+        props.timeEntry.timeEntries.map((timeEntry: TimeEntry) => timeEntry.id),
+        { project_id: projectId, task_id: taskId }
     );
-    props.updateTimeEntries(updatedTimeEntries);
 }
 
 const expanded = ref(false);
@@ -163,7 +155,10 @@ const expanded = ref(false);
                 :createProject
                 :tags="tags"
                 indent
-                :updateTimeEntry="(arg: TimeEntry) => updateTimeEntries([arg])"
+                :updateTimeEntry="
+                    (timeEntry: TimeEntry) =>
+                        updateTimeEntries([timeEntry.id], { ...timeEntry })
+                "
                 :onStartStopClick="() => onStartStopClick(subEntry)"
                 :deleteTimeEntry="() => deleteTimeEntries([subEntry])"
                 :currency="currency"

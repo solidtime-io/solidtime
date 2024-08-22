@@ -28,7 +28,7 @@ const props = defineProps<{
     clients: Client[];
     createTag: (name: string) => Promise<Tag | undefined>;
     updateTimeEntry: (entry: TimeEntry) => void;
-    updateTimeEntries: (entries: TimeEntry[]) => void;
+    updateTimeEntries: (ids: string[], changes: Partial<TimeEntry>) => void;
     deleteTimeEntries: (entries: TimeEntry[]) => void;
     createTimeEntry: (entry: Omit<CreateTimeEntryBody, 'member_id'>) => void;
     createProject: (project: CreateProjectBody) => Promise<Project | undefined>;
