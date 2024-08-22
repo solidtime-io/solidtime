@@ -45,5 +45,5 @@ export {
     SelectDropdown,
     Badge,
     Checkbox,
-    TimeEntryGroupedTable
+    TimeEntryGroupedTable,
 };

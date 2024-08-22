@@ -10,7 +10,6 @@ function getCurrentUserId() {
     return page.props.auth.user.id;
 }
 
-
 function getCurrentOrganizationId() {
     return page.props.auth.user.current_team_id;
 }
@@ -26,8 +25,6 @@ function getCurrentRole() {
         (team) => team.id === getCurrentOrganizationId()
     )?.membership.role;
 }
-
-
 
 export {
     getCurrentOrganizationId,
