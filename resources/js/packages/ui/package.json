@@ -1,6 +1,6 @@
 {
     "name": "@solidtime/ui",
-    "version": "0.0.5",
+    "version": "0.0.6",
     "description": "Package containing the solidtime ui components",
     "main": "./dist/solidtime-ui-lib.umd.cjs",
     "module": "./dist/solidtime-ui-lib.js",
@@ -12,8 +12,14 @@
     "types": "./dist/packages/ui/src/index.d.ts",
     "exports": {
         ".": {
-            "import": "./dist/solidtime-ui-lib.js",
-            "require": "./dist/solidtime-ui-lib.umd.cjs"
+            "import": {
+                "types": "./dist/packages/ui/src/index.d.ts",
+                "default": "./dist/solidtime-ui-lib.js"
+            },
+            "require": {
+                "types": "./dist/packages/ui/src/index.d.ts",
+                "default": "./dist/solidtime-ui-lib.umd.cjs"
+            }
         },
         "./style.css": "./dist/style.css"
     },
