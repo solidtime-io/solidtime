@@ -9,6 +9,8 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          path: resources/js/packages/api
       # Setup .npmrc file to publish to npm
       - uses: actions/setup-node@v4
         with:
@@ -16,12 +18,9 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
       - name: Install dependencies
         run: npm ci
-        working-directory: ./resources/js/packages/api
       - name: Build package
         run: npm run build
-        working-directory: ./resources/js/packages/api
       - name: Publish Package
         run: npm publish --provenance --access public
-        working-directory: ./resources/js/packages/api
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
