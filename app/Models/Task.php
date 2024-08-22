@@ -42,6 +42,7 @@ class Task extends Model
      */
     protected $casts = [
         'name' => 'string',
+        'done_at' => 'datetime',
     ];
 
     /**

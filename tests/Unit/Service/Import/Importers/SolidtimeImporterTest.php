@@ -7,51 +7,73 @@ namespace Tests\Unit\Service\Import\Importers;
 use App\Models\Organization;
 use App\Service\Import\Importers\DefaultImporter;
 use App\Service\Import\Importers\ImportException;
-use App\Service\Import\Importers\TogglTimeEntriesImporter;
-use Illuminate\Support\Facades\Storage;
+use App\Service\Import\Importers\SolidtimeImporter;
+use Exception;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
 
-#[CoversClass(TogglTimeEntriesImporter::class)]
+#[CoversClass(SolidtimeImporter::class)]
 #[CoversClass(ImportException::class)]
 #[CoversClass(DefaultImporter::class)]
-#[UsesClass(TogglTimeEntriesImporter::class)]
-class TogglTimeEntriesImporterTest extends ImporterTestAbstract
+#[UsesClass(SolidtimeImporter::class)]
+class SolidtimeImporterTest extends ImporterTestAbstract
 {
-    public function test_import_of_test_file_succeeds(): void
+    public function test_import_throws_exception_if_data_is_not_zip(): void
     {
         // Arrange
         $organization = Organization::factory()->create();
         $timezone = 'Europe/Vienna';
-        $importer = new TogglTimeEntriesImporter();
+        $importer = new SolidtimeImporter();
         $importer->init($organization);
-        $data = Storage::disk('testfiles')->get('toggl_time_entries_import_test_1.csv');
+
+        // Act
+        try {
+            $importer->importData('not a zip', $timezone);
+        } catch (Exception $e) {
+            $this->assertInstanceOf(ImportException::class, $e);
+            $this->assertSame('Invalid ZIP, error code: 19', $e->getMessage());
+
+            return;
+        }
+        $this->fail();
+    }
+
+    public function test_import_of_test_file_succeeds(): void
+    {
+        // Arrange
+        $zipPath = $this->createTestZip('solidtime_import_test_1');
+        $timezone = 'Europe/Vienna';
+        $organization = Organization::factory()->create();
+        $importer = new SolidtimeImporter();
+        $importer->init($organization);
+        $data = file_get_contents($zipPath);
 
         // Act
         $importer->importData($data, $timezone);
         $report = $importer->getReport();
 
         // Assert
-        $testScenario = $this->checkTestScenarioAfterImportExcludingTimeEntries();
+        $testScenario = $this->checkTestScenarioAfterImportExcludingTimeEntries(true);
         $this->checkTimeEntries($testScenario);
         $this->assertSame(2, $report->timeEntriesCreated);
         $this->assertSame(2, $report->tagsCreated);
-        $this->assertSame(1, $report->tasksCreated);
+        $this->assertSame(2, $report->tasksCreated);
         $this->assertSame(1, $report->usersCreated);
-        $this->assertSame(2, $report->projectsCreated);
-        $this->assertSame(1, $report->clientsCreated);
+        $this->assertSame(3, $report->projectsCreated);
+        $this->assertSame(2, $report->clientsCreated);
     }
 
     public function test_import_of_test_file_twice_succeeds(): void
     {
         // Arrange
-        $organization = Organization::factory()->create();
+        $zipPath = $this->createTestZip('solidtime_import_test_1');
         $timezone = 'Europe/Vienna';
-        $importer = new TogglTimeEntriesImporter();
+        $organization = Organization::factory()->create();
+        $importer = new SolidtimeImporter();
         $importer->init($organization);
-        $data = Storage::disk('testfiles')->get('toggl_time_entries_import_test_1.csv');
+        $data = file_get_contents($zipPath);
         $importer->importData($data, $timezone);
-        $importer = new TogglTimeEntriesImporter();
+        $importer = new SolidtimeImporter();
         $importer->init($organization);
 
         // Act
@@ -59,7 +81,7 @@ class TogglTimeEntriesImporterTest extends ImporterTestAbstract
         $report = $importer->getReport();
 
         // Assert
-        $testScenario = $this->checkTestScenarioAfterImportExcludingTimeEntries();
+        $testScenario = $this->checkTestScenarioAfterImportExcludingTimeEntries(true);
         $this->checkTimeEntries($testScenario, true);
         $this->assertSame(2, $report->timeEntriesCreated);
         $this->assertSame(0, $report->tagsCreated);

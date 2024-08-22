@@ -41,6 +41,7 @@ class ImporterProviderTest extends TestCase
             'toggl_data_importer',
             'clockify_time_entries',
             'clockify_projects',
+            'solidtime',
         ], $keys);
     }
 }

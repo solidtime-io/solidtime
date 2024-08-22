@@ -8,6 +8,7 @@ use App\Enums\Role;
 use App\Models\Client;
 use App\Models\Member;
 use App\Models\Organization;
+use App\Models\OrganizationInvitation;
 use App\Models\Project;
 use App\Models\ProjectMember;
 use App\Models\Tag;
@@ -39,6 +40,9 @@ class DatabaseSeeder extends Seeder
             'personal_team' => false,
             'currency' => 'EUR',
         ]);
+        OrganizationInvitation::factory()->forOrganization($organizationAcme)->create([
+            'email' => 'new.employee@example.com',
+        ]);
         $userAcmeManager = User::factory()->withPersonalOrganization()->create([
             'name' => 'Acme Manager',
             'email' => 'test@example.com',
@@ -62,6 +66,15 @@ class DatabaseSeeder extends Seeder
         $userAcmeEmployeeMember = Member::factory()->forUser($userAcmeEmployee)->forOrganization($organizationAcme)->role(Role::Employee)->create();
         $userAcmePlaceholderMember = Member::factory()->forUser($userAcmePlaceholder)->forOrganization($organizationAcme)->role(Role::Placeholder)->create();
         $userWithMultipleOrganizationsAcmeMember = Member::factory()->forUser($userWithMultipleOrganizations)->forOrganization($organizationAcme)->role(Role::Employee)->create();
+        Tag::factory()->forOrganization($organizationAcme)->create([
+            'name' => 'Code Review',
+        ]);
+        Tag::factory()->forOrganization($organizationAcme)->create([
+            'name' => 'Meeting',
+        ]);
+        Tag::factory()->forOrganization($organizationAcme)->create([
+            'name' => 'Research',
+        ]);
 
         TimeEntry::factory()
             ->count(10)
@@ -147,6 +160,7 @@ class DatabaseSeeder extends Seeder
         DB::table((new Project())->getTable())->delete();
         DB::table((new Client())->getTable())->delete();
         DB::table((new User())->getTable())->delete();
+        DB::table((new OrganizationInvitation())->getTable())->delete();
         DB::table((new Organization())->getTable())->delete();
     }
 }

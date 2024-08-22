@@ -14,6 +14,7 @@ class ImporterProvider
         'toggl_data_importer' => TogglDataImporter::class,
         'clockify_time_entries' => ClockifyTimeEntriesImporter::class,
         'clockify_projects' => ClockifyProjectsImporter::class,
+        'solidtime' => SolidtimeImporter::class,
     ];
 
     /**

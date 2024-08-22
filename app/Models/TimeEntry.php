@@ -20,13 +20,15 @@ use Korridor\LaravelComputedAttributes\ComputedAttributes;
  * @property string $description
  * @property Carbon $start
  * @property Carbon|null $end
- * @property int $billable_rate Billable rate per hour in cents
+ * @property int|null $billable_rate Billable rate per hour in cents
  * @property bool $billable
  * @property array $tags
  * @property string $user_id
  * @property string $member_id
  * @property bool $is_imported
  * @property Carbon|null $still_active_email_sent_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  * @property-read User $user
  * @property-read Member $member
  * @property string $organization_id

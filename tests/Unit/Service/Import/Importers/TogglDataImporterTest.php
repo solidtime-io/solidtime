@@ -9,12 +9,8 @@ use App\Service\Import\Importers\DefaultImporter;
 use App\Service\Import\Importers\ImportException;
 use App\Service\Import\Importers\TogglDataImporter;
 use Exception;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
-use Spatie\TemporaryDirectory\TemporaryDirectory;
-use ZipArchive;
 
 #[CoversClass(TogglDataImporter::class)]
 #[CoversClass(ImportException::class)]
@@ -22,20 +18,6 @@ use ZipArchive;
 #[UsesClass(TogglDataImporter::class)]
 class TogglDataImporterTest extends ImporterTestAbstract
 {
-    private function createTestZip(string $folder): string
-    {
-        $tempDir = TemporaryDirectory::make();
-        $zipPath = $tempDir->path('test.zip');
-        $zip = new ZipArchive();
-        $zip->open($zipPath, ZipArchive::CREATE);
-        foreach (Storage::disk('testfiles')->allFiles($folder) as $file) {
-            $zip->addFile(Storage::disk('testfiles')->path($file), Str::of($file)->after($folder.'/')->value());
-        }
-        $zip->close();
-
-        return $zipPath;
-    }
-
     public function test_import_throws_exception_if_data_is_not_zip(): void
     {
         // Arrange
@@ -74,10 +56,10 @@ class TogglDataImporterTest extends ImporterTestAbstract
         $this->checkTestScenarioAfterImportExcludingTimeEntries(true);
         $this->assertSame(0, $report->timeEntriesCreated);
         $this->assertSame(2, $report->tagsCreated);
-        $this->assertSame(1, $report->tasksCreated);
+        $this->assertSame(2, $report->tasksCreated);
         $this->assertSame(1, $report->usersCreated);
-        $this->assertSame(2, $report->projectsCreated);
-        $this->assertSame(1, $report->clientsCreated);
+        $this->assertSame(3, $report->projectsCreated);
+        $this->assertSame(2, $report->clientsCreated);
     }
 
     public function test_import_of_test_file_twice_succeeds(): void

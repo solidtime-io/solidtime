@@ -5,5 +5,12 @@
         "id": 301,
         "name": "Big Company",
         "wid": 0
+    },
+    {
+        "archived": true,
+        "creator_id": 201,
+        "id": 302,
+        "name": "Other Company (Archived)",
+        "wid": 0
     }
 ]

@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -17,6 +18,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $project_id Project ID
  * @property string $member_id Member ID
  * @property string $user_id User ID (legacy)
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  * @property-read Project $project
  * @property-read Member $member
  * @property-read User $user

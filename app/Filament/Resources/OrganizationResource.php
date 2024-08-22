@@ -7,6 +7,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\OrganizationResource\Pages;
 use App\Filament\Resources\OrganizationResource\RelationManagers\UsersRelationManager;
 use App\Models\Organization;
+use App\Service\Export\ExportService;
 use App\Service\Import\Importers\ImporterProvider;
 use App\Service\Import\Importers\ImportException;
 use App\Service\Import\Importers\ReportDto;
@@ -110,6 +111,30 @@ class OrganizationResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Action::make('Export')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->action(function (Organization $record) {
+                        try {
+                            $file = app(ExportService::class)->export($record);
+                            Notification::make()
+                                ->title('Export successful')
+                                ->success()
+                                ->persistent()
+                                ->send();
+
+                            return response()->streamDownload(function () use ($file) {
+                                echo Storage::disk(config('filesystems.private'))->get($file);
+                            }, 'export.zip');
+                        } catch (\Exception $exception) {
+                            report($exception);
+                            Notification::make()
+                                ->title('Export failed')
+                                ->danger()
+                                ->body('Message: '.$exception->getMessage())
+                                ->persistent()
+                                ->send();
+                        }
+                    }),
                 Action::make('Import')
                     ->icon('heroicon-o-inbox-arrow-down')
                     ->action(function (Organization $record, array $data) {

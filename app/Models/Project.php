@@ -22,6 +22,7 @@ use Illuminate\Support\Carbon;
  * @property string $organization_id
  * @property string $client_id
  * @property int|null $billable_rate
+ * @property bool $is_public
  * @property bool $is_billable
  * @property-read bool $is_archived
  * @property Carbon|null $archived_at
