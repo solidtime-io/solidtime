@@ -275,14 +275,14 @@ class TimeEntryController extends Controller
         $this->checkAnyPermission($organization, ['time-entries:update:all', 'time-entries:update:own']);
         $canAccessAll = $this->hasPermission($organization, 'time-entries:update:all');
 
-        $ids = $request->input('ids');
+        $ids = $request->validated('ids');
 
         $timeEntries = TimeEntry::query()
             ->whereBelongsTo($organization, 'organization')
             ->whereIn('id', $ids)
             ->get();
 
-        $changes = $request->input('changes');
+        $changes = $request->validated('changes');
 
         if (isset($changes['member_id']) && ! $canAccessAll && $this->member($organization)->getKey() !== $changes['member_id']) {
             throw new AuthorizationException();
