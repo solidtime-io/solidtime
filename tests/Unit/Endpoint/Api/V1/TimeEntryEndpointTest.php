@@ -1786,6 +1786,42 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         ]);
     }
 
+    public function test_update_multiple_ignores_other_fields_in_changes(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:update:all',
+        ]);
+        $timeEntry1 = TimeEntry::factory()->forMember($data->member)->create();
+        $timeEntry2 = TimeEntry::factory()->forMember($data->member)->create();
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->patchJson(route('api.v1.time-entries.update-multiple', [$data->organization->getKey()]), [
+            'ids' => [
+                $timeEntry1->getKey(),
+                $timeEntry2->getKey(),
+            ],
+            'changes' => [
+                'project_id' => $project->getKey(),
+                'other_field' => 'test123',
+            ],
+        ]);
+
+        // Assert
+        $response->assertValid();
+        $response->assertStatus(200);
+        $response->assertExactJson([
+            'success' => [
+                $timeEntry1->getKey(),
+                $timeEntry2->getKey(),
+            ],
+            'error' => [
+            ],
+        ]);
+    }
+
     public function test_update_multiple_can_update_project_and_sets_client_automatically(): void
     {
         // Arrange
