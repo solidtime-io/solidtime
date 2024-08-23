@@ -2,8 +2,10 @@
 import { onMounted, onUnmounted, ref } from 'vue';
 import {
     flip,
+    limitShift,
     type Placement,
     type ReferenceElement,
+    shift,
     useFloating,
 } from '@floating-ui/vue';
 import { offset } from '@floating-ui/vue';
@@ -59,7 +61,15 @@ const floating = ref(null);
 const { floatingStyles } = useFloating(reference, floating, {
     placement: props.align,
     whileElementsMounted: autoUpdate,
-    middleware: [flip(), offset(10)],
+    middleware: [
+        flip(),
+        offset(10),
+        shift({
+            limiter: limitShift({
+                offset: 5,
+            }),
+        }),
+    ],
 });
 </script>
 

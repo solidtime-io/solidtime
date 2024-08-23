@@ -102,6 +102,10 @@ export function formatHumanReadableDate(date: string) {
     return dayjs(date).fromNow();
 }
 
+export function formatWeekday(date: string) {
+    return dayjs(date).format('dddd');
+}
+
 export function formatStartEnd(start: string, end: string | null) {
     if (end) {
         return `${formatTime(start)} - ${formatTime(end)}`;

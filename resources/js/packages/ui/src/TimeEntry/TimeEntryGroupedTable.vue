@@ -112,11 +112,16 @@ function startTimeEntryFromExisting(entry: TimeEntry) {
         description: entry.description,
     });
 }
+function sumDuration(timeEntries: TimeEntry[]) {
+    return timeEntries.reduce((acc, entry) => acc + (entry?.duration ?? 0), 0);
+}
 </script>
 
 <template>
     <div v-for="(value, key) in groupedTimeEntries" :key="key">
-        <TimeEntryRowHeading :date="key"></TimeEntryRowHeading>
+        <TimeEntryRowHeading
+            :date="key"
+            :duration="sumDuration(value)"></TimeEntryRowHeading>
         <template v-for="entry in value" :key="entry.id">
             <TimeEntryAggregateRow
                 :createProject
@@ -127,6 +132,7 @@ function startTimeEntryFromExisting(entry: TimeEntry) {
                 :clients
                 :onStartStopClick="startTimeEntryFromExisting"
                 :updateTimeEntries
+                :updateTimeEntry
                 :deleteTimeEntries
                 :createTag
                 :currency="currency"
@@ -145,7 +151,7 @@ function startTimeEntryFromExisting(entry: TimeEntry) {
                 :deleteTimeEntry="() => deleteTimeEntries([entry])"
                 :currency="currency"
                 v-else
-                :time-entry="entry"></TimeEntryRow>
+                :time-entry="entry.timeEntries[0]"></TimeEntryRow>
         </template>
     </div>
 </template>
