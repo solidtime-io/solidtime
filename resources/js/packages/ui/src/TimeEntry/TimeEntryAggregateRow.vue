@@ -35,6 +35,7 @@ const props = defineProps<{
     createClient: (client: CreateClientBody) => Promise<Client | undefined>;
     onStartStopClick: (timeEntry: TimeEntry) => void;
     updateTimeEntries: (ids: string[], changes: Partial<TimeEntry>) => void;
+    updateTimeEntry: (timeEntry: TimeEntry) => void;
     deleteTimeEntries: (timeEntries: TimeEntry[]) => void;
     currency: string;
 }>();
@@ -156,8 +157,7 @@ const expanded = ref(false);
                 :tags="tags"
                 indent
                 :updateTimeEntry="
-                    (timeEntry: TimeEntry) =>
-                        updateTimeEntries([timeEntry.id], { ...timeEntry })
+                    (timeEntry: TimeEntry) => updateTimeEntry(timeEntry)
                 "
                 :onStartStopClick="() => onStartStopClick(subEntry)"
                 :deleteTimeEntry="() => deleteTimeEntries([subEntry])"
