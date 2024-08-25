@@ -134,4 +134,6 @@ export type MyMemberships = ZodiosResponseByAlias<
 
 export type MyMembership = MyMemberships[0];
 
-export const api = createApiClient('/api', { validate: 'none' });
+const api = createApiClient('/api', { validate: 'none' });
+
+export { createApiClient, api };
