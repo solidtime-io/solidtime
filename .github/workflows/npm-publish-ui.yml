@@ -1,6 +1,6 @@
 name: Publish UI package to NPM
 on:
-  workflow_dispatch
+  push
 jobs:
   build:
     runs-on: ubuntu-latest
