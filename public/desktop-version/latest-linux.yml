@@ -1,13 +1,13 @@
 version: 0.0.23
 files:
-  - url: solidtime-0.0.23.AppImage
+  - url: https://github.com/solidtime-io/solidtime-desktop/releases/download/v0.0.23/solidtime-0.0.23.AppImage
     sha512: O7JKg+rZOFPwaysl9KfrMdH2/KoJAaC+y+pq3JUAv0qG5Kr1eaLjIrzv5iJvWg+Ow+7n7xDGyeEd9ZojQ968OA==
     size: 116853923
     blockMapSize: 122039
-  - url: solidtime_0.0.23_amd64.deb
+  - url: https://github.com/solidtime-io/solidtime-desktop/releases/download/v0.0.23/solidtime_0.0.23_amd64.deb
     sha512: U7Rwb+F7IZZbgJmWuIqMa9D3lfOkZlWgoqnNMZO+pX9SVMuskMEkLoFB5axEPI4JKtOWCUh5H9mDdqbmBbuoFw==
     size: 78604326
-  - url: solidtime-0.0.23.x86_64.rpm
+  - url: https://github.com/solidtime-io/solidtime-desktop/releases/download/v0.0.23/solidtime-0.0.23.x86_64.rpm
     sha512: xICjadHCip4vcpQt2mrewAZheI4gXO3csZxUo6Za8c1+eLCU5Wvdj+WaRGtz/+NIrzmiKJ7YmrSUhW2rs08qiQ==
     size: 78917997
 path: solidtime-0.0.23.AppImage
