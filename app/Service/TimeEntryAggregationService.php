@@ -65,6 +65,12 @@ class TimeEntryAggregationService
         if ($groupBy !== null) {
             $timeEntriesQuery->groupBy($groupBy);
         }
+        if ($group1Select !== null) {
+            $timeEntriesQuery->orderBy('group_1');
+            if ($group2Select !== null) {
+                $timeEntriesQuery->orderBy('group_2');
+            }
+        }
 
         $timeEntriesAggregates = $timeEntriesQuery->get();
 
