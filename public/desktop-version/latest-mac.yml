@@ -1,0 +1,17 @@
+version: 0.0.23
+files:
+  - url: solidtime-0.0.23-mac.zip
+    sha512: /1dAPCgPV7PEE2KPQkHGme0YFPjHUqkGEvNkJj4Ncw1ZXFY5YK0+lr82XrnQiwCVUioylpWeQitdc+QEwW+2fQ==
+    size: 108473987
+  - url: solidtime-0.0.23-arm64-mac.zip
+    sha512: TOuyxEI8i6IMdcE4vG0U6cU0IZDs6JR67/8uSISmhqiwyTwKLC+pLuiWn/ayNLfXDtAVPvGFq6NsyhSd6CXjbA==
+    size: 100954963
+  - url: solidtime-0.0.23-x64.dmg
+    sha512: 9ib2nk7i149ihTB6GO3lyRM62dCzUigqLqNEGIa35Vw4CDeYIHBDfu+kTbHold0MphVAP36/Z7ZYUNXy+IDphg==
+    size: 112692794
+  - url: solidtime-0.0.23-arm64.dmg
+    sha512: JGekA83DFOtzmAc93dcCyYneVLFLsDl/wq/lfCr3ejCYlcNip6be9EAr5MKFlqXQ/MaqjWfpweOVYJVM/S3hDQ==
+    size: 105162031
+path: solidtime-0.0.23-mac.zip
+sha512: /1dAPCgPV7PEE2KPQkHGme0YFPjHUqkGEvNkJj4Ncw1ZXFY5YK0+lr82XrnQiwCVUioylpWeQitdc+QEwW+2fQ==
+releaseDate: '2024-08-27T13:30:08.202Z'

@@ -1,6 +1,6 @@
 name: Publish API package to NPM
 on:
-  push
+  workflow_dispatch
 jobs:
   build:
     runs-on: ubuntu-latest

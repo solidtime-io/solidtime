@@ -1,0 +1,8 @@
+version: 0.0.23
+files:
+  - url: solidtime-0.0.23-setup.exe
+    sha512: i3ju9ekS7scQlwOzocairegdhCKwEFKE9JppQF8SmLHXxD2aWxsW1uOCc9HcB+0KSo7/1IcnmsOMdHfIvjeW1Q==
+    size: 84101154
+path: solidtime-0.0.23-setup.exe
+sha512: i3ju9ekS7scQlwOzocairegdhCKwEFKE9JppQF8SmLHXxD2aWxsW1uOCc9HcB+0KSo7/1IcnmsOMdHfIvjeW1Q==
+releaseDate: '2024-08-27T13:26:34.512Z'
