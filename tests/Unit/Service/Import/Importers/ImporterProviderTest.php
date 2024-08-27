@@ -17,7 +17,7 @@ class ImporterProviderTest extends TestCase
     public function test_register_importer_can_register_a_new_importer_for_example_in_an_extension(): void
     {
         // Arrange
-        $provider = new ImporterProvider();
+        $provider = new ImporterProvider;
 
         // Act
         $provider->registerImporter('some_provider_importer', ClockifyProjectsImporter::class);
@@ -30,7 +30,7 @@ class ImporterProviderTest extends TestCase
     public function test_get_importer_keys_return_the_keys_of_the_available_importers(): void
     {
         // Arrange
-        $provider = new ImporterProvider();
+        $provider = new ImporterProvider;
 
         // Act
         $keys = $provider->getImporterKeys();

@@ -275,7 +275,7 @@ class TimeEntryAggregationService
         if ($start->gt($end)) {
             throw new \InvalidArgumentException('Start date must be before end date');
         }
-        $slots = new Collection();
+        $slots = new Collection;
         $current = $start->copy()->timezone($timezone);
         if ($interval === TimeEntryAggregationTypeInterval::Day) {
             $current->startOfDay();

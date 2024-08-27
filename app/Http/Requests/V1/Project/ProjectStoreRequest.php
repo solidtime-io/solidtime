@@ -41,7 +41,7 @@ class ProjectStoreRequest extends FormRequest
                 'required',
                 'string',
                 'max:255',
-                new ColorRule(),
+                new ColorRule,
             ],
             'is_billable' => [
                 'required',

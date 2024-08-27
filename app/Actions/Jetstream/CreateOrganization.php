@@ -35,7 +35,7 @@ class CreateOrganization implements CreatesTeams
 
         AddingTeam::dispatch($user);
 
-        $organization = new Organization();
+        $organization = new Organization;
         $organization->name = $input['name'];
         $organization->personal_team = false;
         $organization->owner()->associate($user);

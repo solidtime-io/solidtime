@@ -65,7 +65,7 @@ class FortifyServiceProvider extends ServiceProvider
             return Limit::perMinute(5)->by($request->session()->get('login.id'));
         });
 
-        $this->app->instance(LoginResponse::class, new CustomLoginResponse());
-        $this->app->instance(TwoFactorLoginResponse::class, new CustomTwoFactorLoginResponse());
+        $this->app->instance(LoginResponse::class, new CustomLoginResponse);
+        $this->app->instance(TwoFactorLoginResponse::class, new CustomTwoFactorLoginResponse);
     }
 }

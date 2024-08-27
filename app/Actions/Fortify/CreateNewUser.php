@@ -86,7 +86,7 @@ class CreateNewUser implements CreatesNewUsers
                 'timezone' => $timezone ?? 'UTC',
                 'week_start' => $startOfWeek,
             ]), function (User $user) use ($currency): void {
-                $organization = new Organization();
+                $organization = new Organization;
                 $organization->name = explode(' ', $user->name, 2)[0]."'s Organization";
                 $organization->personal_team = true;
                 $organization->currency = $currency ?? 'EUR';

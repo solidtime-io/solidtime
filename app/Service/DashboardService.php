@@ -30,7 +30,7 @@ class DashboardService
      */
     private function lastDays(int $days, CarbonTimeZone $timeZone): Collection
     {
-        $result = new Collection();
+        $result = new Collection;
         $date = Carbon::now($timeZone)->subDays($days);
         for ($i = 0; $i < $days; $i++) {
             $date->addDay();
@@ -77,7 +77,7 @@ class DashboardService
      */
     private function daysOfThisWeek(CarbonTimeZone $timeZone, Weekday $startOfWeek): Collection
     {
-        $result = new Collection();
+        $result = new Collection;
         $date = Carbon::now($timeZone);
         $start = $date->startOfWeek($startOfWeek->carbonWeekDay());
         for ($i = 0; $i < 7; $i++) {

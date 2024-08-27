@@ -59,7 +59,7 @@ class UserService
         }
 
         // Create a new organization
-        $organization = new Organization();
+        $organization = new Organization;
         $organization->name = $user->name."'s Organization";
         $organization->personal_team = true;
         $organization->user_id = $user->id;
