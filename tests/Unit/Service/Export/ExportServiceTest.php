@@ -7,8 +7,10 @@ namespace Tests\Unit\Service\Export;
 use App\Models\Client;
 use App\Models\Member;
 use App\Models\Organization;
+use App\Models\OrganizationInvitation;
 use App\Models\Project;
 use App\Models\ProjectMember;
+use App\Models\Tag;
 use App\Models\Task;
 use App\Models\TimeEntry;
 use App\Models\User;
@@ -27,6 +29,8 @@ class ExportServiceTest extends TestCaseWithDatabase
         $user1 = User::factory()->create();
         $user2 = User::factory()->create();
         $organization = Organization::factory()->withOwner($user1)->create();
+        OrganizationInvitation::factory()->forOrganization($organization)->create();
+        OrganizationInvitation::factory()->forOrganization($organization)->create();
         $member1 = Member::factory()->forUser($user1)->forOrganization($organization)->create();
         $member2 = Member::factory()->forUser($user2)->forOrganization($organization)->create();
         $timeEntry1 = TimeEntry::factory()->forMember($member1)->create();
@@ -40,6 +44,8 @@ class ExportServiceTest extends TestCaseWithDatabase
         $projectMember2 = ProjectMember::factory()->forMember($member2)->forProject($project1)->create();
         $client1 = Client::factory()->forOrganization($organization)->create();
         $client2 = Client::factory()->forOrganization($organization)->create();
+        Tag::factory()->forOrganization($organization)->create();
+        Tag::factory()->forOrganization($organization)->create();
 
         return $organization;
     }
