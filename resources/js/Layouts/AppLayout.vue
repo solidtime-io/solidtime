@@ -33,24 +33,33 @@ import { isBillingActivated } from '@/utils/billing';
 import type { User } from '@/types/models';
 import { ArrowsRightLeftIcon } from '@heroicons/vue/16/solid';
 import { fetchToken, isTokenValid } from '@/utils/session';
+import UpdateSidebarNotification from '@/Components/UpdateSidebarNotification.vue';
 
 defineProps({
     title: String,
 });
 
 const showSidebarMenu = ref(false);
-
+const isUnloading = ref(false);
 onMounted(async () => {
     // make sure that the initial requests are only loaded once, this can be removed once we move away from inertia
     if (window.initialDataLoaded !== true) {
         window.initialDataLoaded = true;
         initializeStores();
     }
+    window.onbeforeunload = () => {
+        isUnloading.value = true;
+    };
     window.onfocus = async () => {
         if (!isTokenValid()) {
             await fetchToken();
         }
-        refreshStores();
+        setTimeout(() => {
+            // prevent store refreshing on navigation
+            if (isUnloading.value === false) {
+                refreshStores();
+            }
+        }, 100);
     };
 });
 
@@ -178,16 +187,19 @@ const page = usePage<{
                 </nav>
             </div>
 
-            <ul
-                class="border-t border-default-background-separator pt-3 flex justify-between pr-4 items-center">
-                <NavigationSidebarItem
-                    class="flex-1"
-                    title="Profile Settings"
-                    :icon="Cog6ToothIcon"
-                    :href="route('profile.show')"></NavigationSidebarItem>
+            <div>
+                <UpdateSidebarNotification></UpdateSidebarNotification>
+                <ul
+                    class="border-t border-default-background-separator pt-3 flex justify-between pr-4 items-center">
+                    <NavigationSidebarItem
+                        class="flex-1"
+                        title="Profile Settings"
+                        :icon="Cog6ToothIcon"
+                        :href="route('profile.show')"></NavigationSidebarItem>
 
-                <UserSettingsIcon></UserSettingsIcon>
-            </ul>
+                    <UserSettingsIcon></UserSettingsIcon>
+                </ul>
+            </div>
         </div>
         <div class="flex-1 sm:ml-[230px] 2xl:ml-[250px]">
             <div
