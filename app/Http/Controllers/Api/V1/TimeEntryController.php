@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Exceptions\Api\TimeEntryCanNotBeRestartedApiException;
 use App\Exceptions\Api\TimeEntryStillRunningApiException;
 use App\Http\Requests\V1\TimeEntry\TimeEntryAggregateRequest;
+use App\Http\Requests\V1\TimeEntry\TimeEntryDestroyMultipleRequest;
 use App\Http\Requests\V1\TimeEntry\TimeEntryIndexRequest;
 use App\Http\Requests\V1\TimeEntry\TimeEntryStoreRequest;
 use App\Http\Requests\V1\TimeEntry\TimeEntryUpdateMultipleRequest;
@@ -428,5 +429,53 @@ class TimeEntryController extends Controller
 
         return response()
             ->json(null, 204);
+    }
+
+    /**
+     * Delete multiple time entries
+     *
+     * @throws AuthorizationException
+     *
+     * @operationId deleteTimeEntries
+     */
+    public function destroyMultiple(Organization $organization, TimeEntryDestroyMultipleRequest $request): JsonResponse
+    {
+        $this->checkAnyPermission($organization, ['time-entries:delete:all', 'time-entries:delete:own']);
+        $canDeleteAll = $this->hasPermission($organization, 'time-entries:delete:all');
+
+        $ids = $request->validated('ids');
+        $timeEntries = TimeEntry::query()
+            ->whereBelongsTo($organization, 'organization')
+            ->whereIn('id', $ids)
+            ->get();
+
+        $success = new Collection();
+        $error = new Collection();
+
+        foreach ($ids as $id) {
+            /** @var TimeEntry|null $timeEntry */
+            $timeEntry = $timeEntries->firstWhere('id', $id);
+            if ($timeEntry === null) {
+                // Note: ID wrong or time entry in different organization
+                $error->push($id);
+
+                continue;
+            }
+
+            if (! $canDeleteAll && $timeEntry->user_id !== Auth::id()) {
+                $error->push($id);
+
+                continue;
+
+            }
+
+            $timeEntry->delete();
+            $success->push($id);
+        }
+
+        return response()->json([
+            'success' => $success->toArray(),
+            'error' => $error->toArray(),
+        ]);
     }
 }

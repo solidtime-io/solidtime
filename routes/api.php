@@ -92,6 +92,7 @@ Route::middleware([
         Route::put('/organizations/{organization}/time-entries/{timeEntry}', [TimeEntryController::class, 'update'])->name('update')->middleware('check-organization-blocked');
         Route::patch('/organizations/{organization}/time-entries', [TimeEntryController::class, 'updateMultiple'])->name('update-multiple')->middleware('check-organization-blocked');
         Route::delete('/organizations/{organization}/time-entries/{timeEntry}', [TimeEntryController::class, 'destroy'])->name('destroy');
+        Route::delete('/organizations/{organization}/time-entries', [TimeEntryController::class, 'destroyMultiple'])->name('destroy-multiple');
     });
 
     Route::name('users.time-entries.')->group(static function (): void {

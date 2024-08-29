@@ -1660,6 +1660,146 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         ]);
     }
 
+    public function test_destroy_multiple_endpoint_fails_if_user_has_no_permission_to_delete_own_time_entries_or_all_time_entries(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission();
+        $timeEntries = TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)->createMany(3);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->deleteJson(route('api.v1.time-entries.destroy-multiple', [$data->organization->getKey()]), [
+            'ids' => $timeEntries->pluck('id')->toArray(),
+        ]);
+
+        // Assert
+        $response->assertValid();
+        $response->assertForbidden();
+    }
+
+    public function test_destroy_multiple_endpoint_fails_if_ids_contains_non_uuid_id(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:delete:own',
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->deleteJson(route('api.v1.time-entries.destroy-multiple', [$data->organization->getKey()]), [
+            'ids' => [
+                Str::uuid(),
+                'non-uuid',
+            ],
+        ]);
+
+        // Assert
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors([
+            'ids.1' => ['The ids.1 field must be a valid UUID.'],
+        ]);
+    }
+
+    public function test_destroy_multiple_endpoint_own_time_entries_and_fails_for_time_entries_of_other_users_and_and_other_organizations_with_own_time_entries_permission(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:delete:own',
+        ]);
+        $otherData = $this->createUserWithPermission();
+        $otherUser = User::factory()->create();
+        $otherMember = Member::factory()->forOrganization($data->organization)->forUser($otherUser)->role(Role::Employee)->create();
+
+        $ownTimeEntry = TimeEntry::factory()->forMember($data->member)->create();
+        $otherTimeEntry = TimeEntry::factory()->forMember($otherMember)->create();
+        $otherOrganizationTimeEntry = TimeEntry::factory()->forMember($otherData->member)->create();
+        $wrongId = Str::uuid();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->deleteJson(route('api.v1.time-entries.destroy-multiple', [$data->organization->getKey()]), [
+            'ids' => [
+                $ownTimeEntry->getKey(),
+                $otherTimeEntry->getKey(),
+                $otherOrganizationTimeEntry->getKey(),
+                $wrongId,
+            ],
+        ]);
+
+        // Assert
+        $response->assertValid();
+        $response->assertStatus(200);
+        $response->assertExactJson([
+            'success' => [
+                $ownTimeEntry->getKey(),
+            ],
+            'error' => [
+                $otherTimeEntry->getKey(),
+                $otherOrganizationTimeEntry->getKey(),
+                $wrongId,
+            ],
+        ]);
+        $this->assertDatabaseMissing(TimeEntry::class, [
+            'id' => $ownTimeEntry->getKey(),
+        ]);
+        $this->assertDatabaseHas(TimeEntry::class, [
+            'id' => $otherTimeEntry->getKey(),
+        ]);
+        $this->assertDatabaseHas(TimeEntry::class, [
+            'id' => $otherOrganizationTimeEntry->getKey(),
+        ]);
+    }
+
+    public function test_destroy_multiple_deletes_all_time_entries_and_fails_for_time_entries_of_other_users_and_and_other_organizations_with_all_time_entries_permission(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:delete:all',
+        ]);
+        $otherData = $this->createUserWithPermission();
+        $otherUser = User::factory()->create();
+        $otherMember = Member::factory()->forOrganization($data->organization)->forUser($otherUser)->role(Role::Employee)->create();
+
+        $ownTimeEntry = TimeEntry::factory()->forMember($data->member)->create();
+        $otherTimeEntry = TimeEntry::factory()->forMember($otherMember)->create();
+        $otherOrganizationTimeEntry = TimeEntry::factory()->forMember($otherData->member)->create();
+        $wrongId = Str::uuid();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->deleteJson(route('api.v1.time-entries.destroy-multiple', [$data->organization->getKey()]), [
+            'ids' => [
+                $ownTimeEntry->getKey(),
+                $otherTimeEntry->getKey(),
+                $otherOrganizationTimeEntry->getKey(),
+                $wrongId,
+            ],
+        ]);
+
+        // Assert
+        $response->assertValid();
+        $response->assertStatus(200);
+        $response->assertExactJson([
+            'success' => [
+                $ownTimeEntry->getKey(),
+                $otherTimeEntry->getKey(),
+            ],
+            'error' => [
+                $otherOrganizationTimeEntry->getKey(),
+                $wrongId,
+            ],
+        ]);
+        $this->assertDatabaseMissing(TimeEntry::class, [
+            'id' => $ownTimeEntry->getKey(),
+        ]);
+        $this->assertDatabaseMissing(TimeEntry::class, [
+            'id' => $otherTimeEntry->getKey(),
+        ]);
+        $this->assertDatabaseHas(TimeEntry::class, [
+            'id' => $otherOrganizationTimeEntry->getKey(),
+        ]);
+    }
+
     public function test_destroy_endpoint_recalculates_project_and_task_spend_time_after_deleting_time_entry(): void
     {
         // Arrange
