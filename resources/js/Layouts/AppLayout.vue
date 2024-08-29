@@ -77,7 +77,11 @@ const page = usePage<{
                 '!flex bg-default-background w-full z-[9999999999]':
                     showSidebarMenu,
             }"
-            class="flex-shrink-0 h-screen hidden fixed w-[230px] 2xl:w-[250px] px-2.5 2xl:px-4 py-4 sm:flex flex-col justify-between overflow-y-scroll">
+            class="flex-shrink-0 h-screen hidden fixed w-[230px] 2xl:w-[250px] px-2.5 2xl:px-4 py-4 sm:flex flex-col justify-between overflow-y-scroll"
+            style="
+                scrollbar-width: thin;
+                scrollbar-color: var(--color-bg-primary) transparent;
+            ">
             <div>
                 <div
                     class="border-b border-default-background-separator pb-2 flex justify-between">
