@@ -159,6 +159,7 @@ abstract class DefaultImporter implements ImporterContract
             ],
         ]);
         $this->organizationInvitationsImportHelper = new ImportDatabaseHelper(OrganizationInvitation::class, ['email', 'organization_id'], true, function (Builder $builder) {
+            /** @var Builder<OrganizationInvitation> $builder */
             return $builder->where('organization_id', $this->organization->id);
         }, validate: [
             'email' => [
