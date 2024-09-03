@@ -18,6 +18,8 @@ use Laravel\Jetstream\Events\TeamDeleted;
 use Laravel\Jetstream\Events\TeamUpdated;
 use Laravel\Jetstream\Jetstream;
 use Laravel\Jetstream\Team as JetstreamTeam;
+use OwenIt\Auditing\Auditable;
+use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
  * @property string $id
@@ -37,8 +39,9 @@ use Laravel\Jetstream\Team as JetstreamTeam;
  * @method HasMany<OrganizationInvitation> teamInvitations()
  * @method static OrganizationFactory factory()
  */
-class Organization extends JetstreamTeam
+class Organization extends JetstreamTeam implements AuditableContract
 {
+    use Auditable;
     use HasFactory;
     use HasUuids;
 

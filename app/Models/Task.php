@@ -14,6 +14,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
+use OwenIt\Auditing\Auditable;
+use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
  * @property string $id
@@ -30,8 +32,9 @@ use Illuminate\Support\Carbon;
  *
  * @method static TaskFactory factory()
  */
-class Task extends Model
+class Task extends Model implements AuditableContract
 {
+    use Auditable;
     use HasFactory;
     use HasUuids;
 

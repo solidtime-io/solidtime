@@ -25,6 +25,8 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Jetstream\HasTeams;
 use Laravel\Passport\HasApiTokens;
+use OwenIt\Auditing\Auditable;
+use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
  * @property string $id
@@ -53,8 +55,9 @@ use Laravel\Passport\HasApiTokens;
  * @method Builder<User> belongsToOrganization(Organization $organization)
  * @method Builder<User> active()
  */
-class User extends Authenticatable implements FilamentUser, MustVerifyEmail
+class User extends Authenticatable implements AuditableContract, FilamentUser, MustVerifyEmail
 {
+    use Auditable;
     use HasApiTokens;
     use HasFactory;
     use HasProfilePhoto;

@@ -11,6 +11,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 use Laravel\Jetstream\Membership as JetstreamMembership;
+use OwenIt\Auditing\Auditable;
+use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
  * @property string $id
@@ -25,8 +27,9 @@ use Laravel\Jetstream\Membership as JetstreamMembership;
  *
  * @method static MemberFactory factory()
  */
-class Member extends JetstreamMembership
+class Member extends JetstreamMembership implements AuditableContract
 {
+    use Auditable;
     use HasFactory;
     use HasUuids;
 

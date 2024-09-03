@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
+use OwenIt\Auditing\Auditable;
+use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
  * @property string $id
@@ -21,8 +23,9 @@ use Illuminate\Support\Carbon;
  *
  * @method static TagFactory factory()
  */
-class Tag extends Model
+class Tag extends Model implements AuditableContract
 {
+    use Auditable;
     use HasFactory;
     use HasUuids;
 

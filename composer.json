@@ -24,6 +24,7 @@
         "league/flysystem-aws-s3-v3": "^3.0",
         "novadaemon/filament-pretty-json": "^2.2",
         "nwidart/laravel-modules": "^11.0.11",
+        "owen-it/laravel-auditing": "^13.6",
         "pxlrbt/filament-environment-indicator": "^2.0",
         "spatie/temporary-directory": "^2.2",
         "stechstudio/filament-impersonate": "^3.8",
