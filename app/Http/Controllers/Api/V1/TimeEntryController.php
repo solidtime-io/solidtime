@@ -299,6 +299,7 @@ class TimeEntryController extends Controller
         $error = new Collection();
 
         foreach ($ids as $id) {
+            /** @var TimeEntry|null $timeEntry */
             $timeEntry = $timeEntries->firstWhere('id', $id);
             if ($timeEntry === null) {
                 // Note: ID wrong or time entry in different organization
@@ -316,6 +317,7 @@ class TimeEntryController extends Controller
             if ($overwriteClient) {
                 $timeEntry->client()->associate($client);
             }
+            $timeEntry->setComputedAttributeValue('billable_rate');
             $timeEntry->save();
             $success->push($id);
         }

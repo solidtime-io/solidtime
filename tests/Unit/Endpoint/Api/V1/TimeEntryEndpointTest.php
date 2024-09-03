@@ -1786,6 +1786,55 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         ]);
     }
 
+    public function test_update_multiple_refreshes_billable_rate_on_updates_time_entries(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:update:all',
+        ]);
+
+        $oldProject = Project::factory()->forOrganization($data->organization)->billable()->create();
+        $timeEntry1 = TimeEntry::factory()->forMember($data->member)->forProject($oldProject)->billable()->create();
+        $timeEntry2 = TimeEntry::factory()->forMember($data->member)->forProject($oldProject)->notBillable()->create();
+        $project = Project::factory()->billable()->forOrganization($data->organization)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->patchJson(route('api.v1.time-entries.update-multiple', [$data->organization->getKey()]), [
+            'ids' => [
+                $timeEntry1->getKey(),
+                $timeEntry2->getKey(),
+            ],
+            'changes' => [
+                'project_id' => $project->getKey(),
+            ],
+        ]);
+
+        // Assert
+        $response->assertValid();
+        $response->assertStatus(200);
+        $response->assertExactJson([
+            'success' => [
+                $timeEntry1->getKey(),
+                $timeEntry2->getKey(),
+            ],
+            'error' => [
+            ],
+        ]);
+        $this->assertDatabaseHas(TimeEntry::class, [
+            'id' => $timeEntry1->getKey(),
+            'project_id' => $project->getKey(),
+            'billable' => true,
+            'billable_rate' => $project->billable_rate,
+        ]);
+        $this->assertDatabaseHas(TimeEntry::class, [
+            'id' => $timeEntry2->getKey(),
+            'project_id' => $project->getKey(),
+            'billable' => false,
+            'billable_rate' => null,
+        ]);
+    }
+
     public function test_update_multiple_ignores_other_fields_in_changes(): void
     {
         // Arrange
