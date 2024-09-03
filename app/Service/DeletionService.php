@@ -86,7 +86,13 @@ class DeletionService
                 'currentOrganization',
             ])
             ->get();
-        $organization->users()->sync([]);
+
+        $members = Member::query()
+            ->whereBelongsTo($organization, 'organization')
+            ->get();
+        foreach ($members as $member) {
+            $member->delete();
+        }
 
         // Make sure all users have at least one organization and delete placeholders
         foreach ($users as $user) {

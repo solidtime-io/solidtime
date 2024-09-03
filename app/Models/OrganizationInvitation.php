@@ -11,6 +11,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 use Laravel\Jetstream\Jetstream;
 use Laravel\Jetstream\TeamInvitation as JetstreamTeamInvitation;
+use OwenIt\Auditing\Auditable;
+use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
  * @property string $id
@@ -23,8 +25,9 @@ use Laravel\Jetstream\TeamInvitation as JetstreamTeamInvitation;
  *
  * @method static OrganizationInvitationFactory factory()
  */
-class OrganizationInvitation extends JetstreamTeamInvitation
+class OrganizationInvitation extends JetstreamTeamInvitation implements AuditableContract
 {
+    use Auditable;
     use HasFactory;
     use HasUuids;
 

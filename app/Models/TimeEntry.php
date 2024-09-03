@@ -14,6 +14,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 use Korridor\LaravelComputedAttributes\ComputedAttributes;
+use OwenIt\Auditing\Auditable;
+use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
  * @property string $id
@@ -43,8 +45,9 @@ use Korridor\LaravelComputedAttributes\ComputedAttributes;
  * @method Builder<TimeEntry> hasTag(Tag $tag)
  * @method static TimeEntryFactory factory()
  */
-class TimeEntry extends Model
+class TimeEntry extends Model implements AuditableContract
 {
+    use Auditable;
     use ComputedAttributes;
     use HasFactory;
     use HasUuids;

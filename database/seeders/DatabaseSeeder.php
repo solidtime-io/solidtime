@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use App\Enums\Role;
+use App\Models\Audit;
 use App\Models\Client;
 use App\Models\Member;
 use App\Models\Organization;
@@ -153,6 +154,7 @@ class DatabaseSeeder extends Seeder
 
     private function deleteAll(): void
     {
+        DB::table((new Audit())->getTable())->delete();
         DB::table((new TimeEntry())->getTable())->delete();
         DB::table((new Task())->getTable())->delete();
         DB::table((new Tag())->getTable())->delete();

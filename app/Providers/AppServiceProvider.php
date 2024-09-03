@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Models\Client;
+use App\Models\FailedJob;
 use App\Models\Member;
 use App\Models\Organization;
 use App\Models\OrganizationInvitation;
 use App\Models\Project;
+use App\Models\ProjectMember;
 use App\Models\Tag;
 use App\Models\Task;
 use App\Models\TimeEntry;
@@ -56,15 +58,17 @@ class AppServiceProvider extends ServiceProvider
         Model::preventSilentlyDiscardingAttributes(! $this->app->isProduction());
         Model::preventAccessingMissingAttributes(! $this->app->isProduction());
         Relation::enforceMorphMap([
+            'client' => Client::class,
+            'failed-job' => FailedJob::class,
             'membership' => Member::class,
             'organization' => Organization::class,
             'organization-invitation' => OrganizationInvitation::class,
-            'user' => User::class,
-            'time-entry' => TimeEntry::class,
             'project' => Project::class,
-            'task' => Task::class,
-            'client' => Client::class,
+            'project-member' => ProjectMember::class,
             'tag' => Tag::class,
+            'task' => Task::class,
+            'time-entry' => TimeEntry::class,
+            'user' => User::class,
         ]);
         Model::unguard();
 
