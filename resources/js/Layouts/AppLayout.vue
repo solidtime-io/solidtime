@@ -34,6 +34,7 @@ import type { User } from '@/types/models';
 import { ArrowsRightLeftIcon } from '@heroicons/vue/16/solid';
 import { fetchToken, isTokenValid } from '@/utils/session';
 import UpdateSidebarNotification from '@/Components/UpdateSidebarNotification.vue';
+import BillingBanner from '@/Components/Billing/BillingBanner.vue';
 
 defineProps({
     title: String,
@@ -217,6 +218,7 @@ const page = usePage<{
             <Head :title="title" />
 
             <Banner />
+            <BillingBanner v-if="isBillingActivated()" />
 
             <div
                 class="min-h-screen bg-default-background border-l border-default-background-separator">
