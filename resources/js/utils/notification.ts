@@ -16,6 +16,8 @@ export const useNotificationsStore = defineStore('notifications', () => {
         }[]
     >([]);
 
+    const showActionBlockedModal = ref(false);
+
     function addNotification(
         type: NotificationType,
         title: string,
@@ -59,13 +61,20 @@ export const useNotificationsStore = defineStore('notifications', () => {
                     error?.response?.status === 403 ||
                     error?.response?.status === 400
                 ) {
-                    addNotification(
-                        'error',
-                        errorMessage ?? 'Request Error',
-                        error.response?.data?.errorMessage ??
-                            error?.response?.data?.message ??
-                            'An request error occurred. Please try again later.'
-                    );
+                    if (
+                        error?.response?.data?.key ===
+                        'organization_has_no_subscription_but_multiple_members'
+                    ) {
+                        showActionBlockedModal.value = true;
+                    } else {
+                        addNotification(
+                            'error',
+                            errorMessage ?? 'Request Error',
+                            error.response?.data?.errorMessage ??
+                                error?.response?.data?.message ??
+                                'An request error occurred. Please try again later.'
+                        );
+                    }
                 } else if (error?.response?.status === 422) {
                     const message = error.response.data.message;
                     addNotification('error', message);
@@ -94,5 +103,10 @@ export const useNotificationsStore = defineStore('notifications', () => {
         }
     }
 
-    return { addNotification, notifications, handleApiRequestNotifications };
+    return {
+        addNotification,
+        notifications,
+        handleApiRequestNotifications,
+        showActionBlockedModal,
+    };
 });
