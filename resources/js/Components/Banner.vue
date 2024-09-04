@@ -26,22 +26,14 @@ watchEffect(async () => {
     <div>
         <div
             v-if="show && message"
-            :class="{
-                'bg-indigo-500': style == 'success',
-                'bg-red-700': style == 'danger',
-            }">
-            <div class="max-w-screen-xl mx-auto py-2 px-3 sm:px-6 lg:px-8">
+            class="bg-secondary border-b border-border-secondary">
+            <div class="mx-auto py-1 px-3 sm:px-6 lg:px-8">
                 <div class="flex items-center justify-between flex-wrap">
                     <div class="w-0 flex-1 flex items-center min-w-0">
-                        <span
-                            class="flex p-2 rounded-lg"
-                            :class="{
-                                'bg-indigo-600': style == 'success',
-                                'bg-red-600': style == 'danger',
-                            }">
+                        <span class="flex">
                             <svg
                                 v-if="style == 'success'"
-                                class="h-5 w-5 text-white"
+                                class="h-6 w-6 text-text-secondary"
                                 xmlns="http://www.w3.org/2000/svg"
                                 fill="none"
                                 viewBox="0 0 24 24"
@@ -76,13 +68,7 @@ watchEffect(async () => {
                     <div class="shrink-0 sm:ms-3">
                         <button
                             type="button"
-                            class="-me-1 flex p-2 rounded-md focus:outline-none sm:-me-2 transition"
-                            :class="{
-                                'hover:bg-indigo-600 focus:bg-indigo-600':
-                                    style == 'success',
-                                'hover:bg-red-600 focus:bg-red-600':
-                                    style == 'danger',
-                            }"
+                            class="-me-1 flex p-2 rounded-md focus:outline-none sm:-me-2 transition hover:bg-tertiary focus:bg-tertiary"
                             aria-label="Dismiss"
                             @click.prevent="show = false">
                             <svg

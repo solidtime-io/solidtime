@@ -2,7 +2,7 @@
 import TextInput from '@/packages/ui/src/Input/TextInput.vue';
 import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
 import DialogModal from '@/packages/ui/src/DialogModal.vue';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import { useFocus } from '@vueuse/core';
 import InputLabel from '@/packages/ui/src/Input/InputLabel.vue';
@@ -11,7 +11,11 @@ import type { Role } from '@/types/jetstream';
 import { Link, useForm } from '@inertiajs/vue3';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import { filterRoles } from '@/utils/roles';
-import { hasActiveSubscription, isBillingActivated } from '@/utils/billing';
+import {
+    hasActiveSubscription,
+    isBillingActivated,
+    isInTrial,
+} from '@/utils/billing';
 import { CreditCardIcon, UserGroupIcon } from '@heroicons/vue/20/solid';
 import { canUpdateOrganization } from '@/utils/permissions';
 import { api } from '@/packages/api/src';
@@ -80,6 +84,14 @@ async function submit() {
 
 const clientNameInput = ref<HTMLInputElement | null>(null);
 useFocus(clientNameInput, { initialValue: true });
+
+const inviteMembersIsAllowed = computed(() => {
+    return (
+        !isBillingActivated() ||
+        (isBillingActivated() && hasActiveSubscription()) ||
+        (isBillingActivated() && isInTrial())
+    );
+});
 </script>
 
 <template>
@@ -91,7 +103,7 @@ useFocus(clientNameInput, { initialValue: true });
         </template>
 
         <template #content>
-            <div v-if="isBillingActivated() && !hasActiveSubscription()">
+            <div v-if="!inviteMembersIsAllowed">
                 <div
                     class="rounded-full flex items-center justify-center w-20 h-20 mx-auto border border-border-tertiary bg-secondary">
                     <UserGroupIcon class="w-12"></UserGroupIcon>
@@ -201,7 +213,7 @@ useFocus(clientNameInput, { initialValue: true });
         <template #footer>
             <SecondaryButton @click="show = false"> Cancel</SecondaryButton>
             <PrimaryButton
-                v-if="!isBillingActivated() || hasActiveSubscription()"
+                v-if="inviteMembersIsAllowed"
                 class="ms-3"
                 :class="{ 'opacity-25': saving }"
                 :disabled="saving"

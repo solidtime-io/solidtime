@@ -8,6 +8,29 @@ export function isBillingActivated() {
     return page.props.has_billing_extension;
 }
 
+export function isInTrial() {
+    const page = usePage<{
+        billing: {
+            has_trial: boolean;
+        };
+    }>();
+
+    return page.props.billing.has_trial;
+}
+export function isBlocked() {
+    const page = usePage<{
+        billing: {
+            is_blocked: boolean;
+        };
+    }>();
+
+    return page.props.billing.is_blocked;
+}
+
+export function isFreePlan() {
+    return !hasActiveSubscription() && !isInTrial();
+}
+
 export function hasActiveSubscription() {
     const page = usePage<{
         billing: {
