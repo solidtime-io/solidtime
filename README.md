@@ -23,6 +23,7 @@ solidtime is a modern open-source time tracking application for Freelancers and 
 ## Self Hosting
 
 If you are looking into self-hosting solidtime, you can find the guides [here](https://docs.solidtime.io/self-hosting/intro)
+
 We also have an examples repository [here](https://github.com/solidtime-io/self-hosting-examples)
 
 If you do not want to self-host solidtime or try it out you can sign up for [solidtime cloud](https://www.solidtime.io/)
