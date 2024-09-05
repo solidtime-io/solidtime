@@ -77,6 +77,7 @@ useFocus(projectNameInput, { initialValue: true });
             <ProjectMemberBillableRateModal
                 :member-name="props.name"
                 v-model:show="showBillableRateModal"
+                :new-billable-rate="projectMemberBody.billable_rate"
                 @close="showBillableRateModal = false"
                 @submit="submitBillableRate"></ProjectMemberBillableRateModal>
             <div class="grid grid-cols-3 items-center space-x-4">
