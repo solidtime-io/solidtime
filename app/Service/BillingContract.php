@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Models\Organization;
+use Illuminate\Support\Carbon;
 
 /**
  * This class is a contract for the billing system
@@ -31,6 +32,15 @@ class BillingContract
     public function hasTrial(Organization $organization): bool
     {
         return false;
+    }
+
+    /**
+     * Get the date until which the organization's trial subscription is valid
+     * If the organization does not have a trial subscription, this method should return null
+     */
+    public function getTrialUntil(Organization $organization): ?Carbon
+    {
+        return null;
     }
 
     /**

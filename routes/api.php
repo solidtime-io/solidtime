@@ -73,7 +73,7 @@ Route::middleware([
         Route::get('/organizations/{organization}/projects/{project}', [ProjectController::class, 'show'])->name('show');
         Route::post('/organizations/{organization}/projects', [ProjectController::class, 'store'])->name('store')->middleware('check-organization-blocked');
         Route::put('/organizations/{organization}/projects/{project}', [ProjectController::class, 'update'])->name('update')->middleware('check-organization-blocked');
-        Route::delete('/organizations/{organization}/projects/{project}', [ProjectController::class, 'destroy'])->name('destroy')->middleware('check-organization-blocked');
+        Route::delete('/organizations/{organization}/projects/{project}', [ProjectController::class, 'destroy'])->name('destroy');
     });
 
     // Project member routes
@@ -81,7 +81,7 @@ Route::middleware([
         Route::get('/organizations/{organization}/projects/{project}/project-members', [ProjectMemberController::class, 'index'])->name('index');
         Route::post('/organizations/{organization}/projects/{project}/project-members', [ProjectMemberController::class, 'store'])->name('store')->middleware('check-organization-blocked');
         Route::put('/organizations/{organization}/project-members/{projectMember}', [ProjectMemberController::class, 'update'])->name('update')->middleware('check-organization-blocked');
-        Route::delete('/organizations/{organization}/project-members/{projectMember}', [ProjectMemberController::class, 'destroy'])->name('destroy')->middleware('check-organization-blocked');
+        Route::delete('/organizations/{organization}/project-members/{projectMember}', [ProjectMemberController::class, 'destroy'])->name('destroy');
     });
 
     // Time entry routes
@@ -91,7 +91,7 @@ Route::middleware([
         Route::post('/organizations/{organization}/time-entries', [TimeEntryController::class, 'store'])->name('store')->middleware('check-organization-blocked');
         Route::put('/organizations/{organization}/time-entries/{timeEntry}', [TimeEntryController::class, 'update'])->name('update')->middleware('check-organization-blocked');
         Route::patch('/organizations/{organization}/time-entries', [TimeEntryController::class, 'updateMultiple'])->name('update-multiple')->middleware('check-organization-blocked');
-        Route::delete('/organizations/{organization}/time-entries/{timeEntry}', [TimeEntryController::class, 'destroy'])->name('destroy')->middleware('check-organization-blocked');
+        Route::delete('/organizations/{organization}/time-entries/{timeEntry}', [TimeEntryController::class, 'destroy'])->name('destroy');
     });
 
     Route::name('users.time-entries.')->group(static function () {
