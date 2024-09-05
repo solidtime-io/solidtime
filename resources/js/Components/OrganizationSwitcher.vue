@@ -5,7 +5,7 @@ import DropdownLink from '@/Components/DropdownLink.vue';
 import { usePage } from '@inertiajs/vue3';
 import type { Organization, User } from '@/types/models';
 import { isBillingActivated } from '@/utils/billing';
-import { canUpdateOrganization } from '@/utils/permissions';
+import { canManageBilling } from '@/utils/permissions';
 import { switchOrganization } from '@/utils/useOrganization';
 
 const page = usePage<{
@@ -79,7 +79,7 @@ const switchToTeam = (organization: Organization) => {
                 </DropdownLink>
 
                 <DropdownLink
-                    v-if="canUpdateOrganization() && isBillingActivated()"
+                    v-if="canManageBilling() && isBillingActivated()"
                     href="/billing">
                     Billing
                 </DropdownLink>

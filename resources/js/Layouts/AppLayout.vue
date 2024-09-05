@@ -23,6 +23,7 @@ import { onMounted, ref } from 'vue';
 import NotificationContainer from '@/Components/NotificationContainer.vue';
 import { initializeStores, refreshStores } from '@/utils/init';
 import {
+    canManageBilling,
     canUpdateOrganization,
     canViewClients,
     canViewMembers,
@@ -160,9 +161,7 @@ const page = usePage<{
                 <nav>
                     <ul>
                         <NavigationSidebarItem
-                            v-if="
-                                canUpdateOrganization() && isBillingActivated()
-                            "
+                            v-if="canManageBilling() && isBillingActivated()"
                             title="Billing"
                             :icon="CreditCardIcon"
                             href="/billing"></NavigationSidebarItem>

@@ -38,11 +38,10 @@
                     or remove all users except the owner.
                 </p>
 
-                <Link href="/billing">
-                    <PrimaryButton
-                        type="button"
-                        class="mt-6"
-                        v-if="isBillingActivated() && canUpdateOrganization()">
+                <Link
+                    v-if="isBillingActivated() && canManageBilling()"
+                    href="/billing">
+                    <PrimaryButton type="button" class="mt-6">
                         <CreditCardIcon class="w-5 h-5 me-2" />
                         Go to Billing
                     </PrimaryButton>
@@ -63,7 +62,7 @@ import { storeToRefs } from 'pinia';
 import { useNotificationsStore } from '@/utils/notification';
 import DialogModal from '@/packages/ui/src/DialogModal.vue';
 import { isBillingActivated } from '@/utils/billing';
-import { canUpdateOrganization } from '@/utils/permissions';
+import { canManageBilling } from '@/utils/permissions';
 import { CreditCardIcon, XCircleIcon } from '@heroicons/vue/20/solid';
 import { Link } from '@inertiajs/vue3';
 import PrimaryButton from '../packages/ui/src/Buttons/PrimaryButton.vue';
