@@ -10,7 +10,7 @@ import type { Organization } from '@/types/models';
 import type { Permissions } from '@/types/jetstream';
 import { CreditCardIcon } from '@heroicons/vue/20/solid';
 import { isBillingActivated } from '@/utils/billing';
-import { canUpdateOrganization } from '@/utils/permissions';
+import { canManageBilling } from '@/utils/permissions';
 
 const props = defineProps<{
     team: Organization;
@@ -61,12 +61,10 @@ const updateTeamName = () => {
                     </div>
                 </div>
                 <div>
-                    <Link href="/billing">
-                        <PrimaryButton
-                            type="button"
-                            v-if="
-                                isBillingActivated() && canUpdateOrganization()
-                            ">
+                    <Link
+                        v-if="isBillingActivated() && canManageBilling()"
+                        href="/billing">
+                        <PrimaryButton type="button">
                             <CreditCardIcon class="w-5 h-5 me-2" />
                             Go to Billing
                         </PrimaryButton>

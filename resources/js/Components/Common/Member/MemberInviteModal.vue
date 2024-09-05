@@ -17,7 +17,7 @@ import {
     isInTrial,
 } from '@/utils/billing';
 import { CreditCardIcon, UserGroupIcon } from '@heroicons/vue/20/solid';
-import { canUpdateOrganization } from '@/utils/permissions';
+import { canManageBilling, canUpdateOrganization } from '@/utils/permissions';
 import { api } from '@/packages/api/src';
 import type { MemberRole } from '@/packages/api/src';
 import { z } from 'zod';
@@ -117,7 +117,9 @@ const inviteMembersIsAllowed = computed(() => {
                         <strong>please upgrade to a paid plan</strong>.
                     </p>
 
-                    <Link href="/billing">
+                    <Link
+                        v-if="isBillingActivated() && canManageBilling()"
+                        href="/billing">
                         <PrimaryButton
                             type="button"
                             class="mt-6"

@@ -7,9 +7,15 @@ import {
 } from '@heroicons/vue/16/solid';
 import { Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
-import { isBlocked, isFreePlan, isInTrial } from '@/utils/billing';
+import {
+    isBillingActivated,
+    isBlocked,
+    isFreePlan,
+    isInTrial,
+} from '@/utils/billing';
 import { useSessionStorage } from '@vueuse/core';
 import { getCurrentOrganizationId } from '@/utils/useUser';
+import { canManageBilling } from '@/utils/permissions';
 
 const hideTrialBanner = useSessionStorage(
     'showTrialBanner-' + getCurrentOrganizationId(),
@@ -46,13 +52,13 @@ const showFreeUpgradeBanner = computed(
                 </span>
             </div>
             <div class="flex items-center space-x-2">
-                <Link href="/billing">
+                <Link v-if="canManageBilling()" href="/billing">
                     <div
                         class="text-white font-semibold uppercase text-xs flex space-x-1 items-center hover:bg-white/10 rounded-lg px-2 py-1.5">
                         <span>Upgrade now</span>
                     </div>
                 </Link>
-                <button @click="showTrialBanner = false" class="p-1">
+                <button @click="hideTrialBanner = true" class="p-1">
                     <XMarkIcon
                         class="w-4 opacity-50 hover:opacity-100"></XMarkIcon>
                 </button>
@@ -74,13 +80,15 @@ const showFreeUpgradeBanner = computed(
                 </span>
             </div>
             <div class="flex items-center space-x-2">
-                <Link href="/billing">
+                <Link
+                    v-if="isBillingActivated() && canManageBilling()"
+                    href="/billing">
                     <div
                         class="text-white font-semibold uppercase text-xs flex space-x-1 items-center hover:bg-white/10 rounded-lg px-2 py-1.5">
                         <span>Upgrade now</span>
                     </div>
                 </Link>
-                <button @click="showBlockedBanner = false" class="p-1">
+                <button @click="hideBlockedBanner = true" class="p-1">
                     <XMarkIcon
                         class="w-4 opacity-50 hover:opacity-100"></XMarkIcon>
                 </button>
@@ -102,13 +110,15 @@ const showFreeUpgradeBanner = computed(
                 >
             </div>
             <div class="flex items-center space-x-2">
-                <Link href="/billing">
+                <Link
+                    v-if="isBillingActivated() && canManageBilling()"
+                    href="/billing">
                     <div
                         class="text-white font-semibold uppercase text-xs flex space-x-1 items-center hover:bg-white/10 rounded-lg px-2 py-1.5">
                         <span>Upgrade now</span>
                     </div>
                 </Link>
-                <button @click="showFreeUpgradeBanner = false" class="p-1">
+                <button @click="hideTrialBanner = true" class="p-1">
                     <XMarkIcon
                         class="w-4 opacity-50 hover:opacity-100"></XMarkIcon>
                 </button>

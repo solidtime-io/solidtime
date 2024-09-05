@@ -96,3 +96,7 @@ export function canCreateTags() {
 export function canDeleteTags() {
     return currentUserHasPermission('tags:delete');
 }
+
+export function canManageBilling() {
+    return currentUserHasPermission('billing');
+}
