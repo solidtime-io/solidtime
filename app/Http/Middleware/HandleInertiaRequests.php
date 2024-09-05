@@ -51,6 +51,7 @@ class HandleInertiaRequests extends Middleware
             'billing' => $billing !== null && $currentOrganization !== null ? [
                 'has_subscription' => $billing->hasSubscription($currentOrganization),
                 'has_trial' => $billing->hasTrial($currentOrganization),
+                'trial_until' => $billing->getTrialUntil($currentOrganization)?->toIso8601ZuluString(),
                 'is_blocked' => $billing->isBlocked($currentOrganization),
             ] : null,
             'flash' => [

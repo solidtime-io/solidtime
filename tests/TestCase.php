@@ -28,6 +28,7 @@ abstract class TestCase extends BaseTestCase
         $this->mock(BillingContract::class, function (MockInterface $mock) {
             $mock->shouldReceive('hasSubscription')->andReturn(false);
             $mock->shouldReceive('hasTrial')->andReturn(false);
+            $mock->shouldReceive('getTrialUntil')->andReturn(null);
             $mock->shouldReceive('isBlocked')->andReturn(false);
         });
     }
