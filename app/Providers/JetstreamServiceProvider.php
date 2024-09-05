@@ -125,6 +125,7 @@ class JetstreamServiceProvider extends ServiceProvider
             'members:make-placeholder',
             'members:update',
             'members:delete',
+            'billing',
         ])->description('Owner users can perform any action. There is only one owner per organization.');
 
         Jetstream::role(Role::Admin->value, 'Administrator', [
