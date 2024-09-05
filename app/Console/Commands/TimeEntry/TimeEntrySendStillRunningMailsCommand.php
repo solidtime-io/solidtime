@@ -9,8 +9,8 @@ use App\Models\TimeEntry;
 use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Mail;
 
 class TimeEntrySendStillRunningMailsCommand extends Command
