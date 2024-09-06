@@ -49,6 +49,7 @@ export async function stoppedTimeEntryResponse(
     return page.waitForResponse(async (response) => {
         return (
             response.status() === 200 &&
+            response.url().includes('/time-entries/') &&
             (await response.headerValue('Content-Type')) ===
                 'application/json' &&
             (await response.json()).data.id !== null &&
