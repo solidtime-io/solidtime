@@ -73,16 +73,8 @@ const seriesData = computed(() => {
             ...el,
             ...{
                 itemStyle: {
-                    color: new LinearGradient(0, 0, 0, 1, [
-                        {
-                            offset: 0,
-                            color: hexToRGBA(el.color, 0.8),
-                        },
-                        {
-                            offset: 1,
-                            color: hexToRGBA(el.color, 0.4),
-                        },
-                    ]),
+                    color: el.color
+
                 },
             },
         };
@@ -93,7 +85,8 @@ const option = ref({
         trigger: 'item',
     },
     legend: {
-        top: 'bottom',
+        show: true,
+        top: '250px'
     },
     backgroundColor: 'transparent',
     series: [
@@ -107,21 +100,17 @@ const option = ref({
                 },
             },
             data: seriesData,
-            radius: ['30%', '65%'],
+            radius: ['30%', '60%'],
+            top: '-50%',
             type: 'pie',
-            top: '-10%',
         },
     ],
 });
 </script>
 
 <template>
-    <v-chart class="chart" :autoresize="true" :option="option" />
+    <v-chart class="background-transparent h-[450px]" :autoresize="true" :option="option" />
 </template>
 
 <style scoped>
-.chart {
-    height: 300px;
-    background: transparent;
-}
 </style>
