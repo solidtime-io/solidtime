@@ -118,7 +118,7 @@ const showFreeUpgradeBanner = computed(
                         <span>Upgrade now</span>
                     </div>
                 </Link>
-                <button @click="hideTrialBanner = true" class="p-1">
+                <button @click="hideFreeUpgradeBanner = true" class="p-1">
                     <XMarkIcon
                         class="w-4 opacity-50 hover:opacity-100"></XMarkIcon>
                 </button>

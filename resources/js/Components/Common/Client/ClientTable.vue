@@ -3,15 +3,15 @@ import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
 import { UserCircleIcon } from '@heroicons/vue/24/solid';
 import { PlusIcon } from '@heroicons/vue/16/solid';
 import { type Component, ref } from 'vue';
-import { storeToRefs } from 'pinia';
-import { useClientsStore } from '@/utils/useClients';
+import { type Client } from '@/packages/api/src';
 import ClientTableRow from '@/Components/Common/Client/ClientTableRow.vue';
 import ClientCreateModal from '@/Components/Common/Client/ClientCreateModal.vue';
 import ClientTableHeading from '@/Components/Common/Client/ClientTableHeading.vue';
 import { canCreateClients } from '@/utils/permissions';
 
-const { clients } = storeToRefs(useClientsStore());
-
+defineProps<{
+    clients: Client[];
+}>();
 const createClient = ref(false);
 </script>
 
