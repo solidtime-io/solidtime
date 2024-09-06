@@ -62,19 +62,21 @@ const { floatingStyles } = useFloating(reference, floating, {
     placement: props.align,
     whileElementsMounted: autoUpdate,
     middleware: [
-        flip(),
         offset(10),
         shift({
             limiter: limitShift({
                 offset: 5,
             }),
         }),
+        flip({
+            fallbackAxisSideDirection: 'start',
+        }),
     ],
 });
 </script>
 
 <template>
-    <div class="min-w-0">
+    <div class="min-w-0 isolate">
         <div @click.prevent="toggleOpen" ref="reference" class="min-w-0">
             <slot name="trigger" />
         </div>

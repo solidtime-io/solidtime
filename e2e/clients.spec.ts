@@ -50,4 +50,34 @@ test('test that creating and deleting a new client via the modal works', async (
     );
 });
 
+test('test that archiving and unarchiving clients works', async ({ page }) => {
+    const newClientName = 'New Client ' + Math.floor(1 + Math.random() * 10000);
+    await goToProjectsOverview(page);
+    await page.getByRole('button', { name: 'Create Client' }).click();
+    await page.getByLabel('Client Name').fill(newClientName);
+
+    await page.getByRole('button', { name: 'Create Client' }).nth(1).click();
+    await expect(page.getByText(newClientName)).toBeVisible();
+
+    await page.getByRole('row').first().getByRole('button').click();
+    await Promise.all([
+        page.getByRole('button').getByText('Archive').first().click(),
+        expect(page.getByText(newClientName)).not.toBeVisible(),
+    ]);
+    await Promise.all([
+        page.getByRole('tab', { name: 'Archived' }).click(),
+        expect(page.getByText(newClientName)).toBeVisible(),
+    ]);
+
+    await page.getByRole('row').first().getByRole('button').click();
+    await Promise.all([
+        page.getByRole('button').getByText('Unarchive').first().click(),
+        expect(page.getByText(newClientName)).not.toBeVisible(),
+    ]);
+    await Promise.all([
+        page.getByRole('tab', { name: 'Active' }).click(),
+        expect(page.getByText(newClientName)).toBeVisible(),
+    ]);
+});
+
 // TODO: Add Name Update Test

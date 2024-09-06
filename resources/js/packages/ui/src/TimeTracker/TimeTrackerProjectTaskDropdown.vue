@@ -33,7 +33,7 @@ watch(open, (isOpen) => {
     if (isOpen) {
         nextTick(() => {
             initializeHighlightedItem();
-            searchInput.value?.focus();
+            searchInput.value?.focus({ preventScroll: true });
         });
     }
 });
