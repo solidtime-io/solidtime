@@ -106,13 +106,13 @@ async function createClient(
         v-model:show="showManualTimeEntryModal"></TimeEntryCreateModal>
     <AppLayout title="Dashboard" data-testid="time_view">
         <MainContainer
-            class="pt-5 sm:pt-8 pb-4 sm:pb-6 border-b border-default-background-separator">
+            class="pt-5 lg:pt-8 pb-4 lg:pb-6 border-b border-default-background-separator">
             <div
-                class="sm:flex items-end sm:divide-x divide-default-background-separator divide-y sm:divide-y-0 space-y-2 sm:space-y-0 sm:space-x-2">
+                class="lg:flex items-end lg:divide-x divide-default-background-separator divide-y lg:divide-y-0 space-y-2 lg:space-y-0 lg:space-x-2">
                 <div class="flex-1">
                     <TimeTracker></TimeTracker>
                 </div>
-                <div class="pb-2 pt-2 sm:pt-0 sm:pl-4 flex justify-center">
+                <div class="pb-2 pt-2 lg:pt-0 lg:pl-4 flex justify-center">
                     <SecondaryButton
                         class="w-full text-center flex justify-center"
                         @click="showManualTimeEntryModal = true"
