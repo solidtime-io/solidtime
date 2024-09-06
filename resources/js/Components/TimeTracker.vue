@@ -45,12 +45,17 @@ const { tasks } = storeToRefs(taskStore);
 const clientStore = useClientsStore();
 const { clients } = storeToRefs(clientStore);
 
+const emit = defineEmits<{
+    change: [];
+}>();
+
 watch(isActive, () => {
     if (isActive.value) {
         startLiveTimer();
     } else {
         stopLiveTimer();
     }
+    emit('change');
 });
 
 onMounted(async () => {
