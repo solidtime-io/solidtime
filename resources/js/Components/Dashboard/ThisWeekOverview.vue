@@ -51,47 +51,49 @@ const props = defineProps<{
 }>();
 const accentColor = useCssVar('--color-accent-quaternary');
 
-const seriesData = props.weeklyHistory.map((el) => {
-    return {
-        value: el.duration,
-        ...{
-            itemStyle: {
-                borderColor: new LinearGradient(0, 0, 0, 1, [
-                    {
-                        offset: 0,
-                        color: 'rgba(' + accentColor.value + ',0.7)',
-                    },
-                    {
-                        offset: 1,
-                        color: 'rgba(' + accentColor.value + ',0.5)',
-                    },
-                ]),
-                emphasis: {
-                    color: new LinearGradient(0, 0, 0, 1, [
+const seriesData = computed(() => {
+    return props.weeklyHistory.map((el) => {
+        return {
+            value: el.duration,
+            ...{
+                itemStyle: {
+                    borderColor: new LinearGradient(0, 0, 0, 1, [
                         {
                             offset: 0,
-                            color: 'rgba(' + accentColor.value + ',0.9)',
+                            color: 'rgba(' + accentColor.value + ',0.7)',
                         },
                         {
                             offset: 1,
+                            color: 'rgba(' + accentColor.value + ',0.5)',
+                        },
+                    ]),
+                    emphasis: {
+                        color: new LinearGradient(0, 0, 0, 1, [
+                            {
+                                offset: 0,
+                                color: 'rgba(' + accentColor.value + ',0.9)',
+                            },
+                            {
+                                offset: 1,
+                                color: 'rgba(' + accentColor.value + ',0.7)',
+                            },
+                        ]),
+                    },
+                    borderRadius: [12, 12, 0, 0],
+                    color: new LinearGradient(0, 0, 0, 1, [
+                        {
+                            offset: 0,
                             color: 'rgba(' + accentColor.value + ',0.7)',
+                        },
+                        {
+                            offset: 1,
+                            color: 'rgba(' + accentColor.value + ',0.5)',
                         },
                     ]),
                 },
-                borderRadius: [12, 12, 0, 0],
-                color: new LinearGradient(0, 0, 0, 1, [
-                    {
-                        offset: 0,
-                        color: 'rgba(' + accentColor.value + ',0.7)',
-                    },
-                    {
-                        offset: 1,
-                        color: 'rgba(' + accentColor.value + ',0.5)',
-                    },
-                ]),
             },
-        },
-    };
+        };
+    });
 });
 
 const weekdays = computed(() => {
