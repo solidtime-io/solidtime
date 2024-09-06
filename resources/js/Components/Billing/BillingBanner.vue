@@ -101,13 +101,16 @@ const showFreeUpgradeBanner = computed(
         <MainContainer class="flex items-center justify-between">
             <div class="flex items-center space-x-1.5">
                 <XCircleIcon class="w-4 text-white/50"></XCircleIcon>
-                <span class="font-medium">
-                    Your are currently using the Free Plan.
-                </span>
-                <span
-                    >To unlock all premium features & support the development of
-                    solidtime, please upgrade your plan.</span
-                >
+                <div class="flex items-center flex-col md:flex-row">
+                    <span class="font-medium">
+                        You are currently using the Free Plan.
+                    </span>
+                    <span
+                        >To unlock all premium features & support the
+                        development of solidtime, please upgrade your
+                        plan.</span
+                    >
+                </div>
             </div>
             <div class="flex items-center space-x-2">
                 <Link

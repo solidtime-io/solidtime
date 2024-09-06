@@ -79,23 +79,24 @@ const page = usePage<{
                 '!flex bg-default-background w-full z-[9999999999]':
                     showSidebarMenu,
             }"
-            class="flex-shrink-0 h-screen hidden fixed w-[230px] 2xl:w-[250px] px-2.5 2xl:px-4 py-4 sm:flex flex-col justify-between overflow-y-scroll"
-            style="
-                scrollbar-width: thin;
-                scrollbar-color: var(--color-bg-primary) transparent;
-            ">
+            class="flex-shrink-0 h-screen hidden fixed w-[230px] 2xl:w-[250px] px-2.5 2xl:px-4 py-4 lg:flex flex-col justify-between">
             <div>
                 <div
                     class="border-b border-default-background-separator pb-2 flex justify-between">
                     <OrganizationSwitcher class="w-full"></OrganizationSwitcher>
                     <XMarkIcon
                         @click="showSidebarMenu = false"
-                        class="w-8 sm:hidden"></XMarkIcon>
+                        class="w-8 lg:hidden"></XMarkIcon>
                 </div>
                 <div class="border-b border-default-background-separator">
                     <CurrentSidebarTimer></CurrentSidebarTimer>
                 </div>
-                <nav class="pt-2">
+                <nav
+                    class="pt-2 overflow-y-scroll"
+                    style="
+                        scrollbar-width: thin;
+                        scrollbar-color: var(--color-bg-primary) transparent;
+                    ">
                     <ul>
                         <NavigationSidebarItem
                             title="Dashboard"
@@ -205,9 +206,9 @@ const page = usePage<{
                 </ul>
             </div>
         </div>
-        <div class="flex-1 sm:ml-[230px] 2xl:ml-[250px]">
+        <div class="flex-1 lg:ml-[230px] 2xl:ml-[250px] min-w-0">
             <div
-                class="sm:hidden w-full px-3 py-1 border-b border-b-default-background-separator text-muted flex justify-between items-center">
+                class="lg:hidden w-full px-3 py-1 border-b border-b-default-background-separator text-muted flex justify-between items-center">
                 <Bars3Icon
                     @click="showSidebarMenu = !showSidebarMenu"
                     class="w-7 text-muted"></Bars3Icon>

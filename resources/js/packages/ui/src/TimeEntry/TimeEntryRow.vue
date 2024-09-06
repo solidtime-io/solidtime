@@ -61,18 +61,17 @@ function updateProjectAndTask(projectId: string, taskId: string) {
 
 <template>
     <div
-        class="border-b border-default-background-separator transition"
+        class="border-b border-default-background-separator transition min-w-0"
         data-testid="time_entry_row">
-        <MainContainer>
+        <MainContainer class="min-w-0">
             <div
-                class="sm:flex py-1 lg:py-1.5 items-center justify-between group">
+                class="sm:flex py-1 lg:py-1.5 min-w-0 items-center justify-between group">
                 <div class="flex space-x-1 items-center min-w-0">
                     <input
                         type="checkbox"
                         class="h-4 w-4 rounded bg-card-background border-input-border text-accent-500/80 focus:ring-accent-500/80" />
                     <div class="w-7 h-7" v-if="indent === true"></div>
                     <TimeEntryDescriptionInput
-                        class="flex-1 max-w-[220px] md:max-w-[400px] text-ellipsis overflow-ellipsis"
                         @changed="updateTimeEntryDescription"
                         :modelValue="
                             timeEntry.description
