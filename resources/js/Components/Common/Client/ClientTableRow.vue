@@ -25,6 +25,13 @@ const projectCount = computed(() => {
     ).length;
 });
 
+function archiveClient() {
+    useClientsStore().updateClient(props.client.id, {
+        ...props.client,
+        is_archived: !props.client.is_archived,
+    });
+}
+
 const showEditModal = ref(false);
 </script>
 
@@ -50,6 +57,7 @@ const showEditModal = ref(false);
             <ClientMoreOptionsDropdown
                 :client="client"
                 @edit="showEditModal = true"
+                @archive="archiveClient"
                 @delete="deleteClient"></ClientMoreOptionsDropdown>
         </div>
     </TableRow>

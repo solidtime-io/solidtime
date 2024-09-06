@@ -29,6 +29,10 @@ const props = defineProps<{
     currency: string;
 }>();
 
+const activeClients = computed(() => {
+    return props.clients.filter((client) => !client.is_archived);
+});
+
 const project = ref<CreateProjectBody>({
     name: '',
     color: getRandomColor(),
@@ -100,7 +104,7 @@ const currentClientName = computed(() => {
                     <InputLabel for="client" value="Client" />
                     <ClientDropdown
                         :createClient="createClient"
-                        :clients="clients"
+                        :clients="activeClients"
                         class="mt-2"
                         v-model="project.client_id">
                         <template #trigger>

@@ -7,6 +7,7 @@ import type { CreateClientBody } from '@/packages/api/src';
 import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import { useFocus } from '@vueuse/core';
 import { useClientsStore } from '@/utils/useClients';
+import InputLabel from '../../../packages/ui/src/Input/InputLabel.vue';
 
 const { createClient } = useClientsStore();
 const show = defineModel('show', { default: false });
@@ -36,6 +37,7 @@ useFocus(clientNameInput, { initialValue: true });
         <template #content>
             <div class="flex items-center space-x-4">
                 <div class="col-span-6 sm:col-span-4 flex-1">
+                    <InputLabel for="clientName" value="Client Name" />
                     <TextInput
                         id="clientName"
                         ref="clientNameInput"

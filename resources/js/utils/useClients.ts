@@ -20,6 +20,9 @@ export const useClientsStore = defineStore('clients', () => {
             clientResponse.value = await handleApiRequestNotifications(
                 () =>
                     api.getClients({
+                        queries: {
+                            archived: 'all',
+                        },
                         params: {
                             organization: organization,
                         },
