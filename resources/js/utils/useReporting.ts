@@ -79,6 +79,14 @@ export const useReportingStore = defineStore('reporting', () => {
         return reportingTableResponse.value?.data as AggregatedTimeEntries;
     });
 
+    const emptyPlaceholder = {
+        user: 'No User',
+        project: 'No Project',
+        task: 'No Task',
+        billable: 'Non-Billable',
+        client: 'No Client',
+    } as Record<string, string>;
+
     function getNameForReportingRowEntry(
         key: string | null,
         type: string | null
@@ -87,14 +95,6 @@ export const useReportingStore = defineStore('reporting', () => {
             return null;
         }
         if (key === null) {
-            const emptyPlaceholder = {
-                user: 'No User',
-                project: 'No Project',
-                task: 'No Task',
-                billable: 'Non-Billable',
-                client: 'No Client',
-            };
-
             return emptyPlaceholder[type as keyof typeof emptyPlaceholder];
         }
 
@@ -167,5 +167,6 @@ export const useReportingStore = defineStore('reporting', () => {
         aggregatedTableTimeEntries,
         getNameForReportingRowEntry,
         groupByOptions,
+        emptyPlaceholder,
     };
 });
