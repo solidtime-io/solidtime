@@ -8,6 +8,7 @@ import {
 import { Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import {
+    daysLeftInTrial,
     isBillingActivated,
     isBlocked,
     isFreePlan,
@@ -45,7 +46,9 @@ const showFreeUpgradeBanner = computed(
         <MainContainer class="flex items-center justify-between">
             <div class="flex items-center space-x-1.5">
                 <CheckBadgeIcon class="w-4 text-white/50"></CheckBadgeIcon>
-                <span class="font-medium"> Your trial expires in X days. </span>
+                <span class="font-medium">
+                    Your trial expires in {{ daysLeftInTrial() }} days.
+                </span>
                 <span>
                     To continue using all features & support the development of
                     solidtime, please upgrade your plan.

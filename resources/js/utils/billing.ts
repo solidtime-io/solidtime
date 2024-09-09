@@ -1,4 +1,5 @@
 import { usePage } from '@inertiajs/vue3';
+import { getDayJsInstance } from '@/packages/ui/src/utils/time';
 
 export function isBillingActivated() {
     const page = usePage<{
@@ -17,6 +18,22 @@ export function isInTrial() {
 
     return page.props.billing.has_trial;
 }
+
+export function daysLeftInTrial() {
+    const page = usePage<{
+        billing: {
+            trial_until: string;
+        };
+    }>();
+
+    return (
+        getDayJsInstance()(page.props.billing.trial_until).diff(
+            getDayJsInstance()(),
+            'days'
+        ) + 1
+    );
+}
+
 export function isBlocked() {
     const page = usePage<{
         billing: {
