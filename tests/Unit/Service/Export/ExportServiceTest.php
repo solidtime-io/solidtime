@@ -53,6 +53,7 @@ class ExportServiceTest extends TestCaseWithDatabase
     public function test_export_creates_zip_with_all_the_data_of_the_organization(): void
     {
         // Arrange
+        $this->mockPrivateStorage();
         $organization1 = $this->getFullOrganization();
         $organization2 = $this->getFullOrganization();
 
@@ -61,6 +62,6 @@ class ExportServiceTest extends TestCaseWithDatabase
         $zip = $exportService->export($organization1);
 
         // Assert
-        Storage::disk('local')->assertExists($zip);
+        Storage::disk(config('filesystems.default'))->assertExists($zip);
     }
 }
