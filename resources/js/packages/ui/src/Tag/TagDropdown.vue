@@ -187,7 +187,7 @@ const showCreateTagModal = ref(false);
                 ref="searchInput"
                 class="bg-card-background border-0 placeholder-muted text-sm text-white py-2.5 focus:ring-0 border-b border-card-background-separator focus:border-card-background-separator w-full"
                 placeholder="Search for a Tag..." />
-            <div ref="dropdownViewport" class="w-60 max-h-48 overflow-y-scroll">
+            <div ref="dropdownViewport" class="w-60 max-h-60 overflow-y-scroll">
                 <div
                     v-for="tag in filteredTags"
                     :key="tag.id"

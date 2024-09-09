@@ -136,7 +136,9 @@ function updateValue(project: Project) {
                         placeholder="Search for a project..." />
                 </ComboboxAnchor>
                 <ComboboxContent>
-                    <ComboboxViewport ref="dropdownViewport" class="w-60">
+                    <ComboboxViewport
+                        ref="dropdownViewport"
+                        class="w-60 max-h-60 overflow-y-scroll">
                         <ComboboxItem
                             v-if="searchValue === ''"
                             class="data-[highlighted]:bg-card-background-active"

@@ -125,7 +125,7 @@ watch(open, () => {
             <slot name="trigger"> </slot>
         </template>
         <template #content>
-            <div ref="dropdownViewport" class="w-60">
+            <div ref="dropdownViewport" class="w-60 max-h-60 overflow-y-scroll">
                 <div
                     v-for="item in filteredItems"
                     :key="props.getKeyFromItem(item) ?? 'none'"
