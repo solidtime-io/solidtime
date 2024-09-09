@@ -26,7 +26,8 @@ services:
             - "traefik.http.routers.solidtime-dev-vite.service=solidtime-dev-vite"
             - "traefik.http.routers.solidtime-dev-vite.entrypoints=web"
         extra_hosts:
-            - 'host.docker.internal:host-gateway'
+            - "host.docker.internal:host-gateway"
+            - "storage.${NGINX_HOST_NAME}:${REVERSE_PROXY_IP:-10.100.100.10}"
         environment:
             XDG_CONFIG_HOME: /var/www/html/config
             XDG_DATA_HOME: /var/www/html/data
@@ -128,6 +129,63 @@ services:
             - reverse-proxy
         volumes:
             - '.:/src'
+    minio:
+        image: 'minio/minio:latest'
+        environment:
+            MINIO_BROWSER_REDIRECT_URL: 'https://storage-management.${NGINX_HOST_NAME}'
+            MINIO_ROOT_USER: 'sail'
+            MINIO_ROOT_PASSWORD: 'password'
+        volumes:
+            - 'sail-minio:/data/minio'
+        networks:
+            - reverse-proxy
+            - sail
+        command: minio server /data/minio --console-address ":8900"
+        healthcheck:
+            test: [ "CMD", "mc", "ready", "local" ]
+            interval: 5s
+            timeout: 5s
+            retries: 5
+        labels:
+            - "traefik.enable=true"
+            - "traefik.docker.network=${NETWORK_NAME}"
+            # Storage Frontend
+            - "traefik.http.services.solidtime-dev-storage-frontend.loadbalancer.server.port=9000"
+            # http
+            - "traefik.http.routers.solidtime-dev-storage-frontend.rule=Host(`storage.${NGINX_HOST_NAME}`)"
+            - "traefik.http.routers.solidtime-dev-storage-frontend.service=solidtime-dev-storage-frontend"
+            - "traefik.http.routers.solidtime-dev-storage-frontend.entrypoints=web"
+            # https
+            - "traefik.http.routers.solidtime-dev-storage-frontend-https.rule=Host(`storage.${NGINX_HOST_NAME}`)"
+            - "traefik.http.routers.solidtime-dev-storage-frontend-https.service=solidtime-dev-storage-frontend"
+            - "traefik.http.routers.solidtime-dev-storage-frontend-https.entrypoints=websecure"
+            - "traefik.http.routers.solidtime-dev-storage-frontend-https.tls=true"
+            # Storage Management
+            - "traefik.http.services.solidtime-dev-storage-management.loadbalancer.server.port=8900"
+            # http
+            - "traefik.http.routers.solidtime-dev-storage-management.rule=Host(`storage-management.${NGINX_HOST_NAME}`)"
+            - "traefik.http.routers.solidtime-dev-storage-management.service=solidtime-dev-storage-management"
+            - "traefik.http.routers.solidtime-dev-storage-management.entrypoints=web"
+            # https
+            - "traefik.http.routers.solidtime-dev-storage-management-https.rule=Host(`storage-management.${NGINX_HOST_NAME}`)"
+            - "traefik.http.routers.solidtime-dev-storage-management-https.service=solidtime-dev-storage-management"
+            - "traefik.http.routers.solidtime-dev-storage-management-https.entrypoints=websecure"
+            - "traefik.http.routers.solidtime-dev-storage-management-https.tls=true"
+
+    minio-create-bucket:
+        image: minio/mc:latest
+        depends_on:
+            - minio
+        environment:
+            S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID}
+            S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY}
+            S3_BUCKET: ${S3_BUCKET}
+            S3_ENDPOINT: ${S3_ENDPOINT}
+        volumes:
+            - './docker/local/minio:/etc/minio'
+        networks:
+            - sail
+        entrypoint: /etc/minio/create_bucket.sh
 networks:
     reverse-proxy:
         name: "${NETWORK_NAME}"
@@ -138,4 +196,6 @@ volumes:
     sail-pgsql:
         driver: local
     sail-pgsql-test:
+        driver: local
+    sail-minio:
         driver: local

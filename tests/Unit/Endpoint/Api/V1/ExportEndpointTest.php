@@ -81,13 +81,13 @@ class ExportEndpointTest extends ApiEndpointTestAbstract
         Passport::actingAs($user->user);
 
         // Act
-        $response = $this->postJson(route('api.v1.export.export', ['organization' => $user->organization->getKey()]));
+        $response = $this->postJson(route('api.v1.export.export', [
+            'organization' => $user->organization->getKey(),
+        ]));
 
         // Assert
         $response->assertStatus(200);
-        $response->assertExactJson([
-            'success' => true,
-            'download_url' => Storage::disk('local')->temporaryUrl($filepath, $now->addMinutes(10)),
-        ]);
+        $response->assertJsonPath('success', true);
+        $this->assertStringContainsString($filepath, $response->json('download_url'));
     }
 }

@@ -8,6 +8,7 @@ use App\Models\Organization;
 use App\Service\Import\Importers\DefaultImporter;
 use App\Service\Import\Importers\ImportException;
 use App\Service\Import\Importers\TogglTimeEntriesImporter;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
@@ -28,10 +29,14 @@ class TogglTimeEntriesImporterTest extends ImporterTestAbstract
         $data = Storage::disk('testfiles')->get('toggl_time_entries_import_test_1.csv');
 
         // Act
+        DB::enableQueryLog();
+        DB::flushQueryLog();
         $importer->importData($data, $timezone);
         $report = $importer->getReport();
+        $queryLog = DB::getQueryLog();
 
         // Assert
+        $this->assertCount(31, $queryLog);
         $testScenario = $this->checkTestScenarioAfterImportExcludingTimeEntries();
         $this->checkTimeEntries($testScenario);
         $this->assertSame(2, $report->timeEntriesCreated);
@@ -55,10 +60,14 @@ class TogglTimeEntriesImporterTest extends ImporterTestAbstract
         $importer->init($organization);
 
         // Act
+        DB::enableQueryLog();
+        DB::flushQueryLog();
         $importer->importData($data, $timezone);
         $report = $importer->getReport();
+        $queryLog = DB::getQueryLog();
 
         // Assert
+        $this->assertCount(15, $queryLog);
         $testScenario = $this->checkTestScenarioAfterImportExcludingTimeEntries();
         $this->checkTimeEntries($testScenario, true);
         $this->assertSame(2, $report->timeEntriesCreated);

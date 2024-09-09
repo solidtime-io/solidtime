@@ -261,10 +261,11 @@ class DeletionServiceTest extends TestCaseWithDatabase
     public function test_delete_user_deletes_all_resources_of_the_user_but_does_not_delete_other_resources(): void
     {
         // Arrange
+        $this->mockPublicStorage();
         $user = User::factory()->withProfilePicture()->withPersonalOrganization()->create();
         $otherUser = User::factory()->withProfilePicture()->withPersonalOrganization()->create();
-        Storage::disk('public')->assertExists($user->profile_photo_path);
-        Storage::disk('public')->assertExists($otherUser->profile_photo_path);
+        Storage::disk(config('filesystems.public'))->assertExists($user->profile_photo_path);
+        Storage::disk(config('filesystems.public'))->assertExists($otherUser->profile_photo_path);
 
         // Act
         $this->deletionService->deleteUser($user);
@@ -288,8 +289,8 @@ class DeletionServiceTest extends TestCaseWithDatabase
         $this->assertDatabaseMissing(Member::class, [
             'user_id' => $user->getKey(),
         ]);
-        Storage::disk('public')->assertMissing($user->profile_photo_path);
-        Storage::disk('public')->assertExists($otherUser->profile_photo_path);
+        Storage::disk(config('filesystems.public'))->assertMissing($user->profile_photo_path);
+        Storage::disk(config('filesystems.public'))->assertExists($otherUser->profile_photo_path);
         Log::assertLoggedTimes(fn (LogEntry $log) => $log->level === 'debug'
             && $log->message === 'Start deleting user'
             && $log->context['id'] === $user->getKey(),

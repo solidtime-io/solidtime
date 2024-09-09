@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Mockery\MockInterface;
 use TiMacDonald\Log\LogFake;
 
@@ -23,6 +24,16 @@ abstract class TestCase extends BaseTestCase
         parent::setUp();
         Mail::fake();
         LogFake::bind();
+    }
+
+    protected function mockPrivateStorage(): void
+    {
+        Storage::fake(config('filesystems.default'));
+    }
+
+    protected function mockPublicStorage(): void
+    {
+        Storage::fake(config('filesystems.public'));
     }
 
     protected function tearDown(): void
