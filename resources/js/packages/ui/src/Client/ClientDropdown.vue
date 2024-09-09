@@ -142,7 +142,7 @@ const highlightedItem = computed(() => {
                 ref="searchInput"
                 class="bg-card-background border-0 placeholder-muted text-sm text-white py-2.5 focus:ring-0 border-b border-card-background-separator focus:border-card-background-separator w-full"
                 placeholder="Search for a client..." />
-            <div ref="dropdownViewport" class="w-60">
+            <div ref="dropdownViewport" class="w-60 max-h-60 overflow-y-scroll">
                 <div
                     v-if="
                         searchValue.length > 0 && filteredClients.length === 0
