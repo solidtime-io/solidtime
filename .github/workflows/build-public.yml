@@ -18,7 +18,7 @@ jobs:
       contents: read
       attestations: write
       id-token: write
-    timeout-minutes: 10
+    timeout-minutes: 90
 
     steps:
       - name: "Check out code"
