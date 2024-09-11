@@ -134,6 +134,11 @@ export type MyMemberships = ZodiosResponseByAlias<
 
 export type MyMembership = MyMemberships[0];
 
+export type OrganizationExportResponse = ZodiosResponseByAlias<
+    SolidTimeApi,
+    'exportOrganization'
+>;
+
 const api = createApiClient('/api', { validate: 'none' });
 
 export { createApiClient, api };

@@ -1,16 +1,22 @@
 <script setup lang="ts">
-import FormSection from '@/Components/FormSection.vue';
 import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import { computed, onMounted, ref } from 'vue';
 import { useNotificationsStore } from '@/utils/notification';
 import { api } from '@/packages/api/src';
 import InputLabel from '@/packages/ui/src/Input/InputLabel.vue';
 import { DocumentIcon } from '@heroicons/vue/24/solid';
+import {
+    ArrowDownOnSquareIcon,
+    InformationCircleIcon,
+} from '@heroicons/vue/24/outline';
+
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import type { ImportReport, ImportType } from '@/packages/api/src';
 import DialogModal from '@/packages/ui/src/DialogModal.vue';
 import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
 import { initializeStores } from '@/utils/init';
+import { CardTitle } from '@/packages/ui/src';
+import Card from '@/Components/Common/Card.vue';
 
 const importTypeOptions = ref<ImportType[]>([]);
 
@@ -163,21 +169,30 @@ const showResultModal = ref(false);
             </SecondaryButton>
         </template>
     </DialogModal>
-    <FormSection>
-        <template #title> Import Data</template>
+    <div>
+        <CardTitle
+            title="Import Data"
+            :icon="ArrowDownOnSquareIcon"></CardTitle>
+        <Card class="mb-3">
+            <div class="py-2 px-3 sm:px-4 text-sm flex items-center space-x-3">
+                <InformationCircleIcon
+                    class="h-5 min-w-0 w-5 text-bg-tertiary" />
+                <p class="flex-1">
+                    Import existing data from Toggl, Clockify or a different
+                    solidtime instance. Please select the type of data you want
+                    to import and follow the instructions.
+                </p>
+            </div>
+        </Card>
 
-        <template #description>
-            Import existing data from Toggl or Clockify.
-        </template>
-
-        <template #form>
-            <!-- Organization Owner Information -->
-            <div class="col-span-6">
-                <div class="col-span-6 sm:col-span-4">
-                    <InputLabel for="currency" value="Import Type" />
+        <Card>
+            <div
+                class="px-4 py-5 sm:px-5 bg-card-background shadow sm:rounded-tl-md sm:rounded-tr-md">
+                <div>
+                    <InputLabel for="importType" value="Import Type" />
                     <select
-                        name="currency"
-                        id="currency"
+                        name="importType"
+                        id="importType"
                         v-model="importType"
                         class="mt-1 block w-full border-input-border bg-input-background text-white focus:border-input-border-active rounded-md shadow-sm">
                         <option :value="null" selected disabled>
@@ -232,11 +247,13 @@ const showResultModal = ref(false);
                     </div>
                 </div>
             </div>
-        </template>
-        <template #actions>
-            <PrimaryButton :loading @click="importData"
-                >Import Data</PrimaryButton
-            >
-        </template>
-    </FormSection>
+
+            <div
+                class="flex items-center justify-end px-4 py-3 bg-card-background border-t border-card-background-separator text-end sm:px-6 shadow sm:rounded-bl-md sm:rounded-br-md">
+                <PrimaryButton :loading @click="importData"
+                    >Import Data
+                </PrimaryButton>
+            </div>
+        </Card>
+    </div>
 </template>

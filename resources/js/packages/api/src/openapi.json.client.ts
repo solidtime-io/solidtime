@@ -544,6 +544,55 @@ const endpoints = makeApi([
     },
     {
         method: 'post',
+        path: '/v1/organizations/:organization/export',
+        alias: 'exportOrganization',
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'body',
+                type: 'Body',
+                schema: z.object({}).partial().passthrough(),
+            },
+            {
+                name: 'organization',
+                type: 'Path',
+                schema: z.string(),
+            },
+        ],
+        response: z
+            .object({ success: z.boolean(), download_url: z.string() })
+            .passthrough(),
+        errors: [
+            {
+                status: 400,
+                description: `API exception`,
+                schema: z
+                    .object({
+                        error: z.boolean(),
+                        key: z.string(),
+                        message: z.string(),
+                    })
+                    .passthrough(),
+            },
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 403,
+                description: `Authorization error`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 404,
+                description: `Not found`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+        ],
+    },
+    {
+        method: 'post',
         path: '/v1/organizations/:organization/import',
         alias: 'importData',
         requestFormat: 'json',
@@ -1056,6 +1105,58 @@ const endpoints = makeApi([
         method: 'post',
         path: '/v1/organizations/:organization/members/:member/invite-placeholder',
         alias: 'invitePlaceholder',
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'body',
+                type: 'Body',
+                schema: z.object({}).partial().passthrough(),
+            },
+            {
+                name: 'organization',
+                type: 'Path',
+                schema: z.string(),
+            },
+            {
+                name: 'member',
+                type: 'Path',
+                schema: z.string(),
+            },
+        ],
+        response: z.null(),
+        errors: [
+            {
+                status: 400,
+                description: `API exception`,
+                schema: z
+                    .object({
+                        error: z.boolean(),
+                        key: z.string(),
+                        message: z.string(),
+                    })
+                    .passthrough(),
+            },
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 403,
+                description: `Authorization error`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 404,
+                description: `Not found`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+        ],
+    },
+    {
+        method: 'post',
+        path: '/v1/organizations/:organization/members/:member/make-placeholder',
+        alias: 'v1.members.make-placeholder',
         requestFormat: 'json',
         parameters: [
             {
