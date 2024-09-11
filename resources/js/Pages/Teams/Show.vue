@@ -5,7 +5,6 @@ import SectionBorder from '@/Components/SectionBorder.vue';
 import UpdateTeamNameForm from '@/Pages/Teams/Partials/UpdateTeamNameForm.vue';
 import type { Organization } from '@/types/models';
 import type { Permissions, Role } from '@/types/jetstream';
-import ImportData from '@/Pages/Teams/Partials/ImportData.vue';
 import { canUpdateOrganization } from '@/utils/permissions';
 import OrganizationBillableRate from '@/Pages/Teams/Partials/OrganizationBillableRate.vue';
 
@@ -34,14 +33,8 @@ defineProps<{
                     :team="team" />
                 <SectionBorder />
 
-                <ImportData
-                    v-if="canUpdateOrganization()"
-                    :team="team"></ImportData>
-
                 <template
                     v-if="permissions.canDeleteTeam && !team.personal_team">
-                    <SectionBorder />
-
                     <DeleteTeamForm class="mt-10 sm:mt-0" :team="team" />
                 </template>
             </div>
