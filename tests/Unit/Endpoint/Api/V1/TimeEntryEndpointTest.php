@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Endpoint\Api\V1;
 
 use App\Enums\Role;
+use App\Enums\TimeEntryAggregationType;
 use App\Exceptions\Api\TimeEntryCanNotBeRestartedApiException;
 use App\Http\Controllers\Api\V1\TimeEntryController;
 use App\Models\Client;
@@ -464,6 +465,25 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
 
         // Assert
         $response->assertForbidden();
+    }
+
+    public function test_aggregate_endpoint_fails_if_request_has_sub_group_but_no_group(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:view:all',
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.time-entries.aggregate', [
+            $data->organization->getKey(),
+            'sub_group' => TimeEntryAggregationType::Task->value,
+        ]));
+
+        // Assert
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrorFor('group');
     }
 
     public function test_aggregate_endpoint_groups_by_two_groups(): void
