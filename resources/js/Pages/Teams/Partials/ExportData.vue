@@ -42,7 +42,7 @@ async function exportData() {
             showResultModal.value = true;
             loading.value = false;
             exportResponse.value = response;
-            window.open(response.download_url, '_blank')?.focus();
+            window.open(response.download_url, '_self')?.focus();
         }
     }
 }
@@ -59,7 +59,7 @@ async function exportData() {
                 The download should start automatically. If it does not
                 <a
                     class="font-semibold text-accent-200 hover:text-accent-300"
-                    target="_blank"
+                    target="_self"
                     :href="exportResponse?.download_url"
                     >click here</a
                 >
