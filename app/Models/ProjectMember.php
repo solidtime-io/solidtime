@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Models\Concerns\CustomAuditable;
 use App\Models\Concerns\HasUuids;
 use Database\Factories\ProjectMemberFactory;
 use Illuminate\Database\Eloquent\Builder;
@@ -11,7 +12,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
-use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
@@ -31,7 +31,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  */
 class ProjectMember extends Model implements AuditableContract
 {
-    use Auditable;
+    use CustomAuditable;
 
     /** @use HasFactory<ProjectMemberFactory> */
     use HasFactory;

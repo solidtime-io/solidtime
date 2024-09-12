@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Models\Concerns\CustomAuditable;
 use App\Models\Concerns\HasUuids;
 use Database\Factories\ClientFactory;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -12,7 +13,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
-use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
@@ -29,7 +29,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  */
 class Client extends Model implements AuditableContract
 {
-    use Auditable;
+    use CustomAuditable;
 
     /** @use HasFactory<ClientFactory> */
     use HasFactory;

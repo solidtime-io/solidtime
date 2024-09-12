@@ -36,7 +36,7 @@ class TogglTimeEntriesImporterTest extends ImporterTestAbstract
         $queryLog = DB::getQueryLog();
 
         // Assert
-        $this->assertCount(31, $queryLog);
+        $this->assertCount(23, $queryLog);
         $testScenario = $this->checkTestScenarioAfterImportExcludingTimeEntries();
         $this->checkTimeEntries($testScenario);
         $this->assertSame(2, $report->timeEntriesCreated);

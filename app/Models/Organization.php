@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Models\Concerns\CustomAuditable;
 use App\Models\Concerns\HasUuids;
 use Database\Factories\OrganizationFactory;
 use Illuminate\Database\Eloquent\Collection;
@@ -19,7 +20,6 @@ use Laravel\Jetstream\Events\TeamDeleted;
 use Laravel\Jetstream\Events\TeamUpdated;
 use Laravel\Jetstream\Jetstream;
 use Laravel\Jetstream\Team as JetstreamTeam;
-use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
@@ -42,7 +42,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  */
 class Organization extends JetstreamTeam implements AuditableContract
 {
-    use Auditable;
+    use CustomAuditable;
 
     /** @use HasFactory<OrganizationFactory> */
     use HasFactory;
