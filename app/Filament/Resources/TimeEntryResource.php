@@ -49,7 +49,7 @@ class TimeEntryResource extends Resource
                     ->label('End')
                     ->nullable()
                     ->rules([
-                        'after:start',
+                        'after_or_equal:start',
                     ]),
                 Select::make('user_id')
                     ->relationship(name: 'user', titleAttribute: 'email')

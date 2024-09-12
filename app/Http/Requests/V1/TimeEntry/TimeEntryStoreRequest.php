@@ -71,7 +71,7 @@ class TimeEntryStoreRequest extends FormRequest
             'end' => [
                 'nullable',
                 'date_format:Y-m-d\TH:i:s\Z',
-                'after:start',
+                'after_or_equal:start',
             ],
             // Whether time entry is billable
             'billable' => [
