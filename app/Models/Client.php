@@ -43,6 +43,7 @@ class Client extends Model implements AuditableContract
      */
     protected $casts = [
         'name' => 'string',
+        'archived_at' => 'datetime',
     ];
 
     /**
