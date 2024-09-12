@@ -40,11 +40,11 @@ const groupChartData = computed(() => {
             const name = getNameForReportingRowEntry(entry.key, props.type);
             let color = getRandomColorWithSeed(entry.key ?? 'none');
             if (name && props.type && emptyPlaceholder[props.type] === name) {
-                color = '#CCC';
+                color = '#CCCCCC';
             } else if (props.type === 'project') {
                 color =
                     projects.find((project) => project.id === entry.key)
-                        ?.color ?? '#CCC';
+                        ?.color ?? '#CCCCCC';
             }
             return {
                 value: entry.seconds,
@@ -61,7 +61,12 @@ const seriesData = computed(() => {
             ...el,
             ...{
                 itemStyle: {
-                    color: el.color,
+                    color: `${el.color}BB`,
+                },
+                emphasis: {
+                    itemStyle: {
+                        color: `${el.color}`,
+                    },
                 },
             },
         };
@@ -88,7 +93,7 @@ const option = ref({
             },
             data: seriesData,
             radius: ['30%', '60%'],
-            top: '-50%',
+            top: '-45%',
             type: 'pie',
         },
     ],
@@ -97,7 +102,7 @@ const option = ref({
 
 <template>
     <v-chart
-        class="background-transparent h-[450px]"
+        class="background-transparent h-[460px]"
         :autoresize="true"
         :option="option" />
 </template>

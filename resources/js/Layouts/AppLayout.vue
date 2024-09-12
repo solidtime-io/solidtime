@@ -177,7 +177,7 @@ const page = usePage<{
                                 href="/billing"></NavigationSidebarItem>
                             <NavigationSidebarItem
                                 v-if="canUpdateOrganization()"
-                            title="Import / Export"
+                                title="Import / Export"
                                 :icon="ArrowsRightLeftIcon"
                                 :current="route().current('import')"
                                 :href="route('import')"></NavigationSidebarItem>
