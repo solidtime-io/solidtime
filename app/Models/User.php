@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\Weekday;
+use App\Models\Concerns\CustomAuditable;
 use App\Models\Concerns\HasUuids;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
@@ -25,7 +26,6 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Jetstream\HasTeams;
 use Laravel\Passport\HasApiTokens;
-use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
@@ -57,7 +57,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  */
 class User extends Authenticatable implements AuditableContract, FilamentUser, MustVerifyEmail
 {
-    use Auditable;
+    use CustomAuditable;
     use HasApiTokens;
 
     /** @use HasFactory<UserFactory> */

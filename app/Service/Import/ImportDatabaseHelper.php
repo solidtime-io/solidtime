@@ -98,12 +98,16 @@ class ImportDatabaseHelper
             throw new ImportException('Invalid data: '.implode(', ', $validator->errors()->all()));
         }
 
+        /** @var TModel $model */
         $model = new $this->model;
         foreach ($data as $key => $value) {
             $model->{$key} = $value;
         }
         if ($this->beforeSave !== null) {
             ($this->beforeSave)($model);
+        }
+        if (method_exists($model, 'disableAuditing')) {
+            $model->disableAuditing();
         }
         $model->save();
 

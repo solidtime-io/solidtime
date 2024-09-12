@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Models\Concerns\CustomAuditable;
 use App\Models\Concerns\HasUuids;
 use Database\Factories\MemberFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -11,7 +12,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 use Laravel\Jetstream\Membership as JetstreamMembership;
-use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
@@ -29,7 +29,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  */
 class Member extends JetstreamMembership implements AuditableContract
 {
-    use Auditable;
+    use CustomAuditable;
 
     /** @use HasFactory<MemberFactory> */
     use HasFactory;

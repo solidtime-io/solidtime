@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Models\Concerns\CustomAuditable;
 use App\Models\Concerns\HasUuids;
 use App\Service\BillableRateService;
 use Carbon\CarbonInterval;
@@ -14,7 +15,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 use Korridor\LaravelComputedAttributes\ComputedAttributes;
-use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
@@ -47,8 +47,8 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  */
 class TimeEntry extends Model implements AuditableContract
 {
-    use Auditable;
     use ComputedAttributes;
+    use CustomAuditable;
 
     /** @use HasFactory<TimeEntryFactory> */
     use HasFactory;
