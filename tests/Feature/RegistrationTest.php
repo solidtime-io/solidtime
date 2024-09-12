@@ -202,6 +202,37 @@ class RegistrationTest extends TestCase
         $this->assertSame('USD', $user->organizations->first()->currency);
     }
 
+    public function test_new_users_can_register_and_legacy_timezone_from_client_is_mapped_to_new_timezone(): void
+    {
+        // Arrange
+        $this->mock(IpLookupServiceContract::class, function ($mock) {
+            $mock->shouldReceive('lookup')->andReturn(new IpLookupResponseDto(
+                'America/New_York',
+                Weekday::Sunday,
+                'USD',
+            ));
+        });
+
+        // Act
+        $response = $this->post('/register', [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+            'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature(),
+            'timezone' => 'Asia/Calcutta',
+        ]);
+
+        // Assert
+        $this->assertAuthenticated();
+        $response->assertRedirect(RouteServiceProvider::HOME);
+        /** @var User $user */
+        $user = User::where('email', 'test@example.com')->firstOrFail();
+        $this->assertSame('Asia/Kolkata', $user->timezone);
+        $this->assertSame(Weekday::Sunday, $user->week_start);
+        $this->assertSame('USD', $user->organizations->first()->currency);
+    }
+
     public function test_new_users_can_register_and_ignores_invalid_timezones_from_frontend(): void
     {
         $response = $this->post('/register', [

@@ -62,7 +62,10 @@ class CreateNewUser implements CreatesNewUsers
             if (app(TimezoneService::class)->isValid($input['timezone'])) {
                 $timezone = $input['timezone'];
             } else {
-                Log::debug('Invalid timezone', ['timezone' => $input['timezone']]);
+                $timezone = app(TimezoneService::class)->mapLegacyTimezone($input['timezone']);
+                if ($timezone === null) {
+                    Log::debug('Invalid timezone', ['timezone' => $input['timezone']]);
+                }
             }
         }
 
