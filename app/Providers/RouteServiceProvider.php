@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Http\Controllers\Web\HealthCheckController;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Http\Request;
@@ -37,6 +38,12 @@ class RouteServiceProvider extends ServiceProvider
         });
 
         $this->routes(function () {
+            Route::middleware('health-check')
+                ->group(function () {
+                    Route::get('health-check/up', [HealthCheckController::class, 'up']);
+                    Route::get('health-check/debug', [HealthCheckController::class, 'debug']);
+                });
+
             Route::middleware('api')
                 ->prefix('api')
                 ->name('api.')
