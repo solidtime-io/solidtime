@@ -25,24 +25,27 @@ async function exportData() {
     loading.value = true;
     const organizationId = getCurrentOrganizationId();
     if (organizationId) {
-        const response = await handleApiRequestNotifications(
-            () =>
-                api.exportOrganization(
-                    {},
-                    {
-                        params: {
-                            organization: organizationId,
-                        },
-                    }
-                ),
-            'Organization data exported successfully.',
-            'Exporting organization data failed.'
-        );
-        if (response) {
-            showResultModal.value = true;
+        try {
+            const response = await handleApiRequestNotifications(
+                () =>
+                    api.exportOrganization(
+                        {},
+                        {
+                            params: {
+                                organization: organizationId,
+                            },
+                        }
+                    ),
+                'Organization data exported successfully.',
+                'Exporting organization data failed.'
+            );
+            if (response) {
+                showResultModal.value = true;
+                exportResponse.value = response;
+                window.open(response.download_url, '_self')?.focus();
+            }
+        } finally {
             loading.value = false;
-            exportResponse.value = response;
-            window.open(response.download_url, '_self')?.focus();
         }
     }
 }
