@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Console\Commands\Admin;
 
-use App\Console\Commands\Admin\DeleteOrganizationCommand;
+use App\Console\Commands\Admin\OrganizationDeleteCommand;
 use App\Models\Organization;
 use App\Service\DeletionService;
 use Illuminate\Support\Str;
@@ -13,9 +13,9 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
 use Tests\TestCaseWithDatabase;
 
-#[CoversClass(DeleteOrganizationCommand::class)]
-#[UsesClass(DeleteOrganizationCommand::class)]
-class DeleteOrganizationCommandTest extends TestCaseWithDatabase
+#[CoversClass(OrganizationDeleteCommand::class)]
+#[UsesClass(OrganizationDeleteCommand::class)]
+class OrganizationDeleteCommandTest extends TestCaseWithDatabase
 {
     public function test_it_calls_the_deletion_service_with_the_organization(): void
     {
@@ -28,7 +28,7 @@ class DeleteOrganizationCommandTest extends TestCaseWithDatabase
         });
 
         // Act
-        $this->artisan('admin:delete-organization', ['organization' => $organization->getKey()])
+        $this->artisan('admin:organization:delete', ['organization' => $organization->getKey()])
             ->expectsOutput("Deleting organization with ID {$organization->getKey()}")
             ->expectsOutput("Organization with ID {$organization->getKey()} has been deleted.")
             ->assertExitCode(0);
@@ -40,7 +40,7 @@ class DeleteOrganizationCommandTest extends TestCaseWithDatabase
         $organizationId = Str::uuid()->toString();
 
         // Act
-        $this->artisan('admin:delete-organization', ['organization' => $organizationId])
+        $this->artisan('admin:organization:delete', ['organization' => $organizationId])
             ->expectsOutput('Organization with ID '.$organizationId.' not found.')
             ->assertExitCode(1);
     }
@@ -51,7 +51,7 @@ class DeleteOrganizationCommandTest extends TestCaseWithDatabase
         $organizationId = 'invalid-uuid';
 
         // Act
-        $this->artisan('admin:delete-organization', ['organization' => $organizationId])
+        $this->artisan('admin:organization:delete', ['organization' => $organizationId])
             ->expectsOutput('Organization ID must be a valid UUID.')
             ->assertExitCode(1);
     }
