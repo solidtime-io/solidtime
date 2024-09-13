@@ -9,14 +9,14 @@ use App\Service\DeletionService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 
-class DeleteOrganizationCommand extends Command
+class OrganizationDeleteCommand extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'admin:delete-organization
+    protected $signature = 'admin:organization:delete
                 { organization : The ID of the organization to delete }';
 
     /**
@@ -24,7 +24,7 @@ class DeleteOrganizationCommand extends Command
      *
      * @var string
      */
-    protected $description = 'Delete a organization.';
+    protected $description = 'Delete a organization';
 
     /**
      * Execute the console command.
