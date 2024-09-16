@@ -221,6 +221,7 @@ class SolidtimeImporter extends DefaultImporter
                     $taskId = $this->taskImportHelper->getKeyByExternalIdentifier($timeEntryRow['task_id']);
                 }
                 $timeEntry = new TimeEntry;
+                $timeEntry->disableAuditing();
                 $timeEntry->user_id = $userId;
                 $timeEntry->member_id = $memberId;
                 $timeEntry->task_id = $taskId;

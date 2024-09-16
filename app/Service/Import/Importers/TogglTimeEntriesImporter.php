@@ -99,6 +99,7 @@ class TogglTimeEntriesImporter extends DefaultImporter
                     ]);
                 }
                 $timeEntry = new TimeEntry;
+                $timeEntry->disableAuditing();
                 $timeEntry->user_id = $userId;
                 $timeEntry->member_id = $memberId;
                 $timeEntry->task_id = $taskId;
