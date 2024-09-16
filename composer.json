@@ -37,7 +37,7 @@
         "brianium/paratest": "^7.3",
         "fakerphp/faker": "^1.9.1",
         "fumeapp/modeltyper": "^2.2",
-        "phpstan/phpstan": "1.12.0",
+        "phpstan/phpstan": "1.12.3",
         "larastan/larastan": "^2.0",
         "laravel/pint": "^1.0",
         "laravel/sail": "^1.18",
