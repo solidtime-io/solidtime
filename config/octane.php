@@ -221,7 +221,7 @@ return [
     |
     */
 
-    'max_execution_time' => 45,
+    'max_execution_time' => 120,
 
     /**
      * Custom swoole config
