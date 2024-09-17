@@ -15,6 +15,7 @@ enum TimeEntryAggregationType: string
     case Task = 'task';
     case Client = 'client';
     case Billable = 'billable';
+    case Description = 'description';
 
     public function toInterval(): ?TimeEntryAggregationTypeInterval
     {

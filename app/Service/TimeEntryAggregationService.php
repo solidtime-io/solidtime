@@ -270,6 +270,8 @@ class TimeEntryAggregationService
             return 'client_id';
         } elseif ($group === TimeEntryAggregationType::Billable) {
             return 'billable';
+        } elseif ($group === TimeEntryAggregationType::Description) {
+            return 'description';
         }
     }
 
