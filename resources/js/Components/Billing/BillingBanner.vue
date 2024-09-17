@@ -42,17 +42,19 @@ const showFreeUpgradeBanner = computed(
 <template>
     <div
         v-if="showTrialBanner"
-        class="bg-accent-600/50 text-sm py-0.5 border-b border-border-secondary">
+        class="bg-accent-600/50 text-xs lg:text-sm py-0.5 border-b border-border-secondary">
         <MainContainer class="flex items-center justify-between">
             <div class="flex items-center space-x-1.5">
                 <CheckBadgeIcon class="w-4 text-white/50"></CheckBadgeIcon>
-                <span class="font-medium">
-                    Your trial expires in {{ daysLeftInTrial() }} days.
-                </span>
-                <span>
-                    To continue using all features & support the development of
-                    solidtime, please upgrade your plan.
-                </span>
+                <div class="lg:flex flex-1 items-center flex-col md:flex-row">
+                    <span class="font-medium">
+                        Your trial expires in {{ daysLeftInTrial() }} days.
+                    </span>
+                    <span>
+                        To continue using all features & support the development
+                        of solidtime, please upgrade your plan.
+                    </span>
+                </div>
             </div>
             <div class="flex items-center space-x-2">
                 <Link v-if="canManageBilling()" href="/billing">
@@ -70,17 +72,19 @@ const showFreeUpgradeBanner = computed(
     </div>
     <div
         v-if="showBlockedBanner"
-        class="bg-red-600/50 text-sm py-0.5 border-b border-border-secondary">
+        class="bg-red-600/50 text-xs lg:text-sm py-0.5 border-b border-border-secondary">
         <MainContainer class="flex items-center justify-between">
             <div class="flex items-center space-x-1.5">
                 <XCircleIcon class="w-4 text-white/50"></XCircleIcon>
-                <span class="font-medium">
-                    Your organization is currently blocked.
-                </span>
-                <span>
-                    Please upgrade to a premium plan or remove all users except
-                    the owner to unblock your organization.
-                </span>
+                <div class="lg:flex flex-1 items-center flex-col md:flex-row">
+                    <span class="font-medium">
+                        Your organization is currently blocked.
+                    </span>
+                    <span>
+                        Please upgrade to a premium plan or remove all users
+                        except the owner to unblock your organization.
+                    </span>
+                </div>
             </div>
             <div class="flex items-center space-x-2">
                 <Link
@@ -100,11 +104,11 @@ const showFreeUpgradeBanner = computed(
     </div>
     <div
         v-if="showFreeUpgradeBanner"
-        class="bg-tertiary text-sm py-0.5 border-b border-border-secondary">
+        class="bg-tertiary text-xs lg:text-sm py-0.5 border-b border-border-secondary">
         <MainContainer class="flex items-center justify-between">
             <div class="flex items-center space-x-1.5">
                 <XCircleIcon class="w-4 text-white/50"></XCircleIcon>
-                <div class="flex items-center flex-col md:flex-row">
+                <div class="lg:flex flex-1 items-center flex-col md:flex-row">
                     <span class="font-medium">
                         You are currently using the Free Plan.
                     </span>
