@@ -41,6 +41,7 @@ FROM composer:${COMPOSER_VERSION} AS vendor
 FROM dunglas/frankenphp:${FRANKENPHP_VERSION}-php${PHP_VERSION}
 
 ARG DOCKER_FILES_BASE_PATH
+ARG TARGETPLATFORM
 
 LABEL maintainer="solidtime <hello@solidtime.io>"
 LABEL org.opencontainers.image.title="solidtime"
@@ -77,6 +78,7 @@ RUN apt-get update; \
     apt-get install -yqq --no-install-recommends --show-progress \
     apt-utils \
     curl \
+    gcc \
     wget \
     nano \
     ncdu \
@@ -133,6 +135,16 @@ RUN chown -R ${USER}:${USER} ${ROOT} /var/{log,run} \
 
 RUN cp ${PHP_INI_DIR}/php.ini-production ${PHP_INI_DIR}/php.ini
 
+COPY --chown=${USER}:${USER} ${DOCKER_FILES_BASE_PATH}deployment/php.ini ${PHP_INI_DIR}/conf.d/99-octane-default.ini
+COPY --chown=${USER}:${USER} ${DOCKER_FILES_BASE_PATH}deployment/php-arm.ini ${PHP_INI_DIR}/conf.d/99-octane-arm.ini
+
+RUN echo "TARGETPLATFORM is equal to ${TARGETPLATFORM}"
+RUN if [ "${TARGETPLATFORM}" = "linux/arm64" ]; then \
+    rm ${PHP_INI_DIR}/conf.d/99-octane-default.ini; \
+    else \
+    rm ${PHP_INI_DIR}/conf.d/99-octane-arm.ini; \
+    fi
+
 USER ${USER}
 
 COPY --chown=${USER}:${USER} --from=vendor /usr/bin/composer /usr/bin/composer
@@ -158,7 +170,6 @@ COPY --chown=${USER}:${USER} ${DOCKER_FILES_BASE_PATH}deployment/supervisord.con
 COPY --chown=${USER}:${USER} ${DOCKER_FILES_BASE_PATH}deployment/octane/FrankenPHP/supervisord.frankenphp.conf /etc/supervisor/conf.d/
 COPY --chown=${USER}:${USER} ${DOCKER_FILES_BASE_PATH}deployment/supervisord.*.conf /etc/supervisor/conf.d/
 COPY --chown=${USER}:${USER} ${DOCKER_FILES_BASE_PATH}deployment/start-container /usr/local/bin/start-container
-COPY --chown=${USER}:${USER} ${DOCKER_FILES_BASE_PATH}deployment/php.ini ${PHP_INI_DIR}/conf.d/99-octane.ini
 
 # FrankenPHP embedded PHP configuration
 COPY --chown=${USER}:${USER} ${DOCKER_FILES_BASE_PATH}deployment/php.ini /lib/php.ini
