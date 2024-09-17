@@ -37,10 +37,12 @@ import { useTagsStore } from '@/utils/useTags';
 import { formatCents } from '@/packages/ui/src/utils/money';
 import { useStorage } from '@vueuse/core';
 
-const startDate = ref<string>(
+const startDate = useStorage<string>(
+    'reporting-start-date',
     getLocalizedDayJs(getDayJsInstance()().format()).subtract(14, 'd').format()
 );
-const endDate = ref<string>(
+const endDate = useStorage<string>(
+    'reporting-end-date',
     getLocalizedDayJs(getDayJsInstance()().format()).format()
 );
 const selectedTags = ref<string[]>([]);
