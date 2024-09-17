@@ -35,6 +35,7 @@ import { getCurrentMembershipId, getCurrentRole } from '@/utils/useUser';
 import ClientMultiselectDropdown from '@/Components/Common/Client/ClientMultiselectDropdown.vue';
 import { useTagsStore } from '@/utils/useTags';
 import { formatCents } from '@/packages/ui/src/utils/money';
+import { useStorage } from '@vueuse/core';
 
 const startDate = ref<string>(
     getLocalizedDayJs(getDayJsInstance()().format()).subtract(14, 'd').format()
@@ -50,8 +51,8 @@ const selectedClients = ref<string[]>([]);
 
 const billable = ref<'true' | 'false' | null>(null);
 
-const group = ref<GroupingOption>('project');
-const subGroup = ref<GroupingOption>('task');
+const group = useStorage<GroupingOption>('reporting-group', 'project');
+const subGroup = useStorage<GroupingOption>('reporting-sub-group', 'task');
 
 const reportingStore = useReportingStore();
 
