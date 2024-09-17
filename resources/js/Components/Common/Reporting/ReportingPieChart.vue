@@ -15,6 +15,7 @@ import { getRandomColorWithSeed } from '@/packages/ui/src/utils/color';
 import type { GroupedDataEntries } from '@/packages/api/src';
 import { useReportingStore } from '@/utils/useReporting';
 import { useProjectsStore } from '@/utils/useProjects';
+import { storeToRefs } from 'pinia';
 
 use([
     CanvasRenderer,
@@ -32,7 +33,7 @@ const props = defineProps<{
     type: string | null;
 }>();
 const { getNameForReportingRowEntry, emptyPlaceholder } = useReportingStore();
-const { projects } = useProjectsStore();
+const { projects } = storeToRefs(useProjectsStore());
 
 const groupChartData = computed(() => {
     return (
@@ -43,7 +44,7 @@ const groupChartData = computed(() => {
                 color = '#CCCCCC';
             } else if (props.type === 'project') {
                 color =
-                    projects.find((project) => project.id === entry.key)
+                    projects.value?.find((project) => project.id === entry.key)
                         ?.color ?? '#CCCCCC';
             }
             return {
