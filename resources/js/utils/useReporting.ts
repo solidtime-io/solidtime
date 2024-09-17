@@ -17,7 +17,7 @@ import {
     UserCircleIcon,
     UserGroupIcon,
 } from '@heroicons/vue/20/solid';
-import { FolderIcon } from '@heroicons/vue/16/solid';
+import { DocumentTextIcon, FolderIcon } from '@heroicons/vue/16/solid';
 import BillableIcon from '@/packages/ui/src/Icons/BillableIcon.vue';
 
 export type GroupingOption =
@@ -25,7 +25,8 @@ export type GroupingOption =
     | 'task'
     | 'user'
     | 'billable'
-    | 'client';
+    | 'client'
+    | 'description';
 
 export const useReportingStore = defineStore('reporting', () => {
     const reportingGraphResponse = ref<ReportingResponse | null>(null);
@@ -85,6 +86,7 @@ export const useReportingStore = defineStore('reporting', () => {
         task: 'No Task',
         billable: 'Non-Billable',
         client: 'No Client',
+        description: 'No Description',
     } as Record<string, string>;
 
     function getNameForReportingRowEntry(
@@ -157,6 +159,11 @@ export const useReportingStore = defineStore('reporting', () => {
             label: 'Billable',
             value: 'billable',
             icon: BillableIcon,
+        },
+        {
+            label: 'Description',
+            value: 'description',
+            icon: DocumentTextIcon,
         },
     ];
 

@@ -2430,6 +2430,7 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
                         'task',
                         'client',
                         'billable',
+                        'description',
                     ])
                     .optional(),
             },
@@ -2447,6 +2448,7 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
                         'task',
                         'client',
                         'billable',
+                        'description',
                     ])
                     .optional(),
             },
