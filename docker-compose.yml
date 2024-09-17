@@ -29,6 +29,7 @@ services:
             - "host.docker.internal:host-gateway"
             - "storage.${NGINX_HOST_NAME}:${REVERSE_PROXY_IP:-10.100.100.10}"
         environment:
+            SUPERVISOR_PHP_COMMAND: "/usr/bin/php -d variables_order=EGPCS /var/www/html/artisan octane:start --server=frankenphp --host=0.0.0.0 --admin-port=2019 --port=80"
             XDG_CONFIG_HOME: /var/www/html/config
             XDG_DATA_HOME: /var/www/html/data
             WWWUSER: '${WWWUSER}'

@@ -10,6 +10,7 @@ use App\Service\Import\Importers\ImporterProvider;
 use App\Service\Import\Importers\ImportException;
 use App\Service\Import\Importers\ReportDto;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -27,9 +28,16 @@ class ImportService
         Storage::disk(config('filesystems.default'))
             ->put('import/'.Carbon::now()->toDateString().'-'.$organization->getKey().'-'.Str::uuid(), $data);
 
-        DB::transaction(function () use (&$importer, &$data, &$timezone) {
-            $importer->importData($data, $timezone);
-        });
+        $lock = Cache::lock('import:'.$organization->getKey(), config('octane.max_execution_time', 60) + 1);
+
+        if ($lock->get()) {
+            DB::transaction(function () use (&$importer, &$data, &$timezone) {
+                $importer->importData($data, $timezone);
+            });
+            $lock->release();
+        } else {
+            throw new ImportException('Import is already in progress');
+        }
 
         return $importer->getReport();
     }
