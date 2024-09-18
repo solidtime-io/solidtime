@@ -165,7 +165,9 @@ const highlightedItem = computed(() => {
                 ref="searchInput"
                 class="bg-card-background border-0 placeholder-muted text-sm text-white py-2.5 focus:ring-0 border-b border-card-background-separator focus:border-card-background-separator w-full"
                 :placeholder="searchPlaceholder" />
-            <div ref="dropdownViewport" class="w-60 max-h-60 overflow-y-scroll">
+            <div
+                ref="dropdownViewport"
+                class="min-w-60 max-w-80 max-h-60 overflow-y-scroll">
                 <div
                     v-for="item in filteredItems"
                     :key="props.getKeyFromItem(item)"

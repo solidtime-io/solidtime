@@ -6,6 +6,7 @@ import type {
     Client,
     CreateClientBody,
     CreateProjectBody,
+    Member,
     Project,
     Tag,
     Task,
@@ -17,6 +18,7 @@ import TimeEntryRowDurationInput from '@/packages/ui/src/TimeEntry/TimeEntryRowD
 import TimeEntryMoreOptionsDropdown from '@/packages/ui/src/TimeEntry/TimeEntryMoreOptionsDropdown.vue';
 import TimeTrackerProjectTaskDropdown from '@/packages/ui/src/TimeTracker/TimeTrackerProjectTaskDropdown.vue';
 import BillableToggleButton from '@/packages/ui/src/Input/BillableToggleButton.vue';
+import { computed } from 'vue';
 
 const props = defineProps<{
     timeEntry: TimeEntry;
@@ -25,6 +27,7 @@ const props = defineProps<{
     tasks: Task[];
     tags: Tag[];
     clients: Client[];
+    members?: Member[];
     createTag: (name: string) => Promise<Tag | undefined>;
     createProject: (project: CreateProjectBody) => Promise<Project | undefined>;
     createClient: (client: CreateClientBody) => Promise<Client | undefined>;
@@ -32,6 +35,8 @@ const props = defineProps<{
     deleteTimeEntry: () => void;
     updateTimeEntry: (timeEntry: TimeEntry) => void;
     currency: string;
+    showMember?: boolean;
+    showDate?: boolean;
 }>();
 
 function updateTimeEntryDescription(description: string) {
@@ -57,6 +62,18 @@ function updateProjectAndTask(projectId: string, taskId: string) {
         task_id: taskId,
     });
 }
+
+const memberName = computed(() => {
+    if (props.members) {
+        const member = props.members.find(
+            (member) => member.user_id === props.timeEntry.user_id
+        );
+        if (member) {
+            return member.name;
+        }
+    }
+    return '';
+});
 </script>
 
 <template>
@@ -65,7 +82,7 @@ function updateProjectAndTask(projectId: string, taskId: string) {
         data-testid="time_entry_row">
         <MainContainer class="min-w-0">
             <div
-                class="sm:flex py-1 lg:py-1.5 min-w-0 items-center justify-between group">
+                class="sm:flex py-0.5 min-w-0 items-center justify-between group">
                 <div class="flex space-x-1 items-center min-w-0">
                     <input
                         type="checkbox"
@@ -91,6 +108,9 @@ function updateProjectAndTask(projectId: string, taskId: string) {
                         "></TimeTrackerProjectTaskDropdown>
                 </div>
                 <div class="flex items-center font-medium lg:space-x-2">
+                    <div class="text-sm px-2" v-if="showMember && members">
+                        {{ memberName }}
+                    </div>
                     <TimeEntryRowTagDropdown
                         @changed="updateTimeEntryTags"
                         :createTag
@@ -107,6 +127,7 @@ function updateProjectAndTask(projectId: string, taskId: string) {
                             class="hidden lg:block"
                             :start="timeEntry.start"
                             :end="timeEntry.end"
+                            :showDate
                             @changed="
                                 updateStartEndTime
                             "></TimeEntryRangeSelector>
