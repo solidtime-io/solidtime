@@ -7,6 +7,8 @@ namespace Tests\Unit\Endpoint\Api\V1;
 use App\Enums\Role;
 use App\Exceptions\Api\TimeEntryCanNotBeRestartedApiException;
 use App\Http\Controllers\Api\V1\TimeEntryController;
+use App\Jobs\RecalculateSpentTimeForProject;
+use App\Jobs\RecalculateSpentTimeForTask;
 use App\Models\Client;
 use App\Models\Member;
 use App\Models\Project;
@@ -16,6 +18,7 @@ use App\Models\TimeEntry;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Laravel\Passport\Passport;
@@ -1050,6 +1053,45 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         ]);
     }
 
+    public function test_create_endpoint_recalculates_project_and_task_spent_time_if_time_entry_has_project_and_task(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:create:own',
+        ]);
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        $task = Task::factory()->forOrganization($data->organization)->forProject($project)->create();
+        TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)->forProject($project)->forTask($task)->create();
+        $timeEntryFake = TimeEntry::factory()->forOrganization($data->organization)->make();
+        Passport::actingAs($data->user);
+        Queue::fake([
+            RecalculateSpentTimeForProject::class,
+            RecalculateSpentTimeForTask::class,
+        ]);
+
+        // Act
+        $response = $this->postJson(route('api.v1.time-entries.store', [$data->organization->getKey()]), [
+            'description' => $timeEntryFake->description,
+            'billable' => $timeEntryFake->billable,
+            'start' => Carbon::now()->toIso8601ZuluString(),
+            'end' => Carbon::now()->addHour()->toIso8601ZuluString(),
+            'member_id' => $data->member->getKey(),
+            'project_id' => $project->getKey(),
+            'task_id' => $task->getKey(),
+        ]);
+
+        // Assert
+        $response->assertStatus(201);
+        Queue::assertPushed(RecalculateSpentTimeForProject::class, 1);
+        Queue::assertPushed(RecalculateSpentTimeForTask::class, 1);
+        Queue::assertPushed(RecalculateSpentTimeForProject::class, function (RecalculateSpentTimeForProject $job) use ($project): bool {
+            return $job->project->is($project);
+        });
+        Queue::assertPushed(RecalculateSpentTimeForTask::class, function (RecalculateSpentTimeForTask $job) use ($task): bool {
+            return $job->task->is($task);
+        });
+    }
+
     public function test_update_endpoint_fails_if_user_has_no_permission_to_update_own_time_entries(): void
     {
         // Arrange
@@ -1385,6 +1427,82 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         ]);
     }
 
+    public function test_update_endpoint_recalculates_project_and_task_spend_time_after_updating_time_entry_settings_a_project_and_a_task(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:update:own',
+        ]);
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        $task = Task::factory()->forOrganization($data->organization)->forProject($project)->create();
+        $timeEntry = TimeEntry::factory()->forOrganization($data->organization)->forProject(null)->forTask(null)->forMember($data->member)->create();
+        TimeEntry::factory()->forOrganization($data->organization)->make();
+        Passport::actingAs($data->user);
+        Queue::fake([
+            RecalculateSpentTimeForProject::class,
+            RecalculateSpentTimeForTask::class,
+        ]);
+
+        // Act
+        $response = $this->putJson(route('api.v1.time-entries.update', [$data->organization->getKey(), $timeEntry->getKey()]), [
+            'project_id' => $project->getKey(),
+            'task_id' => $task->getKey(),
+        ]);
+
+        // Assert
+        $response->assertStatus(200);
+        Queue::assertPushed(RecalculateSpentTimeForProject::class, 1);
+        Queue::assertPushed(RecalculateSpentTimeForTask::class, 1);
+        Queue::assertPushed(function (RecalculateSpentTimeForProject $job) use ($project): bool {
+            return $job->project->is($project);
+        }, 1);
+        Queue::assertPushed(function (RecalculateSpentTimeForTask $job) use ($task): bool {
+            return $job->task->is($task);
+        }, 1);
+    }
+
+    public function test_update_endpoint_recalculates_project_and_task_spend_time_after_updating_time_entry_settings_a_new_project_and_a_new_task(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:update:own',
+        ]);
+        $oldProject = Project::factory()->forOrganization($data->organization)->create();
+        $oldTask = Task::factory()->forOrganization($data->organization)->forProject($oldProject)->create();
+        $timeEntry = TimeEntry::factory()->forOrganization($data->organization)->forProject($oldProject)->forTask($oldTask)->forMember($data->member)->create();
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        $task = Task::factory()->forOrganization($data->organization)->forProject($project)->create();
+        TimeEntry::factory()->forOrganization($data->organization)->make();
+        Passport::actingAs($data->user);
+        Queue::fake([
+            RecalculateSpentTimeForProject::class,
+            RecalculateSpentTimeForTask::class,
+        ]);
+
+        // Act
+        $response = $this->putJson(route('api.v1.time-entries.update', [$data->organization->getKey(), $timeEntry->getKey()]), [
+            'project_id' => $project->getKey(),
+            'task_id' => $task->getKey(),
+        ]);
+
+        // Assert
+        $response->assertStatus(200);
+        Queue::assertPushed(RecalculateSpentTimeForProject::class, 2);
+        Queue::assertPushed(RecalculateSpentTimeForTask::class, 2);
+        Queue::assertPushed(function (RecalculateSpentTimeForProject $job) use ($project): bool {
+            return $job->project->is($project);
+        }, 1);
+        Queue::assertPushed(function (RecalculateSpentTimeForProject $job) use ($oldProject): bool {
+            return $job->project->is($oldProject);
+        }, 1);
+        Queue::assertPushed(function (RecalculateSpentTimeForTask $job) use ($task): bool {
+            return $job->task->is($task);
+        }, 1);
+        Queue::assertPushed(function (RecalculateSpentTimeForTask $job) use ($oldTask): bool {
+            return $job->task->is($oldTask);
+        }, 1);
+    }
+
     public function test_destroy_endpoint_fails_if_user_tries_to_delete_time_entry_in_organization_that_they_does_belong_to(): void
     {
         // Arrange
@@ -1491,6 +1609,68 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         $this->assertDatabaseMissing(TimeEntry::class, [
             'id' => $timeEntry->getKey(),
         ]);
+    }
+
+    public function test_destroy_endpoint_recalculates_project_and_task_spend_time_after_deleting_time_entry(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:delete:own',
+        ]);
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        $task = Task::factory()->forOrganization($data->organization)->create();
+        $timeEntry = TimeEntry::factory()->forOrganization($data->organization)->forProject($project)->forTask($task)->forMember($data->member)->create();
+        $project = $timeEntry->project;
+        $task = $timeEntry->task;
+        Passport::actingAs($data->user);
+        Queue::fake([
+            RecalculateSpentTimeForProject::class,
+            RecalculateSpentTimeForTask::class,
+        ]);
+
+        // Act
+        $response = $this->deleteJson(route('api.v1.time-entries.destroy', [$data->organization->getKey(), $timeEntry->getKey()]));
+
+        // Assert
+        $response->assertStatus(204);
+        $response->assertNoContent();
+        $this->assertDatabaseMissing(TimeEntry::class, [
+            'id' => $timeEntry->getKey(),
+        ]);
+        Queue::assertPushed(RecalculateSpentTimeForProject::class, 1);
+        Queue::assertPushed(RecalculateSpentTimeForTask::class, 1);
+        Queue::assertPushed(RecalculateSpentTimeForProject::class, function (RecalculateSpentTimeForProject $job) use ($project) {
+            return $job->project->is($project);
+        });
+        Queue::assertPushed(RecalculateSpentTimeForTask::class, function (RecalculateSpentTimeForTask $job) use ($task) {
+            return $job->task->is($task);
+        });
+    }
+
+    public function test_destroy_endpoint_does_not_recalculate_project_and_task_spend_time_after_deleting_time_entry_if_time_entry_had_no_project_and_task(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:delete:own',
+        ]);
+        $timeEntry = TimeEntry::factory()->forOrganization($data->organization)->forProject(null)->forTask(null)->forMember($data->member)->create();
+        Passport::actingAs($data->user);
+        Queue::fake([
+            RecalculateSpentTimeForProject::class,
+            RecalculateSpentTimeForTask::class,
+        ]);
+
+        // Act
+        $response = $this->deleteJson(route('api.v1.time-entries.destroy', [$data->organization->getKey(), $timeEntry->getKey()]));
+
+        // Assert
+        $response->assertStatus(204);
+        $response->assertNoContent();
+        $this->assertDatabaseMissing(TimeEntry::class, [
+            'id' => $timeEntry->getKey(),
+        ]);
+        Queue::assertNotPushed(RecalculateSpentTimeForProject::class);
+        Queue::assertNotPushed(RecalculateSpentTimeForTask::class);
     }
 
     public function test_update_multiple_endpoint_fails_if_user_has_no_permission_to_update_own_time_entries_or_all_time_entries(): void

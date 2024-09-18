@@ -10,6 +10,8 @@ use App\Models\Organization;
 use App\Models\Project;
 use App\Models\ProjectMember;
 use App\Models\Task;
+use App\Models\TimeEntry;
+use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
 
@@ -115,6 +117,47 @@ class ProjectModelTest extends ModelTestAbstract
             $projectPublic->getKey(),
             $projectPrivateButMember->getKey(),
         ], $allProjects);
+    }
+
+    public function test_computed_spent_time_returns_the_sum_of_all_time_entries_excl_running_timers(): void
+    {
+        // Arrange
+        $project = Project::factory()->create();
+        $otherProject = Project::factory()->create();
+        TimeEntry::factory()->forProject($project)->startWithDuration(now(), 10)->create();
+        TimeEntry::factory()->forProject($project)->startWithDuration(now(), 10)->create();
+        TimeEntry::factory()->forProject($project)->startWithDuration(now(), 10)->create();
+        TimeEntry::factory()->forProject($otherProject)->startWithDuration(now(), 10)->create();
+        TimeEntry::factory()->forProject($otherProject)->start(now())->active()->create();
+
+        // Act
+        $project->refresh();
+        $spentTime = $project->getSpentTimeComputed();
+
+        // Assert
+        $this->assertEquals(30, $spentTime);
+    }
+
+    public function test_computed_spent_time_returns_already_computed_value_if_present(): void
+    {
+        // Arrange
+        $project = Project::factory()->create();
+        $otherProject = Project::factory()->create();
+        TimeEntry::factory()->forProject($project)->startWithDuration(now(), 10)->create();
+        TimeEntry::factory()->forProject($project)->startWithDuration(now(), 10)->create();
+        TimeEntry::factory()->forProject($project)->startWithDuration(now(), 10)->create();
+        TimeEntry::factory()->forProject($otherProject)->startWithDuration(now(), 10)->create();
+        TimeEntry::factory()->forProject($otherProject)->start(now())->active()->create();
+        $timeEntries = Project::query()
+            ->withAggregate('timeEntries as spent_time_computed', DB::raw('extract(epoch from ("end" - start))'), 'sum')
+            ->get();
+
+        // Act
+        $project->refresh();
+        $spentTime = $timeEntries->first()->getSpentTimeComputed();
+
+        // Assert
+        $this->assertEquals(30, $spentTime);
     }
 
     public function test_accessor_is_archived_is_true_if_archived_at_is_not_null(): void

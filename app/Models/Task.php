@@ -15,6 +15,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
+use Korridor\LaravelComputedAttributes\ComputedAttributes;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
@@ -24,6 +26,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  * @property string $organization_id
  * @property Carbon|null $done_at
  * @property int|null $estimated_time
+ * @property int $spent_time
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read Project $project
@@ -35,6 +38,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  */
 class Task extends Model implements AuditableContract
 {
+    use ComputedAttributes;
     use CustomAuditable;
 
     /** @use HasFactory<TaskFactory> */
@@ -52,6 +56,68 @@ class Task extends Model implements AuditableContract
         'estimated_time' => 'integer',
         'done_at' => 'datetime',
     ];
+
+    /**
+     * The attributes that are computed. (f.e. for performance reasons)
+     * These attributes can be regenerated at any time.
+     *
+     * @var string[]
+     */
+    protected array $computed = [
+        'spent_time',
+    ];
+
+    /**
+     * Attributes to exclude from the Audit.
+     *
+     * @var array<string>
+     */
+    protected array $auditExclude = [
+        'spent_time',
+    ];
+
+    public function getSpentTimeComputed(): ?int
+    {
+        if ($this->hasAttribute('spent_time_computed')) {
+            return $this->attributes['spent_time_computed'] === null ? 0 : (int) $this->attributes['spent_time_computed'];
+        } else {
+            /** @var object{ spent_time: string } $result */
+            $result = $this->timeEntries()
+                ->whereNotNull('end')
+                ->selectRaw('sum(extract(epoch from ("end" - start))) as spent_time')
+                ->first();
+
+            return (int) $result->spent_time;
+        }
+    }
+
+    /**
+     * This scope will be applied during the computed property generation with artisan computed-attributes:generate.
+     *
+     * @param  Builder<Task>  $builder
+     * @param  array<string>  $attributes  Attributes that will be generated.
+     * @return Builder<Task>
+     */
+    public function scopeComputedAttributesGenerate(Builder $builder, array $attributes): Builder
+    {
+        if (in_array('spent_time', $attributes, true)) {
+            $builder->withAggregate('timeEntries as spent_time_computed', DB::raw('extract(epoch from ("end" - start))'), 'sum');
+        }
+
+        return $builder;
+    }
+
+    /**
+     * This scope will be applied during the computed property validation with artisan computed-attributes:validate.
+     *
+     * @param  Builder<Task>  $builder
+     * @param  array<string>  $attributes  Attributes that will be validated.
+     * @return Builder<Task>
+     */
+    public function scopeComputedAttributesValidate(Builder $builder, array $attributes): Builder
+    {
+        return $this->scopeComputedAttributesGenerate($builder, $attributes);
+    }
 
     /**
      * @return BelongsTo<Project, Task>

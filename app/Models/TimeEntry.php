@@ -81,6 +81,15 @@ class TimeEntry extends Model implements AuditableContract
         'billable_rate',
     ];
 
+    /**
+     * Attributes to exclude from the Audit.
+     *
+     * @var array<string>
+     */
+    protected array $auditExclude = [
+        'billable_rate',
+    ];
+
     public function getBillableRateComputed(): ?int
     {
         return app(BillableRateService::class)->getBillableRateForTimeEntry($this);
