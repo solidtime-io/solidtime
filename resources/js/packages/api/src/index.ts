@@ -107,6 +107,11 @@ export type ReportingResponse = ZodiosResponseByAlias<
 export type AggregatedTimeEntries = ReportingResponse['data'];
 export type GroupedDataEntries = ReportingResponse['data']['grouped_data'];
 
+export type TimeEntriesQueryParams = ZodiosQueryParamsByAlias<
+    SolidTimeApi,
+    'getTimeEntries'
+>;
+
 export type AggregatedTimeEntriesQueryParams = ZodiosQueryParamsByAlias<
     SolidTimeApi,
     'getAggregatedTimeEntries'
