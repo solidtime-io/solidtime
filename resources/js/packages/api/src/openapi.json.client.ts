@@ -2156,6 +2156,11 @@ Users with the permission &#x60;time-entries:view:own&#x60; can only use this en
                 schema: z.array(z.string().uuid()).min(1).optional(),
             },
             {
+                name: 'client_ids',
+                type: 'Query',
+                schema: z.array(z.string().uuid()).min(1).optional(),
+            },
+            {
                 name: 'project_ids',
                 type: 'Query',
                 schema: z.array(z.string().uuid()).min(1).optional(),
@@ -2169,11 +2174,6 @@ Users with the permission &#x60;time-entries:view:own&#x60; can only use this en
                 name: 'task_ids',
                 type: 'Query',
                 schema: z.array(z.string().uuid()).min(1).optional(),
-            },
-            {
-                name: 'client_ids',
-                type: 'Query',
-                schema: z.string().optional(),
             },
             {
                 name: 'user_id',

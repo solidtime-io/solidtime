@@ -8,6 +8,7 @@ import { reactive, ref } from 'vue';
 import {
     api,
     type CreateTimeEntryBody,
+    type TimeEntriesQueryParams,
     type TimeEntry,
 } from '@/packages/api/src';
 import dayjs from 'dayjs';
@@ -19,8 +20,14 @@ export const useTimeEntriesStore = defineStore('timeEntries', () => {
     const allTimeEntriesLoaded = ref(false);
     const { handleApiRequestNotifications } = useNotificationsStore();
 
-    async function fetchTimeEntries() {
+    async function fetchTimeEntries(
+        queryParams: TimeEntriesQueryParams = {
+            only_full_dates: 'true',
+            member_id: getCurrentMembershipId(),
+        }
+    ) {
         const organizationId = getCurrentOrganizationId();
+
         if (organizationId) {
             const timeEntriesResponse = await handleApiRequestNotifications(
                 () =>
@@ -28,10 +35,7 @@ export const useTimeEntriesStore = defineStore('timeEntries', () => {
                         params: {
                             organization: organizationId,
                         },
-                        queries: {
-                            only_full_dates: 'true',
-                            member_id: getCurrentMembershipId(),
-                        },
+                        queries: queryParams,
                     }),
                 undefined,
                 'Failed to fetch time entries'
