@@ -60,7 +60,7 @@ jobs:
           php artisan passport:keys
 
       - name: "Run PHPUnit"
-        run: php artisan test --stop-on-failure --coverage-text --coverage-clover=coverage.xml
+        run: php artisan test --parallel --stop-on-failure --coverage-text --coverage-clover=coverage.xml
 
       - name: "Upload coverage reports to Codecov"
         uses: codecov/codecov-action@v5.4.2
