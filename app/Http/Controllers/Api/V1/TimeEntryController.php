@@ -13,9 +13,12 @@ use App\Http\Requests\V1\TimeEntry\TimeEntryUpdateMultipleRequest;
 use App\Http\Requests\V1\TimeEntry\TimeEntryUpdateRequest;
 use App\Http\Resources\V1\TimeEntry\TimeEntryCollection;
 use App\Http\Resources\V1\TimeEntry\TimeEntryResource;
+use App\Jobs\RecalculateSpentTimeForProject;
+use App\Jobs\RecalculateSpentTimeForTask;
 use App\Models\Member;
 use App\Models\Organization;
 use App\Models\Project;
+use App\Models\Task;
 use App\Models\TimeEntry;
 use App\Service\TimeEntryAggregationService;
 use App\Service\TimeEntryFilter;
@@ -215,7 +218,16 @@ class TimeEntryController extends Controller
             throw new TimeEntryStillRunningApiException;
         }
 
-        $client = $request->input('project_id') !== null ? Project::findOrFail((string) $request->input('project_id'))->client : null;
+        $project = $request->input('project_id') !== null ? Project::findOrFail((string) $request->input('project_id')) : null;
+        $client = $project?->client;
+        $task = $request->input('task_id') !== null ? $project->tasks()->findOrFail((string) $request->input('task_id')) : null;
+
+        if ($project !== null) {
+            RecalculateSpentTimeForProject::dispatch($project);
+        }
+        if ($task !== null) {
+            RecalculateSpentTimeForTask::dispatch($task);
+        }
 
         $timeEntry = new TimeEntry;
         $timeEntry->fill($request->validated());
@@ -250,15 +262,37 @@ class TimeEntryController extends Controller
             throw new TimeEntryCanNotBeRestartedApiException;
         }
 
+        $oldProject = $timeEntry->project;
+        $oldTask = $timeEntry->task;
+
+        $project = null;
         if ($request->has('project_id')) {
-            $client = $request->input('project_id') !== null ? Project::findOrFail((string) $request->input('project_id'))->client : null;
+            $project = $request->input('project_id') !== null ? Project::findOrFail((string) $request->input('project_id')) : null;
+            $client = $project?->client;
             $timeEntry->client()->associate($client);
+        }
+        $task = null;
+        if ($request->has('task_id')) {
+            $task = $request->input('task_id') !== null ? Task::findOrFail((string) $request->input('task_id')) : null;
         }
 
         $timeEntry->fill($request->validated());
         $timeEntry->description = $request->input('description', $timeEntry->description) ?? '';
         $timeEntry->setComputedAttributeValue('billable_rate');
         $timeEntry->save();
+
+        if ($oldProject !== null) {
+            RecalculateSpentTimeForProject::dispatch($oldProject);
+        }
+        if ($oldTask !== null) {
+            RecalculateSpentTimeForTask::dispatch($oldTask);
+        }
+        if ($project !== null && ($oldProject === null || $project->isNot($oldProject))) {
+            RecalculateSpentTimeForProject::dispatch($project);
+        }
+        if ($task !== null && ($oldTask === null || $task->isNot($oldTask))) {
+            RecalculateSpentTimeForTask::dispatch($task);
+        }
 
         return new TimeEntryResource($timeEntry);
     }
@@ -279,6 +313,10 @@ class TimeEntryController extends Controller
 
         $timeEntries = TimeEntry::query()
             ->whereBelongsTo($organization, 'organization')
+            ->with([
+                'project',
+                'task',
+            ])
             ->whereIn('id', $ids)
             ->get();
 
@@ -288,11 +326,18 @@ class TimeEntryController extends Controller
             throw new AuthorizationException;
         }
 
+        $project = null;
         $client = null;
         $overwriteClient = false;
         if ($request->has('changes.project_id')) {
-            $client = $request->input('changes.project_id') !== null ? Project::findOrFail((string) $request->input('changes.project_id'))->client : null;
+            $project = $request->input('changes.project_id') !== null ? Project::findOrFail((string) $request->input('changes.project_id')) : null;
+            $client = $project?->client;
             $overwriteClient = true;
+        }
+
+        $task = null;
+        if ($request->has('changes.task_id')) {
+            $task = $request->input('changes.task_id') !== null ? Task::findOrFail((string) $request->input('changes.task_id')) : null;
         }
 
         $success = new Collection;
@@ -313,12 +358,28 @@ class TimeEntryController extends Controller
                 continue;
 
             }
+            $oldProject = $timeEntry->project;
+            $oldTask = $timeEntry->task;
+
             $timeEntry->fill($changes);
             if ($overwriteClient) {
                 $timeEntry->client()->associate($client);
             }
             $timeEntry->setComputedAttributeValue('billable_rate');
             $timeEntry->save();
+            if ($oldTask !== null) {
+                RecalculateSpentTimeForTask::dispatch($oldTask);
+            }
+            if ($oldProject !== null) {
+                RecalculateSpentTimeForProject::dispatch($oldProject);
+            }
+            if ($project !== null && ($oldProject === null || $project->isNot($oldProject))) {
+                RecalculateSpentTimeForProject::dispatch($project);
+            }
+            if ($task !== null && ($oldTask === null || $task->isNot($oldTask))) {
+                RecalculateSpentTimeForTask::dispatch($task);
+            }
+
             $success->push($id);
         }
 
@@ -343,7 +404,17 @@ class TimeEntryController extends Controller
             $this->checkPermission($organization, 'time-entries:delete:all', $timeEntry);
         }
 
+        $project = $timeEntry->project;
+        $task = $timeEntry->task;
+
         $timeEntry->delete();
+
+        if ($project !== null) {
+            RecalculateSpentTimeForProject::dispatch($project);
+        }
+        if ($task !== null) {
+            RecalculateSpentTimeForTask::dispatch($task);
+        }
 
         return response()
             ->json(null, 204);
