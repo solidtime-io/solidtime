@@ -29,8 +29,8 @@ const displaysPlaceholder = computed(() => {
         <div class="relative text-sm font-medium min-w-0">
             <div
                 :class="[
-                    'opacity-0 py-2 text-base whitespace-pre min-w-0 pl-3 pr-1',
-                    { 'min-w-[150px]': displaysPlaceholder },
+                    'opacity-0 py-2 text-sm whitespace-pre min-w-0 pl-3 pr-1',
+                    { 'min-w-[130px]': displaysPlaceholder },
                 ]">
                 {{ liveDataValue }}
             </div>
@@ -41,7 +41,7 @@ const displaysPlaceholder = computed(() => {
                 @input="onInput"
                 @keydown.enter="onChange"
                 placeholder="Add a description"
-                class="absolute px-0 h-full min-w-0 pl-3 pr-1 left-0 top-0 w-full text-sm lg:text-base text-white font-medium bg-transparent focus-visible:ring-0 rounded-lg border-0" />
+                class="absolute px-0 h-full min-w-0 pl-3 pr-1 left-0 top-0 w-full text-sm text-white font-medium bg-transparent focus-visible:ring-0 rounded-lg border-0" />
         </div>
     </div>
 </template>
