@@ -46,6 +46,8 @@ class TimeEntryController extends Controller
      * If you only need time entries for a specific user, you can filter by `user_id`.
      * Users with the permission `time-entries:view:own` can only use this endpoint with their own user ID in the user_id filter.
      *
+     * @return TimeEntryCollection<TimeEntryResource>
+     *
      * @throws AuthorizationException
      *
      * @operationId getTimeEntries
@@ -76,11 +78,14 @@ class TimeEntryController extends Controller
         $filter->addClientIdsFilter($request->input('client_ids'));
         $filter->addBillableFilter($request->input('billable'));
 
-        $limit = $request->has('limit') ? (int) $request->input('limit', 100) : 100;
+        $totalCount = $timeEntriesQuery->count();
+
+        $limit = $request->getLimit();
         if ($limit > 1000) {
             $limit = 1000;
         }
         $timeEntriesQuery->limit($limit);
+        $timeEntriesQuery->skip($request->getSkip());
 
         $timeEntries = $timeEntriesQuery->get();
 
@@ -114,7 +119,12 @@ class TimeEntryController extends Controller
             }
         }
 
-        return new TimeEntryCollection($timeEntries);
+        return (new TimeEntryCollection($timeEntries))
+            ->additional([
+                'meta' => [
+                    'total' => $totalCount,
+                ],
+            ]);
     }
 
     /**
