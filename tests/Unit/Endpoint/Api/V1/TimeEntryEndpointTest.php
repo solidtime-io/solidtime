@@ -23,6 +23,7 @@ use Illuminate\Support\Str;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Laravel\Passport\Passport;
 use PHPUnit\Framework\Attributes\UsesClass;
+use Ramsey\Uuid\Type\Time;
 use TiMacDonald\Log\LogEntry;
 
 #[UsesClass(TimeEntryController::class)]
@@ -166,6 +167,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         // Assert
         $response->assertStatus(200);
         $response->assertJsonCount(1, 'data');
+        $response->assertJsonPath('meta.total', 1);
         $response->assertJsonPath('data.0.id', $activeTimeEntry->getKey());
     }
 
@@ -189,13 +191,13 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         // Assert
         $response->assertStatus(200);
         $response->assertJsonCount(1, 'data');
+        $response->assertJsonPath('meta.total', 1);
         $response->assertJsonPath('data.0.id', $nonActiveTimeEntries->getKey());
     }
 
     public function test_index_endpoint_filter_only_full_dates_returns_time_entries_for_the_whole_day_case_less_time_entries_than_limit(): void
     {
         // Arrange
-
         $data = $this->createUserWithPermission([
             'time-entries:view:own',
         ]);
@@ -213,6 +215,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         // Assert
         $response->assertStatus(200);
         $response->assertJsonCount(3, 'data');
+        $response->assertJsonPath('meta.total', 3);
     }
 
     public function test_index_endpoint_filter_only_full_dates_returns_time_entries_for_the_whole_day_case_more_time_entries_than_limit(): void
@@ -240,6 +243,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         // Assert
         $response->assertStatus(200);
         $response->assertJsonCount(3, 'data');
+        $response->assertJsonPath('meta.total', 6);
     }
 
     public function test_index_endpoint_filter_only_full_dates_returns_time_entries_for_the_whole_day_case_more_time_entries_than_limit_with_a_timezone_edge_case(): void
@@ -288,6 +292,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         // Assert
         $response->assertStatus(200);
         $response->assertJsonCount(2, 'data');
+        $response->assertJsonPath('meta.total', 7);
     }
 
     public function test_index_endpoint_filter_only_full_dates_returns_time_entries_for_the_whole_day_case_more_time_entries_in_latest_day_than_limit(): void
@@ -321,6 +326,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         // Assert
         $response->assertStatus(200);
         $response->assertJsonCount(7, 'data');
+        $response->assertJsonPath('meta.total', 10);
         Log::assertLogged(fn (LogEntry $log) => $log->level === 'warning'
             && $log->message === 'User has has more than 5 time entries on one date'
         );
@@ -362,6 +368,8 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         $response->assertStatus(200);
         $response->assertJson(fn (AssertableJson $json) => $json
             ->has('data')
+            ->has('meta')
+            ->where('meta.total', 4)
             ->count('data', 4)
             ->where('data.0.id', $timeEntriesDirectlyBeforeLimit->getKey())
             ->where('data.1.id', $timeEntriesBeforeSorted->get(0)->getKey())
@@ -400,6 +408,8 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         $response->assertStatus(200);
         $response->assertJson(fn (AssertableJson $json) => $json
             ->has('data')
+            ->has('meta')
+            ->where('meta.total', 4)
             ->count('data', 4)
             ->where('data.0.id', $timeEntriesAfterSorted->get(0)->getKey())
             ->where('data.1.id', $timeEntriesAfterSorted->get(1)->getKey())
@@ -451,9 +461,48 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         $response->assertStatus(200);
         $response->assertJson(fn (AssertableJson $json) => $json
             ->has('data')
+            ->has('meta')
+            ->where('meta.total', 1)
             ->count('data', 1)
             ->where('data.0.id', $timeEntry1->getKey())
         );
+    }
+
+    public function test_index_endpoint_with_limit_skip_and_only_full_dates_deactivated(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:view:own',
+        ]);
+        $project1 = Project::factory()->forOrganization($data->organization)->create();
+        $project2 = Project::factory()->forOrganization($data->organization)->create();
+        TimeEntry::factory()->forMember($data->member)->forProject($project1)->forOrganization($data->organization)->create([
+            'start' => Carbon::now()->subDays(2),
+        ]);
+        $timeEntry = TimeEntry::factory()->forMember($data->member)->forProject($project1)->forOrganization($data->organization)->create([
+            'start' => Carbon::now()->subDays(3),
+        ]);
+        TimeEntry::factory()->forMember($data->member)->forProject($project1)->forOrganization($data->organization)->create([
+            'start' => Carbon::now()->subDays(4),
+        ]);
+        TimeEntry::factory()->forMember($data->member)->forProject($project2)->forOrganization($data->organization)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.time-entries.index', [
+            $data->organization->getKey(),
+            'member_id' => $data->member->getKey(),
+            'project_ids' => [$project1->getKey()],
+            'limit' => 1,
+            'skip' => 1,
+            'only_full_dates' => 'false',
+        ]));
+
+        // Assert
+        $response->assertStatus(200);
+        $response->assertJsonCount(1, 'data');
+        $response->assertJsonPath('meta.total', 3);
+        $response->assertJsonPath('data.*.id', [$timeEntry->getKey()]);
     }
 
     public function test_aggregate_endpoint_fails_if_user_has_no_permission_to_view_time_entries(): void
