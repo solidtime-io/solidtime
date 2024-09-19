@@ -87,7 +87,11 @@ function setLastYear() {
 </script>
 
 <template>
-    <Dropdown v-model="open" :close-on-content-click="false" align="bottom-end">
+    <Dropdown
+        v-model="open"
+        :close-on-content-click="false"
+        align="bottom-end"
+        @submit="emit('submit')">
         <template #trigger>
             <button
                 class="px-3 py-1.5 bg-input-background border border-input-border font-medium rounded-lg flex items-center space-x-2">
