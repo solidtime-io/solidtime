@@ -131,6 +131,11 @@ class TimeEntryIndexRequest extends FormRequest
                 'min:1',
                 'max:500',
             ],
+            // Skip the first n time entries (default: 0)
+            'skip' => [
+                'integer',
+                'min:0',
+            ],
             // Filter makes sure that only time entries of a whole date are returned
             'only_full_dates' => [
                 'string',
@@ -142,5 +147,15 @@ class TimeEntryIndexRequest extends FormRequest
     public function getOnlyFullDates(): bool
     {
         return $this->input('only_full_dates', 'false') === 'true';
+    }
+
+    public function getLimit(): int
+    {
+        return $this->has('limit') ? (int) $this->validated('limit', 100) : 100;
+    }
+
+    public function getSkip(): int
+    {
+        return $this->has('skip') ? (int) $this->validated('skip', 0) : 0;
     }
 }
