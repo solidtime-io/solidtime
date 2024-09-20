@@ -113,9 +113,8 @@ const showFreeUpgradeBanner = computed(
                         You are currently using the Free Plan.
                     </span>
                     <span class="hidden md:inline">
-                        >To unlock all premium features & support the
-                        development of solidtime, please upgrade your
-                        plan.</span
+                        To unlock all premium features & support the development
+                        of solidtime, please upgrade your plan.</span
                     >
                 </div>
             </div>
