@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import MainContainer from '@/packages/ui/src/MainContainer.vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
-import { FolderIcon, PlusIcon } from '@heroicons/vue/16/solid';
+import { PlusIcon } from '@heroicons/vue/16/solid';
 import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
 import { UserCircleIcon } from '@heroicons/vue/20/solid';
 import { computed, onMounted, ref } from 'vue';
@@ -43,7 +43,7 @@ const shownClients = computed(() => {
         <MainContainer
             class="py-5 border-b border-default-background-separator flex justify-between items-center">
             <div class="flex items-center space-x-3 sm:space-x-6">
-                <PageTitle :icon="FolderIcon" title="Projects"></PageTitle>
+                <PageTitle :icon="UserCircleIcon" title="Clients"> </PageTitle>
                 <TabBar>
                     <TabBarItem
                         :active="isActiveTab('active')"
@@ -56,9 +56,6 @@ const shownClients = computed(() => {
                         Archived
                     </TabBarItem>
                 </TabBar>
-            </div>
-            <div class="flex items-center space-x-6">
-                <PageTitle :icon="UserCircleIcon" title="Clients"> </PageTitle>
             </div>
             <SecondaryButton
                 v-if="canCreateClients()"
