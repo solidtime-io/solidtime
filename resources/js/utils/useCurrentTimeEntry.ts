@@ -202,8 +202,6 @@ export const useCurrentTimeEntryStore = defineStore('currentTimeEntry', () => {
         useTimeEntriesStore().fetchTimeEntries();
     }
 
-    startLiveTimer();
-
     return {
         currentTimeEntry,
         fetchCurrentTimeEntry,
