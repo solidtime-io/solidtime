@@ -19,6 +19,7 @@ const client = ref<CreateClientBody>({
 
 async function submit() {
     await createClient(client.value);
+    client.value.name = '';
     show.value = false;
 }
 
