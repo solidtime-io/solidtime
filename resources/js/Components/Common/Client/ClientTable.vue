@@ -22,7 +22,7 @@ const createClient = ref(false);
             <div
                 data-testid="client_table"
                 class="grid min-w-full"
-                style="grid-template-columns: 1fr 150px 80px">
+                style="grid-template-columns: 1fr 150px 200px 80px">
                 <ClientTableHeading></ClientTableHeading>
                 <div
                     class="col-span-2 py-24 text-center"
