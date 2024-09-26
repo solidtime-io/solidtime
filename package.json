@@ -38,6 +38,7 @@
         "@heroicons/vue": "^2.1.1",
         "@rushstack/eslint-patch": "^1.7.0",
         "@tailwindcss/container-queries": "^0.1.1",
+        "@tanstack/vue-table": "^8.20.5",
         "@vue/eslint-config-prettier": "^9.0.0",
         "@vue/eslint-config-typescript": "^13.0.0",
         "@vueuse/core": "^10.11.0",
