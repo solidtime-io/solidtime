@@ -4,6 +4,7 @@ import BillableRateInput from '@/packages/ui/src/Input/BillableRateInput.vue';
 import ProjectBillableSelect from '@/packages/ui/src/Project/ProjectBillableSelect.vue';
 import { computed, onMounted, ref, watch } from 'vue';
 import type { BillableKey } from '@/types/projects';
+import BillableIcon from '@/packages/ui/src/Icons/BillableIcon.vue';
 
 defineProps<{
     currency: string;
@@ -56,7 +57,11 @@ const emit = defineEmits(['submit']);
 <template>
     <div class="sm:flex items-center space-y-2 sm:space-y-0 sm:space-x-4 pt-6">
         <div>
-            <InputLabel for="billable" value="Billable Default" />
+            <div class="flex items-center space-x-1">
+                <BillableIcon
+                    class="text-text-quaternary h-4 ml-1 mr-0.5"></BillableIcon>
+                <InputLabel for="billable" value="Billable Default" />
+            </div>
             <ProjectBillableSelect
                 v-model="billableRateSelect"
                 class="mt-2"></ProjectBillableSelect>
@@ -72,7 +77,7 @@ const emit = defineEmits(['submit']);
                 name="billableRate" />
         </div>
     </div>
-    <div class="flex items-center text-muted pt-2 pl-1">
+    <div class="flex items-center text-muted text-xs pt-2 pl-1">
         <span>
             <span class="font-semibold"> Info: </span>
             {{ billableOptionInfoText }}

@@ -7,6 +7,10 @@ import TableRow from '@/Components/TableRow.vue';
 import { canDeleteTasks } from '@/utils/permissions';
 import TaskEditModal from '@/Components/Common/Task/TaskEditModal.vue';
 import { ref } from 'vue';
+import { isAllowedToPerformPremiumAction } from '@/utils/billing';
+import EstimatedTimeProgress from '@/packages/ui/src/EstimatedTimeProgress.vue';
+import UpgradeBadge from '@/Components/Common/UpgradeBadge.vue';
+import { formatHumanReadableDuration } from '../../../packages/ui/src/utils/time';
 
 const props = defineProps<{
     task: Task;
@@ -29,10 +33,27 @@ const showTaskEditModal = ref(false);
 <template>
     <TableRow>
         <div
-            class="whitespace-nowrap flex items-center space-x-5 3xl:pl-12 py-4 pr-3 text-sm font-medium text-white pl-4 sm:pl-6 lg:pl-8 3xl:pl-12">
-            <span>
+            class="whitespace-nowrap min-w-0 flex items-center space-x-5 3xl:pl-12 py-4 pr-3 text-sm font-medium text-white pl-4 sm:pl-6 lg:pl-8 3xl:pl-12">
+            <span class="overflow-ellipsis overflow-hidden">
                 {{ task.name }}
             </span>
+        </div>
+        <div
+            class="whitespace-nowrap px-3 py-4 text-sm text-muted flex space-x-1 items-center font-medium">
+            <span v-if="task.spent_time">
+                {{ formatHumanReadableDuration(task.spent_time) }}
+            </span>
+            <span v-else> -- </span>
+        </div>
+        <div
+            class="whitespace-nowrap px-3 flex items-center text-sm text-muted">
+            <UpgradeBadge
+                v-if="!isAllowedToPerformPremiumAction()"></UpgradeBadge>
+            <EstimatedTimeProgress
+                v-else-if="task.estimated_time"
+                :estimated="task.estimated_time"
+                :current="task.spent_time"></EstimatedTimeProgress>
+            <span v-else> -- </span>
         </div>
         <div
             class="whitespace-nowrap px-3 py-4 text-sm text-muted flex space-x-1 items-center font-medium">

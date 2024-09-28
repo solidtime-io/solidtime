@@ -17,10 +17,12 @@ import { useClientsStore } from '@/utils/useClients';
 import { storeToRefs } from 'pinia';
 import ProjectColorSelector from '@/packages/ui/src/Project/ProjectColorSelector.vue';
 import { UserCircleIcon } from '@heroicons/vue/20/solid';
+import EstimatedTimeSection from '@/packages/ui/src/EstimatedTimeSection.vue';
 import InputLabel from '@/packages/ui/src/Input/InputLabel.vue';
 import ProjectBillableRateModal from '@/packages/ui/src/Project/ProjectBillableRateModal.vue';
 import { getOrganizationCurrencyString } from '@/utils/money';
 import ProjectEditBillableSection from '@/packages/ui/src/Project/ProjectEditBillableSection.vue';
+import { isAllowedToPerformPremiumAction } from '@/utils/billing';
 
 const { updateProject } = useProjectsStore();
 const { clients } = storeToRefs(useClientsStore());
@@ -41,6 +43,7 @@ const project = ref<CreateProjectBody>({
     client_id: props.originalProject.client_id,
     billable_rate: props.originalProject.billable_rate,
     is_billable: props.originalProject.is_billable,
+    estimated_time: props.originalProject.estimated_time,
 });
 
 async function submit() {
@@ -127,13 +130,23 @@ async function submitBillableRate() {
                     </ClientDropdown>
                 </div>
             </div>
-            <ProjectEditBillableSection
-                @submit="submit"
-                :currency="getOrganizationCurrencyString()"
-                v-model:isBillable="project.is_billable"
-                v-model:billableRate="
-                    project.billable_rate
-                "></ProjectEditBillableSection>
+            <div class="lg:grid grid-cols-2 gap-12">
+                <div>
+                    <ProjectEditBillableSection
+                        @submit="submit"
+                        :currency="getOrganizationCurrencyString()"
+                        v-model:isBillable="project.is_billable"
+                        v-model:billableRate="
+                            project.billable_rate
+                        "></ProjectEditBillableSection>
+                </div>
+                <div>
+                    <EstimatedTimeSection
+                        v-if="isAllowedToPerformPremiumAction()"
+                        @submit="submit()"
+                        v-model="project.estimated_time"></EstimatedTimeSection>
+                </div>
+            </div>
         </template>
         <template #footer>
             <SecondaryButton @click="show = false"> Cancel</SecondaryButton>

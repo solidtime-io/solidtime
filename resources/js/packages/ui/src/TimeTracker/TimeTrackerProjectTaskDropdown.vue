@@ -165,6 +165,8 @@ watchEffect(() => {
                     is_billable: false,
                     expanded: false,
                     tasks: [],
+                    estimated_time: null,
+                    spent_time: 0,
                 },
             ],
         });

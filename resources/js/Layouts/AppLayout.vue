@@ -92,7 +92,7 @@ const page = usePage<{
                     <CurrentSidebarTimer></CurrentSidebarTimer>
                 </div>
                 <div
-                    class="overflow-y-scroll flex-1 w-[calc(100%+10px)]"
+                    class="overflow-y-scroll flex-1 w-full"
                     style="
                         scrollbar-width: thin;
                         scrollbar-color: var(--color-bg-primary) transparent;

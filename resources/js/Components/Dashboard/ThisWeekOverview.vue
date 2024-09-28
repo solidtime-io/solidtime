@@ -189,7 +189,7 @@ const option = ref({
         </div>
         <div class="space-y-6">
             <StatCard
-                title="Total Time"
+                title="Spent Time"
                 :value="formatHumanReadableDuration(props.totalWeeklyTime)" />
             <StatCard
                 title="Billable Time"

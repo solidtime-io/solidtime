@@ -15,9 +15,11 @@ import ClientDropdown from '@/packages/ui/src/Client/ClientDropdown.vue';
 import Badge from '@/packages/ui/src/Badge.vue';
 import ProjectColorSelector from '@/packages/ui/src/Project/ProjectColorSelector.vue';
 import { UserCircleIcon } from '@heroicons/vue/20/solid';
+import EstimatedTimeSection from '@/packages/ui/src/EstimatedTimeSection.vue';
 import InputLabel from '@/packages/ui/src/Input/InputLabel.vue';
 import ProjectEditBillableSection from '@/packages/ui/src/Project/ProjectEditBillableSection.vue';
 import type { Client } from '@/packages/api/src';
+import { isAllowedToPerformPremiumAction } from '@/utils/billing';
 
 const show = defineModel('show', { default: false });
 const saving = ref(false);
@@ -39,6 +41,7 @@ const project = ref<CreateProjectBody>({
     client_id: null,
     billable_rate: null,
     is_billable: false,
+    estimated_time: null,
 });
 
 async function submit() {
@@ -50,6 +53,7 @@ async function submit() {
         client_id: null,
         billable_rate: null,
         is_billable: false,
+        estimated_time: null,
     };
 }
 
@@ -123,12 +127,22 @@ const currentClientName = computed(() => {
                     </ClientDropdown>
                 </div>
             </div>
-            <ProjectEditBillableSection
-                :currency="currency"
-                v-model:isBillable="project.is_billable"
-                v-model:billableRate="
-                    project.billable_rate
-                "></ProjectEditBillableSection>
+            <div class="lg:grid grid-cols-2 gap-12">
+                <div>
+                    <ProjectEditBillableSection
+                        :currency="currency"
+                        v-model:isBillable="project.is_billable"
+                        v-model:billableRate="
+                            project.billable_rate
+                        "></ProjectEditBillableSection>
+                </div>
+                <div>
+                    <EstimatedTimeSection
+                        v-if="isAllowedToPerformPremiumAction()"
+                        @submit="submit()"
+                        v-model="project.estimated_time"></EstimatedTimeSection>
+                </div>
+            </div>
         </template>
         <template #footer>
             <SecondaryButton @click="show = false"> Cancel</SecondaryButton>

@@ -10,6 +10,12 @@ import TableHeading from '@/Components/Common/TableHeading.vue';
         </div>
         <div class="px-3 py-1.5 text-left font-semibold text-white">Client</div>
         <div class="px-3 py-1.5 text-left font-semibold text-white">
+            Total Time
+        </div>
+        <div class="px-3 py-1.5 text-left font-semibold text-white">
+            Progress
+        </div>
+        <div class="px-3 py-1.5 text-left font-semibold text-white">
             Billable Rate
         </div>
         <div class="px-3 py-1.5 text-left font-semibold text-white">Status</div>

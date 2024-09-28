@@ -57,3 +57,12 @@ export function hasActiveSubscription() {
 
     return page.props.billing.has_subscription;
 }
+
+export function isAllowedToPerformPremiumAction() {
+    return true;
+    return (
+        !isBillingActivated() ||
+        (isBillingActivated() && hasActiveSubscription()) ||
+        (isBillingActivated() && isInTrial())
+    );
+}

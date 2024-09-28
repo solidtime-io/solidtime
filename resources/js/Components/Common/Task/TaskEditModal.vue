@@ -7,6 +7,8 @@ import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import { useFocus } from '@vueuse/core';
 import { useTasksStore } from '@/utils/useTasks';
 import type { Task, UpdateTaskBody } from '@/packages/api/src';
+import EstimatedTimeSection from '@/packages/ui/src/EstimatedTimeSection.vue';
+import { isAllowedToPerformPremiumAction } from '@/utils/billing';
 
 const { updateTask } = useTasksStore();
 const show = defineModel('show', { default: false });
@@ -18,6 +20,7 @@ const props = defineProps<{
 
 const taskBody = ref<UpdateTaskBody>({
     name: props.task.name,
+    estimated_time: props.task.estimated_time,
 });
 
 async function submit() {
@@ -34,7 +37,7 @@ useFocus(taskNameInput, { initialValue: true });
     <DialogModal closeable :show="show" @close="show = false">
         <template #title>
             <div class="flex space-x-2">
-                <span> Create Task </span>
+                <span> Update Task </span>
             </div>
         </template>
 
@@ -53,6 +56,10 @@ useFocus(taskNameInput, { initialValue: true });
                         autocomplete="taskName" />
                 </div>
             </div>
+            <EstimatedTimeSection
+                v-if="isAllowedToPerformPremiumAction()"
+                @submit="submit()"
+                v-model="taskBody.estimated_time"></EstimatedTimeSection>
         </template>
         <template #footer>
             <SecondaryButton @click="show = false"> Cancel </SecondaryButton>
