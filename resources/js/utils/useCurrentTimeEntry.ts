@@ -205,8 +205,6 @@ export const useCurrentTimeEntryStore = defineStore('currentTimeEntry', () => {
     return {
         currentTimeEntry,
         fetchCurrentTimeEntry,
-        startTimer,
-        stopTimer,
         updateTimer,
         isActive,
         startLiveTimer,

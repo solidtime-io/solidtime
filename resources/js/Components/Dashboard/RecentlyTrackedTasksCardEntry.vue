@@ -4,8 +4,8 @@ import TimeTrackerStartStop from '@/packages/ui/src/TimeTrackerStartStop.vue';
 import { useProjectsStore } from '@/utils/useProjects';
 import { storeToRefs } from 'pinia';
 import { computed } from 'vue';
-import dayjs from 'dayjs';
 import { useCurrentTimeEntryStore } from '@/utils/useCurrentTimeEntry';
+import { getDayJsInstance } from '@/packages/ui/src/utils/time';
 
 const props = defineProps<{
     title: string;
@@ -20,16 +20,16 @@ const project = computed(() => {
 });
 
 const { currentTimeEntry } = storeToRefs(useCurrentTimeEntryStore());
-const { stopTimer, startTimer } = useCurrentTimeEntryStore();
+const { setActiveState } = useCurrentTimeEntryStore();
 
 async function startTaskTimer() {
     if (currentTimeEntry.value.id) {
-        await stopTimer();
+        await setActiveState(true);
     }
     currentTimeEntry.value.project_id = props.project_id;
     currentTimeEntry.value.task_id = props.task_id;
-    currentTimeEntry.value.start = dayjs().utc().format();
-    await startTimer();
+    currentTimeEntry.value.start = getDayJsInstance().utc().format();
+    await setActiveState(true);
     useCurrentTimeEntryStore().fetchCurrentTimeEntry();
 }
 </script>
