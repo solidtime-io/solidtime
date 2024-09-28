@@ -16,8 +16,8 @@ const props = withDefaults(
 );
 const buttonSizeClasses = {
     small: 'w-6 h-6 bg-accent-200/40 hover:bg-accent-300/70',
-    base: 'w-8 h-8 bg-accent-200/40 hover:scale-110 hover:bg-accent-300/70 ring-accent-200/10 focus:ring-accent-200/10 hover:ring-4',
-    large: 'w-11 h-11 ring-accent-200/10 focus:ring-accent-200/20 ring-4 sm:ring-8 hover:scale-110',
+    base: 'w-8 h-8 bg-accent-200/40 hover:scale-110 hover:bg-accent-300/70 ring-accent-200/10 focus-visible:ring-white/80 ring-4 hover:ring-4',
+    large: 'w-11 h-11 ring-accent-200/10 focus-visible:ring-white/80 ring-4 sm:ring-[6px] hover:scale-110',
 };
 const iconClass = {
     small: 'w-2.5 h-2.5',
@@ -29,7 +29,7 @@ const buttonColorClasses = computed(() => {
     if (props.active) {
         return 'bg-red-400/80 hover:bg-red-500/80 focus:bg-red-500/80';
     } else {
-        return 'bg-accent-300/70 hover:bg-accent-400/70 focus:bg-accent-400/70';
+        return 'bg-accent-300/70 hover:bg-accent-400/70 focus:bg-accent-500/70';
     }
 });
 
@@ -46,7 +46,7 @@ function toggleState() {
             twMerge(
                 buttonSizeClasses[size],
                 buttonColorClasses,
-                'flex items-center justify-center py-1 transition  focus:outline-0 rounded-full text-white '
+                'flex items-center justify-center py-1 transition focus:outline-0 rounded-full text-white '
             )
         ">
         <Transition name="fade" mode="out-in">
