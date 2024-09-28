@@ -10,7 +10,9 @@ import {
     ChevronRightIcon,
     CheckCircleIcon,
     UserGroupIcon,
+    PencilSquareIcon,
 } from '@heroicons/vue/20/solid';
+
 import { Link } from '@inertiajs/vue3';
 import TaskCreateModal from '@/Components/Common/Task/TaskCreateModal.vue';
 import TaskTable from '@/Components/Common/Task/TaskTable.vue';
@@ -19,10 +21,18 @@ import Card from '@/Components/Common/Card.vue';
 import ProjectMemberTable from '@/Components/Common/ProjectMember/ProjectMemberTable.vue';
 import ProjectMemberCreateModal from '@/Components/Common/ProjectMember/ProjectMemberCreateModal.vue';
 import { useProjectMembersStore } from '@/utils/useProjectMembers';
-import { canCreateTasks, canViewProjectMembers } from '@/utils/permissions';
+import {
+    canCreateProjects,
+    canCreateTasks,
+    canViewProjectMembers,
+} from '@/utils/permissions';
 import TabBarItem from '@/Components/Common/TabBar/TabBarItem.vue';
 import TabBar from '@/Components/Common/TabBar/TabBar.vue';
 import { useTasksStore } from '@/utils/useTasks';
+import ProjectEditModal from '@/Components/Common/Project/ProjectEditModal.vue';
+import { Badge } from '@/packages/ui/src';
+import { formatCents } from '../packages/ui/src/utils/money';
+import { getOrganizationCurrencyString } from '../utils/money';
 
 const { projects } = storeToRefs(useProjectsStore());
 
@@ -44,6 +54,8 @@ onMounted(() => {
         useProjectMembersStore().fetchProjectMembers(projectId);
     }
 });
+
+const showEditProjectModal = ref(false);
 
 const activeTab = ref<'active' | 'done'>('active');
 
@@ -98,7 +110,35 @@ const shownTasks = computed(() => {
                         </div>
                     </li>
                 </ol>
+                <div class="px-4">
+                    <Badge v-if="project?.billable_rate">
+                        {{
+                            formatCents(
+                                project?.billable_rate ?? 0,
+                                getOrganizationCurrencyString()
+                            )
+                        }}
+                        / h
+                    </Badge>
+                    <Badge
+                        v-if="project?.is_billable && !project?.billable_rate">
+                        Default Rate
+                    </Badge>
+                    <Badge v-if="!project?.is_billable"> Non-Billable </Badge>
+                </div>
             </nav>
+            <div>
+                <SecondaryButton
+                    :icon="PencilSquareIcon"
+                    @click="showEditProjectModal = true"
+                    v-if="canCreateProjects()">
+                    Edit Project
+                </SecondaryButton>
+                <ProjectEditModal
+                    v-if="project"
+                    :originalProject="project"
+                    v-model:show="showEditProjectModal"></ProjectEditModal>
+            </div>
         </MainContainer>
         <MainContainer>
             <div class="grid lg:grid-cols-2 gap-x-6 pt-6">
