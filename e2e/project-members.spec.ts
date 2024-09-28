@@ -33,7 +33,10 @@ test('test that updating project member billable rate works for existing time en
         .first()
         .getByRole('button')
         .click();
-    await page.getByRole('button', { name: 'Edit' }).first().click();
+    await page
+        .getByRole('button', { name: 'Edit Project Member' })
+        .first()
+        .click();
     await page.getByLabel('Billable Rate').fill(newBillableRate.toString());
     await page.getByRole('button', { name: 'Update Project Member' }).click();
 
