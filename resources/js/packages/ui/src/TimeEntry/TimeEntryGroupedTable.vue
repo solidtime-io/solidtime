@@ -17,7 +17,6 @@ import {
 import TimeEntryAggregateRow from '@/packages/ui/src/TimeEntry/TimeEntryAggregateRow.vue';
 import TimeEntryRowHeading from '@/packages/ui/src/TimeEntry/TimeEntryRowHeading.vue';
 import TimeEntryRow from '@/packages/ui/src/TimeEntry/TimeEntryRow.vue';
-import dayjs from 'dayjs';
 import type { TimeEntriesGroupedByType } from '@/types/time-entries';
 
 const props = defineProps<{
@@ -106,7 +105,7 @@ function startTimeEntryFromExisting(entry: TimeEntry) {
     props.createTimeEntry({
         project_id: entry.project_id,
         task_id: entry.task_id,
-        start: dayjs().utc().format(),
+        start: getDayJsInstance().utc().format(),
         end: null,
         billable: entry.billable,
         description: entry.description,

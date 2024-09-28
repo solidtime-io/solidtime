@@ -42,14 +42,14 @@ const loadMoreContainer = ref<HTMLDivElement | null>(null);
 const isLoadMoreVisible = useElementVisibility(loadMoreContainer);
 const currentTimeEntryStore = useCurrentTimeEntryStore();
 const { currentTimeEntry } = storeToRefs(currentTimeEntryStore);
-const { stopTimer } = currentTimeEntryStore;
+const { setActiveState } = currentTimeEntryStore;
 const { tags } = storeToRefs(useTagsStore());
 
 async function startTimeEntry(
     timeEntry: Omit<CreateTimeEntryBody, 'member_id'>
 ) {
     if (currentTimeEntry.value.id) {
-        await stopTimer();
+        await setActiveState(false);
     }
     await createTimeEntry(timeEntry);
     fetchTimeEntries();
