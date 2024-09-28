@@ -11,6 +11,10 @@ import TableRow from '@/Components/TableRow.vue';
 import ProjectEditModal from '@/Components/Common/Project/ProjectEditModal.vue';
 import { formatCents } from '@/packages/ui/src/utils/money';
 import { getOrganizationCurrencyString } from '@/utils/money';
+import EstimatedTimeProgress from '@/packages/ui/src/EstimatedTimeProgress.vue';
+import UpgradeBadge from '@/Components/Common/UpgradeBadge.vue';
+import { formatHumanReadableDuration } from '../../../packages/ui/src/utils/time';
+import { isAllowedToPerformPremiumAction } from '@/utils/billing';
 
 const { clients } = storeToRefs(useClientsStore());
 const { tasks } = storeToRefs(useTasksStore());
@@ -76,11 +80,29 @@ const showEditProjectModal = ref(false);
             </span>
             <span class="text-muted"> {{ projectTasksCount }} Tasks </span>
         </div>
-        <div class="whitespace-nowrap px-3 py-4 text-sm text-muted">
-            <div v-if="project.client_id">
+        <div class="whitespace-nowrap min-w-0 px-3 py-4 text-sm text-muted">
+            <div
+                class="overflow-ellipsis overflow-hidden"
+                v-if="project.client_id">
                 {{ client?.name }}
             </div>
             <div v-else>No client</div>
+        </div>
+        <div class="whitespace-nowrap px-3 py-4 text-sm text-muted">
+            <div v-if="project.spent_time">
+                {{ formatHumanReadableDuration(project.spent_time) }}
+            </div>
+            <div v-else>--</div>
+        </div>
+        <div
+            class="whitespace-nowrap px-3 flex items-center text-sm text-muted">
+            <UpgradeBadge
+                v-if="!isAllowedToPerformPremiumAction()"></UpgradeBadge>
+            <EstimatedTimeProgress
+                v-else-if="project.estimated_time"
+                :estimated="project.estimated_time"
+                :current="project.spent_time"></EstimatedTimeProgress>
+            <span v-else> -- </span>
         </div>
         <div class="whitespace-nowrap px-3 py-4 text-sm text-muted">
             {{ billableRateInfo }}

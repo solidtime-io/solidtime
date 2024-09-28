@@ -49,7 +49,15 @@ const { clients } = storeToRefs(useClientsStore());
             <div
                 data-testid="project_table"
                 class="grid min-w-full"
-                style="grid-template-columns: 1fr 1fr 1fr 150px 80px">
+                style="
+                    grid-template-columns:
+                        1fr minmax(150px, auto) minmax(140px, auto)
+                        minmax(130px, auto) minmax(130px, auto) minmax(
+                            120px,
+                            auto
+                        )
+                        80px;
+                ">
                 <ProjectTableHeading></ProjectTableHeading>
                 <div
                     class="col-span-5 py-24 text-center"

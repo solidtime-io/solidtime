@@ -7,12 +7,15 @@ import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import { useFocus } from '@vueuse/core';
 import { useTasksStore } from '@/utils/useTasks';
 import ProjectDropdown from '@/Components/Common/Project/ProjectDropdown.vue';
+import EstimatedTimeSection from '@/packages/ui/src/EstimatedTimeSection.vue';
+import { isAllowedToPerformPremiumAction } from '@/utils/billing';
 
 const { createTask } = useTasksStore();
 const show = defineModel('show', { default: false });
 const saving = ref(false);
 
 const taskName = ref('');
+const estimatedTime = ref<number | null>(null);
 
 const props = defineProps<{
     projectId: string;
@@ -22,6 +25,7 @@ async function submit() {
     await createTask({
         name: taskName.value,
         project_id: props.projectId,
+        estimated_time: estimatedTime.value,
     });
     show.value = false;
     taskName.value = '';
@@ -58,6 +62,10 @@ useFocus(taskNameInput, { initialValue: true });
                     <ProjectDropdown :modelValue="projectId"></ProjectDropdown>
                 </div>
             </div>
+            <EstimatedTimeSection
+                v-if="isAllowedToPerformPremiumAction()"
+                @submit="submit()"
+                v-model="estimatedTime"></EstimatedTimeSection>
         </template>
         <template #footer>
             <SecondaryButton @click="show = false"> Cancel </SecondaryButton>

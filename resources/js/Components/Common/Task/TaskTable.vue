@@ -27,7 +27,14 @@ const createTask = ref(false);
                 data-testid="task_table"
                 role="table"
                 class="grid min-w-full"
-                style="grid-template-columns: 1fr 150px 80px">
+                style="
+                    grid-template-columns:
+                        1fr minmax(80px, auto) minmax(120px, auto) minmax(
+                            50px,
+                            auto
+                        )
+                        80px;
+                ">
                 <TaskTableHeading></TaskTableHeading>
                 <div
                     class="col-span-5 py-24 text-center"

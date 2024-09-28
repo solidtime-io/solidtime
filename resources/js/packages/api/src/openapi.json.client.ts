@@ -68,6 +68,8 @@ const ProjectResource = z
         is_archived: z.boolean(),
         billable_rate: z.union([z.number(), z.null()]),
         is_billable: z.boolean(),
+        estimated_time: z.union([z.number(), z.null()]),
+        spent_time: z.number().int(),
     })
     .passthrough();
 const ProjectStoreRequest = z
@@ -77,6 +79,7 @@ const ProjectStoreRequest = z
         is_billable: z.boolean(),
         billable_rate: z.union([z.number(), z.null()]).optional(),
         client_id: z.union([z.string(), z.null()]).optional(),
+        estimated_time: z.union([z.number(), z.null()]).optional(),
     })
     .passthrough();
 const ProjectUpdateRequest = z
@@ -87,6 +90,7 @@ const ProjectUpdateRequest = z
         is_archived: z.boolean().optional(),
         client_id: z.union([z.string(), z.null()]).optional(),
         billable_rate: z.union([z.number(), z.null()]).optional(),
+        estimated_time: z.union([z.number(), z.null()]).optional(),
     })
     .passthrough();
 const ProjectMemberResource = z
@@ -128,17 +132,24 @@ const TaskResource = z
         name: z.string(),
         is_done: z.boolean(),
         project_id: z.string(),
+        estimated_time: z.union([z.number(), z.null()]),
+        spent_time: z.number().int(),
         created_at: z.string(),
         updated_at: z.string(),
     })
     .passthrough();
 const TaskStoreRequest = z
-    .object({ name: z.string().min(1).max(255), project_id: z.string() })
+    .object({
+        name: z.string().min(1).max(255),
+        project_id: z.string(),
+        estimated_time: z.union([z.number(), z.null()]).optional(),
+    })
     .passthrough();
 const TaskUpdateRequest = z
     .object({
         name: z.string().min(1).max(255),
         is_done: z.boolean().optional(),
+        estimated_time: z.union([z.number(), z.null()]).optional(),
     })
     .passthrough();
 const start = z.union([z.string(), z.null()]).optional();
