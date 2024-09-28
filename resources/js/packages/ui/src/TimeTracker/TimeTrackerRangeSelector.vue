@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import Dropdown from '@/packages/ui/src/Input/Dropdown.vue';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import TimeRangeSelector from '@/packages/ui/src/Input/TimeRangeSelector.vue';
 import dayjs, { Dayjs } from 'dayjs';
 import parse from 'parse-duration';
@@ -131,6 +131,12 @@ const startTime = computed(() => {
     }
     return dayjs().utc().format();
 });
+const inputField = ref<HTMLInputElement | null>(null);
+watch(open, (isOpen) => {
+    if (!isOpen) {
+        inputField.value?.focus();
+    }
+});
 </script>
 
 <template>
@@ -144,6 +150,7 @@ const startTime = computed(() => {
                 <input
                     placeholder="00:00:00"
                     @focus="pauseLiveTimerUpdate"
+                    ref="inputField"
                     data-testid="time_entry_time"
                     @blur="updateTimerAndStartLiveTimerUpdate"
                     @keydown.enter="onTimeEntryEnterPress"
