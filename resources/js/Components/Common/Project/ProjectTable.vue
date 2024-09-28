@@ -51,7 +51,10 @@ const { clients } = storeToRefs(useClientsStore());
                 class="grid min-w-full"
                 style="
                     grid-template-columns:
-                        1fr minmax(150px, auto) minmax(140px, auto)
+                        minmax(300px, 1fr) minmax(150px, auto) minmax(
+                            140px,
+                            auto
+                        )
                         minmax(130px, auto) minmax(130px, auto) minmax(
                             120px,
                             auto

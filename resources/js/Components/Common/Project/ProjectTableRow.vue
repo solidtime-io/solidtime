@@ -68,14 +68,14 @@ const showEditProjectModal = ref(false);
         :original-project="project"></ProjectEditModal>
     <TableRow :href="route('projects.show', { project: project.id })">
         <div
-            class="whitespace-nowrap flex items-center space-x-5 3xl:pl-12 py-4 pr-3 text-sm font-medium text-white pl-4 sm:pl-6 lg:pl-8 3xl:pl-12">
+            class="whitespace-nowrap min-w-0 flex items-center space-x-5 3xl:pl-12 py-4 pr-3 text-sm font-medium text-white pl-4 sm:pl-6 lg:pl-8 3xl:pl-12">
             <div
                 :style="{
                     backgroundColor: project.color,
                     boxShadow: `var(--tw-ring-inset) 0 0 0 calc(4px + var(--tw-ring-offset-width)) ${project.color}30`,
                 }"
                 class="w-3 h-3 rounded-full"></div>
-            <span>
+            <span class="overflow-ellipsis overflow-hidden">
                 {{ project.name }}
             </span>
             <span class="text-muted"> {{ projectTasksCount }} Tasks </span>
