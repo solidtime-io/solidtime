@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Endpoint\Api\V1;
 
+use App\Enums\ProjectMemberRole;
 use App\Http\Controllers\Api\V1\ProjectMemberController;
 use App\Models\Member;
 use App\Models\Organization;
@@ -93,6 +94,7 @@ class ProjectMemberEndpointTest extends ApiEndpointTestAbstract
         // Act
         $response = $this->postJson(route('api.v1.project-members.store', [$data->organization->getKey(), $project->getKey()]), [
             'billable_rate' => $projectMemberFake->billable_rate,
+            'role' => $projectMemberFake->role->value,
             'member_id' => $member->getKey(),
         ]);
 
@@ -118,6 +120,7 @@ class ProjectMemberEndpointTest extends ApiEndpointTestAbstract
         // Act
         $response = $this->postJson(route('api.v1.project-members.store', [$data->organization->getKey(), $project->getKey()]), [
             'billable_rate' => $projectMemberFake->billable_rate,
+            'role' => $projectMemberFake->role->value,
             'member_id' => $member->getKey(),
         ]);
 
@@ -165,6 +168,7 @@ class ProjectMemberEndpointTest extends ApiEndpointTestAbstract
         // Act
         $response = $this->postJson(route('api.v1.project-members.store', [$data->organization->getKey(), $project->getKey()]), [
             'billable_rate' => $projectMemberFake->billable_rate,
+            'role' => $projectMemberFake->role->value,
             'member_id' => $member->getKey(),
         ]);
 
@@ -179,6 +183,7 @@ class ProjectMemberEndpointTest extends ApiEndpointTestAbstract
             'billable_rate' => $projectMemberFake->billable_rate,
             'member_id' => $member->getKey(),
             'project_id' => $project->getKey(),
+            'role' => $projectMemberFake->role->value,
         ]);
     }
 
@@ -197,6 +202,7 @@ class ProjectMemberEndpointTest extends ApiEndpointTestAbstract
         // Act
         $response = $this->postJson(route('api.v1.project-members.store', [$data->organization->getKey(), $project->getKey()]), [
             'billable_rate' => $projectMemberFake->billable_rate,
+            'role' => $projectMemberFake->role->value,
             'member_id' => $member->getKey(),
         ]);
 
@@ -211,6 +217,7 @@ class ProjectMemberEndpointTest extends ApiEndpointTestAbstract
             'billable_rate' => $projectMemberFake->billable_rate,
             'member_id' => $member->getKey(),
             'project_id' => $project->getKey(),
+            'role' => $projectMemberFake->role->value,
         ]);
     }
 
@@ -236,6 +243,7 @@ class ProjectMemberEndpointTest extends ApiEndpointTestAbstract
         // Act
         $response = $this->postJson(route('api.v1.project-members.store', [$data->organization->getKey(), $project->getKey()]), [
             'billable_rate' => $projectMemberFake->billable_rate,
+            'role' => $projectMemberFake->role->value,
             'member_id' => $member->getKey(),
         ]);
 
@@ -245,6 +253,36 @@ class ProjectMemberEndpointTest extends ApiEndpointTestAbstract
             'billable_rate' => $projectMemberFake->billable_rate,
             'member_id' => $member->getKey(),
             'project_id' => $project->getKey(),
+            'role' => $projectMemberFake->role->value,
+        ]);
+    }
+
+    public function test_store_endpoint_can_create_a_new_project_member_with_role_manager(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'project-members:create',
+        ]);
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        $user = User::factory()->create();
+        $member = Member::factory()->forOrganization($data->organization)->forUser($user)->create();
+        $this->assertBillableRateServiceIsUnused();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.project-members.store', [$data->organization->getKey(), $project->getKey()]), [
+            'billable_rate' => null,
+            'role' => ProjectMemberRole::Manager->value,
+            'member_id' => $member->getKey(),
+        ]);
+
+        // Assert
+        $response->assertStatus(201);
+        $this->assertDatabaseHas(ProjectMember::class, [
+            'billable_rate' => null,
+            'member_id' => $member->getKey(),
+            'project_id' => $project->getKey(),
+            'role' => ProjectMemberRole::Manager->value,
         ]);
     }
 
@@ -266,6 +304,7 @@ class ProjectMemberEndpointTest extends ApiEndpointTestAbstract
         // Act
         $response = $this->postJson(route('api.v1.project-members.store', [$data->organization->getKey(), $project->getKey()]), [
             'billable_rate' => $projectMemberFake->billable_rate,
+            'role' => $projectMemberFake->role->value,
             'member_id' => $member->getKey(),
         ]);
 
@@ -275,6 +314,7 @@ class ProjectMemberEndpointTest extends ApiEndpointTestAbstract
             'billable_rate' => null,
             'member_id' => $member->getKey(),
             'project_id' => $project->getKey(),
+            'role' => $projectMemberFake->role->value,
         ]);
     }
 
@@ -371,6 +411,32 @@ class ProjectMemberEndpointTest extends ApiEndpointTestAbstract
             'id' => $projectMember->getKey(),
             'billable_rate' => $billableRate,
             'member_id' => $projectMember->member_id,
+        ]);
+    }
+
+    public function test_update_endpoint_can_update_role(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'project-members:update',
+        ]);
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        $projectMember = ProjectMember::factory()->forProject($project)->role(ProjectMemberRole::Normal)->create();
+        $this->assertBillableRateServiceIsUnused();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.project-members.update', [$data->organization->getKey(), $projectMember->getKey()]), [
+            'role' => ProjectMemberRole::Manager->value,
+        ]);
+
+        // Assert
+        $response->assertStatus(200);
+        $this->assertDatabaseHas(ProjectMember::class, [
+            'id' => $projectMember->getKey(),
+            'billable_rate' => $projectMember->billable_rate,
+            'member_id' => $projectMember->member_id,
+            'role' => ProjectMemberRole::Manager->value,
         ]);
     }
 

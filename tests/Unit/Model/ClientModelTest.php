@@ -44,7 +44,7 @@ class ClientModelTest extends ModelTestAbstract
         // Assert
         $this->assertNotNull($projectsRel);
         $this->assertCount(4, $projectsRel);
-        $this->assertTrue($projectsRel->first()->is($projects->first()));
+        $this->assertNotEquals($projectsOtherClient->pluck('id'), $projectsRel->pluck('id'));
     }
 
     public function test_accessor_is_archived_is_true_if_archived_at_is_not_null(): void

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Enums\ProjectMemberRole;
 use App\Exceptions\Api\EntityStillInUseApiException;
 use App\Http\Requests\V1\Project\ProjectIndexRequest;
 use App\Http\Requests\V1\Project\ProjectStoreRequest;
@@ -15,6 +16,8 @@ use App\Models\Project;
 use App\Models\ProjectMember;
 use App\Service\BillableRateService;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Carbon;
@@ -50,6 +53,12 @@ class ProjectController extends Controller
 
         if (! $canViewAllProjects) {
             $projectsQuery->visibleByEmployee($user);
+            $projectsQuery->with([
+                'members' => function (HasMany $query): void {
+                    /** @var Builder<ProjectMember> $query */
+                    $query->whereBelongsTo($this->user(), 'user');
+                },
+            ]);
         }
         $filterArchived = $request->getFilterArchived();
         if ($filterArchived === 'true') {
@@ -59,6 +68,14 @@ class ProjectController extends Controller
         }
 
         $projects = $projectsQuery->paginate(config('app.pagination_per_page_default'));
+
+        foreach ($projects->items() as $project) {
+            if ($canViewAllProjects) {
+                $project->setAttribute('limited_visibility', false);
+            } else {
+                $project->setAttribute('limited_visibility', $project->members->firstWhere('user_id', $this->user()->id)?->role !== ProjectMemberRole::Manager);
+            }
+        }
 
         return new ProjectCollection($projects);
     }
@@ -73,6 +90,26 @@ class ProjectController extends Controller
     public function show(Organization $organization, Project $project): JsonResource
     {
         $this->checkPermission($organization, 'projects:view', $project);
+        $canViewAllProjects = $this->hasPermission($organization, 'projects:view:all');
+
+        $project->load([
+            'members' => function (HasMany $query): void {
+                /** @var Builder<ProjectMember> $query */
+                $query->whereBelongsTo($this->user(), 'user');
+            },
+        ]);
+
+        if (! $canViewAllProjects) {
+            if (! $project->is_public && $project->members->firstWhere('user_id', '=', $this->user()->id) === null) {
+                throw new AuthorizationException('No access to project');
+            }
+        }
+
+        if ($canViewAllProjects) {
+            $project->setAttribute('limited_visibility', false);
+        } else {
+            $project->setAttribute('limited_visibility', $project->members->firstWhere('user_id', $this->user()->id)?->role !== ProjectMemberRole::Manager);
+        }
 
         $project->load('organization');
 
@@ -100,6 +137,8 @@ class ProjectController extends Controller
         }
         $project->organization()->associate($organization);
         $project->save();
+
+        $project->setAttribute('limited_visibility', false);
 
         return new ProjectResource($project);
     }
@@ -131,6 +170,8 @@ class ProjectController extends Controller
         if ($oldBillableRate !== $request->getBillableRate()) {
             $billableRateService->updateTimeEntriesBillableRateForProject($project);
         }
+
+        $project->setAttribute('limited_visibility', false);
 
         return new ProjectResource($project);
     }

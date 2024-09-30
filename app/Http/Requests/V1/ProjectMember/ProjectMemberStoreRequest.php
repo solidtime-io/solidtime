@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\V1\ProjectMember;
 
+use App\Enums\ProjectMemberRole;
 use App\Models\Member;
 use App\Models\Organization;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 use Korridor\LaravelModelValidationRules\Rules\ExistsEloquent;
 
 /**
@@ -19,7 +21,7 @@ class ProjectMemberStoreRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, array<string|ValidationRule>>
+     * @return array<string, array<string|ValidationRule|\Illuminate\Contracts\Validation\Rule>>
      */
     public function rules(): array
     {
@@ -37,6 +39,11 @@ class ProjectMemberStoreRequest extends FormRequest
                 'integer',
                 'min:0',
             ],
+            'role' => [
+                'required',
+                'string',
+                Rule::enum(ProjectMemberRole::class),
+            ],
         ];
     }
 
@@ -45,5 +52,10 @@ class ProjectMemberStoreRequest extends FormRequest
         $input = $this->input('billable_rate');
 
         return $input !== null && $input !== 0 ? (int) $this->input('billable_rate') : null;
+    }
+
+    public function getRole(): ProjectMemberRole
+    {
+        return ProjectMemberRole::from($this->validated('role'));
     }
 }

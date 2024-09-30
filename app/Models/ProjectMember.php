@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\ProjectMemberRole;
 use App\Models\Concerns\CustomAuditable;
 use App\Models\Concerns\HasUuids;
 use Database\Factories\ProjectMemberFactory;
@@ -22,6 +23,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  * @property string $user_id User ID (legacy)
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property ProjectMemberRole $role
  * @property-read Project $project
  * @property-read Member $member
  * @property-read User $user
@@ -45,6 +47,7 @@ class ProjectMember extends Model implements AuditableContract
      */
     protected $casts = [
         'billable_rate' => 'int',
+        'role' => ProjectMemberRole::class,
     ];
 
     /**

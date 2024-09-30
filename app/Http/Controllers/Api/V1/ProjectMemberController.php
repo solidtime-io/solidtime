@@ -72,6 +72,7 @@ class ProjectMemberController extends Controller
         }
 
         $projectMember = new ProjectMember;
+        $projectMember->role = $request->getRole();
         $projectMember->billable_rate = $request->getBillableRate();
         $projectMember->member()->associate($member);
         $projectMember->user()->associate($member->user);
@@ -95,11 +96,17 @@ class ProjectMemberController extends Controller
     public function update(Organization $organization, ProjectMember $projectMember, ProjectMemberUpdateRequest $request, BillableRateService $billableRateService): JsonResource
     {
         $this->checkPermission($organization, 'project-members:update', projectMember: $projectMember);
-        $oldBillableRate = $projectMember->billable_rate;
-        $projectMember->billable_rate = $request->getBillableRate();
+        $hasBillableRate = $request->has('billable_rate');
+        if ($hasBillableRate) {
+            $oldBillableRate = $projectMember->billable_rate;
+            $projectMember->billable_rate = $request->getBillableRate();
+        }
+        if ($request->getRole() !== null) {
+            $projectMember->role = $request->getRole();
+        }
         $projectMember->save();
 
-        if ($oldBillableRate !== $request->getBillableRate()) {
+        if ($hasBillableRate && $oldBillableRate !== $request->getBillableRate()) {
             $billableRateService->updateTimeEntriesBillableRateForProjectMember($projectMember);
         }
 

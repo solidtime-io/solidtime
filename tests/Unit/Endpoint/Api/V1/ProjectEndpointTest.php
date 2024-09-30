@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Endpoint\Api\V1;
 
+use App\Enums\ProjectMemberRole;
 use App\Http\Controllers\Api\V1\ProjectController;
 use App\Models\Client;
 use App\Models\Organization;
@@ -159,6 +160,54 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
         $response->assertJsonCount(4, 'data');
     }
 
+    public function test_index_endpoint_returns_limited_visibility_flag_for_projects(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'projects:view',
+            'projects:view:all',
+        ]);
+        Project::factory()->forOrganization($data->organization)->createMany(2);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.projects.index', [$data->organization->getKey()]));
+
+        // Assert
+        $response->assertStatus(200);
+        $response->assertJsonPath('data.0.limited_visibility', false);
+        $response->assertJsonPath('data.1.limited_visibility', false);
+    }
+
+    public function test_index_endpoint_returns_limit_visibility_flag_for_projects_for_user_with_restricted_permission(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'projects:view',
+        ]);
+        $project1 = Project::factory()->forOrganization($data->organization)->create([
+            'created_at' => now()->subDays(4),
+        ]);
+        ProjectMember::factory()->forProject($project1)->forMember($data->member)->role(ProjectMemberRole::Normal)->create();
+        $project2 = Project::factory()->forOrganization($data->organization)->create([
+            'created_at' => now()->subDays(3),
+        ]);
+        ProjectMember::factory()->forProject($project2)->forMember($data->member)->role(ProjectMemberRole::Manager)->create();
+        $project3 = Project::factory()->forOrganization($data->organization)->isPublic()->create([
+            'created_at' => now()->subDays(2),
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.projects.index', [$data->organization->getKey()]));
+
+        // Assert
+        $response->assertStatus(200);
+        $response->assertJsonPath('data.0.limited_visibility', true);
+        $response->assertJsonPath('data.1.limited_visibility', false);
+        $response->assertJsonPath('data.2.limited_visibility', true);
+    }
+
     public function test_show_endpoint_fails_if_user_is_not_part_of_project_organization(): void
     {
         // Arrange
@@ -190,7 +239,82 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
         $response->assertForbidden();
     }
 
-    public function test_show_endpoint_returns_project(): void
+    public function test_show_endpoint_returns_project_if_user_has_access_to_all_projects_in_organization(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'projects:view',
+            'projects:view:all',
+        ]);
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.projects.show', [$data->organization->getKey(), $project->getKey()]));
+
+        // Assert
+        $response->assertStatus(200);
+        $response->assertJsonPath('data.id', $project->getKey());
+        $response->assertJsonPath('data.limited_visibility', false);
+    }
+
+    public function test_show_endpoint_returns_project_if_user_can_view_projects_and_project_is_public(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'projects:view',
+        ]);
+        $project = Project::factory()->forOrganization($data->organization)->isPublic()->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.projects.show', [$data->organization->getKey(), $project->getKey()]));
+
+        // Assert
+        $response->assertStatus(200);
+        $response->assertJsonPath('data.id', $project->getKey());
+        $response->assertJsonPath('data.limited_visibility', true);
+    }
+
+    public function test_show_endpoint_returns_project_if_user_can_view_projects_and_user_is_member_of_project(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'projects:view',
+        ]);
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        ProjectMember::factory()->forProject($project)->forMember($data->member)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.projects.show', [$data->organization->getKey(), $project->getKey()]));
+
+        // Assert
+        $response->assertStatus(200);
+        $response->assertJsonPath('data.id', $project->getKey());
+        $response->assertJsonPath('data.limited_visibility', true);
+    }
+
+    public function test_show_endpoint_returns_project_with_no_limited_visibility_is_user_is_project_manager(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'projects:view',
+        ]);
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        ProjectMember::factory()->forProject($project)->forMember($data->member)->role(ProjectMemberRole::Manager)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.projects.show', [$data->organization->getKey(), $project->getKey()]));
+
+        // Assert
+        $response->assertStatus(200);
+        $response->assertJsonPath('data.id', $project->getKey());
+        $response->assertJsonPath('data.limited_visibility', false);
+    }
+
+    public function test_show_endpoint_fails_for_user_with_access_to_not_all_projects_for_project_that_is_private_and_the_user_is_not_a_member_of(): void
     {
         // Arrange
         $data = $this->createUserWithPermission([
@@ -203,8 +327,7 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
         $response = $this->getJson(route('api.v1.projects.show', [$data->organization->getKey(), $project->getKey()]));
 
         // Assert
-        $response->assertStatus(200);
-        $response->assertJsonPath('data.id', $project->getKey());
+        $response->assertStatus(403);
     }
 
     public function test_store_endpoint_fails_if_user_has_no_permission_to_create_projects(): void

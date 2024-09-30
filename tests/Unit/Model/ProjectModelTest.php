@@ -75,7 +75,7 @@ class ProjectModelTest extends ModelTestAbstract
         // Assert
         $this->assertNotNull($tasksRel);
         $this->assertCount(3, $tasksRel);
-        $this->assertTrue($tasksRel->first()->is($tasks->first()));
+        $this->assertEqualsIdsOfEloquentCollection($tasks->pluck('id')->toArray(), $tasksRel);
     }
 
     public function test_it_has_many_members(): void
@@ -91,7 +91,7 @@ class ProjectModelTest extends ModelTestAbstract
         // Assert
         $this->assertNotNull($membersRel);
         $this->assertCount(3, $membersRel);
-        $this->assertTrue($membersRel->first()->is($members->first()));
+        $this->assertEqualsIdsOfEloquentCollection($members->pluck('id')->toArray(), $membersRel);
     }
 
     public function test_scope_visible_by_user_filters_so_that_only_public_projects_or_projects_where_the_user_is_member_are_shown(): void

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Enums\ProjectMemberRole;
 use App\Models\Member;
 use App\Models\Project;
 use App\Models\ProjectMember;
@@ -24,10 +25,20 @@ class ProjectMemberFactory extends Factory
     {
         return [
             'billable_rate' => $this->faker->numberBetween(10, 10000) * 100,
+            'role' => ProjectMemberRole::Normal,
             'project_id' => Project::factory(),
             'user_id' => User::factory(),
             'member_id' => Member::factory(),
         ];
+    }
+
+    public function role(ProjectMemberRole $role): self
+    {
+        return $this->state(function (array $attributes) use ($role) {
+            return [
+                'role' => $role,
+            ];
+        });
     }
 
     /**

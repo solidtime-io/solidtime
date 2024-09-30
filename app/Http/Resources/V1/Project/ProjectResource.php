@@ -20,6 +20,8 @@ class ProjectResource extends BaseResource
      */
     public function toArray(Request $request): array
     {
+        $limitedVisibility = is_bool($this->resource->getAttributeValue('limited_visibility')) ? $this->resource->getAttributeValue('limited_visibility') : true;
+
         return [
             /** @var string $id ID of project */
             'id' => $this->resource->id,
@@ -32,13 +34,15 @@ class ProjectResource extends BaseResource
             /** @var bool $is_archived Whether the client is archived */
             'is_archived' => $this->resource->is_archived,
             /** @var int|null $billable_rate Billable rate in cents per hour */
-            'billable_rate' => $this->resource->billable_rate,
+            'billable_rate' => $limitedVisibility ? null : $this->resource->billable_rate,
             /** @var bool $is_billable Project time entries billable default */
             'is_billable' => $this->resource->is_billable,
             /** @var int|null $estimated_time Estimated time in seconds */
-            'estimated_time' => $this->resource->estimated_time,
+            'estimated_time' => $limitedVisibility ? null : $this->resource->estimated_time,
             /** @var int $spent_time Spent time on this project in seconds (sum of the duration of all associated time entries, excl. still running time entries) */
-            'spent_time' => $this->resource->spent_time,
+            'spent_time' => $limitedVisibility ? null : $this->resource->spent_time,
+            /** @var bool $limited_visibility */
+            'limited_visibility' => $limitedVisibility,
         ];
     }
 }
