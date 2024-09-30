@@ -140,6 +140,7 @@ class TimeEntryAggregationServiceTest extends TestCaseWithDatabase
     public function test_aggregate_time_entries_empty_state_by_day_and_project_with_filled_gaps(): void
     {
         // Arrange
+        $timezone = 'Europe/Vienna';
         $query = TimeEntry::query();
 
         // Act
@@ -147,7 +148,7 @@ class TimeEntryAggregationServiceTest extends TestCaseWithDatabase
             $query,
             TimeEntryAggregationType::Day,
             TimeEntryAggregationType::Project,
-            'Europe/Vienna',
+            $timezone,
             Weekday::Monday,
             true,
             Carbon::now()->subDays(2)->utc(),
@@ -161,14 +162,14 @@ class TimeEntryAggregationServiceTest extends TestCaseWithDatabase
             'grouped_type' => 'day',
             'grouped_data' => [
                 [
-                    'key' => Carbon::now()->subDays(2)->utc()->format('Y-m-d'),
+                    'key' => Carbon::now()->subDays(2)->timezone($timezone)->format('Y-m-d'),
                     'seconds' => 0,
                     'cost' => 0,
                     'grouped_type' => 'project',
                     'grouped_data' => [],
                 ],
                 [
-                    'key' => Carbon::now()->subDay()->utc()->format('Y-m-d'),
+                    'key' => Carbon::now()->subDay()->timezone($timezone)->format('Y-m-d'),
                     'seconds' => 0,
                     'cost' => 0,
                     'grouped_type' => 'project',

@@ -147,8 +147,8 @@ class TimeEntryFactory extends Factory
     {
         return $this->state(function (array $attributes) use ($start, $durationInSeconds): array {
             return [
-                'start' => $start->utc(),
-                'end' => $start->copy()->addSeconds($durationInSeconds),
+                'start' => $start->copy()->utc(),
+                'end' => $start->copy()->utc()->addSeconds($durationInSeconds),
             ];
         });
     }
@@ -157,7 +157,7 @@ class TimeEntryFactory extends Factory
     {
         return $this->state(function (array $attributes) use ($start): array {
             return [
-                'start' => $start->utc(),
+                'start' => $start->copy()->utc(),
             ];
         });
     }

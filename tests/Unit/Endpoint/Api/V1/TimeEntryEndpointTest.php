@@ -473,8 +473,8 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
             'time-entries:view:all',
         ]);
         $project = Project::factory()->forOrganization($data->organization)->create();
-        $day1 = Carbon::now()->timezone($data->user->timezone)->subDays(1)->utc();
-        $day2 = Carbon::now()->timezone($data->user->timezone)->subDays(3)->utc();
+        $day1 = Carbon::now()->timezone($data->user->timezone)->subDays(1);
+        $day2 = Carbon::now()->timezone($data->user->timezone)->subDays(3);
         $timeEntry1NoProject = TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)->startWithDuration($day1, 10)->create();
         $timeEntry2NoProject = TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)->startWithDuration($day2, 10)->create();
         $timeEntry1WithProject = TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)->forProject($project)->startWithDuration($day1, 10)->create();
@@ -552,8 +552,8 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
             'time-entries:view:all',
         ]);
         $project = Project::factory()->forOrganization($data->organization)->create();
-        $day1 = Carbon::now()->timezone($data->user->timezone)->subDays(1)->utc();
-        $day2 = Carbon::now()->timezone($data->user->timezone)->subDays(3)->utc();
+        $day1 = Carbon::now()->timezone($data->user->timezone)->subDays(1);
+        $day2 = Carbon::now()->timezone($data->user->timezone)->subDays(3);
         $timeEntry1NoProject = TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)->startWithDuration($day1, 10)->create();
         $timeEntry2NoProject = TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)->startWithDuration($day2, 10)->create();
         $timeEntry1WithProject = TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)->forProject($project)->startWithDuration($day1, 10)->create();
