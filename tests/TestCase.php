@@ -31,6 +31,8 @@ abstract class TestCase extends BaseTestCase
             $mock->shouldReceive('getTrialUntil')->andReturn(null);
             $mock->shouldReceive('isBlocked')->andReturn(false);
         });
+        // Note: The following line can be used to test timezone edge cases.
+        // $this->travelTo(Carbon::now()->timezone('Europe/Vienna')->setHour(0)->setMinute(59)->setSecond(0));
     }
 
     protected function mockPrivateStorage(): void
