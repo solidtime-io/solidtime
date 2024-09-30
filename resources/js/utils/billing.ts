@@ -59,7 +59,6 @@ export function hasActiveSubscription() {
 }
 
 export function isAllowedToPerformPremiumAction() {
-    return true;
     return (
         !isBillingActivated() ||
         (isBillingActivated() && hasActiveSubscription()) ||
