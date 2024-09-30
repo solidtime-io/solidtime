@@ -29,6 +29,8 @@ class ProjectMemberResource extends BaseResource
             'member_id' => $this->resource->member_id,
             /** @var string $project_id ID of the project */
             'project_id' => $this->resource->project_id,
+            /** @var string $role Role of the project member */
+            'role' => $this->resource->role->value,
         ];
     }
 }

@@ -12,6 +12,8 @@ import { useProjectMembersStore } from '@/utils/useProjectMembers';
 import MemberCombobox from '@/Components/Common/Member/MemberCombobox.vue';
 import BillableRateInput from '@/packages/ui/src/Input/BillableRateInput.vue';
 import { getOrganizationCurrencyString } from '@/utils/money';
+import { InputLabel } from '@/packages/ui/src';
+import ProjectMemberRoleSelect from '@/Components/Common/ProjectMember/ProjectMemberRoleSelect.vue';
 const { createProjectMember } = useProjectMembersStore();
 const show = defineModel('show', { default: false });
 const saving = ref(false);
@@ -24,6 +26,7 @@ const props = defineProps<{
 const projectMember = ref<CreateProjectMemberBody>({
     member_id: '',
     billable_rate: null,
+    role: 'normal',
 });
 
 async function submit() {
@@ -32,6 +35,7 @@ async function submit() {
     projectMember.value = {
         member_id: '',
         billable_rate: null,
+        role: 'normal',
     };
 }
 
@@ -49,19 +53,28 @@ useFocus(projectNameInput, { initialValue: true });
         </template>
 
         <template #content>
-            <div class="grid grid-cols-3 items-center space-x-4">
-                <div class="col-span-3 sm:col-span-2">
+            <div class="items-center space-y-4">
+                <div>
+                    <InputLabel value="Member" class="mb-2"></InputLabel>
                     <MemberCombobox
                         :hidden-members="props.existingMembers"
                         v-model="projectMember.member_id"></MemberCombobox>
                 </div>
-                <div class="col-span-3 sm:col-span-1 flex-1">
+                <div>
+                    <InputLabel
+                        value="Billable Rate"
+                        for="billable_rate"></InputLabel>
                     <BillableRateInput
                         name="billable_rate"
                         :currency="getOrganizationCurrencyString()"
                         v-model="
                             projectMember.billable_rate
                         "></BillableRateInput>
+                </div>
+                <div>
+                    <InputLabel value="Role" class="mb-2"></InputLabel>
+                    <ProjectMemberRoleSelect
+                        v-model="projectMember.role"></ProjectMemberRoleSelect>
                 </div>
             </div>
         </template>

@@ -9,6 +9,7 @@ import type {
 } from '@/packages/api/src';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import { useNotificationsStore } from '@/utils/notification';
+export type ProjectMemberRole = 'normal' | 'manager';
 
 export const useProjectMembersStore = defineStore('project-members', () => {
     const projectMemberResponse = ref<ProjectMemberResponse | null>(null);

@@ -8,12 +8,15 @@ import type {
 } from '@/packages/api/src';
 import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import { useFocus } from '@vueuse/core';
-import { useProjectMembersStore } from '@/utils/useProjectMembers';
+import {
+    type ProjectMemberRole,
+    useProjectMembersStore,
+} from '@/utils/useProjectMembers';
 import BillableRateInput from '@/packages/ui/src/Input/BillableRateInput.vue';
-import { UserIcon } from '@heroicons/vue/24/solid';
 import ProjectMemberBillableRateModal from '@/Components/Common/ProjectMember/ProjectMemberBillableRateModal.vue';
 import InputLabel from '@/packages/ui/src/Input/InputLabel.vue';
 import { getOrganizationCurrencyString } from '@/utils/money';
+import ProjectMemberRoleSelect from '@/Components/Common/ProjectMember/ProjectMemberRoleSelect.vue';
 const { updateProjectMember } = useProjectMembersStore();
 
 const show = defineModel('show', { default: false });
@@ -26,6 +29,7 @@ const props = defineProps<{
 
 const projectMemberBody = ref<UpdateProjectMemberBody>({
     billable_rate: props.projectMember.billable_rate,
+    role: props.projectMember.role as ProjectMemberRole,
 });
 const showBillableRateModal = ref(false);
 async function submit() {
@@ -40,6 +44,7 @@ async function submit() {
     show.value = false;
     projectMemberBody.value = {
         billable_rate: null,
+        role: 'normal',
     };
 }
 
@@ -55,6 +60,7 @@ watch(
         if (value) {
             projectMemberBody.value = {
                 billable_rate: props.projectMember.billable_rate,
+                role: props.projectMember.role as ProjectMemberRole,
             };
         }
     }
@@ -69,7 +75,7 @@ useFocus(projectNameInput, { initialValue: true });
     <DialogModal closeable :show="show" @close="show = false">
         <template #title>
             <div class="flex space-x-2">
-                <span>Edit Project Member</span>
+                <span>Edit Project Member "{{ props.name }}"</span>
             </div>
         </template>
 
@@ -80,23 +86,26 @@ useFocus(projectNameInput, { initialValue: true });
                 :new-billable-rate="projectMemberBody.billable_rate"
                 @close="showBillableRateModal = false"
                 @submit="submitBillableRate"></ProjectMemberBillableRateModal>
-            <div class="grid grid-cols-3 items-center space-x-4">
-                <div
-                    class="col-span-3 sm:col-span-2 space-x-2 flex items-center">
-                    <UserIcon class="w-4 text-muted"></UserIcon>
-                    <span>{{ props.name }}</span>
-                </div>
-                <div class="col-span-3 sm:col-span-1 flex-1">
-                    <InputLabel
-                        for="billable_rate"
-                        value="Billable Rate"></InputLabel>
-                    <BillableRateInput
-                        @keydown.enter="submit"
-                        :currency="getOrganizationCurrencyString()"
-                        name="billable_rate"
-                        v-model="
-                            projectMemberBody.billable_rate
-                        "></BillableRateInput>
+            <div>
+                <div class="items-center space-y-4">
+                    <div>
+                        <InputLabel
+                            value="Billable Rate"
+                            for="billable_rate"></InputLabel>
+                        <BillableRateInput
+                            name="billable_rate"
+                            :currency="getOrganizationCurrencyString()"
+                            v-model="
+                                projectMemberBody.billable_rate
+                            "></BillableRateInput>
+                    </div>
+                    <div>
+                        <InputLabel value="Role" class="mb-2"></InputLabel>
+                        <ProjectMemberRoleSelect
+                            v-model="
+                                projectMemberBody.role
+                            "></ProjectMemberRoleSelect>
+                    </div>
                 </div>
             </div>
         </template>

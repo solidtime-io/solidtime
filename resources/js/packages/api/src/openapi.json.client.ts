@@ -70,6 +70,7 @@ const ProjectResource = z
         is_billable: z.boolean(),
         estimated_time: z.union([z.number(), z.null()]),
         spent_time: z.number().int(),
+        limited_visibility: z.boolean(),
     })
     .passthrough();
 const ProjectStoreRequest = z
@@ -99,16 +100,22 @@ const ProjectMemberResource = z
         billable_rate: z.union([z.number(), z.null()]),
         member_id: z.string(),
         project_id: z.string(),
+        role: z.string(),
     })
     .passthrough();
+const ProjectMemberRole = z.enum(['manager', 'normal']);
 const ProjectMemberStoreRequest = z
     .object({
         member_id: z.string().uuid(),
         billable_rate: z.union([z.number(), z.null()]).optional(),
+        role: ProjectMemberRole,
     })
     .passthrough();
 const ProjectMemberUpdateRequest = z
-    .object({ billable_rate: z.union([z.number(), z.null()]) })
+    .object({
+        billable_rate: z.union([z.number(), z.null()]),
+        role: ProjectMemberRole,
+    })
     .partial()
     .passthrough();
 const TagResource = z
@@ -257,6 +264,7 @@ export const schemas = {
     ProjectStoreRequest,
     ProjectUpdateRequest,
     ProjectMemberResource,
+    ProjectMemberRole,
     ProjectMemberStoreRequest,
     ProjectMemberUpdateRequest,
     TagResource,

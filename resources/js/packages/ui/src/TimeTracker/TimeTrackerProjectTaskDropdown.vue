@@ -167,6 +167,7 @@ watchEffect(() => {
                     tasks: [],
                     estimated_time: null,
                     spent_time: 0,
+                    limited_visibility: false,
                 },
             ],
         });
