@@ -51,12 +51,14 @@ const OrganizationResource = z
         name: z.string(),
         is_personal: z.boolean(),
         billable_rate: z.union([z.number(), z.null()]),
+        employees_can_see_billable_rates: z.boolean(),
     })
     .passthrough();
 const OrganizationUpdateRequest = z
     .object({
         name: z.string().max(255),
         billable_rate: z.union([z.number(), z.null()]).optional(),
+        employees_can_see_billable_rates: z.boolean().optional(),
     })
     .passthrough();
 const ProjectResource = z

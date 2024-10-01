@@ -9,6 +9,7 @@ import { useOrganizationStore } from '@/utils/useOrganization';
 import { storeToRefs } from 'pinia';
 import OrganizationBillableRateModal from '@/Components/Common/Organization/OrganizationBillableRateModal.vue';
 import { getOrganizationCurrencyString } from '@/utils/money';
+import { Checkbox } from '@/packages/ui/src';
 
 const store = useOrganizationStore();
 const { fetchOrganization, updateOrganization } = store;
@@ -17,6 +18,7 @@ const saving = ref(false);
 const organizationBody = ref<UpdateOrganizationBody>({
     name: '',
     billable_rate: null as number | null,
+    employees_can_see_billable_rates: false,
 });
 
 onMounted(async () => {
@@ -24,6 +26,8 @@ onMounted(async () => {
     organizationBody.value = {
         name: organization.value?.name ?? '',
         billable_rate: organization.value?.billable_rate,
+        employees_can_see_billable_rates:
+            organization.value?.employees_can_see_billable_rates ?? false,
     };
 });
 const showConfirmationModal = ref(false);
@@ -33,6 +37,17 @@ async function submit() {
     await updateOrganization(organizationBody.value);
     saving.value = false;
     showConfirmationModal.value = false;
+}
+
+function checkForConfirmationModal() {
+    if (
+        organizationBody.value.billable_rate ===
+        organization.value?.billable_rate
+    ) {
+        submit();
+    } else {
+        showConfirmationModal.value = true;
+    }
 }
 </script>
 
@@ -64,9 +79,25 @@ async function submit() {
                         name="organizationBillableRate"></BillableRateInput>
                 </div>
             </div>
+
+            <div class="col-span-6">
+                <div class="col-span-6 sm:col-span-4">
+                    <div class="flex items-center space-x-2">
+                        <Checkbox
+                            v-if="organization"
+                            v-model:checked="
+                                organizationBody.employees_can_see_billable_rates
+                            "
+                            id="organizationShowBillableRatesToEmployees"></Checkbox>
+                        <InputLabel
+                            for="organizationShowBillableRatesToEmployees"
+                            value="Show Billable Rates to Employees" />
+                    </div>
+                </div>
+            </div>
         </template>
         <template #actions>
-            <PrimaryButton @click="showConfirmationModal = true"
+            <PrimaryButton @click="checkForConfirmationModal"
                 >Save</PrimaryButton
             >
         </template>
