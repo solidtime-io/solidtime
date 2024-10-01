@@ -103,7 +103,7 @@ const option = ref({
 
 <template>
     <v-chart
-        class="background-transparent max-w-[300px] mx-auto h-[460px]"
+        class="background-transparent h-[460px]"
         :autoresize="true"
         :option="option" />
 </template>
