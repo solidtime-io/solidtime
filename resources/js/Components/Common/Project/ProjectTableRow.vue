@@ -21,6 +21,7 @@ const { tasks } = storeToRefs(useTasksStore());
 
 const props = defineProps<{
     project: Project;
+    showBillableRate: boolean;
 }>();
 
 const client = computed(() => {
@@ -104,7 +105,9 @@ const showEditProjectModal = ref(false);
                 :current="project.spent_time"></EstimatedTimeProgress>
             <span v-else> -- </span>
         </div>
-        <div class="whitespace-nowrap px-3 py-4 text-sm text-muted">
+        <div
+            class="whitespace-nowrap px-3 py-4 text-sm text-muted"
+            v-if="showBillableRate">
             {{ billableRateInfo }}
         </div>
         <div

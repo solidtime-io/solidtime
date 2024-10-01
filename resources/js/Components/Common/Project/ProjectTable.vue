@@ -2,7 +2,7 @@
 import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
 import { FolderPlusIcon } from '@heroicons/vue/24/solid';
 import { PlusIcon } from '@heroicons/vue/16/solid';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import ProjectCreateModal from '@/packages/ui/src/Project/ProjectCreateModal.vue';
 import ProjectTableHeading from '@/Components/Common/Project/ProjectTableHeading.vue';
 import ProjectTableRow from '@/Components/Common/Project/ProjectTableRow.vue';
@@ -18,8 +18,9 @@ import { useClientsStore } from '@/utils/useClients';
 import { storeToRefs } from 'pinia';
 import { getOrganizationCurrencyString } from '@/utils/money';
 
-defineProps<{
+const props = defineProps<{
     projects: Project[];
+    showBillableRate: boolean;
 }>();
 
 const showCreateProjectModal = ref(false);
@@ -35,6 +36,9 @@ async function createClient(
     return await useClientsStore().createClient(client);
 }
 const { clients } = storeToRefs(useClientsStore());
+const gridTemplate = computed(() => {
+    return `grid-template-columns: minmax(300px, 1fr) minmax(150px, auto) minmax(140px, auto) minmax(130px, auto) ${props.showBillableRate ? 'minmax(130px, auto)' : ''} minmax(120px, auto) 80px;`;
+});
 </script>
 
 <template>
@@ -49,19 +53,11 @@ const { clients } = storeToRefs(useClientsStore());
             <div
                 data-testid="project_table"
                 class="grid min-w-full"
-                style="
-                    grid-template-columns:
-                        minmax(300px, 1fr) minmax(150px, auto) minmax(
-                            140px,
-                            auto
-                        )
-                        minmax(130px, auto) minmax(130px, auto) minmax(
-                            120px,
-                            auto
-                        )
-                        80px;
-                ">
-                <ProjectTableHeading></ProjectTableHeading>
+                :style="gridTemplate">
+                <ProjectTableHeading
+                    :showBillableRate="
+                        props.showBillableRate
+                    "></ProjectTableHeading>
                 <div
                     class="col-span-5 py-24 text-center"
                     v-if="projects.length === 0">
@@ -79,7 +75,9 @@ const { clients } = storeToRefs(useClientsStore());
                     </SecondaryButton>
                 </div>
                 <template v-for="project in projects" :key="project.id">
-                    <ProjectTableRow :project="project"></ProjectTableRow>
+                    <ProjectTableRow
+                        :showBillableRate="props.showBillableRate"
+                        :project="project"></ProjectTableRow>
                 </template>
             </div>
         </div>

@@ -20,12 +20,17 @@ import type {
     Project,
 } from '@/packages/api/src';
 import { getOrganizationCurrencyString } from '@/utils/money';
+import { getCurrentRole } from '@/utils/useUser';
+import { useOrganizationStore } from '@/utils/useOrganization';
 
 onMounted(() => {
     useProjectsStore().fetchProjects();
+    useOrganizationStore().fetchOrganization();
 });
 const { clients } = storeToRefs(useClientsStore());
 const showCreateProjectModal = ref(false);
+
+const { organization } = storeToRefs(useOrganizationStore());
 
 const activeTab = ref<'active' | 'archived'>('active');
 
@@ -53,10 +58,18 @@ async function createClient(
 ): Promise<Client | undefined> {
     return await useClientsStore().createClient(client);
 }
+
+const showBillableRate = computed(() => {
+    return !!(
+        getCurrentRole() !== 'employee' ||
+        organization.value?.employees_can_see_billable_rates
+    );
+});
 </script>
 
 <template>
     <AppLayout title="Projects" data-testid="projects_view">
+        {{ organization?.employee_can_see_billable_rates ? 'true' : 'false' }}
         <MainContainer
             class="py-3 sm:py-5 border-b border-default-background-separator flex justify-between items-center">
             <div class="flex items-center space-x-3 sm:space-x-6">
@@ -88,6 +101,8 @@ async function createClient(
                 @submit="createProject"
                 v-model:show="showCreateProjectModal"></ProjectCreateModal>
         </MainContainer>
-        <ProjectTable :projects="shownProjects"></ProjectTable>
+        <ProjectTable
+            :show-billable-rate="showBillableRate"
+            :projects="shownProjects"></ProjectTable>
     </AppLayout>
 </template>
