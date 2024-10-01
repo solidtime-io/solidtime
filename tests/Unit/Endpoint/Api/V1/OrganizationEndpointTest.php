@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Endpoint\Api\V1;
 
+use App\Enums\Role;
 use App\Http\Controllers\Api\V1\OrganizationController;
 use App\Models\Organization;
 use App\Service\BillableRateService;
@@ -56,6 +57,40 @@ class OrganizationEndpointTest extends ApiEndpointTestAbstract
         // Assert
         $response->assertStatus(200);
         $response->assertJsonPath('data.id', $data->organization->getKey());
+    }
+
+    public function test_show_endpoint_shows_billable_rate_for_members_with_role_employee_if_organization_allows_it(): void
+    {
+        // Arrange
+        $data = $this->createUserWithRole(Role::Employee);
+        $data->organization->employees_can_see_billable_rates = true;
+        $data->organization->billable_rate = 100;
+        $data->organization->save();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.organizations.show', [$data->organization->getKey()]));
+
+        // Assert
+        $response->assertStatus(200);
+        $response->assertJsonPath('data.billable_rate', 100);
+    }
+
+    public function test_show_endpoint_does_not_show_billable_rate_for_members_with_role_employee_if_organization_does_not_allow_it(): void
+    {
+        // Arrange
+        $data = $this->createUserWithRole(Role::Employee);
+        $data->organization->employees_can_see_billable_rates = false;
+        $data->organization->billable_rate = 100;
+        $data->organization->save();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.organizations.show', [$data->organization->getKey()]));
+
+        // Assert
+        $response->assertStatus(200);
+        $response->assertJsonPath('data.billable_rate', null);
     }
 
     public function test_update_endpoint_fails_if_user_has_no_permission_to_update_organizations(): void
@@ -120,6 +155,32 @@ class OrganizationEndpointTest extends ApiEndpointTestAbstract
         $this->assertDatabaseHas(Organization::class, [
             'name' => $organizationFake->name,
             'billable_rate' => $organizationFake->billable_rate,
+        ]);
+    }
+
+    public function test_update_endpoint_can_update_the_setting_employees_can_see_billable_rates(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'organizations:update',
+        ]);
+        $this->assertBillableRateServiceIsUnused();
+        $data->organization->employees_can_see_billable_rates = false;
+        $data->organization->save();
+        $organizationFake = Organization::factory()->make();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.organizations.update', [$data->organization->getKey()]), [
+            'name' => $organizationFake->name,
+            'employees_can_see_billable_rates' => true,
+        ]);
+
+        // Assert
+        $response->assertStatus(200);
+        $this->assertDatabaseHas(Organization::class, [
+            'name' => $organizationFake->name,
+            'employees_can_see_billable_rates' => true,
         ]);
     }
 
