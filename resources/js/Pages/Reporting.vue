@@ -35,16 +35,13 @@ import { getCurrentMembershipId, getCurrentRole } from '@/utils/useUser';
 import ClientMultiselectDropdown from '@/Components/Common/Client/ClientMultiselectDropdown.vue';
 import { useTagsStore } from '@/utils/useTags';
 import { formatCents } from '@/packages/ui/src/utils/money';
-import { useSessionStorage, useStorage } from '@vueuse/core';
-import TabBar from '@/Components/Common/TabBar/TabBar.vue';
-import TabBarItem from '@/Components/Common/TabBar/TabBarItem.vue';
-import { router } from '@inertiajs/vue3';
+import { useStorage } from '@vueuse/core';
 
-const startDate = useSessionStorage<string>(
+const startDate = useStorage<string>(
     'reporting-start-date',
     getLocalizedDayJs(getDayJsInstance()().format()).subtract(14, 'd').format()
 );
-const endDate = useSessionStorage<string>(
+const endDate = useStorage<string>(
     'reporting-end-date',
     getLocalizedDayJs(getDayJsInstance()().format()).format()
 );
@@ -160,15 +157,6 @@ async function createTag(tag: string) {
             class="py-3 sm:py-5 border-b border-default-background-separator flex justify-between items-center">
             <div class="flex items-center space-x-3 sm:space-x-6">
                 <PageTitle :icon="ChartBarIcon" title="Reporting"></PageTitle>
-                <TabBar>
-                    <TabBarItem @click="router.visit(route('reporting'))" active
-                        >Overview</TabBarItem
-                    >
-                    <TabBarItem
-                        @click="router.visit(route('reporting.detailed'))"
-                        >Detailed</TabBarItem
-                    >
-                </TabBar>
             </div>
         </MainContainer>
         <div class="p-3 w-full border-b border-default-background-separator">

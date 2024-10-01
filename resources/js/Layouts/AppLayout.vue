@@ -114,10 +114,7 @@ const page = usePage<{
                             <NavigationSidebarItem
                                 title="Reporting"
                                 :icon="ChartBarIcon"
-                                :current="
-                                    route().current('reporting') ||
-                                    route().current('reporting.detailed')
-                                "
+                                :current="route().current('reporting')"
                                 :href="
                                     route('reporting')
                                 "></NavigationSidebarItem>
