@@ -82,7 +82,7 @@ class TimeEntryController extends Controller
             $limit = 1000;
         }
         $timeEntriesQuery->limit($limit);
-        $timeEntriesQuery->skip($request->getSkip());
+        $timeEntriesQuery->skip($request->getOffset());
 
         $timeEntries = $timeEntriesQuery->get();
 
