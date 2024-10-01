@@ -69,7 +69,6 @@ const showBillableRate = computed(() => {
 
 <template>
     <AppLayout title="Projects" data-testid="projects_view">
-        {{ organization?.employee_can_see_billable_rates ? 'true' : 'false' }}
         <MainContainer
             class="py-3 sm:py-5 border-b border-default-background-separator flex justify-between items-center">
             <div class="flex items-center space-x-3 sm:space-x-6">
