@@ -132,7 +132,7 @@ class TimeEntryIndexRequest extends FormRequest
                 'max:500',
             ],
             // Skip the first n time entries (default: 0)
-            'offset' => [
+            'skip' => [
                 'integer',
                 'min:0',
             ],
@@ -154,8 +154,8 @@ class TimeEntryIndexRequest extends FormRequest
         return $this->has('limit') ? (int) $this->validated('limit', 100) : 100;
     }
 
-    public function getOffset(): int
+    public function getSkip(): int
     {
-        return $this->has('offset') ? (int) $this->validated('offset', 0) : 0;
+        return $this->has('skip') ? (int) $this->validated('skip', 0) : 0;
     }
 }
