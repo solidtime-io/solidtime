@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import TableHeading from '@/Components/Common/TableHeading.vue';
+defineProps<{
+    showBillableRate: boolean;
+}>();
 </script>
 
 <template>
@@ -15,7 +18,9 @@ import TableHeading from '@/Components/Common/TableHeading.vue';
         <div class="px-3 py-1.5 text-left font-semibold text-white">
             Progress
         </div>
-        <div class="px-3 py-1.5 text-left font-semibold text-white">
+        <div
+            class="px-3 py-1.5 text-left font-semibold text-white"
+            v-if="showBillableRate">
             Billable Rate
         </div>
         <div class="px-3 py-1.5 text-left font-semibold text-white">Status</div>
