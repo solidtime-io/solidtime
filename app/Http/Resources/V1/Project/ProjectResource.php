@@ -13,6 +13,15 @@ use Illuminate\Http\Request;
  */
 class ProjectResource extends BaseResource
 {
+    private bool $showBillableRate;
+
+    public function __construct(Project $resource, bool $showBillableRate)
+    {
+        parent::__construct($resource);
+
+        $this->showBillableRate = $showBillableRate;
+    }
+
     /**
      * Transform the resource into an array.
      *
@@ -32,7 +41,7 @@ class ProjectResource extends BaseResource
             /** @var bool $is_archived Whether the client is archived */
             'is_archived' => $this->resource->is_archived,
             /** @var int|null $billable_rate Billable rate in cents per hour */
-            'billable_rate' => $this->resource->billable_rate,
+            'billable_rate' => $this->showBillableRate ? $this->resource->billable_rate : null,
             /** @var bool $is_billable Project time entries billable default */
             'is_billable' => $this->resource->is_billable,
             /** @var int|null $estimated_time Estimated time in seconds */

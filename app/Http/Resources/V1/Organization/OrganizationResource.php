@@ -13,6 +13,20 @@ use Illuminate\Http\Request;
  */
 class OrganizationResource extends BaseResource
 {
+    private bool $showBillableRate;
+
+    /**
+     * Create a new resource instance.
+     *
+     * @return void
+     */
+    public function __construct(Organization $resource, bool $showBillableRate)
+    {
+        parent::__construct($resource);
+
+        $this->showBillableRate = $showBillableRate;
+    }
+
     /**
      * Transform the resource into an array.
      *
@@ -28,7 +42,9 @@ class OrganizationResource extends BaseResource
             /** @var bool $color Personal organizations automatically created after registration */
             'is_personal' => $this->resource->personal_team,
             /** @var int|null $billable_rate Billable rate in cents per hour */
-            'billable_rate' => $this->resource->billable_rate,
+            'billable_rate' => $this->showBillableRate ? $this->resource->billable_rate : null,
+            /** @var bool $employees_can_see_billable_rates Can members of the organization with role "employee" see the billable rates */
+            'employees_can_see_billable_rates' => $this->resource->employees_can_see_billable_rates,
         ];
     }
 }

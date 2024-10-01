@@ -26,6 +26,7 @@ class OrganizationFactory extends Factory
             'billable_rate' => null,
             'user_id' => User::factory(),
             'personal_team' => true,
+            'employees_can_see_billable_rates' => false,
         ];
     }
 

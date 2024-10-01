@@ -53,6 +53,32 @@ abstract class TestCaseWithDatabase extends TestCase
         ];
     }
 
+    public function createUserWithRole(Role $role): object
+    {
+        $owner = User::factory()->create();
+        $organization = Organization::factory()->withOwner($owner)->create();
+        $ownerMember = Member::factory()->forUser($owner)->forOrganization($organization)->role(Role::Owner)->create();
+        $owner->currentOrganization()->associate($organization);
+        $owner->save();
+
+        if ($role === Role::Owner) {
+            $user = $owner;
+            $member = $ownerMember;
+        } else {
+            $user = User::factory()->create();
+            $member = Member::factory()->forUser($user)->forOrganization($organization)->role($role)->create();
+            $user->currentOrganization()->associate($organization);
+        }
+
+        return (object) [
+            'user' => $user,
+            'organization' => $organization,
+            'member' => $member,
+            'owner' => $owner,
+            'ownerMember' => $ownerMember,
+        ];
+    }
+
     protected function enableQueryLog(): void
     {
         DB::flushQueryLog();

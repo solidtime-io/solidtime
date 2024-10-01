@@ -11,6 +11,7 @@ use App\Models\Project;
 use App\Models\ProjectMember;
 use App\Service\ColorService;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Carbon;
 
 /**
  * @extends Factory<Project>
@@ -46,12 +47,21 @@ class ProjectFactory extends Factory
         });
     }
 
-    public function billable(): self
+    public function billable(?int $billableRate = null): self
     {
-        return $this->state(function (array $attributes): array {
+        return $this->state(function (array $attributes) use ($billableRate): array {
             return [
                 'is_billable' => true,
-                'billable_rate' => $this->faker->numberBetween(50, 1000) * 100,
+                'billable_rate' => $billableRate === null ? $this->faker->numberBetween(50, 1000) * 100 : $billableRate,
+            ];
+        });
+    }
+
+    public function createdAt(Carbon $createdAt): self
+    {
+        return $this->state(function (array $attributes) use ($createdAt): array {
+            return [
+                'created_at' => $createdAt,
             ];
         });
     }

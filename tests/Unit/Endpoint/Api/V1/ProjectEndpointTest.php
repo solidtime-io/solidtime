@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Endpoint\Api\V1;
 
+use App\Enums\Role;
 use App\Http\Controllers\Api\V1\ProjectController;
 use App\Models\Client;
 use App\Models\Organization;
@@ -157,6 +158,64 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
         // Assert
         $response->assertStatus(200);
         $response->assertJsonCount(4, 'data');
+    }
+
+    public function test_index_endpoint_sets_billable_rate_to_null_if_member_is_employee_and_organization_does_not_allow_employees_to_see_billable_rates(): void
+    {
+        // Arrange
+        $data = $this->createUserWithRole(Role::Employee);
+        $organization = $data->organization;
+        $organization->employees_can_see_billable_rates = false;
+        $organization->save();
+        $privateProjects = Project::factory()->forOrganization($data->organization)->isPrivate()->billable(111)->createMany(2);
+        $publicProjects = Project::factory()->forOrganization($data->organization)->isPublic()->billable(112)->createMany(2);
+        $privateProjectsWithMembership = Project::factory()->forOrganization($data->organization)->addMember($data->member)->billable(113)->isPrivate()->createMany(2);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.projects.index', [$organization->getKey()]));
+
+        // Assert
+        $response->assertStatus(200);
+        $response->assertJsonCount(4, 'data');
+        $response->assertJson(fn (AssertableJson $json) => $json
+            ->has('data')
+            ->has('links')
+            ->has('meta')
+            ->where('data.0.billable_rate', null)
+            ->where('data.1.billable_rate', null)
+            ->where('data.2.billable_rate', null)
+            ->where('data.3.billable_rate', null)
+        );
+    }
+
+    public function test_index_endpoint_does_not_set_billable_rate_to_null_if_member_is_employee_and_organization_allows_employees_to_see_billable_rates(): void
+    {
+        // Arrange
+        $data = $this->createUserWithRole(Role::Employee);
+        $organization = $data->organization;
+        $organization->employees_can_see_billable_rates = true;
+        $organization->save();
+        $privateProjects = Project::factory()->forOrganization($data->organization)->isPrivate()->billable(111)->createdAt(now()->subMinutes(4))->createMany(2);
+        $publicProjects = Project::factory()->forOrganization($data->organization)->isPublic()->billable(112)->createdAt(now()->subMinutes(3))->createMany(2);
+        $privateProjectsWithMembership = Project::factory()->forOrganization($data->organization)->addMember($data->member)->billable(113)->isPrivate()->createdAt(now()->subMinutes(2))->createMany(2);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.projects.index', [$organization->getKey()]));
+
+        // Assert
+        $response->assertStatus(200);
+        $response->assertJsonCount(4, 'data');
+        $response->assertJson(fn (AssertableJson $json) => $json
+            ->has('data')
+            ->has('links')
+            ->has('meta')
+            ->where('data.0.billable_rate', 112)
+            ->where('data.1.billable_rate', 112)
+            ->where('data.2.billable_rate', 113)
+            ->where('data.3.billable_rate', 113)
+        );
     }
 
     public function test_show_endpoint_fails_if_user_is_not_part_of_project_organization(): void

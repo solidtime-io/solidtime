@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Enums\Role;
 use App\Exceptions\Api\EntityStillInUseApiException;
 use App\Http\Requests\V1\Project\ProjectIndexRequest;
 use App\Http\Requests\V1\Project\ProjectStoreRequest;
@@ -60,7 +61,9 @@ class ProjectController extends Controller
 
         $projects = $projectsQuery->paginate(config('app.pagination_per_page_default'));
 
-        return new ProjectCollection($projects);
+        $showBillableRate = $this->member($organization)->role !== Role::Employee->value || $organization->employees_can_see_billable_rates;
+
+        return new ProjectCollection($projects, $showBillableRate);
     }
 
     /**
@@ -74,9 +77,12 @@ class ProjectController extends Controller
     {
         $this->checkPermission($organization, 'projects:view', $project);
 
+        // Note: There is currently no need to check if a user is a member of the project,
+        // since this is only relevant for users with the role "employee" and they can not access this endpoint.
+
         $project->load('organization');
 
-        return new ProjectResource($project);
+        return new ProjectResource($project, true);
     }
 
     /**
@@ -101,7 +107,7 @@ class ProjectController extends Controller
         $project->organization()->associate($organization);
         $project->save();
 
-        return new ProjectResource($project);
+        return new ProjectResource($project, true);
     }
 
     /**
@@ -132,7 +138,7 @@ class ProjectController extends Controller
             $billableRateService->updateTimeEntriesBillableRateForProject($project);
         }
 
-        return new ProjectResource($project);
+        return new ProjectResource($project, true);
     }
 
     /**
