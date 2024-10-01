@@ -468,7 +468,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         );
     }
 
-    public function test_index_endpoint_with_limit_skip_and_only_full_dates_deactivated(): void
+    public function test_index_endpoint_with_limit_offset_and_only_full_dates_deactivated(): void
     {
         // Arrange
         $data = $this->createUserWithPermission([
@@ -494,7 +494,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
             'member_id' => $data->member->getKey(),
             'project_ids' => [$project1->getKey()],
             'limit' => 1,
-            'skip' => 1,
+            'offset' => 1,
             'only_full_dates' => 'false',
         ]));
 
