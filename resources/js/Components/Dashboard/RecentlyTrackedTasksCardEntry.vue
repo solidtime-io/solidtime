@@ -29,6 +29,7 @@ async function startTaskTimer() {
     currentTimeEntry.value.project_id = props.project_id;
     currentTimeEntry.value.task_id = props.task_id;
     currentTimeEntry.value.start = getDayJsInstance().utc().format();
+    currentTimeEntry.value.billable = project.value?.is_billable ?? false;
     await setActiveState(true);
     useCurrentTimeEntryStore().fetchCurrentTimeEntry();
 }
