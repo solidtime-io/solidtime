@@ -85,7 +85,7 @@ const { floatingStyles } = useFloating(reference, floating, {
         <Teleport to="body">
             <div
                 v-show="open"
-                class="fixed inset-0 z-40"
+                class="fixed inset-0 z-50"
                 @click.prevent="onBackgroundClick" />
             <transition
                 enter-active-class="transition-opacity ease-out duration-200"

@@ -7,6 +7,7 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { ZiggyVue } from '../../vendor/tightenco/ziggy';
 import { createPinia } from 'pinia';
 import type { User } from '@/types/models';
+import { VueQueryPlugin } from '@tanstack/vue-query';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 const pinia = createPinia();
@@ -42,7 +43,7 @@ createInertiaApp({
             return page.props.auth.user.timezone;
         };
 
-        app.use(plugin).use(pinia).use(ZiggyVue).mount(el);
+        app.use(plugin).use(pinia).use(ZiggyVue).use(VueQueryPlugin).mount(el);
     },
 
     progress: {

@@ -16,9 +16,9 @@ import TimeEntryDescriptionInput from '@/packages/ui/src/TimeEntry/TimeEntryDesc
 import TimeEntryRowTagDropdown from '@/packages/ui/src/TimeEntry/TimeEntryRowTagDropdown.vue';
 import TimeEntryRowDurationInput from '@/packages/ui/src/TimeEntry/TimeEntryRowDurationInput.vue';
 import TimeEntryMoreOptionsDropdown from '@/packages/ui/src/TimeEntry/TimeEntryMoreOptionsDropdown.vue';
-import TimeTrackerProjectTaskDropdown from '@/packages/ui/src/TimeTracker/TimeTrackerProjectTaskDropdown.vue';
 import BillableToggleButton from '@/packages/ui/src/Input/BillableToggleButton.vue';
 import { computed } from 'vue';
+import TimeTrackerProjectTaskDropdown from '@/packages/ui/src/TimeTracker/TimeTrackerProjectTaskDropdown.vue';
 
 const props = defineProps<{
     timeEntry: TimeEntry;
@@ -37,7 +37,10 @@ const props = defineProps<{
     currency: string;
     showMember?: boolean;
     showDate?: boolean;
+    selected?: boolean;
 }>();
+
+const emit = defineEmits<{ selected: []; unselected: [] }>();
 
 function updateTimeEntryDescription(description: string) {
     props.updateTimeEntry({ ...props.timeEntry, description });
@@ -74,6 +77,15 @@ const memberName = computed(() => {
     }
     return '';
 });
+
+function onSelectChange(event: Event) {
+    const target = event.target as HTMLInputElement;
+    if (target.checked) {
+        emit('selected');
+    } else {
+        emit('unselected');
+    }
+}
 </script>
 
 <template>
@@ -85,6 +97,8 @@ const memberName = computed(() => {
                 class="sm:flex py-0.5 min-w-0 items-center justify-between group">
                 <div class="flex space-x-1 items-center min-w-0">
                     <input
+                        @change="onSelectChange"
+                        :value="selected"
                         type="checkbox"
                         class="h-4 w-4 rounded bg-card-background border-input-border text-accent-500/80 focus:ring-accent-500/80" />
                     <div class="w-7 h-7" v-if="indent === true"></div>

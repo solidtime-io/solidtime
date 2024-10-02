@@ -520,6 +520,7 @@ const showCreateProject = ref(false);
         <Badge
             @click="showCreateProject = true"
             size="large"
+            tag="button"
             class="cursor-pointer hover:bg-tertiary">
             <PlusIcon class="-ml-1 w-5"></PlusIcon>
             <span>Add new project</span>

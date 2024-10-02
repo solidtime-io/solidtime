@@ -24,7 +24,7 @@ const { setActiveState } = useCurrentTimeEntryStore();
 
 async function startTaskTimer() {
     if (currentTimeEntry.value.id) {
-        await setActiveState(true);
+        await setActiveState(false);
     }
     currentTimeEntry.value.project_id = props.project_id;
     currentTimeEntry.value.task_id = props.task_id;

@@ -9,7 +9,12 @@ import {
     CheckCircleIcon,
     TagIcon,
     ChevronLeftIcon,
+    ChevronDoubleLeftIcon,
     ChevronRightIcon,
+    ChevronDoubleRightIcon,
+    PencilSquareIcon,
+    TrashIcon,
+    ClockIcon,
 } from '@heroicons/vue/20/solid';
 import DateRangePicker from '@/packages/ui/src/Input/DateRangePicker.vue';
 import BillableIcon from '@/packages/ui/src/Icons/BillableIcon.vue';
@@ -20,13 +25,15 @@ import {
 } from '@/packages/ui/src/utils/time';
 import { storeToRefs } from 'pinia';
 import TagDropdown from '@/packages/ui/src/Tag/TagDropdown.vue';
-import type {
-    Client,
-    CreateClientBody,
-    CreateProjectBody,
-    Project,
-    TimeEntriesQueryParams,
-    TimeEntry,
+import {
+    api,
+    type Client,
+    type CreateClientBody,
+    type CreateProjectBody,
+    type Project,
+    type TimeEntriesQueryParams,
+    type TimeEntry,
+    type TimeEntryResponse,
 } from '@/packages/api/src';
 import ReportingFilterBadge from '@/Components/Common/Reporting/ReportingFilterBadge.vue';
 import ProjectMultiselectDropdown from '@/Components/Common/Project/ProjectMultiselectDropdown.vue';
@@ -35,20 +42,31 @@ import TaskMultiselectDropdown from '@/Components/Common/Task/TaskMultiselectDro
 import SelectDropdown from '@/packages/ui/src/Input/SelectDropdown.vue';
 import ClientMultiselectDropdown from '@/Components/Common/Client/ClientMultiselectDropdown.vue';
 import { useTagsStore } from '@/utils/useTags';
-import { useElementVisibility, useSessionStorage } from '@vueuse/core';
+import { useSessionStorage } from '@vueuse/core';
 import { router } from '@inertiajs/vue3';
 import TabBar from '@/Components/Common/TabBar/TabBar.vue';
 import TabBarItem from '@/Components/Common/TabBar/TabBarItem.vue';
 import TimeEntryRow from '@/packages/ui/src/TimeEntry/TimeEntryRow.vue';
-import { useTimeEntriesStore } from '@/utils/useTimeEntries';
 import { useCurrentTimeEntryStore } from '@/utils/useCurrentTimeEntry';
 import { useProjectsStore } from '@/utils/useProjects';
 import { useTasksStore } from '@/utils/useTasks';
 import { useClientsStore } from '@/utils/useClients';
-import dayjs from 'dayjs';
 import { getOrganizationCurrencyString } from '@/utils/money';
 import { useMembersStore } from '@/utils/useMembers';
-import { SecondaryButton } from '@/packages/ui/src';
+import {
+    PaginationEllipsis,
+    PaginationFirst,
+    PaginationLast,
+    PaginationList,
+    PaginationListItem,
+    PaginationNext,
+    PaginationPrev,
+    PaginationRoot,
+} from 'radix-vue';
+import { useQuery, useQueryClient } from '@tanstack/vue-query';
+import { getCurrentOrganizationId } from '@/utils/useUser';
+import { useTimeEntriesStore } from '@/utils/useTimeEntries';
+import TimeEntryMassUpdateModal from '@/Components/Common/TimeEntry/TimeEntryMassUpdateModal.vue';
 
 const startDate = useSessionStorage<string>(
     'reporting-start-date',
@@ -66,13 +84,16 @@ const selectedClients = ref<string[]>([]);
 const billable = ref<'true' | 'false' | null>(null);
 
 const { members } = storeToRefs(useMembersStore());
-const pageLimit = 10;
+const pageLimit = 15;
+const currentPage = ref(1);
+
 function getFilterAttributes() {
     let params: TimeEntriesQueryParams = {
         start: getLocalizedDayJs(startDate.value).startOf('day').utc().format(),
         end: getLocalizedDayJs(endDate.value).endOf('day').utc().format(),
         active: 'false',
         limit: pageLimit,
+        offset: currentPage.value * pageLimit - pageLimit,
     };
     params = {
         ...params,
@@ -96,37 +117,41 @@ function getFilterAttributes() {
     return params;
 }
 
-const timeEntriesStore = useTimeEntriesStore();
-const { timeEntries, allTimeEntriesLoaded } = storeToRefs(timeEntriesStore);
-const { updateTimeEntry, fetchTimeEntries, createTimeEntry } =
-    useTimeEntriesStore();
-
-const loading = ref(false);
-const loadMoreContainer = ref<HTMLDivElement | null>(null);
-const isLoadMoreVisible = useElementVisibility(loadMoreContainer);
 const currentTimeEntryStore = useCurrentTimeEntryStore();
 const { currentTimeEntry } = storeToRefs(currentTimeEntryStore);
-const { stopTimer } = currentTimeEntryStore;
+const { setActiveState, startLiveTimer } = currentTimeEntryStore;
+const { createTimeEntry, updateTimeEntry } = useTimeEntriesStore();
+
 const { tags } = storeToRefs(useTagsStore());
 
-const currentPage = ref(1);
+const { data: timeEntryResponse } = useQuery<TimeEntryResponse>({
+    queryKey: ['timeEntry', 'detailed-report'],
+    enabled: !!getCurrentOrganizationId(),
+    queryFn: () =>
+        api.getTimeEntries({
+            params: {
+                organization: getCurrentOrganizationId() || '',
+            },
+            queries: getFilterAttributes(),
+        }),
+});
 
-function deleteTimeEntries(timeEntries: TimeEntry[]) {
-    timeEntries.forEach((entry) => {
-        timeEntriesStore.deleteTimeEntry(entry.id);
-    });
-    updateFilteredTimeEntries();
+const totalPages = computed(() => {
+    return timeEntryResponse?.value?.meta?.total ?? 1;
+});
+
+const timeEntriesStore = useTimeEntriesStore();
+
+async function deleteTimeEntries(timeEntries: TimeEntry[]) {
+    for (const timeEntry of timeEntries) {
+        await timeEntriesStore.deleteTimeEntry(timeEntry.id);
+    }
+    selectedTimeEntries.value = [];
+    await updateFilteredTimeEntries();
 }
 
-watch(isLoadMoreVisible, async (isVisible) => {
-    if (
-        isVisible &&
-        timeEntries.value.length > 0 &&
-        !allTimeEntriesLoaded.value
-    ) {
-        loading.value = true;
-        await timeEntriesStore.fetchMoreTimeEntries();
-    }
+const timeEntries = computed(() => {
+    return timeEntryResponse?.value?.data || [];
 });
 
 onMounted(async () => {
@@ -140,14 +165,18 @@ const { tasks } = storeToRefs(taskStore);
 const clientStore = useClientsStore();
 const { clients } = storeToRefs(clientStore);
 
+const selectedTimeEntries = ref<TimeEntry[]>([]);
+
 async function createTag(name: string) {
     return await useTagsStore().createTag(name);
 }
+
 async function createProject(
     project: CreateProjectBody
 ): Promise<Project | undefined> {
     return await useProjectsStore().createProject(project);
 }
+
 async function createClient(
     body: CreateClientBody
 ): Promise<Client | undefined> {
@@ -156,35 +185,34 @@ async function createClient(
 
 async function startTimeEntryFromExisting(entry: TimeEntry) {
     if (currentTimeEntry.value.id) {
-        await stopTimer();
+        await setActiveState(false);
     }
     await createTimeEntry({
         project_id: entry.project_id,
         task_id: entry.task_id,
-        start: dayjs().utc().format(),
+        start: getDayJsInstance().utc().format(),
         end: null,
         billable: entry.billable,
         description: entry.description,
     });
+    startLiveTimer();
     updateFilteredTimeEntries();
     useCurrentTimeEntryStore().fetchCurrentTimeEntry();
 }
-
+const queryClient = useQueryClient();
 async function updateFilteredTimeEntries() {
-    await fetchTimeEntries(getFilterAttributes());
-}
-
-const isNextPageAvailable = computed(() => {
-    return timeEntries && timeEntries.value.length === pageLimit;
-});
-
-function nextPage() {
-    currentPage.value++;
-    fetchTimeEntries({
-        ...getFilterAttributes(),
-        end: timeEntries.value[timeEntries.value.length - 1].start,
+    await queryClient.invalidateQueries({
+        queryKey: ['timeEntry', 'detailed-report'],
     });
 }
+watch(currentPage, () => {
+    updateFilteredTimeEntries();
+});
+function deleteSelected() {
+    deleteTimeEntries(selectedTimeEntries.value);
+}
+
+const showMassUpdateModal = ref(false);
 </script>
 
 <template>
@@ -208,7 +236,7 @@ function nextPage() {
                 </TabBar>
             </div>
         </MainContainer>
-        <div class="py-2 w-full border-b border-default-background-separator">
+        <div class="py-2.5 w-full border-b border-default-background-separator">
             <MainContainer
                 class="sm:flex space-y-4 sm:space-y-0 justify-between">
                 <div
@@ -309,9 +337,38 @@ function nextPage() {
                 </div>
             </MainContainer>
         </div>
+        <TimeEntryMassUpdateModal
+            :time-entries="selectedTimeEntries"
+            @submit="updateFilteredTimeEntries"
+            v-model:show="showMassUpdateModal"></TimeEntryMassUpdateModal>
+        <MainContainer
+            class="text-sm py-1.5 font-medium border-b border-t bg-secondary border-border-tertiary flex items-center space-x-3">
+            <div>{{ selectedTimeEntries.length }} selected</div>
+            <button
+                class="text-text-tertiary flex space-x-1 items-center hover:text-text-secondary transition focus-visible:ring-2 outline-0 focus-visible:text-text-primary focus-visible:ring-white/80 rounded h-full px-2"
+                @click="showMassUpdateModal = true"
+                v-if="selectedTimeEntries.length">
+                <PencilSquareIcon class="w-4"></PencilSquareIcon>
+                <span> Edit </span>
+            </button>
+            <button
+                class="text-red-400 h-full px-2 space-x-1 items-center flex hover:text-red-500 transition focus-visible:ring-2 outline-0 focus-visible:text-red-500 focus-visible:ring-white/80 rounded"
+                @click="deleteSelected"
+                v-if="selectedTimeEntries.length">
+                <TrashIcon class="w-3.5"></TrashIcon>
+                <span> Delete </span>
+            </button>
+        </MainContainer>
         <div class="w-full relative">
-            <div v-for="(entry, key) in timeEntries" :key="key">
+            <div v-for="entry in timeEntries" :key="entry.id">
                 <TimeEntryRow
+                    :selected="selectedTimeEntries.includes(entry)"
+                    @selected="selectedTimeEntries.push(entry)"
+                    @unselected="
+                        selectedTimeEntries = selectedTimeEntries.filter(
+                            (item) => item.id !== entry.id
+                        )
+                    "
                     :createClient
                     :createProject
                     :projects="projects"
@@ -328,22 +385,82 @@ function nextPage() {
                     showMember
                     :time-entry="entry"></TimeEntryRow>
             </div>
+            <div v-if="timeEntries.length === 0">
+                <div class="text-center pt-12">
+                    <ClockIcon
+                        class="w-8 text-icon-default inline pb-2"></ClockIcon>
+                    <h3 class="text-white font-semibold">
+                        No time entries found
+                    </h3>
+                    <p class="pb-5">
+                        Adjust the filters to see more time entries!
+                    </p>
+                </div>
+            </div>
         </div>
 
-        <div
-            class="flex space-x-5 text-sm font-medium py-8 justify-center items-center">
-            <SecondaryButton size="small" disabled>
-                <ChevronLeftIcon class="w-4 text-text-tertiary">
-                </ChevronLeftIcon>
-            </SecondaryButton>
-            <span> Page {{ currentPage }} </span>
-            <SecondaryButton
-                :disabled="!isNextPageAvailable"
-                @click="nextPage"
-                size="small">
-                <ChevronRightIcon
-                    class="w-4 text-text-tertiary"></ChevronRightIcon>
-            </SecondaryButton>
-        </div>
+        <PaginationRoot
+            :total="totalPages"
+            :items-per-page="pageLimit"
+            class="flex justify-center items-center py-8"
+            v-model:page="currentPage"
+            :sibling-count="1"
+            show-edges>
+            <PaginationList
+                v-slot="{ items }"
+                class="flex items-center space-x-1 relative">
+                <div
+                    class="pr-2 flex items-center space-x-1 border-r border-border-primary mr-1">
+                    <PaginationFirst class="navigation-item">
+                        <ChevronDoubleLeftIcon class="w-4">
+                        </ChevronDoubleLeftIcon>
+                    </PaginationFirst>
+                    <PaginationPrev class="mr-4 navigation-item">
+                        <ChevronLeftIcon
+                            class="w-4 text-text-tertiary hover:text-text-primary">
+                        </ChevronLeftIcon>
+                    </PaginationPrev>
+                </div>
+                <template v-for="(page, index) in items">
+                    <PaginationListItem
+                        v-if="page.type === 'page'"
+                        :key="index"
+                        class="pagination-item"
+                        :value="page.value">
+                        {{ page.value }}
+                    </PaginationListItem>
+                    <PaginationEllipsis
+                        v-else
+                        :key="page.type"
+                        :index="index"
+                        class="PaginationEllipsis">
+                        <div class="px-2">&#8230;</div>
+                    </PaginationEllipsis>
+                </template>
+                <div
+                    class="!ml-2 pl-2 flex items-center space-x-1 border-l border-border-primary">
+                    <PaginationNext class="navigation-item">
+                        <ChevronRightIcon
+                            class="w-4 text-text-tertiary hover:text-text-primary"></ChevronRightIcon>
+                    </PaginationNext>
+                    <PaginationLast class="navigation-item">
+                        <ChevronDoubleRightIcon
+                            class="w-4 text-text-tertiary hover:text-text-primary"></ChevronDoubleRightIcon>
+                    </PaginationLast>
+                </div>
+            </PaginationList>
+        </PaginationRoot>
     </AppLayout>
 </template>
+<style lang="postcss">
+.navigation-item {
+    @apply bg-quaternary h-8 w-8 flex items-center justify-center rounded border border-border-primary text-text-tertiary hover:text-text-primary transition cursor-pointer hover:border-border-secondary hover:bg-secondary focus-visible:text-text-primary focus-visible:outline-0 focus-visible:ring-2 focus-visible:ring-white/80;
+}
+
+.pagination-item {
+    @apply bg-secondary h-8 w-8 flex items-center justify-center rounded border border-border-tertiary text-text-secondary hover:text-text-primary transition cursor-pointer hover:border-border-secondary hover:bg-secondary focus-visible:text-text-primary focus-visible:outline-0 focus-visible:ring-2 focus-visible:ring-white/80;
+}
+.pagination-item[data-selected] {
+    @apply text-white bg-accent-300/10 border border-accent-300/20 rounded-md font-medium hover:bg-accent-300/20 active:bg-accent-300/20 outline-0 focus-visible:ring-2 focus:ring-white/80 transition ease-in-out duration-150;
+}
+</style>

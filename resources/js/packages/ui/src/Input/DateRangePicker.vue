@@ -94,7 +94,7 @@ function setLastYear() {
         @submit="emit('submit')">
         <template #trigger>
             <button
-                class="px-3 py-1.5 bg-input-background border border-input-border font-medium rounded-lg flex items-center space-x-2">
+                class="px-2 py-1 bg-input-background border border-input-border font-medium rounded-lg flex items-center space-x-2">
                 <CalendarIcon class="w-5"></CalendarIcon>
                 <div class="text-white">
                     {{ formatDate(start) }}
