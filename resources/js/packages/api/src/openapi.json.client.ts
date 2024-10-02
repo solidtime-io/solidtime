@@ -170,7 +170,6 @@ const TimeEntryResource = z
         billable: z.boolean(),
     })
     .passthrough();
-const TimeEntryCollection = z.array(TimeEntryResource);
 const TimeEntryStoreRequest = z
     .object({
         member_id: z.string().uuid(),
@@ -270,7 +269,6 @@ export const schemas = {
     TaskUpdateRequest,
     start,
     TimeEntryResource,
-    TimeEntryCollection,
     TimeEntryStoreRequest,
     TimeEntryUpdateMultipleRequest,
     TimeEntryUpdateRequest,
@@ -2148,6 +2146,11 @@ Users with the permission &#x60;time-entries:view:own&#x60; can only use this en
                 schema: z.number().int().gte(1).lte(500).optional(),
             },
             {
+                name: 'offset',
+                type: 'Query',
+                schema: z.number().int().gte(0).optional(),
+            },
+            {
                 name: 'only_full_dates',
                 type: 'Query',
                 schema: z.enum(['true', 'false']).optional(),
@@ -2183,7 +2186,12 @@ Users with the permission &#x60;time-entries:view:own&#x60; can only use this en
                 schema: z.string().optional(),
             },
         ],
-        response: z.object({ data: TimeEntryCollection }).passthrough(),
+        response: z
+            .object({
+                data: z.array(TimeEntryResource),
+                meta: z.object({ total: z.number().int() }).passthrough(),
+            })
+            .passthrough(),
         errors: [
             {
                 status: 401,

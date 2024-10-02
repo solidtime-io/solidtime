@@ -39,7 +39,7 @@ const borderClasses = computed(() => {
             twMerge(
                 badgeClasses[size],
                 borderClasses,
-                'rounded inline-flex items-center font-semibold text-white',
+                'rounded inline-flex items-center font-semibold text-white outline-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80',
                 props.class
             )
         ">

@@ -28,6 +28,14 @@ export type CreateTimeEntryBody = ZodiosBodyByAlias<
     'createTimeEntry'
 >;
 
+export type UpdateMultipleTimeEntriesBody = ZodiosBodyByAlias<
+    SolidTimeApi,
+    'updateMultipleTimeEntries'
+>;
+
+export type UpdateMultipleTimeEntriesChangeset =
+    UpdateMultipleTimeEntriesBody['changes'];
+
 export type ProjectResponse = ZodiosResponseByAlias<
     SolidTimeApi,
     'getProjects'
