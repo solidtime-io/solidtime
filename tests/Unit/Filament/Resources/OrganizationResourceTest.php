@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit\Filament;
+namespace Tests\Unit\Filament\Resources;
 
 use App\Filament\Resources\OrganizationResource;
 use App\Models\Organization;
@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Config;
 use Livewire\Livewire;
 use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\UsesClass;
+use Tests\Unit\Filament\FilamentTestCase;
 
 #[UsesClass(OrganizationResource::class)]
 class OrganizationResourceTest extends FilamentTestCase

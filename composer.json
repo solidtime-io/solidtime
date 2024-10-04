@@ -2,7 +2,6 @@
     "name": "solidtime-io/solidtime",
     "type": "project",
     "description": "An open-source time-tracking app",
-    "version": "0.0.1",
     "keywords": [],
     "license": "AGPL-3.0-or-later",
     "require": {
@@ -29,7 +28,7 @@
         "spatie/temporary-directory": "^2.2",
         "stechstudio/filament-impersonate": "^3.8",
         "tightenco/ziggy": "^2.1.0",
-        "tpetry/laravel-postgresql-enhanced": "^1.0.0",
+        "tpetry/laravel-postgresql-enhanced": "^2.0.0",
         "wikimedia/composer-merge-plugin": "^2.1.0"
     },
     "require-dev": {

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Providers\Filament;
 
 use App\Filament\Widgets\ActiveUserOverview;
+use App\Filament\Widgets\ServerOverview;
 use App\Filament\Widgets\TimeEntriesCreated;
 use App\Filament\Widgets\TimeEntriesImported;
 use App\Filament\Widgets\UserRegistrations;
@@ -44,11 +45,13 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
+                ServerOverview::class,
                 ActiveUserOverview::class,
                 UserRegistrations::class,
                 TimeEntriesCreated::class,
                 TimeEntriesImported::class,
             ])
+            ->viteTheme('resources/css/filament/admin/theme.css')
             ->plugins([
                 EnvironmentIndicatorPlugin::make()
                     ->color(fn () => match (App::environment()) {

@@ -2,17 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit\Filament;
+namespace Tests\Unit\Filament\Resources;
 
-use App\Filament\Resources\ClientResource;
-use App\Models\Client;
+use App\Filament\Resources\TagResource;
+use App\Models\Tag;
 use App\Models\User;
 use Illuminate\Support\Facades\Config;
 use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\UsesClass;
+use Tests\Unit\Filament\FilamentTestCase;
 
-#[UsesClass(ClientResource::class)]
-class ClientResourceTest extends FilamentTestCase
+#[UsesClass(TagResource::class)]
+class TagResourceTest extends FilamentTestCase
 {
     protected function setUp(): void
     {
@@ -25,26 +26,26 @@ class ClientResourceTest extends FilamentTestCase
         $this->actingAs($user);
     }
 
-    public function test_can_list_clients(): void
+    public function test_can_list_tags(): void
     {
         // Arrange
-        $clients = Client::factory()->createMany(5);
+        $tags = Tag::factory()->createMany(5);
 
         // Act
-        $response = Livewire::test(ClientResource\Pages\ListClients::class);
+        $response = Livewire::test(TagResource\Pages\ListTags::class);
 
         // Assert
         $response->assertSuccessful();
-        $response->assertCanSeeTableRecords($clients);
+        $response->assertCanSeeTableRecords($tags);
     }
 
-    public function test_can_see_edit_page_of_client(): void
+    public function test_can_see_edit_page_of_tag(): void
     {
         // Arrange
-        $client = Client::factory()->create();
+        $tag = Tag::factory()->create();
 
         // Act
-        $response = Livewire::test(ClientResource\Pages\EditClient::class, ['record' => $client->getKey()]);
+        $response = Livewire::test(TagResource\Pages\EditTag::class, ['record' => $tag->getKey()]);
 
         // Assert
         $response->assertSuccessful();
