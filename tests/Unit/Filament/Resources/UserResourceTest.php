@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit\Filament;
+namespace Tests\Unit\Filament\Resources;
 
 use App\Exceptions\Api\CanNotDeleteUserWhoIsOwnerOfOrganizationWithMultipleMembers;
 use App\Filament\Resources\TimeEntryResource;
@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Config;
 use Livewire\Livewire;
 use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\UsesClass;
+use Tests\Unit\Filament\FilamentTestCase;
 
 #[UsesClass(TimeEntryResource::class)]
 class UserResourceTest extends FilamentTestCase

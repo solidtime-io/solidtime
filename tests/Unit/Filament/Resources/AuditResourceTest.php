@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit\Filament;
+namespace Tests\Unit\Filament\Resources;
 
 use App\Filament\Resources\AuditResource;
 use App\Models\Audit;
@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\UsesClass;
+use Tests\Unit\Filament\FilamentTestCase;
 
 #[UsesClass(AuditResource::class)]
 class AuditResourceTest extends FilamentTestCase

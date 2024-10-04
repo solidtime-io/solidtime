@@ -18,7 +18,11 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'solidtime'),
+    'name' => 'solidtime',
+
+    'version' => env('APP_VERSION'),
+
+    'build' => env('APP_BUILD'),
 
     /*
     |--------------------------------------------------------------------------

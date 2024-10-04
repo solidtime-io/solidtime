@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit\Filament;
+namespace Tests\Unit\Filament\Resources;
 
 use App\Filament\Resources\ProjectResource;
 use App\Models\Project;
@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Config;
 use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\UsesClass;
+use Tests\Unit\Filament\FilamentTestCase;
 
 #[UsesClass(ProjectResource::class)]
 class ProjectResourceTest extends FilamentTestCase
