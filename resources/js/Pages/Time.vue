@@ -57,9 +57,7 @@ async function startTimeEntry(
 }
 
 function deleteTimeEntries(timeEntries: TimeEntry[]) {
-    timeEntries.forEach((entry) => {
-        useTimeEntriesStore().deleteTimeEntry(entry.id);
-    });
+    useTimeEntriesStore().deleteTimeEntries(timeEntries);
     fetchTimeEntries();
 }
 

@@ -2326,6 +2326,54 @@ Users with the permission &#x60;time-entries:view:own&#x60; can only use this en
         ],
     },
     {
+        method: 'delete',
+        path: '/v1/organizations/:organization/time-entries',
+        alias: 'deleteTimeEntries',
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'organization',
+                type: 'Path',
+                schema: z.string(),
+            },
+            {
+                name: 'ids',
+                type: 'Query',
+                schema: z.array(z.string().uuid()),
+            },
+        ],
+        response: z
+            .object({ success: z.string(), error: z.string() })
+            .passthrough(),
+        errors: [
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 403,
+                description: `Authorization error`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 404,
+                description: `Not found`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 422,
+                description: `Validation error`,
+                schema: z
+                    .object({
+                        message: z.string(),
+                        errors: z.record(z.array(z.string())),
+                    })
+                    .passthrough(),
+            },
+        ],
+    },
+    {
         method: 'put',
         path: '/v1/organizations/:organization/time-entries/:timeEntry',
         alias: 'updateTimeEntry',
