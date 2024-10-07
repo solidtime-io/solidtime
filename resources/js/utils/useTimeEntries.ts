@@ -168,6 +168,27 @@ export const useTimeEntriesStore = defineStore('timeEntries', () => {
         }
     }
 
+    async function deleteTimeEntries(timeEntries: TimeEntry[]) {
+        const organizationId = getCurrentOrganizationId();
+        const timeEntryIds = timeEntries.map((entry) => entry.id);
+        if (organizationId) {
+            await handleApiRequestNotifications(
+                () =>
+                    api.deleteTimeEntries(undefined, {
+                        queries: {
+                            ids: timeEntryIds,
+                        },
+                        params: {
+                            organization: organizationId,
+                        },
+                    }),
+                'Time entries deleted successfully',
+                'Failed to delete time entries'
+            );
+            await fetchTimeEntries();
+        }
+    }
+
     return {
         timeEntries,
         fetchTimeEntries,
@@ -177,5 +198,6 @@ export const useTimeEntriesStore = defineStore('timeEntries', () => {
         fetchMoreTimeEntries,
         allTimeEntriesLoaded,
         updateTimeEntries,
+        deleteTimeEntries,
     };
 });

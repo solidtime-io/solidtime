@@ -142,7 +142,7 @@ const expanded = ref(false);
                         class="opacity-20 hidden sm:flex group-hover:opacity-100"></TimeTrackerStartStop>
                     <TimeEntryMoreOptionsDropdown
                         @delete="
-                            deleteTimeEntries(timeEntry.timeEntries)
+                            deleteTimeEntries(timeEntry?.timeEntries ?? [])
                         "></TimeEntryMoreOptionsDropdown>
                 </div>
             </div>
