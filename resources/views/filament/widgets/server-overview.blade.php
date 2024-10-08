@@ -1,11 +1,23 @@
 <x-filament-widgets::widget>
     <x-filament::section>
         <div>
-            <span class="text-gray-950 font-bold">Version</span> <span>v{{ $version }}</span><br>
-            <span class="text-gray-950 font-bold">Build</span> {{ $build }}
+            <span class="text-gray-950 font-bold">Version</span>
+            @if($version !== null)
+                <span>v{{ $version }}</span>
+            @else
+                <span>-</span>
+            @endif
+            <br>
+            <span class="text-gray-950 font-bold">Build</span>
+            @if($build !== null)
+                <span>{{ $build }}</span>
+            @else
+                <span>-</span>
+            @endif
+
         </div>
 
-        @if ($currentVersion !== null)
+        @if ($currentVersion !== null && $version !== null)
         <div class="mt-4 inline-flex items-center justify-center gap-1">
             @if ($needsUpdate)
                 <span>

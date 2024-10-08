@@ -16,18 +16,22 @@ class ServerOverview extends Widget
      */
     protected function getViewData(): array
     {
-        $currentVersion = Cache::get('latest_version', null);
+        /** @var string|null $currentVersion */
+        $currentVersion = config('app.version');
+        /** @var string|null $build */
+        $build = config('app.build');
+        $latestVersion = Cache::get('latest_version', null);
 
         $needsUpdate = false;
-        if ($currentVersion !== null && version_compare($currentVersion, config('app.version')) > 0) {
+        if ($latestVersion !== null && $currentVersion !== null && version_compare($latestVersion, $currentVersion) > 0) {
             $needsUpdate = true;
         }
 
         return [
-            'version' => config('app.version'),
-            'build' => config('app.build'),
+            'version' => $currentVersion,
+            'build' => $build,
             'environment' => config('app.env'),
-            'currentVersion' => $currentVersion,
+            'currentVersion' => $latestVersion,
             'needsUpdate' => $needsUpdate,
         ];
     }
