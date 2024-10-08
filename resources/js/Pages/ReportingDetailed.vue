@@ -143,9 +143,7 @@ const totalPages = computed(() => {
 const timeEntriesStore = useTimeEntriesStore();
 
 async function deleteTimeEntries(timeEntries: TimeEntry[]) {
-    for (const timeEntry of timeEntries) {
-        await timeEntriesStore.deleteTimeEntry(timeEntry.id);
-    }
+    await timeEntriesStore.deleteTimeEntries(timeEntries);
     selectedTimeEntries.value = [];
     await updateFilteredTimeEntries();
 }
