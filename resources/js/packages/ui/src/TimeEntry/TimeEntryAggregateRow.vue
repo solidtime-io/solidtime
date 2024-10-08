@@ -38,6 +38,11 @@ const props = defineProps<{
     updateTimeEntry: (timeEntry: TimeEntry) => void;
     deleteTimeEntries: (timeEntries: TimeEntry[]) => void;
     currency: string;
+    selectedTimeEntries: TimeEntry[];
+}>();
+const emit = defineEmits<{
+    selected: [TimeEntry[]];
+    unselected: [TimeEntry[]];
 }>();
 
 function updateTimeEntryDescription(description: string) {
@@ -69,6 +74,14 @@ function updateProjectAndTask(projectId: string, taskId: string) {
 }
 
 const expanded = ref(false);
+function onSelectChange(event: Event) {
+    const target = event.target as HTMLInputElement;
+    if (target.checked) {
+        emit('selected', [...props.timeEntry.timeEntries]);
+    } else {
+        emit('unselected', [...props.timeEntry.timeEntries]);
+    }
+}
 </script>
 
 <template>
@@ -80,6 +93,15 @@ const expanded = ref(false);
                 class="sm:flex py-1.5 items-center min-w-0 justify-between group">
                 <div class="flex space-x-3 items-center min-w-0">
                     <input
+                        @change="onSelectChange"
+                        :checked="
+                            timeEntry.timeEntries.every(
+                                (aggregateTimeEntry: TimeEntry) =>
+                                    selectedTimeEntries.includes(
+                                        aggregateTimeEntry
+                                    )
+                            )
+                        "
                         type="checkbox"
                         class="h-4 w-4 rounded bg-card-background border-input-border text-accent-500/80 focus:ring-accent-500/80" />
                     <div class="flex items-center min-w-0">
@@ -153,6 +175,13 @@ const expanded = ref(false);
             <TimeEntryRow
                 :projects="projects"
                 :tasks="tasks"
+                :selected="
+                    !!selectedTimeEntries.find(
+                        (filterEntry) => filterEntry.id === subEntry.id
+                    )
+                "
+                @selected="emit('selected', [subEntry])"
+                @unselected="emit('unselected', [subEntry])"
                 :createClient
                 :clients
                 :createProject

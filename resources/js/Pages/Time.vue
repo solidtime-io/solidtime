@@ -26,6 +26,7 @@ import { useTagsStore } from '@/utils/useTags';
 import { useClientsStore } from '@/utils/useClients';
 import TimeEntryCreateModal from '@/Components/Common/TimeEntry/TimeEntryCreateModal.vue';
 import { getOrganizationCurrencyString } from '@/utils/money';
+import TimeEntryMassActionRow from '@/Components/Common/TimeEntry/TimeEntryMassActionRow.vue';
 
 const timeEntriesStore = useTimeEntriesStore();
 const { timeEntries, allTimeEntriesLoaded } = storeToRefs(timeEntriesStore);
@@ -97,6 +98,17 @@ async function createClient(
 ): Promise<Client | undefined> {
     return await useClientsStore().createClient(body);
 }
+
+const selectedTimeEntries = ref([] as TimeEntry[]);
+
+async function clearSelectionAndState() {
+    selectedTimeEntries.value = [];
+    await fetchTimeEntries();
+}
+
+function deleteSelected() {
+    deleteTimeEntries(selectedTimeEntries.value);
+}
 </script>
 
 <template>
@@ -120,7 +132,12 @@ async function createClient(
                 </div>
             </div>
         </MainContainer>
+        <TimeEntryMassActionRow
+            :selected-time-entries="selectedTimeEntries"
+            @submit="clearSelectionAndState"
+            :delete-selected="deleteSelected"></TimeEntryMassActionRow>
         <TimeEntryGroupedTable
+            v-model:selected="selectedTimeEntries"
             :createProject
             :clients
             :createClient

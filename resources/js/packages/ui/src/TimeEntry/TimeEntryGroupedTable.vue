@@ -19,6 +19,10 @@ import TimeEntryRowHeading from '@/packages/ui/src/TimeEntry/TimeEntryRowHeading
 import TimeEntryRow from '@/packages/ui/src/TimeEntry/TimeEntryRow.vue';
 import type { TimeEntriesGroupedByType } from '@/types/time-entries';
 
+const selectedTimeEntries = defineModel<TimeEntry[]>('selected', {
+    default: [],
+});
+
 const props = defineProps<{
     timeEntries: TimeEntry[];
     projects: Project[];
@@ -124,6 +128,25 @@ function sumDuration(timeEntries: TimeEntry[]) {
         <template v-for="entry in value" :key="entry.id">
             <TimeEntryAggregateRow
                 :createProject
+                :selected-time-entries="selectedTimeEntries"
+                @selected="
+                    (timeEntries) => {
+                        selectedTimeEntries = [
+                            ...selectedTimeEntries,
+                            ...timeEntries,
+                        ];
+                    }
+                "
+                @unselected="
+                    (timeEntriesToUnselect) => {
+                        selectedTimeEntries = selectedTimeEntries.filter(
+                            (item) =>
+                                !timeEntriesToUnselect.find(
+                                    (filterEntry) => filterEntry.id === item.id
+                                )
+                        );
+                    }
+                "
                 :createClient
                 :projects="projects"
                 :tasks="tasks"
@@ -141,6 +164,17 @@ function sumDuration(timeEntries: TimeEntry[]) {
                 :createClient
                 :createProject
                 :projects="projects"
+                :selected="
+                    !!selectedTimeEntries.find(
+                        (filterEntry) => filterEntry.id === entry.id
+                    )
+                "
+                @selected="selectedTimeEntries.push(entry)"
+                @unselected="
+                    selectedTimeEntries = selectedTimeEntries.filter(
+                        (item) => item.id !== entry.id
+                    )
+                "
                 :tasks="tasks"
                 :tags="tags"
                 :clients

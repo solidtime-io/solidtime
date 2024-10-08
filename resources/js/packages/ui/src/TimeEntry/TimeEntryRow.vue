@@ -98,7 +98,7 @@ function onSelectChange(event: Event) {
                 <div class="flex space-x-1 items-center min-w-0">
                     <input
                         @change="onSelectChange"
-                        :value="selected"
+                        :checked="selected"
                         type="checkbox"
                         class="h-4 w-4 rounded bg-card-background border-input-border text-accent-500/80 focus:ring-accent-500/80" />
                     <div class="w-7 h-7" v-if="indent === true"></div>

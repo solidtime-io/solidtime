@@ -12,8 +12,6 @@ import {
     ChevronDoubleLeftIcon,
     ChevronRightIcon,
     ChevronDoubleRightIcon,
-    PencilSquareIcon,
-    TrashIcon,
     ClockIcon,
 } from '@heroicons/vue/20/solid';
 import DateRangePicker from '@/packages/ui/src/Input/DateRangePicker.vue';
@@ -66,7 +64,7 @@ import {
 import { useQuery, useQueryClient } from '@tanstack/vue-query';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import { useTimeEntriesStore } from '@/utils/useTimeEntries';
-import TimeEntryMassUpdateModal from '@/Components/Common/TimeEntry/TimeEntryMassUpdateModal.vue';
+import TimeEntryMassActionRow from '@/Components/Common/TimeEntry/TimeEntryMassActionRow.vue';
 
 const startDate = useSessionStorage<string>(
     'reporting-start-date',
@@ -210,7 +208,10 @@ function deleteSelected() {
     deleteTimeEntries(selectedTimeEntries.value);
 }
 
-const showMassUpdateModal = ref(false);
+async function clearSelectionAndState() {
+    selectedTimeEntries.value = [];
+    await updateFilteredTimeEntries();
+}
 </script>
 
 <template>
@@ -335,28 +336,10 @@ const showMassUpdateModal = ref(false);
                 </div>
             </MainContainer>
         </div>
-        <TimeEntryMassUpdateModal
-            :time-entries="selectedTimeEntries"
-            @submit="updateFilteredTimeEntries"
-            v-model:show="showMassUpdateModal"></TimeEntryMassUpdateModal>
-        <MainContainer
-            class="text-sm py-1.5 font-medium border-b border-t bg-secondary border-border-tertiary flex items-center space-x-3">
-            <div>{{ selectedTimeEntries.length }} selected</div>
-            <button
-                class="text-text-tertiary flex space-x-1 items-center hover:text-text-secondary transition focus-visible:ring-2 outline-0 focus-visible:text-text-primary focus-visible:ring-white/80 rounded h-full px-2"
-                @click="showMassUpdateModal = true"
-                v-if="selectedTimeEntries.length">
-                <PencilSquareIcon class="w-4"></PencilSquareIcon>
-                <span> Edit </span>
-            </button>
-            <button
-                class="text-red-400 h-full px-2 space-x-1 items-center flex hover:text-red-500 transition focus-visible:ring-2 outline-0 focus-visible:text-red-500 focus-visible:ring-white/80 rounded"
-                @click="deleteSelected"
-                v-if="selectedTimeEntries.length">
-                <TrashIcon class="w-3.5"></TrashIcon>
-                <span> Delete </span>
-            </button>
-        </MainContainer>
+        <TimeEntryMassActionRow
+            :selected-time-entries="selectedTimeEntries"
+            @submit="clearSelectionAndState"
+            :delete-selected="deleteSelected"></TimeEntryMassActionRow>
         <div class="w-full relative">
             <div v-for="entry in timeEntries" :key="entry.id">
                 <TimeEntryRow

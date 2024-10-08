@@ -57,25 +57,23 @@ async function createClient(
     return await useClientsStore().createClient(body);
 }
 
-const description = ref<HTMLInputElement | null>(null);
+const descriptionInput = ref<HTMLInputElement | null>(null);
 
 const { handleApiRequestNotifications } = useNotificationsStore();
 
 watch(show, (value) => {
     if (value) {
         nextTick(() => {
-            description.value?.focus();
+            descriptionInput.value?.focus();
         });
     }
 });
 
-const timeEntryUpdates = ref({
-    description: '',
-    project_id: null,
-    task_id: null,
-    tags: [] as string[],
-    billable: null as boolean | null,
-});
+const description = ref<string>('');
+const taskId = ref<string | null | undefined>(undefined);
+const projectId = ref<string | null | undefined>(undefined);
+const billable = ref<boolean | undefined>(undefined);
+const selectedTags = ref<string[]>([]);
 
 const { tags } = storeToRefs(useTagsStore());
 async function createTag(tag: string) {
@@ -84,46 +82,46 @@ async function createTag(tag: string) {
 
 const timeEntryBillable = computed({
     get: () => {
-        if (timeEntryUpdates.value.billable === null) {
+        if (billable.value) {
             return 'do-not-update';
         }
-        return timeEntryUpdates.value.billable ? 'billable' : 'non-billable';
+        return billable.value ? 'billable' : 'non-billable';
     },
     set: (value) => {
         if (value === 'do-not-update') {
-            timeEntryUpdates.value.billable = null;
+            billable.value = undefined;
         } else if (value === 'billable') {
-            timeEntryUpdates.value.billable = true;
+            billable.value = true;
         } else {
-            timeEntryUpdates.value.billable = false;
+            billable.value = false;
         }
     },
 });
 
-function submit() {
+async function submit() {
     const organizationId = getCurrentOrganizationId();
     saving.value = true;
     if (organizationId) {
         const timeEntryUpdatesBody = {} as UpdateMultipleTimeEntriesChangeset;
-        if (timeEntryUpdates.value.description !== '') {
-            timeEntryUpdatesBody.description =
-                timeEntryUpdates.value.description;
+        if (description.value && description.value !== '') {
+            timeEntryUpdatesBody.description = description.value;
         }
-        if (timeEntryUpdates.value.project_id) {
-            timeEntryUpdatesBody.project_id = timeEntryUpdates.value.project_id;
+        if (projectId.value !== undefined) {
+            timeEntryUpdatesBody.project_id = projectId.value;
+            timeEntryUpdatesBody.task_id = null;
         }
-        if (timeEntryUpdates.value.task_id) {
-            timeEntryUpdatesBody.task_id = timeEntryUpdates.value.task_id;
+        if (taskId.value !== undefined) {
+            timeEntryUpdatesBody.task_id = taskId.value;
         }
-        if (timeEntryUpdates.value.billable !== null) {
-            timeEntryUpdatesBody.billable = timeEntryUpdates.value.billable;
+        if (billable.value !== undefined) {
+            timeEntryUpdatesBody.billable = billable.value;
         }
-        if (timeEntryUpdates.value.tags.length > 0) {
-            timeEntryUpdatesBody.tags = timeEntryUpdates.value.tags;
+        if (selectedTags.value.length > 0) {
+            timeEntryUpdatesBody.tags = selectedTags.value;
         }
 
         try {
-            handleApiRequestNotifications(
+            await handleApiRequestNotifications(
                 () =>
                     api.updateMultipleTimeEntries(
                         {
@@ -145,13 +143,11 @@ function submit() {
                 () => {
                     show.value = false;
                     emit('submit');
-                    timeEntryUpdates.value = {
-                        description: '',
-                        project_id: null,
-                        task_id: null,
-                        tags: [],
-                        billable: null,
-                    };
+                    description.value = '';
+                    projectId.value = undefined;
+                    taskId.value = undefined;
+                    selectedTags.value = [];
+                    billable.value = undefined;
                     saving.value = false;
                 }
             );
@@ -176,8 +172,8 @@ function submit() {
                     <InputLabel for="description" value="Description" />
                     <TextInput
                         id="description"
-                        ref="description"
-                        v-model="timeEntryUpdates.description"
+                        ref="descriptionInput"
+                        v-model="description"
                         @keydown.enter="submit"
                         type="text"
                         class="mt-1 block w-full" />
@@ -193,21 +189,16 @@ function submit() {
                         size="xlarge"
                         :projects="projects"
                         :tasks="tasks"
-                        v-model:project="timeEntryUpdates.project_id"
-                        v-model:task="
-                            timeEntryUpdates.task_id
-                        "></TimeTrackerProjectTaskDropdown>
+                        v-model:project="projectId"
+                        v-model:task="taskId"></TimeTrackerProjectTaskDropdown>
                 </div>
                 <div class="space-y-2">
                     <InputLabel for="project" value="Tag" />
-                    <TagDropdown
-                        :createTag
-                        v-model="timeEntryUpdates.tags"
-                        :tags="tags">
+                    <TagDropdown :createTag v-model="selectedTags" :tags="tags">
                         <template #trigger>
                             <Badge size="xlarge">
-                                <span v-if="timeEntryUpdates.tags.length > 0">
-                                    Set {{ timeEntryUpdates.tags.length }} tags
+                                <span v-if="selectedTags.length > 0">
+                                    Set {{ selectedTags.length }} tags
                                 </span>
                                 <span v-else> Select Tags... </span>
                             </Badge>
@@ -236,13 +227,10 @@ function submit() {
                         ]">
                         <template v-slot:trigger>
                             <Badge tag="button" size="xlarge">
-                                <span v-if="timeEntryUpdates.billable === null">
+                                <span v-if="billable === undefined">
                                     Set billable status
                                 </span>
-                                <span
-                                    v-else-if="
-                                        timeEntryUpdates.billable === true
-                                    ">
+                                <span v-else-if="billable === true">
                                     Billable
                                 </span>
                                 <span v-else> Non Billable </span></Badge
