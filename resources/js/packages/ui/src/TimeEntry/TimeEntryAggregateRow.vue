@@ -90,7 +90,7 @@ function onSelectChange(event: Event) {
         data-testid="time_entry_row">
         <MainContainer class="min-w-0">
             <div
-                class="sm:flex py-1.5 items-center min-w-0 justify-between group">
+                class="sm:flex py-0.5 items-center min-w-0 justify-between group">
                 <div class="flex space-x-3 items-center min-w-0">
                     <input
                         @change="onSelectChange"
