@@ -25,7 +25,7 @@ const tempEnd = ref(props.end ? getLocalizedDayJs(props.end).format() : null);
 
 watch(props, () => {
     tempStart.value = getLocalizedDayJs(props.start).format();
-    tempEnd.value = getLocalizedDayJs(props.end).format();
+    tempEnd.value = props.end ? getLocalizedDayJs(props.end).format() : null;
 });
 function updateTimeEntry() {
     const tempStartUtc = getDayJsInstance()(tempStart.value).utc().format();
