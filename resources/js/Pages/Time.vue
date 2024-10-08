@@ -108,6 +108,7 @@ async function clearSelectionAndState() {
 
 function deleteSelected() {
     deleteTimeEntries(selectedTimeEntries.value);
+    selectedTimeEntries.value = [];
 }
 </script>
 
