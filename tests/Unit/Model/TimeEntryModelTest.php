@@ -148,4 +148,35 @@ class TimeEntryModelTest extends ModelTestAbstract
         $this->assertCount(1, $result);
         $this->assertTrue($result->first()->is($timeEntry1));
     }
+
+    public function test_computed_client_id_returns_null_when_no_project_is_assigned(): void
+    {
+        // Arrange
+        $timeEntry = TimeEntry::factory()->forProject(null)->create();
+        $timeEntry->client_id = null;
+        $timeEntry->save();
+
+        // Act
+        $timeEntry->setComputedAttributeValue('client_id');
+        $clientId = $timeEntry->client_id;
+
+        // Assert
+        $this->assertNull($clientId);
+    }
+
+    public function test_computed_client_id_returns_project_client_id(): void
+    {
+        // Arrange
+        $project = Project::factory()->create();
+        $timeEntry = TimeEntry::factory()->forProject($project)->create();
+        $timeEntry->client_id = null;
+        $timeEntry->save();
+
+        // Act
+        $timeEntry->setComputedAttributeValue('client_id');
+        $clientId = $timeEntry->client_id;
+
+        // Assert
+        $this->assertSame($project->client_id, $clientId);
+    }
 }

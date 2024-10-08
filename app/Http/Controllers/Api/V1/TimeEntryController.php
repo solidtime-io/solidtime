@@ -373,6 +373,10 @@ class TimeEntryController extends Controller
             $oldTask = $timeEntry->task;
 
             $timeEntry->fill($changes);
+            // If project is changed, but task is not, we remove the old task from the time entry
+            if ($oldProject !== null && $project !== null && $oldProject->isNot($project) && $task === null) {
+                $timeEntry->task()->disassociate();
+            }
             if ($overwriteClient) {
                 $timeEntry->client()->associate($client);
             }

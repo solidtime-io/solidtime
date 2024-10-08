@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Carbon;
 use Korridor\LaravelComputedAttributes\ComputedAttributes;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
@@ -79,6 +80,7 @@ class TimeEntry extends Model implements AuditableContract
      */
     protected array $computed = [
         'billable_rate',
+        'client_id',
     ];
 
     /**
@@ -93,6 +95,44 @@ class TimeEntry extends Model implements AuditableContract
     public function getBillableRateComputed(): ?int
     {
         return app(BillableRateService::class)->getBillableRateForTimeEntry($this);
+    }
+
+    public function getClientIdComputed(): ?string
+    {
+        return $this->project_id === null ? null : $this->project->client_id;
+    }
+
+    /**
+     * This scope will be applied during the computed property generation with artisan computed-attributes:generate.
+     *
+     * @param  Builder<TimeEntry>  $builder
+     * @param  array<string>  $attributes  Attributes that will be generated.
+     * @return Builder<TimeEntry>
+     */
+    public function scopeComputedAttributesGenerate(Builder $builder, array $attributes): Builder
+    {
+        if (in_array('client_id', $attributes, true)) {
+            $builder->with([
+                'project' => function (Relation $builder): void {
+                    /** @var Builder<Project> $builder */
+                    $builder->select('id', 'client_id');
+                },
+            ]);
+        }
+
+        return $builder;
+    }
+
+    /**
+     * This scope will be applied during the computed property validation with artisan computed-attributes:validate.
+     *
+     * @param  Builder<TimeEntry>  $builder
+     * @param  array<string>  $attributes  Attributes that will be validated.
+     * @return Builder<TimeEntry>
+     */
+    public function scopeComputedAttributesValidate(Builder $builder, array $attributes): Builder
+    {
+        return $this->scopeComputedAttributesGenerate($builder, $attributes);
     }
 
     public function getDuration(): ?CarbonInterval
