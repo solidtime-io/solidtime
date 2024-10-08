@@ -1883,6 +1883,53 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         $response->assertForbidden();
     }
 
+    public function test_update_multiple_remove_task_from_time_entries_only_if_project_is_set_to_a_new_value_without_setting_a_new_task(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:update:own',
+        ]);
+        $project1 = Project::factory()->forOrganization($data->organization)->create();
+        $project2 = Project::factory()->forOrganization($data->organization)->create();
+        $task1 = Task::factory()->forProject($project1)->forOrganization($data->organization)->create();
+        $task2 = Task::factory()->forProject($project2)->forOrganization($data->organization)->create();
+        $timeEntry1 = TimeEntry::factory()->forOrganization($data->organization)->forProject($project1)->forTask($task1)->forMember($data->member)->create();
+        $timeEntry2 = TimeEntry::factory()->forOrganization($data->organization)->forProject($project2)->forTask($task2)->forMember($data->member)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->patchJson(route('api.v1.time-entries.update-multiple', [$data->organization->getKey()]), [
+            'ids' => [
+                $timeEntry1->getKey(),
+                $timeEntry2->getKey(),
+            ],
+            'changes' => [
+                'project_id' => $project2->getKey(),
+            ],
+        ]);
+
+        // Assert
+        $response->assertValid();
+        $response->assertStatus(200);
+        $response->assertExactJson([
+            'success' => [
+                $timeEntry1->getKey(),
+                $timeEntry2->getKey(),
+            ],
+            'error' => [],
+        ]);
+        $this->assertDatabaseHas(TimeEntry::class, [
+            'id' => $timeEntry1->getKey(),
+            'project_id' => $project2->getKey(),
+            'task_id' => null,
+        ]);
+        $this->assertDatabaseHas(TimeEntry::class, [
+            'id' => $timeEntry2->getKey(),
+            'project_id' => $project2->getKey(),
+            'task_id' => $task2->getKey(),
+        ]);
+    }
+
     public function test_update_multiple_updates_own_time_entries_and_fails_for_time_entries_of_other_users_and_and_other_organizations_with_own_time_entries_permission(): void
     {
         // Arrange
@@ -2096,7 +2143,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         Passport::actingAs($data->user);
 
         // Act
-        $response = $this->patchJson(route('api.v1.time-entries.update-multiple', [$data->organization->getKey()]), [
+        $response = $this->withoutExceptionHandling()->patchJson(route('api.v1.time-entries.update-multiple', [$data->organization->getKey()]), [
             'ids' => [
                 $ownTimeEntry->getKey(),
                 $otherTimeEntry->getKey(),
