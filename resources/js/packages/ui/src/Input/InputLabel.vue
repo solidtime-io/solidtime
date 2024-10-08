@@ -1,11 +1,15 @@
 <script setup lang="ts">
-defineProps({
-    value: String,
-});
+import { twMerge } from 'tailwind-merge';
+
+const props = defineProps<{
+    value?: string;
+    class?: string;
+}>();
 </script>
 
 <template>
-    <label class="block font-medium text-sm text-white">
+    <label
+        :class="twMerge('block font-medium text-sm text-white', props.class)">
         <span v-if="value">{{ value }}</span>
         <span v-else><slot /></span>
     </label>

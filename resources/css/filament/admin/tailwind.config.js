@@ -1,4 +1,4 @@
-import preset from '../../../../vendor/filament/filament/tailwind.config.preset'
+import preset from '../../../../vendor/filament/filament/tailwind.config.preset';
 
 export default {
     presets: [preset],
@@ -7,4 +7,4 @@ export default {
         './resources/views/filament/**/*.blade.php',
         './vendor/filament/**/*.blade.php',
     ],
-}
+};

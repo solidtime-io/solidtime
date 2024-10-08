@@ -339,7 +339,12 @@ async function clearSelectionAndState() {
         <TimeEntryMassActionRow
             :selected-time-entries="selectedTimeEntries"
             @submit="clearSelectionAndState"
-            :delete-selected="deleteSelected"></TimeEntryMassActionRow>
+            :delete-selected="deleteSelected"
+            @select-all="selectedTimeEntries = [...timeEntries]"
+            @unselect-all="selectedTimeEntries = []"
+            :all-selected="
+                selectedTimeEntries.length === timeEntries.length
+            "></TimeEntryMassActionRow>
         <div class="w-full relative">
             <div v-for="entry in timeEntries" :key="entry.id">
                 <TimeEntryRow

@@ -35,5 +35,5 @@ const proxyChecked = computed({
         type="checkbox"
         :id="id"
         :value="value"
-        class="rounded bg-input-background border-input-border text-indigo-600 shadow-sm focus:ring-indigo-500" />
+        class="h-4 w-4 rounded bg-card-background border-input-border text-accent-500/80 focus:ring-accent-500/80" />
 </template>
