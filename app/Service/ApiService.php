@@ -18,7 +18,7 @@ use Log;
 
 class ApiService
 {
-    private const string API_URL = 'https://app.solidtime.io/api';
+    private const string API_URL = 'https://app.solidtime.io/api/v1';
 
     public function checkForUpdate(): ?string
     {
@@ -26,7 +26,7 @@ class ApiService
             $response = Http::asJson()
                 ->timeout(3)
                 ->connectTimeout(2)
-                ->post(self::API_URL.'/check-for-update', [
+                ->post(self::API_URL.'/ping/version', [
                     'version' => config('app.version'),
                     'build' => config('app.build'),
                     'url' => config('app.url'),
@@ -57,7 +57,7 @@ class ApiService
             $response = Http::asJson()
                 ->timeout(3)
                 ->connectTimeout(2)
-                ->post(self::API_URL.'/telemetry', [
+                ->post(self::API_URL.'/ping/telemetry', [
                     'version' => config('app.version'),
                     'build' => config('app.build'),
                     'url' => config('app.url'),

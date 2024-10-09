@@ -453,8 +453,8 @@ class TimeEntryController extends Controller
             ->whereIn('id', $ids)
             ->get();
 
-        $success = new Collection();
-        $error = new Collection();
+        $success = new Collection;
+        $error = new Collection;
 
         foreach ($ids as $id) {
             /** @var TimeEntry|null $timeEntry */
