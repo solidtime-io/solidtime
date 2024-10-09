@@ -33,8 +33,8 @@ const { timeEntries, allTimeEntriesLoaded } = storeToRefs(timeEntriesStore);
 const { updateTimeEntry, fetchTimeEntries, createTimeEntry } =
     useTimeEntriesStore();
 
-function updateTimeEntries(ids: string[], changes: Partial<TimeEntry>) {
-    useTimeEntriesStore().updateTimeEntries(ids, changes);
+async function updateTimeEntries(ids: string[], changes: Partial<TimeEntry>) {
+    await useTimeEntriesStore().updateTimeEntries(ids, changes);
     fetchTimeEntries();
 }
 
