@@ -12,7 +12,12 @@ import type {
 } from '@/packages/api/src';
 import ProjectBadge from '@/packages/ui/src/Project/ProjectBadge.vue';
 import Badge from '@/packages/ui/src/Badge.vue';
-import { PlusIcon, PlusCircleIcon, MinusIcon } from '@heroicons/vue/16/solid';
+import {
+    PlusIcon,
+    PlusCircleIcon,
+    MinusIcon,
+    XMarkIcon,
+} from '@heroicons/vue/16/solid';
 import ProjectCreateModal from '@/packages/ui/src/Project/ProjectCreateModal.vue';
 
 const task = defineModel<string | null>('task', {
@@ -56,10 +61,14 @@ const props = withDefaults(
         ) => Promise<Project | undefined>;
         createClient: (client: CreateClientBody) => Promise<Client | undefined>;
         currency: string;
+        emptyPlaceholder: string;
+        allowReset: boolean;
     }>(),
     {
         showBadgeBorder: true,
         size: 'large',
+        emptyPlaceholder: 'No Project',
+        allowReset: false,
     }
 );
 
@@ -478,7 +487,13 @@ const currentTask = computed(() => {
 });
 
 const selectedProjectName = computed(() => {
-    return currentProject.value?.name || 'No Project';
+    if (project.value === null) {
+        return props.emptyPlaceholder;
+    }
+    if (project.value === '') {
+        return 'No Project';
+    }
+    return currentProject.value?.name;
 });
 
 const selectedProjectColor = computed(() => {
@@ -535,7 +550,7 @@ const showCreateProject = ref(false);
                 :border="showBadgeBorder"
                 tag="button"
                 :name="selectedProjectName"
-                class="focus:border-border-tertiary w-full focus:outline-0 focus:bg-card-background-separator min-w-0">
+                class="focus:border-border-tertiary w-full focus:outline-0 focus:bg-card-background-separator min-w-0 relative">
                 <div class="flex items-center lg:space-x-1 min-w-0">
                     <span class="whitespace-nowrap text-xs lg:text-sm">
                         {{ selectedProjectName }}
@@ -549,6 +564,15 @@ const showCreateProject = ref(false);
                         {{ currentTask.name }}
                     </div>
                 </div>
+                <button
+                    v-if="project !== null && allowReset"
+                    @click.stop="
+                        project = null;
+                        task = null;
+                    "
+                    class="absolute right-0 top-0 h-full flex items-center pr-3 text-text-quaternary hover:text-text-secondary">
+                    <XMarkIcon class="w-5"></XMarkIcon>
+                </button>
             </ProjectBadge>
         </template>
         <template #content>

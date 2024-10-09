@@ -22,7 +22,7 @@ import {
 } from '@/packages/api/src';
 import { useClientsStore } from '@/utils/useClients';
 import { getOrganizationCurrencyString } from '@/utils/money';
-import { Badge } from '@/packages/ui/src';
+import { Badge, Checkbox } from '@/packages/ui/src';
 import SelectDropdown from '../../../packages/ui/src/Input/SelectDropdown.vue';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import { useNotificationsStore } from '@/utils/notification';
@@ -71,7 +71,7 @@ watch(show, (value) => {
 
 const description = ref<string>('');
 const taskId = ref<string | null | undefined>(undefined);
-const projectId = ref<string | null | undefined>(undefined);
+const projectId = ref<string | null>(null);
 const billable = ref<boolean | undefined>(undefined);
 const selectedTags = ref<string[]>([]);
 
@@ -106,18 +106,27 @@ async function submit() {
         if (description.value && description.value !== '') {
             timeEntryUpdatesBody.description = description.value;
         }
-        if (projectId.value !== undefined) {
-            timeEntryUpdatesBody.project_id = projectId.value;
+        if (projectId.value !== null) {
+            if (projectId.value === '') {
+                // "No Project" is selected
+                timeEntryUpdatesBody.project_id = null;
+            } else {
+                timeEntryUpdatesBody.project_id = projectId.value;
+            }
             timeEntryUpdatesBody.task_id = null;
+            if (taskId.value !== undefined) {
+                timeEntryUpdatesBody.task_id = taskId.value;
+            }
         }
-        if (taskId.value !== undefined) {
-            timeEntryUpdatesBody.task_id = taskId.value;
-        }
+
         if (billable.value !== undefined) {
             timeEntryUpdatesBody.billable = billable.value;
         }
         if (selectedTags.value.length > 0) {
             timeEntryUpdatesBody.tags = selectedTags.value;
+        }
+        if (removeAllTags.value) {
+            timeEntryUpdatesBody.tags = [];
         }
 
         try {
@@ -144,11 +153,12 @@ async function submit() {
                     show.value = false;
                     emit('submit');
                     description.value = '';
-                    projectId.value = undefined;
+                    projectId.value = null;
                     taskId.value = undefined;
                     selectedTags.value = [];
                     billable.value = undefined;
                     saving.value = false;
+                    removeAllTags.value = false;
                 }
             );
         } catch (e) {
@@ -156,6 +166,12 @@ async function submit() {
         }
     }
 }
+const removeAllTags = ref(false);
+watch(removeAllTags, () => {
+    if (removeAllTags.value) {
+        selectedTags.value = [];
+    }
+});
 </script>
 
 <template>
@@ -186,6 +202,8 @@ async function submit() {
                         :createClient
                         :currency="getOrganizationCurrencyString()"
                         class="mt-1"
+                        empty-placeholder="Select project..."
+                        allow-reset
                         size="xlarge"
                         :projects="projects"
                         :tasks="tasks"
@@ -194,49 +212,65 @@ async function submit() {
                 </div>
                 <div class="space-y-2">
                     <InputLabel for="project" value="Tag" />
-                    <TagDropdown :createTag v-model="selectedTags" :tags="tags">
-                        <template #trigger>
-                            <Badge size="xlarge">
-                                <span v-if="selectedTags.length > 0">
-                                    Set {{ selectedTags.length }} tags
-                                </span>
-                                <span v-else> Select Tags... </span>
-                            </Badge>
-                        </template>
-                    </TagDropdown>
+                    <div class="flex space-x-5">
+                        <TagDropdown
+                            :createTag
+                            v-model="selectedTags"
+                            :tags="tags">
+                            <template #trigger>
+                                <Badge
+                                    :disabled="removeAllTags"
+                                    tag="button"
+                                    size="xlarge">
+                                    <span v-if="selectedTags.length > 0">
+                                        Set {{ selectedTags.length }} tags
+                                    </span>
+                                    <span v-else> Select Tags... </span>
+                                </Badge>
+                            </template>
+                        </TagDropdown>
+                        <div class="flex items-center space-x-2">
+                            <Checkbox
+                                v-model:checked="removeAllTags"
+                                id="no_tags"></Checkbox>
+                            <InputLabel for="no_tags" value="Remove all tags" />
+                        </div>
+                    </div>
                 </div>
                 <div class="space-y-2">
                     <InputLabel for="project" value="Billable" />
-                    <SelectDropdown
-                        v-model="timeEntryBillable"
-                        :get-key-from-item="(item) => item.value"
-                        :get-name-for-item="(item) => item.label"
-                        :items="[
-                            {
-                                label: 'Keep current billable status',
-                                value: 'do-not-update',
-                            },
-                            {
-                                label: 'Billable',
-                                value: 'billable',
-                            },
-                            {
-                                label: 'Non Billable',
-                                value: 'non-billable',
-                            },
-                        ]">
-                        <template v-slot:trigger>
-                            <Badge tag="button" size="xlarge">
-                                <span v-if="billable === undefined">
-                                    Set billable status
-                                </span>
-                                <span v-else-if="billable === true">
-                                    Billable
-                                </span>
-                                <span v-else> Non Billable </span></Badge
-                            >
-                        </template>
-                    </SelectDropdown>
+                    <div class="flex">
+                        <SelectDropdown
+                            v-model="timeEntryBillable"
+                            :get-key-from-item="(item) => item.value"
+                            :get-name-for-item="(item) => item.label"
+                            :items="[
+                                {
+                                    label: 'Keep current billable status',
+                                    value: 'do-not-update',
+                                },
+                                {
+                                    label: 'Billable',
+                                    value: 'billable',
+                                },
+                                {
+                                    label: 'Non Billable',
+                                    value: 'non-billable',
+                                },
+                            ]">
+                            <template v-slot:trigger>
+                                <Badge tag="button" size="xlarge">
+                                    <span v-if="billable === undefined">
+                                        Set billable status
+                                    </span>
+                                    <span v-else-if="billable === true">
+                                        Billable
+                                    </span>
+                                    <span v-else> Non Billable </span></Badge
+                                >
+                            </template>
+                        </SelectDropdown>
+                    </div>
                 </div>
             </div>
         </template>
