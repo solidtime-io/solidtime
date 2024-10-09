@@ -82,7 +82,7 @@ async function createTag(tag: string) {
 
 const timeEntryBillable = computed({
     get: () => {
-        if (billable.value) {
+        if (billable.value === undefined) {
             return 'do-not-update';
         }
         return billable.value ? 'billable' : 'non-billable';
