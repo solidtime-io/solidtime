@@ -118,13 +118,40 @@ function startTimeEntryFromExisting(entry: TimeEntry) {
 function sumDuration(timeEntries: TimeEntry[]) {
     return timeEntries.reduce((acc, entry) => acc + (entry?.duration ?? 0), 0);
 }
+function selectAllTimeEntries(value: TimeEntriesGroupedByType[]) {
+    for (const timeEntry of value) {
+        if ('timeEntries' in timeEntry) {
+            for (const subTimeEntry of timeEntry.timeEntries) {
+                selectedTimeEntries.value.push(subTimeEntry);
+            }
+        } else {
+            selectedTimeEntries.value.push(timeEntry);
+        }
+    }
+}
+function unselectAllTimeEntries(value: TimeEntriesGroupedByType[]) {
+    selectedTimeEntries.value = selectedTimeEntries.value.filter(
+        (timeEntry) => {
+            return !value.find(
+                (filterTimeEntry) => filterTimeEntry.id === timeEntry.id
+            );
+        }
+    );
+}
 </script>
 
 <template>
     <div v-for="(value, key) in groupedTimeEntries" :key="key">
         <TimeEntryRowHeading
             :date="key"
-            :duration="sumDuration(value)"></TimeEntryRowHeading>
+            :duration="sumDuration(value)"
+            @select-all="selectAllTimeEntries(value)"
+            @unselect-all="unselectAllTimeEntries(value)"
+            :checked="
+                value.every((timeEntry) =>
+                    selectedTimeEntries.includes(timeEntry)
+                )
+            "></TimeEntryRowHeading>
         <template v-for="entry in value" :key="entry.id">
             <TimeEntryAggregateRow
                 :createProject

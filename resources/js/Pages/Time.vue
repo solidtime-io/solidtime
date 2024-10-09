@@ -138,7 +138,6 @@ function deleteSelected() {
             @submit="clearSelectionAndState"
             :all-selected="selectedTimeEntries.length === timeEntries.length"
             @select-all="selectedTimeEntries = [...timeEntries]"
-            @unselect-all="selectedTimeEntries = []"
             :delete-selected="deleteSelected"></TimeEntryMassActionRow>
         <TimeEntryGroupedTable
             v-model:selected="selectedTimeEntries"
