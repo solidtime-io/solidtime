@@ -133,7 +133,11 @@ function unselectAllTimeEntries(value: TimeEntriesGroupedByType[]) {
     selectedTimeEntries.value = selectedTimeEntries.value.filter(
         (timeEntry) => {
             return !value.find(
-                (filterTimeEntry) => filterTimeEntry.id === timeEntry.id
+                (filterTimeEntry) =>
+                    filterTimeEntry.id === timeEntry.id ||
+                    filterTimeEntry.timeEntries?.find(
+                        (subTimeEntry) => subTimeEntry.id === timeEntry.id
+                    )
             );
         }
     );
