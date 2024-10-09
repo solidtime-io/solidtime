@@ -23,7 +23,7 @@
 
         <!-- Scripts -->
         @routes
-        @vite(\Nwidart\Modules\Module::getAssets())
+        @vite(array_filter(\Nwidart\Modules\Module::getAssets(), fn($asset) => $asset !== 'resources/css/filament/admin/theme.css'))
         @inertiaHead
     </head>
     <body class="font-sans antialiased">
