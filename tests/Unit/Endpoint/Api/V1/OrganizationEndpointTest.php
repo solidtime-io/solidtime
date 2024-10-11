@@ -200,7 +200,7 @@ class OrganizationEndpointTest extends ApiEndpointTestAbstract
         Passport::actingAs($data->user);
 
         // Act
-        $response = $this->withoutExceptionHandling()->putJson(route('api.v1.organizations.update', [$data->organization->getKey()]), [
+        $response = $this->putJson(route('api.v1.organizations.update', [$data->organization->getKey()]), [
             'name' => $organizationFake->name,
             'billable_rate' => $organizationFake->billable_rate,
         ]);
