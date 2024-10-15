@@ -60,6 +60,8 @@ class SolidtimeImporter extends DefaultImporter
             $clientsReader = Reader::createFromPath($temporaryDirectory->path('clients.csv'));
             $clientsReader->setHeaderOffset(0);
             $clientsReader->setDelimiter(',');
+            $clientsReader->setEnclosure('"');
+            $clientsReader->setEscape('');
 
             if (! file_exists($temporaryDirectory->path('members.csv'))) {
                 throw new ImportException('File "members.csv" missing in ZIP');
@@ -67,6 +69,8 @@ class SolidtimeImporter extends DefaultImporter
             $membersReader = Reader::createFromPath($temporaryDirectory->path('members.csv'));
             $membersReader->setHeaderOffset(0);
             $membersReader->setDelimiter(',');
+            $membersReader->setEnclosure('"');
+            $membersReader->setEscape('');
 
             if (! file_exists($temporaryDirectory->path('organization_invitations.csv'))) {
                 throw new ImportException('File "organization_invitations.csv" missing in ZIP');
@@ -74,6 +78,8 @@ class SolidtimeImporter extends DefaultImporter
             $organizationInvitationsReader = Reader::createFromPath($temporaryDirectory->path('organization_invitations.csv'));
             $organizationInvitationsReader->setHeaderOffset(0);
             $organizationInvitationsReader->setDelimiter(',');
+            $organizationInvitationsReader->setEnclosure('"');
+            $organizationInvitationsReader->setEscape('');
 
             if (! file_exists($temporaryDirectory->path('project_members.csv'))) {
                 throw new ImportException('File "project_members.csv" missing in ZIP');
@@ -81,6 +87,8 @@ class SolidtimeImporter extends DefaultImporter
             $projectMembersReader = Reader::createFromPath($temporaryDirectory->path('project_members.csv'));
             $projectMembersReader->setHeaderOffset(0);
             $projectMembersReader->setDelimiter(',');
+            $projectMembersReader->setEnclosure('"');
+            $projectMembersReader->setEscape('');
 
             if (! file_exists($temporaryDirectory->path('projects.csv'))) {
                 throw new ImportException('File "projects.csv" missing in ZIP');
@@ -88,6 +96,8 @@ class SolidtimeImporter extends DefaultImporter
             $projectsReader = Reader::createFromPath($temporaryDirectory->path('projects.csv'));
             $projectsReader->setHeaderOffset(0);
             $projectsReader->setDelimiter(',');
+            $projectsReader->setEnclosure('"');
+            $projectsReader->setEscape('');
 
             if (! file_exists($temporaryDirectory->path('tags.csv'))) {
                 throw new ImportException('File "tags.csv" missing in ZIP');
@@ -95,6 +105,8 @@ class SolidtimeImporter extends DefaultImporter
             $tagsReader = Reader::createFromPath($temporaryDirectory->path('tags.csv'));
             $tagsReader->setHeaderOffset(0);
             $tagsReader->setDelimiter(',');
+            $tagsReader->setEnclosure('"');
+            $tagsReader->setEscape('');
 
             if (! file_exists($temporaryDirectory->path('tasks.csv'))) {
                 throw new ImportException('File "tasks.csv" missing in ZIP');
@@ -102,6 +114,8 @@ class SolidtimeImporter extends DefaultImporter
             $tasksReader = Reader::createFromPath($temporaryDirectory->path('tasks.csv'));
             $tasksReader->setHeaderOffset(0);
             $tasksReader->setDelimiter(',');
+            $tasksReader->setEnclosure('"');
+            $tasksReader->setEscape('');
 
             if (! file_exists($temporaryDirectory->path('time_entries.csv'))) {
                 throw new ImportException('File "time_entries.csv" missing in ZIP');
@@ -109,6 +123,8 @@ class SolidtimeImporter extends DefaultImporter
             $timeEntriesReader = Reader::createFromPath($temporaryDirectory->path('time_entries.csv'));
             $timeEntriesReader->setHeaderOffset(0);
             $timeEntriesReader->setDelimiter(',');
+            $timeEntriesReader->setEnclosure('"');
+            $timeEntriesReader->setEscape('');
 
             foreach ($clientsReader as $client) {
                 $this->clientImportHelper->getKey([

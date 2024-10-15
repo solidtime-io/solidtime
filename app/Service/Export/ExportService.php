@@ -47,6 +47,9 @@ class ExportService
         // Organizations
         try {
             $writer = Writer::createFromPath($temporaryDirectory->path('organizations.csv'), 'w+');
+            $writer->setDelimiter(',');
+            $writer->setEnclosure('"');
+            $writer->setEscape('');
             $writer->insertOne([
                 'id',
                 'name',
@@ -66,6 +69,9 @@ class ExportService
 
             // Organization invitations
             $writer = Writer::createFromPath($temporaryDirectory->path('organization_invitations.csv'), 'w+');
+            $writer->setDelimiter(',');
+            $writer->setEnclosure('"');
+            $writer->setEscape('');
             $writer->insertOne([
                 'id',
                 'email',
@@ -91,6 +97,9 @@ class ExportService
 
             // Time entries
             $writer = Writer::createFromPath($temporaryDirectory->path('time_entries.csv'), 'w+');
+            $writer->setDelimiter(',');
+            $writer->setEnclosure('"');
+            $writer->setEscape('');
             $writer->insertOne([
                 'id',
                 'description',
@@ -139,6 +148,9 @@ class ExportService
 
             // Clients
             $writer = Writer::createFromPath($temporaryDirectory->path('clients.csv'), 'w+');
+            $writer->setDelimiter(',');
+            $writer->setEnclosure('"');
+            $writer->setEscape('');
             $writer->insertOne([
                 'id',
                 'name',
@@ -164,6 +176,9 @@ class ExportService
 
             // Projects
             $writer = Writer::createFromPath($temporaryDirectory->path('projects.csv'), 'w+');
+            $writer->setDelimiter(',');
+            $writer->setEnclosure('"');
+            $writer->setEscape('');
             $writer->insertOne([
                 'id',
                 'name',
@@ -199,6 +214,9 @@ class ExportService
 
             // Project members
             $writer = Writer::createFromPath($temporaryDirectory->path('project_members.csv'), 'w+');
+            $writer->setDelimiter(',');
+            $writer->setEnclosure('"');
+            $writer->setEscape('');
             $writer->insertOne([
                 'id',
                 'billable_rate',
@@ -226,6 +244,9 @@ class ExportService
 
             // Members
             $writer = Writer::createFromPath($temporaryDirectory->path('members.csv'), 'w+');
+            $writer->setDelimiter(',');
+            $writer->setEnclosure('"');
+            $writer->setEscape('');
             $writer->insertOne([
                 'id',
                 'user_id',
@@ -260,6 +281,9 @@ class ExportService
 
             // Tasks
             $writer = Writer::createFromPath($temporaryDirectory->path('tasks.csv'), 'w+');
+            $writer->setDelimiter(',');
+            $writer->setEnclosure('"');
+            $writer->setEscape('');
             $writer->insertOne([
                 'id',
                 'name',
@@ -287,6 +311,9 @@ class ExportService
 
             // Tags
             $writer = Writer::createFromPath($temporaryDirectory->path('tags.csv'), 'w+');
+            $writer->setDelimiter(',');
+            $writer->setEnclosure('"');
+            $writer->setEscape('');
             $writer->insertOne([
                 'id',
                 'name',
