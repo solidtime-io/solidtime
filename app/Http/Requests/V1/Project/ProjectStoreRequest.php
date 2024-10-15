@@ -32,10 +32,10 @@ class ProjectStoreRequest extends FormRequest
                 'string',
                 'min:1',
                 'max:255',
-                (new UniqueEloquent(Project::class, 'name', function (Builder $builder): Builder {
+                UniqueEloquent::make(Project::class, 'name', function (Builder $builder): Builder {
                     /** @var Builder<Project> $builder */
                     return $builder->whereBelongsTo($this->organization, 'organization');
-                }))->withCustomTranslation('validation.project_name_already_exists'),
+                })->withCustomTranslation('validation.project_name_already_exists'),
             ],
             'color' => [
                 'required',
@@ -51,20 +51,22 @@ class ProjectStoreRequest extends FormRequest
                 'nullable',
                 'integer',
                 'min:0',
+                'max:2147483647',
             ],
             // ID of the client
             'client_id' => [
                 'nullable',
-                new ExistsEloquent(Client::class, null, function (Builder $builder): Builder {
+                ExistsEloquent::make(Client::class, null, function (Builder $builder): Builder {
                     /** @var Builder<Client> $builder */
                     return $builder->whereBelongsTo($this->organization, 'organization');
-                }),
+                })->uuid(),
             ],
             // Estimated time in seconds
             'estimated_time' => [
                 'nullable',
                 'integer',
                 'min:0',
+                'max:2147483647',
             ],
         ];
     }

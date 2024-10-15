@@ -31,10 +31,10 @@ class ClientUpdateRequest extends FormRequest
                 'string',
                 'min:1',
                 'max:255',
-                (new UniqueEloquent(Client::class, 'name', function (Builder $builder): Builder {
+                UniqueEloquent::make(Client::class, 'name', function (Builder $builder): Builder {
                     /** @var Builder<Client> $builder */
                     return $builder->whereBelongsTo($this->organization, 'organization');
-                }))->ignore($this->client?->getKey())->withCustomTranslation('validation.client_name_already_exists'),
+                })->ignore($this->client?->getKey())->withCustomTranslation('validation.client_name_already_exists'),
             ],
             'is_archived' => [
                 'boolean',

@@ -70,6 +70,7 @@ class OrganizationResource extends Resource
                         'nullable',
                         'integer',
                         'gt:0',
+                        'max:2147483647',
                     ])
                     ->numeric(),
                 Forms\Components\DateTimePicker::make('created_at')

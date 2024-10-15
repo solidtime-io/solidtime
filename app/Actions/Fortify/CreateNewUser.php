@@ -45,7 +45,7 @@ class CreateNewUser implements CreatesNewUsers
                 'string',
                 'email',
                 'max:255',
-                new UniqueEloquent(User::class, 'email', function (Builder $builder): Builder {
+                UniqueEloquent::make(User::class, 'email', function (Builder $builder): Builder {
                     /** @var Builder<User> $builder */
                     return $builder->where('is_placeholder', '=', false);
                 }),

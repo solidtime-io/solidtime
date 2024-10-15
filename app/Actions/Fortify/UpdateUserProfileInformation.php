@@ -35,7 +35,7 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
                 'required',
                 'email',
                 'max:255',
-                (new UniqueEloquent(User::class, 'email'))->ignore($user->id)->query(function (Builder $query) {
+                UniqueEloquent::make(User::class, 'email')->ignore($user->id)->query(function (Builder $query) {
                     /** @var Builder<User> $query */
                     return $query->where('is_placeholder', '=', false);
                 }),

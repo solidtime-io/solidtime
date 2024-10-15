@@ -31,23 +31,24 @@ class TaskStoreRequest extends FormRequest
                 'string',
                 'min:1',
                 'max:255',
-                (new UniqueEloquent(Task::class, 'name', function (Builder $builder): Builder {
+                UniqueEloquent::make(Task::class, 'name', function (Builder $builder): Builder {
                     /** @var Builder<Task> $builder */
                     return $builder->where('project_id', '=', $this->input('project_id'));
-                }))->withCustomTranslation('validation.task_name_already_exists'),
+                })->withCustomTranslation('validation.task_name_already_exists'),
             ],
             'project_id' => [
                 'required',
-                new ExistsEloquent(Project::class, null, function (Builder $builder): Builder {
+                ExistsEloquent::make(Project::class, null, function (Builder $builder): Builder {
                     /** @var Builder<Project> $builder */
                     return $builder->whereBelongsTo($this->organization, 'organization');
-                }),
+                })->uuid(),
             ],
             // Estimated time in seconds
             'estimated_time' => [
                 'nullable',
                 'integer',
                 'min:0',
+                'max:2147483647',
             ],
         ];
     }

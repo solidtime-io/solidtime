@@ -30,6 +30,7 @@ class OrganizationUpdateRequest extends FormRequest
                 'nullable',
                 'integer',
                 'min:0',
+                'max:2147483647',
             ],
             'employees_can_see_billable_rates' => [
                 'boolean',

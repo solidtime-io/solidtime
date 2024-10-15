@@ -71,10 +71,10 @@ class AddOrganizationMember implements AddsTeamMembers
             'email' => [
                 'required',
                 'email',
-                (new ExistsEloquent(User::class, 'email', function (Builder $builder) {
+                ExistsEloquent::make(User::class, 'email', function (Builder $builder) {
                     /** @var Builder<User> $builder */
                     return $builder->where('is_placeholder', '=', false);
-                }))->withMessage(__('We were unable to find a registered user with this email address.')),
+                })->withMessage(__('We were unable to find a registered user with this email address.')),
             ],
             'role' => [
                 'required',

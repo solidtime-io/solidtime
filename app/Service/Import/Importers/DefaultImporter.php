@@ -112,6 +112,7 @@ abstract class DefaultImporter implements ImporterContract
             'billable_rate' => [
                 'nullable',
                 'integer',
+                'max:2147483647',
             ],
         ], beforeSave: function (Project $project): void {
             if ($project->billable_rate === 0) {
@@ -125,6 +126,7 @@ abstract class DefaultImporter implements ImporterContract
             'billable_rate' => [
                 'nullable',
                 'integer',
+                'max:2147483647',
             ],
         ], beforeSave: function (ProjectMember $projectMember): void {
             if ($projectMember->billable_rate === 0) {

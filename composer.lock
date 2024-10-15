@@ -3480,16 +3480,16 @@
         },
         {
             "name": "korridor/laravel-model-validation-rules",
-            "version": "3.1.0",
+            "version": "3.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/korridor/laravel-model-validation-rules.git",
-                "reference": "49370c70cc2b25d1b80252160ba3ab435828c95a"
+                "reference": "e7c27b976eefd383de10a5195e8c986815ac43a4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/korridor/laravel-model-validation-rules/zipball/49370c70cc2b25d1b80252160ba3ab435828c95a",
-                "reference": "49370c70cc2b25d1b80252160ba3ab435828c95a",
+                "url": "https://api.github.com/repos/korridor/laravel-model-validation-rules/zipball/e7c27b976eefd383de10a5195e8c986815ac43a4",
+                "reference": "e7c27b976eefd383de10a5195e8c986815ac43a4",
                 "shasum": ""
             },
             "require": {
@@ -3538,9 +3538,9 @@
             ],
             "support": {
                 "issues": "https://github.com/korridor/laravel-model-validation-rules/issues",
-                "source": "https://github.com/korridor/laravel-model-validation-rules/tree/3.1.0"
+                "source": "https://github.com/korridor/laravel-model-validation-rules/tree/3.2.0"
             },
-            "time": "2024-02-28T15:07:15+00:00"
+            "time": "2024-10-14T16:58:38+00:00"
         },
         {
             "name": "lab404/laravel-impersonate",

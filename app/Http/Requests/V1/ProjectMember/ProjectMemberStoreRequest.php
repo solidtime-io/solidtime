@@ -26,16 +26,16 @@ class ProjectMemberStoreRequest extends FormRequest
         return [
             'member_id' => [
                 'required',
-                'uuid',
-                new ExistsEloquent(Member::class, null, function (Builder $builder): Builder {
+                ExistsEloquent::make(Member::class, null, function (Builder $builder): Builder {
                     /** @var Builder<Member> $builder */
                     return $builder->whereBelongsTo($this->organization, 'organization');
-                }),
+                })->uuid(),
             ],
             'billable_rate' => [
                 'nullable',
                 'integer',
                 'min:0',
+                'max:2147483647',
             ],
         ];
     }

@@ -27,8 +27,7 @@ class TaskIndexRequest extends FormRequest
     {
         return [
             'project_id' => [
-                'uuid',
-                new ExistsEloquent(Project::class, null, function (Builder $builder): Builder {
+                ExistsEloquent::make(Project::class, null, function (Builder $builder): Builder {
                     /** @var Builder<Project> $builder */
                     $builder = $builder->whereBelongsTo($this->organization, 'organization');
 
@@ -37,7 +36,7 @@ class TaskIndexRequest extends FormRequest
                     }
 
                     return $builder;
-                }),
+                })->uuid(),
             ],
             'done' => [
                 'string',
