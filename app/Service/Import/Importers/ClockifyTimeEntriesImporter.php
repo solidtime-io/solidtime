@@ -47,6 +47,8 @@ class ClockifyTimeEntriesImporter extends DefaultImporter
             $reader = Reader::createFromString($data);
             $reader->setHeaderOffset(0);
             $reader->setDelimiter(',');
+            $reader->setEnclosure('"');
+            $reader->setEscape('');
             $header = $reader->getHeader();
             $this->validateHeader($header);
             $records = $reader->getRecords();
