@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Service\Import\Importers;
 
 use App\Models\Organization;
+use App\Models\TimeEntry;
 use App\Service\Import\Importers\DefaultImporter;
 use App\Service\Import\Importers\ImportException;
 use App\Service\Import\Importers\TogglTimeEntriesImporter;
@@ -44,6 +45,31 @@ class TogglTimeEntriesImporterTest extends ImporterTestAbstract
         $this->assertSame(1, $report->tasksCreated);
         $this->assertSame(1, $report->usersCreated);
         $this->assertSame(2, $report->projectsCreated);
+        $this->assertSame(1, $report->clientsCreated);
+    }
+
+    public function test_import_of_test_with_special_characters_description_succeeds(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $timezone = 'Europe/Vienna';
+        $importer = new TogglTimeEntriesImporter;
+        $importer->init($organization);
+        // Description: \\ 🔥 Special characters  """`!@#$%^&*()_+\-=\[\]{};':"\\|,.''<>\/?~ \\\
+        $data = Storage::disk('testfiles')->get('toggl_time_entries_import_test_2.csv');
+
+        // Act
+        $importer->importData($data, $timezone);
+        $report = $importer->getReport();
+
+        // Assert
+        $timeEntry = TimeEntry::first();
+        $this->assertSame('\\\\ 🔥 Special characters  """`!@#$%^&*()_+\-=\[\]{};\':"\\\\|,.\'\'<>\/?~ \\\\\\', $timeEntry->description);
+        $this->assertSame(1, $report->timeEntriesCreated);
+        $this->assertSame(0, $report->tagsCreated);
+        $this->assertSame(1, $report->tasksCreated);
+        $this->assertSame(1, $report->usersCreated);
+        $this->assertSame(1, $report->projectsCreated);
         $this->assertSame(1, $report->clientsCreated);
     }
 
