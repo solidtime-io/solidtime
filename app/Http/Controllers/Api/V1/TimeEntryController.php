@@ -450,6 +450,10 @@ class TimeEntryController extends Controller
         $ids = $request->validated('ids');
         $timeEntries = TimeEntry::query()
             ->whereBelongsTo($organization, 'organization')
+            ->with([
+                'project',
+                'task',
+            ])
             ->whereIn('id', $ids)
             ->get();
 
@@ -473,7 +477,17 @@ class TimeEntryController extends Controller
 
             }
 
+            $project = $timeEntry->project;
+            $task = $timeEntry->task;
+
             $timeEntry->delete();
+
+            if ($project !== null) {
+                RecalculateSpentTimeForProject::dispatch($project);
+            }
+            if ($task !== null) {
+                RecalculateSpentTimeForTask::dispatch($task);
+            }
             $success->push($id);
         }
 

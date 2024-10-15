@@ -14,6 +14,7 @@ use App\Http\Resources\V1\Project\ProjectResource;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Models\ProjectMember;
+use App\Models\TimeEntry;
 use App\Service\BillableRateService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
@@ -130,12 +131,22 @@ class ProjectController extends Controller
             $project->estimated_time = $request->getEstimatedTime();
         }
         $oldBillableRate = $project->billable_rate;
+        $clientIdChanged = false;
         $project->billable_rate = $request->getBillableRate();
-        $project->client_id = $request->input('client_id');
+        if ($project->client_id !== $request->input('client_id')) {
+            $project->client_id = $request->input('client_id');
+            $clientIdChanged = true;
+        }
         $project->save();
 
         if ($oldBillableRate !== $request->getBillableRate()) {
             $billableRateService->updateTimeEntriesBillableRateForProject($project);
+        }
+        if ($clientIdChanged) {
+            TimeEntry::query()
+                ->whereBelongsTo($organization, 'organization')
+                ->whereBelongsTo($project, 'project')
+                ->update(['client_id' => $project->client_id]);
         }
 
         return new ProjectResource($project, true);
