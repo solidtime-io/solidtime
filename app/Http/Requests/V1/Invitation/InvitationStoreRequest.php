@@ -29,10 +29,10 @@ class InvitationStoreRequest extends FormRequest
             'email' => [
                 'required',
                 'email',
-                (new UniqueEloquent(OrganizationInvitation::class, 'email', function (Builder $builder): Builder {
+                UniqueEloquent::make(OrganizationInvitation::class, 'email', function (Builder $builder): Builder {
                     /** @var Builder<OrganizationInvitation> $builder */
                     return $builder->whereBelongsTo($this->organization, 'organization');
-                }))->withCustomTranslation('validation.invitation_already_exists'),
+                })->withCustomTranslation('validation.invitation_already_exists'),
             ],
             'role' => [
                 'required',

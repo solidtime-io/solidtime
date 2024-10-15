@@ -958,6 +958,27 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         ]);
     }
 
+    public function test_store_endpoint_fails_gracefully_if_non_uuid_text_is_in_uuid_validated_field_in_body(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:create:own',
+        ]);
+        $timeEntryFake = TimeEntry::factory()->withTask($data->organization)->forOrganization($data->organization)->make();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.time-entries.store', [$data->organization->getKey()]), [
+            'member_id' => 'non-uuid-text',
+            'tags' => ['non-uuid-text', 1],
+            'project_id' => 'non-uuid-text',
+            'task_id' => 'non-uuid-text',
+        ]);
+
+        // Assert
+        $response->assertStatus(422);
+    }
+
     public function test_store_endpoints_sets_billable_rate(): void
     {
         // Arrange

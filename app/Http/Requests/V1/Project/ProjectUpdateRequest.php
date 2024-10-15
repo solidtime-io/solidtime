@@ -32,10 +32,10 @@ class ProjectUpdateRequest extends FormRequest
                 'required',
                 'string',
                 'max:255',
-                (new UniqueEloquent(Project::class, 'name', function (Builder $builder): Builder {
+                UniqueEloquent::make(Project::class, 'name', function (Builder $builder): Builder {
                     /** @var Builder<Project> $builder */
                     return $builder->whereBelongsTo($this->organization, 'organization');
-                }))->ignore($this->project?->getKey())->withCustomTranslation('validation.project_name_already_exists'),
+                })->ignore($this->project?->getKey())->withCustomTranslation('validation.project_name_already_exists'),
             ],
             'color' => [
                 'required',
@@ -52,21 +52,23 @@ class ProjectUpdateRequest extends FormRequest
             ],
             'client_id' => [
                 'nullable',
-                new ExistsEloquent(Client::class, null, function (Builder $builder): Builder {
+                ExistsEloquent::make(Client::class, null, function (Builder $builder): Builder {
                     /** @var Builder<Client> $builder */
                     return $builder->whereBelongsTo($this->organization, 'organization');
-                }),
+                })->uuid(),
             ],
             'billable_rate' => [
                 'nullable',
                 'integer',
                 'min:0',
+                'max:2147483647',
             ],
             // Estimated time in seconds
             'estimated_time' => [
                 'nullable',
                 'integer',
                 'min:0',
+                'max:2147483647',
             ],
         ];
     }

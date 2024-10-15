@@ -25,6 +25,7 @@ class ProjectMemberUpdateRequest extends FormRequest
                 'nullable',
                 'integer',
                 'min:0',
+                'max:2147483647',
             ],
         ];
     }

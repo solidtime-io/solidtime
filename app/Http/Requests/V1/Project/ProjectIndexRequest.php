@@ -20,6 +20,7 @@ class ProjectIndexRequest extends FormRequest
             'page' => [
                 'integer',
                 'min:1',
+                'max:2147483647',
             ],
             'archived' => [
                 'string',

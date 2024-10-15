@@ -284,6 +284,60 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
         $response->assertForbidden();
     }
 
+    public function test_store_endpoint_highest_possible_billable_rate_can_be_stored_in_database(): void
+    {
+        // Arrange
+        $billableRate = 2147483647;
+        $data = $this->createUserWithPermission([
+            'projects:create',
+        ]);
+        $projectFake = Project::factory()->forOrganization($data->organization)->make();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.projects.store', [$data->organization->getKey()]), [
+            'name' => $projectFake->name,
+            'color' => $projectFake->color,
+            'is_billable' => $projectFake->is_billable,
+            'billable_rate' => $billableRate,
+        ]);
+
+        // Assert
+        $response->assertStatus(201);
+        $this->assertDatabaseHas(Project::class, [
+            'name' => $projectFake->name,
+            'color' => $projectFake->color,
+            'organization_id' => $projectFake->organization_id,
+            'is_billable' => $projectFake->is_billable,
+            'billable_rate' => $billableRate,
+        ]);
+    }
+
+    public function test_store_endpoint_fails_if_billable_rate_is_too_high(): void
+    {
+        // Arrange
+        $billableRate = 2147483647 + 1;
+        $data = $this->createUserWithPermission([
+            'projects:create',
+        ]);
+        $projectFake = Project::factory()->forOrganization($data->organization)->make();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.projects.store', [$data->organization->getKey()]), [
+            'name' => $projectFake->name,
+            'color' => $projectFake->color,
+            'is_billable' => $projectFake->is_billable,
+            'billable_rate' => $billableRate,
+        ]);
+
+        // Assert
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors([
+            'billable_rate' => 'The billable rate field must not be greater than 2147483647.',
+        ]);
+    }
+
     public function test_store_endpoint_creates_new_project(): void
     {
         // Arrange

@@ -30,10 +30,10 @@ class TaskUpdateRequest extends FormRequest
                 'string',
                 'min:1',
                 'max:255',
-                (new UniqueEloquent(Task::class, 'name', function (Builder $builder): Builder {
+                UniqueEloquent::make(Task::class, 'name', function (Builder $builder): Builder {
                     /** @var Builder<Task> $builder */
                     return $builder->where('project_id', '=', $this->task->project_id);
-                }))->ignore($this->task?->getKey())->withCustomTranslation('validation.task_name_already_exists'),
+                })->ignore($this->task?->getKey())->withCustomTranslation('validation.task_name_already_exists'),
             ],
             'is_done' => [
                 'boolean',
@@ -43,6 +43,7 @@ class TaskUpdateRequest extends FormRequest
                 'nullable',
                 'integer',
                 'min:0',
+                'max:2147483647',
             ],
         ];
     }

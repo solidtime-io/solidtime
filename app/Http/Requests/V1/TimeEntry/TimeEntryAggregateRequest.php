@@ -45,11 +45,10 @@ class TimeEntryAggregateRequest extends FormRequest
             // Filter by member ID
             'member_id' => [
                 'string',
-                'uuid',
-                new ExistsEloquent(Member::class, null, function (Builder $builder): Builder {
+                ExistsEloquent::make(Member::class, null, function (Builder $builder): Builder {
                     /** @var Builder<Member> $builder */
                     return $builder->whereBelongsTo($this->organization, 'organization');
-                }),
+                })->uuid(),
             ],
             // Filter by multiple member IDs, member IDs are OR combined, but AND combined with the member_id parameter
             'member_ids' => [
@@ -58,21 +57,19 @@ class TimeEntryAggregateRequest extends FormRequest
             ],
             'member_ids.*' => [
                 'string',
-                'uuid',
-                new ExistsEloquent(Member::class, null, function (Builder $builder): Builder {
+                ExistsEloquent::make(Member::class, null, function (Builder $builder): Builder {
                     /** @var Builder<Member> $builder */
                     return $builder->whereBelongsTo($this->organization, 'organization');
-                }),
+                })->uuid(),
             ],
 
             // Filter by user ID
             'user_id' => [
                 'string',
-                'uuid',
-                new ExistsEloquent(User::class, null, function (Builder $builder): Builder {
+                ExistsEloquent::make(User::class, null, function (Builder $builder): Builder {
                     /** @var Builder<User> $builder */
                     return $builder->belongsToOrganization($this->organization);
-                }),
+                })->uuid(),
             ],
             // Filter by project IDs, project IDs are OR combined
             'project_ids' => [
@@ -81,11 +78,10 @@ class TimeEntryAggregateRequest extends FormRequest
             ],
             'project_ids.*' => [
                 'string',
-                'uuid',
-                new ExistsEloquent(Project::class, null, function (Builder $builder): Builder {
+                ExistsEloquent::make(Project::class, null, function (Builder $builder): Builder {
                     /** @var Builder<Project> $builder */
                     return $builder->whereBelongsTo($this->organization, 'organization');
-                }),
+                })->uuid(),
             ],
             // Filter by client IDs, client IDs are OR combined
             'client_ids' => [
@@ -94,11 +90,10 @@ class TimeEntryAggregateRequest extends FormRequest
             ],
             'client_ids.*' => [
                 'string',
-                'uuid',
-                new ExistsEloquent(Client::class, null, function (Builder $builder): Builder {
+                ExistsEloquent::make(Client::class, null, function (Builder $builder): Builder {
                     /** @var Builder<Client> $builder */
                     return $builder->whereBelongsTo($this->organization, 'organization');
-                }),
+                })->uuid(),
             ],
             // Filter by tag IDs, tag IDs are AND combined
             'tag_ids' => [
@@ -107,11 +102,10 @@ class TimeEntryAggregateRequest extends FormRequest
             ],
             'tag_ids.*' => [
                 'string',
-                'uuid',
-                new ExistsEloquent(Tag::class, null, function (Builder $builder): Builder {
+                ExistsEloquent::make(Tag::class, null, function (Builder $builder): Builder {
                     /** @var Builder<Tag> $builder */
                     return $builder->whereBelongsTo($this->organization, 'organization');
-                }),
+                })->uuid(),
             ],
             // Filter by task IDs, task IDs are OR combined
             'task_ids' => [
@@ -120,10 +114,9 @@ class TimeEntryAggregateRequest extends FormRequest
             ],
             'task_ids.*' => [
                 'string',
-                'uuid',
-                new ExistsEloquent(Task::class, null, function (Builder $builder): Builder {
+                ExistsEloquent::make(Task::class, null, function (Builder $builder): Builder {
                     return $builder->whereBelongsTo($this->organization, 'organization');
-                }),
+                })->uuid(),
             ],
             // Filter only time entries that have a start date after the given timestamp in UTC (example: 2021-01-01T00:00:00Z)
             'start' => [
