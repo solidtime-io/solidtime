@@ -1821,6 +1821,57 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         ]);
     }
 
+    public function test_destroy_multiple_recalculates_project_and_task_spend_time_after_deleting_time_entries(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:delete:all',
+        ]);
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        $task = Task::factory()->forOrganization($data->organization)->create();
+        $timeEntryWithProject = TimeEntry::factory()->forOrganization($data->organization)->forProject($project)->forMember($data->member)->create();
+        $timeEntryWithTask = TimeEntry::factory()->forOrganization($data->organization)->forTask($task)->forMember($data->member)->create();
+        $timeEntryWithProjectAndTask = TimeEntry::factory()->forOrganization($data->organization)->forProject($project)->forTask($task)->forMember($data->member)->create();
+        $timeEntryWithoutProjectAndTask = TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)->create();
+        Passport::actingAs($data->user);
+        Queue::fake([
+            RecalculateSpentTimeForProject::class,
+            RecalculateSpentTimeForTask::class,
+        ]);
+
+        // Act
+        $response = $this->deleteJson(route('api.v1.time-entries.destroy-multiple', [$data->organization->getKey()]), [
+            'ids' => [
+                $timeEntryWithProject->getKey(),
+                $timeEntryWithTask->getKey(),
+                $timeEntryWithProjectAndTask->getKey(),
+                $timeEntryWithoutProjectAndTask->getKey(),
+            ],
+        ]);
+
+        // Assert
+        $response->assertValid();
+        $response->assertStatus(200);
+        $response->assertExactJson([
+            'success' => [
+                $timeEntryWithProject->getKey(),
+                $timeEntryWithTask->getKey(),
+                $timeEntryWithProjectAndTask->getKey(),
+                $timeEntryWithoutProjectAndTask->getKey(),
+            ],
+            'error' => [
+            ],
+        ]);
+        Queue::assertPushed(RecalculateSpentTimeForProject::class, 3);
+        Queue::assertPushed(RecalculateSpentTimeForTask::class, 2);
+        Queue::assertPushed(RecalculateSpentTimeForProject::class, function (RecalculateSpentTimeForProject $job) use ($project) {
+            return $job->project->is($project);
+        });
+        Queue::assertPushed(RecalculateSpentTimeForTask::class, function (RecalculateSpentTimeForTask $job) use ($task) {
+            return $job->task->is($task);
+        });
+    }
+
     public function test_destroy_endpoint_recalculates_project_and_task_spend_time_after_deleting_time_entry(): void
     {
         // Arrange

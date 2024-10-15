@@ -620,6 +620,85 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
         ]);
     }
 
+    public function test_update_endpoint_updates_the_client_id_of_the_associated_time_entries_if_the_client_of_the_project_changed(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'projects:update',
+        ]);
+        $clientOld = Client::factory()->forOrganization($data->organization)->create();
+        $clientNew = Client::factory()->forOrganization($data->organization)->create();
+        $project = Project::factory()->forOrganization($data->organization)->forClient($clientOld)->create();
+        $projectFake = Project::factory()->make();
+        $timeEntry = TimeEntry::factory()->forOrganization($data->organization)->forProject($project)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.projects.update', [$data->organization->getKey(), $project->getKey()]), [
+            'name' => $projectFake->name,
+            'color' => $projectFake->color,
+            'is_billable' => $projectFake->is_billable,
+            'client_id' => $clientNew->getKey(),
+        ]);
+
+        // Assert
+        $response->assertStatus(200);
+        $timeEntry->refresh();
+        $this->assertSame($clientNew->getKey(), $timeEntry->client_id);
+    }
+
+    public function test_update_endpoint_updates_the_client_id_of_the_associated_time_entries_if_the_client_of_the_project_is_removed(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'projects:update',
+        ]);
+        $client = Client::factory()->forOrganization($data->organization)->create();
+        $project = Project::factory()->forOrganization($data->organization)->forClient($client)->create();
+        $projectFake = Project::factory()->make();
+        $timeEntry = TimeEntry::factory()->forOrganization($data->organization)->forProject($project)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.projects.update', [$data->organization->getKey(), $project->getKey()]), [
+            'name' => $projectFake->name,
+            'color' => $projectFake->color,
+            'is_billable' => $projectFake->is_billable,
+            'client_id' => null,
+        ]);
+
+        // Assert
+        $response->assertStatus(200);
+        $timeEntry->refresh();
+        $this->assertNull($timeEntry->client_id);
+    }
+
+    public function test_update_endpoint_updates_the_client_id_of_the_associated_time_entries_if_the_client_of_the_project_is_added(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'projects:update',
+        ]);
+        $clientNew = Client::factory()->forOrganization($data->organization)->create();
+        $project = Project::factory()->forOrganization($data->organization)->forClient(null)->create();
+        $projectFake = Project::factory()->make();
+        $timeEntry = TimeEntry::factory()->forOrganization($data->organization)->forProject($project)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.projects.update', [$data->organization->getKey(), $project->getKey()]), [
+            'name' => $projectFake->name,
+            'color' => $projectFake->color,
+            'is_billable' => $projectFake->is_billable,
+            'client_id' => $clientNew->getKey(),
+        ]);
+
+        // Assert
+        $response->assertStatus(200);
+        $timeEntry->refresh();
+        $this->assertSame($clientNew->getKey(), $timeEntry->client_id);
+    }
+
     public function test_update_endpoint_updates_project_if_name_is_used_in_other_organization(): void
     {
         // Arrange
