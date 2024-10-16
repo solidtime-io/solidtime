@@ -93,7 +93,7 @@ class AppServiceProvider extends ServiceProvider
 
         if (config('app.force_https', false) || App::isProduction()) {
             URL::forceScheme('https');
-            request()->server->set('HTTPS', request()->header('X-Forwarded-Proto', 'https') === 'https' ? 'on' : 'off');
+            request()->server->set('HTTPS', 'on');
         }
 
         $this->app->scoped(PermissionStore::class, function (Application $app): PermissionStore {
