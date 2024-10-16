@@ -8,10 +8,12 @@ import {
     UserGroupIcon,
     CheckCircleIcon,
     TagIcon,
+    ArrowDownTrayIcon,
 } from '@heroicons/vue/20/solid';
 import DateRangePicker from '@/packages/ui/src/Input/DateRangePicker.vue';
 import ReportingChart from '@/Components/Common/Reporting/ReportingChart.vue';
 import BillableIcon from '@/packages/ui/src/Icons/BillableIcon.vue';
+
 import { onMounted, ref } from 'vue';
 import {
     formatHumanReadableDuration,
@@ -21,7 +23,7 @@ import {
 import { type GroupingOption, useReportingStore } from '@/utils/useReporting';
 import { storeToRefs } from 'pinia';
 import TagDropdown from '@/packages/ui/src/Tag/TagDropdown.vue';
-import type { AggregatedTimeEntriesQueryParams } from '@/packages/api/src';
+import { type AggregatedTimeEntriesQueryParams, api } from '@/packages/api/src';
 import ReportingFilterBadge from '@/Components/Common/Reporting/ReportingFilterBadge.vue';
 import ProjectMultiselectDropdown from '@/Components/Common/Project/ProjectMultiselectDropdown.vue';
 import MemberMultiselectDropdown from '@/Components/Common/Member/MemberMultiselectDropdown.vue';
@@ -31,7 +33,11 @@ import ReportingGroupBySelect from '@/Components/Common/Reporting/ReportingGroup
 import ReportingRow from '@/Components/Common/Reporting/ReportingRow.vue';
 import { getOrganizationCurrencyString } from '@/utils/money';
 import ReportingPieChart from '@/Components/Common/Reporting/ReportingPieChart.vue';
-import { getCurrentMembershipId, getCurrentRole } from '@/utils/useUser';
+import {
+    getCurrentMembershipId,
+    getCurrentOrganizationId,
+    getCurrentRole,
+} from '@/utils/useUser';
 import ClientMultiselectDropdown from '@/Components/Common/Client/ClientMultiselectDropdown.vue';
 import { useTagsStore } from '@/utils/useTags';
 import { formatCents } from '@/packages/ui/src/utils/money';
@@ -39,6 +45,10 @@ import { useSessionStorage, useStorage } from '@vueuse/core';
 import TabBar from '@/Components/Common/TabBar/TabBar.vue';
 import TabBarItem from '@/Components/Common/TabBar/TabBarItem.vue';
 import { router } from '@inertiajs/vue3';
+import { SecondaryButton } from '@/packages/ui/src';
+import Dropdown from '@/packages/ui/src/Input/Dropdown.vue';
+import { useNotificationsStore } from '@/utils/notification';
+const { handleApiRequestNotifications } = useNotificationsStore();
 
 const startDate = useSessionStorage<string>(
     'reporting-start-date',
@@ -149,6 +159,29 @@ const { tags } = storeToRefs(useTagsStore());
 async function createTag(tag: string) {
     return await useTagsStore().createTag(tag);
 }
+
+type ExportFormat = 'xlsx' | 'csv' | 'ods';
+
+async function downloadExport(format: ExportFormat) {
+    const organizationId = getCurrentOrganizationId();
+    if (organizationId) {
+        const response = await handleApiRequestNotifications(
+            () =>
+                api.exportTimeEntries({
+                    params: {
+                        organization: organizationId,
+                    },
+                    queries: {
+                        ...getFilterAttributes(),
+                        format: format,
+                    },
+                }),
+            'Export successful',
+            'Export failed'
+        );
+        window.open(response.download_url, '_self')?.focus();
+    }
+}
 </script>
 
 <template>
@@ -170,6 +203,36 @@ async function createTag(tag: string) {
                     >
                 </TabBar>
             </div>
+            <Dropdown align="bottom-end">
+                <template #trigger>
+                    <SecondaryButton>
+                        <div class="flex space-x-2 items-center">
+                            <ArrowDownTrayIcon
+                                class="w-4 text-text-tertiary"></ArrowDownTrayIcon>
+                            <span>Export</span>
+                        </div>
+                    </SecondaryButton>
+                </template>
+                <template #content>
+                    <div class="flex flex-col space-y-1 p-1.5">
+                        <SecondaryButton
+                            class="border-0 px-2"
+                            @click="downloadExport('xlsx')"
+                            >Export as Excel</SecondaryButton
+                        >
+                        <SecondaryButton
+                            class="border-0 px-2"
+                            @click="downloadExport('csv')"
+                            >Export as CSV</SecondaryButton
+                        >
+                        <SecondaryButton
+                            class="border-0 px-2"
+                            @click="downloadExport('ods')"
+                            >Export as ODS
+                        </SecondaryButton>
+                    </div>
+                </template>
+            </Dropdown>
         </MainContainer>
         <div class="p-3 w-full border-b border-default-background-separator">
             <MainContainer
