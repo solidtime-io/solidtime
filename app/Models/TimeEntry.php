@@ -10,6 +10,7 @@ use App\Service\BillableRateService;
 use Carbon\CarbonInterval;
 use Database\Factories\TimeEntryFactory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -17,6 +18,8 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Carbon;
 use Korridor\LaravelComputedAttributes\ComputedAttributes;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
+use Staudenmeir\EloquentJsonRelations\HasJsonRelationships;
+use Staudenmeir\EloquentJsonRelations\Relations\BelongsToJson;
 
 /**
  * @property string $id
@@ -42,6 +45,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  * @property-read Client|null $client
  * @property string|null $task_id
  * @property-read Task|null $task
+ * @property-read Collection<Tag> $tagsRelation
  *
  * @method Builder<TimeEntry> hasTag(Tag $tag)
  * @method static TimeEntryFactory factory()
@@ -50,9 +54,10 @@ class TimeEntry extends Model implements AuditableContract
 {
     use ComputedAttributes;
     use CustomAuditable;
-
     /** @use HasFactory<TimeEntryFactory> */
     use HasFactory;
+
+    use HasJsonRelationships;
 
     use HasUuids;
 
@@ -196,5 +201,15 @@ class TimeEntry extends Model implements AuditableContract
     public function client(): BelongsTo
     {
         return $this->belongsTo(Client::class, 'client_id');
+    }
+
+    /**
+     * Warning: This relation based on a JSON column. Please make sure that there are no performance issues, before using it.
+     *
+     * @return BelongsToJson<Tag, $this>
+     */
+    public function tagsRelation(): BelongsToJson
+    {
+        return $this->belongsToJson(Tag::class, 'tags');
     }
 }
