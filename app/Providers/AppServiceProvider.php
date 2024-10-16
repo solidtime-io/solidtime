@@ -28,7 +28,6 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Foundation\Application;
-use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
@@ -91,9 +90,9 @@ class AppServiceProvider extends ServiceProvider
             );
         });
 
-        if (config('app.force_https', false) || App::isProduction()) {
+        if (config('app.force_https', false)) {
             URL::forceScheme('https');
-            request()->server->set('HTTPS', request()->header('X-Forwarded-Proto', 'https') === 'https' ? 'on' : 'off');
+            request()->server->set('HTTPS', 'on');
         }
 
         $this->app->scoped(PermissionStore::class, function (Application $app): PermissionStore {
