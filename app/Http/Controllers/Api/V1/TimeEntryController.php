@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Enums\ExportFormat;
 use App\Exceptions\Api\TimeEntryCanNotBeRestartedApiException;
 use App\Exceptions\Api\TimeEntryStillRunningApiException;
 use App\Http\Requests\V1\TimeEntry\TimeEntryAggregateRequest;
 use App\Http\Requests\V1\TimeEntry\TimeEntryDestroyMultipleRequest;
+use App\Http\Requests\V1\TimeEntry\TimeEntryIndexExportRequest;
 use App\Http\Requests\V1\TimeEntry\TimeEntryIndexRequest;
 use App\Http\Requests\V1\TimeEntry\TimeEntryStoreRequest;
 use App\Http\Requests\V1\TimeEntry\TimeEntryUpdateMultipleRequest;
@@ -21,15 +23,20 @@ use App\Models\Organization;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\TimeEntry;
+use App\Service\ReportExport\TimeEntriesDetailedCsvExport;
+use App\Service\ReportExport\TimeEntriesDetailedExport;
 use App\Service\TimeEntryAggregationService;
 use App\Service\TimeEntryFilter;
 use App\Service\TimezoneService;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
 
 class TimeEntryController extends Controller
 {
@@ -63,21 +70,7 @@ class TimeEntryController extends Controller
             $this->checkPermission($organization, 'time-entries:view:all');
         }
 
-        $timeEntriesQuery = TimeEntry::query()
-            ->whereBelongsTo($organization, 'organization')
-            ->orderBy('start', 'desc');
-
-        $filter = new TimeEntryFilter($timeEntriesQuery);
-        $filter->addStartFilter($request->input('start'));
-        $filter->addEndFilter($request->input('end'));
-        $filter->addActiveFilter($request->input('active'));
-        $filter->addMemberIdFilter($member);
-        $filter->addMemberIdsFilter($request->input('member_ids'));
-        $filter->addProjectIdsFilter($request->input('project_ids'));
-        $filter->addTagIdsFilter($request->input('tag_ids'));
-        $filter->addTaskIdsFilter($request->input('task_ids'));
-        $filter->addClientIdsFilter($request->input('client_ids'));
-        $filter->addBillableFilter($request->input('billable'));
+        $timeEntriesQuery = $this->getTimeEntriesQuery($organization, $request, $member);
 
         $totalCount = $timeEntriesQuery->count();
 
@@ -126,6 +119,76 @@ class TimeEntryController extends Controller
                     'total' => $totalCount,
                 ],
             ]);
+    }
+
+    /**
+     * @return Builder<TimeEntry>
+     */
+    private function getTimeEntriesQuery(Organization $organization, TimeEntryIndexRequest|TimeEntryIndexExportRequest $request, ?Member $member): Builder
+    {
+        $timeEntriesQuery = TimeEntry::query()
+            ->whereBelongsTo($organization, 'organization')
+            ->orderBy('start', 'desc');
+
+        $filter = new TimeEntryFilter($timeEntriesQuery);
+        $filter->addStartFilter($request->input('start'));
+        $filter->addEndFilter($request->input('end'));
+        $filter->addActiveFilter($request->input('active'));
+        $filter->addMemberIdFilter($member);
+        $filter->addMemberIdsFilter($request->input('member_ids'));
+        $filter->addProjectIdsFilter($request->input('project_ids'));
+        $filter->addTagIdsFilter($request->input('tag_ids'));
+        $filter->addTaskIdsFilter($request->input('task_ids'));
+        $filter->addClientIdsFilter($request->input('client_ids'));
+        $filter->addBillableFilter($request->input('billable'));
+
+        return $filter->get();
+    }
+
+    /**
+     * @throws AuthorizationException
+     */
+    public function indexExport(Organization $organization, TimeEntryIndexExportRequest $request): JsonResponse
+    {
+        /** @var Member|null $member */
+        $member = $request->has('member_id') ? Member::query()->findOrFail($request->input('member_id')) : null;
+        if ($member !== null && $member->user_id === Auth::id()) {
+            $this->checkPermission($organization, 'time-entries:view:own');
+        } else {
+            $this->checkPermission($organization, 'time-entries:view:all');
+        }
+
+        $timeEntriesQuery = $this->getTimeEntriesQuery($organization, $request, $member);
+        $timeEntriesQuery->with([
+            'task',
+            'project' => [
+                'client',
+            ],
+            'user',
+            'tagsRelation',
+        ]);
+        $format = $request->getFormatValue();
+        $filename = 'time-entries-export-'.now()->format('Y-m-d_H-i-s').'.'.$format->getFileExtension();
+        $path = 'exports/'.$filename;
+        if ($format === ExportFormat::CSV) {
+            $export = new TimeEntriesDetailedCsvExport(config('filesystems.private'), $filename, $timeEntriesQuery, 1000);
+            $export->export();
+        } else {
+            Excel::store(
+                new TimeEntriesDetailedExport($timeEntriesQuery),
+                $path,
+                config('filesystems.private'),
+                $format->getExportPackageType(),
+                [
+                    'visibility' => 'private',
+                ]
+            );
+        }
+
+        return response()->json([
+            'download_url' => Storage::disk(config('filesystems.private'))
+                ->temporaryUrl($path, now()->addMinutes(5)),
+        ]);
     }
 
     /**
