@@ -84,7 +84,11 @@ const isRunningInDifferentOrganization = computed(() => {
 async function createProject(
     project: CreateProjectBody
 ): Promise<Project | undefined> {
-    return await useProjectsStore().createProject(project);
+    const newProject = await useProjectsStore().createProject(project);
+    if (newProject) {
+        currentTimeEntry.value.project_id = newProject.id;
+    }
+    return newProject;
 }
 async function createClient(client: CreateClientBody) {
     return await useClientsStore().createClient(client);
