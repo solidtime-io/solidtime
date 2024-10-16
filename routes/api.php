@@ -87,6 +87,7 @@ Route::middleware([
     // Time entry routes
     Route::name('time-entries.')->group(static function (): void {
         Route::get('/organizations/{organization}/time-entries', [TimeEntryController::class, 'index'])->name('index');
+        Route::get('/organizations/{organization}/time-entries/export', [TimeEntryController::class, 'indexExport'])->name('index-export');
         Route::get('/organizations/{organization}/time-entries/aggregate', [TimeEntryController::class, 'aggregate'])->name('aggregate');
         Route::post('/organizations/{organization}/time-entries', [TimeEntryController::class, 'store'])->name('store')->middleware('check-organization-blocked');
         Route::put('/organizations/{organization}/time-entries/{timeEntry}', [TimeEntryController::class, 'update'])->name('update')->middleware('check-organization-blocked');

@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
+use Staudenmeir\EloquentJsonRelations\HasJsonRelationships;
+use Staudenmeir\EloquentJsonRelations\Relations\HasManyJson;
 
 /**
  * @property string $id
@@ -30,6 +32,7 @@ class Tag extends Model implements AuditableContract
     /** @use HasFactory<TagFactory> */
     use HasFactory;
 
+    use HasJsonRelationships;
     use HasUuids;
 
     /**
@@ -47,5 +50,15 @@ class Tag extends Model implements AuditableContract
     public function organization(): BelongsTo
     {
         return $this->belongsTo(Organization::class, 'organization_id');
+    }
+
+    /**
+     * Warning: This relation based on a JSON column. Please make sure that there are no performance issues, before using it.
+     *
+     * @return HasManyJson<TimeEntry, $this>
+     */
+    public function timeEntries(): HasManyJson
+    {
+        return $this->hasManyJson(TimeEntry::class, 'tags');
     }
 }
