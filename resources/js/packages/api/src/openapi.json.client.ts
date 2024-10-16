@@ -105,7 +105,7 @@ const ProjectMemberResource = z
     .passthrough();
 const ProjectMemberStoreRequest = z
     .object({
-        member_id: z.string().uuid(),
+        member_id: z.string(),
         billable_rate: z.union([z.number(), z.null()]).optional(),
     })
     .passthrough();
@@ -172,14 +172,14 @@ const TimeEntryResource = z
     .passthrough();
 const TimeEntryStoreRequest = z
     .object({
-        member_id: z.string().uuid(),
+        member_id: z.string(),
         project_id: z.union([z.string(), z.null()]).optional(),
         task_id: z.union([z.string(), z.null()]).optional(),
         start: z.string(),
         end: z.union([z.string(), z.null()]).optional(),
         billable: z.boolean(),
         description: z.union([z.string(), z.null()]).optional(),
-        tags: z.union([z.array(z.string().uuid()), z.null()]).optional(),
+        tags: z.union([z.array(z.string()), z.null()]).optional(),
     })
     .passthrough();
 const TimeEntryUpdateMultipleRequest = z
@@ -187,12 +187,12 @@ const TimeEntryUpdateMultipleRequest = z
         ids: z.array(z.string().uuid()),
         changes: z
             .object({
-                member_id: z.string().uuid(),
+                member_id: z.string(),
                 project_id: z.union([z.string(), z.null()]),
                 task_id: z.union([z.string(), z.null()]),
                 billable: z.boolean(),
                 description: z.union([z.string(), z.null()]),
-                tags: z.union([z.array(z.string().uuid()), z.null()]),
+                tags: z.union([z.array(z.string()), z.null()]),
             })
             .partial()
             .passthrough(),
@@ -200,14 +200,14 @@ const TimeEntryUpdateMultipleRequest = z
     .passthrough();
 const TimeEntryUpdateRequest = z
     .object({
-        member_id: z.string().uuid(),
+        member_id: z.string(),
         project_id: z.union([z.string(), z.null()]),
         task_id: z.union([z.string(), z.null()]),
         start: z.string(),
         end: z.union([z.string(), z.null()]),
         billable: z.boolean(),
         description: z.union([z.string(), z.null()]),
-        tags: z.union([z.array(z.string().uuid()), z.null()]),
+        tags: z.union([z.array(z.string()), z.null()]),
     })
     .partial()
     .passthrough();
@@ -370,7 +370,7 @@ const endpoints = makeApi([
             {
                 name: 'page',
                 type: 'Query',
-                schema: z.number().int().gte(1).optional(),
+                schema: z.number().int().gte(1).lte(2147483647).optional(),
             },
             {
                 name: 'archived',
@@ -1317,7 +1317,7 @@ const endpoints = makeApi([
             {
                 name: 'page',
                 type: 'Query',
-                schema: z.number().int().gte(1).optional(),
+                schema: z.number().int().gte(1).lte(2147483647).optional(),
             },
             {
                 name: 'archived',
@@ -1889,7 +1889,7 @@ const endpoints = makeApi([
             {
                 name: 'project_id',
                 type: 'Query',
-                schema: z.string().uuid().optional(),
+                schema: z.string().optional(),
             },
             {
                 name: 'done',
@@ -2118,7 +2118,7 @@ Users with the permission &#x60;time-entries:view:own&#x60; can only use this en
             {
                 name: 'member_id',
                 type: 'Query',
-                schema: z.string().uuid().optional(),
+                schema: z.string().optional(),
             },
             {
                 name: 'start',
@@ -2148,7 +2148,7 @@ Users with the permission &#x60;time-entries:view:own&#x60; can only use this en
             {
                 name: 'offset',
                 type: 'Query',
-                schema: z.number().int().gte(0).optional(),
+                schema: z.number().int().gte(0).lte(2147483647).optional(),
             },
             {
                 name: 'only_full_dates',
@@ -2158,27 +2158,27 @@ Users with the permission &#x60;time-entries:view:own&#x60; can only use this en
             {
                 name: 'member_ids',
                 type: 'Query',
-                schema: z.array(z.string().uuid()).min(1).optional(),
+                schema: z.array(z.string()).min(1).optional(),
             },
             {
                 name: 'client_ids',
                 type: 'Query',
-                schema: z.array(z.string().uuid()).min(1).optional(),
+                schema: z.array(z.string()).min(1).optional(),
             },
             {
                 name: 'project_ids',
                 type: 'Query',
-                schema: z.array(z.string().uuid()).min(1).optional(),
+                schema: z.array(z.string()).min(1).optional(),
             },
             {
                 name: 'tag_ids',
                 type: 'Query',
-                schema: z.array(z.string().uuid()).min(1).optional(),
+                schema: z.array(z.string()).min(1).optional(),
             },
             {
                 name: 'task_ids',
                 type: 'Query',
-                schema: z.array(z.string().uuid()).min(1).optional(),
+                schema: z.array(z.string()).min(1).optional(),
             },
             {
                 name: 'user_id',
@@ -2524,12 +2524,12 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
             {
                 name: 'member_id',
                 type: 'Query',
-                schema: z.string().uuid().optional(),
+                schema: z.string().optional(),
             },
             {
                 name: 'user_id',
                 type: 'Query',
-                schema: z.string().uuid().optional(),
+                schema: z.string().optional(),
             },
             {
                 name: 'start',
@@ -2559,27 +2559,27 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
             {
                 name: 'member_ids',
                 type: 'Query',
-                schema: z.array(z.string().uuid()).min(1).optional(),
+                schema: z.array(z.string()).min(1).optional(),
             },
             {
                 name: 'project_ids',
                 type: 'Query',
-                schema: z.array(z.string().uuid()).min(1).optional(),
+                schema: z.array(z.string()).min(1).optional(),
             },
             {
                 name: 'client_ids',
                 type: 'Query',
-                schema: z.array(z.string().uuid()).min(1).optional(),
+                schema: z.array(z.string()).min(1).optional(),
             },
             {
                 name: 'tag_ids',
                 type: 'Query',
-                schema: z.array(z.string().uuid()).min(1).optional(),
+                schema: z.array(z.string()).min(1).optional(),
             },
             {
                 name: 'task_ids',
                 type: 'Query',
-                schema: z.array(z.string().uuid()).min(1).optional(),
+                schema: z.array(z.string()).min(1).optional(),
             },
         ],
         response: z
@@ -2628,6 +2628,107 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
                     .passthrough(),
             })
             .passthrough(),
+        errors: [
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 403,
+                description: `Authorization error`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 404,
+                description: `Not found`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 422,
+                description: `Validation error`,
+                schema: z
+                    .object({
+                        message: z.string(),
+                        errors: z.record(z.array(z.string())),
+                    })
+                    .passthrough(),
+            },
+        ],
+    },
+    {
+        method: 'get',
+        path: '/v1/organizations/:organization/time-entries/export',
+        alias: 'exportTimeEntries',
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'organization',
+                type: 'Path',
+                schema: z.string(),
+            },
+            {
+                name: 'format',
+                type: 'Query',
+                schema: z.enum(['csv', 'pdf', 'xlsx', 'ods']),
+            },
+            {
+                name: 'member_id',
+                type: 'Query',
+                schema: z.string().uuid().optional(),
+            },
+            {
+                name: 'start',
+                type: 'Query',
+                schema: start,
+            },
+            {
+                name: 'end',
+                type: 'Query',
+                schema: start,
+            },
+            {
+                name: 'active',
+                type: 'Query',
+                schema: z.enum(['true', 'false']).optional(),
+            },
+            {
+                name: 'billable',
+                type: 'Query',
+                schema: z.enum(['true', 'false']).optional(),
+            },
+            {
+                name: 'limit',
+                type: 'Query',
+                schema: z.number().int().gte(1).lte(500).optional(),
+            },
+            {
+                name: 'only_full_dates',
+                type: 'Query',
+                schema: z.enum(['true', 'false']).optional(),
+            },
+            {
+                name: 'member_ids',
+                type: 'Query',
+                schema: z.array(z.string().uuid()).min(1).optional(),
+            },
+            {
+                name: 'project_ids',
+                type: 'Query',
+                schema: z.array(z.string().uuid()).min(1).optional(),
+            },
+            {
+                name: 'tag_ids',
+                type: 'Query',
+                schema: z.array(z.string().uuid()).min(1).optional(),
+            },
+            {
+                name: 'task_ids',
+                type: 'Query',
+                schema: z.array(z.string().uuid()).min(1).optional(),
+            },
+        ],
+        response: z.object({ download_url: z.string() }).passthrough(),
         errors: [
             {
                 status: 401,

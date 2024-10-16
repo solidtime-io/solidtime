@@ -147,6 +147,8 @@ class TimeEntryController extends Controller
 
     /**
      * @throws AuthorizationException
+     *
+     * @operationId exportTimeEntries
      */
     public function indexExport(Organization $organization, TimeEntryIndexExportRequest $request): JsonResponse
     {
