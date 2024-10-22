@@ -113,6 +113,7 @@ function startTimeEntryFromExisting(entry: TimeEntry) {
         end: null,
         billable: entry.billable,
         description: entry.description,
+        tags: [...entry.tags],
     });
 }
 function sumDuration(timeEntries: TimeEntry[]) {
