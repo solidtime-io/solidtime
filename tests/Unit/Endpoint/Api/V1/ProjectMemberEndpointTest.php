@@ -23,7 +23,7 @@ class ProjectMemberEndpointTest extends ApiEndpointTestAbstract
         // Arrange
         $data = $this->createUserWithPermission();
         $project = Project::factory()->forOrganization($data->organization)->create();
-        $projectMembers = ProjectMember::factory()->forProject($project)->createMany(4);
+        ProjectMember::factory()->forProject($project)->createMany(4);
         Passport::actingAs($data->user);
 
         // Act
@@ -46,7 +46,7 @@ class ProjectMemberEndpointTest extends ApiEndpointTestAbstract
             'project-members:view',
         ]);
         $project = Project::factory()->forOrganization($otherData->organization)->create();
-        $projectMembers = ProjectMember::factory()->forProject($project)->createMany(4);
+        ProjectMember::factory()->forProject($project)->createMany(4);
         Passport::actingAs($data->user);
 
         // Act
@@ -66,7 +66,7 @@ class ProjectMemberEndpointTest extends ApiEndpointTestAbstract
             'project-members:view',
         ]);
         $project = Project::factory()->forOrganization($data->organization)->create();
-        $projectMembers = ProjectMember::factory()->forProject($project)->createMany(4);
+        ProjectMember::factory()->forProject($project)->createMany(4);
         Passport::actingAs($data->user);
 
         // Act

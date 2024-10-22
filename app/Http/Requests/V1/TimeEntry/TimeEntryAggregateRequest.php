@@ -34,7 +34,7 @@ class TimeEntryAggregateRequest extends FormRequest
         return [
             'group' => [
                 'nullable',
-                'required_with:group_2',
+                'required_with:sub_group',
                 Rule::enum(TimeEntryAggregationType::class),
             ],
 
