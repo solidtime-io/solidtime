@@ -2138,6 +2138,51 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         ]);
     }
 
+    public function test_update_multiple_updates_sets_description_to_empty_if_the_client_sends_null(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:update:own',
+        ]);
+        $timeEntry1 = TimeEntry::factory()->forMember($data->member)->create([
+            'description' => '',
+        ]);
+        $timeEntry2 = TimeEntry::factory()->forMember($data->member)->create([
+            'description' => 'test',
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->patchJson(route('api.v1.time-entries.update-multiple', [$data->organization->getKey()]), [
+            'ids' => [
+                $timeEntry1->getKey(),
+                $timeEntry2->getKey(),
+            ],
+            'changes' => [
+                'description' => null,
+            ],
+        ]);
+
+        // Assert
+        $response->assertValid();
+        $response->assertStatus(200);
+        $response->assertExactJson([
+            'success' => [
+                $timeEntry1->getKey(),
+                $timeEntry2->getKey(),
+            ],
+            'error' => [],
+        ]);
+        $this->assertDatabaseHas(TimeEntry::class, [
+            'id' => $timeEntry1->getKey(),
+            'description' => '',
+        ]);
+        $this->assertDatabaseHas(TimeEntry::class, [
+            'id' => $timeEntry2->getKey(),
+            'description' => '',
+        ]);
+    }
+
     public function test_update_multiple_updates_all_time_entries_and_fails_for_time_entries_of_other_users_and_and_other_organizations_with_all_time_entries_permission(): void
     {
         // Arrange

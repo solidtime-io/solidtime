@@ -333,6 +333,10 @@ class TimeEntryController extends Controller
 
         $changes = $request->validated('changes');
 
+        if ($request->has('changes.description')) {
+            $changes['description'] = $request->input('changes.description') ?? '';
+        }
+
         if (isset($changes['member_id']) && ! $canAccessAll && $this->member($organization)->getKey() !== $changes['member_id']) {
             throw new AuthorizationException;
         }
