@@ -273,7 +273,9 @@ class TimeEntryController extends Controller
     /**
      * Export aggregated time entries in organization
      *
+     * @operationId exportAggregatedTimeEntries
      * @throws AuthorizationException
+     *
      */
     public function aggregateExport(Organization $organization, TimeEntryAggregateExportRequest $request): JsonResponse
     {
