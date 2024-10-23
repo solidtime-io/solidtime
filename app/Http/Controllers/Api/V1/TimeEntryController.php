@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1;
 
 use App\Enums\ExportFormat;
+use App\Exceptions\Api\PdfRendererIsNotConfiguredException;
 use App\Exceptions\Api\TimeEntryCanNotBeRestartedApiException;
 use App\Exceptions\Api\TimeEntryStillRunningApiException;
+use App\Http\Requests\V1\TimeEntry\TimeEntryAggregateExportRequest;
 use App\Http\Requests\V1\TimeEntry\TimeEntryAggregateRequest;
 use App\Http\Requests\V1\TimeEntry\TimeEntryDestroyMultipleRequest;
 use App\Http\Requests\V1\TimeEntry\TimeEntryIndexExportRequest;
@@ -28,15 +30,20 @@ use App\Service\ReportExport\TimeEntriesDetailedExport;
 use App\Service\TimeEntryAggregationService;
 use App\Service\TimeEntryFilter;
 use App\Service\TimezoneService;
+use Gotenberg\Gotenberg;
+use Gotenberg\Stream;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\File;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
+use Spatie\TemporaryDirectory\TemporaryDirectory;
 
 class TimeEntryController extends Controller
 {
@@ -49,7 +56,7 @@ class TimeEntryController extends Controller
     }
 
     /**
-     * Get all time entries in organization
+     * Get time entries in organization
      *
      * If you only need time entries for a specific user, you can filter by `user_id`.
      * Users with the permission `time-entries:view:own` can only use this endpoint with their own user ID in the user_id filter.
@@ -146,7 +153,9 @@ class TimeEntryController extends Controller
     }
 
     /**
-     * @throws AuthorizationException
+     * Export time entries in organization
+     *
+     * @throws AuthorizationException|PdfRendererIsNotConfiguredException
      *
      * @operationId exportTimeEntries
      */
@@ -163,21 +172,40 @@ class TimeEntryController extends Controller
         $timeEntriesQuery = $this->getTimeEntriesQuery($organization, $request, $member);
         $timeEntriesQuery->with([
             'task',
-            'project' => [
-                'client',
-            ],
+            'client',
+            'project',
             'user',
             'tagsRelation',
         ]);
         $format = $request->getFormatValue();
+        //$format = ExportFormat::PDF;
         $filename = 'time-entries-export-'.now()->format('Y-m-d_H-i-s').'.'.$format->getFileExtension();
-        $path = 'exports/'.$filename;
+        $folderPath = 'exports';
+        $path = $folderPath.'/'.$filename;
         if ($format === ExportFormat::CSV) {
-            $export = new TimeEntriesDetailedCsvExport(config('filesystems.private'), $filename, $timeEntriesQuery, 1000);
+            $export = new TimeEntriesDetailedCsvExport(config('filesystems.private'), $folderPath, $filename, $timeEntriesQuery, 1000);
             $export->export();
+        } elseif ($format === ExportFormat::PDF) {
+            if (config('services.gotenberg.url') === null) {
+                throw new PdfRendererIsNotConfiguredException;
+            }
+            $viewFile = file_get_contents(resource_path('views/reports/time-entry-index.blade.php'));
+            $html = Blade::render($viewFile, ['timeEntries' => $timeEntriesQuery->get()]);
+            $footerViewFile = file_get_contents(resource_path('views/reports/time-entry-index-footer.blade.php'));
+            $footerHtml = Blade::render($footerViewFile);
+            $request = Gotenberg::chromium(config('services.gotenberg.url'))
+                ->pdf()
+                ->pdfa('PDF/A-3b')
+                ->paperSize('8.27', '11.7') // A4
+                ->footer(Stream::string('footer', $footerHtml))
+                ->html(Stream::string('body', $html));
+            $tempFolder = TemporaryDirectory::make();
+            $filenameTemp = Gotenberg::save($request, $tempFolder->path());
+            Storage::disk(config('filesystems.private'))
+                ->putFileAs($folderPath, new File($tempFolder->path($filenameTemp)), $filename);
         } else {
             Excel::store(
-                new TimeEntriesDetailedExport($timeEntriesQuery),
+                new TimeEntriesDetailedExport($timeEntriesQuery, $format),
                 $path,
                 config('filesystems.private'),
                 $format->getExportPackageType(),
@@ -225,7 +253,7 @@ class TimeEntryController extends Controller
      *
      * @throws AuthorizationException
      */
-    public function aggregate(Organization $organization, TimeEntryAggregateRequest $request, TimeEntryAggregationService $aggregationService): array
+    public function aggregate(Organization $organization, TimeEntryAggregateRequest $request): array
     {
         /** @var Member|null $member */
         $member = $request->has('member_id') ? Member::query()->findOrFail($request->input('member_id')) : null;
@@ -235,6 +263,75 @@ class TimeEntryController extends Controller
             $this->checkPermission($organization, 'time-entries:view:all');
         }
 
+        $aggregatedData = $this->getTimeEntriesAggregateQuery($organization, $request, $member);
+
+        return [
+            'data' => $aggregatedData,
+        ];
+    }
+
+    /**
+     * Export aggregated time entries in organization
+     *
+     * @throws AuthorizationException
+     */
+    public function aggregateExport(Organization $organization, TimeEntryAggregateExportRequest $request): JsonResponse
+    {
+        /** @var Member|null $member */
+        $member = $request->has('member_id') ? Member::query()->findOrFail($request->input('member_id')) : null;
+        if ($member !== null && $member->user_id === Auth::id()) {
+            $this->checkPermission($organization, 'time-entries:view:own');
+        } else {
+            $this->checkPermission($organization, 'time-entries:view:all');
+        }
+
+        $aggregatedData = $this->getTimeEntriesAggregateQuery($organization, $request, $member);
+
+        $format = $request->getFormatValue();
+        //$format = ExportFormat::PDF;
+        $filename = 'time-entries-report-'.now()->format('Y-m-d_H-i-s').'.'.$format->getFileExtension();
+        $folderPath = 'exports';
+        $path = $folderPath.'/'.$filename;
+
+        if ($format === ExportFormat::CSV) {
+            // TODO
+        } elseif ($format === ExportFormat::PDF) {
+            if (config('services.gotenberg.url') === null) {
+                throw new PdfRendererIsNotConfiguredException;
+            }
+            // TODO
+        } else {
+            // TODO
+        }
+
+        return response()->json([
+            'download_url' => Storage::disk(config('filesystems.private'))
+                ->temporaryUrl($path, now()->addMinutes(5)),
+        ]);
+    }
+
+    /**
+     * @return array{
+     *       grouped_type: string|null,
+     *       grouped_data: null|array<array{
+     *           key: string|null,
+     *           seconds: int,
+     *           cost: int,
+     *           grouped_type: string|null,
+     *           grouped_data: null|array<array{
+     *               key: string|null,
+     *               seconds: int,
+     *               cost: int,
+     *               grouped_type: null,
+     *               grouped_data: null
+     *           }>
+     *       }>,
+     *       seconds: int,
+     *       cost: int
+     * }
+     */
+    private function getTimeEntriesAggregateQuery(Organization $organization, TimeEntryAggregateRequest|TimeEntryAggregateExportRequest $request, ?Member $member): array
+    {
         $timeEntriesQuery = TimeEntry::query()
             ->whereBelongsTo($organization, 'organization');
 
@@ -256,7 +353,7 @@ class TimeEntryController extends Controller
         $group1Type = $request->getGroup();
         $group2Type = $request->getSubGroup();
 
-        $aggregatedData = $aggregationService->getAggregatedTimeEntries(
+        $aggregatedData = app(TimeEntryAggregationService::class)->getAggregatedTimeEntries(
             $timeEntriesQuery,
             $group1Type,
             $group2Type,
@@ -267,9 +364,7 @@ class TimeEntryController extends Controller
             $request->getEnd()
         );
 
-        return [
-            'data' => $aggregatedData,
-        ];
+        return $aggregatedData;
     }
 
     /**
