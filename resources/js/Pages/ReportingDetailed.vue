@@ -64,6 +64,9 @@ import {
 import { useQuery, useQueryClient } from '@tanstack/vue-query';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import { useTimeEntriesStore } from '@/utils/useTimeEntries';
+import ReportingExportButton from '@/Components/Common/Reporting/ReportingExportButton.vue';
+import type { ExportFormat } from '@/types/reporting';
+import { useNotificationsStore } from '@/utils/notification';
 import TimeEntryMassActionRow from '@/packages/ui/src/TimeEntry/TimeEntryMassActionRow.vue';
 import { isAllowedToPerformPremiumAction } from '@/utils/billing';
 import { canCreateProjects } from '@/utils/permissions';
@@ -120,6 +123,7 @@ function getFilterAttributes() {
 const currentTimeEntryStore = useCurrentTimeEntryStore();
 const { currentTimeEntry } = storeToRefs(currentTimeEntryStore);
 const { setActiveState, startLiveTimer } = currentTimeEntryStore;
+const { handleApiRequestNotifications } = useNotificationsStore();
 const { createTimeEntry, updateTimeEntry, updateTimeEntries } =
     useTimeEntriesStore();
 
@@ -215,6 +219,26 @@ async function clearSelectionAndState() {
     selectedTimeEntries.value = [];
     await updateFilteredTimeEntries();
 }
+async function downloadExport(format: ExportFormat) {
+    const organizationId = getCurrentOrganizationId();
+    if (organizationId) {
+        const response = await handleApiRequestNotifications(
+            () =>
+                api.exportTimeEntries({
+                    params: {
+                        organization: organizationId,
+                    },
+                    queries: {
+                        ...getFilterAttributes(),
+                        format: format,
+                    },
+                }),
+            'Export successful',
+            'Export failed'
+        );
+        window.open(response.download_url, '_self')?.focus();
+    }
+}
 </script>
 
 <template>
@@ -237,6 +261,8 @@ async function clearSelectionAndState() {
                     </TabBarItem>
                 </TabBar>
             </div>
+            <ReportingExportButton
+                @submit="downloadExport"></ReportingExportButton>
         </MainContainer>
         <div class="py-2.5 w-full border-b border-default-background-separator">
             <MainContainer

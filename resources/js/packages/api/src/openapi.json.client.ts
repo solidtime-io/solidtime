@@ -2658,6 +2658,159 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
     },
     {
         method: 'get',
+        path: '/v1/organizations/:organization/time-entries/aggregate/export',
+        alias: 'exportAggregatedTimeEntries',
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'organization',
+                type: 'Path',
+                schema: z.string(),
+            },
+            {
+                name: 'format',
+                type: 'Query',
+                schema: z.enum(['csv', 'pdf', 'xlsx', 'ods']),
+            },
+            {
+                name: 'group',
+                type: 'Query',
+                schema: z
+                    .enum([
+                        'day',
+                        'week',
+                        'month',
+                        'year',
+                        'user',
+                        'project',
+                        'task',
+                        'client',
+                        'billable',
+                        'description',
+                    ])
+                    .optional(),
+            },
+            {
+                name: 'sub_group',
+                type: 'Query',
+                schema: z
+                    .enum([
+                        'day',
+                        'week',
+                        'month',
+                        'year',
+                        'user',
+                        'project',
+                        'task',
+                        'client',
+                        'billable',
+                        'description',
+                    ])
+                    .optional(),
+            },
+            {
+                name: 'member_id',
+                type: 'Query',
+                schema: z.string().optional(),
+            },
+            {
+                name: 'user_id',
+                type: 'Query',
+                schema: z.string().optional(),
+            },
+            {
+                name: 'start',
+                type: 'Query',
+                schema: start,
+            },
+            {
+                name: 'end',
+                type: 'Query',
+                schema: start,
+            },
+            {
+                name: 'active',
+                type: 'Query',
+                schema: z.enum(['true', 'false']).optional(),
+            },
+            {
+                name: 'billable',
+                type: 'Query',
+                schema: z.enum(['true', 'false']).optional(),
+            },
+            {
+                name: 'fill_gaps_in_time_groups',
+                type: 'Query',
+                schema: z.enum(['true', 'false']).optional(),
+            },
+            {
+                name: 'member_ids',
+                type: 'Query',
+                schema: z.array(z.string()).min(1).optional(),
+            },
+            {
+                name: 'project_ids',
+                type: 'Query',
+                schema: z.array(z.string()).min(1).optional(),
+            },
+            {
+                name: 'client_ids',
+                type: 'Query',
+                schema: z.array(z.string()).min(1).optional(),
+            },
+            {
+                name: 'tag_ids',
+                type: 'Query',
+                schema: z.array(z.string()).min(1).optional(),
+            },
+            {
+                name: 'task_ids',
+                type: 'Query',
+                schema: z.array(z.string()).min(1).optional(),
+            },
+        ],
+        response: z.object({ download_url: z.string() }).passthrough(),
+        errors: [
+            {
+                status: 400,
+                description: `API exception`,
+                schema: z
+                    .object({
+                        error: z.boolean(),
+                        key: z.string(),
+                        message: z.string(),
+                    })
+                    .passthrough(),
+            },
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 403,
+                description: `Authorization error`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 404,
+                description: `Not found`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 422,
+                description: `Validation error`,
+                schema: z
+                    .object({
+                        message: z.string(),
+                        errors: z.record(z.array(z.string())),
+                    })
+                    .passthrough(),
+            },
+        ],
+    },
+    {
+        method: 'get',
         path: '/v1/organizations/:organization/time-entries/export',
         alias: 'exportTimeEntries',
         requestFormat: 'json',
@@ -2730,6 +2883,17 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
         ],
         response: z.object({ download_url: z.string() }).passthrough(),
         errors: [
+            {
+                status: 400,
+                description: `API exception`,
+                schema: z
+                    .object({
+                        error: z.boolean(),
+                        key: z.string(),
+                        message: z.string(),
+                    })
+                    .passthrough(),
+            },
             {
                 status: 401,
                 description: `Unauthenticated`,

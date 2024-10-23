@@ -8,7 +8,6 @@ import {
     UserGroupIcon,
     CheckCircleIcon,
     TagIcon,
-    ArrowDownTrayIcon,
 } from '@heroicons/vue/20/solid';
 import DateRangePicker from '@/packages/ui/src/Input/DateRangePicker.vue';
 import ReportingChart from '@/Components/Common/Reporting/ReportingChart.vue';
@@ -45,9 +44,9 @@ import { useSessionStorage, useStorage } from '@vueuse/core';
 import TabBar from '@/Components/Common/TabBar/TabBar.vue';
 import TabBarItem from '@/Components/Common/TabBar/TabBarItem.vue';
 import { router } from '@inertiajs/vue3';
-import { SecondaryButton } from '@/packages/ui/src';
-import Dropdown from '@/packages/ui/src/Input/Dropdown.vue';
 import { useNotificationsStore } from '@/utils/notification';
+import ReportingExportButton from '@/Components/Common/Reporting/ReportingExportButton.vue';
+import type { ExportFormat } from '@/types/reporting';
 const { handleApiRequestNotifications } = useNotificationsStore();
 
 const startDate = useSessionStorage<string>(
@@ -160,19 +159,19 @@ async function createTag(tag: string) {
     return await useTagsStore().createTag(tag);
 }
 
-type ExportFormat = 'xlsx' | 'csv' | 'ods';
-
 async function downloadExport(format: ExportFormat) {
     const organizationId = getCurrentOrganizationId();
     if (organizationId) {
         const response = await handleApiRequestNotifications(
             () =>
-                api.exportTimeEntries({
+                api.exportAggregatedTimeEntries({
                     params: {
                         organization: organizationId,
                     },
                     queries: {
                         ...getFilterAttributes(),
+                        group: group.value,
+                        sub_group: subGroup.value,
                         format: format,
                     },
                 }),
@@ -203,38 +202,10 @@ async function downloadExport(format: ExportFormat) {
                     >
                 </TabBar>
             </div>
-            <Dropdown align="bottom-end">
-                <template #trigger>
-                    <SecondaryButton>
-                        <div class="flex space-x-2 items-center">
-                            <ArrowDownTrayIcon
-                                class="w-4 text-text-tertiary"></ArrowDownTrayIcon>
-                            <span>Export</span>
-                        </div>
-                    </SecondaryButton>
-                </template>
-                <template #content>
-                    <div class="flex flex-col space-y-1 p-1.5">
-                        <SecondaryButton
-                            class="border-0 px-2"
-                            @click="downloadExport('xlsx')"
-                            >Export as Excel</SecondaryButton
-                        >
-                        <SecondaryButton
-                            class="border-0 px-2"
-                            @click="downloadExport('csv')"
-                            >Export as CSV</SecondaryButton
-                        >
-                        <SecondaryButton
-                            class="border-0 px-2"
-                            @click="downloadExport('ods')"
-                            >Export as ODS
-                        </SecondaryButton>
-                    </div>
-                </template>
-            </Dropdown>
+            <ReportingExportButton
+                @submit="downloadExport"></ReportingExportButton>
         </MainContainer>
-        <div class="p-3 w-full border-b border-default-background-separator">
+        <div class="py-2.5 w-full border-b border-default-background-separator">
             <MainContainer
                 class="sm:flex space-y-4 sm:space-y-0 justify-between">
                 <div
