@@ -89,6 +89,7 @@ Route::middleware([
         Route::get('/organizations/{organization}/time-entries', [TimeEntryController::class, 'index'])->name('index');
         Route::get('/organizations/{organization}/time-entries/export', [TimeEntryController::class, 'indexExport'])->name('index-export');
         Route::get('/organizations/{organization}/time-entries/aggregate', [TimeEntryController::class, 'aggregate'])->name('aggregate');
+        Route::get('/organizations/{organization}/time-entries/aggregate/export', [TimeEntryController::class, 'aggregateExport'])->name('aggregate-export');
         Route::post('/organizations/{organization}/time-entries', [TimeEntryController::class, 'store'])->name('store')->middleware('check-organization-blocked');
         Route::put('/organizations/{organization}/time-entries/{timeEntry}', [TimeEntryController::class, 'update'])->name('update')->middleware('check-organization-blocked');
         Route::patch('/organizations/{organization}/time-entries', [TimeEntryController::class, 'updateMultiple'])->name('update-multiple')->middleware('check-organization-blocked');

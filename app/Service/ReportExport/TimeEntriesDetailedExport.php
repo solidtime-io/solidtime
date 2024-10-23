@@ -4,18 +4,27 @@ declare(strict_types=1);
 
 namespace App\Service\ReportExport;
 
+use App\Enums\ExportFormat;
 use App\Models\TimeEntry;
 use Illuminate\Database\Eloquent\Builder;
+use LogicException;
 use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\FromQuery;
-use Maatwebsite\Excel\Concerns\WithCustomCsvSettings;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithColumnFormatting;
+use Maatwebsite\Excel\Concerns\WithDefaultStyles;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
+use Maatwebsite\Excel\Concerns\WithStyles;
+use PhpOffice\PhpSpreadsheet\Shared\Date;
+use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
+use PhpOffice\PhpSpreadsheet\Style\Style;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 /**
  * @implements WithMapping<TimeEntry>
  */
-class TimeEntriesDetailedExport implements FromQuery, WithCustomCsvSettings, WithHeadings, WithMapping
+class TimeEntriesDetailedExport implements FromQuery, ShouldAutoSize, WithColumnFormatting, WithDefaultStyles, WithHeadings, WithMapping, WithStyles
 {
     use Exportable;
 
@@ -24,12 +33,15 @@ class TimeEntriesDetailedExport implements FromQuery, WithCustomCsvSettings, Wit
      */
     private Builder $builder;
 
+    private ExportFormat $exportFormat;
+
     /**
      * @param  Builder<TimeEntry>  $builder
      */
-    public function __construct(Builder $builder)
+    public function __construct(Builder $builder, ExportFormat $exportFormat)
     {
         $this->builder = $builder;
+        $this->exportFormat = $exportFormat;
     }
 
     /**
@@ -40,16 +52,39 @@ class TimeEntriesDetailedExport implements FromQuery, WithCustomCsvSettings, Wit
         return $this->builder;
     }
 
+    public function columnFormats(): array
+    {
+        if ($this->exportFormat === ExportFormat::XLSX) {
+            return [
+                'F' => 'yyyy-mm-dd hh:mm:ss',
+                'G' => 'yyyy-mm-dd hh:mm:ss',
+                'I' => NumberFormat::FORMAT_NUMBER_00,
+            ];
+        } elseif ($this->exportFormat === ExportFormat::ODS) {
+            return [
+                'I' => NumberFormat::FORMAT_NUMBER_00,
+            ];
+        } else {
+            throw new LogicException('Unsupported export format.');
+        }
+
+    }
+
     /**
-     * @return array<string, string|bool>
+     * @return array<int|string, array<string, array<string, bool>>>
      */
-    public function getCsvSettings(): array
+    public function styles(Worksheet $sheet): array
     {
         return [
-            'delimiter' => ',',
-            'use_bom' => false,
-            'output_encoding' => 'ISO-8859-1',
+            // Style the first row as bold text.
+            1 => ['font' => ['bold' => true]],
         ];
+    }
+
+    public function defaultStyles(Style $defaultStyle)
+    {
+        // Configure the default styles
+        return $defaultStyle->getFill(); //->setFillType(Fill::FILL_SOLID);
     }
 
     /**
@@ -63,10 +98,8 @@ class TimeEntriesDetailedExport implements FromQuery, WithCustomCsvSettings, Wit
             'Project',
             'Client',
             'User',
-            'Start date',
-            'Start time',
-            'End date',
-            'End time',
+            'Start',
+            'End',
             'Duration',
             'Duration (decimal)',
             'Billable',
@@ -82,20 +115,36 @@ class TimeEntriesDetailedExport implements FromQuery, WithCustomCsvSettings, Wit
     {
         $duration = $model->getDuration();
 
-        return [
-            $model->description,
-            $model->task?->name,
-            $model->project?->name,
-            $model->project?->client?->name,
-            $model->user->name,
-            $model->start->format('Y-m-d'),
-            $model->start->format('H:i:s'),
-            $model->end?->format('Y-m-d'),
-            $model->end?->format('H:i:s'),
-            $duration !== null ? (int) floor($duration->totalHours).':'.$duration->format('%I:%S') : null,
-            $duration?->totalHours,
-            $model->billable ? 'Yes' : 'No',
-            $model->tagsRelation->pluck('name')->implode(', '),
-        ];
+        if ($this->exportFormat === ExportFormat::XLSX) {
+            return [
+                $model->description,
+                $model->task?->name,
+                $model->project?->name,
+                $model->client?->name,
+                $model->user->name,
+                Date::dateTimeToExcel($model->start),
+                $model->end !== null ? Date::dateTimeToExcel($model->end) : null,
+                $duration !== null ? (int) floor($duration->totalHours).':'.$duration->format('%I:%S') : null,
+                $duration?->totalHours,
+                $model->billable ? 'Yes' : 'No',
+                $model->tagsRelation->pluck('name')->implode(', '),
+            ];
+        } elseif ($this->exportFormat === ExportFormat::ODS) {
+            return [
+                $model->description,
+                $model->task?->name,
+                $model->project?->name,
+                $model->client?->name,
+                $model->user->name,
+                $model->start->format('Y-m-d H:i:s'),
+                $model->end?->format('Y-m-d H:i:s'),
+                $duration !== null ? (int) floor($duration->totalHours).':'.$duration->format('%I:%S') : null,
+                $duration?->totalHours,
+                $model->billable ? 'Yes' : 'No',
+                $model->tagsRelation->pluck('name')->implode(', '),
+            ];
+        } else {
+            throw new LogicException('Unsupported export format.');
+        }
     }
 }

@@ -10,6 +10,7 @@ use App\Exceptions\Api\InactiveUserCanNotBeUsedApiException;
 use App\Exceptions\Api\OnlyOwnerCanChangeOwnership;
 use App\Exceptions\Api\OrganizationHasNoSubscriptionButMultipleMembersException;
 use App\Exceptions\Api\OrganizationNeedsAtLeastOneOwner;
+use App\Exceptions\Api\PdfRendererIsNotConfiguredException;
 use App\Exceptions\Api\TimeEntryCanNotBeRestartedApiException;
 use App\Exceptions\Api\TimeEntryStillRunningApiException;
 use App\Exceptions\Api\UserIsAlreadyMemberOfOrganizationApiException;
@@ -33,6 +34,7 @@ return [
         ChangingRoleToPlaceholderIsNotAllowed::KEY => 'Changing role to placeholder is not allowed',
         ExportException::KEY => 'Export failed, please try again later or contact support',
         OrganizationHasNoSubscriptionButMultipleMembersException::KEY => 'Organization has no subscription but multiple members',
+        PdfRendererIsNotConfiguredException::KEY => 'PDF renderer is not configured',
     ],
     'unknown_error_in_admin_panel' => 'An unknown error occurred. Please check the logs.',
 ];

@@ -11,6 +11,7 @@
         "dedoc/scramble": "dev-main",
         "filament/filament": "^3.2",
         "flowframe/laravel-trend": "^0.2.0",
+        "gotenberg/gotenberg-php": "^2.8",
         "guzzlehttp/guzzle": "^7.2",
         "inertiajs/inertia-laravel": "^1.0",
         "korridor/laravel-computed-attributes": "^3.1",
