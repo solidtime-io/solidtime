@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace App\Service\ReportExport;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\File;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use League\Csv\Writer;
+use Spatie\TemporaryDirectory\TemporaryDirectory;
 
 /**
  * @template T of Model
@@ -31,16 +34,19 @@ abstract class CsvExport
      */
     private Builder $builder;
 
+    private string $folderPath;
+
     /**
      * @param  Builder<T>  $builder
      */
-    public function __construct(string $disk, string $filename, Builder $builder, int $chunk)
+    public function __construct(string $disk, string $folderPath, string $filename, Builder $builder, int $chunk)
     {
 
         $this->disk = $disk;
         $this->filename = $filename;
         $this->chunk = $chunk;
         $this->builder = $builder;
+        $this->folderPath = $folderPath;
     }
 
     /**
@@ -49,12 +55,21 @@ abstract class CsvExport
      */
     abstract public function mapRow(Model $model): array;
 
+    /**
+     * @throws \League\Csv\CannotInsertRecord
+     * @throws \League\Csv\Exception
+     * @throws \League\Csv\UnavailableStream
+     */
     public function export(): void
     {
-        $writer = Writer::createFromPath(Storage::disk($this->disk)->path($this->filename), 'w+');
+        $tempDirectory = TemporaryDirectory::make();
+        $writer = Writer::createFromPath($tempDirectory->path($this->filename), 'w+');
+        $writer->setDelimiter(',');
+        $writer->setEnclosure('"');
+        $writer->setEscape('');
         $writer->insertOne(static::HEADER);
 
-        $this->builder->chunk($this->chunk, function ($models) use ($writer): void {
+        $this->builder->chunk($this->chunk, function (Collection $models) use ($writer): void {
             foreach ($models as $model) {
                 $data = $this->mapRow($model);
                 $row = $this->convertRow($data);
@@ -63,6 +78,8 @@ abstract class CsvExport
                 $writer->insertOne(array_values($row));
             }
         });
+        Storage::disk($this->disk)->putFileAs($this->folderPath, new File($tempDirectory->path($this->filename)), $this->filename);
+        $tempDirectory->delete();
     }
 
     /**
@@ -87,13 +104,11 @@ abstract class CsvExport
 
     /**
      * @param  array<string, string>  $row
-     *
-     * @throws \Exception
      */
     private function validateRow(array $row): void
     {
-        if (array_keys($row) !== self::HEADER) {
-            throw new \Exception('Invalid row');
+        if (array_keys($row) !== static::HEADER) {
+            throw new \LogicException('Invalid row');
         }
     }
 }
