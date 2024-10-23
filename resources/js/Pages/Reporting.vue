@@ -12,6 +12,7 @@ import {
 import DateRangePicker from '@/packages/ui/src/Input/DateRangePicker.vue';
 import ReportingChart from '@/Components/Common/Reporting/ReportingChart.vue';
 import BillableIcon from '@/packages/ui/src/Icons/BillableIcon.vue';
+
 import { onMounted, ref } from 'vue';
 import {
     formatHumanReadableDuration,
@@ -21,7 +22,7 @@ import {
 import { type GroupingOption, useReportingStore } from '@/utils/useReporting';
 import { storeToRefs } from 'pinia';
 import TagDropdown from '@/packages/ui/src/Tag/TagDropdown.vue';
-import type { AggregatedTimeEntriesQueryParams } from '@/packages/api/src';
+import { type AggregatedTimeEntriesQueryParams, api } from '@/packages/api/src';
 import ReportingFilterBadge from '@/Components/Common/Reporting/ReportingFilterBadge.vue';
 import ProjectMultiselectDropdown from '@/Components/Common/Project/ProjectMultiselectDropdown.vue';
 import MemberMultiselectDropdown from '@/Components/Common/Member/MemberMultiselectDropdown.vue';
@@ -31,7 +32,11 @@ import ReportingGroupBySelect from '@/Components/Common/Reporting/ReportingGroup
 import ReportingRow from '@/Components/Common/Reporting/ReportingRow.vue';
 import { getOrganizationCurrencyString } from '@/utils/money';
 import ReportingPieChart from '@/Components/Common/Reporting/ReportingPieChart.vue';
-import { getCurrentMembershipId, getCurrentRole } from '@/utils/useUser';
+import {
+    getCurrentMembershipId,
+    getCurrentOrganizationId,
+    getCurrentRole,
+} from '@/utils/useUser';
 import ClientMultiselectDropdown from '@/Components/Common/Client/ClientMultiselectDropdown.vue';
 import { useTagsStore } from '@/utils/useTags';
 import { formatCents } from '@/packages/ui/src/utils/money';
@@ -39,6 +44,10 @@ import { useSessionStorage, useStorage } from '@vueuse/core';
 import TabBar from '@/Components/Common/TabBar/TabBar.vue';
 import TabBarItem from '@/Components/Common/TabBar/TabBarItem.vue';
 import { router } from '@inertiajs/vue3';
+import { useNotificationsStore } from '@/utils/notification';
+import ReportingExportButton from '@/Components/Common/Reporting/ReportingExportButton.vue';
+import type { ExportFormat } from '@/types/reporting';
+const { handleApiRequestNotifications } = useNotificationsStore();
 
 const startDate = useSessionStorage<string>(
     'reporting-start-date',
@@ -149,6 +158,29 @@ const { tags } = storeToRefs(useTagsStore());
 async function createTag(tag: string) {
     return await useTagsStore().createTag(tag);
 }
+
+async function downloadExport(format: ExportFormat) {
+    const organizationId = getCurrentOrganizationId();
+    if (organizationId) {
+        const response = await handleApiRequestNotifications(
+            () =>
+                api.exportAggregatedTimeEntries({
+                    params: {
+                        organization: organizationId,
+                    },
+                    queries: {
+                        ...getFilterAttributes(),
+                        group: group.value,
+                        sub_group: subGroup.value,
+                        format: format,
+                    },
+                }),
+            'Export successful',
+            'Export failed'
+        );
+        window.open(response.download_url, '_self')?.focus();
+    }
+}
 </script>
 
 <template>
@@ -170,8 +202,10 @@ async function createTag(tag: string) {
                     >
                 </TabBar>
             </div>
+            <ReportingExportButton
+                @submit="downloadExport"></ReportingExportButton>
         </MainContainer>
-        <div class="p-3 w-full border-b border-default-background-separator">
+        <div class="py-2.5 w-full border-b border-default-background-separator">
             <MainContainer
                 class="sm:flex space-y-4 sm:space-y-0 justify-between">
                 <div

@@ -189,6 +189,13 @@ services:
         entrypoint: /etc/minio/create_bucket.sh
         extra_hosts:
             - "storage.${NGINX_HOST_NAME}:${REVERSE_PROXY_IP:-10.100.100.10}"
+
+    gotenberg:
+        image: gotenberg/gotenberg:8
+        networks:
+            - sail
+        healthcheck:
+            test: ["CMD", "curl", "--silent", "--fail", "http://localhost:3000/health"]
 networks:
     reverse-proxy:
         name: "${NETWORK_NAME}"
