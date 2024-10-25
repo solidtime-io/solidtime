@@ -13,7 +13,7 @@
     </style>
 </head>
 <body>
-    <h1>Report</h1>
+    <h1>Detailed Report</h1>
 
     <div>
         <span>01.01.2020 - 01.01.2024</span>

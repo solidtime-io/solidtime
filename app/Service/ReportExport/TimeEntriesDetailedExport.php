@@ -6,13 +6,13 @@ namespace App\Service\ReportExport;
 
 use App\Enums\ExportFormat;
 use App\Models\TimeEntry;
+use App\Service\IntervalService;
 use Illuminate\Database\Eloquent\Builder;
 use LogicException;
 use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithColumnFormatting;
-use Maatwebsite\Excel\Concerns\WithDefaultStyles;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
@@ -24,7 +24,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 /**
  * @implements WithMapping<TimeEntry>
  */
-class TimeEntriesDetailedExport implements FromQuery, ShouldAutoSize, WithColumnFormatting, WithDefaultStyles, WithHeadings, WithMapping, WithStyles
+class TimeEntriesDetailedExport implements FromQuery, ShouldAutoSize, WithColumnFormatting, WithHeadings, WithMapping, WithStyles
 {
     use Exportable;
 
@@ -52,6 +52,9 @@ class TimeEntriesDetailedExport implements FromQuery, ShouldAutoSize, WithColumn
         return $this->builder;
     }
 
+    /**
+     * @return array<string, string>
+     */
     public function columnFormats(): array
     {
         if ($this->exportFormat === ExportFormat::XLSX) {
@@ -81,12 +84,6 @@ class TimeEntriesDetailedExport implements FromQuery, ShouldAutoSize, WithColumn
         ];
     }
 
-    public function defaultStyles(Style $defaultStyle)
-    {
-        // Configure the default styles
-        return $defaultStyle->getFill(); //->setFillType(Fill::FILL_SOLID);
-    }
-
     /**
      * @return string[]
      */
@@ -113,6 +110,7 @@ class TimeEntriesDetailedExport implements FromQuery, ShouldAutoSize, WithColumn
      */
     public function map($model): array
     {
+        $interval = app(IntervalService::class);
         $duration = $model->getDuration();
 
         if ($this->exportFormat === ExportFormat::XLSX) {
@@ -124,7 +122,7 @@ class TimeEntriesDetailedExport implements FromQuery, ShouldAutoSize, WithColumn
                 $model->user->name,
                 Date::dateTimeToExcel($model->start),
                 $model->end !== null ? Date::dateTimeToExcel($model->end) : null,
-                $duration !== null ? (int) floor($duration->totalHours).':'.$duration->format('%I:%S') : null,
+                $duration !== null ? $interval->format($duration) : null,
                 $duration?->totalHours,
                 $model->billable ? 'Yes' : 'No',
                 $model->tagsRelation->pluck('name')->implode(', '),

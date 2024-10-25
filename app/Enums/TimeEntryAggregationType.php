@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace App\Enums;
 
+use Datomatic\LaravelEnumHelper\LaravelEnumHelper;
+
 enum TimeEntryAggregationType: string
 {
+    use LaravelEnumHelper;
+
     case Day = 'day';
     case Week = 'week';
     case Month = 'month';
@@ -16,6 +20,16 @@ enum TimeEntryAggregationType: string
     case Client = 'client';
     case Billable = 'billable';
     case Description = 'description';
+
+    public static function fromInterval(TimeEntryAggregationTypeInterval $timeEntryAggregationTypeInterval): TimeEntryAggregationType
+    {
+        return match ($timeEntryAggregationTypeInterval) {
+            TimeEntryAggregationTypeInterval::Day => TimeEntryAggregationType::Day,
+            TimeEntryAggregationTypeInterval::Week => TimeEntryAggregationType::Week,
+            TimeEntryAggregationTypeInterval::Month => TimeEntryAggregationType::Month,
+            TimeEntryAggregationTypeInterval::Year => TimeEntryAggregationType::Year,
+        };
+    }
 
     public function toInterval(): ?TimeEntryAggregationTypeInterval
     {
