@@ -37,6 +37,7 @@ const props = defineProps<{
     createProject: (project: CreateProjectBody) => Promise<Project | undefined>;
     createClient: (client: CreateClientBody) => Promise<Client | undefined>;
     currency: string;
+    enableEstimatedTime: boolean;
 }>();
 
 const groupedTimeEntries = computed(() => {
@@ -160,6 +161,7 @@ function unselectAllTimeEntries(value: TimeEntriesGroupedByType[]) {
         <template v-for="entry in value" :key="entry.id">
             <TimeEntryAggregateRow
                 :createProject
+                :enableEstimatedTime
                 :selected-time-entries="selectedTimeEntries"
                 @selected="
                     (timeEntries) => {
@@ -194,6 +196,7 @@ function unselectAllTimeEntries(value: TimeEntriesGroupedByType[]) {
                 :time-entry="entry"></TimeEntryAggregateRow>
             <TimeEntryRow
                 :createClient
+                :enableEstimatedTime
                 :createProject
                 :projects="projects"
                 :selected="

@@ -39,6 +39,7 @@ const { clients } = storeToRefs(useClientsStore());
 const gridTemplate = computed(() => {
     return `grid-template-columns: minmax(300px, 1fr) minmax(150px, auto) minmax(140px, auto) minmax(130px, auto) ${props.showBillableRate ? 'minmax(130px, auto)' : ''} minmax(120px, auto) 80px;`;
 });
+import { isAllowedToPerformPremiumAction } from '@/utils/billing';
 </script>
 
 <template>
@@ -47,6 +48,7 @@ const gridTemplate = computed(() => {
         :createClient
         :currency="getOrganizationCurrencyString()"
         :clients="clients"
+        :enableEstimatedTime="isAllowedToPerformPremiumAction"
         v-model:show="showCreateProjectModal"></ProjectCreateModal>
     <div class="flow-root max-w-[100vw] overflow-x-auto">
         <div class="inline-block min-w-full align-middle">

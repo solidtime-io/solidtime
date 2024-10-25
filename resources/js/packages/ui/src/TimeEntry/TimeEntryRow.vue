@@ -38,6 +38,7 @@ const props = defineProps<{
     showMember?: boolean;
     showDate?: boolean;
     selected?: boolean;
+    enableEstimatedTime: boolean;
 }>();
 
 const emit = defineEmits<{ selected: []; unselected: [] }>();
@@ -117,6 +118,7 @@ function onSelectChange(event: Event) {
                         @changed="updateProjectAndTask"
                         :project="timeEntry.project_id"
                         :currency="currency"
+                        :enableEstimatedTime
                         :task="
                             timeEntry.task_id
                         "></TimeTrackerProjectTaskDropdown>

@@ -33,6 +33,7 @@ const props = defineProps<{
     createClient: (client: CreateClientBody) => Promise<Client | undefined>;
     isActive: boolean;
     currency: string;
+    enableEstimatedTime: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -92,7 +93,7 @@ function updateTimeEntryDescription() {
         class="flex items-center relative @container"
         data-testid="dashboard_timer">
         <div
-            class="flex flex-col lg:flex-row w-full justify-between rounded-lg bg-card-background border-card-border border transition shadow-card">
+            class="flex flex-col @2xl:flex-row w-full justify-between rounded-lg bg-card-background border-card-border border transition shadow-card">
             <div class="flex flex-1 items-center pr-6">
                 <input
                     placeholder="What are you working on?"
@@ -101,12 +102,12 @@ function updateTimeEntryDescription() {
                     v-model="tempDescription"
                     @keydown.enter="startTimerIfNotActive"
                     @blur="updateTimeEntryDescription"
-                    class="w-full rounded-l-lg py-4 sm:py-2.5 px-3.5 border-b border-b-card-background-separator lg:px-4 text-base @4xl:text-lg text-white font-medium bg-transparent border-none placeholder-muted focus:ring-0 transition"
+                    class="w-full rounded-l-lg py-4 sm:py-2.5 px-3.5 border-b border-b-card-background-separator @2xl:px-4 text-base @4xl:text-lg text-white font-medium bg-transparent border-none placeholder-muted focus:ring-0 transition"
                     type="text" />
             </div>
             <div class="flex items-center justify-between pl-2 shrink min-w-0">
                 <div
-                    class="flex items-center w-[130px] sm:w-auto shrink min-w-0">
+                    class="flex items-center w-[130px] @2xl:w-auto shrink min-w-0">
                     <TimeTrackerProjectTaskDropdown
                         :createClient
                         :clients
@@ -115,12 +116,13 @@ function updateTimeEntryDescription() {
                         :projects="projects"
                         :tasks="tasks"
                         @changed="updateProject"
+                        :enableEstimatedTime="enableEstimatedTime"
                         v-model:project="currentTimeEntry.project_id"
                         v-model:task="
                             currentTimeEntry.task_id
                         "></TimeTrackerProjectTaskDropdown>
                 </div>
-                <div class="flex items-center lg:space-x-2 px-2 lg:px-4">
+                <div class="flex items-center @2xl:space-x-2 px-2 @2xl:px-4">
                     <TimeTrackerTagDropdown
                         @changed="$emit('updateTimeEntry')"
                         :createTag
@@ -149,7 +151,7 @@ function updateTimeEntryDescription() {
             </div>
         </div>
         <div
-            class="pl-4 lg:pl-6 pr-3 absolute sm:relative top-[6px] sm:top-0 right-0">
+            class="pl-4 @2xl:pl-6 pr-3 absolute sm:relative top-[6px] sm:top-0 right-0">
             <TimeTrackerStartStop
                 :active="isActive"
                 @changed="onToggleButtonPress"

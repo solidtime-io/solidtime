@@ -24,6 +24,7 @@ import type {
 import TimeTrackerRunningInDifferentOrganizationOverlay from '@/packages/ui/src/TimeTracker/TimeTrackerRunningInDifferentOrganizationOverlay.vue';
 import { useClientsStore } from '@/utils/useClients';
 import { getOrganizationCurrencyString } from '@/utils/money';
+import { isAllowedToPerformPremiumAction } from '@/utils/billing';
 
 const page = usePage<{
     auth: {
@@ -111,6 +112,7 @@ const { tags } = storeToRefs(useTagsStore());
 
         <TimeTrackerControls
             :createProject
+            :enableEstimatedTime="isAllowedToPerformPremiumAction()"
             :createClient
             :clients
             :tags

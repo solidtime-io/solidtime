@@ -26,14 +26,19 @@ import { useTagsStore } from '@/utils/useTags';
 import { useClientsStore } from '@/utils/useClients';
 import TimeEntryCreateModal from '@/Components/Common/TimeEntry/TimeEntryCreateModal.vue';
 import { getOrganizationCurrencyString } from '@/utils/money';
-import TimeEntryMassActionRow from '@/Components/Common/TimeEntry/TimeEntryMassActionRow.vue';
+import TimeEntryMassActionRow from '@/packages/ui/src/TimeEntry/TimeEntryMassActionRow.vue';
+import type { UpdateMultipleTimeEntriesChangeset } from '@/packages/api/src';
+import { isAllowedToPerformPremiumAction } from '@/utils/billing';
 
 const timeEntriesStore = useTimeEntriesStore();
 const { timeEntries, allTimeEntriesLoaded } = storeToRefs(timeEntriesStore);
 const { updateTimeEntry, fetchTimeEntries, createTimeEntry } =
     useTimeEntriesStore();
 
-async function updateTimeEntries(ids: string[], changes: Partial<TimeEntry>) {
+async function updateTimeEntries(
+    ids: string[],
+    changes: UpdateMultipleTimeEntriesChangeset
+) {
     await useTimeEntriesStore().updateTimeEntries(ids, changes);
     fetchTimeEntries();
 }
@@ -114,6 +119,7 @@ function deleteSelected() {
 
 <template>
     <TimeEntryCreateModal
+        :enableEstimatedTime="isAllowedToPerformPremiumAction()"
         v-model:show="showManualTimeEntryModal"></TimeEntryCreateModal>
     <AppLayout title="Dashboard" data-testid="time_view">
         <MainContainer
@@ -135,14 +141,31 @@ function deleteSelected() {
         </MainContainer>
         <TimeEntryMassActionRow
             :selected-time-entries="selectedTimeEntries"
+            :enableEstimatedTime="isAllowedToPerformPremiumAction()"
             @submit="clearSelectionAndState"
             :all-selected="selectedTimeEntries.length === timeEntries.length"
             @select-all="selectedTimeEntries = [...timeEntries]"
             @unselect-all="selectedTimeEntries = []"
-            :delete-selected="deleteSelected"></TimeEntryMassActionRow>
+            :delete-selected="deleteSelected"
+            :projects="projects"
+            :tasks="tasks"
+            :tags="tags"
+            :currency="getOrganizationCurrencyString()"
+            :clients="clients"
+            :update-time-entries="
+                (args) =>
+                    updateTimeEntries(
+                        selectedTimeEntries.map((timeEntry) => timeEntry.id),
+                        args
+                    )
+            "
+            :create-project="createProject"
+            :create-client="createClient"
+            :createTag="createTag"></TimeEntryMassActionRow>
         <TimeEntryGroupedTable
             v-model:selected="selectedTimeEntries"
             :createProject
+            :enableEstimatedTime="isAllowedToPerformPremiumAction()"
             :clients
             :createClient
             :updateTimeEntry

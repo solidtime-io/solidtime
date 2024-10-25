@@ -63,6 +63,7 @@ const props = withDefaults(
         currency: string;
         emptyPlaceholder: string;
         allowReset: boolean;
+        enableEstimatedTime: boolean;
     }>(),
     {
         showBadgeBorder: true,
@@ -704,6 +705,7 @@ const showCreateProject = ref(false);
     </Dropdown>
     <ProjectCreateModal
         :createClient
+        :enableEstimatedTime="enableEstimatedTime"
         :currency="currency"
         :clients="clients"
         :createProject

@@ -19,7 +19,6 @@ import EstimatedTimeSection from '@/packages/ui/src/EstimatedTimeSection.vue';
 import InputLabel from '@/packages/ui/src/Input/InputLabel.vue';
 import ProjectEditBillableSection from '@/packages/ui/src/Project/ProjectEditBillableSection.vue';
 import type { Client } from '@/packages/api/src';
-import { isAllowedToPerformPremiumAction } from '@/utils/billing';
 
 const show = defineModel('show', { default: false });
 const saving = ref(false);
@@ -29,6 +28,7 @@ const props = defineProps<{
     createProject: (project: CreateProjectBody) => Promise<Project | undefined>;
     createClient: (client: CreateClientBody) => Promise<Client | undefined>;
     currency: string;
+    enableEstimatedTime: boolean;
 }>();
 
 const activeClients = computed(() => {
@@ -138,7 +138,7 @@ const currentClientName = computed(() => {
                 </div>
                 <div>
                     <EstimatedTimeSection
-                        v-if="isAllowedToPerformPremiumAction()"
+                        v-if="enableEstimatedTime"
                         @submit="submit()"
                         v-model="project.estimated_time"></EstimatedTimeSection>
                 </div>

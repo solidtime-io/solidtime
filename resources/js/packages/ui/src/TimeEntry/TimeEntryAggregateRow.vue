@@ -39,6 +39,7 @@ const props = defineProps<{
     deleteTimeEntries: (timeEntries: TimeEntry[]) => void;
     currency: string;
     selectedTimeEntries: TimeEntry[];
+    enableEstimatedTime: boolean;
 }>();
 const emit = defineEmits<{
     selected: [TimeEntry[]];
@@ -125,6 +126,7 @@ function onSelectChange(event: Event) {
                             :showBadgeBorder="false"
                             @changed="updateProjectAndTask"
                             :project="timeEntry.project_id"
+                            :enableEstimatedTime
                             :currency="currency"
                             :task="
                                 timeEntry.task_id
@@ -174,6 +176,7 @@ function onSelectChange(event: Event) {
             class="w-full border-t border-default-background-separator bg-black/15">
             <TimeEntryRow
                 :projects="projects"
+                :enableEstimatedTime
                 :tasks="tasks"
                 :selected="
                     !!selectedTimeEntries.find(
