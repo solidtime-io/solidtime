@@ -39,6 +39,10 @@ const { createTimeEntry } = useTimeEntriesStore();
 const show = defineModel('show', { default: false });
 const saving = ref(false);
 
+defineProps<{
+    enableEstimatedTime: boolean;
+}>();
+
 async function createProject(
     project: CreateProjectBody
 ): Promise<Project | undefined> {
@@ -135,6 +139,7 @@ async function createTag(tag: string) {
                             size="xlarge"
                             :projects="projects"
                             :tasks="tasks"
+                            :enableEstimatedTime="enableEstimatedTime"
                             v-model:project="timeEntry.project_id"
                             v-model:task="
                                 timeEntry.task_id

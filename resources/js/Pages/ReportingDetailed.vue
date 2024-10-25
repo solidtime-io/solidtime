@@ -64,7 +64,8 @@ import {
 import { useQuery, useQueryClient } from '@tanstack/vue-query';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import { useTimeEntriesStore } from '@/utils/useTimeEntries';
-import TimeEntryMassActionRow from '@/Components/Common/TimeEntry/TimeEntryMassActionRow.vue';
+import TimeEntryMassActionRow from '@/packages/ui/src/TimeEntry/TimeEntryMassActionRow.vue';
+import { isAllowedToPerformPremiumAction } from '@/utils/billing';
 
 const startDate = useSessionStorage<string>(
     'reporting-start-date',
@@ -118,7 +119,8 @@ function getFilterAttributes() {
 const currentTimeEntryStore = useCurrentTimeEntryStore();
 const { currentTimeEntry } = storeToRefs(currentTimeEntryStore);
 const { setActiveState, startLiveTimer } = currentTimeEntryStore;
-const { createTimeEntry, updateTimeEntry } = useTimeEntriesStore();
+const { createTimeEntry, updateTimeEntry, updateTimeEntries } =
+    useTimeEntriesStore();
 
 const { tags } = storeToRefs(useTagsStore());
 
@@ -338,13 +340,27 @@ async function clearSelectionAndState() {
         </div>
         <TimeEntryMassActionRow
             :selected-time-entries="selectedTimeEntries"
+            :enableEstimatedTime="isAllowedToPerformPremiumAction()"
             @submit="clearSelectionAndState"
             :delete-selected="deleteSelected"
             @select-all="selectedTimeEntries = [...timeEntries]"
             @unselect-all="selectedTimeEntries = []"
-            :all-selected="
-                selectedTimeEntries.length === timeEntries.length
-            "></TimeEntryMassActionRow>
+            :all-selected="selectedTimeEntries.length === timeEntries.length"
+            :projects="projects"
+            :tasks="tasks"
+            :tags="tags"
+            :currency="getOrganizationCurrencyString()"
+            :clients="clients"
+            :update-time-entries="
+                (args) =>
+                    updateTimeEntries(
+                        selectedTimeEntries.map((timeEntry) => timeEntry.id),
+                        args
+                    )
+            "
+            :create-project="createProject"
+            :create-client="createClient"
+            :createTag="createTag"></TimeEntryMassActionRow>
         <div class="w-full relative">
             <div v-for="entry in timeEntries" :key="entry.id">
                 <TimeEntryRow
@@ -357,6 +373,7 @@ async function clearSelectionAndState() {
                     "
                     :createClient
                     :createProject
+                    :enableEstimatedTime="isAllowedToPerformPremiumAction()"
                     :projects="projects"
                     :tasks="tasks"
                     :tags="tags"

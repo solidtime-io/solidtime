@@ -13,6 +13,7 @@ import {
 } from '@/packages/api/src';
 import dayjs from 'dayjs';
 import { useNotificationsStore } from '@/utils/notification';
+import type { UpdateMultipleTimeEntriesChangeset } from '@/packages/api/src';
 
 export const useTimeEntriesStore = defineStore('timeEntries', () => {
     const timeEntries = ref<TimeEntry[]>(reactive([]));
@@ -83,7 +84,7 @@ export const useTimeEntriesStore = defineStore('timeEntries', () => {
 
     async function updateTimeEntries(
         ids: string[],
-        changes: Partial<TimeEntry>
+        changes: UpdateMultipleTimeEntriesChangeset
     ) {
         const organizationId = getCurrentOrganizationId();
         if (organizationId) {

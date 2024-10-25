@@ -1,65 +1,48 @@
 <script setup lang="ts">
-import TextInput from '@/packages/ui/src/Input/TextInput.vue';
-import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
+import TextInput from '../Input/TextInput.vue';
+import SecondaryButton from '../Buttons/SecondaryButton.vue';
 import DialogModal from '@/packages/ui/src/DialogModal.vue';
 import { computed, nextTick, ref, watch } from 'vue';
-import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
+import PrimaryButton from '../Buttons/PrimaryButton.vue';
 import TimeTrackerProjectTaskDropdown from '@/packages/ui/src/TimeTracker/TimeTrackerProjectTaskDropdown.vue';
-import InputLabel from '@/packages/ui/src/Input/InputLabel.vue';
-
-import { storeToRefs } from 'pinia';
-import { useTasksStore } from '@/utils/useTasks';
-import { useProjectsStore } from '@/utils/useProjects';
-import { useTagsStore } from '@/utils/useTags';
+import InputLabel from '../Input/InputLabel.vue';
 import {
     type CreateClientBody,
     type CreateProjectBody,
     type Project,
     type Client,
-    api,
     type TimeEntry,
     type UpdateMultipleTimeEntriesChangeset,
 } from '@/packages/api/src';
-import { useClientsStore } from '@/utils/useClients';
-import { getOrganizationCurrencyString } from '@/utils/money';
 import { Badge, Checkbox } from '@/packages/ui/src';
-import SelectDropdown from '../../../packages/ui/src/Input/SelectDropdown.vue';
-import { getCurrentOrganizationId } from '@/utils/useUser';
-import { useNotificationsStore } from '@/utils/notification';
+import SelectDropdown from '../Input/SelectDropdown.vue';
 import TagDropdown from '@/packages/ui/src/Tag/TagDropdown.vue';
-const projectStore = useProjectsStore();
-const { projects } = storeToRefs(projectStore);
-const taskStore = useTasksStore();
-const { tasks } = storeToRefs(taskStore);
-const clientStore = useClientsStore();
-const { clients } = storeToRefs(clientStore);
+import type { Tag, Task } from '@/packages/api/src';
 
 const show = defineModel('show', { default: false });
 const saving = ref(false);
 
-async function createProject(
-    project: CreateProjectBody
-): Promise<Project | undefined> {
-    return await useProjectsStore().createProject(project);
-}
-
 const props = defineProps<{
     timeEntries: TimeEntry[];
+    projects: Project[];
+    tasks: Task[];
+    clients: Client[];
+    tags: Tag[];
+    createProject: (project: CreateProjectBody) => Promise<Project | undefined>;
+    createClient: (client: CreateClientBody) => Promise<Client | undefined>;
+    createTag: (name: string) => Promise<Tag | undefined>;
+    updateTimeEntries: (
+        changeset: UpdateMultipleTimeEntriesChangeset
+    ) => Promise<void>;
+    currency: string;
+    enableEstimatedTime: boolean;
 }>();
 
 const emit = defineEmits<{
     submit: [];
 }>();
 
-async function createClient(
-    body: CreateClientBody
-): Promise<Client | undefined> {
-    return await useClientsStore().createClient(body);
-}
-
 const descriptionInput = ref<HTMLInputElement | null>(null);
-
-const { handleApiRequestNotifications } = useNotificationsStore();
 
 watch(show, (value) => {
     if (value) {
@@ -74,11 +57,6 @@ const taskId = ref<string | null | undefined>(undefined);
 const projectId = ref<string | null>(null);
 const billable = ref<boolean | undefined>(undefined);
 const selectedTags = ref<string[]>([]);
-
-const { tags } = storeToRefs(useTagsStore());
-async function createTag(tag: string) {
-    return await useTagsStore().createTag(tag);
-}
 
 const timeEntryBillable = computed({
     get: () => {
@@ -99,71 +77,48 @@ const timeEntryBillable = computed({
 });
 
 async function submit() {
-    const organizationId = getCurrentOrganizationId();
     saving.value = true;
-    if (organizationId) {
-        const timeEntryUpdatesBody = {} as UpdateMultipleTimeEntriesChangeset;
-        if (description.value && description.value !== '') {
-            timeEntryUpdatesBody.description = description.value;
+    const timeEntryUpdatesBody = {} as UpdateMultipleTimeEntriesChangeset;
+    if (description.value && description.value !== '') {
+        timeEntryUpdatesBody.description = description.value;
+    }
+    if (projectId.value !== null) {
+        if (projectId.value === '') {
+            // "No Project" is selected
+            timeEntryUpdatesBody.project_id = null;
+        } else {
+            timeEntryUpdatesBody.project_id = projectId.value;
         }
-        if (projectId.value !== null) {
-            if (projectId.value === '') {
-                // "No Project" is selected
-                timeEntryUpdatesBody.project_id = null;
-            } else {
-                timeEntryUpdatesBody.project_id = projectId.value;
-            }
-            timeEntryUpdatesBody.task_id = null;
-            if (taskId.value !== undefined) {
-                timeEntryUpdatesBody.task_id = taskId.value;
-            }
+        timeEntryUpdatesBody.task_id = null;
+        if (taskId.value !== undefined) {
+            timeEntryUpdatesBody.task_id = taskId.value;
         }
+    }
 
-        if (billable.value !== undefined) {
-            timeEntryUpdatesBody.billable = billable.value;
-        }
-        if (selectedTags.value.length > 0) {
-            timeEntryUpdatesBody.tags = selectedTags.value;
-        }
-        if (removeAllTags.value) {
-            timeEntryUpdatesBody.tags = [];
-        }
+    if (billable.value !== undefined) {
+        timeEntryUpdatesBody.billable = billable.value;
+    }
+    if (selectedTags.value.length > 0) {
+        timeEntryUpdatesBody.tags = selectedTags.value;
+    }
+    if (removeAllTags.value) {
+        timeEntryUpdatesBody.tags = [];
+    }
 
-        try {
-            await handleApiRequestNotifications(
-                () =>
-                    api.updateMultipleTimeEntries(
-                        {
-                            ids: props.timeEntries.map(
-                                (timeEntry) => timeEntry.id
-                            ),
-                            changes: {
-                                ...timeEntryUpdatesBody,
-                            },
-                        },
-                        {
-                            params: {
-                                organization: organizationId,
-                            },
-                        }
-                    ),
-                'Time entries updated',
-                'Failed to update time entries',
-                () => {
-                    show.value = false;
-                    emit('submit');
-                    description.value = '';
-                    projectId.value = null;
-                    taskId.value = undefined;
-                    selectedTags.value = [];
-                    billable.value = undefined;
-                    saving.value = false;
-                    removeAllTags.value = false;
-                }
-            );
-        } catch (e) {
-            saving.value = false;
-        }
+    try {
+        await props.updateTimeEntries({ ...timeEntryUpdatesBody });
+
+        show.value = false;
+        emit('submit');
+        description.value = '';
+        projectId.value = null;
+        taskId.value = undefined;
+        selectedTags.value = [];
+        billable.value = undefined;
+        saving.value = false;
+        removeAllTags.value = false;
+    } catch (e) {
+        saving.value = false;
     }
 }
 const removeAllTags = ref(false);
@@ -200,11 +155,12 @@ watch(removeAllTags, () => {
                         :clients
                         :createProject
                         :createClient
-                        :currency="getOrganizationCurrencyString()"
+                        :currency="currency"
                         class="mt-1"
                         empty-placeholder="Select project..."
                         allow-reset
                         size="xlarge"
+                        :enableEstimatedTime
                         :projects="projects"
                         :tasks="tasks"
                         v-model:project="projectId"

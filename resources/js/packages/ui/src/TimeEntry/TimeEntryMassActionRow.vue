@@ -1,8 +1,17 @@
 <script setup lang="ts">
 import MainContainer from '@/packages/ui/src/MainContainer.vue';
 import { PencilSquareIcon, TrashIcon } from '@heroicons/vue/20/solid';
-import TimeEntryMassUpdateModal from '@/Components/Common/TimeEntry/TimeEntryMassUpdateModal.vue';
-import type { TimeEntry } from '@/packages/api/src';
+import TimeEntryMassUpdateModal from '@/packages/ui/src/TimeEntry/TimeEntryMassUpdateModal.vue';
+import type {
+    Client,
+    CreateClientBody,
+    CreateProjectBody,
+    Project,
+    Tag,
+    Task,
+    TimeEntry,
+    UpdateMultipleTimeEntriesChangeset,
+} from '@/packages/api/src';
 import { ref } from 'vue';
 import { twMerge } from 'tailwind-merge';
 import { Checkbox, InputLabel } from '@/packages/ui/src';
@@ -12,6 +21,18 @@ const props = defineProps<{
     deleteSelected: () => void;
     class?: string;
     allSelected: boolean;
+    projects: Project[];
+    tasks: Task[];
+    tags: Tag[];
+    clients: Client[];
+    createTag: (name: string) => Promise<Tag | undefined>;
+    createProject: (project: CreateProjectBody) => Promise<Project | undefined>;
+    createClient: (client: CreateClientBody) => Promise<Client | undefined>;
+    updateTimeEntries: (
+        changeset: UpdateMultipleTimeEntriesChangeset
+    ) => Promise<void>;
+    currency: string;
+    enableEstimatedTime: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -25,6 +46,16 @@ const showMassUpdateModal = ref(false);
 
 <template>
     <TimeEntryMassUpdateModal
+        :projects
+        :tasks
+        :tags
+        :clients
+        :createTag
+        :createProject
+        :createClient
+        :updateTimeEntries
+        :enableEstimatedTime
+        :currency
         :time-entries="selectedTimeEntries"
         @submit="emit('submit')"
         v-model:show="showMassUpdateModal"></TimeEntryMassUpdateModal>

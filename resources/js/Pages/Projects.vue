@@ -22,6 +22,7 @@ import type {
 import { getOrganizationCurrencyString } from '@/utils/money';
 import { getCurrentRole } from '@/utils/useUser';
 import { useOrganizationStore } from '@/utils/useOrganization';
+import { isAllowedToPerformPremiumAction } from '@/utils/billing';
 
 onMounted(() => {
     useProjectsStore().fetchProjects();
@@ -94,6 +95,7 @@ const showBillableRate = computed(() => {
             </SecondaryButton>
             <ProjectCreateModal
                 :createProject
+                :enableEstimatedTime="isAllowedToPerformPremiumAction"
                 :createClient
                 :currency="getOrganizationCurrencyString()"
                 :clients="clients"
