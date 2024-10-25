@@ -6,6 +6,7 @@ namespace App\Http\Requests\V1\TimeEntry;
 
 use App\Enums\ExportFormat;
 use App\Enums\TimeEntryAggregationType;
+use App\Enums\TimeEntryAggregationTypeInterval;
 use App\Models\Client;
 use App\Models\Member;
 use App\Models\Organization;
@@ -28,7 +29,7 @@ class TimeEntryAggregateExportRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return ValidationRule
+     * @return array<string, array<string|ValidationRule|\Illuminate\Contracts\Validation\Rule>>
      */
     public function rules(): array
     {
@@ -39,15 +40,21 @@ class TimeEntryAggregateExportRequest extends FormRequest
                 Rule::enum(ExportFormat::class),
             ],
             'group' => [
-                'nullable',
-                'required_with:group_2',
+                'required',
                 Rule::enum(TimeEntryAggregationType::class),
             ],
 
             'sub_group' => [
-                'nullable',
+                'required',
                 Rule::enum(TimeEntryAggregationType::class),
             ],
+
+            'history_group' => [
+                'required',
+                'nullable',
+                Rule::enum(TimeEntryAggregationTypeInterval::class),
+            ],
+
             // Filter by member ID
             'member_id' => [
                 'string',
@@ -126,14 +133,14 @@ class TimeEntryAggregateExportRequest extends FormRequest
             ],
             // Filter only time entries that have a start date after the given timestamp in UTC (example: 2021-01-01T00:00:00Z)
             'start' => [
-                'nullable',
+                'required',
                 'string',
                 'date_format:Y-m-d\TH:i:s\Z',
                 'before:end',
             ],
             // Filter only time entries that have a start date before the given timestamp in UTC (example: 2021-01-01T00:00:00Z)
             'end' => [
-                'nullable',
+                'required',
                 'string',
                 'date_format:Y-m-d\TH:i:s\Z',
             ],
@@ -154,29 +161,29 @@ class TimeEntryAggregateExportRequest extends FormRequest
         ];
     }
 
-    public function getGroup(): ?TimeEntryAggregationType
+    public function getGroup(): TimeEntryAggregationType
     {
-        return $this->input('group') !== null ? TimeEntryAggregationType::from($this->input('group')) : null;
+        return TimeEntryAggregationType::from($this->input('group'));
     }
 
-    public function getSubGroup(): ?TimeEntryAggregationType
+    public function getSubGroup(): TimeEntryAggregationType
     {
-        return $this->input('sub_group') !== null ? TimeEntryAggregationType::from($this->input('sub_group')) : null;
+        return TimeEntryAggregationType::from($this->input('sub_group'));
     }
 
-    public function getFillGapsInTimeGroups(): bool
+    public function getHistoryGroup(): TimeEntryAggregationType
     {
-        return $this->has('fill_gaps_in_time_groups') && $this->input('fill_gaps_in_time_groups') === 'true';
+        return TimeEntryAggregationType::fromInterval(TimeEntryAggregationTypeInterval::from($this->input('history_group')));
     }
 
-    public function getStart(): ?Carbon
+    public function getStart(): Carbon
     {
-        return $this->input('start') !== null ? Carbon::createFromFormat('Y-m-d\TH:i:s\Z', $this->input('start'), 'UTC') : null;
+        return Carbon::createFromFormat('Y-m-d\TH:i:s\Z', $this->input('start'), 'UTC');
     }
 
-    public function getEnd(): ?Carbon
+    public function getEnd(): Carbon
     {
-        return $this->input('end') !== null ? Carbon::createFromFormat('Y-m-d\TH:i:s\Z', $this->input('end'), 'UTC') : null;
+        return Carbon::createFromFormat('Y-m-d\TH:i:s\Z', $this->input('end'), 'UTC');
     }
 
     public function getFormatValue(): ExportFormat

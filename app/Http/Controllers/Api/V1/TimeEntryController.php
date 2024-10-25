@@ -27,9 +27,12 @@ use App\Models\Task;
 use App\Models\TimeEntry;
 use App\Service\ReportExport\TimeEntriesDetailedCsvExport;
 use App\Service\ReportExport\TimeEntriesDetailedExport;
+use App\Service\ReportExport\TimeEntriesReportExport;
 use App\Service\TimeEntryAggregationService;
 use App\Service\TimeEntryFilter;
 use App\Service\TimezoneService;
+use Gotenberg\Exceptions\GotenbergApiErrored;
+use Gotenberg\Exceptions\NoOutputFileInResponse;
 use Gotenberg\Gotenberg;
 use Gotenberg\Stream;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -178,7 +181,6 @@ class TimeEntryController extends Controller
             'tagsRelation',
         ]);
         $format = $request->getFormatValue();
-        //$format = ExportFormat::PDF;
         $filename = 'time-entries-export-'.now()->format('Y-m-d_H-i-s').'.'.$format->getFileExtension();
         $folderPath = 'exports';
         $path = $folderPath.'/'.$filename;
@@ -190,8 +192,14 @@ class TimeEntryController extends Controller
                 throw new PdfRendererIsNotConfiguredException;
             }
             $viewFile = file_get_contents(resource_path('views/reports/time-entry-index.blade.php'));
+            if ($viewFile === false) {
+                throw new \LogicException('View file not found');
+            }
             $html = Blade::render($viewFile, ['timeEntries' => $timeEntriesQuery->get()]);
             $footerViewFile = file_get_contents(resource_path('views/reports/time-entry-index-footer.blade.php'));
+            if ($footerViewFile === false) {
+                throw new \LogicException('View file not found');
+            }
             $footerHtml = Blade::render($footerViewFile);
             $request = Gotenberg::chromium(config('services.gotenberg.url'))
                 ->pdf()
@@ -253,7 +261,7 @@ class TimeEntryController extends Controller
      *
      * @throws AuthorizationException
      */
-    public function aggregate(Organization $organization, TimeEntryAggregateRequest $request): array
+    public function aggregate(Organization $organization, TimeEntryAggregateRequest $request, TimeEntryAggregationService $timeEntryAggregationService): array
     {
         /** @var Member|null $member */
         $member = $request->has('member_id') ? Member::query()->findOrFail($request->input('member_id')) : null;
@@ -262,8 +270,22 @@ class TimeEntryController extends Controller
         } else {
             $this->checkPermission($organization, 'time-entries:view:all');
         }
+        $user = $this->user();
 
-        $aggregatedData = $this->getTimeEntriesAggregateQuery($organization, $request, $member);
+        $group1Type = $request->getGroup();
+        $group2Type = $request->getSubGroup();
+        $timeEntriesAggregateQuery = $this->getTimeEntriesAggregateQuery($organization, $request, $member);
+
+        $aggregatedData = $timeEntryAggregationService->getAggregatedTimeEntries(
+            $timeEntriesAggregateQuery,
+            $group1Type,
+            $group2Type,
+            $user->timezone,
+            $user->week_start,
+            $request->getFillGapsInTimeGroups(),
+            $request->getStart(),
+            $request->getEnd()
+        );
 
         return [
             'data' => $aggregatedData,
@@ -274,10 +296,13 @@ class TimeEntryController extends Controller
      * Export aggregated time entries in organization
      *
      * @operationId exportAggregatedTimeEntries
-     * @throws AuthorizationException
      *
+     * @throws AuthorizationException
+     * @throws PdfRendererIsNotConfiguredException
+     * @throws GotenbergApiErrored
+     * @throws NoOutputFileInResponse
      */
-    public function aggregateExport(Organization $organization, TimeEntryAggregateExportRequest $request): JsonResponse
+    public function aggregateExport(Organization $organization, TimeEntryAggregateExportRequest $request, TimeEntryAggregationService $timeEntryAggregationService): JsonResponse
     {
         /** @var Member|null $member */
         $member = $request->has('member_id') ? Member::query()->findOrFail($request->input('member_id')) : null;
@@ -286,24 +311,82 @@ class TimeEntryController extends Controller
         } else {
             $this->checkPermission($organization, 'time-entries:view:all');
         }
+        $user = $this->user();
 
-        $aggregatedData = $this->getTimeEntriesAggregateQuery($organization, $request, $member);
+        $group = $request->getGroup();
+        $subGroup = $request->getSubGroup();
+        $timeEntriesAggregateQuery = $this->getTimeEntriesAggregateQuery($organization, $request, $member);
+
+        $aggregatedData = $timeEntryAggregationService->getAggregatedTimeEntriesWithDescriptions(
+            $timeEntriesAggregateQuery->clone(),
+            $group,
+            $subGroup,
+            $user->timezone,
+            $user->week_start,
+            false,
+            $request->getStart(),
+            $request->getEnd()
+        );
+        $dataHistoryChart = $timeEntryAggregationService->getAggregatedTimeEntries(
+            $timeEntriesAggregateQuery->clone(),
+            $request->getHistoryGroup(),
+            null,
+            $user->timezone,
+            $user->week_start,
+            true,
+            $request->getStart(),
+            $request->getEnd()
+        );
+        $currency = $organization->currency;
+        $timezone = app(TimezoneService::class)->getTimezoneFromUser($this->user());
 
         $format = $request->getFormatValue();
-        //$format = ExportFormat::PDF;
         $filename = 'time-entries-report-'.now()->format('Y-m-d_H-i-s').'.'.$format->getFileExtension();
         $folderPath = 'exports';
         $path = $folderPath.'/'.$filename;
 
-        if ($format === ExportFormat::CSV) {
-            // TODO
-        } elseif ($format === ExportFormat::PDF) {
+        if ($format === ExportFormat::PDF) {
             if (config('services.gotenberg.url') === null) {
                 throw new PdfRendererIsNotConfiguredException;
             }
-            // TODO
+            $viewFile = file_get_contents(resource_path('views/reports/time-entry-aggregate-index.blade.php'));
+            if ($viewFile === false) {
+                throw new \LogicException('View file not found');
+            }
+            $html = Blade::render($viewFile, [
+                'aggregatedData' => $aggregatedData,
+                'dataHistoryChart' => $dataHistoryChart,
+                'currency' => $currency,
+                'group' => $group,
+                'subGroup' => $subGroup,
+                'start' => $request->getStart()->timezone($timezone),
+                'end' => $request->getEnd()->timezone($timezone),
+            ]);
+            $footerViewFile = file_get_contents(resource_path('views/reports/time-entry-index-footer.blade.php'));
+            if ($footerViewFile === false) {
+                throw new \LogicException('View file not found');
+            }
+            $footerHtml = Blade::render($footerViewFile);
+            $request = Gotenberg::chromium(config('services.gotenberg.url'))
+                ->pdf()
+                ->pdfa('PDF/A-3b')
+                ->paperSize('8.27', '11.7') // A4
+                ->footer(Stream::string('footer', $footerHtml))
+                ->html(Stream::string('body', $html));
+            $tempFolder = TemporaryDirectory::make();
+            $filenameTemp = Gotenberg::save($request, $tempFolder->path());
+            Storage::disk(config('filesystems.private'))
+                ->putFileAs($folderPath, new File($tempFolder->path($filenameTemp)), $filename);
         } else {
-            // TODO
+            Excel::store(
+                new TimeEntriesReportExport($aggregatedData, $format, $currency, $group, $subGroup),
+                $path,
+                config('filesystems.private'),
+                $format->getExportPackageType(),
+                [
+                    'visibility' => 'private',
+                ]
+            );
         }
 
         return response()->json([
@@ -313,26 +396,9 @@ class TimeEntryController extends Controller
     }
 
     /**
-     * @return array{
-     *       grouped_type: string|null,
-     *       grouped_data: null|array<array{
-     *           key: string|null,
-     *           seconds: int,
-     *           cost: int,
-     *           grouped_type: string|null,
-     *           grouped_data: null|array<array{
-     *               key: string|null,
-     *               seconds: int,
-     *               cost: int,
-     *               grouped_type: null,
-     *               grouped_data: null
-     *           }>
-     *       }>,
-     *       seconds: int,
-     *       cost: int
-     * }
+     * @return Builder<TimeEntry>
      */
-    private function getTimeEntriesAggregateQuery(Organization $organization, TimeEntryAggregateRequest|TimeEntryAggregateExportRequest $request, ?Member $member): array
+    private function getTimeEntriesAggregateQuery(Organization $organization, TimeEntryAggregateRequest|TimeEntryAggregateExportRequest $request, ?Member $member): Builder
     {
         $timeEntriesQuery = TimeEntry::query()
             ->whereBelongsTo($organization, 'organization');
@@ -348,25 +414,8 @@ class TimeEntryController extends Controller
         $filter->addTaskIdsFilter($request->input('task_ids'));
         $filter->addClientIdsFilter($request->input('client_ids'));
         $filter->addBillableFilter($request->input('billable'));
-        $timeEntriesQuery = $filter->get();
 
-        $user = $this->user();
-
-        $group1Type = $request->getGroup();
-        $group2Type = $request->getSubGroup();
-
-        $aggregatedData = app(TimeEntryAggregationService::class)->getAggregatedTimeEntries(
-            $timeEntriesQuery,
-            $group1Type,
-            $group2Type,
-            $user->timezone,
-            $user->week_start,
-            $request->getFillGapsInTimeGroups(),
-            $request->getStart(),
-            $request->getEnd()
-        );
-
-        return $aggregatedData;
+        return $filter->get();
     }
 
     /**

@@ -7,7 +7,11 @@ namespace App\Service;
 use App\Enums\TimeEntryAggregationType;
 use App\Enums\TimeEntryAggregationTypeInterval;
 use App\Enums\Weekday;
+use App\Models\Client;
+use App\Models\Project;
+use App\Models\Task;
 use App\Models\TimeEntry;
+use App\Models\User;
 use Carbon\CarbonTimeZone;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
@@ -133,6 +137,109 @@ class TimeEntryAggregationService
             'grouped_type' => $group1Type?->value,
             'grouped_data' => $group1Response,
         ];
+    }
+
+    /**
+     * @param  Builder<TimeEntry>  $timeEntriesQuery
+     * @return array{
+     *       grouped_type: string|null,
+     *       grouped_data: null|array<array{
+     *           key: string|null,
+     *           description: string|null,
+     *           seconds: int,
+     *           cost: int,
+     *           grouped_type: string|null,
+     *           grouped_data: null|array<array{
+     *               key: string|null,
+     *               description: string|null,
+     *               seconds: int,
+     *               cost: int,
+     *               grouped_type: null,
+     *               grouped_data: null
+     *           }>
+     *       }>,
+     *       seconds: int,
+     *       cost: int
+     * }
+     */
+    public function getAggregatedTimeEntriesWithDescriptions(Builder $timeEntriesQuery, ?TimeEntryAggregationType $group1Type, ?TimeEntryAggregationType $group2Type, string $timezone, Weekday $startOfWeek, bool $fillGapsInTimeGroups, ?Carbon $start, ?Carbon $end): array
+    {
+        $aggregatedTimeEntries = $this->getAggregatedTimeEntries($timeEntriesQuery, $group1Type, $group2Type, $timezone, $startOfWeek, $fillGapsInTimeGroups, $start, $end);
+
+        $keysGroup1 = [];
+        $keysGroup2 = [];
+
+        if ($aggregatedTimeEntries['grouped_data'] !== null) {
+            foreach ($aggregatedTimeEntries['grouped_data'] as $group1) {
+                $keysGroup1[] = $group1['key'];
+                if ($group1['grouped_data'] !== null) {
+                    foreach ($group1['grouped_data'] as $group2) {
+                        $keysGroup2[] = $group2['key'];
+                    }
+                }
+            }
+        }
+
+        $descriptionMapGroup1 = $group1Type !== null ? $this->loadDescriptionMap($keysGroup1, $group1Type) : [];
+        $descriptionMapGroup2 = $group2Type !== null ? $this->loadDescriptionMap($keysGroup2, $group2Type) : [];
+
+        if ($aggregatedTimeEntries['grouped_data'] !== null) {
+            /*
+            $aggregatedTimeEntries['grouped_data'] = array_map(function (array $value) use ($descriptionMapGroup1, $descriptionMapGroup2): array {
+                $value['description'] = $value['key'] !== null ? ($descriptionMapGroup1[$value['key']] ?? null) : null;
+                if ($value['grouped_data'] !== null) {
+                    $value['grouped_data'] = array_map(function (array $value) use ($descriptionMapGroup2): array {
+                        $value['description'] = $value['key'] !== null ? ($descriptionMapGroup2[$value['key']] ?? null) : null;
+
+                        return $value;
+                    }, $value['grouped_data']);
+                }
+
+                return $value;
+            }, $aggregatedTimeEntries['grouped_data']);
+            */
+            foreach ($aggregatedTimeEntries['grouped_data'] as $keyGroup1 => $group1) {
+                $aggregatedTimeEntries['grouped_data'][$keyGroup1]['description'] = $group1['key'] !== null ? ($descriptionMapGroup1[$group1['key']] ?? null) : null;
+                if ($aggregatedTimeEntries['grouped_data'][$keyGroup1]['grouped_data'] !== null) {
+                    foreach ($aggregatedTimeEntries['grouped_data'][$keyGroup1]['grouped_data'] as $keyGroup2 => $group2) {
+                        $aggregatedTimeEntries['grouped_data'][$keyGroup1]['grouped_data'][$keyGroup2]['description'] = $group2['key'] !== null ? ($descriptionMapGroup2[$group2['key']] ?? null) : null;
+                    }
+                }
+            }
+        }
+
+        return $aggregatedTimeEntries;
+    }
+
+    /**
+     * @param  array<int, string>  $keys
+     * @return array<string, string>
+     */
+    private function loadDescriptionMap(array $keys, TimeEntryAggregationType $type): array
+    {
+        if ($type === TimeEntryAggregationType::Client) {
+            return Client::query()
+                ->whereIn('id', $keys)
+                ->pluck('name', 'id')
+                ->toArray();
+        } elseif ($type === TimeEntryAggregationType::User) {
+            return User::query()
+                ->whereIn('id', $keys)
+                ->pluck('name', 'id')
+                ->toArray();
+        } elseif ($type === TimeEntryAggregationType::Project) {
+            return Project::query()
+                ->whereIn('id', $keys)
+                ->pluck('name', 'id')
+                ->toArray();
+        } elseif ($type === TimeEntryAggregationType::Task) {
+            return Task::query()
+                ->whereIn('id', $keys)
+                ->pluck('name', 'id')
+                ->toArray();
+        } else {
+            return [];
+        }
     }
 
     /**

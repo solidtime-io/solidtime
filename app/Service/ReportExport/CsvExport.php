@@ -36,6 +36,8 @@ abstract class CsvExport
 
     private string $folderPath;
 
+    protected const string CARBON_FORMAT = 'Y-m-d\TH:i:sP';
+
     /**
      * @param  Builder<T>  $builder
      */
@@ -51,7 +53,7 @@ abstract class CsvExport
 
     /**
      * @param  T  $model
-     * @return array<string, string|Carbon|null>
+     * @return array<string, string|float|Carbon|null>
      */
     abstract public function mapRow(Model $model): array;
 
@@ -83,7 +85,7 @@ abstract class CsvExport
     }
 
     /**
-     * @param  array<string, string|Carbon|null>  $data
+     * @param  array<string, string|float|Carbon|null>  $data
      * @return array<string, string>
      */
     private function convertRow(array $data): array
@@ -91,7 +93,9 @@ abstract class CsvExport
         $convertedRow = [];
         foreach ($data as $key => $value) {
             if ($value instanceof Carbon) {
-                $convertedRow[$key] = $value->toIso8601String();
+                $convertedRow[$key] = $value->format(static::CARBON_FORMAT);
+            } elseif (is_float($value)) {
+                $convertedRow[$key] = (string) $value;
             } elseif ($value === null) {
                 $convertedRow[$key] = '';
             } else {

@@ -2,8 +2,12 @@
 
 declare(strict_types=1);
 
+use App\Exceptions\Api\PdfRendererIsNotConfiguredException;
 use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\Web\HomeController;
+use Gotenberg\Gotenberg;
+use Gotenberg\Stream;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Jetstream\Jetstream;
@@ -65,5 +69,23 @@ Route::middleware([
     Route::get('/import', function () {
         return Inertia::render('Import');
     })->name('import');
+
+    Route::get('/pdf-test', function () {
+        if (config('services.gotenberg.url') === null) {
+            throw new PdfRendererIsNotConfiguredException;
+        }
+        $viewFile = file_get_contents(resource_path('views/reports/time-entry-aggregate-index.blade.php'));
+        $html = Blade::render($viewFile, ['aggregatedData' => []]);
+        $footerViewFile = file_get_contents(resource_path('views/reports/time-entry-index-footer.blade.php'));
+        $footerHtml = Blade::render($footerViewFile);
+        $request = Gotenberg::chromium(config('services.gotenberg.url'))
+            ->pdf()
+            ->pdfa('PDF/A-3b')
+            ->paperSize('8.27', '11.7') // A4
+            ->footer(Stream::string('footer', $footerHtml))
+            ->html(Stream::string('body', $html));
+
+        return Gotenberg::send($request);
+    });
 
 });

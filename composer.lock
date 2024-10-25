@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5634bfb04c10a875101045a25ac21f1a",
+    "content-hash": "0ae21e521922b7431905a0764dfc0245",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -1407,6 +1407,113 @@
                 "source": "https://github.com/DASPRiD/Enum/tree/1.0.6"
             },
             "time": "2024-08-09T14:30:48+00:00"
+        },
+        {
+            "name": "datomatic/enum-helper",
+            "version": "v1.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/datomatic/enum-helper.git",
+                "reference": "a31986b4a2876e5d942da2816f760d829af52664"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/datomatic/enum-helper/zipball/a31986b4a2876e5d942da2816f760d829af52664",
+                "reference": "a31986b4a2876e5d942da2816f760d829af52664",
+                "shasum": ""
+            },
+            "require": {
+                "ext-ctype": "*",
+                "ext-mbstring": "*",
+                "php": "^8.1"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^3.8",
+                "pestphp/pest": "^1.21",
+                "phpstan/phpstan": "^1.7"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Datomatic\\EnumHelper\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Alberto Peripolli",
+                    "email": "info@albertoperipolli.com"
+                }
+            ],
+            "description": "Simple opinionated framework agnostic PHP 8.1 enum helper",
+            "support": {
+                "issues": "https://github.com/datomatic/enum-helper/issues",
+                "source": "https://github.com/datomatic/enum-helper/tree/v1.1.0"
+            },
+            "time": "2022-10-15T11:27:54+00:00"
+        },
+        {
+            "name": "datomatic/laravel-enum-helper",
+            "version": "v1.1.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/datomatic/laravel-enum-helper.git",
+                "reference": "293fd7d454b3718b5046a08913e4b121552124a9"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/datomatic/laravel-enum-helper/zipball/293fd7d454b3718b5046a08913e4b121552124a9",
+                "reference": "293fd7d454b3718b5046a08913e4b121552124a9",
+                "shasum": ""
+            },
+            "require": {
+                "composer/class-map-generator": "^1.0",
+                "datomatic/enum-helper": "^1.0",
+                "illuminate/support": "^8.0|^9.0|^10.0|^11.0",
+                "illuminate/translation": "^8.0|^9.0|^10.0|^11.0",
+                "jawira/case-converter": "^3.5",
+                "laminas/laminas-code": "^4.0",
+                "php": "^8.1"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^3.8",
+                "orchestra/testbench": "^6.23|^7.0|^9.0",
+                "pestphp/pest": "^1.21|^2.34",
+                "pestphp/pest-plugin-laravel": "^1.2|^2.3",
+                "phpstan/phpstan": "^1.7"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Datomatic\\LaravelEnumHelper\\LaravelEnumHelperServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Datomatic\\LaravelEnumHelper\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Alberto Peripolli",
+                    "email": "info@albertoperipolli.com"
+                }
+            ],
+            "description": "Simple opinionated framework agnostic PHP 8.1 enum helper for Laravel",
+            "support": {
+                "issues": "https://github.com/datomatic/laravel-enum-helper/issues",
+                "source": "https://github.com/datomatic/laravel-enum-helper/tree/v1.1.1"
+            },
+            "time": "2024-03-14T14:36:39+00:00"
         },
         {
             "name": "dedoc/scramble",
@@ -3425,6 +3532,73 @@
             "time": "2024-06-13T01:25:09+00:00"
         },
         {
+            "name": "jawira/case-converter",
+            "version": "v3.5.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/jawira/case-converter.git",
+                "reference": "2be05b98dcb743bef60ab6f849145bd3434ed003"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/jawira/case-converter/zipball/2be05b98dcb743bef60ab6f849145bd3434ed003",
+                "reference": "2be05b98dcb743bef60ab6f849145bd3434ed003",
+                "shasum": ""
+            },
+            "require": {
+                "ext-mbstring": "*",
+                "php": ">=7.4"
+            },
+            "require-dev": {
+                "behat/behat": "^3.0",
+                "phpstan/phpstan": "^1.0",
+                "phpunit/phpunit": "^9.0",
+                "vimeo/psalm": "^4.0"
+            },
+            "suggest": {
+                "pds/skeleton": "PHP Package Development Standards",
+                "phing/phing": "PHP Build Tool"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Jawira\\CaseConverter\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Jawira Portugal",
+                    "email": "dev@tugal.be"
+                }
+            ],
+            "description": "Convert strings between 13 naming conventions: Snake case, Camel case, Pascal case, Kebab case, Ada case, Train case, Cobol case, Macro case, Upper case, Lower case, Sentence case, Title case and Dot notation.",
+            "homepage": "https://jawira.github.io/case-converter/",
+            "keywords": [
+                "Ada case",
+                "Cobol case",
+                "Macro case",
+                "Train case",
+                "camel case",
+                "dot notation",
+                "kebab case",
+                "lower case",
+                "pascal case",
+                "sentence case",
+                "snake case",
+                "title case",
+                "upper case"
+            ],
+            "support": {
+                "issues": "https://github.com/jawira/case-converter/issues",
+                "source": "https://github.com/jawira/case-converter/tree/v3.5.1"
+            },
+            "time": "2022-08-14T11:40:18+00:00"
+        },
+        {
             "name": "justinrainbow/json-schema",
             "version": "5.3.0",
             "source": {
@@ -3750,6 +3924,69 @@
                 "source": "https://github.com/404labfr/laravel-impersonate/tree/1.7.5"
             },
             "time": "2024-03-11T14:26:14+00:00"
+        },
+        {
+            "name": "laminas/laminas-code",
+            "version": "4.14.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/laminas/laminas-code.git",
+                "reference": "562e02b7d85cb9142b5116cc76c4c7c162a11a1c"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/laminas/laminas-code/zipball/562e02b7d85cb9142b5116cc76c4c7c162a11a1c",
+                "reference": "562e02b7d85cb9142b5116cc76c4c7c162a11a1c",
+                "shasum": ""
+            },
+            "require": {
+                "php": "~8.1.0 || ~8.2.0 || ~8.3.0"
+            },
+            "require-dev": {
+                "doctrine/annotations": "^2.0.1",
+                "ext-phar": "*",
+                "laminas/laminas-coding-standard": "^2.5.0",
+                "laminas/laminas-stdlib": "^3.17.0",
+                "phpunit/phpunit": "^10.3.3",
+                "psalm/plugin-phpunit": "^0.19.0",
+                "vimeo/psalm": "^5.15.0"
+            },
+            "suggest": {
+                "doctrine/annotations": "Doctrine\\Common\\Annotations >=1.0 for annotation features",
+                "laminas/laminas-stdlib": "Laminas\\Stdlib component"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Laminas\\Code\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "description": "Extensions to the PHP Reflection API, static code scanning, and code generation",
+            "homepage": "https://laminas.dev",
+            "keywords": [
+                "code",
+                "laminas",
+                "laminasframework"
+            ],
+            "support": {
+                "chat": "https://laminas.dev/chat",
+                "docs": "https://docs.laminas.dev/laminas-code/",
+                "forum": "https://discourse.laminas.dev",
+                "issues": "https://github.com/laminas/laminas-code/issues",
+                "rss": "https://github.com/laminas/laminas-code/releases.atom",
+                "source": "https://github.com/laminas/laminas-code"
+            },
+            "funding": [
+                {
+                    "url": "https://funding.communitybridge.org/projects/laminas-project",
+                    "type": "community_bridge"
+                }
+            ],
+            "time": "2024-06-17T08:50:25+00:00"
         },
         {
             "name": "laminas/laminas-diactoros",

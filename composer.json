@@ -8,6 +8,7 @@
         "php": "8.3.*",
         "ext-zip": "*",
         "brick/money": "^0.9.0",
+        "datomatic/laravel-enum-helper": "^1.1",
         "dedoc/scramble": "dev-main",
         "filament/filament": "^3.2",
         "flowframe/laravel-trend": "^0.2.0",
