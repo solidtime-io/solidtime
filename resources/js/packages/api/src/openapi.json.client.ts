@@ -2675,38 +2675,39 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
             {
                 name: 'group',
                 type: 'Query',
-                schema: z
-                    .enum([
-                        'day',
-                        'week',
-                        'month',
-                        'year',
-                        'user',
-                        'project',
-                        'task',
-                        'client',
-                        'billable',
-                        'description',
-                    ])
-                    .optional(),
+                schema: z.enum([
+                    'day',
+                    'week',
+                    'month',
+                    'year',
+                    'user',
+                    'project',
+                    'task',
+                    'client',
+                    'billable',
+                    'description',
+                ]),
             },
             {
                 name: 'sub_group',
                 type: 'Query',
-                schema: z
-                    .enum([
-                        'day',
-                        'week',
-                        'month',
-                        'year',
-                        'user',
-                        'project',
-                        'task',
-                        'client',
-                        'billable',
-                        'description',
-                    ])
-                    .optional(),
+                schema: z.enum([
+                    'day',
+                    'week',
+                    'month',
+                    'year',
+                    'user',
+                    'project',
+                    'task',
+                    'client',
+                    'billable',
+                    'description',
+                ]),
+            },
+            {
+                name: 'history_group',
+                type: 'Query',
+                schema: z.enum(['day', 'week', 'month', 'year']),
             },
             {
                 name: 'member_id',
@@ -2721,12 +2722,12 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
             {
                 name: 'start',
                 type: 'Query',
-                schema: start,
+                schema: z.string(),
             },
             {
                 name: 'end',
                 type: 'Query',
-                schema: start,
+                schema: z.string(),
             },
             {
                 name: 'active',

@@ -123,7 +123,7 @@ export type TimeEntriesQueryParams = ZodiosQueryParamsByAlias<
 export type AggregatedTimeEntriesQueryParams = ZodiosQueryParamsByAlias<
     SolidTimeApi,
     'getAggregatedTimeEntries'
->;
+> & { start: string; end: string };
 
 export type OrganizationResponse = ZodiosResponseByAlias<
     SolidTimeApi,

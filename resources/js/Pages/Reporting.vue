@@ -75,7 +75,7 @@ const { aggregatedGraphTimeEntries, aggregatedTableTimeEntries } =
 
 const { groupByOptions } = reportingStore;
 
-function getFilterAttributes() {
+function getFilterAttributes(): AggregatedTimeEntriesQueryParams {
     let params: AggregatedTimeEntriesQueryParams = {
         start: getLocalizedDayJs(startDate.value).startOf('day').utc().format(),
         end: getLocalizedDayJs(endDate.value).endOf('day').utc().format(),
@@ -103,16 +103,12 @@ function getFilterAttributes() {
 }
 
 function updateGraphReporting() {
-    const diffInDays = getDayJsInstance()(endDate.value).diff(
-        getDayJsInstance()(startDate.value),
-        'd'
-    );
     const params = getFilterAttributes();
     if (getCurrentRole() === 'employee') {
         params.member_id = getCurrentMembershipId();
     }
     params.fill_gaps_in_time_groups = 'true';
-    params.group = getOptimalGroupingOption(diffInDays);
+    params.group = getOptimalGroupingOption(startDate.value, endDate.value);
     useReportingStore().fetchGraphReporting(params);
 }
 
@@ -139,10 +135,18 @@ function updateReporting() {
     updateTableReporting();
 }
 
-function getOptimalGroupingOption(diff: number): 'day' | 'week' | 'month' {
-    if (diff <= 31) {
+function getOptimalGroupingOption(
+    startDate: string,
+    endDate: string
+): 'day' | 'week' | 'month' {
+    const diffInDays = getDayJsInstance()(endDate).diff(
+        getDayJsInstance()(startDate),
+        'd'
+    );
+
+    if (diffInDays <= 31) {
         return 'day';
-    } else if (diff <= 200) {
+    } else if (diffInDays <= 200) {
         return 'week';
     } else {
         return 'month';
@@ -172,6 +176,10 @@ async function downloadExport(format: ExportFormat) {
                         ...getFilterAttributes(),
                         group: group.value,
                         sub_group: subGroup.value,
+                        history_group: getOptimalGroupingOption(
+                            startDate.value,
+                            endDate.value
+                        ),
                         format: format,
                     },
                 }),
@@ -203,7 +211,7 @@ async function downloadExport(format: ExportFormat) {
                 </TabBar>
             </div>
             <ReportingExportButton
-                @submit="downloadExport"></ReportingExportButton>
+                :download="downloadExport"></ReportingExportButton>
         </MainContainer>
         <div class="py-2.5 w-full border-b border-default-background-separator">
             <MainContainer

@@ -262,7 +262,7 @@ async function downloadExport(format: ExportFormat) {
                 </TabBar>
             </div>
             <ReportingExportButton
-                @submit="downloadExport"></ReportingExportButton>
+                :download="downloadExport"></ReportingExportButton>
         </MainContainer>
         <div class="py-2.5 w-full border-b border-default-background-separator">
             <MainContainer
