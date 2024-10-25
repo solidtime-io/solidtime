@@ -2,16 +2,19 @@
 import type { HtmlButtonType } from '@/types/dom';
 import { twMerge } from 'tailwind-merge';
 import { type Component } from 'vue';
+import LoadingSpinner from '../LoadingSpinner.vue';
 
 const props = withDefaults(
     defineProps<{
         type: HtmlButtonType;
         icon?: Component;
         size: 'small' | 'base';
+        loading: boolean;
     }>(),
     {
         type: 'button',
         size: 'base',
+        loading: false,
     }
 );
 
@@ -24,6 +27,7 @@ const sizeClasses = {
 <template>
     <button
         :type="type"
+        :disabled="loading"
         :class="
             twMerge(
                 'bg-button-secondary-background border border-button-secondary-border hover:bg-button-secondary-background-hover shadow-sm transition text-white rounded-lg font-semibold inline-flex items-center space-x-1.5 focus-visible:border-input-border-active focus:outline-none focus:ring-0 disabled:opacity-25 ease-in-out',
@@ -34,10 +38,11 @@ const sizeClasses = {
             :class="
                 twMerge('flex items-center ', props.icon ? 'space-x-1.5' : '')
             ">
+            <LoadingSpinner v-if="loading"></LoadingSpinner>
             <component
-                v-if="props.icon"
+                v-if="props.icon && !loading"
                 :is="props.icon"
-                class="w-4 sm:w-5 h-4 sm:h-5 -ml-0.5 sm:-ml-1"></component>
+                class="text-text-tertiary w-4 -ml-0.5 mr-1"></component>
             <span>
                 <slot />
             </span>
