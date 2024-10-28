@@ -28,6 +28,7 @@ import type {
 import { useClientsStore } from '@/utils/useClients';
 import TimePicker from '@/packages/ui/src/Input/TimePicker.vue';
 import { getOrganizationCurrencyString } from '@/utils/money';
+import { canCreateProjects } from '@/utils/permissions';
 const projectStore = useProjectsStore();
 const { projects } = storeToRefs(projectStore);
 const taskStore = useTasksStore();
@@ -134,6 +135,7 @@ async function createTag(tag: string) {
                             :clients
                             :createProject
                             :createClient
+                            :canCreateProject="canCreateProjects()"
                             :currency="getOrganizationCurrencyString()"
                             class="mt-1"
                             size="xlarge"

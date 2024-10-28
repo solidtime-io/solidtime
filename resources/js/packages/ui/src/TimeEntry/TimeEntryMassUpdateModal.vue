@@ -36,6 +36,7 @@ const props = defineProps<{
     ) => Promise<void>;
     currency: string;
     enableEstimatedTime: boolean;
+    canCreateProject: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -156,6 +157,7 @@ watch(removeAllTags, () => {
                         :createProject
                         :createClient
                         :currency="currency"
+                        :canCreateProject
                         class="mt-1"
                         empty-placeholder="Select project..."
                         allow-reset

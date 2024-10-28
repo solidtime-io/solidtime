@@ -64,6 +64,7 @@ const props = withDefaults(
         emptyPlaceholder: string;
         allowReset: boolean;
         enableEstimatedTime: boolean;
+        canCreateProject: boolean;
     }>(),
     {
         showBadgeBorder: true,
@@ -532,7 +533,7 @@ const showCreateProject = ref(false);
 </script>
 
 <template>
-    <div v-if="projects.length === 0">
+    <div v-if="projects.length === 0 && canCreateProject">
         <Badge
             @click="showCreateProject = true"
             size="large"
@@ -689,7 +690,9 @@ const showCreateProject = ref(false);
                     </template>
                 </template>
             </div>
-            <div class="hover:bg-card-background-active rounded-b-lg">
+            <div
+                v-if="canCreateProject"
+                class="hover:bg-card-background-active rounded-b-lg">
                 <button
                     @click="
                         open = false;

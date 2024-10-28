@@ -29,6 +29,7 @@ import { getOrganizationCurrencyString } from '@/utils/money';
 import TimeEntryMassActionRow from '@/packages/ui/src/TimeEntry/TimeEntryMassActionRow.vue';
 import type { UpdateMultipleTimeEntriesChangeset } from '@/packages/api/src';
 import { isAllowedToPerformPremiumAction } from '@/utils/billing';
+import { canCreateProjects } from '@/utils/permissions';
 
 const timeEntriesStore = useTimeEntriesStore();
 const { timeEntries, allTimeEntriesLoaded } = storeToRefs(timeEntriesStore);
@@ -142,6 +143,7 @@ function deleteSelected() {
         <TimeEntryMassActionRow
             :selected-time-entries="selectedTimeEntries"
             :enableEstimatedTime="isAllowedToPerformPremiumAction()"
+            :canCreateProject="canCreateProjects()"
             @submit="clearSelectionAndState"
             :all-selected="selectedTimeEntries.length === timeEntries.length"
             @select-all="selectedTimeEntries = [...timeEntries]"
@@ -166,6 +168,7 @@ function deleteSelected() {
             v-model:selected="selectedTimeEntries"
             :createProject
             :enableEstimatedTime="isAllowedToPerformPremiumAction()"
+            :canCreateProject="canCreateProjects()"
             :clients
             :createClient
             :updateTimeEntry

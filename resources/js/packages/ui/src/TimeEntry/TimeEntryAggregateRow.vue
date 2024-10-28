@@ -40,6 +40,7 @@ const props = defineProps<{
     currency: string;
     selectedTimeEntries: TimeEntry[];
     enableEstimatedTime: boolean;
+    canCreateProject: boolean;
 }>();
 const emit = defineEmits<{
     selected: [TimeEntry[]];
@@ -121,6 +122,7 @@ function onSelectChange(event: Event) {
                             :clients
                             :createProject
                             :createClient
+                            :canCreateProject
                             :projects="projects"
                             :tasks="tasks"
                             :showBadgeBorder="false"
@@ -177,6 +179,7 @@ function onSelectChange(event: Event) {
             <TimeEntryRow
                 :projects="projects"
                 :enableEstimatedTime
+                :canCreateProject
                 :tasks="tasks"
                 :selected="
                     !!selectedTimeEntries.find(

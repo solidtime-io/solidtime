@@ -38,6 +38,7 @@ const props = defineProps<{
     createClient: (client: CreateClientBody) => Promise<Client | undefined>;
     currency: string;
     enableEstimatedTime: boolean;
+    canCreateProject: boolean;
 }>();
 
 const groupedTimeEntries = computed(() => {
@@ -161,6 +162,7 @@ function unselectAllTimeEntries(value: TimeEntriesGroupedByType[]) {
         <template v-for="entry in value" :key="entry.id">
             <TimeEntryAggregateRow
                 :createProject
+                :canCreateProject
                 :enableEstimatedTime
                 :selected-time-entries="selectedTimeEntries"
                 @selected="
@@ -197,6 +199,7 @@ function unselectAllTimeEntries(value: TimeEntriesGroupedByType[]) {
             <TimeEntryRow
                 :createClient
                 :enableEstimatedTime
+                :canCreateProject
                 :createProject
                 :projects="projects"
                 :selected="
