@@ -66,6 +66,7 @@ import { getCurrentOrganizationId } from '@/utils/useUser';
 import { useTimeEntriesStore } from '@/utils/useTimeEntries';
 import TimeEntryMassActionRow from '@/packages/ui/src/TimeEntry/TimeEntryMassActionRow.vue';
 import { isAllowedToPerformPremiumAction } from '@/utils/billing';
+import { canCreateProjects } from '@/utils/permissions';
 
 const startDate = useSessionStorage<string>(
     'reporting-start-date',
@@ -340,6 +341,7 @@ async function clearSelectionAndState() {
         </div>
         <TimeEntryMassActionRow
             :selected-time-entries="selectedTimeEntries"
+            :canCreateProject="canCreateProjects()"
             :enableEstimatedTime="isAllowedToPerformPremiumAction()"
             @submit="clearSelectionAndState"
             :delete-selected="deleteSelected"
@@ -366,6 +368,7 @@ async function clearSelectionAndState() {
                 <TimeEntryRow
                     :selected="selectedTimeEntries.includes(entry)"
                     @selected="selectedTimeEntries.push(entry)"
+                    :canCreateProject="canCreateProjects()"
                     @unselected="
                         selectedTimeEntries = selectedTimeEntries.filter(
                             (item) => item.id !== entry.id

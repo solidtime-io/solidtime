@@ -33,6 +33,7 @@ const props = defineProps<{
     ) => Promise<void>;
     currency: string;
     enableEstimatedTime: boolean;
+    canCreateProject: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -55,6 +56,7 @@ const showMassUpdateModal = ref(false);
         :createClient
         :updateTimeEntries
         :enableEstimatedTime
+        :canCreateProject
         :currency
         :time-entries="selectedTimeEntries"
         @submit="emit('submit')"

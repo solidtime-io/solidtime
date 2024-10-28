@@ -34,6 +34,7 @@ const props = defineProps<{
     isActive: boolean;
     currency: string;
     enableEstimatedTime: boolean;
+    canCreateProject: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -110,6 +111,7 @@ function updateTimeEntryDescription() {
                     class="flex items-center w-[130px] @2xl:w-auto shrink min-w-0">
                     <TimeTrackerProjectTaskDropdown
                         :createClient
+                        :canCreateProject
                         :clients
                         :createProject
                         :currency="currency"

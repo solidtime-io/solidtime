@@ -25,6 +25,7 @@ import TimeTrackerRunningInDifferentOrganizationOverlay from '@/packages/ui/src/
 import { useClientsStore } from '@/utils/useClients';
 import { getOrganizationCurrencyString } from '@/utils/money';
 import { isAllowedToPerformPremiumAction } from '@/utils/billing';
+import { canCreateProjects } from '@/utils/permissions';
 
 const page = usePage<{
     auth: {
@@ -113,6 +114,7 @@ const { tags } = storeToRefs(useTagsStore());
         <TimeTrackerControls
             :createProject
             :enableEstimatedTime="isAllowedToPerformPremiumAction()"
+            :canCreateProject="canCreateProjects()"
             :createClient
             :clients
             :tags

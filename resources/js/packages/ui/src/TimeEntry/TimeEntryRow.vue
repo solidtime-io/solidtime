@@ -38,6 +38,7 @@ const props = defineProps<{
     showMember?: boolean;
     showDate?: boolean;
     selected?: boolean;
+    canCreateProject: boolean;
     enableEstimatedTime: boolean;
 }>();
 
@@ -111,6 +112,7 @@ function onSelectChange(event: Event) {
                     <TimeTrackerProjectTaskDropdown
                         :createProject
                         :createClient
+                        :canCreateProject
                         :clients
                         :projects="projects"
                         :tasks="tasks"
