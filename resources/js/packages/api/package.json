@@ -1,6 +1,6 @@
 {
     "name": "@solidtime/api",
-    "version": "0.0.3",
+    "version": "0.0.4",
     "description": "Package containing the solidtime api client and type declarations",
     "main": "./dist/solidtime-api.umd.cjs",
     "module": "./dist/solidtime-api.js",
