@@ -65,9 +65,19 @@ import { isAllowedToPerformPremiumAction } from '@/utils/billing';
                     v-if="projects.length === 0">
                     <FolderPlusIcon
                         class="w-8 text-icon-default inline pb-2"></FolderPlusIcon>
-                    <h3 class="text-white font-semibold">No projects found</h3>
-                    <p class="pb-5" v-if="canCreateProjects()">
-                        Create your first project now!
+                    <h3 class="text-white font-semibold">
+                        {{
+                            canCreateProjects()
+                                ? 'No projects found'
+                                : 'You are not a member of any projects'
+                        }}
+                    </h3>
+                    <p class="pb-5 max-w-md mx-auto text-sm pt-1">
+                        {{
+                            canCreateProjects()
+                                ? 'Create your first project now!'
+                                : 'Ask your manager to add you to a project as a team member.'
+                        }}
                     </p>
                     <SecondaryButton
                         v-if="canCreateProjects()"
