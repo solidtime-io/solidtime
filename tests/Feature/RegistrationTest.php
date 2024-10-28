@@ -63,6 +63,36 @@ class RegistrationTest extends TestCase
         Event::assertNotDispatched(NewsletterRegistered::class);
     }
 
+    public function test_new_user_can_not_register_with_likely_invalid_domain(): void
+    {
+        // Act
+        $response = $this->post('/register', [
+            'name' => 'Test User',
+            'email' => 'peter.test@gmail',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+            'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature(),
+        ]);
+
+        // Assert
+        $response->assertInvalid(['email']);
+    }
+
+    public function test_new_user_can_register_with_uppercase_email(): void
+    {
+        // Act
+        $response = $this->post('/register', [
+            'name' => 'Test User',
+            'email' => 'PETER.test@gmail.com ',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+            'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature(),
+        ]);
+
+        // Assert
+        $response->assertValid(['email']);
+    }
+
     public function test_new_users_can_consent_to_newsletter_during_registration(): void
     {
         // Arrange

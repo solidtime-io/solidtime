@@ -43,7 +43,7 @@ class CreateNewUser implements CreatesNewUsers
             'email' => [
                 'required',
                 'string',
-                'email',
+                'email:rfc,strict',
                 'max:255',
                 UniqueEloquent::make(User::class, 'email', function (Builder $builder): Builder {
                     /** @var Builder<User> $builder */
