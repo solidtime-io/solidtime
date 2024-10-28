@@ -155,7 +155,7 @@ function unselectAllTimeEntries(value: TimeEntriesGroupedByType[]) {
             @select-all="selectAllTimeEntries(value)"
             @unselect-all="unselectAllTimeEntries(value)"
             :checked="
-                value.every((timeEntry) =>
+                value.every((timeEntry: TimeEntry) =>
                     selectedTimeEntries.includes(timeEntry)
                 )
             "></TimeEntryRowHeading>
@@ -166,7 +166,7 @@ function unselectAllTimeEntries(value: TimeEntriesGroupedByType[]) {
                 :enableEstimatedTime
                 :selected-time-entries="selectedTimeEntries"
                 @selected="
-                    (timeEntries) => {
+                    (timeEntries: TimeEntry[]) => {
                         selectedTimeEntries = [
                             ...selectedTimeEntries,
                             ...timeEntries,
@@ -174,11 +174,12 @@ function unselectAllTimeEntries(value: TimeEntriesGroupedByType[]) {
                     }
                 "
                 @unselected="
-                    (timeEntriesToUnselect) => {
+                    (timeEntriesToUnselect: TimeEntry[]) => {
                         selectedTimeEntries = selectedTimeEntries.filter(
-                            (item) =>
+                            (item: TimeEntry) =>
                                 !timeEntriesToUnselect.find(
-                                    (filterEntry) => filterEntry.id === item.id
+                                    (filterEntry: TimeEntry) =>
+                                        filterEntry.id === item.id
                                 )
                         );
                     }
@@ -204,13 +205,13 @@ function unselectAllTimeEntries(value: TimeEntriesGroupedByType[]) {
                 :projects="projects"
                 :selected="
                     !!selectedTimeEntries.find(
-                        (filterEntry) => filterEntry.id === entry.id
+                        (filterEntry: TimeEntry) => filterEntry.id === entry.id
                     )
                 "
                 @selected="selectedTimeEntries.push(entry)"
                 @unselected="
                     selectedTimeEntries = selectedTimeEntries.filter(
-                        (item) => item.id !== entry.id
+                        (item: TimeEntry) => item.id !== entry.id
                     )
                 "
                 :tasks="tasks"

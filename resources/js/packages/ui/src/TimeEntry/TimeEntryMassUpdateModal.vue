@@ -128,6 +128,7 @@ watch(removeAllTags, () => {
         selectedTags.value = [];
     }
 });
+type SelectOption = { label: string; value: string };
 </script>
 
 <template>
@@ -200,8 +201,12 @@ watch(removeAllTags, () => {
                     <div class="flex">
                         <SelectDropdown
                             v-model="timeEntryBillable"
-                            :get-key-from-item="(item) => item.value"
-                            :get-name-for-item="(item) => item.label"
+                            :get-key-from-item="
+                                (item: SelectOption) => item.value
+                            "
+                            :get-name-for-item="
+                                (item: SelectOption) => item.label
+                            "
                             :items="[
                                 {
                                     label: 'Keep current billable status',

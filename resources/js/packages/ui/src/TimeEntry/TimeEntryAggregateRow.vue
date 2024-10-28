@@ -183,7 +183,8 @@ function onSelectChange(event: Event) {
                 :tasks="tasks"
                 :selected="
                     !!selectedTimeEntries.find(
-                        (filterEntry) => filterEntry.id === subEntry.id
+                        (filterEntry: TimeEntry) =>
+                            filterEntry.id === subEntry.id
                     )
                 "
                 @selected="emit('selected', [subEntry])"
