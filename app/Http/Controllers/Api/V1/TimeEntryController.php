@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1;
 
 use App\Enums\ExportFormat;
+use App\Exceptions\Api\FeatureIsNotAvailableInFreePlanApiException;
 use App\Exceptions\Api\PdfRendererIsNotConfiguredException;
 use App\Exceptions\Api\TimeEntryCanNotBeRestartedApiException;
 use App\Exceptions\Api\TimeEntryStillRunningApiException;
@@ -35,6 +36,7 @@ use Gotenberg\Exceptions\GotenbergApiErrored;
 use Gotenberg\Exceptions\NoOutputFileInResponse;
 use Gotenberg\Gotenberg;
 use Gotenberg\Stream;
+use GuzzleHttp\Client;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\File;
@@ -158,7 +160,7 @@ class TimeEntryController extends Controller
     /**
      * Export time entries in organization
      *
-     * @throws AuthorizationException|PdfRendererIsNotConfiguredException
+     * @throws AuthorizationException|PdfRendererIsNotConfiguredException|FeatureIsNotAvailableInFreePlanApiException
      *
      * @operationId exportTimeEntries
      */
@@ -171,6 +173,10 @@ class TimeEntryController extends Controller
         } else {
             $this->checkPermission($organization, 'time-entries:view:all');
         }
+        $format = $request->getFormatValue();
+        if ($format === ExportFormat::PDF && ! $this->canAccessPremiumFeatures($organization)) {
+            throw new FeatureIsNotAvailableInFreePlanApiException;
+        }
 
         $timeEntriesQuery = $this->getTimeEntriesQuery($organization, $request, $member);
         $timeEntriesQuery->with([
@@ -180,7 +186,6 @@ class TimeEntryController extends Controller
             'user',
             'tagsRelation',
         ]);
-        $format = $request->getFormatValue();
         $filename = 'time-entries-export-'.now()->format('Y-m-d_H-i-s').'.'.$format->getFileExtension();
         $folderPath = 'exports';
         $path = $folderPath.'/'.$filename;
@@ -201,6 +206,12 @@ class TimeEntryController extends Controller
                 throw new \LogicException('View file not found');
             }
             $footerHtml = Blade::render($footerViewFile);
+            $client = new Client([
+                'auth' => config('services.gotenberg.basic_auth_username') !== null && config('services.gotenberg.basic_auth_password') !== null ? [
+                    config('services.gotenberg.basic_auth_username'),
+                    config('services.gotenberg.basic_auth_password'),
+                ] : null,
+            ]);
             $request = Gotenberg::chromium(config('services.gotenberg.url'))
                 ->pdf()
                 ->pdfa('PDF/A-3b')
@@ -208,7 +219,7 @@ class TimeEntryController extends Controller
                 ->footer(Stream::string('footer', $footerHtml))
                 ->html(Stream::string('body', $html));
             $tempFolder = TemporaryDirectory::make();
-            $filenameTemp = Gotenberg::save($request, $tempFolder->path());
+            $filenameTemp = Gotenberg::save($request, $tempFolder->path(), $client);
             Storage::disk(config('filesystems.private'))
                 ->putFileAs($folderPath, new File($tempFolder->path($filenameTemp)), $filename);
         } else {
@@ -301,6 +312,7 @@ class TimeEntryController extends Controller
      * @throws PdfRendererIsNotConfiguredException
      * @throws GotenbergApiErrored
      * @throws NoOutputFileInResponse
+     * @throws FeatureIsNotAvailableInFreePlanApiException
      */
     public function aggregateExport(Organization $organization, TimeEntryAggregateExportRequest $request, TimeEntryAggregationService $timeEntryAggregationService): JsonResponse
     {
@@ -310,6 +322,10 @@ class TimeEntryController extends Controller
             $this->checkPermission($organization, 'time-entries:view:own');
         } else {
             $this->checkPermission($organization, 'time-entries:view:all');
+        }
+        $format = $request->getFormatValue();
+        if ($format === ExportFormat::PDF && ! $this->canAccessPremiumFeatures($organization)) {
+            throw new FeatureIsNotAvailableInFreePlanApiException;
         }
         $user = $this->user();
 
@@ -340,7 +356,6 @@ class TimeEntryController extends Controller
         $currency = $organization->currency;
         $timezone = app(TimezoneService::class)->getTimezoneFromUser($this->user());
 
-        $format = $request->getFormatValue();
         $filename = 'time-entries-report-'.now()->format('Y-m-d_H-i-s').'.'.$format->getFileExtension();
         $folderPath = 'exports';
         $path = $folderPath.'/'.$filename;
@@ -349,6 +364,12 @@ class TimeEntryController extends Controller
             if (config('services.gotenberg.url') === null) {
                 throw new PdfRendererIsNotConfiguredException;
             }
+            $client = new Client([
+                'auth' => config('services.gotenberg.basic_auth_username') !== null && config('services.gotenberg.basic_auth_password') !== null ? [
+                    config('services.gotenberg.basic_auth_username'),
+                    config('services.gotenberg.basic_auth_password'),
+                ] : null,
+            ]);
             $viewFile = file_get_contents(resource_path('views/reports/time-entry-aggregate-index.blade.php'));
             if ($viewFile === false) {
                 throw new \LogicException('View file not found');
@@ -374,7 +395,7 @@ class TimeEntryController extends Controller
                 ->footer(Stream::string('footer', $footerHtml))
                 ->html(Stream::string('body', $html));
             $tempFolder = TemporaryDirectory::make();
-            $filenameTemp = Gotenberg::save($request, $tempFolder->path());
+            $filenameTemp = Gotenberg::save($request, $tempFolder->path(), $client);
             Storage::disk(config('filesystems.private'))
                 ->putFileAs($folderPath, new File($tempFolder->path($filenameTemp)), $filename);
         } else {

@@ -184,20 +184,6 @@ class TimeEntryAggregationService
         $descriptionMapGroup2 = $group2Type !== null ? $this->loadDescriptionMap($keysGroup2, $group2Type) : [];
 
         if ($aggregatedTimeEntries['grouped_data'] !== null) {
-            /*
-            $aggregatedTimeEntries['grouped_data'] = array_map(function (array $value) use ($descriptionMapGroup1, $descriptionMapGroup2): array {
-                $value['description'] = $value['key'] !== null ? ($descriptionMapGroup1[$value['key']] ?? null) : null;
-                if ($value['grouped_data'] !== null) {
-                    $value['grouped_data'] = array_map(function (array $value) use ($descriptionMapGroup2): array {
-                        $value['description'] = $value['key'] !== null ? ($descriptionMapGroup2[$value['key']] ?? null) : null;
-
-                        return $value;
-                    }, $value['grouped_data']);
-                }
-
-                return $value;
-            }, $aggregatedTimeEntries['grouped_data']);
-            */
             foreach ($aggregatedTimeEntries['grouped_data'] as $keyGroup1 => $group1) {
                 $aggregatedTimeEntries['grouped_data'][$keyGroup1]['description'] = $group1['key'] !== null ? ($descriptionMapGroup1[$group1['key']] ?? null) : null;
                 if ($aggregatedTimeEntries['grouped_data'][$keyGroup1]['grouped_data'] !== null) {
@@ -207,6 +193,29 @@ class TimeEntryAggregationService
                 }
             }
         }
+
+        /**
+         * @var array{
+         *        grouped_type: string|null,
+         *        grouped_data: null|array<array{
+         *            key: string|null,
+         *            description: string|null,
+         *            seconds: int,
+         *            cost: int,
+         *            grouped_type: string|null,
+         *            grouped_data: null|array<array{
+         *                key: string|null,
+         *                description: string|null,
+         *                seconds: int,
+         *                cost: int,
+         *                grouped_type: null,
+         *                grouped_data: null
+         *            }>
+         *        }>,
+         *        seconds: int,
+         *        cost: int
+         *  } $aggregatedTimeEntries
+         */
 
         return $aggregatedTimeEntries;
     }

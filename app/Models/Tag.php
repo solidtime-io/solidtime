@@ -7,6 +7,7 @@ namespace App\Models;
 use App\Models\Concerns\CustomAuditable;
 use App\Models\Concerns\HasUuids;
 use Database\Factories\TagFactory;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -21,6 +22,7 @@ use Staudenmeir\EloquentJsonRelations\Relations\HasManyJson;
  * @property string $organization_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property-read Collection<TimeEntry> $timeEntries
  * @property-read Organization $organization
  *
  * @method static TagFactory factory()

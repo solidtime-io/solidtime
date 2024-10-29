@@ -25,12 +25,7 @@ abstract class TestCase extends BaseTestCase
         parent::setUp();
         Mail::fake();
         LogFake::bind();
-        $this->mock(BillingContract::class, function (MockInterface $mock): void {
-            $mock->shouldReceive('hasSubscription')->andReturn(false);
-            $mock->shouldReceive('hasTrial')->andReturn(false);
-            $mock->shouldReceive('getTrialUntil')->andReturn(null);
-            $mock->shouldReceive('isBlocked')->andReturn(false);
-        });
+        $this->actAsOrganizationWithoutSubscriptionAndWithoutTrial();
         // Note: The following line can be used to test timezone edge cases.
         // $this->travelTo(Carbon::now()->timezone('Europe/Vienna')->setHour(0)->setMinute(59)->setSecond(0));
     }
@@ -84,6 +79,16 @@ abstract class TestCase extends BaseTestCase
     {
         $this->mock(BillingContract::class, function (MockInterface $mock): void {
             $mock->shouldReceive('hasSubscription')->andReturn(true);
+            $mock->shouldReceive('hasTrial')->andReturn(false);
+            $mock->shouldReceive('getTrialUntil')->andReturn(null);
+            $mock->shouldReceive('isBlocked')->andReturn(false);
+        });
+    }
+
+    protected function actAsOrganizationWithoutSubscriptionAndWithoutTrial(): void
+    {
+        $this->mock(BillingContract::class, function (MockInterface $mock): void {
+            $mock->shouldReceive('hasSubscription')->andReturn(false);
             $mock->shouldReceive('hasTrial')->andReturn(false);
             $mock->shouldReceive('getTrialUntil')->andReturn(null);
             $mock->shouldReceive('isBlocked')->andReturn(false);
