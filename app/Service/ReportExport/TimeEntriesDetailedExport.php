@@ -123,7 +123,7 @@ class TimeEntriesDetailedExport implements FromQuery, ShouldAutoSize, WithColumn
                 $model->project?->name,
                 $model->client?->name,
                 $model->user->name,
-                Date::dateTimeToExcel($model->start),
+                Date::dateTimeToExcel($model->start->timezone($this->timezone)),
                 $model->end !== null ? Date::dateTimeToExcel($model->end->timezone($this->timezone)) : null,
                 $duration !== null ? $interval->format($duration) : null,
                 $duration?->totalHours,
