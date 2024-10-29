@@ -37,21 +37,25 @@
                 $duration = CarbonInterval::seconds($group2Entry['seconds']);
             @endphp
             <tr>
-                <td style="border: 1px solid black;" data-type="{{ DataType::TYPE_STRING }}">
-                    @if ($group === TimeEntryAggregationType::Billable)
-                        {{ $group1Entry['key'] ? 'Yes' : 'No' }}
-                    @else
-                        {{ $group1Entry['description'] ?? $group1Entry['key'] ?? '-' }}
-                    @endif
-                </td>
                 @if($exportFormat === ExportFormat::ODS || $exportFormat === ExportFormat::CSV)
-                    <td style="border: 1px solid black;" data-type="{{ DataType::TYPE_STRING }}">
-                        @if ($subGroup === TimeEntryAggregationType::Billable)
+                    @if ($group === TimeEntryAggregationType::Billable)
+                        <td style="border: 1px solid black;" data-type="{{ DataType::TYPE_STRING }}">
+                            {{ $group1Entry['key'] ? 'Yes' : 'No' }}
+                        </td>
+                    @else
+                        <td style="border: 1px solid black;" data-type="{{ DataType::TYPE_STRING }}">
+                            {{ $group1Entry['description'] ?? $group1Entry['key'] ?? '-' }}
+                        </td>
+                    @endif
+                    @if ($subGroup === TimeEntryAggregationType::Billable)
+                        <td style="border: 1px solid black;" data-type="{{ DataType::TYPE_STRING }}">
                             {{ $group2Entry['key'] ? 'Yes' : 'No' }}
-                        @else
+                        </td>
+                    @else
+                        <td style="border: 1px solid black;" data-type="{{ DataType::TYPE_STRING }}">
                             {{ $group2Entry['description'] ?? $group2Entry['key'] ?? '-' }}
-                        @endif
-                    </td>
+                        </td>
+                    @endif
                     <td style="border: 1px solid black;" data-type="{{ DataType::TYPE_STRING }}">
                         {{ $interval->format($duration) }}
                     </td>
@@ -62,16 +66,24 @@
                         {{ round(BigDecimal::ofUnscaledValue($group2Entry['cost'], 2)->toFloat(), 2) }}
                     </td>
                 @else
-                    @if ($subGroup === TimeEntryAggregationType::Billable)
+                    @if ($group === TimeEntryAggregationType::Billable)
                         <td style="border: 1px solid black;" data-type="{{ DataType::TYPE_STRING }}">
                             {{ $group1Entry['key'] ? 'Yes' : 'No' }}
+                        </td>
+                    @else
+                        <td style="border: 1px solid black;" data-type="{{ DataType::TYPE_STRING }}">
+                            {{ $group1Entry['description'] ?? $group1Entry['key'] ?? '-' }}
+                        </td>
+                    @endif
+                    @if ($subGroup === TimeEntryAggregationType::Billable)
+                        <td style="border: 1px solid black;" data-type="{{ DataType::TYPE_STRING }}">
+                            {{ $group2Entry['key'] ? 'Yes' : 'No' }}
                         </td>
                     @else
                         <td style="border: 1px solid black;" data-type="{{ DataType::TYPE_STRING }}">
                             {{ $group2Entry['description'] ?? $group2Entry['key'] ?? '-' }}
                         </td>
                     @endif
-
                     <td style="border: 1px solid black;" data-type="{{ DataType::TYPE_NUMERIC }}"
                         data-format="[hh]:mm:ss">
                         {{ $duration->totalDays }}
