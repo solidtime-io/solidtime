@@ -27,6 +27,7 @@ function triggerDownload(format: ExportFormat) {
         <template #content>
             <div class="flex flex-col space-y-1 p-1.5">
                 <SecondaryButton
+                    v-if="false"
                     class="border-0 px-2"
                     @click="triggerDownload('pdf')"
                     >Export as PDF</SecondaryButton
