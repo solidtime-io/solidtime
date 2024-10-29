@@ -35,13 +35,16 @@ class TimeEntriesDetailedExport implements FromQuery, ShouldAutoSize, WithColumn
 
     private ExportFormat $exportFormat;
 
+    private string $timezone;
+
     /**
      * @param  Builder<TimeEntry>  $builder
      */
-    public function __construct(Builder $builder, ExportFormat $exportFormat)
+    public function __construct(Builder $builder, ExportFormat $exportFormat, string $timezone)
     {
         $this->builder = $builder;
         $this->exportFormat = $exportFormat;
+        $this->timezone = $timezone;
     }
 
     /**
@@ -121,7 +124,7 @@ class TimeEntriesDetailedExport implements FromQuery, ShouldAutoSize, WithColumn
                 $model->client?->name,
                 $model->user->name,
                 Date::dateTimeToExcel($model->start),
-                $model->end !== null ? Date::dateTimeToExcel($model->end) : null,
+                $model->end !== null ? Date::dateTimeToExcel($model->end->timezone($this->timezone)) : null,
                 $duration !== null ? $interval->format($duration) : null,
                 $duration?->totalHours,
                 $model->billable ? 'Yes' : 'No',
@@ -134,8 +137,8 @@ class TimeEntriesDetailedExport implements FromQuery, ShouldAutoSize, WithColumn
                 $model->project?->name,
                 $model->client?->name,
                 $model->user->name,
-                $model->start->format('Y-m-d H:i:s'),
-                $model->end?->format('Y-m-d H:i:s'),
+                $model->start->timezone($this->timezone)->format('Y-m-d H:i:s'),
+                $model->end?->timezone($this->timezone)?->format('Y-m-d H:i:s'),
                 $duration !== null ? (int) floor($duration->totalHours).':'.$duration->format('%I:%S') : null,
                 $duration?->totalHours,
                 $model->billable ? 'Yes' : 'No',
