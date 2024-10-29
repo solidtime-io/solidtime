@@ -20,7 +20,15 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-
+      gotenberg:
+        image: gotenberg/gotenberg:8
+        ports:
+          - 3000:3000
+        options: >-
+          --health-cmd "curl --silent --fail http://localhost:3000/health"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - name: "Checkout code"
         uses: actions/checkout@v4

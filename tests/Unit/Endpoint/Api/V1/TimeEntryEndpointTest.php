@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Endpoint\Api\V1;
 
+use App\Enums\ExportFormat;
 use App\Enums\Role;
+use App\Enums\TimeEntryAggregationType;
+use App\Enums\TimeEntryAggregationTypeInterval;
 use App\Exceptions\Api\TimeEntryCanNotBeRestartedApiException;
 use App\Http\Controllers\Api\V1\TimeEntryController;
 use App\Jobs\RecalculateSpentTimeForProject;
@@ -17,8 +20,10 @@ use App\Models\Task;
 use App\Models\TimeEntry;
 use App\Models\User;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Laravel\Passport\Passport;
@@ -29,6 +34,12 @@ use TiMacDonald\Log\LogEntry;
 #[UsesClass(TimeEntryController::class)]
 class TimeEntryEndpointTest extends ApiEndpointTestAbstract
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Storage::fake('local');
+    }
+
     public function test_index_endpoint_fails_if_user_has_no_permission_to_view_time_entries(): void
     {
         // Arrange
@@ -73,7 +84,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         ]));
 
         // Assert
-        $response->assertStatus(200);
+        $this->assertResponseCode($response, 200);
         $response->assertJsonPath('data.0.id', $timeEntry->getKey());
     }
 
@@ -114,7 +125,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         $response = $this->getJson(route('api.v1.time-entries.index', [$data->organization->getKey(), 'user_id' => $user->getKey()]));
 
         // Assert
-        $response->assertStatus(200);
+        $this->assertResponseCode($response, 200);
         $response->assertJsonPath('data.0.id', $timeEntry->getKey());
     }
 
@@ -141,7 +152,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         $response = $this->getJson(route('api.v1.time-entries.index', [$data->organization->getKey()]));
 
         // Assert
-        $response->assertStatus(200);
+        $this->assertResponseCode($response, 200);
         $response->assertJsonPath('data.0.id', $timeEntry1->getKey());
         $response->assertJsonPath('data.1.id', $timeEntry2->getKey());
         $response->assertJsonPath('data.2.id', $timeEntry3->getKey());
@@ -165,7 +176,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         ]));
 
         // Assert
-        $response->assertStatus(200);
+        $this->assertResponseCode($response, 200);
         $response->assertJsonCount(1, 'data');
         $response->assertJsonPath('meta.total', 1);
         $response->assertJsonPath('data.0.id', $activeTimeEntry->getKey());
@@ -189,7 +200,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         ]));
 
         // Assert
-        $response->assertStatus(200);
+        $this->assertResponseCode($response, 200);
         $response->assertJsonCount(1, 'data');
         $response->assertJsonPath('meta.total', 1);
         $response->assertJsonPath('data.0.id', $nonActiveTimeEntries->getKey());
@@ -213,7 +224,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         ]));
 
         // Assert
-        $response->assertStatus(200);
+        $this->assertResponseCode($response, 200);
         $response->assertJsonCount(3, 'data');
         $response->assertJsonPath('meta.total', 3);
     }
@@ -241,7 +252,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         ]));
 
         // Assert
-        $response->assertStatus(200);
+        $this->assertResponseCode($response, 200);
         $response->assertJsonCount(3, 'data');
         $response->assertJsonPath('meta.total', 6);
     }
@@ -290,7 +301,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         ]));
 
         // Assert
-        $response->assertStatus(200);
+        $this->assertResponseCode($response, 200);
         $response->assertJsonCount(2, 'data');
         $response->assertJsonPath('meta.total', 7);
     }
@@ -324,7 +335,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         ]));
 
         // Assert
-        $response->assertStatus(200);
+        $this->assertResponseCode($response, 200);
         $response->assertJsonCount(7, 'data');
         $response->assertJsonPath('meta.total', 10);
         Log::assertLogged(fn (LogEntry $log) => $log->level === 'warning'
@@ -365,7 +376,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         ]));
 
         // Assert
-        $response->assertStatus(200);
+        $this->assertResponseCode($response, 200);
         $response->assertJson(fn (AssertableJson $json) => $json
             ->has('data')
             ->has('meta')
@@ -405,7 +416,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         ]));
 
         // Assert
-        $response->assertStatus(200);
+        $this->assertResponseCode($response, 200);
         $response->assertJson(fn (AssertableJson $json) => $json
             ->has('data')
             ->has('meta')
@@ -458,7 +469,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
 
         // Assert
         $response->assertValid();
-        $response->assertStatus(200);
+        $this->assertResponseCode($response, 200);
         $response->assertJson(fn (AssertableJson $json) => $json
             ->has('data')
             ->has('meta')
@@ -499,10 +510,199 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         ]));
 
         // Assert
-        $response->assertStatus(200);
+        $this->assertResponseCode($response, 200);
         $response->assertJsonCount(1, 'data');
         $response->assertJsonPath('meta.total', 3);
         $response->assertJsonPath('data.*.id', [$timeEntry->getKey()]);
+    }
+
+    public function test_index_export_endpoint_fails_if_user_has_no_permission_to_view_time_entries(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.time-entries.index-export', [
+            $data->organization->getKey(),
+            'format' => ExportFormat::CSV,
+        ]));
+
+        // Assert
+        $response->assertForbidden();
+    }
+
+    public function test_index_export_endpoint_fails_if_pdf_renderer_is_not_configured_but_a_user_want_a_pdf_report(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:view:all',
+        ]);
+        Passport::actingAs($data->user);
+        Config::set('services.gotenberg.url', null);
+        $this->actAsOrganizationWithSubscription();
+
+        // Act
+        $response = $this->getJson(route('api.v1.time-entries.index-export', [
+            $data->organization->getKey(),
+            'format' => ExportFormat::PDF,
+        ]));
+
+        // Assert
+        $response->assertStatus(400);
+        $response->assertExactJson([
+            'error' => true,
+            'key' => 'pdf_renderer_is_not_configured',
+            'message' => 'PDF renderer is not configured',
+        ]);
+    }
+
+    public function test_index_export_endpoint_fails_if_user_wants_a_pdf_export_but_has_no_subscription(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:view:all',
+        ]);
+        Passport::actingAs($data->user);
+        $this->actAsOrganizationWithoutSubscriptionAndWithoutTrial();
+
+        // Act
+        $response = $this->getJson(route('api.v1.time-entries.index-export', [
+            $data->organization->getKey(),
+            'format' => ExportFormat::PDF,
+        ]));
+
+        // Assert
+        $response->assertStatus(400);
+        $response->assertExactJson([
+            'error' => true,
+            'key' => 'feature_is_not_available_in_free_plan',
+            'message' => 'Feature is not available in free plan',
+        ]);
+    }
+
+    public function test_index_export_endpoint_fails_if_user_has_only_access_to_own_time_entries_but_does_not_filter_for_this(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:view:own',
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.time-entries.index-export', [
+            $data->organization->getKey(),
+            'format' => ExportFormat::CSV,
+        ]));
+
+        // Assert
+        $response->assertForbidden();
+    }
+
+    public function test_index_export_endpoint_can_create_a_detailed_time_entry_report_in_format_csv(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:view:all',
+        ]);
+        $client = Client::factory()->forOrganization($data->organization)->create();
+        $project = Project::factory()->forOrganization($data->organization)->forClient($client)->create();
+        $timeEntry1 = TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)->startWithDuration(Carbon::now(), 100)->create();
+        $timeEntry2 = TimeEntry::factory()->forOrganization($data->organization)->forProject($project)->forMember($data->member)->startWithDuration(Carbon::now(), 100)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.time-entries.index-export', [
+            $data->organization->getKey(),
+            'format' => ExportFormat::CSV,
+        ]));
+
+        // Assert
+        $this->assertResponseCode($response, 200);
+    }
+
+    public function test_index_export_endpoint_can_create_a_detailed_time_entry_report_in_format_ods(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:view:all',
+        ]);
+        $client = Client::factory()->forOrganization($data->organization)->create();
+        $project = Project::factory()->forOrganization($data->organization)->forClient($client)->create();
+        $timeEntry1 = TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)->startWithDuration(Carbon::now(), 100)->create();
+        $timeEntry2 = TimeEntry::factory()->forOrganization($data->organization)->forProject($project)->forMember($data->member)->startWithDuration(Carbon::now(), 100)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.time-entries.index-export', [
+            $data->organization->getKey(),
+            'format' => ExportFormat::ODS,
+        ]));
+
+        // Assert
+        $this->assertResponseCode($response, 200);
+    }
+
+    public function test_index_export_endpoint_can_create_a_detailed_time_entry_report_in_format_xlxs(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:view:all',
+        ]);
+        $client = Client::factory()->forOrganization($data->organization)->create();
+        $project = Project::factory()->forOrganization($data->organization)->forClient($client)->create();
+        $timeEntry1 = TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)->startWithDuration(Carbon::now(), 100)->create();
+        $timeEntry2 = TimeEntry::factory()->forOrganization($data->organization)->forProject($project)->forMember($data->member)->startWithDuration(Carbon::now(), 100)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.time-entries.index-export', [
+            $data->organization->getKey(),
+            'format' => ExportFormat::XLSX,
+        ]));
+
+        // Assert
+        $this->assertResponseCode($response, 200);
+    }
+
+    public function test_index_export_endpoint_can_create_a_detailed_time_entry_report_in_format_pdf(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:view:all',
+        ]);
+        Passport::actingAs($data->user);
+        $this->actAsOrganizationWithSubscription();
+
+        // Act
+        $response = $this->getJson(route('api.v1.time-entries.index-export', [
+            $data->organization->getKey(),
+            'format' => ExportFormat::PDF,
+        ]));
+
+        // Assert
+        $this->assertResponseCode($response, 200);
+    }
+
+    public function test_aggregate_export_endpoints_fails_if_user_no_permission_to_view_time_entries(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.time-entries.aggregate-export', [
+            $data->organization->getKey(),
+            'format' => ExportFormat::CSV,
+            'group' => TimeEntryAggregationType::Client,
+            'sub_group' => TimeEntryAggregationType::Project,
+            'history_group' => TimeEntryAggregationTypeInterval::Month,
+            'start' => Carbon::now()->startOfYear()->toIso8601ZuluString(),
+            'end' => Carbon::now()->endOfYear()->toIso8601ZuluString(),
+        ]));
+
+        // Assert
+        $response->assertForbidden();
     }
 
     public function test_aggregate_endpoint_fails_if_user_has_no_permission_to_view_time_entries(): void
@@ -512,10 +712,264 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         Passport::actingAs($data->user);
 
         // Act
-        $response = $this->getJson(route('api.v1.time-entries.aggregate', [$data->organization->getKey()]));
+        $response = $this->getJson(route('api.v1.time-entries.aggregate', [
+            $data->organization->getKey(),
+        ]));
 
         // Assert
         $response->assertForbidden();
+    }
+
+    public function test_aggregate_export_endpoint_fails_if_user_wants_a_pdf_export_but_has_no_subscription(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:view:all',
+        ]);
+        Passport::actingAs($data->user);
+        $this->actAsOrganizationWithoutSubscriptionAndWithoutTrial();
+
+        // Act
+        $response = $this->getJson(route('api.v1.time-entries.aggregate-export', [
+            $data->organization->getKey(),
+            'format' => ExportFormat::PDF,
+            'group' => TimeEntryAggregationType::Client,
+            'sub_group' => TimeEntryAggregationType::Project,
+            'history_group' => TimeEntryAggregationTypeInterval::Month,
+            'start' => Carbon::now()->startOfYear()->toIso8601ZuluString(),
+            'end' => Carbon::now()->endOfYear()->toIso8601ZuluString(),
+        ]));
+
+        // Assert
+        $response->assertStatus(400);
+        $response->assertExactJson([
+            'error' => true,
+            'key' => 'feature_is_not_available_in_free_plan',
+            'message' => 'Feature is not available in free plan',
+        ]);
+    }
+
+    public function test_aggregate_export_endpoint_fails_if_user_has_only_access_to_own_time_entries_but_does_not_filter_for_this(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:view:own',
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.time-entries.aggregate-export', [
+            $data->organization->getKey(),
+            'format' => ExportFormat::CSV,
+            'group' => TimeEntryAggregationType::Client,
+            'sub_group' => TimeEntryAggregationType::Project,
+            'history_group' => TimeEntryAggregationTypeInterval::Month,
+            'start' => Carbon::now()->startOfYear()->toIso8601ZuluString(),
+            'end' => Carbon::now()->endOfYear()->toIso8601ZuluString(),
+        ]));
+
+        // Assert
+        $response->assertForbidden();
+    }
+
+    public function test_aggregate_export_endpoints_can_create_a_csv_report(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:view:all',
+        ]);
+        $client = Client::factory()->forOrganization($data->organization)->create();
+        $project = Project::factory()->forOrganization($data->organization)->forClient($client)->create();
+        $timeEntry1 = TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)->startWithDuration(Carbon::now(), 100)->create();
+        $timeEntry2 = TimeEntry::factory()->forOrganization($data->organization)->forProject($project)->forMember($data->member)->startWithDuration(Carbon::now(), 100)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.time-entries.aggregate-export', [
+            $data->organization->getKey(),
+            'format' => ExportFormat::CSV,
+            'group' => TimeEntryAggregationType::Client,
+            'sub_group' => TimeEntryAggregationType::Project,
+            'history_group' => TimeEntryAggregationTypeInterval::Month,
+            'start' => Carbon::now()->startOfYear()->toIso8601ZuluString(),
+            'end' => Carbon::now()->endOfYear()->toIso8601ZuluString(),
+        ]));
+
+        // Assert
+        $this->assertResponseCode($response, 200);
+    }
+
+    public function test_aggregate_export_endpoints_can_create_a_xlsx_report(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:view:all',
+        ]);
+        $client = Client::factory()->forOrganization($data->organization)->create();
+        $project = Project::factory()->forOrganization($data->organization)->forClient($client)->create();
+        $timeEntry1 = TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)->startWithDuration(Carbon::now(), 100)->create();
+        $timeEntry2 = TimeEntry::factory()->forOrganization($data->organization)->forProject($project)->forMember($data->member)->startWithDuration(Carbon::now(), 100)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.time-entries.aggregate-export', [
+            $data->organization->getKey(),
+            'format' => ExportFormat::XLSX,
+            'group' => TimeEntryAggregationType::Client,
+            'sub_group' => TimeEntryAggregationType::Project,
+            'history_group' => TimeEntryAggregationTypeInterval::Month,
+            'start' => Carbon::now()->startOfYear()->toIso8601ZuluString(),
+            'end' => Carbon::now()->endOfYear()->toIso8601ZuluString(),
+        ]));
+
+        // Assert
+        $this->assertResponseCode($response, 200);
+    }
+
+    public function test_aggregate_export_endpoints_can_create_a_ods_report(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:view:all',
+        ]);
+        $client = Client::factory()->forOrganization($data->organization)->create();
+        $project = Project::factory()->forOrganization($data->organization)->forClient($client)->create();
+        $timeEntry1 = TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)->startWithDuration(Carbon::now(), 100)->create();
+        $timeEntry2 = TimeEntry::factory()->forOrganization($data->organization)->forProject($project)->forMember($data->member)->startWithDuration(Carbon::now(), 100)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.time-entries.aggregate-export', [
+            $data->organization->getKey(),
+            'format' => ExportFormat::ODS,
+            'group' => TimeEntryAggregationType::User,
+            'sub_group' => TimeEntryAggregationType::Project,
+            'history_group' => TimeEntryAggregationTypeInterval::Month,
+            'start' => Carbon::now()->startOfYear()->toIso8601ZuluString(),
+            'end' => Carbon::now()->endOfYear()->toIso8601ZuluString(),
+        ]));
+
+        // Assert
+        $this->assertResponseCode($response, 200);
+    }
+
+    public function test_aggregate_export_endpoint_fails_if_pdf_renderer_is_not_configured_but_a_user_want_a_pdf_report(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:view:all',
+        ]);
+        Passport::actingAs($data->user);
+        $this->actAsOrganizationWithSubscription();
+        Config::set('services.gotenberg.url', null);
+
+        // Act
+        $response = $this->getJson(route('api.v1.time-entries.aggregate-export', [
+            $data->organization->getKey(),
+            'format' => ExportFormat::PDF,
+            'group' => TimeEntryAggregationType::User,
+            'sub_group' => TimeEntryAggregationType::Project,
+            'history_group' => TimeEntryAggregationTypeInterval::Month,
+            'start' => Carbon::now()->startOfYear()->toIso8601ZuluString(),
+            'end' => Carbon::now()->endOfYear()->toIso8601ZuluString(),
+        ]));
+
+        // Assert
+        $response->assertStatus(400);
+        $response->assertExactJson([
+            'error' => true,
+            'key' => 'pdf_renderer_is_not_configured',
+            'message' => 'PDF renderer is not configured',
+        ]);
+    }
+
+    public function test_aggregate_export_endpoints_can_create_a_pdf_report(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:view:all',
+        ]);
+        $client = Client::factory()->forOrganization($data->organization)->create();
+        $project = Project::factory()->forOrganization($data->organization)->forClient($client)->create();
+        $timeEntry1 = TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)->startWithDuration(Carbon::now(), 100)->create();
+        $timeEntry2 = TimeEntry::factory()->forOrganization($data->organization)->forProject($project)->forMember($data->member)->startWithDuration(Carbon::now(), 100)->create();
+        Passport::actingAs($data->user);
+        $this->actAsOrganizationWithSubscription();
+
+        // Act
+        $response = $this->getJson(route('api.v1.time-entries.aggregate-export', [
+            $data->organization->getKey(),
+            'format' => ExportFormat::PDF,
+            'group' => TimeEntryAggregationType::User,
+            'sub_group' => TimeEntryAggregationType::Project,
+            'history_group' => TimeEntryAggregationTypeInterval::Month,
+            'start' => Carbon::now()->startOfYear()->toIso8601ZuluString(),
+            'end' => Carbon::now()->endOfYear()->toIso8601ZuluString(),
+        ]));
+
+        // Assert
+        $this->assertResponseCode($response, 200);
+    }
+
+    public function test_aggregate_endpoint_fails_if_user_has_only_access_to_own_time_entries_but_does_not_filter_for_this(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:view:own',
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.time-entries.aggregate', [
+            $data->organization->getKey(),
+            'group' => 'day',
+            'sub_group' => 'project',
+        ]));
+
+        // Assert
+        $response->assertForbidden();
+    }
+
+    public function test_aggregate_endpoint_works_for_user_with_only_access_to_own_time_entries(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:view:own',
+        ]);
+        $otherUser = User::factory()->create();
+        $otherMember = Member::factory()->forOrganization($data->organization)->forUser($otherUser)->create();
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        $start = Carbon::now()->timezone($data->user->timezone)->subDays(2);
+        $timeEntry = TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)->forProject($project)->startWithDuration($start, 100)->create();
+        $timeEntryOtherMember = TimeEntry::factory()->forOrganization($data->organization)->forMember($otherMember)->forProject($project)->startWithDuration($start, 100)->create();
+
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.time-entries.aggregate', [
+            $data->organization->getKey(),
+            'member_id' => $data->member->getKey(),
+            'group' => 'project',
+        ]));
+
+        // Assert
+        $response->assertSuccessful();
+        $response->assertExactJson([
+            'data' => [
+                'seconds' => 100,
+                'cost' => 0,
+                'grouped_data' => [
+                    0 => [
+                        'key' => $project->getKey(),
+                        'seconds' => 100,
+                        'cost' => 0,
+                        'grouped_type' => null,
+                        'grouped_data' => null,
+                    ],
+                ],
+                'grouped_type' => 'project',
+            ],
+        ]);
     }
 
     public function test_aggregate_endpoint_groups_by_two_groups(): void
@@ -1314,7 +1768,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         ]);
 
         // Assert
-        $response->assertStatus(200);
+        $this->assertResponseCode($response, 200);
         $this->assertDatabaseHas(TimeEntry::class, [
             'id' => $timeEntry->getKey(),
             'member_id' => $data->member->getKey(),
@@ -1343,7 +1797,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         ]);
 
         // Assert
-        $response->assertStatus(200);
+        $this->assertResponseCode($response, 200);
         $this->assertDatabaseHas(TimeEntry::class, [
             'id' => $timeEntry->getKey(),
             'member_id' => $data->member->getKey(),
@@ -1372,7 +1826,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         ]);
 
         // Assert
-        $response->assertStatus(200);
+        $this->assertResponseCode($response, 200);
         $this->assertDatabaseHas(TimeEntry::class, [
             'id' => $timeEntry->getKey(),
             'member_id' => $data->member->getKey(),
@@ -1429,7 +1883,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         ]);
 
         // Assert
-        $response->assertStatus(200);
+        $this->assertResponseCode($response, 200);
         $this->assertDatabaseHas(TimeEntry::class, [
             'id' => $timeEntry->getKey(),
             'member_id' => $member->getKey(),
@@ -1457,7 +1911,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
 
         // Assert
         $response->assertValid();
-        $response->assertStatus(200);
+        $this->assertResponseCode($response, 200);
         $this->assertDatabaseHas(TimeEntry::class, [
             'id' => $timeEntry->getKey(),
             'member_id' => $member->getKey(),
@@ -1487,7 +1941,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
 
         // Assert
         $response->assertValid();
-        $response->assertStatus(200);
+        $this->assertResponseCode($response, 200);
         $this->assertDatabaseHas(TimeEntry::class, [
             'id' => $timeEntry->getKey(),
             'member_id' => $member->getKey(),
@@ -1520,7 +1974,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         ]);
 
         // Assert
-        $response->assertStatus(200);
+        $this->assertResponseCode($response, 200);
         Queue::assertPushed(RecalculateSpentTimeForProject::class, 1);
         Queue::assertPushed(RecalculateSpentTimeForTask::class, 1);
         Queue::assertPushed(function (RecalculateSpentTimeForProject $job) use ($project): bool {
@@ -1556,7 +2010,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         ]);
 
         // Assert
-        $response->assertStatus(200);
+        $this->assertResponseCode($response, 200);
         Queue::assertPushed(RecalculateSpentTimeForProject::class, 2);
         Queue::assertPushed(RecalculateSpentTimeForTask::class, 2);
         Queue::assertPushed(function (RecalculateSpentTimeForProject $job) use ($project): bool {
@@ -1749,7 +2203,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
 
         // Assert
         $response->assertValid();
-        $response->assertStatus(200);
+        $this->assertResponseCode($response, 200);
         $response->assertExactJson([
             'success' => [
                 $ownTimeEntry->getKey(),
@@ -1799,7 +2253,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
 
         // Assert
         $response->assertValid();
-        $response->assertStatus(200);
+        $this->assertResponseCode($response, 200);
         $response->assertExactJson([
             'success' => [
                 $ownTimeEntry->getKey(),
@@ -1851,7 +2305,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
 
         // Assert
         $response->assertValid();
-        $response->assertStatus(200);
+        $this->assertResponseCode($response, 200);
         $response->assertExactJson([
             'success' => [
                 $timeEntryWithProject->getKey(),
@@ -1982,7 +2436,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
 
         // Assert
         $response->assertValid();
-        $response->assertStatus(200);
+        $this->assertResponseCode($response, 200);
         $response->assertExactJson([
             'success' => [
                 $timeEntry1->getKey(),
@@ -2034,7 +2488,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
 
         // Assert
         $response->assertValid();
-        $response->assertStatus(200);
+        $this->assertResponseCode($response, 200);
         $response->assertExactJson([
             'success' => [
                 $ownTimeEntry->getKey(),
@@ -2098,7 +2552,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
 
         // Assert
         $response->assertValid();
-        $response->assertStatus(200);
+        $this->assertResponseCode($response, 200);
         $response->assertExactJson([
             'success' => [
                 $ownTimeEntry->getKey(),
@@ -2215,7 +2669,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
 
         // Assert
         $response->assertValid();
-        $response->assertStatus(200);
+        $this->assertResponseCode($response, 200);
         $response->assertExactJson([
             'success' => [
                 $ownTimeEntry->getKey(),
@@ -2279,7 +2733,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
 
         // Assert
         $response->assertValid();
-        $response->assertStatus(200);
+        $this->assertResponseCode($response, 200);
         $response->assertExactJson([
             'success' => [
                 $ownTimeEntry->getKey(),
@@ -2345,7 +2799,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
 
         // Assert
         $response->assertValid();
-        $response->assertStatus(200);
+        $this->assertResponseCode($response, 200);
         $response->assertExactJson([
             'success' => [
                 $timeEntry1->getKey(),
@@ -2393,7 +2847,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
 
         // Assert
         $response->assertValid();
-        $response->assertStatus(200);
+        $this->assertResponseCode($response, 200);
         $response->assertExactJson([
             'success' => [
                 $timeEntry1->getKey(),
@@ -2432,7 +2886,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
 
         // Assert
         $response->assertValid();
-        $response->assertStatus(200);
+        $this->assertResponseCode($response, 200);
         $response->assertExactJson([
             'success' => [
                 $timeEntry1->getKey(),
@@ -2483,7 +2937,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
 
         // Assert
         $response->assertValid();
-        $response->assertStatus(200);
+        $this->assertResponseCode($response, 200);
         $response->assertExactJson([
             'success' => [
                 $timeEntry1->getKey(),

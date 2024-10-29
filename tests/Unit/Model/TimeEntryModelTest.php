@@ -179,4 +179,50 @@ class TimeEntryModelTest extends ModelTestAbstract
         // Assert
         $this->assertSame($project->client_id, $clientId);
     }
+
+    public function test_has_many_tags_via_json_relation(): void
+    {
+        // Arrange
+        $tag1 = Tag::factory()->create();
+        $tag2 = Tag::factory()->create();
+        $timeEntry = TimeEntry::factory()->create([
+            'tags' => [$tag1->getKey(), $tag2->getKey()],
+        ]);
+
+        // Act
+        $timeEntry->refresh();
+        $tags = $timeEntry->tagsRelation;
+
+        // Assert
+        $this->assertCount(2, $tags);
+        $this->assertTrue($tags->contains($tag1));
+        $this->assertTrue($tags->contains($tag2));
+    }
+
+    public function test_has_many_tags_via_json_relation_eager_loaded(): void
+    {
+        // Arrange
+        $tag1 = Tag::factory()->create();
+        $tag2 = Tag::factory()->create();
+        $timeEntry1 = TimeEntry::factory()->create([
+            'tags' => [$tag1->getKey(), $tag2->getKey()],
+            'created_at' => Carbon::now()->subDay(),
+        ]);
+        $timeEntry2 = TimeEntry::factory()->create([
+            'tags' => [$tag1->getKey()],
+            'created_at' => Carbon::now()->subDays(2),
+        ]);
+
+        // Act
+        $timeEntries = TimeEntry::with('tagsRelation')->orderBy('created_at', 'desc')->get();
+        $tags1 = $timeEntries->get(0)->tagsRelation;
+        $tags2 = $timeEntries->get(1)->tagsRelation;
+
+        // Assert
+        $this->assertCount(2, $tags1);
+        $this->assertTrue($tags1->contains($tag1));
+        $this->assertTrue($tags1->contains($tag2));
+        $this->assertCount(1, $tags2);
+        $this->assertTrue($tags2->contains($tag1));
+    }
 }

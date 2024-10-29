@@ -6,6 +6,7 @@ use App\Exceptions\Api\CanNotDeleteUserWhoIsOwnerOfOrganizationWithMultipleMembe
 use App\Exceptions\Api\CanNotRemoveOwnerFromOrganization;
 use App\Exceptions\Api\ChangingRoleToPlaceholderIsNotAllowed;
 use App\Exceptions\Api\EntityStillInUseApiException;
+use App\Exceptions\Api\FeatureIsNotAvailableInFreePlanApiException;
 use App\Exceptions\Api\InactiveUserCanNotBeUsedApiException;
 use App\Exceptions\Api\OnlyOwnerCanChangeOwnership;
 use App\Exceptions\Api\OrganizationHasNoSubscriptionButMultipleMembersException;
@@ -35,6 +36,7 @@ return [
         ExportException::KEY => 'Export failed, please try again later or contact support',
         OrganizationHasNoSubscriptionButMultipleMembersException::KEY => 'Organization has no subscription but multiple members',
         PdfRendererIsNotConfiguredException::KEY => 'PDF renderer is not configured',
+        FeatureIsNotAvailableInFreePlanApiException::KEY => 'Feature is not available in free plan',
     ],
     'unknown_error_in_admin_panel' => 'An unknown error occurred. Please check the logs.',
 ];
