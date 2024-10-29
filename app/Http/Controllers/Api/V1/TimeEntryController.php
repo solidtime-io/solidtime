@@ -177,6 +177,8 @@ class TimeEntryController extends Controller
         if ($format === ExportFormat::PDF && ! $this->canAccessPremiumFeatures($organization)) {
             throw new FeatureIsNotAvailableInFreePlanApiException;
         }
+        $user = $this->user();
+        $timezone = $user->timezone;
 
         $timeEntriesQuery = $this->getTimeEntriesQuery($organization, $request, $member);
         $timeEntriesQuery->with([
@@ -190,7 +192,7 @@ class TimeEntryController extends Controller
         $folderPath = 'exports';
         $path = $folderPath.'/'.$filename;
         if ($format === ExportFormat::CSV) {
-            $export = new TimeEntriesDetailedCsvExport(config('filesystems.private'), $folderPath, $filename, $timeEntriesQuery, 1000);
+            $export = new TimeEntriesDetailedCsvExport(config('filesystems.private'), $folderPath, $filename, $timeEntriesQuery, 1000, $timezone);
             $export->export();
         } elseif ($format === ExportFormat::PDF) {
             if (config('services.gotenberg.url') === null) {
@@ -224,7 +226,7 @@ class TimeEntryController extends Controller
                 ->putFileAs($folderPath, new File($tempFolder->path($filenameTemp)), $filename);
         } else {
             Excel::store(
-                new TimeEntriesDetailedExport($timeEntriesQuery, $format),
+                new TimeEntriesDetailedExport($timeEntriesQuery, $format, $timezone),
                 $path,
                 config('filesystems.private'),
                 $format->getExportPackageType(),
