@@ -47,22 +47,24 @@ class DashboardService
     {
         $result = [];
         $windowSize = 24 / $windows;
-        $end = Carbon::now($timeZone)->endOfDay()->subHours(3)->utc()->toDateTimeString();
+        $end = Carbon::now($timeZone)->startOfDay()->addDay()->subHours(3)->utc()->toDateTimeString();
         $start = Carbon::now($timeZone)->subDays($days)->startOfDay()->utc()->toDateTimeString();
 
         $date = Carbon::now($timeZone)->startOfDay();
+        $dateUtc = Carbon::now($timeZone)->startOfDay()->utc();
         for ($i = 0; $i < $days; $i++) {
             $dateString = $date->format('Y-m-d');
-            $tempDate = $date->copy();
+            $tempDate = $dateUtc->copy();
             $start = $tempDate->copy()->utc()->toDateTimeString();
             $tempWindows = [];
             for ($j = 0; $j < $windows; $j++) {
-                $tempWindow = $tempDate->utc()->toDateTimeString();
+                $tempWindow = $tempDate->toDateTimeString();
                 $tempWindows[] = $tempWindow;
                 $tempDate->addHours($windowSize);
             }
             $result[$dateString] = $tempWindows;
             $date->subDay();
+            $dateUtc->subDay();
         }
 
         return [
