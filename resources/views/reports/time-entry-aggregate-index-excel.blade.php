@@ -126,15 +126,27 @@
         @else
             <td style="border: 1px solid black; font-weight: bold;" data-type="{{ DataType::TYPE_FORMULA }}"
                 data-format="[hh]:mm:ss">
-                =SUM(C2:C{{ $counter }})
+                @if($counter > 1)
+                    =SUM(C2:C{{ $counter }})
+                @else
+                    =0
+                @endif
             </td>
             <td style="border: 1px solid black; font-weight: bold;" data-type="{{ DataType::TYPE_FORMULA }}"
                 data-format="{{ NumberFormat::FORMAT_NUMBER_00 }}">
-                =SUM(D2:D{{ $counter }})
+                @if($counter > 1)
+                    =SUM(D2:D{{ $counter }})
+                @else
+                    =0
+                @endif
             </td>
             <td style="border: 1px solid black; font-weight: bold;" data-type="{{ DataType::TYPE_FORMULA }}"
                 data-format="{{ NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1 }}">
-                =SUM(E2:E{{ $counter }})
+                @if($counter > 1)
+                    =SUM(E2:E{{ $counter }})
+                @else
+                    =0
+                @endif
             </td>
         @endif
     </tr>
