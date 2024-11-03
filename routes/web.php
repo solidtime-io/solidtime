@@ -48,6 +48,10 @@ Route::middleware([
         return Inertia::render('ReportingDetailed');
     })->name('reporting.detailed');
 
+    Route::get('/reporting/shared', function () {
+        return Inertia::render('ReportingShared');
+    })->name('reporting.shared');
+
     Route::get('/projects', function () {
         return Inertia::render('Projects');
     })->name('projects');

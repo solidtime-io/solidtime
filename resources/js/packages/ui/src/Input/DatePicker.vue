@@ -46,7 +46,7 @@ const emit = defineEmits(['changed']);
 </script>
 
 <template>
-    <div class="flex items-center justify-center text-muted">
+    <div class="flex items-center text-muted">
         <input
             ref="datePicker"
             @change="updateTempValue"
