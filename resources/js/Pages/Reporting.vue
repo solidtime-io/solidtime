@@ -12,8 +12,7 @@ import {
 import DateRangePicker from '@/packages/ui/src/Input/DateRangePicker.vue';
 import ReportingChart from '@/Components/Common/Reporting/ReportingChart.vue';
 import BillableIcon from '@/packages/ui/src/Icons/BillableIcon.vue';
-
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import {
     formatHumanReadableDuration,
     getDayJsInstance,
@@ -23,6 +22,10 @@ import { type GroupingOption, useReportingStore } from '@/utils/useReporting';
 import { storeToRefs } from 'pinia';
 import TagDropdown from '@/packages/ui/src/Tag/TagDropdown.vue';
 import { type AggregatedTimeEntriesQueryParams, api } from '@/packages/api/src';
+import type {
+    AggregatedTimeEntriesQueryParams,
+    CreateReportBodyProperties,
+} from '@/packages/api/src';
 import ReportingFilterBadge from '@/Components/Common/Reporting/ReportingFilterBadge.vue';
 import ProjectMultiselectDropdown from '@/Components/Common/Project/ProjectMultiselectDropdown.vue';
 import MemberMultiselectDropdown from '@/Components/Common/Member/MemberMultiselectDropdown.vue';
@@ -41,9 +44,9 @@ import ClientMultiselectDropdown from '@/Components/Common/Client/ClientMultisel
 import { useTagsStore } from '@/utils/useTags';
 import { formatCents } from '@/packages/ui/src/utils/money';
 import { useSessionStorage, useStorage } from '@vueuse/core';
-import TabBar from '@/Components/Common/TabBar/TabBar.vue';
-import TabBarItem from '@/Components/Common/TabBar/TabBarItem.vue';
-import { router } from '@inertiajs/vue3';
+import { SecondaryButton } from '@/packages/ui/src';
+import ReportCreateModal from '@/Components/Common/Report/ReportCreateModal.vue';
+import ReportingTabNavbar from '@/Components/Common/Reporting/ReportingTabNavbar.vue';
 import { useNotificationsStore } from '@/utils/notification';
 import ReportingExportButton from '@/Components/Common/Reporting/ReportingExportButton.vue';
 import type { ExportFormat } from '@/types/reporting';
@@ -162,6 +165,15 @@ const { tags } = storeToRefs(useTagsStore());
 async function createTag(tag: string) {
     return await useTagsStore().createTag(tag);
 }
+const showCreateReportModal = ref(false);
+
+const reportProperties = computed(() => {
+    return {
+        ...getFilterAttributes(),
+        group: group.value,
+        sub_group: subGroup.value,
+    } as CreateReportBodyProperties;
+});
 
 async function downloadExport(format: ExportFormat) {
     const organizationId = getCurrentOrganizationId();
@@ -192,6 +204,9 @@ async function downloadExport(format: ExportFormat) {
 </script>
 
 <template>
+    <ReportCreateModal
+        :properties="reportProperties"
+        v-model:show="showCreateReportModal"></ReportCreateModal>
     <AppLayout
         title="Reporting"
         data-testid="reporting_view"
@@ -200,16 +215,11 @@ async function downloadExport(format: ExportFormat) {
             class="py-3 sm:py-5 border-b border-default-background-separator flex justify-between items-center">
             <div class="flex items-center space-x-3 sm:space-x-6">
                 <PageTitle :icon="ChartBarIcon" title="Reporting"></PageTitle>
-                <TabBar>
-                    <TabBarItem @click="router.visit(route('reporting'))" active
-                        >Overview</TabBarItem
-                    >
-                    <TabBarItem
-                        @click="router.visit(route('reporting.detailed'))"
-                        >Detailed</TabBarItem
-                    >
-                </TabBar>
+                <ReportingTabNavbar active="reporting"></ReportingTabNavbar>
             </div>
+            <SecondaryButton @click="showCreateReportModal = true"
+                >Save</SecondaryButton
+            >
             <ReportingExportButton
                 :download="downloadExport"></ReportingExportButton>
         </MainContainer>

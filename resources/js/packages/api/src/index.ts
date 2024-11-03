@@ -152,6 +152,16 @@ export type OrganizationExportResponse = ZodiosResponseByAlias<
     'exportOrganization'
 >;
 
+export type ReportIndexResponse = ZodiosResponseByAlias<
+    SolidTimeApi,
+    'getReports'
+>;
+
+export type CreateReportBody = ZodiosBodyByAlias<SolidTimeApi, 'createReport'>;
+export type UpdateReportBody = ZodiosBodyByAlias<SolidTimeApi, 'updateReport'>;
+export type CreateReportBodyProperties = CreateReportBody['properties'];
+export type Report = ReportIndexResponse['data'][0];
+
 const api = createApiClient('/api', { validate: 'none' });
 
 export { createApiClient, api };

@@ -100,3 +100,10 @@ export function canDeleteTags() {
 export function canManageBilling() {
     return currentUserHasPermission('billing');
 }
+
+export function canUpdateReport() {
+    return currentUserHasPermission('reports:update');
+}
+export function canDeleteReport() {
+    return currentUserHasPermission('reports:delete');
+}

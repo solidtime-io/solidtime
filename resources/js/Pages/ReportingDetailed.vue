@@ -41,9 +41,6 @@ import SelectDropdown from '@/packages/ui/src/Input/SelectDropdown.vue';
 import ClientMultiselectDropdown from '@/Components/Common/Client/ClientMultiselectDropdown.vue';
 import { useTagsStore } from '@/utils/useTags';
 import { useSessionStorage } from '@vueuse/core';
-import { router } from '@inertiajs/vue3';
-import TabBar from '@/Components/Common/TabBar/TabBar.vue';
-import TabBarItem from '@/Components/Common/TabBar/TabBarItem.vue';
 import TimeEntryRow from '@/packages/ui/src/TimeEntry/TimeEntryRow.vue';
 import { useCurrentTimeEntryStore } from '@/utils/useCurrentTimeEntry';
 import { useProjectsStore } from '@/utils/useProjects';
@@ -64,6 +61,7 @@ import {
 import { useQuery, useQueryClient } from '@tanstack/vue-query';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import { useTimeEntriesStore } from '@/utils/useTimeEntries';
+import ReportingTabNavbar from '@/Components/Common/Reporting/ReportingTabNavbar.vue';
 import ReportingExportButton from '@/Components/Common/Reporting/ReportingExportButton.vue';
 import type { ExportFormat } from '@/types/reporting';
 import { useNotificationsStore } from '@/utils/notification';
@@ -250,16 +248,7 @@ async function downloadExport(format: ExportFormat) {
             class="py-3 sm:py-5 border-b border-default-background-separator flex justify-between items-center">
             <div class="flex items-center space-x-3 sm:space-x-6">
                 <PageTitle :icon="ChartBarIcon" title="Reporting"></PageTitle>
-                <TabBar>
-                    <TabBarItem @click="router.visit(route('reporting'))"
-                        >Overview
-                    </TabBarItem>
-                    <TabBarItem
-                        @click="router.visit(route('reporting.detailed'))"
-                        active
-                        >Detailed
-                    </TabBarItem>
-                </TabBar>
+                <ReportingTabNavbar active="detailed"></ReportingTabNavbar>
             </div>
             <ReportingExportButton
                 :download="downloadExport"></ReportingExportButton>
