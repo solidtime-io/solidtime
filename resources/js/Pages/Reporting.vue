@@ -21,10 +21,10 @@ import {
 import { type GroupingOption, useReportingStore } from '@/utils/useReporting';
 import { storeToRefs } from 'pinia';
 import TagDropdown from '@/packages/ui/src/Tag/TagDropdown.vue';
-import { type AggregatedTimeEntriesQueryParams, api } from '@/packages/api/src';
-import type {
-    AggregatedTimeEntriesQueryParams,
-    CreateReportBodyProperties,
+import {
+    type AggregatedTimeEntriesQueryParams,
+    type CreateReportBodyProperties,
+    api,
 } from '@/packages/api/src';
 import ReportingFilterBadge from '@/Components/Common/Reporting/ReportingFilterBadge.vue';
 import ProjectMultiselectDropdown from '@/Components/Common/Project/ProjectMultiselectDropdown.vue';
