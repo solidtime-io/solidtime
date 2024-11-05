@@ -28,13 +28,6 @@ return new class extends Migration
         if ($foreignKeyProblems->count() > 0) {
             throw new Exception('There are organizations with non-existing owners, check the logs for more information');
         }
-        Schema::table('organizations', function (Blueprint $table): void {
-            $table->foreign('user_id')
-                ->references('id')
-                ->on('users')
-                ->onDelete('restrict')
-                ->onUpdate('cascade');
-        });
         $foreignKeyProblems = DB::table('members')
             ->select(['members.id', 'members.organization_id'])
             ->whereNotExists(function (Builder $query): void {
@@ -63,6 +56,13 @@ return new class extends Migration
         if ($foreignKeyProblems->count() > 0) {
             throw new Exception('There are members with non-existing users, check the logs for more information');
         }
+        Schema::table('organizations', function (Blueprint $table): void {
+            $table->foreign('user_id')
+                ->references('id')
+                ->on('users')
+                ->onDelete('restrict')
+                ->onUpdate('cascade');
+        });
         Schema::table('members', function (Blueprint $table): void {
             $table->foreign('organization_id')
                 ->references('id')
