@@ -13,6 +13,9 @@ use App\Models\User;
 use App\Providers\Filament\AdminPanelProvider;
 use Filament\Panel;
 use Illuminate\Support\Facades\Config;
+use Laravel\Passport\AuthCode;
+use Laravel\Passport\Client;
+use Laravel\Passport\Token;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
 
@@ -137,5 +140,67 @@ class UserModelTest extends ModelTestAbstract
         // Assert
         $this->assertCount(1, $activeUsers);
         $this->assertTrue($activeUsers->first()->is($user));
+    }
+
+    public function test_it_has_many_access_tokens(): void
+    {
+        // Arrange
+        $user = User::factory()->create();
+        $client = new Client;
+        $client->name = 'desktop';
+        $client->redirect = 'solidtime://oauth/callback';
+        $client->personal_access_client = false;
+        $client->password_client = false;
+        $client->revoked = false;
+        $client->save();
+        $token = new Token;
+        $token->id = 'some-id';
+        $token->user_id = $user->getKey();
+        $token->client_id = $client->getKey();
+        $token->revoked = false;
+        $token->save();
+
+        // Act
+        $user->refresh();
+        $tokensRel = $user->accessTokens;
+
+        // Assert
+        $this->assertNotNull($tokensRel);
+        $this->assertCount(1, $tokensRel);
+        $this->assertEqualsCanonicalizing(
+            [$token->getKey()],
+            $tokensRel->pluck('id')->toArray()
+        );
+    }
+
+    public function test_it_has_many_auth_codes(): void
+    {
+        // Arrange
+        $user = User::factory()->create();
+        $client = new Client;
+        $client->name = 'desktop';
+        $client->redirect = 'solidtime://oauth/callback';
+        $client->personal_access_client = false;
+        $client->password_client = false;
+        $client->revoked = false;
+        $client->save();
+        $authCode = new AuthCode;
+        $authCode->id = 'some-id';
+        $authCode->user_id = $user->getKey();
+        $authCode->client_id = $client->getKey();
+        $authCode->revoked = false;
+        $authCode->save();
+
+        // Act
+        $user->refresh();
+        $authCodesRel = $user->authCodes;
+
+        // Assert
+        $this->assertNotNull($authCodesRel);
+        $this->assertCount(1, $authCodesRel);
+        $this->assertEqualsCanonicalizing(
+            [$authCode->getKey()],
+            $authCodesRel->pluck('id')->toArray()
+        );
     }
 }

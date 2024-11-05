@@ -307,19 +307,30 @@ class DeletionServiceTest extends TestCaseWithDatabase
     {
         // Arrange
         $user = User::factory()->create();
+        $otherUser = User::factory()->create();
         $organizationOwned = Organization::factory()->withOwner($user)->create();
-        $organizationNotOwned = Organization::factory()->create();
+        $organizationNotOwned = Organization::factory()->withOwner($otherUser)->create();
         $memberOwned = Member::factory()->forUser($user)->forOrganization($organizationOwned)->role(Role::Owner)->create();
         $memberNotOwned = Member::factory()->forUser($user)->forOrganization($organizationNotOwned)->role(Role::Employee)->create();
         TimeEntry::factory()->forOrganization($organizationOwned)->forMember($memberOwned)->createMany(2);
         TimeEntry::factory()->forOrganization($organizationNotOwned)->forMember($memberNotOwned)->createMany(2);
+        $this->assertDatabaseCount(User::class, 2);
 
         // Act
         $this->deletionService->deleteUser($user);
 
         // Assert
+        $this->assertDatabaseCount(Organization::class, 1);
+        $this->assertDatabaseCount(User::class, 2);
         $this->assertDatabaseMissing(User::class, [
             'id' => $user->getKey(),
+        ]);
+        $this->assertDatabaseHas(User::class, [
+            'id' => $otherUser->getKey(),
+            'is_placeholder' => false,
+        ]);
+        $this->assertDatabaseHas(User::class, [
+            'is_placeholder' => true,
         ]);
         $this->assertDatabaseMissing(Organization::class, [
             'id' => $organizationOwned->getKey(),

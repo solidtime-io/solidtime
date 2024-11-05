@@ -18,6 +18,12 @@ use App\Models\TimeEntry;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Laravel\Passport\AuthCode;
+use Laravel\Passport\Client as PassportClient;
+use Laravel\Passport\ClientRepository;
+use Laravel\Passport\PersonalAccessClient;
+use Laravel\Passport\RefreshToken;
+use Laravel\Passport\Token;
 
 class DatabaseSeeder extends Seeder
 {
@@ -150,10 +156,35 @@ class DatabaseSeeder extends Seeder
         User::factory()->withPersonalOrganization()->create([
             'email' => 'admin@example.com',
         ]);
+
+        app(ClientRepository::class)->create(
+            null,
+            'desktop',
+            'solidtime://oauth/callback',
+            null,
+            false,
+            false,
+            false
+        );
     }
 
     private function deleteAll(): void
     {
+        // Laravel Passport tables
+        DB::table((new RefreshToken)->getTable())->delete();
+        DB::table((new Token)->getTable())->delete();
+        DB::table((new AuthCode)->getTable())->delete();
+        DB::table((new PersonalAccessClient)->getTable())->delete();
+        DB::table((new PassportClient)->getTable())->delete();
+
+        // Internal tables
+        DB::table('cache')->delete();
+        DB::table('cache_locks')->delete();
+        DB::table('jobs')->delete();
+        DB::table('failed_jobs')->delete();
+        DB::table('sessions')->delete();
+
+        // Application tables
         DB::table((new Audit)->getTable())->delete();
         DB::table((new TimeEntry)->getTable())->delete();
         DB::table((new Task)->getTable())->delete();
@@ -161,8 +192,9 @@ class DatabaseSeeder extends Seeder
         DB::table((new ProjectMember)->getTable())->delete();
         DB::table((new Project)->getTable())->delete();
         DB::table((new Client)->getTable())->delete();
-        DB::table((new User)->getTable())->delete();
+        DB::table((new Member)->getTable())->delete();
         DB::table((new OrganizationInvitation)->getTable())->delete();
         DB::table((new Organization)->getTable())->delete();
+        DB::table((new User)->getTable())->delete();
     }
 }

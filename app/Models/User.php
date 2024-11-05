@@ -25,7 +25,9 @@ use Illuminate\Support\Facades\Storage;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Jetstream\HasTeams;
+use Laravel\Passport\AuthCode;
 use Laravel\Passport\HasApiTokens;
+use Laravel\Passport\Token;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
@@ -176,6 +178,22 @@ class User extends Authenticatable implements AuditableContract, FilamentUser, M
     public function projectMembers(): HasMany
     {
         return $this->hasMany(ProjectMember::class, 'user_id');
+    }
+
+    /**
+     * @return HasMany<Token>
+     */
+    public function accessTokens(): HasMany
+    {
+        return $this->hasMany(Token::class);
+    }
+
+    /**
+     * @return HasMany<AuthCode>
+     */
+    public function authCodes(): HasMany
+    {
+        return $this->hasMany(AuthCode::class);
     }
 
     /**
