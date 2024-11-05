@@ -44,7 +44,7 @@ class MemberService
         }
     }
 
-    public function makeMemberToPlaceholder(Member $member): void
+    public function makeMemberToPlaceholder(Member $member, bool $makeSureUserHasAtLeastOneOrganization = true): void
     {
         $user = $member->user;
         $placeholderUser = $user->replicate();
@@ -56,6 +56,8 @@ class MemberService
         $member->save();
 
         $this->userService->assignOrganizationEntitiesToDifferentMember($member->organization, $user, $placeholderUser, $member);
-        $this->userService->makeSureUserHasAtLeastOneOrganization($user);
+        if ($makeSureUserHasAtLeastOneOrganization) {
+            $this->userService->makeSureUserHasAtLeastOneOrganization($user);
+        }
     }
 }

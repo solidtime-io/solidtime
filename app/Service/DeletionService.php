@@ -144,6 +144,7 @@ class DeletionService
             ->get();
 
         foreach ($members as $member) {
+            /** @var Member $member */
             if ($member->role === Role::Owner->value && $member->organization->users()->count() > 1) {
                 throw new CanNotDeleteUserWhoIsOwnerOfOrganizationWithMultipleMembers;
             }
@@ -154,9 +155,12 @@ class DeletionService
             if ($member->role === Role::Owner->value) {
                 $this->deleteOrganization($member->organization, false, $user);
             } else {
-                $this->memberService->makeMemberToPlaceholder($member);
+                $this->memberService->makeMemberToPlaceholder($member, false);
             }
         }
+
+        $user->accessTokens()->delete();
+        $user->authCodes()->delete();
 
         // Note: Since the deletion of the profile photo is not reversible via a database rollback this needs to be done last
         $user->deleteProfilePhoto();
