@@ -22,7 +22,7 @@ class BillingContract
      */
     public function hasSubscription(Organization $organization): bool
     {
-        return false;
+        return true;
     }
 
     /**
