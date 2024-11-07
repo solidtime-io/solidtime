@@ -30,7 +30,7 @@ return [
     | may even configure multiple disks of the same driver. Defaults have
     | been set up for each driver as an example of the required values.
     |
-    | Supported Drivers: "local", "ftp", "sftp", "s3"
+    | Supported Drivers: "local", "ftp", "sftp", "s3", "azure"
     |
     */
 
@@ -68,6 +68,13 @@ return [
             'root' => resource_path('testfiles'),
             'throw' => true,
         ],
+
+        'azure' => [
+            'driver' => 'azure-storage-blob',
+            'connection_string' => env('AZURE_STORAGE_CONNECTION_STRING'),
+            'container' => env('AZURE_STORAGE_CONTAINER'),
+            'prefix' => env('AZURE_STORAGE_PREFIX'),
+],
 
     ],
 
