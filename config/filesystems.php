@@ -74,6 +74,7 @@ return [
             'connection_string' => env('AZURE_STORAGE_CONNECTION_STRING'),
             'container' => env('AZURE_STORAGE_CONTAINER'),
             'prefix' => env('AZURE_STORAGE_PREFIX'),
+            'throw' => true,
 ],
 
     ],
