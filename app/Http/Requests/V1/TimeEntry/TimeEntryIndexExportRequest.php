@@ -68,7 +68,7 @@ class TimeEntryIndexExportRequest extends TimeEntryIndexRequest
                     return $builder->whereBelongsTo($this->organization, 'organization');
                 }),
             ],
-            // Filter by tag IDs, tag IDs are AND combined
+            // Filter by tag IDs, tag IDs are OR combined
             'tag_ids' => [
                 'array',
                 'min:1',

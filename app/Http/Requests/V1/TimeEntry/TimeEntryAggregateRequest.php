@@ -95,7 +95,7 @@ class TimeEntryAggregateRequest extends FormRequest
                     return $builder->whereBelongsTo($this->organization, 'organization');
                 })->uuid(),
             ],
-            // Filter by tag IDs, tag IDs are AND combined
+            // Filter by tag IDs, tag IDs are OR combined
             'tag_ids' => [
                 'array',
                 'min:1',
