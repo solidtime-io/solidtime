@@ -133,7 +133,11 @@ class TimeEntryFilter
         if ($tagIds === null) {
             return $this;
         }
-        $this->builder->whereJsonContains('tags', $tagIds);
+        $this->builder->where(function (Builder $builder) use ($tagIds): void {
+            foreach ($tagIds as $tagId) {
+                $builder->orWhereJsonContains('tags', $tagId);
+            }
+        });
 
         return $this;
     }
