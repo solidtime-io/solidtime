@@ -34,21 +34,35 @@ class DetailedReportResource extends BaseResource
             /** @var string|null $shareable_link Get link to access the report externally, not set if the report is private */
             'shareable_link' => $this->resource->getShareableLink(),
             'properties' => [
+                /** @var string $group Type of first grouping */
                 'group' => $this->resource->properties->group->value,
+                /** @var string $sub_group Type of second grouping */
                 'sub_group' => $this->resource->properties->subGroup->value,
-                /** @var string|null $start Start date of the report */
-                'start' => $this->resource->properties->start?->toIso8601ZuluString(),
-                /** @var string|null $end End date of the report */
-                'end' => $this->resource->properties->end?->toIso8601ZuluString(),
+                /** @var string $history_group Type of grouping of the historic aggregation (time chart) */
+                'history_group' => $this->resource->properties->historyGroup->value,
+                /** @var string $start Start date of the report */
+                'start' => $this->resource->properties->start->toIso8601ZuluString(),
+                /** @var string $end End date of the report */
+                'end' => $this->resource->properties->end->toIso8601ZuluString(),
                 /** @var bool|null $active Whether the report is active */
                 'active' => $this->resource->properties->active,
+                /** @var array<string>|null $member_ids Filter by multiple member IDs, member IDs are OR combined */
                 'member_ids' => $this->resource->properties->memberIds?->toArray(),
+                /** @var bool|null $billable Filter by billable status */
                 'billable' => $this->resource->properties->billable,
+                /** @var array<string>|null $client_ids Filter by client IDs, client IDs are OR combined */
                 'client_ids' => $this->resource->properties->clientIds?->toArray(),
+                /** @var array<string>|null $project_ids Filter by project IDs, project IDs are OR combined */
                 'project_ids' => $this->resource->properties->projectIds?->toArray(),
+                /** @var array<string>|null $tags_ids Filter by tag IDs, tag IDs are OR combined */
                 'tag_ids' => $this->resource->properties->tagIds?->toArray(),
+                /** @var array<string>|null $task_ids Filter by task IDs, task IDs are OR combined */
                 'task_ids' => $this->resource->properties->taskIds?->toArray(),
             ],
+            /** @var string $created_at Date when the report was created */
+            'created_at' => $this->resource->created_at?->toIso8601ZuluString(),
+            /** @var string $updated_at Date when the report was last updated */
+            'updated_at' => $this->resource->updated_at?->toIso8601ZuluString(),
         ];
     }
 }

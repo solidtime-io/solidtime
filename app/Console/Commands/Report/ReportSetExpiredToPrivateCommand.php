@@ -8,6 +8,7 @@ use App\Models\Report;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
+use LogicException;
 
 class ReportSetExpiredToPrivateCommand extends Command
 {
@@ -44,7 +45,12 @@ class ReportSetExpiredToPrivateCommand extends Command
             ->chunk(500, function (Collection $reports) use ($dryRun, &$resetReports): void {
                 /** @var Collection<int, Report> $reports */
                 foreach ($reports as $report) {
-                    $this->info('Make report "'.$report->name.'" ('.$report->getKey().') private, expired: '.$report->public_until->toIso8601ZuluString().' ('.$report->public_until->diffForHumans().')');
+                    $publicUntil = $report->public_until;
+                    if ($publicUntil === null) {
+                        throw new LogicException('public_until should not be null');
+                    }
+                    $this->info('Make report "'.$report->name.'" ('.$report->getKey().') private, expired: '.
+                        $publicUntil->toIso8601ZuluString().' ('.$publicUntil->diffForHumans().')');
                     $resetReports++;
                     if (! $dryRun) {
                         $report->is_public = false;

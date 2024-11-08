@@ -4,9 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Public;
 
+use App\Enums\TimeEntryAggregationType;
 use App\Http\Controllers\Api\V1\Controller;
-use App\Http\Resources\V1\Report\DetailedReportResource;
+use App\Http\Resources\V1\Report\DetailedWithDataReportResource;
 use App\Models\Report;
+use App\Models\TimeEntry;
+use App\Service\Dto\ReportPropertiesDto;
+use App\Service\TimeEntryAggregationService;
+use App\Service\TimeEntryFilter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
@@ -22,7 +27,7 @@ class ReportController extends Controller
      *
      * @operationId getPublicReport
      */
-    public function show(Request $request): DetailedReportResource
+    public function show(Request $request, TimeEntryAggregationService $timeEntryAggregationService): DetailedWithDataReportResource
     {
         $shareSecret = $request->header('X-Api-Key');
         if (! is_string($shareSecret)) {
@@ -30,6 +35,9 @@ class ReportController extends Controller
         }
 
         $report = Report::query()
+            ->with([
+                'organization',
+            ])
             ->where('share_secret', '=', $shareSecret)
             ->where('is_public', '=', true)
             ->where(function (Builder $builder): void {
@@ -38,7 +46,45 @@ class ReportController extends Controller
                     ->orWhere('public_until', '>', now());
             })
             ->firstOrFail();
+        /** @var ReportPropertiesDto $properties */
+        $properties = $report->properties;
 
-        return new DetailedReportResource($report);
+        $timeEntriesQuery = TimeEntry::query()
+            ->whereBelongsTo($report->organization, 'organization');
+
+        $filter = new TimeEntryFilter($timeEntriesQuery);
+        $filter->addStart($properties->start);
+        $filter->addEnd($properties->end);
+        $filter->addActive($properties->active);
+        $filter->addBillable($properties->billable);
+        $filter->addMemberIdsFilter($properties->memberIds?->toArray());
+        $filter->addProjectIdsFilter($properties->projectIds?->toArray());
+        $filter->addTagIdsFilter($properties->tagIds?->toArray());
+        $filter->addTaskIdsFilter($properties->taskIds?->toArray());
+        $filter->addClientIdsFilter($properties->clientIds?->toArray());
+        $timeEntriesQuery = $filter->get();
+
+        $data = $timeEntryAggregationService->getAggregatedTimeEntriesWithDescriptions(
+            $timeEntriesQuery->clone(),
+            $report->properties->group,
+            $report->properties->subGroup,
+            $report->properties->timezone,
+            $report->properties->weekStart,
+            false,
+            $report->properties->start,
+            $report->properties->end,
+        );
+        $historyData = $timeEntryAggregationService->getAggregatedTimeEntriesWithDescriptions(
+            $timeEntriesQuery->clone(),
+            TimeEntryAggregationType::fromInterval($report->properties->historyGroup),
+            null,
+            $report->properties->timezone,
+            $report->properties->weekStart,
+            true,
+            $report->properties->start,
+            $report->properties->end,
+        );
+
+        return new DetailedWithDataReportResource($report, $data, $historyData);
     }
 }

@@ -33,6 +33,10 @@ class ReportResource extends BaseResource
             'public_until' => $this->resource->public_until?->toIso8601ZuluString(),
             /** @var string|null $shareable_link Get link to access the report externally, not set if the report is private */
             'shareable_link' => $this->resource->getShareableLink(),
+            /** @var string $created_at Date when the report was created */
+            'created_at' => $this->resource->created_at?->toIso8601ZuluString(),
+            /** @var string $updated_at Date when the report was last updated */
+            'updated_at' => $this->resource->updated_at?->toIso8601ZuluString(),
         ];
     }
 }

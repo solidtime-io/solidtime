@@ -30,7 +30,17 @@ class TimeEntryFilter
         if ($dateTime === null) {
             return $this;
         }
-        $this->builder->where('start', '<', Carbon::createFromFormat('Y-m-d\TH:i:s\Z', $dateTime, 'UTC'));
+        $this->addEnd(Carbon::createFromFormat('Y-m-d\TH:i:s\Z', $dateTime, 'UTC'));
+
+        return $this;
+    }
+
+    public function addEnd(?Carbon $end): self
+    {
+        if ($end === null) {
+            return $this;
+        }
+        $this->builder->where('start', '<', $end);
 
         return $this;
     }
@@ -40,7 +50,17 @@ class TimeEntryFilter
         if ($dateTime === null) {
             return $this;
         }
-        $this->builder->where('start', '>', Carbon::createFromFormat('Y-m-d\TH:i:s\Z', $dateTime, 'UTC'));
+        $this->addStart(Carbon::createFromFormat('Y-m-d\TH:i:s\Z', $dateTime, 'UTC'));
+
+        return $this;
+    }
+
+    public function addStart(?Carbon $start): self
+    {
+        if ($start === null) {
+            return $this;
+        }
+        $this->builder->where('start', '>', $start);
 
         return $this;
     }
@@ -51,9 +71,21 @@ class TimeEntryFilter
             return $this;
         }
         if ($active === 'true') {
-            $this->builder->whereNull('end');
+            $this->addActive(true);
+        } elseif ($active === 'false') {
+            $this->addActive(false);
+        } else {
+            Log::warning('Invalid active filter value', ['value' => $active]);
         }
-        if ($active === 'false') {
+
+        return $this;
+    }
+
+    public function addActive(?bool $active): self
+    {
+        if ($active) {
+            $this->builder->whereNull('end');
+        } else {
             $this->builder->whereNotNull('end');
         }
 
@@ -89,12 +121,22 @@ class TimeEntryFilter
             return $this;
         }
         if ($billable === 'true') {
-            $this->builder->where('billable', '=', true);
+            $this->addBillable(true);
         } elseif ($billable === 'false') {
-            $this->builder->where('billable', '=', false);
+            $this->addBillable(false);
         } else {
             Log::warning('Invalid billable filter value', ['value' => $billable]);
         }
+
+        return $this;
+    }
+
+    public function addBillable(?bool $billable): self
+    {
+        if ($billable === null) {
+            return $this;
+        }
+        $this->builder->where('billable', '=', $billable);
 
         return $this;
     }

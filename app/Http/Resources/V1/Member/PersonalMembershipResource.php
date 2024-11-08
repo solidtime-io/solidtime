@@ -28,6 +28,8 @@ class PersonalMembershipResource extends BaseResource
                 'id' => $this->resource->organization->id,
                 /** @var string $name Name of organization */
                 'name' => $this->resource->organization->name,
+                /** @var string $currency Currency code (ISO 4217) of organization */
+                'currency' => $this->resource->organization->currency,
             ],
             /** @var string $role Role */
             'role' => $this->resource->role,

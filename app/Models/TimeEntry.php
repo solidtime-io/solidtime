@@ -104,7 +104,7 @@ class TimeEntry extends Model implements AuditableContract
 
     public function getClientIdComputed(): ?string
     {
-        return $this->project_id === null ? null : $this->project->client_id;
+        return $this->project_id === null || $this->project === null ? null : $this->project->client_id;
     }
 
     /**

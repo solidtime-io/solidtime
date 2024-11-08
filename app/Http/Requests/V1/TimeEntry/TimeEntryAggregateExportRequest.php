@@ -34,21 +34,23 @@ class TimeEntryAggregateExportRequest extends FormRequest
     public function rules(): array
     {
         return [
+            // Data format of the export
             'format' => [
                 'required',
                 'string',
                 Rule::enum(ExportFormat::class),
             ],
+            // Type of first grouping
             'group' => [
                 'required',
                 Rule::enum(TimeEntryAggregationType::class),
             ],
-
+            // Type of second grouping
             'sub_group' => [
                 'required',
                 Rule::enum(TimeEntryAggregationType::class),
             ],
-
+            // Type of grouping of the historic aggregation (time chart)
             'history_group' => [
                 'required',
                 'nullable',
@@ -178,12 +180,22 @@ class TimeEntryAggregateExportRequest extends FormRequest
 
     public function getStart(): Carbon
     {
-        return Carbon::createFromFormat('Y-m-d\TH:i:s\Z', $this->input('start'), 'UTC');
+        $start = Carbon::createFromFormat('Y-m-d\TH:i:s\Z', $this->input('start'), 'UTC');
+        if ($start === null) {
+            throw new \LogicException('Start date validation is not working');
+        }
+
+        return $start;
     }
 
     public function getEnd(): Carbon
     {
-        return Carbon::createFromFormat('Y-m-d\TH:i:s\Z', $this->input('end'), 'UTC');
+        $end = Carbon::createFromFormat('Y-m-d\TH:i:s\Z', $this->input('end'), 'UTC');
+        if ($end === null) {
+            throw new \LogicException('End date validation is not working');
+        }
+
+        return $end;
     }
 
     public function getFormatValue(): ExportFormat

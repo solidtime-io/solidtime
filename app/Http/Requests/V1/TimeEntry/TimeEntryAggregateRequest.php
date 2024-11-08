@@ -32,12 +32,13 @@ class TimeEntryAggregateRequest extends FormRequest
     public function rules(): array
     {
         return [
+            // Type of first grouping
             'group' => [
                 'nullable',
                 'required_with:sub_group',
                 Rule::enum(TimeEntryAggregationType::class),
             ],
-
+            // Type of second grouping
             'sub_group' => [
                 'nullable',
                 Rule::enum(TimeEntryAggregationType::class),
