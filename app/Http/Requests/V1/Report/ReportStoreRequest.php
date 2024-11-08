@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Requests\V1\Report;
 
 use App\Enums\TimeEntryAggregationType;
+use App\Enums\TimeEntryAggregationTypeInterval;
+use App\Enums\Weekday;
 use App\Models\Organization;
 use Illuminate\Contracts\Validation\Rule as LegacyValidationRule;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -49,11 +51,11 @@ class ReportStoreRequest extends FormRequest
                 'array',
             ],
             'properties.start' => [
-                'nullable',
+                'required',
                 'date_format:Y-m-d\TH:i:s\Z',
             ],
             'properties.end' => [
-                'nullable',
+                'required',
                 'date_format:Y-m-d\TH:i:s\Z',
             ],
             'properties.active' => [
@@ -80,6 +82,7 @@ class ReportStoreRequest extends FormRequest
                 'string',
                 'uuid',
             ],
+            // Filter by project IDs, project IDs are OR combined
             'properties.project_ids' => [
                 'nullable',
                 'array',
@@ -88,6 +91,7 @@ class ReportStoreRequest extends FormRequest
                 'string',
                 'uuid',
             ],
+            // Filter by tag IDs, tag IDs are OR combined
             'properties.tag_ids' => [
                 'nullable',
                 'array',
@@ -108,10 +112,21 @@ class ReportStoreRequest extends FormRequest
                 'required',
                 Rule::enum(TimeEntryAggregationType::class),
             ],
-
             'properties.sub_group' => [
                 'required',
                 Rule::enum(TimeEntryAggregationType::class),
+            ],
+            'properties.history_group' => [
+                'required',
+                Rule::enum(TimeEntryAggregationTypeInterval::class),
+            ],
+            'properties.week_start' => [
+                'nullable',
+                Rule::enum(Weekday::class),
+            ],
+            'properties.timezone' => [
+                'nullable',
+                'timezone:all',
             ],
         ];
     }
@@ -136,5 +151,58 @@ class ReportStoreRequest extends FormRequest
         $publicUntil = $this->input('public_until');
 
         return $publicUntil === null ? null : Carbon::createFromFormat('Y-m-d\TH:i:s\Z', $publicUntil);
+    }
+
+    public function getPropertyStart(): Carbon
+    {
+        $start = Carbon::createFromFormat('Y-m-d\TH:i:s\Z', $this->input('properties.start'));
+        if ($start === null) {
+            throw new \LogicException('Start date validation is not working');
+        }
+
+        return $start;
+    }
+
+    public function getPropertyEnd(): Carbon
+    {
+        $end = Carbon::createFromFormat('Y-m-d\TH:i:s\Z', $this->input('properties.end'));
+        if ($end === null) {
+            throw new \LogicException('End date validation is not working');
+        }
+
+        return $end;
+    }
+
+    public function getPropertyActive(): ?bool
+    {
+        if ($this->has('properties.active') && $this->input('properties.active') !== null) {
+            return (bool) $this->input('properties.active');
+        }
+
+        return null;
+    }
+
+    public function getPropertyBillable(): ?bool
+    {
+        if ($this->has('properties.billable') && $this->input('properties.billable') !== null) {
+            return (bool) $this->input('properties.billable');
+        }
+
+        return null;
+    }
+
+    public function getPropertyGroup(): TimeEntryAggregationType
+    {
+        return TimeEntryAggregationType::from($this->input('properties.group'));
+    }
+
+    public function getPropertySubGroup(): TimeEntryAggregationType
+    {
+        return TimeEntryAggregationType::from($this->input('properties.sub_group'));
+    }
+
+    public function getPropertyHistoryGroup(): TimeEntryAggregationTypeInterval
+    {
+        return TimeEntryAggregationTypeInterval::from($this->input('properties.history_group'));
     }
 }

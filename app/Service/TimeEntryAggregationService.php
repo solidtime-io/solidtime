@@ -146,12 +146,14 @@ class TimeEntryAggregationService
      *       grouped_data: null|array<array{
      *           key: string|null,
      *           description: string|null,
+     *           color: string|null,
      *           seconds: int,
      *           cost: int,
      *           grouped_type: string|null,
      *           grouped_data: null|array<array{
      *               key: string|null,
      *               description: string|null,
+     *               color: string|null,
      *               seconds: int,
      *               cost: int,
      *               grouped_type: null,
@@ -180,15 +182,17 @@ class TimeEntryAggregationService
             }
         }
 
-        $descriptionMapGroup1 = $group1Type !== null ? $this->loadDescriptionMap($keysGroup1, $group1Type) : [];
-        $descriptionMapGroup2 = $group2Type !== null ? $this->loadDescriptionMap($keysGroup2, $group2Type) : [];
+        $descriptionMapGroup1 = $group1Type !== null ? $this->loadDescriptorsMap($keysGroup1, $group1Type) : [];
+        $descriptionMapGroup2 = $group2Type !== null ? $this->loadDescriptorsMap($keysGroup2, $group2Type) : [];
 
         if ($aggregatedTimeEntries['grouped_data'] !== null) {
             foreach ($aggregatedTimeEntries['grouped_data'] as $keyGroup1 => $group1) {
-                $aggregatedTimeEntries['grouped_data'][$keyGroup1]['description'] = $group1['key'] !== null ? ($descriptionMapGroup1[$group1['key']] ?? null) : null;
+                $aggregatedTimeEntries['grouped_data'][$keyGroup1]['description'] = $group1['key'] !== null ? ($descriptionMapGroup1[$group1['key']]['description'] ?? null) : null;
+                $aggregatedTimeEntries['grouped_data'][$keyGroup1]['color'] = $group1['key'] !== null ? ($descriptionMapGroup1[$group1['key']]['color'] ?? null) : null;
                 if ($aggregatedTimeEntries['grouped_data'][$keyGroup1]['grouped_data'] !== null) {
                     foreach ($aggregatedTimeEntries['grouped_data'][$keyGroup1]['grouped_data'] as $keyGroup2 => $group2) {
-                        $aggregatedTimeEntries['grouped_data'][$keyGroup1]['grouped_data'][$keyGroup2]['description'] = $group2['key'] !== null ? ($descriptionMapGroup2[$group2['key']] ?? null) : null;
+                        $aggregatedTimeEntries['grouped_data'][$keyGroup1]['grouped_data'][$keyGroup2]['description'] = $group2['key'] !== null ? ($descriptionMapGroup2[$group2['key']]['description'] ?? null) : null;
+                        $aggregatedTimeEntries['grouped_data'][$keyGroup1]['grouped_data'][$keyGroup2]['color'] = $group2['key'] !== null ? ($descriptionMapGroup2[$group2['key']]['color'] ?? null) : null;
                     }
                 }
             }
@@ -200,12 +204,14 @@ class TimeEntryAggregationService
          *        grouped_data: null|array<array{
          *            key: string|null,
          *            description: string|null,
+         *            color: string|null,
          *            seconds: int,
          *            cost: int,
          *            grouped_type: string|null,
          *            grouped_data: null|array<array{
          *                key: string|null,
          *                description: string|null,
+         *                color: string|null,
          *                seconds: int,
          *                cost: int,
          *                grouped_type: null,
@@ -222,33 +228,61 @@ class TimeEntryAggregationService
 
     /**
      * @param  array<int, string>  $keys
-     * @return array<string, string>
+     * @return array<string, array{
+     *     description: string,
+     *     color: string|null
+     * }>
      */
-    private function loadDescriptionMap(array $keys, TimeEntryAggregationType $type): array
+    private function loadDescriptorsMap(array $keys, TimeEntryAggregationType $type): array
     {
+        $descriptorMap = [];
         if ($type === TimeEntryAggregationType::Client) {
-            return Client::query()
+            $clients = Client::query()
                 ->whereIn('id', $keys)
-                ->pluck('name', 'id')
-                ->toArray();
+                ->select('id', 'name')
+                ->get();
+            foreach ($clients as $client) {
+                $descriptorMap[$client->id] = [
+                    'description' => $client->name,
+                    'color' => null,
+                ];
+            }
         } elseif ($type === TimeEntryAggregationType::User) {
-            return User::query()
+            $users = User::query()
                 ->whereIn('id', $keys)
-                ->pluck('name', 'id')
-                ->toArray();
+                ->select('id', 'name')
+                ->get();
+            foreach ($users as $user) {
+                $descriptorMap[$user->id] = [
+                    'description' => $user->name,
+                    'color' => null,
+                ];
+            }
         } elseif ($type === TimeEntryAggregationType::Project) {
-            return Project::query()
+            $projects = Project::query()
                 ->whereIn('id', $keys)
-                ->pluck('name', 'id')
-                ->toArray();
+                ->select('id', 'name', 'color')
+                ->get();
+            foreach ($projects as $project) {
+                $descriptorMap[$project->id] = [
+                    'description' => $project->name,
+                    'color' => $project->color,
+                ];
+            }
         } elseif ($type === TimeEntryAggregationType::Task) {
-            return Task::query()
+            $tasks = Task::query()
                 ->whereIn('id', $keys)
-                ->pluck('name', 'id')
-                ->toArray();
-        } else {
-            return [];
+                ->select('id', 'name')
+                ->get();
+            foreach ($tasks as $task) {
+                $descriptorMap[$task->id] = [
+                    'description' => $task->name,
+                    'color' => null,
+                ];
+            }
         }
+
+        return $descriptorMap;
     }
 
     /**

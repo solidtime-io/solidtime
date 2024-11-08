@@ -87,18 +87,18 @@ Route::prefix('v1')->name('v1.')->group(static function (): void {
             Route::delete('/project-members/{projectMember}', [ProjectMemberController::class, 'destroy'])->name('destroy');
         });
 
-    // Time entry routes
-    Route::name('time-entries.')->prefix('/organizations/{organization}')->group(static function (): void {
-        Route::get('/time-entries', [TimeEntryController::class, 'index'])->name('index');
-        Route::get('/time-entries/export', [TimeEntryController::class, 'indexExport'])->name('index-export');
-        Route::get('/time-entries/aggregate', [TimeEntryController::class, 'aggregate'])->name('aggregate');
-        Route::get('/time-entries/aggregate/export', [TimeEntryController::class, 'aggregateExport'])->name('aggregate-export');
-        Route::post('/time-entries', [TimeEntryController::class, 'store'])->name('store')->middleware('check-organization-blocked');
-        Route::put('/time-entries/{timeEntry}', [TimeEntryController::class, 'update'])->name('update')->middleware('check-organization-blocked');
-        Route::patch('/time-entries', [TimeEntryController::class, 'updateMultiple'])->name('update-multiple')->middleware('check-organization-blocked');
-        Route::delete('/time-entries/{timeEntry}', [TimeEntryController::class, 'destroy'])->name('destroy');
-        Route::delete('/time-entries', [TimeEntryController::class, 'destroyMultiple'])->name('destroy-multiple');
-    });
+        // Time entry routes
+        Route::name('time-entries.')->prefix('/organizations/{organization}')->group(static function (): void {
+            Route::get('/time-entries', [TimeEntryController::class, 'index'])->name('index');
+            Route::get('/time-entries/export', [TimeEntryController::class, 'indexExport'])->name('index-export');
+            Route::get('/time-entries/aggregate', [TimeEntryController::class, 'aggregate'])->name('aggregate');
+            Route::get('/time-entries/aggregate/export', [TimeEntryController::class, 'aggregateExport'])->name('aggregate-export');
+            Route::post('/time-entries', [TimeEntryController::class, 'store'])->name('store')->middleware('check-organization-blocked');
+            Route::put('/time-entries/{timeEntry}', [TimeEntryController::class, 'update'])->name('update')->middleware('check-organization-blocked');
+            Route::patch('/time-entries', [TimeEntryController::class, 'updateMultiple'])->name('update-multiple')->middleware('check-organization-blocked');
+            Route::delete('/time-entries/{timeEntry}', [TimeEntryController::class, 'destroy'])->name('destroy');
+            Route::delete('/time-entries', [TimeEntryController::class, 'destroyMultiple'])->name('destroy-multiple');
+        });
 
         Route::name('users.time-entries.')->group(static function (): void {
             Route::get('/users/me/time-entries/active', [UserTimeEntryController::class, 'myActive'])->name('my-active');

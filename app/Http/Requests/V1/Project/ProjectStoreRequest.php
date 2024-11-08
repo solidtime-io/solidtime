@@ -68,7 +68,16 @@ class ProjectStoreRequest extends FormRequest
                 'min:0',
                 'max:2147483647',
             ],
+            // Whether the project is public
+            'is_public' => [
+                'boolean',
+            ],
         ];
+    }
+
+    public function getIsPublic(): bool
+    {
+        return $this->has('is_public') && $this->boolean('is_public');
     }
 
     public function getBillableRate(): ?int

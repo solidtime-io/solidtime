@@ -22,6 +22,8 @@ use Illuminate\Support\Carbon;
  * @property string|null $share_secret
  * @property ReportPropertiesDto $properties
  * @property-read Organization $organization
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  *
  * @method static ReportFactory factory()
  */

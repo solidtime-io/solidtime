@@ -4,15 +4,17 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1;
 
-use App\Enums\TimeEntryAggregationType;
+use App\Enums\Weekday;
 use App\Http\Requests\V1\Report\ReportStoreRequest;
 use App\Http\Requests\V1\Report\ReportUpdateRequest;
 use App\Http\Resources\V1\Report\DetailedReportResource;
 use App\Http\Resources\V1\Report\ReportCollection;
+use App\Http\Resources\V1\Report\ReportResource;
 use App\Models\Organization;
 use App\Models\Report;
 use App\Service\Dto\ReportPropertiesDto;
 use App\Service\ReportService;
+use App\Service\TimezoneService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 
@@ -31,6 +33,8 @@ class ReportController extends Controller
 
     /**
      * Get reports
+     *
+     * @return ReportCollection<ReportResource>
      *
      * @throws AuthorizationException
      *
@@ -69,9 +73,10 @@ class ReportController extends Controller
      *
      * @operationId createReport
      */
-    public function store(Organization $organization, ReportStoreRequest $request): DetailedReportResource
+    public function store(Organization $organization, ReportStoreRequest $request, TimezoneService $timezoneService, ReportService $reportService): DetailedReportResource
     {
         $this->checkPermission($organization, 'reports:create');
+        $user = $this->user();
 
         $report = new Report;
         $report->name = $request->getName();
@@ -79,11 +84,32 @@ class ReportController extends Controller
         $isPublic = $request->getIsPublic();
         $report->is_public = $isPublic;
         $properties = new ReportPropertiesDto;
-        $properties->group = TimeEntryAggregationType::from($request->input('properties.group'));
-        $properties->subGroup = TimeEntryAggregationType::from($request->input('properties.sub_group'));
+        $properties->group = $request->getPropertyGroup();
+        $properties->subGroup = $request->getPropertySubGroup();
+        $properties->historyGroup = $request->getPropertyHistoryGroup();
+        $properties->start = $request->getPropertyStart();
+        $properties->end = $request->getPropertyEnd();
+        $properties->active = $request->getPropertyActive();
+        $properties->setMemberIds($request->input('properties.member_ids', null));
+        $properties->billable = $request->getPropertyBillable();
+        $properties->setClientIds($request->input('properties.client_ids', null));
+        $properties->setProjectIds($request->input('properties.project_ids', null));
+        $properties->setTagIds($request->input('properties.tag_ids', null));
+        $properties->setTaskIds($request->input('properties.task_ids', null));
+        $properties->weekStart = $request->has('properties.week_start') ? Weekday::from($request->input('properties.week_start')) : $user->week_start;
+        $timezone = $user->timezone;
+        if ($request->has('properties.timezone')) {
+            if ($timezoneService->isValid($request->input('properties.timezone'))) {
+                $timezone = $request->input('properties.timezone');
+            }
+            if ($timezoneService->mapLegacyTimezone($request->input('properties.timezone')) !== null) {
+                $timezone = $timezoneService->mapLegacyTimezone($request->input('properties.timezone'));
+            }
+        }
+        $properties->timezone = $timezone;
         $report->properties = $properties;
         if ($isPublic) {
-            $report->share_secret = app(ReportService::class)->generateSecret();
+            $report->share_secret = $reportService->generateSecret();
             $report->public_until = $request->getPublicUntil();
         } else {
             $report->share_secret = null;
@@ -102,7 +128,7 @@ class ReportController extends Controller
      *
      * @operationId updateReport
      */
-    public function update(Organization $organization, Report $report, ReportUpdateRequest $request): DetailedReportResource
+    public function update(Organization $organization, Report $report, ReportUpdateRequest $request, ReportService $reportService): DetailedReportResource
     {
         $this->checkPermission($organization, 'reports:update', $report);
 
@@ -116,7 +142,7 @@ class ReportController extends Controller
             $isPublic = $request->getIsPublic();
             $report->is_public = $isPublic;
             if ($isPublic) {
-                $report->share_secret = app(ReportService::class)->generateSecret();
+                $report->share_secret = $reportService->generateSecret();
                 $report->public_until = $request->getPublicUntil();
             } else {
                 $report->share_secret = null;

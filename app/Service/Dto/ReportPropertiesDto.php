@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Service\Dto;
 
 use App\Enums\TimeEntryAggregationType;
+use App\Enums\TimeEntryAggregationTypeInterval;
+use App\Enums\Weekday;
 use Illuminate\Contracts\Database\Eloquent\Castable;
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 use Illuminate\Database\Eloquent\Model;
@@ -14,13 +16,19 @@ use Illuminate\Support\Str;
 
 class ReportPropertiesDto implements Castable
 {
-    public ?TimeEntryAggregationType $group = null;
+    public TimeEntryAggregationType $group;
 
-    public ?TimeEntryAggregationType $subGroup = null;
+    public TimeEntryAggregationType $subGroup;
 
-    public ?Carbon $start = null;
+    public TimeEntryAggregationTypeInterval $historyGroup;
 
-    public ?Carbon $end = null;
+    public Weekday $weekStart;
+
+    public string $timezone;
+
+    public Carbon $start;
+
+    public Carbon $end;
 
     public ?bool $active = null;
 
@@ -64,6 +72,9 @@ class ReportPropertiesDto implements Castable
             private const array REQUIRED_PROPERTIES = [
                 'group',
                 'subGroup',
+                'historyGroup',
+                'weekStart',
+                'timezone',
                 'start',
                 'end',
                 'active',
@@ -93,36 +104,19 @@ class ReportPropertiesDto implements Castable
                 $dto->end = $data->end !== null ? Carbon::createFromFormat('Y-m-d\TH:i:s\Z', $data->end) : null;
                 $dto->start = $data->start !== null ? Carbon::createFromFormat('Y-m-d\TH:i:s\Z', $data->start) : null;
                 $dto->active = $data->active;
-                $dto->memberIds = $data->memberIds !== null ? $this->idArrayToCollection($data->memberIds) : null;
+                $dto->memberIds = $data->memberIds !== null ? ReportPropertiesDto::idArrayToCollection($data->memberIds) : null;
                 $dto->billable = $data->billable;
-                $dto->clientIds = $data->clientIds !== null ? $this->idArrayToCollection($data->clientIds) : null;
-                $dto->projectIds = $data->projectIds !== null ? $this->idArrayToCollection($data->projectIds) : null;
-                $dto->tagIds = $data->tagIds !== null ? $this->idArrayToCollection($data->tagIds) : null;
-                $dto->taskIds = $data->taskIds ? $this->idArrayToCollection($data->taskIds) : null;
-                $dto->group = $data->group !== null ? TimeEntryAggregationType::from($data->group) : null;
-                $dto->subGroup = $data->subGroup !== null ? TimeEntryAggregationType::from($data->subGroup) : null;
+                $dto->clientIds = $data->clientIds !== null ? ReportPropertiesDto::idArrayToCollection($data->clientIds) : null;
+                $dto->projectIds = $data->projectIds !== null ? ReportPropertiesDto::idArrayToCollection($data->projectIds) : null;
+                $dto->tagIds = $data->tagIds !== null ? ReportPropertiesDto::idArrayToCollection($data->tagIds) : null;
+                $dto->taskIds = $data->taskIds ? ReportPropertiesDto::idArrayToCollection($data->taskIds) : null;
+                $dto->group = TimeEntryAggregationType::from($data->group);
+                $dto->subGroup = TimeEntryAggregationType::from($data->subGroup);
+                $dto->historyGroup = TimeEntryAggregationTypeInterval::from($data->historyGroup);
+                $dto->weekStart = Weekday::from($data->weekStart);
+                $dto->timezone = $data->timezone;
 
                 return $dto;
-            }
-
-            /**
-             * @param  array<mixed>  $ids
-             * @return Collection<int, string>
-             */
-            private function idArrayToCollection(array $ids): Collection
-            {
-                $collection = new Collection;
-                foreach ($ids as $id) {
-                    if (! is_string($id)) {
-                        throw new \InvalidArgumentException('The given ID is not a string');
-                    }
-                    if (Str::isUuid($id)) {
-                        throw new \InvalidArgumentException('The given ID is not a valid UUID');
-                    }
-                    $collection->push($id);
-                }
-
-                return $collection;
             }
 
             /**
@@ -135,8 +129,8 @@ class ReportPropertiesDto implements Castable
                 }
 
                 $data = (object) [
-                    'end' => $value->end?->toIso8601ZuluString(),
-                    'start' => $value->start?->toIso8601ZuluString(),
+                    'end' => $value->end->toIso8601ZuluString(),
+                    'start' => $value->start->toIso8601ZuluString(),
                     'active' => $value->active,
                     'memberIds' => $value->memberIds?->toArray(),
                     'billable' => $value->billable,
@@ -144,8 +138,11 @@ class ReportPropertiesDto implements Castable
                     'projectIds' => $value->projectIds?->toArray(),
                     'tagIds' => $value->tagIds?->toArray(),
                     'taskIds' => $value->taskIds?->toArray(),
-                    'group' => $value->group?->value,
-                    'subGroup' => $value->subGroup?->value,
+                    'group' => $value->group->value,
+                    'subGroup' => $value->subGroup->value,
+                    'historyGroup' => $value->historyGroup->value,
+                    'weekStart' => $value->weekStart->value,
+                    'timezone' => $value->timezone,
                 ];
 
                 $jsonString = json_encode($data);
@@ -156,5 +153,65 @@ class ReportPropertiesDto implements Castable
                 return $jsonString;
             }
         };
+    }
+
+    /**
+     * @param  array<mixed>  $ids
+     * @return Collection<int, string>
+     */
+    public static function idArrayToCollection(array $ids): Collection
+    {
+        $collection = new Collection;
+        foreach ($ids as $id) {
+            if (! is_string($id)) {
+                throw new \InvalidArgumentException('The given ID is not a string');
+            }
+            if (! Str::isUuid($id)) {
+                throw new \InvalidArgumentException('The given ID is not a valid UUID');
+            }
+            $collection->push($id);
+        }
+
+        return $collection;
+    }
+
+    /**
+     * @param  array<mixed>|null  $memberIds
+     */
+    public function setMemberIds(?array $memberIds): void
+    {
+        $this->memberIds = $memberIds !== null ? ReportPropertiesDto::idArrayToCollection($memberIds) : null;
+    }
+
+    /**
+     * @param  array<mixed>|null  $clientIds
+     */
+    public function setClientIds(?array $clientIds): void
+    {
+        $this->clientIds = $clientIds !== null ? ReportPropertiesDto::idArrayToCollection($clientIds) : null;
+    }
+
+    /**
+     * @param  array<mixed>|null  $projectIds
+     */
+    public function setProjectIds(?array $projectIds): void
+    {
+        $this->projectIds = $projectIds !== null ? ReportPropertiesDto::idArrayToCollection($projectIds) : null;
+    }
+
+    /**
+     * @param  array<mixed>|null  $tagIds
+     */
+    public function setTagIds(?array $tagIds): void
+    {
+        $this->tagIds = $tagIds !== null ? ReportPropertiesDto::idArrayToCollection($tagIds) : null;
+    }
+
+    /**
+     * @param  array<mixed>|null  $taskIds
+     */
+    public function setTaskIds(?array $taskIds): void
+    {
+        $this->taskIds = $taskIds !== null ? ReportPropertiesDto::idArrayToCollection($taskIds) : null;
     }
 }

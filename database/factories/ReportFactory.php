@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace Database\Factories;
 
 use App\Enums\TimeEntryAggregationType;
+use App\Enums\TimeEntryAggregationTypeInterval;
+use App\Enums\Weekday;
 use App\Models\Organization;
 use App\Models\Report;
 use App\Service\Dto\ReportPropertiesDto;
 use App\Service\ReportService;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Carbon;
 
 /**
  * @extends Factory<Report>
@@ -24,8 +27,13 @@ class ReportFactory extends Factory
     public function definition(): array
     {
         $reportDto = new ReportPropertiesDto;
+        $reportDto->start = Carbon::createFromDate($this->faker->dateTimeBetween('-1 year', '-1 month'));
+        $reportDto->end = Carbon::createFromDate($this->faker->dateTimeBetween('-1 month', 'now'));
         $reportDto->group = TimeEntryAggregationType::Project;
         $reportDto->subGroup = TimeEntryAggregationType::Task;
+        $reportDto->historyGroup = TimeEntryAggregationTypeInterval::Day;
+        $reportDto->weekStart = Weekday::from($this->faker->randomElement(Weekday::values()));
+        $reportDto->timezone = $this->faker->timezone();
 
         return [
             'name' => $this->faker->company(),

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Endpoint\Api\V1;
 
 use App\Enums\TimeEntryAggregationType;
+use App\Enums\Weekday;
 use App\Http\Controllers\Api\V1\ReportController;
 use App\Models\Report;
 use Illuminate\Support\Carbon;
@@ -70,6 +71,9 @@ class ReportEndpointTest extends ApiEndpointTestAbstract
             'properties' => [
                 'group' => TimeEntryAggregationType::Project->value,
                 'sub_group' => TimeEntryAggregationType::Task->value,
+                'history_group' => TimeEntryAggregationType::Day->value,
+                'start' => Carbon::now()->subDays(30)->toIso8601ZuluString(),
+                'end' => Carbon::now()->toIso8601ZuluString(),
             ],
         ]);
 
@@ -92,6 +96,9 @@ class ReportEndpointTest extends ApiEndpointTestAbstract
             'properties' => [
                 'group' => TimeEntryAggregationType::Project->value,
                 'sub_group' => TimeEntryAggregationType::Task->value,
+                'history_group' => TimeEntryAggregationType::Day->value,
+                'start' => Carbon::now()->subDays(30)->toIso8601ZuluString(),
+                'end' => Carbon::now()->toIso8601ZuluString(),
             ],
         ]);
 
@@ -117,7 +124,7 @@ class ReportEndpointTest extends ApiEndpointTestAbstract
         Passport::actingAs($data->user);
 
         // Act
-        $response = $this->postJson(route('api.v1.reports.store', [$data->organization->getKey()]), [
+        $response = $this->withoutExceptionHandling()->postJson(route('api.v1.reports.store', [$data->organization->getKey()]), [
             'name' => 'Test Report',
             'description' => 'Test description',
             'is_public' => true,
@@ -134,6 +141,9 @@ class ReportEndpointTest extends ApiEndpointTestAbstract
                 'task_ids' => [],
                 'group' => TimeEntryAggregationType::Project->value,
                 'sub_group' => TimeEntryAggregationType::Task->value,
+                'history_group' => TimeEntryAggregationType::Day->value,
+                'week_start' => Weekday::Monday->value,
+                'timezone' => 'Europe/Berlin',
             ],
         ]);
 
@@ -251,7 +261,7 @@ class ReportEndpointTest extends ApiEndpointTestAbstract
         );
     }
 
-    public function test_update_endpoint_can_set_a_report_to_public_which_generates_a_new_secret(): void
+    public function test_update_endpoint_can_set_a_report_from_private_to_public_which_generates_a_new_secret(): void
     {
         // Arrange
         $data = $this->createUserWithPermission([
@@ -269,7 +279,7 @@ class ReportEndpointTest extends ApiEndpointTestAbstract
         $report->refresh();
         $this->assertTrue($report->is_public);
         $this->assertNotNull($report->share_secret);
-        $response->assertStatus(200);
+        $this->assertResponseCode($response, 200);
         $response->assertJson(fn (AssertableJson $json) => $json
             ->has('data')
             ->where('data.is_public', true)
@@ -277,7 +287,7 @@ class ReportEndpointTest extends ApiEndpointTestAbstract
         );
     }
 
-    public function test_update_endpoint_can_set_a_report_to_private_which_resets_the_secret(): void
+    public function test_update_endpoint_can_set_a_report_from_public_to_private_which_resets_the_secret(): void
     {
         // Arrange
         $data = $this->createUserWithPermission([

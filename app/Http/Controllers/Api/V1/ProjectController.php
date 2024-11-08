@@ -102,6 +102,7 @@ class ProjectController extends Controller
         $project->is_billable = (bool) $request->input('is_billable');
         $project->billable_rate = $request->getBillableRate();
         $project->client_id = $request->input('client_id');
+        $project->is_public = $request->getIsPublic();
         if ($this->canAccessPremiumFeatures($organization) && $request->has('estimated_time')) {
             $project->estimated_time = $request->getEstimatedTime();
         }
@@ -126,6 +127,9 @@ class ProjectController extends Controller
         $project->is_billable = (bool) $request->input('is_billable');
         if ($request->has('is_archived')) {
             $project->archived_at = $request->getIsArchived() ? Carbon::now() : null;
+        }
+        if ($request->has('is_public')) {
+            $project->is_public = $request->boolean('is_public');
         }
         if ($this->canAccessPremiumFeatures($organization) && $request->has('estimated_time')) {
             $project->estimated_time = $request->getEstimatedTime();
