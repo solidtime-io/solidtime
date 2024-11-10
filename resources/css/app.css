@@ -57,7 +57,7 @@
 }
 
 /* Track */
-::-webkit-scrollbar-track {
+::-webkit-scrollbar-track, ::-webkit-scrollbar-corner {
     background: transparent;
 }
 

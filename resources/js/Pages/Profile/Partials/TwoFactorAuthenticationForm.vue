@@ -264,7 +264,7 @@ const disableTwoFactorAuthentication = () => {
                         @confirmed="disableTwoFactorAuthentication">
                         <SecondaryButton
                             v-if="confirming"
-                            :class="{ 'opacity-25': disabling }"
+                            :class="disabling ? 'opacity-25' : ''"
                             :disabled="disabling">
                             Cancel
                         </SecondaryButton>
