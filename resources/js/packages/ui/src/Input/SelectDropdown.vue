@@ -1,12 +1,17 @@
 <script setup lang="ts" generic="T">
 import Dropdown from '@/packages/ui/src/Input/Dropdown.vue';
-import { type Component, computed, ref, watch } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 import SelectDropdownItem from '@/packages/ui/src/Input/SelectDropdownItem.vue';
 import { onKeyStroke } from '@vueuse/core';
 import { type Placement } from '@floating-ui/vue';
+import { twMerge } from 'tailwind-merge';
 
 const model = defineModel<string | null>({
     default: null,
+});
+
+const open = defineModel('open', {
+    default: false,
 });
 
 const props = withDefaults(
@@ -15,14 +20,14 @@ const props = withDefaults(
         getKeyFromItem: (item: T) => string | null;
         getNameForItem: (item: T) => string;
         align?: Placement;
+        class?: string;
     }>(),
     {
         align: 'bottom-start',
     }
 );
 
-const open = ref(false);
-const dropdownViewport = ref<Component | null>(null);
+const dropdownViewport = ref<HTMLDivElement | null>(null);
 
 const searchValue = ref('');
 
@@ -84,7 +89,7 @@ function moveHighlightDown() {
     }
 }
 
-const highlightedItemId = ref<string | null>(null);
+const highlightedItemId = ref<string | null>(model.value);
 const highlightedItem = computed(() => {
     return props.items.find(
         (item) => props.getKeyFromItem(item) === highlightedItemId.value
@@ -114,9 +119,21 @@ onKeyStroke('Enter', (e) => {
 
 watch(open, () => {
     if (open.value === true) {
-        highlightedItemId.value = model.value;
+        nextTick(() => {
+            scrollCurrentItemInView();
+        });
     }
 });
+
+function scrollCurrentItemInView() {
+    const highlightedDomElement = dropdownViewport.value?.querySelector(
+        `[data-select-id="${model.value}"]`
+    ) as HTMLElement;
+    dropdownViewport.value?.scrollTo({
+        top: highlightedDomElement?.offsetTop ?? 0,
+        behavior: 'instant',
+    });
+}
 </script>
 
 <template>
@@ -125,11 +142,16 @@ watch(open, () => {
             <slot name="trigger"> </slot>
         </template>
         <template #content>
-            <div ref="dropdownViewport" class="w-60 max-h-60 overflow-y-scroll">
+            <div
+                ref="dropdownViewport"
+                :class="
+                    twMerge('w-60 max-h-60 overflow-y-scroll', props.class)
+                ">
                 <div
                     v-for="item in filteredItems"
                     :key="props.getKeyFromItem(item) ?? 'none'"
                     role="option"
+                    :data-select-id="props.getKeyFromItem(item)"
                     :value="props.getKeyFromItem(item)"
                     :class="{
                         'bg-card-background-active':

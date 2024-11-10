@@ -10,6 +10,7 @@ const props = withDefaults(
         icon?: Component;
         size: 'small' | 'base';
         loading: boolean;
+        class?: string;
     }>(),
     {
         type: 'button',
@@ -31,7 +32,8 @@ const sizeClasses = {
         :class="
             twMerge(
                 'bg-button-secondary-background border border-button-secondary-border hover:bg-button-secondary-background-hover shadow-sm transition text-white rounded-lg font-semibold inline-flex items-center space-x-1.5 focus-visible:border-input-border-active focus:outline-none focus:ring-0 disabled:opacity-25 ease-in-out',
-                sizeClasses[props.size]
+                sizeClasses[props.size],
+                props.class
             )
         ">
         <span

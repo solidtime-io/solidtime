@@ -17,7 +17,7 @@ dayjs.extend(utc);
 
 const emptyTimeEntry = {
     id: '',
-    description: null,
+    description: '',
     user_id: '',
     start: '',
     end: null,

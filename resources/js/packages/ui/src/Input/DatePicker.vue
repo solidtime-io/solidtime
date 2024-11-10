@@ -54,7 +54,7 @@ const emit = defineEmits(['changed']);
             @keydown.enter="updateDate"
             :class="
                 twMerge(
-                    'bg-input-background border text-white border-input-border rounded-md',
+                    'bg-input-background border text-white border-input-border focus-visible:outline-0 focus-visible:ring-0 rounded-md',
                     props.class
                 )
             "
@@ -68,6 +68,7 @@ const emit = defineEmits(['changed']);
 <style scoped>
 input::-webkit-calendar-picker-indicator {
     filter: invert(1);
+
     opacity: 0.2;
 }
 </style>

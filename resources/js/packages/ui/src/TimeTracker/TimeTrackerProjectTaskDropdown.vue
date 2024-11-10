@@ -19,6 +19,7 @@ import {
     XMarkIcon,
 } from '@heroicons/vue/16/solid';
 import ProjectCreateModal from '@/packages/ui/src/Project/ProjectCreateModal.vue';
+import { twMerge } from 'tailwind-merge';
 
 const task = defineModel<string | null>('task', {
     default: null,
@@ -65,6 +66,7 @@ const props = withDefaults(
         allowReset: boolean;
         enableEstimatedTime: boolean;
         canCreateProject: boolean;
+        class?: string;
     }>(),
     {
         showBadgeBorder: true,
@@ -552,7 +554,12 @@ const showCreateProject = ref(false);
                 :border="showBadgeBorder"
                 tag="button"
                 :name="selectedProjectName"
-                class="focus:border-border-tertiary w-full focus:outline-0 focus:bg-card-background-separator min-w-0 relative">
+                :class="
+                    twMerge(
+                        'focus:border-border-tertiary w-full focus:outline-0 focus:bg-card-background-separator min-w-0 relative',
+                        props.class
+                    )
+                ">
                 <div class="flex items-center lg:space-x-1 min-w-0">
                     <span class="whitespace-nowrap text-xs lg:text-sm">
                         {{ selectedProjectName }}

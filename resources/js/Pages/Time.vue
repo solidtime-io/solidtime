@@ -121,6 +121,9 @@ function deleteSelected() {
 <template>
     <TimeEntryCreateModal
         :enableEstimatedTime="isAllowedToPerformPremiumAction()"
+        :createProject="createProject"
+        :createClient="createClient"
+        :createTimeEntry="createTimeEntry"
         v-model:show="showManualTimeEntryModal"></TimeEntryCreateModal>
     <AppLayout title="Dashboard" data-testid="time_view">
         <MainContainer
