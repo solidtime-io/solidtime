@@ -40,6 +40,8 @@ Therefore, we do not currently accept any contributions, unless you are a member
 
 As soon as we feel comfortable enough that the application structure is stable enough, we will open up the project for contributions.
 
+We do accept contributions in the [documentation repository](https://github.com/solidtime-io/docs) f.e. to add new self-hosting guides.
+
 ## Security
 
 Looking to report a vulnerability? Please refer our [SECURITY.md](./SECURITY.md) file.
