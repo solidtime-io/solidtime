@@ -9,7 +9,6 @@ import { canViewClients, canViewMembers } from '@/utils/permissions';
 
 export function initializeStores() {
     refreshStores();
-    useTimeEntriesStore().fetchTimeEntries();
 }
 
 export function refreshStores() {
@@ -17,6 +16,7 @@ export function refreshStores() {
     useTasksStore().fetchTasks();
     useTagsStore().fetchTags();
     useCurrentTimeEntryStore().fetchCurrentTimeEntry();
+    useTimeEntriesStore().patchTimeEntries();
     if (canViewMembers()) {
         useMembersStore().fetchMembers();
     }

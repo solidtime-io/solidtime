@@ -21,6 +21,39 @@ export const useTimeEntriesStore = defineStore('timeEntries', () => {
     const allTimeEntriesLoaded = ref(false);
     const { handleApiRequestNotifications } = useNotificationsStore();
 
+    async function patchTimeEntries(
+        queryParams: TimeEntriesQueryParams = {
+            only_full_dates: 'true',
+            member_id: getCurrentMembershipId(),
+        }
+    ) {
+        const organizationId = getCurrentOrganizationId();
+
+        if (organizationId) {
+            const timeEntriesResponse = await handleApiRequestNotifications(
+                () =>
+                    api.getTimeEntries({
+                        params: {
+                            organization: organizationId,
+                        },
+                        queries: queryParams,
+                    }),
+                undefined,
+                'Failed to fetch time entries'
+            );
+            if (timeEntriesResponse?.data) {
+                // insert missing time entries
+                const missingTimeEntries = timeEntriesResponse.data.filter(
+                    (entry) => !timeEntries.value.find((e) => e.id === entry.id)
+                );
+                timeEntries.value = [
+                    ...missingTimeEntries,
+                    ...timeEntries.value,
+                ];
+            }
+        }
+    }
+
     async function fetchTimeEntries(
         queryParams: TimeEntriesQueryParams = {
             only_full_dates: 'true',
@@ -200,5 +233,6 @@ export const useTimeEntriesStore = defineStore('timeEntries', () => {
         allTimeEntriesLoaded,
         updateTimeEntries,
         deleteTimeEntries,
+        patchTimeEntries,
     };
 });
