@@ -5,7 +5,6 @@ import SelectDropdownItem from '@/packages/ui/src/Input/SelectDropdownItem.vue';
 import { onKeyStroke } from '@vueuse/core';
 import { type Placement } from '@floating-ui/vue';
 import { twMerge } from 'tailwind-merge';
-
 const model = defineModel<string | null>({
     default: null,
 });
@@ -41,9 +40,33 @@ const filteredItems = computed<T[]>(() => {
     });
 });
 
+const highlightedItemId = ref<string | null>(model.value);
+
+watch(model, () => {
+    highlightedItemId.value = model.value;
+});
+
 watch(filteredItems, () => {
-    if (filteredItems.value.length > 0) {
+    if (
+        filteredItems.value.length > 0 &&
+        filteredItems.value.find(
+            (item) => props.getKeyFromItem(item) === highlightedItemId.value
+        ) === undefined
+    ) {
         highlightedItemId.value = props.getKeyFromItem(filteredItems.value[0]);
+    }
+});
+
+watch(highlightedItemId, () => {
+    if (highlightedItemId.value) {
+        const highlightedDomElement = dropdownViewport.value?.querySelector(
+            `[data-select-id="${highlightedItemId.value}"]`
+        ) as HTMLElement;
+
+        highlightedDomElement?.scrollIntoView({
+            block: 'nearest',
+            inline: 'nearest',
+        });
     }
 });
 
@@ -89,7 +112,6 @@ function moveHighlightDown() {
     }
 }
 
-const highlightedItemId = ref<string | null>(model.value);
 const highlightedItem = computed(() => {
     return props.items.find(
         (item) => props.getKeyFromItem(item) === highlightedItemId.value
@@ -120,20 +142,16 @@ onKeyStroke('Enter', (e) => {
 watch(open, () => {
     if (open.value === true) {
         nextTick(() => {
-            scrollCurrentItemInView();
+            const highlightedDomElement = dropdownViewport.value?.querySelector(
+                `[data-select-id="${model.value}"]`
+            ) as HTMLElement;
+            dropdownViewport.value?.scrollTo({
+                top: highlightedDomElement?.offsetTop ?? 0,
+                behavior: 'instant',
+            });
         });
     }
 });
-
-function scrollCurrentItemInView() {
-    const highlightedDomElement = dropdownViewport.value?.querySelector(
-        `[data-select-id="${model.value}"]`
-    ) as HTMLElement;
-    dropdownViewport.value?.scrollTo({
-        top: highlightedDomElement?.offsetTop ?? 0,
-        behavior: 'instant',
-    });
-}
 </script>
 
 <template>
@@ -145,7 +163,10 @@ function scrollCurrentItemInView() {
             <div
                 ref="dropdownViewport"
                 :class="
-                    twMerge('w-60 max-h-60 overflow-y-scroll', props.class)
+                    twMerge(
+                        'w-60 py-1.5 max-h-60 overflow-y-scroll',
+                        props.class
+                    )
                 ">
                 <div
                     v-for="item in filteredItems"
@@ -153,12 +174,14 @@ function scrollCurrentItemInView() {
                     role="option"
                     :data-select-id="props.getKeyFromItem(item)"
                     :value="props.getKeyFromItem(item)"
-                    :class="{
-                        'bg-card-background-active':
-                            props.getKeyFromItem(item) === highlightedItemId,
-                    }"
                     :data-item-id="props.getKeyFromItem(item)">
                     <SelectDropdownItem
+                        @mouseenter="
+                            highlightedItemId = props.getKeyFromItem(item)
+                        "
+                        :highlighted="
+                            props.getKeyFromItem(item) === highlightedItemId
+                        "
                         :selected="props.getKeyFromItem(item) === model"
                         @click="setItem(props.getKeyFromItem(item))"
                         :name="props.getNameForItem(item)"></SelectDropdownItem>

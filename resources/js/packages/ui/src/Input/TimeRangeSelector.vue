@@ -57,27 +57,27 @@ watch(focused, (newValue, oldValue) => {
         class="grid grid-cols-2 divide-x divide-card-background-separator text-center py-2">
         <div class="px-2">
             <div class="font-bold text-white text-sm pb-2">Start</div>
-            <div class="space-y-1">
+            <div class="space-y-2">
                 <TimePicker
                     data-testid="time_entry_range_start"
                     :focus
                     @changed="updateTimeEntry"
                     v-model="tempStart"></TimePicker>
                 <DatePicker
-                    class="text-sm px-2 py-1"
+                    class="text-xs text-text-tertiary max-w-24 px-1.5 py-1.5"
                     @changed="updateTimeEntry"
                     v-model="tempStart"></DatePicker>
             </div>
         </div>
         <div class="px-2">
             <div class="font-bold text-white text-sm pb-2">End</div>
-            <div v-if="tempEnd !== null" class="space-y-1">
+            <div v-if="tempEnd !== null" class="space-y-2">
                 <TimePicker
                     data-testid="time_entry_range_end"
                     @changed="updateTimeEntry"
                     v-model="tempEnd"></TimePicker>
                 <DatePicker
-                    class="text-sm px-2 py-1"
+                    class="text-xs text-text-tertiary max-w-24 px-1.5 py-1.5"
                     @changed="updateTimeEntry"
                     v-model="tempEnd"></DatePicker>
             </div>

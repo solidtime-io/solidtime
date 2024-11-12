@@ -69,7 +69,7 @@ const emit = defineEmits(['submit']);
         <div
             class="sm:max-w-[120px]"
             v-if="billableRateSelect === 'custom-rate'">
-            <InputLabel for="billableRate" value="Billable Rate" />
+            <InputLabel for="billableRate" value="Billable Rate" class="mb-2" />
             <BillableRateInput
                 @keydown.enter="emit('submit')"
                 :currency="currency"

@@ -219,7 +219,6 @@ const billableProxy = computed({
                     <InputLabel>Duration</InputLabel>
                     <div class="space-y-2 mt-1 flex flex-col">
                         <DurationHumanInput
-                            class="h-full text-white py-2 flex-1 rounded-r-lg text-left px-3 text-base lg:text-lg font-bold border-input-border border rounded-lg bg-card-background placeholder-muted focus:ring-0 transition"
                             v-model:start="localStart"
                             v-model:end="localEnd"></DurationHumanInput>
                         <div class="text-sm flex space-x-1">

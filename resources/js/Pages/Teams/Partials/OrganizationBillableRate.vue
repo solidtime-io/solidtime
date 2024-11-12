@@ -71,6 +71,7 @@ function checkForConfirmationModal() {
                 <div class="col-span-6 sm:col-span-4">
                     <InputLabel
                         for="organizationBillableRate"
+                        class="mb-2"
                         value="Organization Billable Rate" />
                     <BillableRateInput
                         v-if="organization"

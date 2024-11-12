@@ -6,6 +6,7 @@ import {
 } from '@/packages/ui/src/utils/time';
 import { useFocus } from '@vueuse/core';
 import { SelectDropdown, TextInput } from '@/packages/ui/src';
+import { twMerge } from 'tailwind-merge';
 
 // This has to be a localized timestamp, not UTC
 const model = defineModel<string | null>({
@@ -36,6 +37,47 @@ function updateTime(event: Event) {
             emit('changed', model.value);
         }
     }
+    // check if input is only numbers
+    else if (/^\d+$/.test(newValue)) {
+        if (newValue.length === 4) {
+            // parse 1300 to 13:00
+            const [hours, minutes] = [
+                newValue.slice(0, 2),
+                newValue.slice(2, 4),
+            ];
+            model.value = getLocalizedDayJs(model.value)
+                .set('hours', Math.min(parseInt(hours), 23))
+                .set('minutes', Math.min(parseInt(minutes), 59))
+                .format();
+            emit('changed', model.value);
+        } else if (newValue.length === 3) {
+            // parse 130 to 01:30
+            const [hours, minutes] = [
+                newValue.slice(0, 1),
+                newValue.slice(1, 3),
+            ];
+            model.value = getLocalizedDayJs(model.value)
+                .set('hours', Math.min(parseInt(hours), 23))
+                .set('minutes', Math.min(parseInt(minutes), 59))
+                .format();
+            emit('changed', model.value);
+        } else if (newValue.length === 2) {
+            // parse 13 to 13:00
+            model.value = getLocalizedDayJs(model.value)
+                .set('hours', Math.min(parseInt(newValue), 23))
+                .set('minutes', 0)
+                .format();
+            emit('changed', model.value);
+        } else if (newValue.length === 1) {
+            // parse 1 to 01:00
+            model.value = getLocalizedDayJs(model.value)
+                .set('hours', Math.min(parseInt(newValue), 23))
+                .set('minutes', 0)
+                .format();
+            emit('changed', model.value);
+        }
+    }
+
     inputValue.value = getLocalizedDayJs(model.value).format('HH:mm');
 }
 
@@ -96,7 +138,7 @@ const closestValue = computed({
 <template>
     <div class="flex min-w-0 items-center justify-center text-white">
         <SelectDropdown
-            class="min-w-0 w-28"
+            :class="twMerge('mine-w-0 w-24', size === 'large' && 'w-28')"
             v-model="closestValue"
             v-model:open="open"
             :get-key-from-item="(item) => item.timestamp"
@@ -106,18 +148,24 @@ const closestValue = computed({
                 <TextInput
                     v-model="inputValue"
                     ref="timeInput"
-                    class="w-28 text-center"
+                    :class="
+                        twMerge(
+                            'text-center w-24 px-3 py-2',
+                            size === 'large' && 'w-28'
+                        )
+                    "
                     @blur="updateTime"
                     @keydown.enter="
                         updateTime($event);
                         open = false;
                     "
+                    @keydown.tab="open = false"
                     @focus="($event.target as HTMLInputElement).select()"
                     @mouseup="($event.target as HTMLInputElement).select()"
                     @click="($event.target as HTMLInputElement).select()"
                     @pointerup="($event.target as HTMLInputElement).select()"
                     @focusin="open = true"
-                    data-testid="time_picker_hour"
+                    data-testid="time_picker_input"
                     type="text" />
             </template>
         </SelectDropdown>

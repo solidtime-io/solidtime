@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, watch } from 'vue';
+import { useId } from 'radix-vue';
+import { isLastLayer, layers } from '@/packages/ui/src/utils/dismissableLayer';
 
 const props = defineProps({
     show: {
@@ -34,20 +36,35 @@ const close = () => {
         emit('close');
     }
 };
+const id = useId();
 
 const closeOnEscape = (e: KeyboardEvent) => {
-    if (e.key === 'Escape' && props.show) {
-        close();
+    if (isLastLayer(id)) {
+        if (e.key === 'Escape' && props.show) {
+            close();
+        }
     }
 };
 
-onMounted(() => document.addEventListener('keydown', closeOnEscape));
+onMounted(() => {
+    document.addEventListener('keydown', closeOnEscape);
+});
 
 onUnmounted(() => {
     document.removeEventListener('keydown', closeOnEscape);
     document.body.style.overflow = 'visible';
 });
 
+watch(
+    () => props.show,
+    (value) => {
+        if (value) {
+            layers.value.push(id);
+        } else {
+            layers.value = layers.value.filter((layer) => layer !== id);
+        }
+    }
+);
 const maxWidthClass = computed(() => {
     return {
         sm: 'sm:max-w-sm',

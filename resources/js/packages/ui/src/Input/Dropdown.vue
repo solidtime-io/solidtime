@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref, watch } from 'vue';
 import {
     flip,
     limitShift,
@@ -10,6 +10,8 @@ import {
 } from '@floating-ui/vue';
 import { offset } from '@floating-ui/vue';
 import { autoUpdate } from '@floating-ui/vue';
+import { useId } from 'radix-vue';
+import { isLastLayer, layers } from '@/packages/ui/src/utils/dismissableLayer';
 
 const props = withDefaults(
     defineProps<{
@@ -24,16 +26,27 @@ const props = withDefaults(
 
 const emit = defineEmits(['open', 'submit']);
 const open = defineModel({ default: false });
+const id = useId();
 
 const closeOnEscape = (e: KeyboardEvent) => {
-    if (open.value && e.key === 'Escape') {
-        open.value = false;
-    }
-    if (open.value && e.key === 'Enter') {
-        emit('submit');
-        if (props.closeOnContentClick) open.value = false;
+    if (isLastLayer(id)) {
+        if (open.value && e.key === 'Escape') {
+            open.value = false;
+        }
+        if (open.value && e.key === 'Enter') {
+            emit('submit');
+            if (props.closeOnContentClick) open.value = false;
+        }
     }
 };
+
+watch(open, (value) => {
+    if (value) {
+        layers.value.push(id);
+    } else {
+        layers.value = layers.value.filter((layer) => layer !== id);
+    }
+});
 
 onMounted(() => document.addEventListener('keydown', closeOnEscape));
 onUnmounted(() => document.removeEventListener('keydown', closeOnEscape));
