@@ -48,6 +48,8 @@ class HealthCheckController extends Controller
         return response()
             ->json([
                 'ip_address' => $ipAddress,
+                'url' => $request->url(),
+                'path' => $request->path(),
                 'hostname' => $hostname,
                 'timestamp' => Carbon::now()->timestamp,
                 'date_time_utc' => Carbon::now('UTC')->toDateTimeString(),
