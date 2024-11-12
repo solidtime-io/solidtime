@@ -26,6 +26,8 @@ import Badge from './Badge.vue';
 import Checkbox from './Input/Checkbox.vue';
 import TimeEntryGroupedTable from './TimeEntry/TimeEntryGroupedTable.vue';
 import TimeEntryMassActionRow from './TimeEntry/TimeEntryMassActionRow.vue';
+import TimeEntryCreateModal from './TimeEntry/TimeEntryCreateModal.vue';
+import MoreOptionsDropdown from './MoreOptionsDropdown.vue';
 
 export {
     money,
@@ -48,4 +50,6 @@ export {
     Checkbox,
     TimeEntryGroupedTable,
     TimeEntryMassActionRow,
+    MoreOptionsDropdown,
+    TimeEntryCreateModal,
 };

@@ -90,7 +90,12 @@ const emit = defineEmits(['changed']);
 
 useFocus(timeInput, { initialValue: props.focus });
 
-const getStartOptions = computed(() => {
+type TimeOption = {
+    timestamp: string;
+    name: string;
+};
+
+const getStartOptions = computed<TimeOption[]>(() => {
     // options for the entire day in 15 minute intervals
     const options = [];
     for (let hour = 0; hour < 24; hour++) {
@@ -141,8 +146,8 @@ const closestValue = computed({
             :class="twMerge('mine-w-0 w-24', size === 'large' && 'w-28')"
             v-model="closestValue"
             v-model:open="open"
-            :get-key-from-item="(item) => item.timestamp"
-            :get-name-for-item="(item) => item.name"
+            :get-key-from-item="(item: TimeOption) => item.timestamp"
+            :get-name-for-item="(item: TimeOption) => item.name"
             :items="getStartOptions">
             <template #trigger>
                 <TextInput

@@ -24,7 +24,7 @@ import { useProjectsStore } from '@/utils/useProjects';
 import TimeEntryGroupedTable from '@/packages/ui/src/TimeEntry/TimeEntryGroupedTable.vue';
 import { useTagsStore } from '@/utils/useTags';
 import { useClientsStore } from '@/utils/useClients';
-import TimeEntryCreateModal from '@/Components/Common/TimeEntry/TimeEntryCreateModal.vue';
+import TimeEntryCreateModal from '@/packages/ui/src/TimeEntry/TimeEntryCreateModal.vue';
 import { getOrganizationCurrencyString } from '@/utils/money';
 import TimeEntryMassActionRow from '@/packages/ui/src/TimeEntry/TimeEntryMassActionRow.vue';
 import type { UpdateMultipleTimeEntriesChangeset } from '@/packages/api/src';
@@ -123,7 +123,12 @@ function deleteSelected() {
         :enableEstimatedTime="isAllowedToPerformPremiumAction()"
         :createProject="createProject"
         :createClient="createClient"
+        :createTag="createTag"
         :createTimeEntry="createTimeEntry"
+        :projects
+        :tasks
+        :tags
+        :clients
         v-model:show="showManualTimeEntryModal"></TimeEntryCreateModal>
     <AppLayout title="Dashboard" data-testid="time_view">
         <MainContainer

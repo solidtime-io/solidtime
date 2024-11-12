@@ -5,17 +5,12 @@ import DialogModal from '@/packages/ui/src/DialogModal.vue';
 import { computed, nextTick, ref, watch } from 'vue';
 import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import TimeTrackerProjectTaskDropdown from '@/packages/ui/src/TimeTracker/TimeTrackerProjectTaskDropdown.vue';
-import { getCurrentUserId } from '@/utils/useUser';
 import InputLabel from '@/packages/ui/src/Input/InputLabel.vue';
 import { TagIcon } from '@heroicons/vue/20/solid';
 import {
     getDayJsInstance,
     getLocalizedDayJs,
 } from '@/packages/ui/src/utils/time';
-import { storeToRefs } from 'pinia';
-import { useTasksStore } from '@/utils/useTasks';
-import { useProjectsStore } from '@/utils/useProjects';
-import { useTagsStore } from '@/utils/useTags';
 import type {
     CreateClientBody,
     CreateProjectBody,
@@ -23,24 +18,18 @@ import type {
     Client,
     CreateTimeEntryBody,
 } from '@/packages/api/src';
-import { useClientsStore } from '@/utils/useClients';
 import TimePicker from '@/packages/ui/src/Input/TimePicker.vue';
 import { getOrganizationCurrencyString } from '@/utils/money';
 import { canCreateProjects } from '@/utils/permissions';
 import TagDropdown from '@/packages/ui/src/Tag/TagDropdown.vue';
 import { Badge } from '@/packages/ui/src';
 import BillableIcon from '@/packages/ui/src/Icons/BillableIcon.vue';
-import SelectDropdown from '../../../packages/ui/src/Input/SelectDropdown.vue';
+import SelectDropdown from '@/packages/ui/src/Input/SelectDropdown.vue';
 import DatePicker from '@/packages/ui/src/Input/DatePicker.vue';
 import DurationHumanInput from '@/packages/ui/src/Input/DurationHumanInput.vue';
 
 import { InformationCircleIcon } from '@heroicons/vue/20/solid';
-const projectStore = useProjectsStore();
-const { projects } = storeToRefs(projectStore);
-const taskStore = useTasksStore();
-const { tasks } = storeToRefs(taskStore);
-const clientStore = useClientsStore();
-const { clients } = storeToRefs(clientStore);
+import type { Tag, Task } from '@/packages/api';
 
 const show = defineModel('show', { default: false });
 const saving = ref(false);
@@ -52,6 +41,11 @@ const props = defineProps<{
     ) => Promise<void>;
     createClient: (client: CreateClientBody) => Promise<Client | undefined>;
     createProject: (project: CreateProjectBody) => Promise<Project | undefined>;
+    createTag: (name: string) => Promise<Tag | undefined>;
+    tags: Tag[];
+    projects: Project[];
+    tasks: Task[];
+    clients: Client[];
 }>();
 
 const description = ref<HTMLInputElement | null>(null);
@@ -72,7 +66,6 @@ const timeEntryDefaultValues = {
     billable: false,
     start: getDayJsInstance().utc().subtract(1, 'h').format(),
     end: getDayJsInstance().utc().format(),
-    user_id: getCurrentUserId(),
 };
 
 const timeEntry = ref({ ...timeEntryDefaultValues });
@@ -101,10 +94,6 @@ async function submit() {
     localEnd.value = getLocalizedDayJs(timeEntryDefaultValues.end).format();
     show.value = false;
 }
-const { tags } = storeToRefs(useTagsStore());
-async function createTag(tag: string) {
-    return await useTagsStore().createTag(tag);
-}
 
 const billableProxy = computed({
     get: () => (timeEntry.value.billable ? 'true' : 'false'),
@@ -112,6 +101,11 @@ const billableProxy = computed({
         timeEntry.value.billable = value === 'true';
     },
 });
+
+type BillableOption = {
+    label: string;
+    value: string;
+};
 </script>
 
 <template>
@@ -183,8 +177,12 @@ const billableProxy = computed({
                         <div class="flex-col">
                             <SelectDropdown
                                 v-model="billableProxy"
-                                :get-key-from-item="(item) => item.value"
-                                :get-name-for-item="(item) => item.label"
+                                :get-key-from-item="
+                                    (item: BillableOption) => item.value
+                                "
+                                :get-name-for-item="
+                                    (item: BillableOption) => item.label
+                                "
                                 :items="[
                                     {
                                         label: 'Billable',
