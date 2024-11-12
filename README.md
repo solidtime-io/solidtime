@@ -28,6 +28,11 @@ We also have an examples repository [here](https://github.com/solidtime-io/self-
 
 If you do not want to self-host solidtime or try it out you can sign up for [solidtime cloud](https://www.solidtime.io/)
 
+## Issues & Feature Requests
+
+If you find any **bugs in solidtime**, please feel free to [**open an issue**](https://github.com/solidtime-io/solidtime/issues/new) in this repository, with instructions on how to reproduce the bug. 
+If you have a **feature request**, please [**create a discussion**](https://github.com/solidtime-io/solidtime/discussions/new?category=ideas) in this repository.
+
 ## Contributing
 
 This project is in a very early stage. The structure and APIs are still subject to change and not stable. 
