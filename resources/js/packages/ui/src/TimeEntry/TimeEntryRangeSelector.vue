@@ -3,6 +3,7 @@ import Dropdown from '@/packages/ui/src/Input/Dropdown.vue';
 import { defineProps, ref } from 'vue';
 import { formatDate, formatStartEnd } from '@/packages/ui/src/utils/time';
 import TimeRangeSelector from '@/packages/ui/src/Input/TimeRangeSelector.vue';
+import { twMerge } from 'tailwind-merge';
 
 defineProps<{
     start: string;
@@ -27,11 +28,15 @@ const open = ref(false);
             <template #trigger>
                 <button
                     data-testid="time_entry_range_selector"
-                    class="text-muted w-[110px] px-2 bg-transparent text-center hover:bg-card-background rounded-lg border border-transparent hover:border-card-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80"
-                    :class="{
-                        'text-sm py-2 font-medium': !showDate,
-                        'text-xs py-1.5 font-semibold': showDate,
-                    }">
+                    :class="
+                        twMerge(
+                            'text-muted w-[110px] px-2 bg-transparent text-center hover:bg-card-background rounded-lg border border-transparent hover:border-card-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80',
+                            showDate
+                                ? 'text-xs py-1.5 font-semibold'
+                                : 'text-sm py-2 font-medium',
+                            open && 'border-card-border bg-card-background'
+                        )
+                    ">
                     {{ formatStartEnd(start, end) }}
                     <span v-if="showDate" class="text-text-tertiary font-medium"
                         >{{ formatDate(start) }}

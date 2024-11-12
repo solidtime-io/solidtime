@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import parse from 'parse-duration';
-import { computed, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import {
     formatHumanReadableDuration,
     getDayJsInstance,
 } from '@/packages/ui/src/utils/time';
 import dayjs from 'dayjs';
 import { twMerge } from 'tailwind-merge';
+import { TextInput } from '@/packages/ui/src';
 const temporaryCustomTimerEntry = ref<string>('');
 
 const start = defineModel('start', {
@@ -49,7 +50,7 @@ function updateDuration() {
         start.value = newStartDate.utc().format();
     }
     // fallback to minutes if just a number is given
-    temporaryCustomTimerEntry.value = '';
+    updateTimeEntryInputValue();
 }
 
 function isNumeric(value: string) {
@@ -62,39 +63,24 @@ const props = defineProps<{
 
 const HHMMtimeRegex = /^([0-9]{1,2}):([0-5]?[0-9])$/;
 
-const currentTime = computed({
-    get() {
-        if (temporaryCustomTimerEntry.value !== '') {
-            return temporaryCustomTimerEntry.value;
-        }
-        if (start.value && end.value) {
-            const startTime = dayjs(start.value);
-            const diff = getDayJsInstance()(end.value).diff(
-                startTime,
-                'seconds'
-            );
-            return formatHumanReadableDuration(diff);
-        }
-        return null;
-    },
-    // setter
-    set(newValue) {
-        if (newValue) {
-            temporaryCustomTimerEntry.value = newValue;
-        } else {
-            temporaryCustomTimerEntry.value = '';
-        }
-    },
-});
+watch([start, end], updateTimeEntryInputValue);
+onMounted(() => updateTimeEntryInputValue());
+
+function updateTimeEntryInputValue() {
+    if (start.value && end.value) {
+        const startTime = dayjs(start.value);
+        const diff = getDayJsInstance()(end.value).diff(startTime, 'seconds');
+        temporaryCustomTimerEntry.value = formatHumanReadableDuration(diff);
+    }
+}
 </script>
 
 <template>
-    <input
-        placeholder="00:00:00"
+    <TextInput
         ref="inputField"
         @blur="updateDuration"
         @keydown.enter="updateDuration"
-        v-model="currentTime"
+        v-model="temporaryCustomTimerEntry"
         :class="twMerge('text-text-secondary', props.class)"
         type="text" />
 </template>

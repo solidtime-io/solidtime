@@ -82,7 +82,7 @@ const inputValue = ref(formatValue(model.value));
             type="text"
             :name="name"
             placeholder="Billable Rate"
-            class="mt-2 block w-full"
+            class="block w-full"
             autocomplete="teamMemberRate" />
         <div
             class="absolute top-0 right-0 h-full flex items-center px-4 font-medium pointer-events-none">

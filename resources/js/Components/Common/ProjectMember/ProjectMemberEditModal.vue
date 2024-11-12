@@ -89,6 +89,7 @@ useFocus(projectNameInput, { initialValue: true });
                 <div class="col-span-3 sm:col-span-1 flex-1">
                     <InputLabel
                         for="billable_rate"
+                        class="mb-2"
                         value="Billable Rate"></InputLabel>
                     <BillableRateInput
                         @keydown.enter="submit"

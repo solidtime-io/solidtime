@@ -54,7 +54,7 @@ const emit = defineEmits(['changed']);
             @keydown.enter="updateDate"
             :class="
                 twMerge(
-                    'bg-input-background border text-white border-input-border focus-visible:outline-0 focus-visible:ring-0 rounded-md',
+                    'bg-input-background border text-white border-input-border focus-visible:outline-0 focus-visible:border-input-border-active focus-visible:ring-0 rounded-md',
                     props.class
                 )
             "

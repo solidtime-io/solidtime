@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
+import { twMerge } from 'tailwind-merge';
 
-defineProps<{
+const props = defineProps<{
     name?: string;
+    class?: string;
 }>();
 
 const input = ref<HTMLInputElement | null>(null);
@@ -20,7 +22,12 @@ const model = defineModel();
 <template>
     <input
         ref="input"
-        class="border-input-border border bg-input-background text-white focus:ring-input-border-active focus:ring-0 focus-visible:border-input-border-active rounded-md shadow-sm"
+        :class="
+            twMerge(
+                'border-input-border border bg-input-background text-white focus:ring-input-border-active focus:ring-0 focus-visible:border-input-border-active rounded-md shadow-sm',
+                props.class
+            )
+        "
         v-model="model"
         :name="name" />
 </template>

@@ -151,6 +151,7 @@ const roleDescription = computed(() => {
                             v-if="billableRateSelect === 'custom-rate'">
                             <InputLabel
                                 for="memberBillableRate"
+                                class="mb-2"
                                 value="Billable Rate" />
                             <BillableRateInput
                                 focus
