@@ -29,7 +29,7 @@ import DatePicker from '@/packages/ui/src/Input/DatePicker.vue';
 import DurationHumanInput from '@/packages/ui/src/Input/DurationHumanInput.vue';
 
 import { InformationCircleIcon } from '@heroicons/vue/20/solid';
-import type { Tag, Task } from '@/packages/api';
+import type { Tag, Task } from '@/packages/api/src';
 
 const show = defineModel('show', { default: false });
 const saving = ref(false);
