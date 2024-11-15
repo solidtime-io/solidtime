@@ -57,6 +57,38 @@ test('test that starting and stopping a timer with a description works', async (
     await assertThatTimerIsStopped(page);
 });
 
+test('test that starting the time entry starts the live timer and that it keeps running after reload', async ({
+    page,
+}) => {
+    await goToDashboard(page);
+
+    await Promise.all([
+        newTimeEntryResponse(page),
+        startOrStopTimerWithButton(page),
+    ]);
+    await assertThatTimerHasStarted(page);
+    await page.waitForTimeout(500);
+    const beforeTimerValue = await page
+        .getByTestId('time_entry_time')
+        .inputValue();
+    await page.waitForTimeout(2000);
+    const afterWaitTimeValue = await page
+        .getByTestId('time_entry_time')
+        .inputValue();
+    expect(afterWaitTimeValue).not.toEqual(beforeTimerValue);
+    await page.reload();
+    await page.waitForTimeout(500);
+
+    const afterReloadTimerValue = await page
+        .getByTestId('time_entry_time')
+        .inputValue();
+    await page.waitForTimeout(2000);
+    const afterReloadAfterWaitTimerValue = await page
+        .getByTestId('time_entry_time')
+        .inputValue();
+    expect(afterReloadTimerValue).not.toEqual(afterReloadAfterWaitTimerValue);
+});
+
 test('test that starting and updating the description while running works', async ({
     page,
 }) => {
