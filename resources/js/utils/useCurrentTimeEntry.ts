@@ -66,6 +66,12 @@ export const useCurrentTimeEntryStore = defineStore('currentTimeEntry', () => {
                 if (timeEntriesResponse?.data) {
                     if (timeEntriesResponse.data) {
                         currentTimeEntry.value = timeEntriesResponse.data;
+                        if (
+                            currentTimeEntry.value.start !== '' &&
+                            currentTimeEntry.value.end === null
+                        ) {
+                            startLiveTimer();
+                        }
                     } else {
                         currentTimeEntry.value = { ...emptyTimeEntry };
                     }
