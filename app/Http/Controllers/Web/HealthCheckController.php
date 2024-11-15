@@ -45,18 +45,34 @@ class HealthCheckController extends Controller
 
         $dbTimezone = DB::select('show timezone;');
 
+        $response = [
+            'ip_address' => $ipAddress,
+            'url' => $request->url(),
+            'path' => $request->path(),
+            'hostname' => $hostname,
+            'timestamp' => Carbon::now()->timestamp,
+            'date_time_utc' => Carbon::now('UTC')->toDateTimeString(),
+            'date_time_app' => Carbon::now()->toDateTimeString(),
+            'timezone' => $dbTimezone[0]->TimeZone,
+            'secure' => $secure,
+            'is_trusted_proxy' => $isTrustedProxy,
+        ];
+
+        if (app()->hasDebugModeEnabled()) {
+            $response['app_debug'] = true;
+            $response['app_url'] = config('app.url');
+            $response['app_env'] = app()->environment();
+            $response['app_timezone'] = config('app.timezone');
+            $response['app_force_https'] = config('app.force_https');
+            $response['trusted_proxies'] = config('trustedproxy.proxies');
+            $headers = $request->headers->all();
+            if (isset($headers['cookie'])) {
+                $headers['cookie'] = '***';
+            }
+            $response['headers'] = $headers;
+        }
+
         return response()
-            ->json([
-                'ip_address' => $ipAddress,
-                'url' => $request->url(),
-                'path' => $request->path(),
-                'hostname' => $hostname,
-                'timestamp' => Carbon::now()->timestamp,
-                'date_time_utc' => Carbon::now('UTC')->toDateTimeString(),
-                'date_time_app' => Carbon::now()->toDateTimeString(),
-                'timezone' => $dbTimezone[0]->TimeZone,
-                'secure' => $secure,
-                'is_trusted_proxy' => $isTrustedProxy,
-            ]);
+            ->json($response);
     }
 }

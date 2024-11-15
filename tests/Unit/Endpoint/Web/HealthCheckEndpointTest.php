@@ -33,20 +33,57 @@ class HealthCheckEndpointTest extends EndpointTestAbstract
 
     public function test_debug_endpoint_returns_ok(): void
     {
+        // Arrange
+        config(['app.debug' => false]);
+
         // Act
         $response = $this->get('health-check/debug');
 
         // Assert
         $response->assertSuccessful();
-        $response->assertJsonStructure([
-            'ip_address',
-            'hostname',
-            'timestamp',
-            'date_time_utc',
+        $response->assertExactJsonStructure([
             'date_time_app',
-            'timezone',
-            'secure',
+            'date_time_utc',
+            'hostname',
+            'ip_address',
             'is_trusted_proxy',
+            'path',
+            'secure',
+            'timestamp',
+            'timezone',
+            'url',
+        ]);
+        config(['app.debug' => true]);
+    }
+
+    public function test_debug_endpoint_returns_more_information_if_debug_mode_is_enabled(): void
+    {
+        // Arrange
+        config(['app.debug' => true]);
+
+        // Act
+        $response = $this->get('health-check/debug');
+
+        // Assert
+        $response->assertSuccessful();
+        $response->assertExactJsonStructure([
+            'app_debug',
+            'app_env',
+            'app_force_https',
+            'app_timezone',
+            'app_url',
+            'date_time_app',
+            'date_time_utc',
+            'headers',
+            'hostname',
+            'ip_address',
+            'is_trusted_proxy',
+            'path',
+            'secure',
+            'timestamp',
+            'timezone',
+            'trusted_proxies',
+            'url',
         ]);
     }
 }

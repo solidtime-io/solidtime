@@ -65,7 +65,7 @@ return [
 
     'asset_url' => env('ASSET_URL'),
 
-    'force_https' => env('APP_FORCE_HTTPS', false),
+    'force_https' => (bool) env('APP_FORCE_HTTPS', false),
 
     /*
     |--------------------------------------------------------------------------
