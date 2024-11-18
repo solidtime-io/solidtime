@@ -6861,16 +6861,16 @@
         },
         {
             "name": "nwidart/laravel-modules",
-            "version": "v11.1.5",
+            "version": "v11.1.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nWidart/laravel-modules.git",
-                "reference": "7e52dd96e69da04e8733b74db28370276c57097a"
+                "reference": "bebe5b4676cf22d891c1863e9aa2688f34ddaa9f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nWidart/laravel-modules/zipball/7e52dd96e69da04e8733b74db28370276c57097a",
-                "reference": "7e52dd96e69da04e8733b74db28370276c57097a",
+                "url": "https://api.github.com/repos/nWidart/laravel-modules/zipball/bebe5b4676cf22d891c1863e9aa2688f34ddaa9f",
+                "reference": "bebe5b4676cf22d891c1863e9aa2688f34ddaa9f",
                 "shasum": ""
             },
             "require": {
@@ -6934,7 +6934,7 @@
             ],
             "support": {
                 "issues": "https://github.com/nWidart/laravel-modules/issues",
-                "source": "https://github.com/nWidart/laravel-modules/tree/v11.1.5"
+                "source": "https://github.com/nWidart/laravel-modules/tree/v11.1.6"
             },
             "funding": [
                 {
@@ -6946,7 +6946,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2024-11-16T14:05:05+00:00"
+            "time": "2024-11-16T20:27:06+00:00"
         },
         {
             "name": "nyholm/psr7",
