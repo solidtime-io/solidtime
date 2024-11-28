@@ -409,6 +409,7 @@ class TimeEntryController extends Controller
             $footerHtml = Blade::render($footerViewFile);
             $request = Gotenberg::chromium(config('services.gotenberg.url'))
                 ->pdf()
+                ->waitForExpression("window.status === 'ready'")
                 ->pdfa('PDF/A-3b')
                 ->paperSize('8.27', '11.7') // A4
                 ->footer(Stream::string('footer', $footerHtml))
