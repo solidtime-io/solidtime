@@ -164,7 +164,7 @@ class TimeEntryController extends Controller
      *
      * @operationId exportTimeEntries
      */
-    public function indexExport(Organization $organization, TimeEntryIndexExportRequest $request): JsonResponse
+    public function indexExport(Organization $organization, TimeEntryIndexExportRequest $request, TimeEntryAggregationService $timeEntryAggregationService): JsonResponse
     {
         /** @var Member|null $member */
         $member = $request->has('member_id') ? Member::query()->findOrFail($request->input('member_id')) : null;
@@ -198,12 +198,29 @@ class TimeEntryController extends Controller
             if (config('services.gotenberg.url') === null) {
                 throw new PdfRendererIsNotConfiguredException;
             }
-            $viewFile = file_get_contents(resource_path('views/reports/time-entry-index.blade.php'));
+            $viewFile = file_get_contents(resource_path('views/reports/time-entry-index/pdf.blade.php'));
             if ($viewFile === false) {
                 throw new \LogicException('View file not found');
             }
-            $html = Blade::render($viewFile, ['timeEntries' => $timeEntriesQuery->get()]);
-            $footerViewFile = file_get_contents(resource_path('views/reports/time-entry-index-footer.blade.php'));
+            $aggregatedData = $timeEntryAggregationService->getAggregatedTimeEntries(
+                $timeEntriesQuery->clone()->reorder()->withOnly([]),
+                null,
+                null,
+                $user->timezone,
+                $user->week_start,
+                false,
+                null,
+                null
+            );
+            $html = Blade::render($viewFile, [
+                'timeEntries' => $timeEntriesQuery->get(),
+                'aggregatedData' => $aggregatedData,
+                'timezone' => $timezone,
+                'currency' => $organization->currency,
+                'start' => $request->getStart()->timezone($timezone),
+                'end' => $request->getEnd()->timezone($timezone),
+            ]);
+            $footerViewFile = file_get_contents(resource_path('views/reports/time-entry-index/pdf-footer.blade.php'));
             if ($footerViewFile === false) {
                 throw new \LogicException('View file not found');
             }
@@ -372,7 +389,7 @@ class TimeEntryController extends Controller
                     config('services.gotenberg.basic_auth_password'),
                 ] : null,
             ]);
-            $viewFile = file_get_contents(resource_path('views/reports/time-entry-aggregate-index.blade.php'));
+            $viewFile = file_get_contents(resource_path('views/reports/time-entry-aggregate/pdf.blade.php'));
             if ($viewFile === false) {
                 throw new \LogicException('View file not found');
             }
@@ -385,7 +402,7 @@ class TimeEntryController extends Controller
                 'start' => $request->getStart()->timezone($timezone),
                 'end' => $request->getEnd()->timezone($timezone),
             ]);
-            $footerViewFile = file_get_contents(resource_path('views/reports/time-entry-index-footer.blade.php'));
+            $footerViewFile = file_get_contents(resource_path('views/reports/time-entry-aggregate/pdf-footer.blade.php'));
             if ($footerViewFile === false) {
                 throw new \LogicException('View file not found');
             }
@@ -395,6 +412,7 @@ class TimeEntryController extends Controller
                 ->pdfa('PDF/A-3b')
                 ->paperSize('8.27', '11.7') // A4
                 ->footer(Stream::string('footer', $footerHtml))
+                ->assets(Stream::path(resource_path('pdf-js/echarts.min.js'), 'echarts.min.js'))
                 ->html(Stream::string('body', $html));
             $tempFolder = TemporaryDirectory::make();
             $filenameTemp = Gotenberg::save($request, $tempFolder->path(), $client);
