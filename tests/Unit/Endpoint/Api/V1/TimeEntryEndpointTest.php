@@ -526,6 +526,8 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         $response = $this->getJson(route('api.v1.time-entries.index-export', [
             $data->organization->getKey(),
             'format' => ExportFormat::CSV,
+            'start' => Carbon::now()->startOfYear()->toIso8601ZuluString(),
+            'end' => Carbon::now()->endOfYear()->toIso8601ZuluString(),
         ]));
 
         // Assert
@@ -546,6 +548,8 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         $response = $this->getJson(route('api.v1.time-entries.index-export', [
             $data->organization->getKey(),
             'format' => ExportFormat::PDF,
+            'start' => Carbon::now()->startOfYear()->toIso8601ZuluString(),
+            'end' => Carbon::now()->endOfYear()->toIso8601ZuluString(),
         ]));
 
         // Assert
@@ -570,6 +574,8 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         $response = $this->getJson(route('api.v1.time-entries.index-export', [
             $data->organization->getKey(),
             'format' => ExportFormat::PDF,
+            'start' => Carbon::now()->startOfYear()->toIso8601ZuluString(),
+            'end' => Carbon::now()->endOfYear()->toIso8601ZuluString(),
         ]));
 
         // Assert
@@ -593,6 +599,8 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         $response = $this->getJson(route('api.v1.time-entries.index-export', [
             $data->organization->getKey(),
             'format' => ExportFormat::CSV,
+            'start' => Carbon::now()->startOfYear()->toIso8601ZuluString(),
+            'end' => Carbon::now()->endOfYear()->toIso8601ZuluString(),
         ]));
 
         // Assert
@@ -615,6 +623,8 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         $response = $this->getJson(route('api.v1.time-entries.index-export', [
             $data->organization->getKey(),
             'format' => ExportFormat::CSV,
+            'start' => Carbon::now()->startOfYear()->toIso8601ZuluString(),
+            'end' => Carbon::now()->endOfYear()->toIso8601ZuluString(),
         ]));
 
         // Assert
@@ -637,6 +647,8 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         $response = $this->getJson(route('api.v1.time-entries.index-export', [
             $data->organization->getKey(),
             'format' => ExportFormat::ODS,
+            'start' => Carbon::now()->startOfYear()->toIso8601ZuluString(),
+            'end' => Carbon::now()->endOfYear()->toIso8601ZuluString(),
         ]));
 
         // Assert
@@ -659,6 +671,8 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         $response = $this->getJson(route('api.v1.time-entries.index-export', [
             $data->organization->getKey(),
             'format' => ExportFormat::XLSX,
+            'start' => Carbon::now()->startOfYear()->toIso8601ZuluString(),
+            'end' => Carbon::now()->endOfYear()->toIso8601ZuluString(),
         ]));
 
         // Assert
@@ -678,6 +692,8 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         $response = $this->getJson(route('api.v1.time-entries.index-export', [
             $data->organization->getKey(),
             'format' => ExportFormat::PDF,
+            'start' => Carbon::now()->startOfYear()->toIso8601ZuluString(),
+            'end' => Carbon::now()->endOfYear()->toIso8601ZuluString(),
         ]));
 
         // Assert

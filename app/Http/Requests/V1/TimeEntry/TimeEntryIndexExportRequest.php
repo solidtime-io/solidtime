@@ -12,6 +12,7 @@ use App\Models\Tag;
 use App\Models\Task;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
 use Korridor\LaravelModelValidationRules\Rules\ExistsEloquent;
 
@@ -96,14 +97,14 @@ class TimeEntryIndexExportRequest extends TimeEntryIndexRequest
             ],
             // Filter only time entries that have a start date after the given timestamp in UTC (example: 2021-01-01T00:00:00Z)
             'start' => [
-                'nullable',
+                'required',
                 'string',
                 'date_format:Y-m-d\TH:i:s\Z',
                 'before:end',
             ],
             // Filter only time entries that have a start date before the given timestamp in UTC (example: 2021-01-01T00:00:00Z)
             'end' => [
-                'nullable',
+                'required',
                 'string',
                 'date_format:Y-m-d\TH:i:s\Z',
             ],
@@ -129,6 +130,26 @@ class TimeEntryIndexExportRequest extends TimeEntryIndexRequest
                 'in:true,false',
             ],
         ];
+    }
+
+    public function getStart(): Carbon
+    {
+        $start = Carbon::createFromFormat('Y-m-d\TH:i:s\Z', $this->input('start'), 'UTC');
+        if ($start === null) {
+            throw new \LogicException('Start date validation is not working');
+        }
+
+        return $start;
+    }
+
+    public function getEnd(): Carbon
+    {
+        $end = Carbon::createFromFormat('Y-m-d\TH:i:s\Z', $this->input('end'), 'UTC');
+        if ($end === null) {
+            throw new \LogicException('End date validation is not working');
+        }
+
+        return $end;
     }
 
     public function getOnlyFullDates(): bool
