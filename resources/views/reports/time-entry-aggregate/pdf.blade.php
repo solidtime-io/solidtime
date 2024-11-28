@@ -37,6 +37,9 @@
             font-weight: bold;
         }
     </style>
+    <script>
+        window.status = 'processing';
+    </script>
     <script src="echarts.min.js"></script>
 </head>
 <body>
@@ -189,6 +192,10 @@
             }
         ]
     };
+
+    myChart.on('finished', () => {
+        window.status = 'ready';
+    })
 
     // Display the chart using the configuration items and data just specified.
     myChart.setOption(option);
