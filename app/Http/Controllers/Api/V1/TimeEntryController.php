@@ -234,6 +234,7 @@ class TimeEntryController extends Controller
             $request = Gotenberg::chromium(config('services.gotenberg.url'))
                 ->pdf()
                 ->pdfa('PDF/A-3b')
+                ->margins(0.39, 0.78, 0.39, 0.39)
                 ->paperSize('8.27', '11.7') // A4
                 ->footer(Stream::string('footer', $footerHtml))
                 ->html(Stream::string('body', $html));
@@ -411,6 +412,7 @@ class TimeEntryController extends Controller
                 ->pdf()
                 ->waitForExpression("window.status === 'ready'")
                 ->pdfa('PDF/A-3b')
+                ->margins(0.39, 0.78, 0.39, 0.39)
                 ->paperSize('8.27', '11.7') // A4
                 ->footer(Stream::string('footer', $footerHtml))
                 ->assets(Stream::path(resource_path('pdf-js/echarts.min.js'), 'echarts.min.js'))
