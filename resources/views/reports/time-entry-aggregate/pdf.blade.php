@@ -3,7 +3,8 @@
 @use('PhpOffice\PhpSpreadsheet\Cell\DataType')
 @use('Carbon\CarbonInterval')
 @inject('interval', 'App\Service\IntervalService')
-    <!DOCTYPE html>
+@inject('colorService', 'App\Service\ColorService')
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8"/>
@@ -36,6 +37,13 @@
             font-size: 24px;
             font-weight: bold;
         }
+
+        .data-table {
+            break-after: auto;
+        }
+        .no-break {
+            break-after: avoid-page;
+        }
     </style>
     <script>
         window.status = 'processing';
@@ -43,6 +51,7 @@
     <script src="echarts.min.js"></script>
 </head>
 <body>
+
 <h1>Report</h1>
 
 <hr>
@@ -56,83 +65,141 @@
     <span>Total cost: {{ Money::of(BigDecimal::ofUnscaledValue($aggregatedData['cost'], 2)->__toString(), $currency)->formatTo('en_US') }}</span><br>
 </div>
 
-<div id="main-chart" style="width: 100%; height:400px; margin-bottom: 50px;"></div>
+<div id="main-chart" style="width: 100%; height:400px;"></div>
+
+<div id="pie-chart" style="width: 100%; height: 150px; margin-bottom: 50px;"></div>
 
 @foreach($aggregatedData['grouped_data'] as $group1Entry)
-    <h2>{{ $group1Entry['description'] ?? $group1Entry['key'] ?? 'No '.Str::lower($group->description()) }}</h2>
+    <div class="data-table">
+        <h2 class="no-break">{{ $group1Entry['description'] ?? $group1Entry['key'] ?? 'No '.Str::lower($group->description()) }}</h2>
 
-    <table>
-        <thead>
-        <tr>
-            <th>
-                {{ $subGroup->description() }}
-            </th>
-            <th>
-                Duration
-            </th>
-            <th>
-                Duration (decimal)
-            </th>
-            <th>
-                Cost
-            </th>
-        </tr>
-        </thead>
-        <tbody>
-        @php
-            $counter = 1;
-            $totalDuration = 0;
-            $totalCost = 0;
-        @endphp
-        @foreach($group1Entry['grouped_data'] as $group2Entry)
-            @php
-                $duration = CarbonInterval::seconds($group2Entry['seconds']);
-            @endphp
+        <table>
+            <thead>
             <tr>
-                <td style="text-align: left;">
-                    {{ $group2Entry['description'] ?? $group2Entry['key'] ?? '-' }}
-                </td>
-                <td style="text-align: right;">
-                    {{ $interval->format($duration) }}
-                </td>
-                <td style="text-align: right;">
-                    {{ round($duration->totalHours, 2) }}
-                </td>
-                <td style="text-align: right;">
-                    {{ Money::of(BigDecimal::ofUnscaledValue($group2Entry['cost'], 2)->__toString(), $currency)->formatTo('en_US') }}
-                </td>
+                <th>
+                    {{ $subGroup->description() }}
+                </th>
+                <th>
+                    Duration
+                </th>
+                <th>
+                    Duration (decimal)
+                </th>
+                <th>
+                    Cost
+                </th>
             </tr>
+            </thead>
+            <tbody>
             @php
-                $totalDuration += $group2Entry['seconds'];
-                $totalCost += $group2Entry['cost'];
+                $counter = 1;
+                $totalDuration = 0;
+                $totalCost = 0;
             @endphp
-        @endforeach
-        </tbody>
-    </table>
+            @foreach($group1Entry['grouped_data'] as $group2Entry)
+                @php
+                    $duration = CarbonInterval::seconds($group2Entry['seconds']);
+                @endphp
+                <tr>
+                    <td style="text-align: left;">
+                        {{ $group2Entry['description'] ?? $group2Entry['key'] ?? '-' }}
+                    </td>
+                    <td style="text-align: right;">
+                        {{ $interval->format($duration) }}
+                    </td>
+                    <td style="text-align: right;">
+                        {{ round($duration->totalHours, 2) }}
+                    </td>
+                    <td style="text-align: right;">
+                        {{ Money::of(BigDecimal::ofUnscaledValue($group2Entry['cost'], 2)->__toString(), $currency)->formatTo('en_US') }}
+                    </td>
+                </tr>
+                @php
+                    $totalDuration += $group2Entry['seconds'];
+                    $totalCost += $group2Entry['cost'];
+                @endphp
+            @endforeach
+            </tbody>
+        </table>
+    </div>
 @endforeach
 
 <script>
-    // Initialize the echarts instance based on the prepared dom
-    let element = document.getElementById('main-chart');
-    let myChart = echarts.init(element, null, {
+    let elementPieChart = document.getElementById('pie-chart');
+    let pieChart = echarts.init(elementPieChart, null, {
         renderer: 'svg'
     });
+    let pieChartOptions = {
+        legend: {
+            left: '25%',
+            align: 'left',
+            top: 'middle',
+            orient: 'vertical',
+        },
+        backgroundColor: 'transparent',
+        series: [
+            {
+                label: {
+                    show: false,
+                },
+                data: {!! json_encode(collect($aggregatedData['grouped_data'])->map(function (array $data) use (&$colorService, $group): object {
+                    $color = $data['color'];
+                    if ($color === null) {
+                        $color = $colorService->getRandomColor();
+                    }
+                    if ($data['key'] === null) {
+                       $color = '#CCCCCC';
+                    }
+                    return (object)[
+                        'value' => $data['seconds'],
+                        'name' => $data['description'] ?? $data['key'] ?? 'No '.Str::lower($group->description()),
+                        'color' => $color,
+                        'itemStyle' => (object) [
+                            'color' => $color.'BB',
+                        ],
+                        'emphasis' => (object) [
+                            'itemStyle' => (object) [
+                                'color' => $color,
+                            ],
+                        ],
+                    ];
+                })->toArray()) !!},
+                center: ['10%', '50%'],
+                radius: ['30%', '60%'],
+                left: 'left',
+                type: 'pie',
+            },
+        ],
+    };
+    pieChart.on('finished', () => {
+        window.pieChartFinished = true;
+        if (window.mainChartFinished && window.pieChartFinished) {
+            window.status = 'ready';
+        }
+    })
+    pieChart.setOption(pieChartOptions);
 
-    // Specify the configuration items and data for the chart
-    let option = {
+    let elementMainChart = document.getElementById('main-chart');
+    let mainChart = echarts.init(elementMainChart, null, {
+        renderer: 'svg'
+    });
+    let mainChartOptions = {
         tooltip: {},
         xAxis: {
             data: ['{!! collect($dataHistoryChart['grouped_data'])->pluck('key')->implode("', '") !!}'],
             axisLabel: {
-                show: true,
+                fontSize: 12,
+                fontWeight: 600,
+                color: 'rgb(120, 120, 120)',
+                margin: 16,
+                fontFamily: 'Outfit, sans-serif',
+            },
+            axisTick: {
                 interval: 0,
-                rotate: 90,
-            }
+                alignWithLabel: true,
+            },
         },
         grid: {
-            left: 0,
-            right: 0,
-            bottom: 0,
             containLabel: true
         },
         yAxis: {
@@ -164,6 +231,9 @@
                 name: 'time',
                 type: 'bar',
                 data: [{!! collect($dataHistoryChart['grouped_data'])->pluck('seconds')->implode(', ') !!}],
+                itemStyle: {
+                    borderColor: '#5470c6',
+                },
                 label: {
                     show: true,
                     position: 'top',
@@ -192,13 +262,13 @@
             }
         ]
     };
-
-    myChart.on('finished', () => {
-        window.status = 'ready';
+    mainChart.on('finished', () => {
+        window.mainChartFinished = true;
+        if (window.mainChartFinished && window.pieChartFinished) {
+            window.status = 'ready';
+        }
     })
-
-    // Display the chart using the configuration items and data just specified.
-    myChart.setOption(option);
+    mainChart.setOption(mainChartOptions);
 </script>
 </body>
 </html>
