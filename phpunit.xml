@@ -38,5 +38,6 @@
         <env name="SESSION_DRIVER" value="array"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="AUDITING_ENABLED" value="true"/>
+        <env name="NEWSLETTER_URL" value="null"/>
     </php>
 </phpunit>
