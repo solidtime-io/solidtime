@@ -11,6 +11,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Mockery\MockInterface;
@@ -25,6 +26,7 @@ abstract class TestCase extends BaseTestCase
         parent::setUp();
         Mail::fake();
         LogFake::bind();
+        Http::preventStrayRequests();
         $this->actAsOrganizationWithoutSubscriptionAndWithoutTrial();
         // Note: The following line can be used to test timezone edge cases.
         // $this->travelTo(Carbon::now()->timezone('Europe/Vienna')->setHour(0)->setMinute(59)->setSecond(0));
