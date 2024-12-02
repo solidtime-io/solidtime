@@ -18,6 +18,7 @@ class SelfHostGenerateKeysCommand extends Command
      */
     protected $signature = 'self-host:generate-keys
                 { --length=4096 : The length of the passport private key }
+                { --multi-line : Whether to output the keys in multiple lines }
                 { --format=env : The format of the output (env, yaml) }';
 
     /**
@@ -34,6 +35,7 @@ class SelfHostGenerateKeysCommand extends Command
     {
         $format = $this->option('format');
         $key = RSA::createKey((int) $this->option('length'));
+        $multiLine = (bool) $this->option('multi-line');
 
         $publicKey = (string) $key->getPublicKey();
         $privateKey = (string) $key;
@@ -41,12 +43,17 @@ class SelfHostGenerateKeysCommand extends Command
 
         if ($format === 'env') {
             $this->line('APP_KEY="'.$appKey.'"');
-            $this->line('PASSPORT_PRIVATE_KEY="'.$privateKey.'"');
-            $this->line('PASSPORT_PUBLIC_KEY="'.$publicKey.'"');
+            if ($multiLine) {
+                $this->line('PASSPORT_PRIVATE_KEY="'.Str::replace("\r\n", "\n", $privateKey).'"');
+                $this->line('PASSPORT_PUBLIC_KEY="'.Str::replace("\r\n", "\n", $publicKey).'"');
+            } else {
+                $this->line('PASSPORT_PRIVATE_KEY="'.Str::replace("\r\n", '\n', $privateKey).'"');
+                $this->line('PASSPORT_PUBLIC_KEY="'.Str::replace("\r\n", '\n', $publicKey).'"');
+            }
         } elseif ($format === 'yaml') {
             $this->line('APP_KEY: "'.$appKey.'"');
-            $this->line("PASSPORT_PRIVATE_KEY: |\n  ".Str::replace("\n", "\n  ", $privateKey));
-            $this->line("PASSPORT_PUBLIC_KEY: |\n  ".Str::replace("\n", "\n  ", $publicKey));
+            $this->line("PASSPORT_PRIVATE_KEY: |\n  ".Str::replace("\r\n", "\n  ", $privateKey));
+            $this->line("PASSPORT_PUBLIC_KEY: |\n  ".Str::replace("\r\n", "\n  ", $publicKey));
         } else {
             $this->error('Invalid format');
 
