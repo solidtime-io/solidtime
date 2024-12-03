@@ -258,7 +258,7 @@ const tableData = computed(() => {
                         cost: el.cost,
                         description: getNameForReportingRowEntry(
                             el.key,
-                            el.grouped_type
+                            entry.grouped_type
                         ),
                     };
                 }) ?? [],
