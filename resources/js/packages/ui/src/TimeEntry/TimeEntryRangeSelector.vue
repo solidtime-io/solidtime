@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import Dropdown from '@/packages/ui/src/Input/Dropdown.vue';
 import { defineProps, ref } from 'vue';
-import { formatDate, formatStartEnd } from '@/packages/ui/src/utils/time';
+import {
+    formatDateLocalized,
+    formatStartEnd,
+} from '@/packages/ui/src/utils/time';
 import TimeRangeSelector from '@/packages/ui/src/Input/TimeRangeSelector.vue';
 import { twMerge } from 'tailwind-merge';
 
@@ -39,7 +42,7 @@ const open = ref(false);
                     ">
                     {{ formatStartEnd(start, end) }}
                     <span v-if="showDate" class="text-text-tertiary font-medium"
-                        >{{ formatDate(start) }}
+                        >{{ formatDateLocalized(start) }}
                     </span>
                 </button>
             </template>
