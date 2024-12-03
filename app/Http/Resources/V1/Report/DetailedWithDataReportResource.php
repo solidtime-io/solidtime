@@ -90,12 +90,14 @@ class DetailedWithDataReportResource extends BaseResource
              *        grouped_data: null|array<array{
              *            key: string|null,
              *            description: string|null,
+             *            color: string|null,
              *            seconds: int,
              *            cost: int,
              *            grouped_type: string|null,
              *            grouped_data: null|array<array{
              *                key: string|null,
              *                description: string|null,
+             *                color: string|null,
              *                seconds: int,
              *                cost: int,
              *                grouped_type: null,

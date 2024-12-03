@@ -10,7 +10,9 @@ import ReportingPieChart from '@/Components/Common/Reporting/ReportingPieChart.v
 import { formatCents } from '@/packages/ui/src/utils/money';
 import { computed, onMounted, ref } from 'vue';
 import { useQuery } from '@tanstack/vue-query';
-import { type AggregatedTimeEntries, api } from '@/packages/api/src';
+import { api } from '@/packages/api/src';
+import { getRandomColorWithSeed } from '@/packages/ui/src/utils/color';
+import { useReportingStore } from '@/utils/useReporting';
 
 const sharedSecret = ref<string | null>(null);
 
@@ -18,16 +20,15 @@ const hasSharedSecret = computed(() => {
     return sharedSecret.value !== null;
 });
 
-useQuery({
+const { data: sharedReportResponseData } = useQuery({
     enabled: hasSharedSecret,
-    queryKey: ['reporting', sharedSecret.value],
-    queryFn: () => {
+    queryKey: ['reporting', sharedSecret],
+    queryFn: () =>
         api.getPublicReport({
             headers: {
                 'X-Api-Key': sharedSecret.value,
             },
-        });
-    },
+        }),
 });
 
 onMounted(() => {
@@ -38,7 +39,21 @@ onMounted(() => {
     }
 });
 
-const aggregatedTableTimeEntries = computed<AggregatedTimeEntries>(() => {
+const aggregatedTableTimeEntries = computed(() => {
+    if (sharedReportResponseData.value) {
+        return sharedReportResponseData.value?.data;
+    }
+    return {
+        grouped_data: [],
+        grouped_type: 'project',
+        seconds: 0,
+        cost: 0,
+    };
+});
+const aggregatedGraphTimeEntries = computed(() => {
+    if (sharedReportResponseData.value) {
+        return sharedReportResponseData.value?.history_data;
+    }
     // Placeholder Data
     return {
         grouped_data: [],
@@ -47,17 +62,79 @@ const aggregatedTableTimeEntries = computed<AggregatedTimeEntries>(() => {
         cost: 0,
     };
 });
-const aggregatedGraphTimeEntries = computed<AggregatedTimeEntries>(() => {
-    // Placeholder Data
-    return {
-        grouped_data: [],
-        grouped_type: 'project',
-        seconds: 0,
-        cost: 0,
-    };
+
+const group = computed(() => {
+    if (sharedReportResponseData.value) {
+        return sharedReportResponseData.value?.properties.group;
+    }
+    return 'billable';
 });
-const group = ref('billable');
-const subGroup = ref('project');
+
+const subGroup = computed(() => {
+    if (sharedReportResponseData.value) {
+        return sharedReportResponseData.value?.properties.sub_group;
+    }
+    return 'project';
+});
+const { emptyPlaceholder } = useReportingStore();
+
+const groupedPieChartData = computed(() => {
+    return (
+        aggregatedTableTimeEntries.value?.grouped_data?.map((entry) => {
+            if (entry.description === null) {
+                return {
+                    value: entry.seconds,
+                    name: emptyPlaceholder[
+                        aggregatedTableTimeEntries.value?.grouped_type ??
+                            'project'
+                    ],
+                    color: '#CCCCCC',
+                };
+            }
+            return {
+                value: entry.seconds,
+                name: entry.description,
+                color:
+                    entry.color ??
+                    getRandomColorWithSeed(entry.description ?? 'none'),
+            };
+        }) ?? []
+    );
+});
+
+const tableData = computed(() => {
+    return aggregatedTableTimeEntries.value?.grouped_data?.map((entry) => {
+        return {
+            seconds: entry.seconds,
+            cost: entry.cost,
+            description:
+                entry.description ??
+                emptyPlaceholder[
+                    aggregatedTableTimeEntries.value?.grouped_type ?? 'project'
+                ],
+            grouped_data:
+                entry.grouped_data?.map((el) => {
+                    return {
+                        seconds: el.seconds,
+                        cost: el.cost,
+                        description:
+                            el.description ??
+                            emptyPlaceholder[
+                                aggregatedTableTimeEntries.value
+                                    ?.grouped_type ?? 'project'
+                            ],
+                    };
+                }) ?? [],
+        };
+    });
+});
+
+const { groupByOptions } = useReportingStore();
+function getGroupLabel(key: string) {
+    return groupByOptions.find((option) => {
+        return option.value === key;
+    })?.label;
+}
 </script>
 
 <template>
@@ -82,9 +159,13 @@ const subGroup = ref('project');
                 <div
                     class="col-span-3 bg-card-background rounded-lg border border-card-border pt-3">
                     <div
-                        class="text-sm flex text-white items-center space-x-3 font-medium px-6 border-b border-card-background-separator pb-3">
-                        <span>Group by</span> {{ group }} <span>and</span>
-                        {{ subGroup }}
+                        class="text-sm flex text-white items-center font-medium px-6 border-b border-card-background-separator pb-3">
+                        Group by
+                        <strong class="px-2">{{ getGroupLabel(group) }}</strong>
+                        and
+                        <strong class="px-2">{{
+                            getGroupLabel(subGroup)
+                        }}</strong>
                     </div>
                     <div
                         class="grid items-center"
@@ -102,8 +183,8 @@ const subGroup = ref('project');
                                     ?.length > 0
                             ">
                             <ReportingRow
-                                v-for="entry in aggregatedTableTimeEntries.grouped_data"
-                                :key="entry.key ?? 'none'"
+                                v-for="entry in tableData"
+                                :key="entry.description ?? 'none'"
                                 :entry="entry"
                                 :type="
                                     aggregatedTableTimeEntries.grouped_type
@@ -144,10 +225,7 @@ const subGroup = ref('project');
                 </div>
                 <div class="px-2 lg:px-4">
                     <ReportingPieChart
-                        :type="aggregatedTableTimeEntries?.grouped_type"
-                        :data="
-                            aggregatedTableTimeEntries?.grouped_data
-                        "></ReportingPieChart>
+                        :data="groupedPieChartData"></ReportingPieChart>
                 </div>
             </div>
         </MainContainer>

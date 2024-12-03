@@ -37,20 +37,22 @@ const props = defineProps<{
     properties: CreateReportBodyProperties;
 }>();
 
-const report = ref<CreateReportBody>({
+const report = ref({
     name: '',
     description: '',
     is_public: false,
     public_until: null,
-    properties: {},
 });
 
 const { handleApiRequestNotifications } = useNotificationsStore();
 
 async function submit() {
-    report.value.properties = { ...props.properties };
     await handleApiRequestNotifications(
-        () => createReportMutation.mutateAsync(report.value),
+        () =>
+            createReportMutation.mutateAsync({
+                ...report.value,
+                properties: { ...props.properties },
+            }),
         'Success',
         'Error',
         () => {
@@ -59,7 +61,6 @@ async function submit() {
                 description: '',
                 is_public: false,
                 public_until: null,
-                properties: {},
             };
             show.value = false;
         }

@@ -65,6 +65,7 @@
     <span>Total cost: {{ Money::of(BigDecimal::ofUnscaledValue($aggregatedData['cost'], 2)->__toString(), $currency)->formatTo('en_US') }}</span><br>
 </div>
 
+
 <div id="main-chart" style="width: 100%; height:400px;"></div>
 
 <div id="pie-chart" style="width: 100%; height: 150px; margin-bottom: 50px;"></div>

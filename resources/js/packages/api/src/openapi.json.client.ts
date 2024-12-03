@@ -52,6 +52,7 @@ const OrganizationResource = z
         is_personal: z.boolean(),
         billable_rate: z.union([z.number(), z.null()]),
         employees_can_see_billable_rates: z.boolean(),
+        currency: z.string(),
     })
     .passthrough();
 const OrganizationUpdateRequest = z
@@ -72,6 +73,7 @@ const ProjectResource = z
         is_billable: z.boolean(),
         estimated_time: z.union([z.number(), z.null()]),
         spent_time: z.number().int(),
+        is_public: z.boolean(),
     })
     .passthrough();
 const ProjectStoreRequest = z
@@ -82,6 +84,7 @@ const ProjectStoreRequest = z
         billable_rate: z.union([z.number(), z.null()]).optional(),
         client_id: z.union([z.string(), z.null()]).optional(),
         estimated_time: z.union([z.number(), z.null()]).optional(),
+        is_public: z.boolean().optional(),
     })
     .passthrough();
 const ProjectUpdateRequest = z
@@ -90,6 +93,7 @@ const ProjectUpdateRequest = z
         color: z.string().max(255),
         is_billable: z.boolean(),
         is_archived: z.boolean().optional(),
+        is_public: z.boolean().optional(),
         client_id: z.union([z.string(), z.null()]).optional(),
         billable_rate: z.union([z.number(), z.null()]).optional(),
         estimated_time: z.union([z.number(), z.null()]).optional(),
@@ -121,9 +125,10 @@ const ReportResource = z
         is_public: z.boolean(),
         public_until: z.union([z.string(), z.null()]),
         shareable_link: z.union([z.string(), z.null()]),
+        created_at: z.string(),
+        updated_at: z.string(),
     })
     .passthrough();
-const ReportCollection = z.array(ReportResource);
 const TimeEntryAggregationType = z.enum([
     'day',
     'week',
@@ -136,6 +141,21 @@ const TimeEntryAggregationType = z.enum([
     'billable',
     'description',
 ]);
+const TimeEntryAggregationTypeInterval = z.enum([
+    'day',
+    'week',
+    'month',
+    'year',
+]);
+const Weekday = z.enum([
+    'monday',
+    'tuesday',
+    'wednesday',
+    'thursday',
+    'friday',
+    'saturday',
+    'sunday',
+]);
 const ReportStoreRequest = z
     .object({
         name: z.string().max(255),
@@ -144,22 +164,39 @@ const ReportStoreRequest = z
         public_until: z.union([z.string(), z.null()]).optional(),
         properties: z
             .object({
-                start: z.union([z.string(), z.null()]),
-                end: z.union([z.string(), z.null()]),
-                active: z.union([z.boolean(), z.null()]),
-                member_ids: z.union([z.array(z.string().uuid()), z.null()]),
-                billable: z.union([z.boolean(), z.null()]),
-                client_ids: z.union([z.array(z.string().uuid()), z.null()]),
-                project_ids: z.union([z.array(z.string().uuid()), z.null()]),
-                tag_ids: z.union([z.array(z.string().uuid()), z.null()]),
-                task_ids: z.union([z.array(z.string().uuid()), z.null()]),
-                group: TimeEntryAggregationType,
-                sub_group: TimeEntryAggregationType,
+                start: z.string(),
+                end: z.string(),
+                active: z.union([z.boolean(), z.null()]).optional(),
+                member_ids: z
+                    .union([z.array(z.string().uuid()), z.null()])
+                    .optional(),
+                billable: z.union([z.boolean(), z.null()]).optional(),
+                client_ids: z
+                    .union([z.array(z.string().uuid()), z.null()])
+                    .optional(),
+                project_ids: z
+                    .union([z.array(z.string().uuid()), z.null()])
+                    .optional(),
+                tag_ids: z
+                    .union([z.array(z.string().uuid()), z.null()])
+                    .optional(),
+                task_ids: z
+                    .union([z.array(z.string().uuid()), z.null()])
+                    .optional(),
+                group: TimeEntryAggregationType.optional(),
+                sub_group: TimeEntryAggregationType.optional(),
+                history_group: TimeEntryAggregationTypeInterval.optional(),
+                week_start: Weekday.optional(),
+                timezone: z.union([z.string(), z.null()]).optional(),
             })
-            .partial()
             .passthrough(),
-        'properties.group': z.string().optional(),
-        'properties.sub_group': z.string().optional(),
+        'properties.member_ids': z.string().optional(),
+        'properties.client_ids': z.string().optional(),
+        'properties.project_ids': z.string().optional(),
+        'properties.tag_ids': z.string().optional(),
+        'properties.task_ids': z.string().optional(),
+        'properties.week_start': z.string().optional(),
+        'properties.timezone': z.string().optional(),
     })
     .passthrough();
 const DetailedReportResource = z
@@ -174,17 +211,20 @@ const DetailedReportResource = z
             .object({
                 group: z.string(),
                 sub_group: z.string(),
-                start: z.union([z.string(), z.null()]),
-                end: z.union([z.string(), z.null()]),
+                history_group: z.string(),
+                start: z.string(),
+                end: z.string(),
                 active: z.union([z.boolean(), z.null()]),
-                member_ids: z.string(),
-                billable: z.string(),
-                client_ids: z.string(),
-                project_ids: z.string(),
-                tag_ids: z.string(),
-                task_ids: z.string(),
+                member_ids: z.union([z.array(z.string()), z.null()]),
+                billable: z.union([z.boolean(), z.null()]),
+                client_ids: z.union([z.array(z.string()), z.null()]),
+                project_ids: z.union([z.array(z.string()), z.null()]),
+                tag_ids: z.union([z.array(z.string()), z.null()]),
+                task_ids: z.union([z.array(z.string()), z.null()]),
             })
             .passthrough(),
+        created_at: z.string(),
+        updated_at: z.string(),
     })
     .passthrough();
 const ReportUpdateRequest = z
@@ -195,6 +235,112 @@ const ReportUpdateRequest = z
         public_until: z.union([z.string(), z.null()]),
     })
     .partial()
+    .passthrough();
+const DetailedWithDataReportResource = z
+    .object({
+        name: z.string(),
+        description: z.union([z.string(), z.null()]),
+        public_until: z.union([z.string(), z.null()]),
+        currency: z.string(),
+        properties: z
+            .object({
+                group: z.string(),
+                sub_group: z.string(),
+                history_group: z.string(),
+                start: z.string(),
+                end: z.string(),
+            })
+            .passthrough(),
+        data: z
+            .object({
+                grouped_type: z.union([z.string(), z.null()]),
+                grouped_data: z.union([
+                    z.array(
+                        z
+                            .object({
+                                key: z.union([z.string(), z.null()]),
+                                description: z.union([z.string(), z.null()]),
+                                color: z.union([z.string(), z.null()]),
+                                seconds: z.number().int(),
+                                cost: z.number().int(),
+                                grouped_type: z.union([z.string(), z.null()]),
+                                grouped_data: z.union([
+                                    z.array(
+                                        z
+                                            .object({
+                                                key: z.union([
+                                                    z.string(),
+                                                    z.null(),
+                                                ]),
+                                                description: z.union([
+                                                    z.string(),
+                                                    z.null(),
+                                                ]),
+                                                color: z.union([
+                                                    z.string(),
+                                                    z.null(),
+                                                ]),
+                                                seconds: z.number().int(),
+                                                cost: z.number().int(),
+                                                grouped_type: z.null(),
+                                                grouped_data: z.null(),
+                                            })
+                                            .passthrough()
+                                    ),
+                                    z.null(),
+                                ]),
+                            })
+                            .passthrough()
+                    ),
+                    z.null(),
+                ]),
+                seconds: z.number().int(),
+                cost: z.number().int(),
+            })
+            .passthrough(),
+        history_data: z
+            .object({
+                grouped_type: z.union([z.string(), z.null()]),
+                grouped_data: z.union([
+                    z.array(
+                        z
+                            .object({
+                                key: z.union([z.string(), z.null()]),
+                                description: z.union([z.string(), z.null()]),
+                                seconds: z.number().int(),
+                                cost: z.number().int(),
+                                grouped_type: z.union([z.string(), z.null()]),
+                                grouped_data: z.union([
+                                    z.array(
+                                        z
+                                            .object({
+                                                key: z.union([
+                                                    z.string(),
+                                                    z.null(),
+                                                ]),
+                                                description: z.union([
+                                                    z.string(),
+                                                    z.null(),
+                                                ]),
+                                                seconds: z.number().int(),
+                                                cost: z.number().int(),
+                                                grouped_type: z.null(),
+                                                grouped_data: z.null(),
+                                            })
+                                            .passthrough()
+                                    ),
+                                    z.null(),
+                                ]),
+                            })
+                            .passthrough()
+                    ),
+                    z.null(),
+                ]),
+                seconds: z.number().int(),
+                cost: z.number().int(),
+            })
+            .passthrough(),
+    })
     .passthrough();
 const TagResource = z
     .object({
@@ -294,15 +440,6 @@ const TimeEntryUpdateRequest = z
     })
     .partial()
     .passthrough();
-const Weekday = z.enum([
-    'monday',
-    'tuesday',
-    'wednesday',
-    'thursday',
-    'friday',
-    'saturday',
-    'sunday',
-]);
 const UserResource = z
     .object({
         id: z.string(),
@@ -317,7 +454,7 @@ const PersonalMembershipResource = z
     .object({
         id: z.string(),
         organization: z
-            .object({ id: z.string(), name: z.string() })
+            .object({ id: z.string(), name: z.string(), currency: z.string() })
             .passthrough(),
         role: z.string(),
     })
@@ -344,11 +481,13 @@ export const schemas = {
     ProjectMemberStoreRequest,
     ProjectMemberUpdateRequest,
     ReportResource,
-    ReportCollection,
     TimeEntryAggregationType,
+    TimeEntryAggregationTypeInterval,
+    Weekday,
     ReportStoreRequest,
     DetailedReportResource,
     ReportUpdateRequest,
+    DetailedWithDataReportResource,
     TagResource,
     TagCollection,
     TagStoreRequest,
@@ -361,7 +500,6 @@ export const schemas = {
     TimeEntryStoreRequest,
     TimeEntryUpdateMultipleRequest,
     TimeEntryUpdateRequest,
-    Weekday,
     UserResource,
     PersonalMembershipResource,
     PersonalMembershipCollection,
@@ -1797,7 +1935,39 @@ const endpoints = makeApi([
                 schema: z.string(),
             },
         ],
-        response: z.object({ data: ReportCollection }).passthrough(),
+        response: z
+            .object({
+                data: z.array(ReportResource),
+                links: z
+                    .object({
+                        first: z.union([z.string(), z.null()]),
+                        last: z.union([z.string(), z.null()]),
+                        prev: z.union([z.string(), z.null()]),
+                        next: z.union([z.string(), z.null()]),
+                    })
+                    .passthrough(),
+                meta: z
+                    .object({
+                        current_page: z.number().int(),
+                        from: z.union([z.number(), z.null()]),
+                        last_page: z.number().int(),
+                        links: z.array(
+                            z
+                                .object({
+                                    url: z.union([z.string(), z.null()]),
+                                    label: z.string(),
+                                    active: z.boolean(),
+                                })
+                                .passthrough()
+                        ),
+                        path: z.union([z.string(), z.null()]),
+                        per_page: z.number().int(),
+                        to: z.union([z.number(), z.null()]),
+                        total: z.number().int(),
+                    })
+                    .passthrough(),
+            })
+            .passthrough(),
         errors: [
             {
                 status: 401,
@@ -3123,12 +3293,12 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
             {
                 name: 'start',
                 type: 'Query',
-                schema: start,
+                schema: z.string(),
             },
             {
                 name: 'end',
                 type: 'Query',
-                schema: start,
+                schema: z.string(),
             },
             {
                 name: 'active',
@@ -3219,7 +3389,7 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
 The report is considered expired if the &#x60;public_until&#x60; field is set and the date is in the past.
 The report is considered public if the &#x60;is_public&#x60; field is set to &#x60;true&#x60;.`,
         requestFormat: 'json',
-        response: z.object({ data: DetailedReportResource }).passthrough(),
+        response: DetailedWithDataReportResource,
         errors: [
             {
                 status: 404,
