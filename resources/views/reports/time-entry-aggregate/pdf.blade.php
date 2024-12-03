@@ -48,7 +48,7 @@
     <script>
         window.status = 'processing';
     </script>
-    <script src="echarts.min.js"></script>
+    <script src="{{ $debug ? 'https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js' : 'echarts.min.js' }}"></script>
 </head>
 <body>
 

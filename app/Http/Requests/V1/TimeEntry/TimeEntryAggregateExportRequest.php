@@ -160,7 +160,16 @@ class TimeEntryAggregateExportRequest extends FormRequest
                 'string',
                 'in:true,false',
             ],
+            'debug' => [
+                'string',
+                'in:true,false',
+            ],
         ];
+    }
+
+    public function getDebug(): bool
+    {
+        return $this->input('debug') === 'true';
     }
 
     public function getGroup(): TimeEntryAggregationType
