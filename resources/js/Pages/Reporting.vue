@@ -44,12 +44,12 @@ import ClientMultiselectDropdown from '@/Components/Common/Client/ClientMultisel
 import { useTagsStore } from '@/utils/useTags';
 import { formatCents } from '@/packages/ui/src/utils/money';
 import { useSessionStorage, useStorage } from '@vueuse/core';
-import { SecondaryButton } from '@/packages/ui/src';
-import ReportCreateModal from '@/Components/Common/Report/ReportCreateModal.vue';
 import ReportingTabNavbar from '@/Components/Common/Reporting/ReportingTabNavbar.vue';
 import { useNotificationsStore } from '@/utils/notification';
 import ReportingExportButton from '@/Components/Common/Reporting/ReportingExportButton.vue';
 import type { ExportFormat } from '@/types/reporting';
+import ReportSaveButton from '@/Components/Common/Report/ReportSaveButton.vue';
+import { getRandomColorWithSeed } from '@/packages/ui/src/utils/color';
 const { handleApiRequestNotifications } = useNotificationsStore();
 
 const startDate = useSessionStorage<string>(
@@ -165,13 +165,13 @@ const { tags } = storeToRefs(useTagsStore());
 async function createTag(tag: string) {
     return await useTagsStore().createTag(tag);
 }
-const showCreateReportModal = ref(false);
 
 const reportProperties = computed(() => {
     return {
         ...getFilterAttributes(),
         group: group.value,
         sub_group: subGroup.value,
+        history_group: getOptimalGroupingOption(startDate.value, endDate.value),
     } as CreateReportBodyProperties;
 });
 
@@ -201,12 +201,73 @@ async function downloadExport(format: ExportFormat) {
         window.open(response.download_url, '_self')?.focus();
     }
 }
+const { getNameForReportingRowEntry, emptyPlaceholder } = useReportingStore();
+import { useProjectsStore } from '@/utils/useProjects';
+const projectsStore = useProjectsStore();
+const { projects } = storeToRefs(projectsStore);
+
+const groupedPieChartData = computed(() => {
+    return (
+        aggregatedTableTimeEntries.value?.grouped_data?.map((entry) => {
+            const name = getNameForReportingRowEntry(
+                entry.key,
+                aggregatedTableTimeEntries.value?.grouped_type
+            );
+            let color = getRandomColorWithSeed(entry.key ?? 'none');
+            if (
+                name &&
+                aggregatedTableTimeEntries.value?.grouped_type &&
+                emptyPlaceholder[
+                    aggregatedTableTimeEntries.value?.grouped_type
+                ] === name
+            ) {
+                color = '#CCCCCC';
+            } else if (
+                aggregatedTableTimeEntries.value?.grouped_type === 'project'
+            ) {
+                color =
+                    projects.value?.find((project) => project.id === entry.key)
+                        ?.color ?? '#CCCCCC';
+            }
+            return {
+                value: entry.seconds,
+                name:
+                    getNameForReportingRowEntry(
+                        entry.key,
+                        aggregatedTableTimeEntries.value?.grouped_type
+                    ) ?? '',
+                color: color,
+            };
+        }) ?? []
+    );
+});
+
+const tableData = computed(() => {
+    return aggregatedTableTimeEntries.value?.grouped_data?.map((entry) => {
+        return {
+            seconds: entry.seconds,
+            cost: entry.cost,
+            description: getNameForReportingRowEntry(
+                entry.key,
+                aggregatedTableTimeEntries.value?.grouped_type
+            ),
+            grouped_data:
+                entry.grouped_data?.map((el) => {
+                    return {
+                        seconds: el.seconds,
+                        cost: el.cost,
+                        description: getNameForReportingRowEntry(
+                            el.key,
+                            el.grouped_type
+                        ),
+                    };
+                }) ?? [],
+        };
+    });
+});
 </script>
 
 <template>
-    <ReportCreateModal
-        :properties="reportProperties"
-        v-model:show="showCreateReportModal"></ReportCreateModal>
     <AppLayout
         title="Reporting"
         data-testid="reporting_view"
@@ -217,11 +278,12 @@ async function downloadExport(format: ExportFormat) {
                 <PageTitle :icon="ChartBarIcon" title="Reporting"></PageTitle>
                 <ReportingTabNavbar active="reporting"></ReportingTabNavbar>
             </div>
-            <SecondaryButton @click="showCreateReportModal = true"
-                >Save</SecondaryButton
-            >
-            <ReportingExportButton
-                :download="downloadExport"></ReportingExportButton>
+            <div class="flex space-x-2">
+                <ReportingExportButton
+                    :download="downloadExport"></ReportingExportButton>
+                <ReportSaveButton
+                    :reportProperties="reportProperties"></ReportSaveButton>
+            </div>
         </MainContainer>
         <div class="py-2.5 w-full border-b border-default-background-separator">
             <MainContainer
@@ -370,8 +432,8 @@ async function downloadExport(format: ExportFormat) {
                                     ?.length > 0
                             ">
                             <ReportingRow
-                                v-for="entry in aggregatedTableTimeEntries.grouped_data"
-                                :key="entry.key ?? 'none'"
+                                v-for="entry in tableData"
+                                :key="entry.description ?? 'none'"
                                 :entry="entry"
                                 :type="
                                     aggregatedTableTimeEntries.grouped_type
@@ -412,10 +474,7 @@ async function downloadExport(format: ExportFormat) {
                 </div>
                 <div class="px-2 lg:px-4">
                     <ReportingPieChart
-                        :type="aggregatedTableTimeEntries?.grouped_type"
-                        :data="
-                            aggregatedTableTimeEntries?.grouped_data
-                        "></ReportingPieChart>
+                        :data="groupedPieChartData"></ReportingPieChart>
                 </div>
             </div>
         </MainContainer>

@@ -29,7 +29,6 @@ import {
     type CreateClientBody,
     type CreateProjectBody,
     type Project,
-    type TimeEntriesQueryParams,
     type TimeEntry,
     type TimeEntryResponse,
 } from '@/packages/api/src';
@@ -89,15 +88,15 @@ const pageLimit = 15;
 const currentPage = ref(1);
 
 function getFilterAttributes() {
-    let params: TimeEntriesQueryParams = {
+    const defaultParams = {
         start: getLocalizedDayJs(startDate.value).startOf('day').utc().format(),
         end: getLocalizedDayJs(endDate.value).endOf('day').utc().format(),
-        active: 'false',
+        active: 'false' as 'true' | 'false',
         limit: pageLimit,
         offset: currentPage.value * pageLimit - pageLimit,
     };
-    params = {
-        ...params,
+    const params = {
+        ...defaultParams,
         member_ids:
             selectedMembers.value.length > 0
                 ? selectedMembers.value
@@ -135,7 +134,7 @@ const { data: timeEntryResponse } = useQuery<TimeEntryResponse>({
             params: {
                 organization: getCurrentOrganizationId() || '',
             },
-            queries: getFilterAttributes(),
+            queries: { ...getFilterAttributes() },
         }),
 });
 

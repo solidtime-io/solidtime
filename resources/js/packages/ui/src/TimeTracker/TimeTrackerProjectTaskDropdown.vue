@@ -180,6 +180,7 @@ watchEffect(() => {
                     tasks: [],
                     estimated_time: null,
                     spent_time: 0,
+                    is_public: false,
                 },
             ],
         });
