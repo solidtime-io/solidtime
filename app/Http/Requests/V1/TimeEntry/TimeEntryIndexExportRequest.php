@@ -129,7 +129,16 @@ class TimeEntryIndexExportRequest extends TimeEntryIndexRequest
                 'string',
                 'in:true,false',
             ],
+            'debug' => [
+                'string',
+                'in:true,false',
+            ],
         ];
+    }
+
+    public function getDebug(): bool
+    {
+        return $this->input('debug', 'false') === 'true';
     }
 
     public function getStart(): Carbon

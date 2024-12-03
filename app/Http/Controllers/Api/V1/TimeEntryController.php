@@ -173,6 +173,7 @@ class TimeEntryController extends Controller
         } else {
             $this->checkPermission($organization, 'time-entries:view:all');
         }
+        $debug = $request->getDebug();
         $format = $request->getFormatValue();
         if ($format === ExportFormat::PDF && ! $this->canAccessPremiumFeatures($organization)) {
             throw new FeatureIsNotAvailableInFreePlanApiException;
@@ -195,7 +196,7 @@ class TimeEntryController extends Controller
             $export = new TimeEntriesDetailedCsvExport(config('filesystems.private'), $folderPath, $filename, $timeEntriesQuery, 1000, $timezone);
             $export->export();
         } elseif ($format === ExportFormat::PDF) {
-            if (config('services.gotenberg.url') === null) {
+            if (config('services.gotenberg.url') === null && ! $debug) {
                 throw new PdfRendererIsNotConfiguredException;
             }
             $viewFile = file_get_contents(resource_path('views/reports/time-entry-index/pdf.blade.php'));
@@ -225,6 +226,13 @@ class TimeEntryController extends Controller
                 throw new \LogicException('View file not found');
             }
             $footerHtml = Blade::render($footerViewFile);
+            if ($debug) {
+                return response()->json([
+                    'html' => $html,
+                    'footer_html' => $footerHtml,
+                ]);
+            }
+
             $client = new Client([
                 'auth' => config('services.gotenberg.basic_auth_username') !== null && config('services.gotenberg.basic_auth_password') !== null ? [
                     config('services.gotenberg.basic_auth_username'),
@@ -347,6 +355,7 @@ class TimeEntryController extends Controller
         if ($format === ExportFormat::PDF && ! $this->canAccessPremiumFeatures($organization)) {
             throw new FeatureIsNotAvailableInFreePlanApiException;
         }
+        $debug = $request->getDebug();
         $user = $this->user();
 
         $group = $request->getGroup();
@@ -381,7 +390,7 @@ class TimeEntryController extends Controller
         $path = $folderPath.'/'.$filename;
 
         if ($format === ExportFormat::PDF) {
-            if (config('services.gotenberg.url') === null) {
+            if (config('services.gotenberg.url') === null && ! $debug) {
                 throw new PdfRendererIsNotConfiguredException;
             }
             $client = new Client([
@@ -402,12 +411,19 @@ class TimeEntryController extends Controller
                 'subGroup' => $subGroup,
                 'start' => $request->getStart()->timezone($timezone),
                 'end' => $request->getEnd()->timezone($timezone),
+                'debug' => $debug,
             ]);
             $footerViewFile = file_get_contents(resource_path('views/reports/time-entry-aggregate/pdf-footer.blade.php'));
             if ($footerViewFile === false) {
                 throw new \LogicException('View file not found');
             }
             $footerHtml = Blade::render($footerViewFile);
+            if ($debug) {
+                return response()->json([
+                    'html' => $html,
+                    'footer_html' => $footerHtml,
+                ]);
+            }
             $request = Gotenberg::chromium(config('services.gotenberg.url'))
                 ->pdf()
                 ->waitForExpression("window.status === 'ready'")
