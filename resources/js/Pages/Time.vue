@@ -125,6 +125,8 @@ function deleteSelected() {
         :createClient="createClient"
         :createTag="createTag"
         :createTimeEntry="createTimeEntry"
+        :currency="getOrganizationCurrencyString()"
+        :canCreateProject="canCreateProjects()"
         :projects
         :tasks
         :tags
