@@ -11,11 +11,6 @@ import {
     TooltipComponent,
 } from 'echarts/components';
 import { formatHumanReadableDuration } from '@/packages/ui/src/utils/time';
-import { getRandomColorWithSeed } from '@/packages/ui/src/utils/color';
-import type { GroupedDataEntries } from '@/packages/api/src';
-import { useReportingStore } from '@/utils/useReporting';
-import { useProjectsStore } from '@/utils/useProjects';
-import { storeToRefs } from 'pinia';
 
 use([
     CanvasRenderer,
@@ -28,36 +23,18 @@ use([
 
 provide(THEME_KEY, 'dark');
 
-const props = defineProps<{
-    data: GroupedDataEntries | null;
-    type: string | null;
-}>();
-const { getNameForReportingRowEntry, emptyPlaceholder } = useReportingStore();
-const { projects } = storeToRefs(useProjectsStore());
+type ReportingChartDataEntry = {
+    value: number;
+    name: string;
+    color: string;
+}[];
 
-const groupChartData = computed(() => {
-    return (
-        props?.data?.map((entry) => {
-            const name = getNameForReportingRowEntry(entry.key, props.type);
-            let color = getRandomColorWithSeed(entry.key ?? 'none');
-            if (name && props.type && emptyPlaceholder[props.type] === name) {
-                color = '#CCCCCC';
-            } else if (props.type === 'project') {
-                color =
-                    projects.value?.find((project) => project.id === entry.key)
-                        ?.color ?? '#CCCCCC';
-            }
-            return {
-                value: entry.seconds,
-                name: getNameForReportingRowEntry(entry.key, props.type),
-                color: color,
-            };
-        }) ?? []
-    );
-});
+const props = defineProps<{
+    data: ReportingChartDataEntry | null;
+}>();
 
 const seriesData = computed(() => {
-    return groupChartData.value.map((el) => {
+    return props.data?.map((el) => {
         return {
             ...el,
             ...{

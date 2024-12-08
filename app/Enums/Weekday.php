@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace App\Enums;
 
+use Datomatic\LaravelEnumHelper\LaravelEnumHelper;
 use Illuminate\Support\Carbon;
 
 enum Weekday: string
 {
+    use LaravelEnumHelper;
+
     case Monday = 'monday';
     case Tuesday = 'tuesday';
     case Wednesday = 'wednesday';

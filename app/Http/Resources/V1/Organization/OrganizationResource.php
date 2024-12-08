@@ -45,6 +45,8 @@ class OrganizationResource extends BaseResource
             'billable_rate' => $this->showBillableRate ? $this->resource->billable_rate : null,
             /** @var bool $employees_can_see_billable_rates Can members of the organization with role "employee" see the billable rates */
             'employees_can_see_billable_rates' => $this->resource->employees_can_see_billable_rates,
+            /** @var string $currency Currency code (ISO 4217) */
+            'currency' => $this->resource->currency,
         ];
     }
 }

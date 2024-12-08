@@ -29,7 +29,6 @@ import {
     type CreateClientBody,
     type CreateProjectBody,
     type Project,
-    type TimeEntriesQueryParams,
     type TimeEntry,
     type TimeEntryResponse,
 } from '@/packages/api/src';
@@ -41,9 +40,6 @@ import SelectDropdown from '@/packages/ui/src/Input/SelectDropdown.vue';
 import ClientMultiselectDropdown from '@/Components/Common/Client/ClientMultiselectDropdown.vue';
 import { useTagsStore } from '@/utils/useTags';
 import { useSessionStorage } from '@vueuse/core';
-import { router } from '@inertiajs/vue3';
-import TabBar from '@/Components/Common/TabBar/TabBar.vue';
-import TabBarItem from '@/Components/Common/TabBar/TabBarItem.vue';
 import TimeEntryRow from '@/packages/ui/src/TimeEntry/TimeEntryRow.vue';
 import { useCurrentTimeEntryStore } from '@/utils/useCurrentTimeEntry';
 import { useProjectsStore } from '@/utils/useProjects';
@@ -64,6 +60,7 @@ import {
 import { useQuery, useQueryClient } from '@tanstack/vue-query';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import { useTimeEntriesStore } from '@/utils/useTimeEntries';
+import ReportingTabNavbar from '@/Components/Common/Reporting/ReportingTabNavbar.vue';
 import ReportingExportButton from '@/Components/Common/Reporting/ReportingExportButton.vue';
 import type { ExportFormat } from '@/types/reporting';
 import { useNotificationsStore } from '@/utils/notification';
@@ -91,15 +88,15 @@ const pageLimit = 15;
 const currentPage = ref(1);
 
 function getFilterAttributes() {
-    let params: TimeEntriesQueryParams = {
+    const defaultParams = {
         start: getLocalizedDayJs(startDate.value).startOf('day').utc().format(),
         end: getLocalizedDayJs(endDate.value).endOf('day').utc().format(),
-        active: 'false',
+        active: 'false' as 'true' | 'false',
         limit: pageLimit,
         offset: currentPage.value * pageLimit - pageLimit,
     };
-    params = {
-        ...params,
+    const params = {
+        ...defaultParams,
         member_ids:
             selectedMembers.value.length > 0
                 ? selectedMembers.value
@@ -137,7 +134,7 @@ const { data: timeEntryResponse } = useQuery<TimeEntryResponse>({
             params: {
                 organization: getCurrentOrganizationId() || '',
             },
-            queries: getFilterAttributes(),
+            queries: { ...getFilterAttributes() },
         }),
 });
 
@@ -236,7 +233,9 @@ async function downloadExport(format: ExportFormat) {
             'Export successful',
             'Export failed'
         );
-        window.open(response.download_url, '_self')?.focus();
+        if (response?.download_url) {
+            window.open(response.download_url as string, '_blank')?.focus();
+        }
     }
 }
 </script>
@@ -250,20 +249,12 @@ async function downloadExport(format: ExportFormat) {
             class="py-3 sm:py-5 border-b border-default-background-separator flex justify-between items-center">
             <div class="flex items-center space-x-3 sm:space-x-6">
                 <PageTitle :icon="ChartBarIcon" title="Reporting"></PageTitle>
-                <TabBar>
-                    <TabBarItem @click="router.visit(route('reporting'))"
-                        >Overview
-                    </TabBarItem>
-                    <TabBarItem
-                        @click="router.visit(route('reporting.detailed'))"
-                        active
-                        >Detailed
-                    </TabBarItem>
-                </TabBar>
+                <ReportingTabNavbar active="detailed"></ReportingTabNavbar>
             </div>
             <ReportingExportButton
                 :download="downloadExport"></ReportingExportButton>
         </MainContainer>
+
         <div class="py-2.5 w-full border-b border-default-background-separator">
             <MainContainer
                 class="sm:flex space-y-4 sm:space-y-0 justify-between">

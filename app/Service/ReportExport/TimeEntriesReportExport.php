@@ -77,7 +77,7 @@ class TimeEntriesReportExport implements FromView, ShouldAutoSize, WithCustomCsv
 
     public function view(): View
     {
-        return view('reports.time-entry-aggregate-index-excel', [
+        return view('reports.time-entry-aggregate.spreadsheet', [
             'data' => $this->data,
             'currency' => $this->currency,
             'group' => $this->group,

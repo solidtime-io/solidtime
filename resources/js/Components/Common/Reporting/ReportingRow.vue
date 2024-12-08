@@ -4,30 +4,23 @@ import { formatCents } from '@/packages/ui/src/utils/money';
 import GroupedItemsCountButton from '@/packages/ui/src/GroupedItemsCountButton.vue';
 import { ref } from 'vue';
 import { twMerge } from 'tailwind-merge';
-import { useReportingStore } from '@/utils/useReporting';
 import { getOrganizationCurrencyString } from '@/utils/money';
-const { getNameForReportingRowEntry } = useReportingStore();
 
 type AggregatedGroupedData = GroupedData & {
-    grouped_type?: string | null;
     grouped_data?: GroupedData[] | null;
 };
 
 type GroupedData = {
-    key: string | null;
     seconds: number;
     cost: number;
+    description: string | null | undefined;
 };
 
 const props = defineProps<{
     entry: AggregatedGroupedData;
     indent?: boolean;
-    type: string | null;
 }>();
 
-function getNameForKey(key: string | null) {
-    return getNameForReportingRowEntry(key, props.type);
-}
 const expanded = ref(false);
 </script>
 
@@ -48,7 +41,7 @@ const expanded = ref(false);
                 {{ entry.grouped_data?.length }}
             </GroupedItemsCountButton>
             <span>
-                {{ getNameForKey(entry.key) }}
+                {{ entry.description }}
             </span>
         </div>
         <div class="justify-end flex items-center">
@@ -65,8 +58,7 @@ const expanded = ref(false);
         <ReportingRow
             indent
             v-for="subEntry in entry.grouped_data"
-            :type="entry?.grouped_type ?? null"
-            :key="subEntry.key ?? 'none'"
+            :key="subEntry.description ?? 'none'"
             :entry="subEntry"></ReportingRow>
     </div>
 </template>

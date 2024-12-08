@@ -12,8 +12,7 @@ import {
 import DateRangePicker from '@/packages/ui/src/Input/DateRangePicker.vue';
 import ReportingChart from '@/Components/Common/Reporting/ReportingChart.vue';
 import BillableIcon from '@/packages/ui/src/Icons/BillableIcon.vue';
-
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import {
     formatHumanReadableDuration,
     getDayJsInstance,
@@ -22,7 +21,11 @@ import {
 import { type GroupingOption, useReportingStore } from '@/utils/useReporting';
 import { storeToRefs } from 'pinia';
 import TagDropdown from '@/packages/ui/src/Tag/TagDropdown.vue';
-import { type AggregatedTimeEntriesQueryParams, api } from '@/packages/api/src';
+import {
+    type AggregatedTimeEntriesQueryParams,
+    type CreateReportBodyProperties,
+    api,
+} from '@/packages/api/src';
 import ReportingFilterBadge from '@/Components/Common/Reporting/ReportingFilterBadge.vue';
 import ProjectMultiselectDropdown from '@/Components/Common/Project/ProjectMultiselectDropdown.vue';
 import MemberMultiselectDropdown from '@/Components/Common/Member/MemberMultiselectDropdown.vue';
@@ -41,12 +44,12 @@ import ClientMultiselectDropdown from '@/Components/Common/Client/ClientMultisel
 import { useTagsStore } from '@/utils/useTags';
 import { formatCents } from '@/packages/ui/src/utils/money';
 import { useSessionStorage, useStorage } from '@vueuse/core';
-import TabBar from '@/Components/Common/TabBar/TabBar.vue';
-import TabBarItem from '@/Components/Common/TabBar/TabBarItem.vue';
-import { router } from '@inertiajs/vue3';
+import ReportingTabNavbar from '@/Components/Common/Reporting/ReportingTabNavbar.vue';
 import { useNotificationsStore } from '@/utils/notification';
 import ReportingExportButton from '@/Components/Common/Reporting/ReportingExportButton.vue';
 import type { ExportFormat } from '@/types/reporting';
+import ReportSaveButton from '@/Components/Common/Report/ReportSaveButton.vue';
+import { getRandomColorWithSeed } from '@/packages/ui/src/utils/color';
 const { handleApiRequestNotifications } = useNotificationsStore();
 
 const startDate = useSessionStorage<string>(
@@ -163,6 +166,15 @@ async function createTag(tag: string) {
     return await useTagsStore().createTag(tag);
 }
 
+const reportProperties = computed(() => {
+    return {
+        ...getFilterAttributes(),
+        group: group.value,
+        sub_group: subGroup.value,
+        history_group: getOptimalGroupingOption(startDate.value, endDate.value),
+    } as CreateReportBodyProperties;
+});
+
 async function downloadExport(format: ExportFormat) {
     const organizationId = getCurrentOrganizationId();
     if (organizationId) {
@@ -186,9 +198,75 @@ async function downloadExport(format: ExportFormat) {
             'Export successful',
             'Export failed'
         );
-        window.open(response.download_url, '_self')?.focus();
+        if (response?.download_url) {
+            window.open(response.download_url as string, '_blank')?.focus();
+        }
     }
 }
+const { getNameForReportingRowEntry, emptyPlaceholder } = useReportingStore();
+import { useProjectsStore } from '@/utils/useProjects';
+const projectsStore = useProjectsStore();
+const { projects } = storeToRefs(projectsStore);
+
+const groupedPieChartData = computed(() => {
+    return (
+        aggregatedTableTimeEntries.value?.grouped_data?.map((entry) => {
+            const name = getNameForReportingRowEntry(
+                entry.key,
+                aggregatedTableTimeEntries.value?.grouped_type
+            );
+            let color = getRandomColorWithSeed(entry.key ?? 'none');
+            if (
+                name &&
+                aggregatedTableTimeEntries.value?.grouped_type &&
+                emptyPlaceholder[
+                    aggregatedTableTimeEntries.value?.grouped_type
+                ] === name
+            ) {
+                color = '#CCCCCC';
+            } else if (
+                aggregatedTableTimeEntries.value?.grouped_type === 'project'
+            ) {
+                color =
+                    projects.value?.find((project) => project.id === entry.key)
+                        ?.color ?? '#CCCCCC';
+            }
+            return {
+                value: entry.seconds,
+                name:
+                    getNameForReportingRowEntry(
+                        entry.key,
+                        aggregatedTableTimeEntries.value?.grouped_type
+                    ) ?? '',
+                color: color,
+            };
+        }) ?? []
+    );
+});
+
+const tableData = computed(() => {
+    return aggregatedTableTimeEntries.value?.grouped_data?.map((entry) => {
+        return {
+            seconds: entry.seconds,
+            cost: entry.cost,
+            description: getNameForReportingRowEntry(
+                entry.key,
+                aggregatedTableTimeEntries.value?.grouped_type
+            ),
+            grouped_data:
+                entry.grouped_data?.map((el) => {
+                    return {
+                        seconds: el.seconds,
+                        cost: el.cost,
+                        description: getNameForReportingRowEntry(
+                            el.key,
+                            entry.grouped_type
+                        ),
+                    };
+                }) ?? [],
+        };
+    });
+});
 </script>
 
 <template>
@@ -200,18 +278,14 @@ async function downloadExport(format: ExportFormat) {
             class="py-3 sm:py-5 border-b border-default-background-separator flex justify-between items-center">
             <div class="flex items-center space-x-3 sm:space-x-6">
                 <PageTitle :icon="ChartBarIcon" title="Reporting"></PageTitle>
-                <TabBar>
-                    <TabBarItem @click="router.visit(route('reporting'))" active
-                        >Overview</TabBarItem
-                    >
-                    <TabBarItem
-                        @click="router.visit(route('reporting.detailed'))"
-                        >Detailed</TabBarItem
-                    >
-                </TabBar>
+                <ReportingTabNavbar active="reporting"></ReportingTabNavbar>
             </div>
-            <ReportingExportButton
-                :download="downloadExport"></ReportingExportButton>
+            <div class="flex space-x-2">
+                <ReportingExportButton
+                    :download="downloadExport"></ReportingExportButton>
+                <ReportSaveButton
+                    :reportProperties="reportProperties"></ReportSaveButton>
+            </div>
         </MainContainer>
         <div class="py-2.5 w-full border-b border-default-background-separator">
             <MainContainer
@@ -360,8 +434,8 @@ async function downloadExport(format: ExportFormat) {
                                     ?.length > 0
                             ">
                             <ReportingRow
-                                v-for="entry in aggregatedTableTimeEntries.grouped_data"
-                                :key="entry.key ?? 'none'"
+                                v-for="entry in tableData"
+                                :key="entry.description ?? 'none'"
                                 :entry="entry"
                                 :type="
                                     aggregatedTableTimeEntries.grouped_type
@@ -402,10 +476,7 @@ async function downloadExport(format: ExportFormat) {
                 </div>
                 <div class="px-2 lg:px-4">
                     <ReportingPieChart
-                        :type="aggregatedTableTimeEntries?.grouped_type"
-                        :data="
-                            aggregatedTableTimeEntries?.grouped_data
-                        "></ReportingPieChart>
+                        :data="groupedPieChartData"></ReportingPieChart>
                 </div>
             </div>
         </MainContainer>

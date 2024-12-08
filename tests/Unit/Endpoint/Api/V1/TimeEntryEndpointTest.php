@@ -526,6 +526,8 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         $response = $this->getJson(route('api.v1.time-entries.index-export', [
             $data->organization->getKey(),
             'format' => ExportFormat::CSV,
+            'start' => Carbon::now()->startOfYear()->toIso8601ZuluString(),
+            'end' => Carbon::now()->endOfYear()->toIso8601ZuluString(),
         ]));
 
         // Assert
@@ -546,6 +548,8 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         $response = $this->getJson(route('api.v1.time-entries.index-export', [
             $data->organization->getKey(),
             'format' => ExportFormat::PDF,
+            'start' => Carbon::now()->startOfYear()->toIso8601ZuluString(),
+            'end' => Carbon::now()->endOfYear()->toIso8601ZuluString(),
         ]));
 
         // Assert
@@ -570,6 +574,8 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         $response = $this->getJson(route('api.v1.time-entries.index-export', [
             $data->organization->getKey(),
             'format' => ExportFormat::PDF,
+            'start' => Carbon::now()->startOfYear()->toIso8601ZuluString(),
+            'end' => Carbon::now()->endOfYear()->toIso8601ZuluString(),
         ]));
 
         // Assert
@@ -593,6 +599,8 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         $response = $this->getJson(route('api.v1.time-entries.index-export', [
             $data->organization->getKey(),
             'format' => ExportFormat::CSV,
+            'start' => Carbon::now()->startOfYear()->toIso8601ZuluString(),
+            'end' => Carbon::now()->endOfYear()->toIso8601ZuluString(),
         ]));
 
         // Assert
@@ -615,6 +623,8 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         $response = $this->getJson(route('api.v1.time-entries.index-export', [
             $data->organization->getKey(),
             'format' => ExportFormat::CSV,
+            'start' => Carbon::now()->startOfYear()->toIso8601ZuluString(),
+            'end' => Carbon::now()->endOfYear()->toIso8601ZuluString(),
         ]));
 
         // Assert
@@ -637,6 +647,8 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         $response = $this->getJson(route('api.v1.time-entries.index-export', [
             $data->organization->getKey(),
             'format' => ExportFormat::ODS,
+            'start' => Carbon::now()->startOfYear()->toIso8601ZuluString(),
+            'end' => Carbon::now()->endOfYear()->toIso8601ZuluString(),
         ]));
 
         // Assert
@@ -659,6 +671,8 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         $response = $this->getJson(route('api.v1.time-entries.index-export', [
             $data->organization->getKey(),
             'format' => ExportFormat::XLSX,
+            'start' => Carbon::now()->startOfYear()->toIso8601ZuluString(),
+            'end' => Carbon::now()->endOfYear()->toIso8601ZuluString(),
         ]));
 
         // Assert
@@ -678,6 +692,8 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         $response = $this->getJson(route('api.v1.time-entries.index-export', [
             $data->organization->getKey(),
             'format' => ExportFormat::PDF,
+            'start' => Carbon::now()->startOfYear()->toIso8601ZuluString(),
+            'end' => Carbon::now()->endOfYear()->toIso8601ZuluString(),
         ]));
 
         // Assert
@@ -928,6 +944,25 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
 
         // Assert
         $response->assertForbidden();
+    }
+
+    public function test_aggregate_endpoint_fails_if_request_has_sub_group_but_no_group(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:view:all',
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.time-entries.aggregate', [
+            $data->organization->getKey(),
+            'sub_group' => TimeEntryAggregationType::Task->value,
+        ]));
+
+        // Assert
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrorFor('group');
     }
 
     public function test_aggregate_endpoint_works_for_user_with_only_access_to_own_time_entries(): void

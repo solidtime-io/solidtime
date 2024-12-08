@@ -164,7 +164,7 @@ class TimeEntryController extends Controller
      *
      * @operationId exportTimeEntries
      */
-    public function indexExport(Organization $organization, TimeEntryIndexExportRequest $request): JsonResponse
+    public function indexExport(Organization $organization, TimeEntryIndexExportRequest $request, TimeEntryAggregationService $timeEntryAggregationService): JsonResponse
     {
         /** @var Member|null $member */
         $member = $request->has('member_id') ? Member::query()->findOrFail($request->input('member_id')) : null;
@@ -173,6 +173,7 @@ class TimeEntryController extends Controller
         } else {
             $this->checkPermission($organization, 'time-entries:view:all');
         }
+        $debug = $request->getDebug();
         $format = $request->getFormatValue();
         if ($format === ExportFormat::PDF && ! $this->canAccessPremiumFeatures($organization)) {
             throw new FeatureIsNotAvailableInFreePlanApiException;
@@ -195,19 +196,43 @@ class TimeEntryController extends Controller
             $export = new TimeEntriesDetailedCsvExport(config('filesystems.private'), $folderPath, $filename, $timeEntriesQuery, 1000, $timezone);
             $export->export();
         } elseif ($format === ExportFormat::PDF) {
-            if (config('services.gotenberg.url') === null) {
+            if (config('services.gotenberg.url') === null && ! $debug) {
                 throw new PdfRendererIsNotConfiguredException;
             }
-            $viewFile = file_get_contents(resource_path('views/reports/time-entry-index.blade.php'));
+            $viewFile = file_get_contents(resource_path('views/reports/time-entry-index/pdf.blade.php'));
             if ($viewFile === false) {
                 throw new \LogicException('View file not found');
             }
-            $html = Blade::render($viewFile, ['timeEntries' => $timeEntriesQuery->get()]);
-            $footerViewFile = file_get_contents(resource_path('views/reports/time-entry-index-footer.blade.php'));
+            $aggregatedData = $timeEntryAggregationService->getAggregatedTimeEntries(
+                $timeEntriesQuery->clone()->reorder()->withOnly([]),
+                null,
+                null,
+                $user->timezone,
+                $user->week_start,
+                false,
+                null,
+                null
+            );
+            $html = Blade::render($viewFile, [
+                'timeEntries' => $timeEntriesQuery->get(),
+                'aggregatedData' => $aggregatedData,
+                'timezone' => $timezone,
+                'currency' => $organization->currency,
+                'start' => $request->getStart()->timezone($timezone),
+                'end' => $request->getEnd()->timezone($timezone),
+            ]);
+            $footerViewFile = file_get_contents(resource_path('views/reports/time-entry-index/pdf-footer.blade.php'));
             if ($footerViewFile === false) {
                 throw new \LogicException('View file not found');
             }
             $footerHtml = Blade::render($footerViewFile);
+            if ($debug) {
+                return response()->json([
+                    'html' => $html,
+                    'footer_html' => $footerHtml,
+                ]);
+            }
+
             $client = new Client([
                 'auth' => config('services.gotenberg.basic_auth_username') !== null && config('services.gotenberg.basic_auth_password') !== null ? [
                     config('services.gotenberg.basic_auth_username'),
@@ -216,7 +241,10 @@ class TimeEntryController extends Controller
             ]);
             $request = Gotenberg::chromium(config('services.gotenberg.url'))
                 ->pdf()
-                ->pdfa('PDF/A-3b')
+                ->assets(
+                    Stream::path(resource_path('pdf/Outfit-VariableFont_wght.ttf'), 'outfit.ttf'),
+                )
+                ->margins(0.39, 0.78, 0.39, 0.39)
                 ->paperSize('8.27', '11.7') // A4
                 ->footer(Stream::string('footer', $footerHtml))
                 ->html(Stream::string('body', $html));
@@ -329,6 +357,7 @@ class TimeEntryController extends Controller
         if ($format === ExportFormat::PDF && ! $this->canAccessPremiumFeatures($organization)) {
             throw new FeatureIsNotAvailableInFreePlanApiException;
         }
+        $debug = $request->getDebug();
         $user = $this->user();
 
         $group = $request->getGroup();
@@ -363,7 +392,7 @@ class TimeEntryController extends Controller
         $path = $folderPath.'/'.$filename;
 
         if ($format === ExportFormat::PDF) {
-            if (config('services.gotenberg.url') === null) {
+            if (config('services.gotenberg.url') === null && ! $debug) {
                 throw new PdfRendererIsNotConfiguredException;
             }
             $client = new Client([
@@ -372,7 +401,7 @@ class TimeEntryController extends Controller
                     config('services.gotenberg.basic_auth_password'),
                 ] : null,
             ]);
-            $viewFile = file_get_contents(resource_path('views/reports/time-entry-aggregate-index.blade.php'));
+            $viewFile = file_get_contents(resource_path('views/reports/time-entry-aggregate/pdf.blade.php'));
             if ($viewFile === false) {
                 throw new \LogicException('View file not found');
             }
@@ -384,17 +413,28 @@ class TimeEntryController extends Controller
                 'subGroup' => $subGroup,
                 'start' => $request->getStart()->timezone($timezone),
                 'end' => $request->getEnd()->timezone($timezone),
+                'debug' => $debug,
             ]);
-            $footerViewFile = file_get_contents(resource_path('views/reports/time-entry-index-footer.blade.php'));
+            $footerViewFile = file_get_contents(resource_path('views/reports/time-entry-aggregate/pdf-footer.blade.php'));
             if ($footerViewFile === false) {
                 throw new \LogicException('View file not found');
             }
             $footerHtml = Blade::render($footerViewFile);
+            if ($debug) {
+                return response()->json([
+                    'html' => $html,
+                    'footer_html' => $footerHtml,
+                ]);
+            }
             $request = Gotenberg::chromium(config('services.gotenberg.url'))
                 ->pdf()
-                ->pdfa('PDF/A-3b')
+                ->waitForExpression("window.status === 'ready'")
+                ->margins(0.39, 0.78, 0.39, 0.39)
                 ->paperSize('8.27', '11.7') // A4
                 ->footer(Stream::string('footer', $footerHtml))
+                ->assets(Stream::path(resource_path('pdf/echarts.min.js'), 'echarts.min.js'),
+                    Stream::path(resource_path('pdf/Outfit-VariableFont_wght.ttf'), 'outfit.ttf'),
+                )
                 ->html(Stream::string('body', $html));
             $tempFolder = TemporaryDirectory::make();
             $filenameTemp = Gotenberg::save($request, $tempFolder->path(), $client);

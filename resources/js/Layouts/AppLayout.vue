@@ -114,13 +114,27 @@ const page = usePage<{
                             <NavigationSidebarItem
                                 title="Reporting"
                                 :icon="ChartBarIcon"
+                                :sub-items="[
+                                    {
+                                        title: 'Overview',
+                                        route: 'reporting',
+                                    },
+                                    {
+                                        title: 'Detailed',
+                                        route: 'reporting.detailed',
+                                    },
+                                    {
+                                        title: 'Shared',
+                                        route: 'reporting.shared',
+                                    },
+                                ]"
                                 :current="
                                     route().current('reporting') ||
-                                    route().current('reporting.detailed')
+                                    route().current('reporting.detailed') ||
+                                    route().current('reporting.shared')
                                 "
-                                :href="
-                                    route('reporting')
-                                "></NavigationSidebarItem>
+                                :href="route('reporting')">
+                            </NavigationSidebarItem>
                         </ul>
                     </nav>
 

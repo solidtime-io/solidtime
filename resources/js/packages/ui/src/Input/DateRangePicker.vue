@@ -2,7 +2,11 @@
 import { CalendarIcon } from '@heroicons/vue/20/solid';
 import Dropdown from '@/packages/ui/src/Input/Dropdown.vue';
 import DatePicker from '@/packages/ui/src/Input/DatePicker.vue';
-import { formatDate, getDayJsInstance } from '@/packages/ui/src/utils/time';
+import {
+    formatDateLocalized,
+    getDayJsInstance,
+    getLocalizedDayJs,
+} from '@/packages/ui/src/utils/time';
 import { ref } from 'vue';
 
 const start = defineModel('start', { default: '' });
@@ -12,39 +16,46 @@ const emit = defineEmits(['submit']);
 
 const open = ref(false);
 
+function setToday() {
+    start.value = getLocalizedDayJs().startOf('day').format();
+    end.value = getLocalizedDayJs().endOf('day').format();
+    emit('submit');
+    open.value = false;
+}
+
 function setThisWeek() {
-    start.value = getDayJsInstance()().startOf('week').format();
-    end.value = getDayJsInstance()().endOf('week').format();
+    start.value = getLocalizedDayJs().startOf('week').format();
+    end.value = getLocalizedDayJs().endOf('week').format();
     emit('submit');
     open.value = false;
 }
 function setLastWeek() {
-    start.value = getDayJsInstance()()
+    start.value = getLocalizedDayJs()
         .subtract(1, 'week')
         .startOf('week')
         .format();
-    end.value = getDayJsInstance()().subtract(1, 'week').endOf('week').format();
+    end.value = getLocalizedDayJs().subtract(1, 'week').endOf('week').format();
     emit('submit');
     open.value = false;
 }
 function setLast14Days() {
-    start.value = getDayJsInstance()().subtract(14, 'days').format();
-    end.value = getDayJsInstance()().format();
+    start.value = getLocalizedDayJs().subtract(14, 'days').format();
+    end.value = getLocalizedDayJs().format();
     emit('submit');
     open.value = false;
 }
 function setThisMonth() {
-    start.value = getDayJsInstance()().startOf('month').format();
-    end.value = getDayJsInstance()().endOf('month').format();
+    start.value = getLocalizedDayJs().startOf('month').format();
+    end.value = getLocalizedDayJs().endOf('month').format();
     emit('submit');
     open.value = false;
 }
 function setLastMonth() {
-    start.value = getDayJsInstance()()
+    start.value = getLocalizedDayJs()
         .subtract(1, 'month')
         .startOf('month')
         .format();
-    end.value = getDayJsInstance()()
+    end.value = getLocalizedDayJs()
         .subtract(1, 'month')
         .endOf('month')
         .format();
@@ -52,8 +63,8 @@ function setLastMonth() {
     open.value = false;
 }
 function setLast30Days() {
-    start.value = getDayJsInstance()().subtract(30, 'days').format();
-    end.value = getDayJsInstance()().format();
+    start.value = getLocalizedDayJs().subtract(30, 'days').format();
+    end.value = getLocalizedDayJs().format();
     emit('submit');
     open.value = false;
 }
@@ -64,23 +75,23 @@ function setLast90Days() {
     open.value = false;
 }
 function setLast12Months() {
-    start.value = getDayJsInstance()().subtract(12, 'months').format();
-    end.value = getDayJsInstance()().format();
+    start.value = getLocalizedDayJs().subtract(12, 'months').format();
+    end.value = getLocalizedDayJs().format();
     emit('submit');
     open.value = false;
 }
 function setThisYear() {
-    start.value = getDayJsInstance()().startOf('year').format();
-    end.value = getDayJsInstance()().endOf('year').format();
+    start.value = getLocalizedDayJs().startOf('year').format();
+    end.value = getLocalizedDayJs().endOf('year').format();
     emit('submit');
     open.value = false;
 }
 function setLastYear() {
-    start.value = getDayJsInstance()()
+    start.value = getLocalizedDayJs()
         .subtract(1, 'year')
         .startOf('year')
         .format();
-    end.value = getDayJsInstance()().subtract(1, 'year').endOf('year').format();
+    end.value = getLocalizedDayJs().subtract(1, 'year').endOf('year').format();
     emit('submit');
     open.value = false;
 }
@@ -97,9 +108,9 @@ function setLastYear() {
                 class="px-2 py-1 bg-input-background border border-input-border font-medium rounded-lg flex items-center space-x-2">
                 <CalendarIcon class="w-5"></CalendarIcon>
                 <div class="text-white">
-                    {{ formatDate(start) }}
+                    {{ formatDateLocalized(start) }}
                     <span class="px-1.5 text-muted">-</span>
-                    {{ formatDate(end) }}
+                    {{ formatDateLocalized(end) }}
                 </div>
             </button>
         </template>
@@ -109,6 +120,7 @@ function setLastYear() {
                     class="flex divide-x divide-border-secondary justify-between">
                     <div
                         class="text-white text-sm flex flex-col space-y-0.5 items-start py-2 [&_button:hover]:bg-tertiary [&_button]:rounded [&_button]:px-2 [&_button]:py-1">
+                        <button @click="setToday">Today</button>
                         <button @click="setThisWeek">This Week</button>
                         <button @click="setLastWeek">Last Week</button>
                         <button @click="setLast14Days">Last 14 days</button>

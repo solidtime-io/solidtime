@@ -4,8 +4,8 @@
     "scripts": {
         "dev": "vite",
         "build": "vite build",
-        "lint": "eslint --ext .js,.vue,.ts --ignore-path .gitignore .",
-        "lint:fix": "eslint --fix --ext .js,.vue,.ts --ignore-path .gitignore .",
+        "lint": "eslint --ext .js,.vue,.ts --ignore-path .gitignore resources/js",
+        "lint:fix": "eslint --fix --ext .js,.vue,.ts --ignore-path .gitignore resources/js",
         "type-check": "vue-tsc --noEmit",
         "test:e2e": "rm -rf test-results/.auth && npx playwright test",
         "zod:generate": "npx openapi-zod-client http://localhost:80/docs/api.json --output resources/js/packages/api/src/openapi.json.client.ts --base-url /api"

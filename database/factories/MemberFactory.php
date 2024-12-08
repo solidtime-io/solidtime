@@ -41,20 +41,16 @@ class MemberFactory extends Factory
 
     public function forOrganization(Organization $organization): static
     {
-        return $this->state(function (array $attributes) use ($organization): array {
-            return [
-                'organization_id' => $organization->getKey(),
-            ];
-        });
+        return $this->state(fn (array $attributes): array => [
+            'organization_id' => $organization->getKey(),
+        ]);
     }
 
     public function forUser(User $user): static
     {
-        return $this->state(function (array $attributes) use ($user): array {
-            return [
-                'user_id' => $user->getKey(),
-            ];
-        });
+        return $this->state(fn (array $attributes): array => [
+            'user_id' => $user->getKey(),
+        ]);
     }
 
     /**

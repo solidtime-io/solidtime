@@ -52,6 +52,7 @@ const OrganizationResource = z
         is_personal: z.boolean(),
         billable_rate: z.union([z.number(), z.null()]),
         employees_can_see_billable_rates: z.boolean(),
+        currency: z.string(),
     })
     .passthrough();
 const OrganizationUpdateRequest = z
@@ -72,6 +73,7 @@ const ProjectResource = z
         is_billable: z.boolean(),
         estimated_time: z.union([z.number(), z.null()]),
         spent_time: z.number().int(),
+        is_public: z.boolean(),
     })
     .passthrough();
 const ProjectStoreRequest = z
@@ -82,6 +84,7 @@ const ProjectStoreRequest = z
         billable_rate: z.union([z.number(), z.null()]).optional(),
         client_id: z.union([z.string(), z.null()]).optional(),
         estimated_time: z.union([z.number(), z.null()]).optional(),
+        is_public: z.boolean().optional(),
     })
     .passthrough();
 const ProjectUpdateRequest = z
@@ -90,6 +93,7 @@ const ProjectUpdateRequest = z
         color: z.string().max(255),
         is_billable: z.boolean(),
         is_archived: z.boolean().optional(),
+        is_public: z.boolean().optional(),
         client_id: z.union([z.string(), z.null()]).optional(),
         billable_rate: z.union([z.number(), z.null()]).optional(),
         estimated_time: z.union([z.number(), z.null()]).optional(),
@@ -112,6 +116,231 @@ const ProjectMemberStoreRequest = z
 const ProjectMemberUpdateRequest = z
     .object({ billable_rate: z.union([z.number(), z.null()]) })
     .partial()
+    .passthrough();
+const ReportResource = z
+    .object({
+        id: z.string(),
+        name: z.string(),
+        description: z.union([z.string(), z.null()]),
+        is_public: z.boolean(),
+        public_until: z.union([z.string(), z.null()]),
+        shareable_link: z.union([z.string(), z.null()]),
+        created_at: z.string(),
+        updated_at: z.string(),
+    })
+    .passthrough();
+const TimeEntryAggregationType = z.enum([
+    'day',
+    'week',
+    'month',
+    'year',
+    'user',
+    'project',
+    'task',
+    'client',
+    'billable',
+    'description',
+]);
+const TimeEntryAggregationTypeInterval = z.enum([
+    'day',
+    'week',
+    'month',
+    'year',
+]);
+const Weekday = z.enum([
+    'monday',
+    'tuesday',
+    'wednesday',
+    'thursday',
+    'friday',
+    'saturday',
+    'sunday',
+]);
+const ReportStoreRequest = z
+    .object({
+        name: z.string().max(255),
+        description: z.union([z.string(), z.null()]).optional(),
+        is_public: z.boolean(),
+        public_until: z.union([z.string(), z.null()]).optional(),
+        properties: z
+            .object({
+                start: z.string(),
+                end: z.string(),
+                active: z.union([z.boolean(), z.null()]).optional(),
+                member_ids: z
+                    .union([z.array(z.string().uuid()), z.null()])
+                    .optional(),
+                billable: z.union([z.boolean(), z.null()]).optional(),
+                client_ids: z
+                    .union([z.array(z.string().uuid()), z.null()])
+                    .optional(),
+                project_ids: z
+                    .union([z.array(z.string().uuid()), z.null()])
+                    .optional(),
+                tag_ids: z
+                    .union([z.array(z.string().uuid()), z.null()])
+                    .optional(),
+                task_ids: z
+                    .union([z.array(z.string().uuid()), z.null()])
+                    .optional(),
+                group: TimeEntryAggregationType.optional(),
+                sub_group: TimeEntryAggregationType.optional(),
+                history_group: TimeEntryAggregationTypeInterval.optional(),
+                week_start: Weekday.optional(),
+                timezone: z.union([z.string(), z.null()]).optional(),
+            })
+            .passthrough(),
+        'properties.member_ids': z.string().optional(),
+        'properties.client_ids': z.string().optional(),
+        'properties.project_ids': z.string().optional(),
+        'properties.tag_ids': z.string().optional(),
+        'properties.task_ids': z.string().optional(),
+        'properties.week_start': z.string().optional(),
+        'properties.timezone': z.string().optional(),
+    })
+    .passthrough();
+const DetailedReportResource = z
+    .object({
+        id: z.string(),
+        name: z.string(),
+        description: z.union([z.string(), z.null()]),
+        is_public: z.boolean(),
+        public_until: z.union([z.string(), z.null()]),
+        shareable_link: z.union([z.string(), z.null()]),
+        properties: z
+            .object({
+                group: z.string(),
+                sub_group: z.string(),
+                history_group: z.string(),
+                start: z.string(),
+                end: z.string(),
+                active: z.union([z.boolean(), z.null()]),
+                member_ids: z.union([z.array(z.string()), z.null()]),
+                billable: z.union([z.boolean(), z.null()]),
+                client_ids: z.union([z.array(z.string()), z.null()]),
+                project_ids: z.union([z.array(z.string()), z.null()]),
+                tag_ids: z.union([z.array(z.string()), z.null()]),
+                task_ids: z.union([z.array(z.string()), z.null()]),
+            })
+            .passthrough(),
+        created_at: z.string(),
+        updated_at: z.string(),
+    })
+    .passthrough();
+const ReportUpdateRequest = z
+    .object({
+        name: z.string().max(255),
+        description: z.union([z.string(), z.null()]),
+        is_public: z.boolean(),
+        public_until: z.union([z.string(), z.null()]),
+    })
+    .partial()
+    .passthrough();
+const DetailedWithDataReportResource = z
+    .object({
+        name: z.string(),
+        description: z.union([z.string(), z.null()]),
+        public_until: z.union([z.string(), z.null()]),
+        currency: z.string(),
+        properties: z
+            .object({
+                group: z.string(),
+                sub_group: z.string(),
+                history_group: z.string(),
+                start: z.string(),
+                end: z.string(),
+            })
+            .passthrough(),
+        data: z
+            .object({
+                grouped_type: z.union([z.string(), z.null()]),
+                grouped_data: z.union([
+                    z.array(
+                        z
+                            .object({
+                                key: z.union([z.string(), z.null()]),
+                                description: z.union([z.string(), z.null()]),
+                                color: z.union([z.string(), z.null()]),
+                                seconds: z.number().int(),
+                                cost: z.number().int(),
+                                grouped_type: z.union([z.string(), z.null()]),
+                                grouped_data: z.union([
+                                    z.array(
+                                        z
+                                            .object({
+                                                key: z.union([
+                                                    z.string(),
+                                                    z.null(),
+                                                ]),
+                                                description: z.union([
+                                                    z.string(),
+                                                    z.null(),
+                                                ]),
+                                                color: z.union([
+                                                    z.string(),
+                                                    z.null(),
+                                                ]),
+                                                seconds: z.number().int(),
+                                                cost: z.number().int(),
+                                                grouped_type: z.null(),
+                                                grouped_data: z.null(),
+                                            })
+                                            .passthrough()
+                                    ),
+                                    z.null(),
+                                ]),
+                            })
+                            .passthrough()
+                    ),
+                    z.null(),
+                ]),
+                seconds: z.number().int(),
+                cost: z.number().int(),
+            })
+            .passthrough(),
+        history_data: z
+            .object({
+                grouped_type: z.union([z.string(), z.null()]),
+                grouped_data: z.union([
+                    z.array(
+                        z
+                            .object({
+                                key: z.union([z.string(), z.null()]),
+                                description: z.union([z.string(), z.null()]),
+                                seconds: z.number().int(),
+                                cost: z.number().int(),
+                                grouped_type: z.union([z.string(), z.null()]),
+                                grouped_data: z.union([
+                                    z.array(
+                                        z
+                                            .object({
+                                                key: z.union([
+                                                    z.string(),
+                                                    z.null(),
+                                                ]),
+                                                description: z.union([
+                                                    z.string(),
+                                                    z.null(),
+                                                ]),
+                                                seconds: z.number().int(),
+                                                cost: z.number().int(),
+                                                grouped_type: z.null(),
+                                                grouped_data: z.null(),
+                                            })
+                                            .passthrough()
+                                    ),
+                                    z.null(),
+                                ]),
+                            })
+                            .passthrough()
+                    ),
+                    z.null(),
+                ]),
+                seconds: z.number().int(),
+                cost: z.number().int(),
+            })
+            .passthrough(),
+    })
     .passthrough();
 const TagResource = z
     .object({
@@ -211,15 +440,6 @@ const TimeEntryUpdateRequest = z
     })
     .partial()
     .passthrough();
-const Weekday = z.enum([
-    'monday',
-    'tuesday',
-    'wednesday',
-    'thursday',
-    'friday',
-    'saturday',
-    'sunday',
-]);
 const UserResource = z
     .object({
         id: z.string(),
@@ -234,7 +454,7 @@ const PersonalMembershipResource = z
     .object({
         id: z.string(),
         organization: z
-            .object({ id: z.string(), name: z.string() })
+            .object({ id: z.string(), name: z.string(), currency: z.string() })
             .passthrough(),
         role: z.string(),
     })
@@ -260,6 +480,14 @@ export const schemas = {
     ProjectMemberResource,
     ProjectMemberStoreRequest,
     ProjectMemberUpdateRequest,
+    ReportResource,
+    TimeEntryAggregationType,
+    TimeEntryAggregationTypeInterval,
+    Weekday,
+    ReportStoreRequest,
+    DetailedReportResource,
+    ReportUpdateRequest,
+    DetailedWithDataReportResource,
     TagResource,
     TagCollection,
     TagStoreRequest,
@@ -272,7 +500,6 @@ export const schemas = {
     TimeEntryStoreRequest,
     TimeEntryUpdateMultipleRequest,
     TimeEntryUpdateRequest,
-    Weekday,
     UserResource,
     PersonalMembershipResource,
     PersonalMembershipCollection,
@@ -1698,6 +1925,238 @@ const endpoints = makeApi([
     },
     {
         method: 'get',
+        path: '/v1/organizations/:organization/reports',
+        alias: 'getReports',
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'organization',
+                type: 'Path',
+                schema: z.string(),
+            },
+        ],
+        response: z
+            .object({
+                data: z.array(ReportResource),
+                links: z
+                    .object({
+                        first: z.union([z.string(), z.null()]),
+                        last: z.union([z.string(), z.null()]),
+                        prev: z.union([z.string(), z.null()]),
+                        next: z.union([z.string(), z.null()]),
+                    })
+                    .passthrough(),
+                meta: z
+                    .object({
+                        current_page: z.number().int(),
+                        from: z.union([z.number(), z.null()]),
+                        last_page: z.number().int(),
+                        links: z.array(
+                            z
+                                .object({
+                                    url: z.union([z.string(), z.null()]),
+                                    label: z.string(),
+                                    active: z.boolean(),
+                                })
+                                .passthrough()
+                        ),
+                        path: z.union([z.string(), z.null()]),
+                        per_page: z.number().int(),
+                        to: z.union([z.number(), z.null()]),
+                        total: z.number().int(),
+                    })
+                    .passthrough(),
+            })
+            .passthrough(),
+        errors: [
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 403,
+                description: `Authorization error`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 404,
+                description: `Not found`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+        ],
+    },
+    {
+        method: 'post',
+        path: '/v1/organizations/:organization/reports',
+        alias: 'createReport',
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'body',
+                type: 'Body',
+                schema: ReportStoreRequest,
+            },
+            {
+                name: 'organization',
+                type: 'Path',
+                schema: z.string(),
+            },
+        ],
+        response: z.object({ data: DetailedReportResource }).passthrough(),
+        errors: [
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 403,
+                description: `Authorization error`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 404,
+                description: `Not found`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 422,
+                description: `Validation error`,
+                schema: z
+                    .object({
+                        message: z.string(),
+                        errors: z.record(z.array(z.string())),
+                    })
+                    .passthrough(),
+            },
+        ],
+    },
+    {
+        method: 'get',
+        path: '/v1/organizations/:organization/reports/:report',
+        alias: 'getReport',
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'organization',
+                type: 'Path',
+                schema: z.string(),
+            },
+            {
+                name: 'report',
+                type: 'Path',
+                schema: z.string(),
+            },
+        ],
+        response: z.object({ data: DetailedReportResource }).passthrough(),
+        errors: [
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 403,
+                description: `Authorization error`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 404,
+                description: `Not found`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+        ],
+    },
+    {
+        method: 'put',
+        path: '/v1/organizations/:organization/reports/:report',
+        alias: 'updateReport',
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'body',
+                type: 'Body',
+                schema: ReportUpdateRequest,
+            },
+            {
+                name: 'organization',
+                type: 'Path',
+                schema: z.string(),
+            },
+            {
+                name: 'report',
+                type: 'Path',
+                schema: z.string(),
+            },
+        ],
+        response: z.object({ data: DetailedReportResource }).passthrough(),
+        errors: [
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 403,
+                description: `Authorization error`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 404,
+                description: `Not found`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 422,
+                description: `Validation error`,
+                schema: z
+                    .object({
+                        message: z.string(),
+                        errors: z.record(z.array(z.string())),
+                    })
+                    .passthrough(),
+            },
+        ],
+    },
+    {
+        method: 'delete',
+        path: '/v1/organizations/:organization/reports/:report',
+        alias: 'deleteReport',
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'organization',
+                type: 'Path',
+                schema: z.string(),
+            },
+            {
+                name: 'report',
+                type: 'Path',
+                schema: z.string(),
+            },
+        ],
+        response: z.null(),
+        errors: [
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 403,
+                description: `Authorization error`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 404,
+                description: `Not found`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+        ],
+    },
+    {
+        method: 'get',
         path: '/v1/organizations/:organization/tags',
         alias: 'getTags',
         requestFormat: 'json',
@@ -2745,6 +3204,11 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
                 schema: z.enum(['true', 'false']).optional(),
             },
             {
+                name: 'debug',
+                type: 'Query',
+                schema: z.enum(['true', 'false']).optional(),
+            },
+            {
                 name: 'member_ids',
                 type: 'Query',
                 schema: z.array(z.string()).min(1).optional(),
@@ -2770,7 +3234,12 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
                 schema: z.array(z.string()).min(1).optional(),
             },
         ],
-        response: z.object({ download_url: z.string() }).passthrough(),
+        response: z.union([
+            z.object({ download_url: z.string() }).passthrough(),
+            z
+                .object({ html: z.string(), footer_html: z.string() })
+                .passthrough(),
+        ]),
         errors: [
             {
                 status: 400,
@@ -2834,12 +3303,12 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
             {
                 name: 'start',
                 type: 'Query',
-                schema: start,
+                schema: z.string(),
             },
             {
                 name: 'end',
                 type: 'Query',
-                schema: start,
+                schema: z.string(),
             },
             {
                 name: 'active',
@@ -2858,6 +3327,11 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
             },
             {
                 name: 'only_full_dates',
+                type: 'Query',
+                schema: z.enum(['true', 'false']).optional(),
+            },
+            {
+                name: 'debug',
                 type: 'Query',
                 schema: z.enum(['true', 'false']).optional(),
             },
@@ -2882,7 +3356,12 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
                 schema: z.array(z.string().uuid()).min(1).optional(),
             },
         ],
-        response: z.object({ download_url: z.string() }).passthrough(),
+        response: z.union([
+            z.object({ download_url: z.string() }).passthrough(),
+            z
+                .object({ html: z.string(), footer_html: z.string() })
+                .passthrough(),
+        ]),
         errors: [
             {
                 status: 400,
@@ -2919,6 +3398,23 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
                         errors: z.record(z.array(z.string())),
                     })
                     .passthrough(),
+            },
+        ],
+    },
+    {
+        method: 'get',
+        path: '/v1/public/reports',
+        alias: 'getPublicReport',
+        description: `This endpoint is public and does not require authentication. The report must be public and not expired.
+The report is considered expired if the &#x60;public_until&#x60; field is set and the date is in the past.
+The report is considered public if the &#x60;is_public&#x60; field is set to &#x60;true&#x60;.`,
+        requestFormat: 'json',
+        response: DetailedWithDataReportResource,
+        errors: [
+            {
+                status: 404,
+                description: `Not found`,
+                schema: z.object({ message: z.string() }).passthrough(),
             },
         ],
     },

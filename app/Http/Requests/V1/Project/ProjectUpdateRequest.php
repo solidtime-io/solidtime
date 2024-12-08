@@ -50,6 +50,9 @@ class ProjectUpdateRequest extends FormRequest
             'is_archived' => [
                 'boolean',
             ],
+            'is_public' => [
+                'boolean',
+            ],
             'client_id' => [
                 'nullable',
                 ExistsEloquent::make(Client::class, null, function (Builder $builder): Builder {

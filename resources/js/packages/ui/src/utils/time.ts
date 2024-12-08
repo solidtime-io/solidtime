@@ -6,6 +6,7 @@ import isYesterday from 'dayjs/plugin/isYesterday';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import weekOfYear from 'dayjs/plugin/weekOfYear';
+
 import { getUserTimezone, getWeekStart } from './settings';
 import updateLocale from 'dayjs/plugin/updateLocale';
 import { computed } from 'vue';
@@ -69,7 +70,7 @@ export function formatTime(date: string) {
     return dayjs.utc(date).tz(getUserTimezone()).format('HH:mm');
 }
 
-export function getLocalizedDayJs(timestamp: string | null) {
+export function getLocalizedDayJs(timestamp?: string | null) {
     return dayjs.utc(timestamp).tz(getUserTimezone());
 }
 
@@ -82,7 +83,20 @@ export function getLocalizedDateFromTimestamp(timestamp: string) {
  * @param date - date in the format of 'YYYY-MM-DD'
  */
 export function formatDate(date: string): string {
-    return dayjs(date).format('DD.MM.YYYY');
+    if (date?.includes('+')) {
+        console.warn(
+            'Date contains timezone information, use formatDateLocalized instead'
+        );
+    }
+    return getDayJsInstance()(date).format('DD.MM.YYYY');
+}
+
+/*
+ * Returns a formatted date.
+ * @param date - date in the format of 'YYYY-MM-DD'
+ */
+export function formatDateLocalized(date: string): string {
+    return getLocalizedDayJs(date).format('DD.MM.YYYY');
 }
 
 export function formatWeek(date: string | null): string {
