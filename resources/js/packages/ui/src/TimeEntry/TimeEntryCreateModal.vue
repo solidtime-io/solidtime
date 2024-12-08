@@ -70,6 +70,19 @@ const timeEntryDefaultValues = {
 
 const timeEntry = ref({ ...timeEntryDefaultValues });
 
+watch(
+    () => timeEntry.value.project_id,
+    (value) => {
+        if (value) {
+            // check if project is billable by default and set billable accordingly
+            const project = props.projects.find((p) => p.id === value);
+            if (project) {
+                timeEntry.value.billable = project.is_billable;
+            }
+        }
+    }
+);
+
 const localStart = ref(
     getLocalizedDayJs(timeEntryDefaultValues.start).format()
 );
