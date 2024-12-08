@@ -3204,6 +3204,11 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
                 schema: z.enum(['true', 'false']).optional(),
             },
             {
+                name: 'debug',
+                type: 'Query',
+                schema: z.enum(['true', 'false']).optional(),
+            },
+            {
                 name: 'member_ids',
                 type: 'Query',
                 schema: z.array(z.string()).min(1).optional(),
@@ -3229,7 +3234,12 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
                 schema: z.array(z.string()).min(1).optional(),
             },
         ],
-        response: z.object({ download_url: z.string() }).passthrough(),
+        response: z.union([
+            z.object({ download_url: z.string() }).passthrough(),
+            z
+                .object({ html: z.string(), footer_html: z.string() })
+                .passthrough(),
+        ]),
         errors: [
             {
                 status: 400,
@@ -3321,6 +3331,11 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
                 schema: z.enum(['true', 'false']).optional(),
             },
             {
+                name: 'debug',
+                type: 'Query',
+                schema: z.enum(['true', 'false']).optional(),
+            },
+            {
                 name: 'member_ids',
                 type: 'Query',
                 schema: z.array(z.string().uuid()).min(1).optional(),
@@ -3341,7 +3356,12 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
                 schema: z.array(z.string().uuid()).min(1).optional(),
             },
         ],
-        response: z.object({ download_url: z.string() }).passthrough(),
+        response: z.union([
+            z.object({ download_url: z.string() }).passthrough(),
+            z
+                .object({ html: z.string(), footer_html: z.string() })
+                .passthrough(),
+        ]),
         errors: [
             {
                 status: 400,
