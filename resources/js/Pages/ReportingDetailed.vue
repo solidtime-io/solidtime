@@ -233,7 +233,9 @@ async function downloadExport(format: ExportFormat) {
             'Export successful',
             'Export failed'
         );
-        window.open(response.download_url, '_self')?.focus();
+        if (response?.download_url) {
+            window.open(response.download_url as string, '_blank')?.focus();
+        }
     }
 }
 </script>
@@ -252,6 +254,7 @@ async function downloadExport(format: ExportFormat) {
             <ReportingExportButton
                 :download="downloadExport"></ReportingExportButton>
         </MainContainer>
+
         <div class="py-2.5 w-full border-b border-default-background-separator">
             <MainContainer
                 class="sm:flex space-y-4 sm:space-y-0 justify-between">

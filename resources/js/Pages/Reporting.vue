@@ -198,7 +198,9 @@ async function downloadExport(format: ExportFormat) {
             'Export successful',
             'Export failed'
         );
-        window.open(response.download_url, '_blank')?.focus();
+        if (response?.download_url) {
+            window.open(response.download_url as string, '_blank')?.focus();
+        }
     }
 }
 const { getNameForReportingRowEntry, emptyPlaceholder } = useReportingStore();

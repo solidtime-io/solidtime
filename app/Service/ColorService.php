@@ -33,7 +33,7 @@ class ColorService
 
     private const string VALID_REGEX = '/^#[0-9a-f]{6}$/';
 
-    public function getRandomColor(string $seed = null): string
+    public function getRandomColor(?string $seed = null): string
     {
         if ($seed !== null) {
             srand(crc32($seed));
