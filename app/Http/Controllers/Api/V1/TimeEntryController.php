@@ -241,7 +241,9 @@ class TimeEntryController extends Controller
             ]);
             $request = Gotenberg::chromium(config('services.gotenberg.url'))
                 ->pdf()
-                ->pdfa('PDF/A-3b')
+                ->assets(
+                    Stream::path(resource_path('pdf/Outfit-VariableFont_wght.ttf'), 'outfit.ttf'),
+                )
                 ->margins(0.39, 0.78, 0.39, 0.39)
                 ->paperSize('8.27', '11.7') // A4
                 ->footer(Stream::string('footer', $footerHtml))

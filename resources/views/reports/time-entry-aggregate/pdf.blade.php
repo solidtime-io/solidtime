@@ -72,6 +72,10 @@
             color: #18181b
         }
 
+        table {
+            font-size: 14px;
+        }
+
         thead {
             border-bottom: 1px #d4d4d8 solid;
         }
@@ -90,8 +94,15 @@
             background-color: #fafafa;
         }
 
+        .table-wrapper {
+            border: 1px solid #d4d4d8;
+            border-radius: 8px;
+            overflow: hidden;
+            width: calc(100% - 2px)
+        }
+
         table tr {
-            border-bottom: 1px #e4e4e7 solid
+            border-bottom: 1px #e4e4e7 solid;
         }
 
         table tr:last-of-type {
@@ -102,18 +113,6 @@
             font-weight: 400;
             color: #3f3f46;
             padding: 6px 12px;
-        }
-
-        .range {
-            font-size: 24px;
-            font-weight: bold;
-        }
-
-        .table-wrapper {
-            border: 1px solid #d4d4d8;
-            border-radius: 8px;
-            overflow: hidden;
-            width: calc(100% - 2px)
         }
 
         .data-table {
@@ -147,7 +146,6 @@
 
 
 <div class="table-wrapper">
-
     <div
         style="background-color: #fafafa; padding: 5px 14px; border-bottom: 1px #d4d4d8 solid; display: flex; gap: 20px;">
         <div style="padding: 8px 12px; border-radius: 8px;">
@@ -187,11 +185,18 @@
                     <tr>
                         <td style="display: flex; align-items: center;">
                             <div style="width: 12px; height: 12px; border-radius: 50%; background-color: {{
-                        $group1Entry['color'] ?? $group1Entry['key'] ? $colorService->getRandomColor($group1Entry['key']) : '#CCCCCC'
+                        $group1Entry['color'] ?? ($group1Entry['key'] ? $colorService->getRandomColor($group1Entry['key']) : '#CCCCCC')
  }};">
                             </div>
                             <span style="padding-left: 8px;">
-                         {{ $group1Entry['description'] ?? $group1Entry['key'] ?? 'No '.Str::lower($group->description()) }}
+
+                                @if($group->is(\App\Enums\TimeEntryAggregationType::Billable))
+                                    {{ $group1Entry['key'] === '1' ? 'Billable' : 'Non-billable' }}
+                                @else
+                                    {{ $group1Entry['description'] ?? $group1Entry['key'] ?? 'No '.Str::lower($group->description()) }}
+                                @endif
+
+
                     </span>
                         </td>
                         <td style="text-align: left;">
@@ -225,18 +230,18 @@
 @foreach($aggregatedData['grouped_data'] as $group1Entry)
     <div class="data-table">
         <h2 class="no-break"
-            style="padding-top: 16px; padding-bottom: 8px; font-size: 20px; font-weight: 600; padding-left: 6px; color: #3f3f46;">
-            @if($group1Entry['key'])
+            style="padding-top: 16px; padding-bottom: 8px; font-size: 16px; font-weight: 600; padding-left: 6px; color: #3f3f46;">
+            @if($group->is(\App\Enums\TimeEntryAggregationType::Billable))
+                {{ $group1Entry['key'] === '1' ? 'Billable' : 'Non-billable' }}
+            @else
                 <span style="color: #a1a1aa;">
-                {{ $group->description() }}:
-            </span>
+                    {{ $group->description() }}:
+                    </span>
+                {{ $group1Entry['description'] ?? $group1Entry['key'] ?? 'No '.Str::lower($group->description()) }}
             @endif
-            {{ $group1Entry['description'] ?? $group1Entry['key'] ?? 'No '.Str::lower($group->description()) }}
         </h2>
 
         <div class="table-wrapper">
-
-
             <table style="width: 100%;">
                 <thead>
                 <tr>
@@ -266,7 +271,11 @@
                     @endphp
                     <tr>
                         <td>
-                            {{ $group2Entry['description'] ?? $group2Entry['key'] ?? '-' }}
+                            @if($subGroup->is(\App\Enums\TimeEntryAggregationType::Billable))
+                                {{ $group2Entry['key'] === '1' ? 'Billable' : 'Non-billable' }}
+                            @else
+                                {{ $group2Entry['description'] ?? $group2Entry['key'] ?? '-' }}
+                            @endif
                         </td>
                         <td>
                             {{ $interval->format($duration) }}
