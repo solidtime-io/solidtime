@@ -106,7 +106,7 @@
             color: #18181b;
         }
 
-        table td, table th{
+        table td, table th {
             font-size: 12px;
         }
 
@@ -127,64 +127,77 @@
     </style>
 </head>
 <body>
-    <div>
-        <p style="font-size: 32px; font-weight: 600; margin-bottom: 5px;">Detailed Report</p>
-        <div style="font-size: 16px; font-weight: 600; color: #71717a;">
-            <span>{{ $start->format('d.m.Y') }} - {{ $end->format('d.m.Y') }}</span><br><br>
-        </div>
+<div>
+    <p style="font-size: 32px; font-weight: 600; margin-bottom: 5px;">Detailed Report</p>
+    <div style="font-size: 16px; font-weight: 600; color: #71717a;">
+        <span>{{ $start->format('d.m.Y') }} - {{ $end->format('d.m.Y') }}</span><br><br>
     </div>
-    <div class="table-wrapper">
-        <div
-            style="background-color: #fafafa;  border-bottom: 1px #d4d4d8 solid; padding: 5px 14px; display: flex; gap: 20px;">
-            <div style="padding: 8px 12px; border-radius: 8px;">
-                <div style="color: #71717a; font-weight: 600;">Duration</div>
-                <div
-                    style="font-size: 24px; font-weight: 500; margin-top: 2px;">{{ $interval->format(CarbonInterval::seconds($aggregatedData['seconds'])) }} </div>
-            </div>
-            <div style="padding: 8px 12px; border-radius: 8px;">
-                <div style="color: #71717a; font-weight: 600;">Total cost</div>
-                <div
-                    style="font-size: 24px; font-weight: 500; margin-top: 2px;">{{ Money::of(BigDecimal::ofUnscaledValue($aggregatedData['cost'], 2)->__toString(), $currency)->formatTo('en_US') }} </div>
-            </div>
+</div>
+<div class="table-wrapper">
+    <div
+        style="background-color: #fafafa;  border-bottom: 1px #d4d4d8 solid; padding: 5px 14px; display: flex; gap: 20px;">
+        <div style="padding: 8px 12px; border-radius: 8px;">
+            <div style="color: #71717a; font-weight: 600;">Duration</div>
+            <div
+                style="font-size: 24px; font-weight: 500; margin-top: 2px;">{{ $interval->format(CarbonInterval::seconds($aggregatedData['seconds'])) }} </div>
+        </div>
+        <div style="padding: 8px 12px; border-radius: 8px;">
+            <div style="color: #71717a; font-weight: 600;">Total cost</div>
+            <div
+                style="font-size: 24px; font-weight: 500; margin-top: 2px;">{{ Money::of(BigDecimal::ofUnscaledValue($aggregatedData['cost'], 2)->__toString(), $currency)->formatTo('en_US') }} </div>
+        </div>
 
-        </div>
-        <div>
-            <table style="width: 100%;">
-                <thead>
-                <tr>
-                    <th>Description</th>
-                    <th>Task</th>
-                    <th>Project</th>
-                    <th>Client</th>
-                    <th>User</th>
-                    <th>Time</th>
-                    <th>Duration</th>
-                    <th>Billable</th>
-                    <th>Tags</th>
-                </tr>
-                </thead>
-                <tbody>
-                @foreach($timeEntries as $timeEntry)
-                    <tr>
-                        <td>{{ $timeEntry->description === '' ? '-' : $timeEntry->description }}</td>
-                        <td>{{ $timeEntry->task?->name ?? '-' }}</td>
-                        <td>{{ $timeEntry->project?->name ?? '-' }}</td>
-                        <td>{{ $timeEntry->client?->name ?? '-' }}</td>
-                        <td>{{ $timeEntry->user->name }}</td>
-                        <td>
-                            {{ $timeEntry->start->format('Y-m-d H:i:s') }} - <br> {{ $timeEntry->end->format('Y-m-d H:i:s') }}
-                        </td>
-                        <td>
-                            {{ $interval->format($timeEntry->getDuration()) }}
-                        </td>
-                        <td>{{ $timeEntry->billable ? 'Yes' : 'No' }}</td>
-                        <td>{{ count($timeEntry->tagsRelation) === 0 ? '-' : $timeEntry->tagsRelation->implode('name', ', ') }}</td>
-                    </tr>
-                @endforeach
-                </tbody>
-            </table>
-        </div>
     </div>
+    <div>
+        <table style="width: 100%;">
+            <thead>
+            <tr>
+                <th>Time Entry</th>
+                <th>User</th>
+                <th style="text-align: center;">Time</th>
+                <th>Duration</th>
+                <th>Billable</th>
+                <th>Tags</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach($timeEntries as $timeEntry)
+                <tr>
+                    <td style="overflow-wrap: break-word; max-width: 250px;">
+                        {{ $timeEntry->description === '' ? '-' : $timeEntry->description }} <br>
+                        @if($timeEntry->task?->name)
+                            <span style="font-weight: 600;">Task:</span> {{ $timeEntry->task?->name ?? '-' }} <br>
+                        @endif
+                        @if($timeEntry->project?->name)
+                            <span style="font-weight: 600;">Project:</span> {{ $timeEntry->project?->name }} <br>
+                        @endif
+                        @if($timeEntry->client?->name)
+                            <span style="font-weight: 600;">
+                                    Client:
+                                </span>{{ $timeEntry->client?->name }} <br>
+                        @endif
+                    </td>
+                    <td style="overflow-wrap: break-word; min-width: 75px;">{{ $timeEntry->user->name }}</td>
+                    <td style="overflow-wrap: break-word; min-width: 150px; text-align: center;">
+                        @if($timeEntry->start->format('Y-m-d') === $timeEntry->end->format('Y-m-d'))
+                            {{ $timeEntry->start->format('Y-m-d') }}
+                        @else
+                            {{ $timeEntry->start->format('Y-m-d') }} - <br> {{ $timeEntry->end->format('Y-m-d') }}
+                        @endif
+                        <br>
+                        {{ $timeEntry->start->format('H:i:s') }} - {{ $timeEntry->end->format('H:i:s') }}
+                    </td>
+                    <td style="overflow-wrap: break-word; min-width: 75px;">
+                        {{ $interval->format($timeEntry->getDuration()) }}
+                    </td>
+                    <td style="overflow-wrap: break-word;">{{ $timeEntry->billable ? 'Yes' : 'No' }}</td>
+                    <td style="overflow-wrap: break-word; min-width: 75px;">{{ count($timeEntry->tagsRelation) === 0 ? '-' : $timeEntry->tagsRelation->implode('name', ', ') }}</td>
+                </tr>
+            @endforeach
+            </tbody>
+        </table>
+    </div>
+</div>
 
 
 </body>

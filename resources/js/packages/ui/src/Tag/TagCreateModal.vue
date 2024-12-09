@@ -21,6 +21,7 @@ async function submit() {
     const newTag = props.createTag(tag.value.name);
     if (newTag !== undefined) {
         show.value = false;
+        tag.value.name = '';
     }
 }
 
