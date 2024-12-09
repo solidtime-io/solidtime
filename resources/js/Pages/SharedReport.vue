@@ -13,6 +13,7 @@ import { useQuery } from '@tanstack/vue-query';
 import { api } from '@/packages/api/src';
 import { getRandomColorWithSeed } from '@/packages/ui/src/utils/color';
 import { useReportingStore } from '@/utils/useReporting';
+import { Head } from '@inertiajs/vue3';
 
 const sharedSecret = ref<string | null>(null);
 
@@ -138,6 +139,8 @@ function getGroupLabel(key: string) {
 </script>
 
 <template>
+    <Head :title="sharedReportResponseData?.name" />
+
     <div class="text-muted">
         <MainContainer
             class="py-3 sm:py-5 border-b border-default-background-separator flex justify-between items-center">
