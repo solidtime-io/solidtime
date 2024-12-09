@@ -135,7 +135,7 @@
 </div>
 <div class="table-wrapper">
     <div
-        style="background-color: #fafafa;  border-bottom: 1px #d4d4d8 solid; padding: 5px 14px; display: flex; gap: 20px;">
+        style="background-color: #fafafa; padding: 5px 14px; display: flex; gap: 20px;">
         <div style="padding: 8px 12px; border-radius: 8px;">
             <div style="color: #71717a; font-weight: 600;">Duration</div>
             <div
@@ -151,7 +151,7 @@
     <div>
         <table style="width: 100%;">
             <thead>
-            <tr>
+            <tr style="border-top: 1px #d4d4d8 solid;">
                 <th>Time Entry</th>
                 <th>User</th>
                 <th style="text-align: center;">Time</th>
