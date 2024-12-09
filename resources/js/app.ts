@@ -32,7 +32,7 @@ createInertiaApp({
                     user: User;
                 };
             }>();
-            return page.props.auth.user.week_start;
+            return page.props.auth.user.week_start ?? 'monday';
         };
         window.getTimezoneSetting = function () {
             const page = usePage<{
