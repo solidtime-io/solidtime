@@ -67,6 +67,7 @@ import { useNotificationsStore } from '@/utils/notification';
 import TimeEntryMassActionRow from '@/packages/ui/src/TimeEntry/TimeEntryMassActionRow.vue';
 import { isAllowedToPerformPremiumAction } from '@/utils/billing';
 import { canCreateProjects } from '@/utils/permissions';
+import ReportingExportModal from '@/Components/Common/Reporting/ReportingExportModal.vue';
 
 const startDate = useSessionStorage<string>(
     'reporting-start-date',
@@ -167,6 +168,9 @@ const { clients } = storeToRefs(clientStore);
 
 const selectedTimeEntries = ref<TimeEntry[]>([]);
 
+const showExportModal = ref(false);
+const exportUrl = ref<string | null>(null);
+
 async function createTag(name: string) {
     return await useTagsStore().createTag(name);
 }
@@ -234,7 +238,8 @@ async function downloadExport(format: ExportFormat) {
             'Export failed'
         );
         if (response?.download_url) {
-            window.open(response.download_url as string, '_blank')?.focus();
+            showExportModal.value = true;
+            exportUrl.value = response.download_url as string;
         }
     }
 }
@@ -245,6 +250,9 @@ async function downloadExport(format: ExportFormat) {
         title="Reporting"
         data-testid="reporting_view"
         class="overflow-hidden">
+        <ReportingExportModal
+            v-model:show="showExportModal"
+            :exportUrl="exportUrl"></ReportingExportModal>
         <MainContainer
             class="py-3 sm:py-5 border-b border-default-background-separator flex justify-between items-center">
             <div class="flex items-center space-x-3 sm:space-x-6">

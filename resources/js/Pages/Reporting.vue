@@ -198,15 +198,20 @@ async function downloadExport(format: ExportFormat) {
             'Export successful',
             'Export failed'
         );
+
         if (response?.download_url) {
-            window.open(response.download_url as string, '_blank')?.focus();
+            showExportModal.value = true;
+            exportUrl.value = response.download_url as string;
         }
     }
 }
 const { getNameForReportingRowEntry, emptyPlaceholder } = useReportingStore();
 import { useProjectsStore } from '@/utils/useProjects';
+import ReportingExportModal from '@/Components/Common/Reporting/ReportingExportModal.vue';
 const projectsStore = useProjectsStore();
 const { projects } = storeToRefs(projectsStore);
+const showExportModal = ref(false);
+const exportUrl = ref<string | null>(null);
 
 const groupedPieChartData = computed(() => {
     return (
@@ -274,6 +279,9 @@ const tableData = computed(() => {
         title="Reporting"
         data-testid="reporting_view"
         class="overflow-hidden">
+        <ReportingExportModal
+            v-model:show="showExportModal"
+            :exportUrl="exportUrl"></ReportingExportModal>
         <MainContainer
             class="py-3 sm:py-5 border-b border-default-background-separator flex justify-between items-center">
             <div class="flex items-center space-x-3 sm:space-x-6">
