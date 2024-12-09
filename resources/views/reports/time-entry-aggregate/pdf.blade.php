@@ -373,7 +373,7 @@
         grid: {
             containLabel: true,
             left: 15,
-            top: 0,
+            top: 15,
             right: 15,
             bottom: 0
         },
