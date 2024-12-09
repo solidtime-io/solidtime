@@ -113,6 +113,7 @@ const currentClientName = computed(() => {
                         v-model="project.client_id">
                         <template #trigger>
                             <Badge
+                                tag="button"
                                 class="bg-input-background cursor-pointer hover:bg-tertiary"
                                 size="xlarge">
                                 <div class="flex items-center space-x-2">

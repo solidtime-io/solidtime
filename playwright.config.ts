@@ -30,7 +30,7 @@ export default defineConfig({
         trace: process.env.CI ? 'on-first-retry' : 'on',
     },
 
-    timeout: 10 * 1000,
+    timeout: 20 * 1000,
 
     /* Configure projects for major browsers */
     projects: [

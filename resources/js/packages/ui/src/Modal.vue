@@ -78,7 +78,9 @@ const maxWidthClass = computed(() => {
 });
 
 const target = ref();
-const { activate, deactivate } = useFocusTrap(target);
+const { activate, deactivate } = useFocusTrap(target, {
+    allowOutsideClick: true,
+});
 watch(
     () => props.show,
     (value) => {
