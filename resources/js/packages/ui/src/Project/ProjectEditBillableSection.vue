@@ -57,7 +57,7 @@ const emit = defineEmits(['submit']);
 <template>
     <div class="sm:flex items-center space-y-2 sm:space-y-0 sm:space-x-4 pt-6">
         <div>
-            <div class="flex items-center space-x-1">
+            <div class="flex items-center space-x-1 mb-2">
                 <BillableIcon
                     class="text-text-quaternary h-4 ml-1 mr-0.5"></BillableIcon>
                 <InputLabel for="billable" value="Billable Default" />

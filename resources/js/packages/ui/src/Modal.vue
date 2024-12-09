@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, watch } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, watch } from 'vue';
 import { useId } from 'radix-vue';
 import { isLastLayer, layers } from '@/packages/ui/src/utils/dismissableLayer';
+import { useFocusTrap } from '@vueuse/integrations/useFocusTrap';
+import { ref } from 'vue';
 
 const props = defineProps({
     show: {
@@ -74,6 +76,23 @@ const maxWidthClass = computed(() => {
         '2xl': 'sm:max-w-2xl',
     }[props.maxWidth];
 });
+
+const target = ref();
+const { activate, deactivate } = useFocusTrap(target);
+watch(
+    () => props.show,
+    (value) => {
+        if (value) {
+            nextTick(() => {
+                activate();
+            });
+        } else {
+            nextTick(() => {
+                deactivate();
+            });
+        }
+    }
+);
 </script>
 
 <template>
@@ -109,6 +128,7 @@ const maxWidthClass = computed(() => {
                     <div
                         v-show="show"
                         role="dialog"
+                        ref="target"
                         class="mb-6 bg-default-background border border-card-border rounded-lg shadow-xl transform transition-all sm:w-full sm:mx-auto"
                         :class="maxWidthClass">
                         <slot v-if="show" />
