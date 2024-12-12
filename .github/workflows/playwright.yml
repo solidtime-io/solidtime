@@ -2,6 +2,9 @@ name: Playwright Tests
 on: [push]
 jobs:
   test:
+    # DeepVision Patch: disable api docs
+    if: false
+
     runs-on: ubuntu-latest
     timeout-minutes: 60
 

@@ -11,12 +11,9 @@ on:
       - 'docker/prod/**'
   workflow_dispatch:
 
-name: Build - Private
+name: Build - DeepVision Image
 jobs:
   build:
-    # DeepVision Patch: disable private build
-    if: false
-
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -72,44 +69,6 @@ jobs:
         with:
           node-version: '20.x'
 
-      - name: "Checkout billing extension"
-        uses: actions/checkout@v4
-        with:
-          repository: solidtime-io/extension-billing
-          path: extensions/Billing
-          ssh-key: ${{ secrets.SSH_PRIVATE_KEY_BILLING_EXTENSION }}
-
-      - name: "Install dependencies in billing extension"
-        uses: php-actions/composer@v6
-        env:
-          COMPOSER_AUTH: '{"http-basic": {"spark.laravel.com": {"username": "gregor@vostrak.at", "password": "${{ secrets.LARAVEL_SPARK_API_KEY }}"}}}'
-        with:
-          working_dir: "extensions/Billing"
-          command: install
-          only_args: --no-dev --no-ansi --no-interaction --prefer-dist --ignore-platform-reqs --classmap-authoritative
-          php_version: 8.3
-
-      - name: "Install npm dependencies in billing extension"
-        run: cd extensions/Billing && npm ci
-
-      - name: "Checkout services extension"
-        uses: actions/checkout@v4
-        with:
-          repository: solidtime-io/extension-services
-          path: extensions/Services
-          ssh-key: ${{ secrets.SSH_PRIVATE_KEY_SERVICES_EXTENSION }}
-
-      - name: "Install composer dependencies in services extension"
-        uses: php-actions/composer@v6
-        with:
-          working_dir: "extensions/Services"
-          command: install
-          only_args: --no-dev --no-ansi --no-interaction --prefer-dist --ignore-platform-reqs --classmap-authoritative
-          php_version: 8.3
-
-      - name: "Install npm dependencies in services extension"
-        run: cd extensions/Services && npm ci
-
       - name: "Setup PHP with PECL extension"
         uses: shivammathur/setup-php@v2
         with:
@@ -124,32 +83,26 @@ jobs:
           only_args: --no-dev --no-ansi --no-interaction --prefer-dist --ignore-platform-reqs --classmap-authoritative
           php_version: 8.3
 
-      - name: "Activate billing extension"
-        run: php artisan module:enable Billing
-
-      - name: "Activate services extension"
-        run: php artisan module:enable Services
-
       - name: "Install npm dependencies"
         run: npm ci
 
       - name: "Build"
         run: npm run build
-        env:
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+#        env:
+#          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
 
-      - name: "Login to GitHub Container Registry"
+      - name: "Login to Google Artifact Registry"
         uses: docker/login-action@v3
         with:
-          registry: rg.fr-par.scw.cloud/solidtime
-          username: nologin
-          password: ${{ secrets.SCALEWAY_REGISTRY_TOKEN }}
+          registry: us-docker.pkg.dev
+          username: _json_key
+          password: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
 
       - name: "Docker meta"
         id: "meta"
         uses: docker/metadata-action@v5
         with:
-          images: rg.fr-par.scw.cloud/solidtime/solidtime
+          images: us-docker.pkg.dev/deepops/dv/timetracker
           tags: |
             type=ref,event=branch
             type=ref,event=pr

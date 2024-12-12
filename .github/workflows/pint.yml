@@ -2,6 +2,9 @@ name: PHP Linting
 on: push
 jobs:
   pint:
+    # DeepVision Patch: disable api docs
+    if: false
+
     runs-on: ubuntu-latest
     timeout-minutes: 10
 

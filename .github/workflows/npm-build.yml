@@ -4,6 +4,9 @@ on: [push]
 
 jobs:
   build:
+    # DeepVision Patch: disable api docs
+    if: false
+
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
