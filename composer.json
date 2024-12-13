@@ -32,6 +32,7 @@
         "spatie/temporary-directory": "^2.2",
         "staudenmeir/eloquent-json-relations": "^1.1",
         "stechstudio/filament-impersonate": "^3.8",
+        "symfony/http-client": "^7.2",
         "symfony/postmark-mailer": "^7.1",
         "tightenco/ziggy": "^2.1.0",
         "tpetry/laravel-postgresql-enhanced": "^2.0.0",
