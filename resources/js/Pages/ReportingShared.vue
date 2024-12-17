@@ -115,11 +115,11 @@ watch(currentPage, () => {
         </div>
 
         <ReportTable
-            v-if="reports"
-            :reports="reports"
-            show-billable-rate=""></ReportTable>
+            v-if="reports.length > 0 || isAllowedToPerformPremiumAction()"
+            :reports="reports"></ReportTable>
 
         <PaginationRoot
+            v-if="reports.length > 0 || isAllowedToPerformPremiumAction()"
             :total="totalPages"
             :items-per-page="pageLimit"
             class="flex justify-center items-center py-8"
