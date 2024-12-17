@@ -40,7 +40,7 @@ const props = defineProps<{
 const report = ref({
     name: '',
     description: '',
-    is_public: false,
+    is_public: true,
     public_until: null,
 });
 
@@ -94,7 +94,7 @@ async function submit() {
                 </div>
                 <InputLabel value="Visibility" />
                 <div class="flex items-center space-x-12">
-                    <div class="flex items-center space-x-2 px-2 py-3">
+                    <div class="flex items-center space-x-3 px-2 py-3">
                         <Checkbox
                             v-model:checked="report.is_public"
                             id="is_public"></Checkbox>
@@ -103,7 +103,12 @@ async function submit() {
                     <div
                         v-if="report.is_public"
                         class="flex items-center space-x-4">
-                        <InputLabel for="public_until" value="Expires at" />
+                        <div>
+                            <InputLabel for="public_until" value="Expires at" />
+                            <div class="text-text-tertiary font-medium">
+                                (optional)
+                            </div>
+                        </div>
                         <DatePicker id="public_until"></DatePicker>
                     </div>
                 </div>
