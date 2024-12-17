@@ -64,8 +64,7 @@ const updateTeamName = () => {
                     <Link
                         v-if="isBillingActivated() && canManageBilling()"
                         href="/billing">
-                        <PrimaryButton type="button">
-                            <CreditCardIcon class="w-5 h-5 me-2" />
+                        <PrimaryButton :icon="CreditCardIcon" type="button">
                             Go to Billing
                         </PrimaryButton>
                     </Link>

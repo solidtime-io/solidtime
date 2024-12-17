@@ -103,10 +103,10 @@ watch(currentPage, () => {
                         <PrimaryButton
                             type="button"
                             class="mt-6"
+                            :icon="CreditCardIcon"
                             v-if="
                                 isBillingActivated() && canUpdateOrganization()
                             ">
-                            <CreditCardIcon class="w-5 h-5 me-2" />
                             Go to Billing
                         </PrimaryButton>
                     </Link>
