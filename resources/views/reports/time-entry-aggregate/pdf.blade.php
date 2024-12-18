@@ -393,11 +393,7 @@
                     if (minutes < 10) {
                         minutes = "0" + minutes;
                     }
-                    let seconds = totalSeconds % 60;
-                    if (seconds < 10) {
-                        seconds = "0" + seconds;
-                    }
-                    return hours + ":" + minutes + ":" + seconds;
+                    return hours + ":" + minutes;
                 }
             }
         },
@@ -412,6 +408,11 @@
                 },
                 label: {
                     show: true,
+                    @if(count($dataHistoryChart['grouped_data']) > 15)
+                    rotate: 90,
+                    offset: [10, 5],
+                    @endif
+                    fontSize: 10,
                     position: "top",
                     formatter: function(params) {
                         let value = params.value;
@@ -428,11 +429,7 @@
                         if (minutes < 10) {
                             minutes = "0" + minutes;
                         }
-                        let seconds = totalSeconds % 60;
-                        if (seconds < 10) {
-                            seconds = "0" + seconds;
-                        }
-                        return hours + ":" + minutes + ":" + seconds;
+                        return hours + ":" + minutes;
                     }
                 }
             }
