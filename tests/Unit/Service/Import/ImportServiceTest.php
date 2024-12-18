@@ -35,12 +35,33 @@ class ImportServiceTest extends TestCase
         $report = $importService->import($organization, 'toggl_time_entries', $data, $timezone);
 
         // Assert
+        $lock = Cache::lock('import:'.$organization->getKey());
+        $this->assertTrue($lock->get());
         $this->assertSame(2, $report->timeEntriesCreated);
         $this->assertSame(2, $report->tagsCreated);
         $this->assertSame(1, $report->tasksCreated);
         $this->assertSame(1, $report->usersCreated);
         $this->assertSame(2, $report->projectsCreated);
         $this->assertSame(1, $report->clientsCreated);
+    }
+
+    public function test_import_releases_lock_if_an_exception_happens_during_the_import(): void
+    {
+        // Arrange
+        Storage::fake(config('filesystems.default'));
+        $organization = Organization::factory()->create();
+        $timezone = 'Europe/Vienna';
+        $data = 'Invalid CSV data';
+
+        // Act
+        $importService = app(ImportService::class);
+        try {
+            $importService->import($organization, 'toggl_time_entries', $data, $timezone);
+        } catch (ImportException) {
+            // Assert
+            $lock = Cache::lock('import:'.$organization->getKey());
+            $this->assertTrue($lock->get());
+        }
     }
 
     public function test_import_throws_exception_if_import_is_already_in_progress(): void

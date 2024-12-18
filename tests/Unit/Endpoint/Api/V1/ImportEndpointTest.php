@@ -78,6 +78,7 @@ class ImportEndpointTest extends ApiEndpointTestAbstract
 
     public function test_import_fails_if_data_can_not_be_base64_decoded(): void
     {
+        // Arrange
         $user = $this->createUserWithPermission([
             'import',
         ]);
@@ -98,6 +99,7 @@ class ImportEndpointTest extends ApiEndpointTestAbstract
 
     public function test_import_return_error_message_if_import_fails(): void
     {
+        // Arrange
         $user = $this->createUserWithPermission([
             'import',
         ]);
