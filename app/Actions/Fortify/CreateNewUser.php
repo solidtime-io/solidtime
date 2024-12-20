@@ -4,16 +4,14 @@ declare(strict_types=1);
 
 namespace App\Actions\Fortify;
 
-use App\Enums\Role;
 use App\Enums\Weekday;
 use App\Events\NewsletterRegistered;
-use App\Models\Organization;
 use App\Models\User;
 use App\Service\IpLookup\IpLookupServiceContract;
 use App\Service\TimezoneService;
+use App\Service\UserService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Korridor\LaravelModelValidationRules\Rules\UniqueEloquent;
@@ -34,6 +32,12 @@ class CreateNewUser implements CreatesNewUsers
      */
     public function create(array $input): User
     {
+        if (! config('app.enable_registration')) {
+            throw ValidationException::withMessages([
+                'email' => [__('Registration is disabled.')],
+            ]);
+        }
+
         Validator::make($input, [
             'name' => [
                 'required',
@@ -81,30 +85,16 @@ class CreateNewUser implements CreatesNewUsers
             $currency = $ipLookupResponse->currency;
         }
         $user = null;
-        $organization = null;
-        DB::transaction(function () use (&$user, &$organization, $input, $timezone, $startOfWeek, $currency): void {
-            $user = User::create([
-                'name' => $input['name'],
-                'email' => $input['email'],
-                'password' => Hash::make($input['password']),
-                'timezone' => $timezone ?? 'UTC',
-                'week_start' => $startOfWeek,
-            ]);
-
-            $organization = new Organization;
-            $organization->name = explode(' ', $user->name, 2)[0]."'s Organization";
-            $organization->personal_team = true;
-            $organization->currency = $currency ?? 'EUR';
-            $organization->owner()->associate($user);
-            $organization->save();
-
-            $organization->users()->attach(
-                $user, [
-                    'role' => Role::Owner->value,
-                ]
+        DB::transaction(function () use (&$user, $input, $timezone, $startOfWeek, $currency): void {
+            $userService = app(UserService::class);
+            $user = $userService->createUser(
+                $input['name'],
+                $input['email'],
+                $input['password'],
+                $timezone ?? 'UTC',
+                $startOfWeek,
+                $currency ?? 'EUR',
             );
-
-            $user->ownedTeams()->save($organization);
         });
 
         $newsletterConsent = isset($input['newsletter_consent']) && (bool) $input['newsletter_consent'];

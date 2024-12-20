@@ -67,6 +67,8 @@ return [
 
     'force_https' => (bool) env('APP_FORCE_HTTPS', false),
 
+    'enable_registration' => (bool) env('APP_ENABLE_REGISTRATION', false),
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone
