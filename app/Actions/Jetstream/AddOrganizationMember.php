@@ -7,18 +7,16 @@ namespace App\Actions\Jetstream;
 use App\Enums\Role;
 use App\Models\Organization;
 use App\Models\User;
+use App\Service\MemberService;
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\In;
 use Korridor\LaravelModelValidationRules\Rules\ExistsEloquent;
 use Laravel\Jetstream\Contracts\AddsTeamMembers;
-use Laravel\Jetstream\Events\AddingTeamMember;
-use Laravel\Jetstream\Events\TeamMemberAdded;
 
 class AddOrganizationMember implements AddsTeamMembers
 {
@@ -36,15 +34,7 @@ class AddOrganizationMember implements AddsTeamMembers
             ->where('is_placeholder', '=', false)
             ->firstOrFail();
 
-        AddingTeamMember::dispatch($organization, $newOrganizationMember);
-
-        DB::transaction(function () use ($organization, $newOrganizationMember, $role): void {
-            $organization->users()->attach(
-                $newOrganizationMember, ['role' => $role]
-            );
-        });
-
-        TeamMemberAdded::dispatch($organization, $newOrganizationMember);
+        app(MemberService::class)->addMember($newOrganizationMember, $organization, Role::from($role));
     }
 
     /**
