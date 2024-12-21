@@ -13,6 +13,7 @@ use App\Providers\RouteServiceProvider;
 use App\Service\IpLookup\IpLookupResponseDto;
 use App\Service\IpLookup\IpLookupServiceContract;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Laravel\Fortify\Features;
 use Laravel\Jetstream\Jetstream;
@@ -60,6 +61,31 @@ class RegistrationTest extends TestCase
         $this->assertSame(true, $organization->personal_team);
         $member = Member::query()->whereBelongsTo($user, 'user')->whereBelongsTo($organization, 'organization')->firstOrFail();
         $this->assertSame(Role::Owner->value, $member->role);
+        Event::assertNotDispatched(NewsletterRegistered::class);
+    }
+
+    public function test_user_registration_fails_if_registration_is_deactivated(): void
+    {
+        // Arrange
+        Event::fake([
+            NewsletterRegistered::class,
+        ]);
+        Config::set('app.enable_registration', false);
+
+        // Act
+        $response = $this->post('/register', [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+            'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature(),
+        ]);
+
+        // Assert
+        $response->assertInvalid([
+            'email' => 'Registration is disabled.',
+        ]);
+        $this->assertFalse(User::query()->where('email', 'test@example.com')->exists());
         Event::assertNotDispatched(NewsletterRegistered::class);
     }
 

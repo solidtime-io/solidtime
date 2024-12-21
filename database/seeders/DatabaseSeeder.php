@@ -12,6 +12,7 @@ use App\Models\Organization;
 use App\Models\OrganizationInvitation;
 use App\Models\Project;
 use App\Models\ProjectMember;
+use App\Models\Report;
 use App\Models\Tag;
 use App\Models\Task;
 use App\Models\TimeEntry;
@@ -134,6 +135,7 @@ class DatabaseSeeder extends Seeder
             'personal_team' => true,
             'currency' => 'USD',
         ]);
+        Member::factory()->forUser($rivalOwner)->forOrganization($organizationRival)->role(Role::Owner)->create();
         $userRivalManager = User::factory()->withPersonalOrganization()->create([
             'name' => 'Other User',
             'email' => 'test@rival-company.test',
@@ -186,6 +188,7 @@ class DatabaseSeeder extends Seeder
 
         // Application tables
         DB::table((new Audit)->getTable())->delete();
+        DB::table((new Report)->getTable())->delete();
         DB::table((new TimeEntry)->getTable())->delete();
         DB::table((new Task)->getTable())->delete();
         DB::table((new Tag)->getTable())->delete();

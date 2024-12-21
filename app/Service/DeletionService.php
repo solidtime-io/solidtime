@@ -13,6 +13,7 @@ use App\Models\Organization;
 use App\Models\OrganizationInvitation;
 use App\Models\Project;
 use App\Models\ProjectMember;
+use App\Models\Report;
 use App\Models\Tag;
 use App\Models\Task;
 use App\Models\TimeEntry;
@@ -70,6 +71,9 @@ class DeletionService
 
         // Delete all clients
         Client::query()->whereBelongsTo($organization, 'organization')->delete();
+
+        // Delete all reports
+        Report::query()->whereBelongsTo($organization, 'organization')->delete();
 
         // Reset the current organization
         $organization->owner()

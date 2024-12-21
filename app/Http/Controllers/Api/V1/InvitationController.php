@@ -9,13 +9,12 @@ use App\Http\Requests\V1\Invitation\InvitationIndexRequest;
 use App\Http\Requests\V1\Invitation\InvitationStoreRequest;
 use App\Http\Resources\V1\Invitation\InvitationCollection;
 use App\Http\Resources\V1\Invitation\InvitationResource;
-use App\Mail\OrganizationInvitationMail;
 use App\Models\Organization;
 use App\Models\OrganizationInvitation;
 use App\Service\InvitationService;
+use App\Service\OrganizationInvitationService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Mail;
 
 class InvitationController extends Controller
 {
@@ -73,12 +72,11 @@ class InvitationController extends Controller
      *
      * @operationId resendInvitationEmail
      */
-    public function resend(Organization $organization, OrganizationInvitation $invitation): JsonResponse
+    public function resend(Organization $organization, OrganizationInvitation $invitation, OrganizationInvitationService $organizationInvitationService): JsonResponse
     {
         $this->checkPermission($organization, 'invitations:resend', $invitation);
 
-        Mail::to($invitation->email)
-            ->queue(new OrganizationInvitationMail($invitation));
+        $organizationInvitationService->resend($invitation);
 
         return response()->json(null, 204);
     }

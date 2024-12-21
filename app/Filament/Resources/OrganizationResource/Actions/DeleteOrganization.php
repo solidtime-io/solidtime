@@ -15,7 +15,6 @@ class DeleteOrganization extends DeleteAction
     protected function setUp(): void
     {
         parent::setUp();
-        // TODO: check why setting the icon is necessary
         $this->icon('heroicon-m-trash');
         $this->action(function (): void {
             $result = $this->process(function (Organization $record): bool {
