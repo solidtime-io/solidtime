@@ -261,7 +261,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
     {
         // Arrange
         $now = Carbon::create(2024, 1, 1, 12, 0, 0, 'Europe/Vienna');
-        $this->freezeTime($now);
+        $this->travelTo($now);
         $data = $this->createUserWithPermission([
             'time-entries:view:own',
         ]);
@@ -310,7 +310,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
     {
         // Arrange
         $now = Carbon::create(2024, 1, 1, 12, 0, 0, 'Europe/Vienna');
-        $this->freezeTime($now);
+        $this->travelTo($now);
         $data = $this->createUserWithPermission([
             'time-entries:view:own',
         ]);
