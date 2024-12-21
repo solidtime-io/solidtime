@@ -40,7 +40,7 @@
         "barryvdh/laravel-ide-helper": "^3.0",
         "brianium/paratest": "^7.3",
         "fakerphp/faker": "^1.9.1",
-        "fumeapp/modeltyper": "^2.2",
+        "fumeapp/modeltyper": "^3.0",
         "phpstan/phpstan": "1.12.0",
         "larastan/larastan": "^2.0",
         "laravel/pint": "^1.0",
