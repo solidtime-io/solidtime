@@ -25,7 +25,7 @@ class BillableRateServiceTest extends TestCaseWithDatabase
 
     private BillableRateService $billableRateService;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
         $this->billableRateService = app(BillableRateService::class);

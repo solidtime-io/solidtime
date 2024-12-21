@@ -5,18 +5,20 @@ declare(strict_types=1);
 return [
     'clockify_time_entries' => [
         'name' => 'Clockify Time Entries',
-        'description' => '1. First make sure that you set the Date format to "MM/DD/YYYY" and the Time format to "12-hour" in the user settings.<br> '.
-            '2. Go to REPORTS -> TIME -> Detailed in the navigation on the left. <br>'.
-            '3. Now select the date range that you want to export in the right top. '.
+        'description' => '1. First make sure that you set the Date format to "MM/DD/YYYY" and the Time format to "12-hour" in the user settings.<br>'.
+            '2. In the same preferences page change the language of Clockfiy to English.<br>'.
+            '3. Go to REPORTS -> TIME -> Detailed in the navigation on the left. <br>'.
+            '4. Now select the date range that you want to export in the right top. '.
             'It is currently not possible to select more than one year. You can export each year separately and import them one after another .'.
             '<br> 4. Now click Export -> Save as CSV. The Export dropdown is in the header of the export table left of the printer symbol. '.
             '<br><br>Before you import make sure that the Timezone settings in Clockify are the same as in solidtime.',
     ],
     'clockify_projects' => [
         'name' => 'Clockify Projects',
-        'description' => '1. Go to PROJECTS in the navigation on the left.<br> '.
-            '2. Now click on the three dots on the right of the project that you want to export and select Export.<br> '.
-            '3. Now click Export -> Save as CSV. The Export dropdown is in the header of the export table in the top right corner.',
+        'description' => '1. Make sure to set the language of Clockify to English in "Preferences -> General".<br>'.
+            '2. Go to PROJECTS in the navigation on the left.<br> '.
+            '3. Now click on the three dots on the right of the project that you want to export and select Export.<br> '.
+            '4. Now click Export -> Save as CSV. The Export dropdown is in the header of the export table in the top right corner.',
     ],
     'toggl_data_importer' => [
         'name' => 'Toggl Data Importer',
