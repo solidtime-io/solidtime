@@ -27,7 +27,7 @@ class DashboardServiceTest extends TestCase
 
     protected DashboardService $dashboardService;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
         $this->dashboardService = app(DashboardService::class);
