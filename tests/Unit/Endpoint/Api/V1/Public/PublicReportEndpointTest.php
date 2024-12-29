@@ -79,6 +79,7 @@ class PublicReportEndpointTest extends ApiEndpointTestAbstract
     public function test_show_returns_detailed_information_about_the_report(): void
     {
         // Arrange
+        $timezone = 'Europe/Vienna';
         $reportDto = new ReportPropertiesDto;
         $organization = Organization::factory()->create();
         $reportDto->start = now()->subDays(2);
@@ -87,7 +88,7 @@ class PublicReportEndpointTest extends ApiEndpointTestAbstract
         $reportDto->subGroup = TimeEntryAggregationType::Task;
         $reportDto->historyGroup = TimeEntryAggregationTypeInterval::Day;
         $reportDto->weekStart = Weekday::Monday;
-        $reportDto->timezone = 'Europe/Vienna';
+        $reportDto->timezone = $timezone;
         $report = Report::factory()->forOrganization($organization)->public()->create([
             'public_until' => null,
             'properties' => $reportDto,
@@ -182,7 +183,7 @@ class PublicReportEndpointTest extends ApiEndpointTestAbstract
                 'grouped_type' => TimeEntryAggregationTypeInterval::Day->value,
                 'grouped_data' => [
                     [
-                        'key' => now()->subDays(2)->toDateString(),
+                        'key' => now()->timezone($timezone)->subDays(2)->toDateString(),
                         'seconds' => 0,
                         'cost' => 0,
                         'grouped_type' => null,
@@ -191,7 +192,7 @@ class PublicReportEndpointTest extends ApiEndpointTestAbstract
                         'color' => null,
                     ],
                     [
-                        'key' => now()->subDays(1)->toDateString(),
+                        'key' => now()->timezone($timezone)->subDays(1)->toDateString(),
                         'seconds' => 300,
                         'cost' => 0,
                         'grouped_type' => null,
@@ -200,7 +201,7 @@ class PublicReportEndpointTest extends ApiEndpointTestAbstract
                         'color' => null,
                     ],
                     [
-                        'key' => now()->toDateString(),
+                        'key' => now()->timezone($timezone)->toDateString(),
                         'seconds' => 0,
                         'cost' => 0,
                         'grouped_type' => null,
@@ -320,6 +321,7 @@ class PublicReportEndpointTest extends ApiEndpointTestAbstract
     public function test_if_the_resources_behind_the_filters_no_longer_exist_the_report_ignores_those_filters_but_this_does_not_increase_the_visible_data(): void
     {
         // Arrange
+        $timezone = 'Europe/Vienna';
         $organization = Organization::factory()->create();
         $client = Client::factory()->forOrganization($organization)->create();
         $project = Project::factory()->forClient($client)->forOrganization($organization)->create();
@@ -341,7 +343,7 @@ class PublicReportEndpointTest extends ApiEndpointTestAbstract
         $reportDto->subGroup = TimeEntryAggregationType::Task;
         $reportDto->historyGroup = TimeEntryAggregationTypeInterval::Day;
         $reportDto->weekStart = Weekday::Monday;
-        $reportDto->timezone = 'Europe/Vienna';
+        $reportDto->timezone = $timezone;
         $reportDto->setMemberIds([Str::uuid()->toString()]);
         $reportDto->setClientIds([Str::uuid()->toString()]);
         $reportDto->setProjectIds([Str::uuid()->toString()]);
@@ -382,7 +384,7 @@ class PublicReportEndpointTest extends ApiEndpointTestAbstract
                 'grouped_type' => TimeEntryAggregationTypeInterval::Day->value,
                 'grouped_data' => [
                     [
-                        'key' => now()->subDays(2)->toDateString(),
+                        'key' => now()->timezone($timezone)->subDays(2)->toDateString(),
                         'seconds' => 0,
                         'cost' => 0,
                         'grouped_type' => null,
@@ -391,7 +393,7 @@ class PublicReportEndpointTest extends ApiEndpointTestAbstract
                         'color' => null,
                     ],
                     [
-                        'key' => now()->subDays(1)->toDateString(),
+                        'key' => now()->timezone($timezone)->subDays(1)->toDateString(),
                         'seconds' => 0,
                         'cost' => 0,
                         'grouped_type' => null,
@@ -400,7 +402,7 @@ class PublicReportEndpointTest extends ApiEndpointTestAbstract
                         'color' => null,
                     ],
                     [
-                        'key' => now()->toDateString(),
+                        'key' => now()->timezone($timezone)->toDateString(),
                         'seconds' => 0,
                         'cost' => 0,
                         'grouped_type' => null,

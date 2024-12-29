@@ -41,8 +41,10 @@
                 <Link
                     v-if="isBillingActivated() && canManageBilling()"
                     href="/billing">
-                    <PrimaryButton type="button" class="mt-6">
-                        <CreditCardIcon class="w-5 h-5 me-2" />
+                    <PrimaryButton
+                        :icon="CreditCardIcon"
+                        type="button"
+                        class="mt-6">
                         Go to Billing
                     </PrimaryButton>
                 </Link>
