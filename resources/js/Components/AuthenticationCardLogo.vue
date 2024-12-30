@@ -7,7 +7,7 @@ import { Link } from '@inertiajs/vue3';
         <svg
             class="h-12 py-2"
             viewBox="0 0 434 270"
-            height="100px"
+            style="height: 100px"
             fill="none"
             xmlns="http://www.w3.org/2000/svg">
             <path fill-rule="evenodd" clip-rule="evenodd"
