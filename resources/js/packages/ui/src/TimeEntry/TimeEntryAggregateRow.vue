@@ -23,6 +23,7 @@ import {
 import TimeEntryRow from '@/packages/ui/src/TimeEntry/TimeEntryRow.vue';
 import GroupedItemsCountButton from '@/packages/ui/src/GroupedItemsCountButton.vue';
 import type { TimeEntriesGroupedByType } from '@/types/time-entries';
+import { Checkbox } from '@/packages/ui/src';
 
 const props = defineProps<{
     timeEntry: TimeEntriesGroupedByType;
@@ -76,6 +77,7 @@ function updateProjectAndTask(projectId: string, taskId: string) {
 }
 
 const expanded = ref(false);
+
 function onSelectChange(event: Event) {
     const target = event.target as HTMLInputElement;
     if (target.checked) {
@@ -92,10 +94,10 @@ function onSelectChange(event: Event) {
         data-testid="time_entry_row">
         <MainContainer class="min-w-0">
             <div
-                class="sm:flex py-0.5 items-center min-w-0 justify-between group">
+                class="sm:flex py-2 items-center min-w-0 justify-between group">
                 <div class="flex space-x-3 items-center min-w-0">
-                    <input
-                        @change="onSelectChange"
+                    <Checkbox
+                        @update:checked="onSelectChange"
                         :checked="
                             timeEntry.timeEntries.every(
                                 (aggregateTimeEntry: TimeEntry) =>
@@ -103,9 +105,7 @@ function onSelectChange(event: Event) {
                                         aggregateTimeEntry
                                     )
                             )
-                        "
-                        type="checkbox"
-                        class="h-4 w-4 rounded bg-card-background border-input-border text-accent-500/80 focus:ring-accent-500/80" />
+                        " />
                     <div class="flex items-center min-w-0">
                         <GroupedItemsCountButton
                             :expanded="expanded"
@@ -113,7 +113,7 @@ function onSelectChange(event: Event) {
                             {{ timeEntry?.timeEntries?.length }}
                         </GroupedItemsCountButton>
                         <TimeEntryDescriptionInput
-                            class="min-w-0"
+                            class="min-w-0 mr-4"
                             @changed="updateTimeEntryDescription"
                             :modelValue="
                                 timeEntry.description
@@ -130,6 +130,7 @@ function onSelectChange(event: Event) {
                             :project="timeEntry.project_id"
                             :enableEstimatedTime
                             :currency="currency"
+                            class="border border-border-primary"
                             :task="
                                 timeEntry.task_id
                             "></TimeTrackerProjectTaskDropdown>
@@ -143,6 +144,7 @@ function onSelectChange(event: Event) {
                         :modelValue="timeEntry.tags"></TimeEntryRowTagDropdown>
                     <BillableToggleButton
                         :modelValue="timeEntry.billable"
+                        class="opacity-50 focus-visible:opacity-100 group-hover:opacity-100"
                         size="small"
                         @changed="
                             updateTimeEntryBillable
@@ -150,13 +152,13 @@ function onSelectChange(event: Event) {
                     <div class="flex-1">
                         <button
                             @click="expanded = !expanded"
-                            class="hidden lg:block text-muted w-[110px] px-2 py-2 bg-transparent text-center hover:bg-card-background rounded-lg border border-transparent hover:border-card-border text-sm font-medium">
+                            class="hidden lg:block text-muted w-[105px] px-1 py-1.5 bg-transparent text-center hover:bg-card-background rounded-lg border border-transparent hover:border-card-border text-sm font-medium focus-visible:outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:bg-tertiary">
                             {{ formatStartEnd(timeEntry.start, timeEntry.end) }}
                         </button>
                     </div>
                     <button
                         @click="expanded = !expanded"
-                        class="text-white w-[100px] px-3 py-2 bg-transparent text-center hover:bg-card-background rounded-lg border border-transparent hover:border-card-border text-sm font-semibold">
+                        class="text-white min-w-[90px] px-2 py-1.5 bg-transparent text-center hover:bg-card-background rounded-lg border border-transparent hover:border-card-border text-sm font-semibold focus-visible:outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:bg-tertiary">
                         {{
                             formatHumanReadableDuration(timeEntry.duration ?? 0)
                         }}
@@ -165,7 +167,7 @@ function onSelectChange(event: Event) {
                     <TimeTrackerStartStop
                         @changed="onStartStopClick(timeEntry)"
                         :active="!!(timeEntry.start && !timeEntry.end)"
-                        class="opacity-20 hidden sm:flex group-hover:opacity-100"></TimeTrackerStartStop>
+                        class="opacity-20 hidden sm:flex group-hover:opacity-100 focus-visible:opacity-100"></TimeTrackerStartStop>
                     <TimeEntryMoreOptionsDropdown
                         @delete="
                             deleteTimeEntries(timeEntry?.timeEntries ?? [])

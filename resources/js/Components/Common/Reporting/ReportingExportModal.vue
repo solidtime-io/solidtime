@@ -25,7 +25,7 @@ function downloadCurrentExport() {
         @close="showExportModal = false"
         :show="showExportModal">
         <button
-            class="text-text-tertiary w-6 mx-auto absolute focus-visible:outline-none focus-visible:ring-2 rounded-full focus-visible:ring-white/80 transition focus-visible:text-text-primary hover:text-text-primary top-2 right-2">
+            class="text-text-tertiary w-6 mx-auto absolute focus-visible:outline-none focus-visible:ring-2 rounded-full focus-visible:ring-ring transition focus-visible:text-text-primary hover:text-text-primary top-2 right-2">
             <XMarkIcon @click="showExportModal = false"></XMarkIcon>
         </button>
         <div class="text-center text-text-primary py-6">

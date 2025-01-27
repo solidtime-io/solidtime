@@ -71,7 +71,7 @@ function selectInput(event: Event) {
         <template #trigger>
             <input
                 data-testid="time_entry_duration_input"
-                class="text-white w-[100px] px-3 py-2 bg-transparent text-center hover:bg-card-background rounded-lg border border-transparent hover:border-card-border text-sm font-semibold focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-white/80"
+                class="text-white w-[90px] px-2 py-1.5 bg-transparent text-center hover:bg-card-background rounded-lg border border-transparent hover:border-card-border text-sm font-semibold focus-visible:bg-tertiary focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-ring"
                 @focus="selectInput"
                 @keydown.tab="open = false"
                 @blur="updateTimerAndStartLiveTimerUpdate"

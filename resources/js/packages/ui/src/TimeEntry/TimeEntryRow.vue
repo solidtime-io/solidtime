@@ -19,6 +19,7 @@ import TimeEntryMoreOptionsDropdown from '@/packages/ui/src/TimeEntry/TimeEntryM
 import BillableToggleButton from '@/packages/ui/src/Input/BillableToggleButton.vue';
 import { computed } from 'vue';
 import TimeTrackerProjectTaskDropdown from '@/packages/ui/src/TimeTracker/TimeTrackerProjectTaskDropdown.vue';
+import { Checkbox } from '@/packages/ui/src';
 
 const props = defineProps<{
     timeEntry: TimeEntry;
@@ -96,16 +97,15 @@ function onSelectChange(event: Event) {
         data-testid="time_entry_row">
         <MainContainer class="min-w-0">
             <div
-                class="sm:flex py-0.5 min-w-0 items-center justify-between group">
-                <div class="flex space-x-1 items-center min-w-0">
-                    <input
-                        @change="onSelectChange"
-                        :checked="selected"
-                        type="checkbox"
-                        class="h-4 w-4 rounded bg-card-background border-input-border text-accent-500/80 focus:ring-accent-500/80" />
-                    <div class="w-7 h-7" v-if="indent === true"></div>
+                class="sm:flex py-2 min-w-0 items-center justify-between group">
+                <div class="flex items-center min-w-0">
+                    <Checkbox
+                        @update:checked="onSelectChange"
+                        :checked="selected" />
+                    <div class="w-10 h-7" v-if="indent === true"></div>
                     <TimeEntryDescriptionInput
                         @changed="updateTimeEntryDescription"
+                        class="min-w-0 mr-4"
                         :modelValue="
                             timeEntry.description
                         "></TimeEntryDescriptionInput>
@@ -120,12 +120,14 @@ function onSelectChange(event: Event) {
                         @changed="updateProjectAndTask"
                         :project="timeEntry.project_id"
                         :currency="currency"
+                        class="border border-border-primary"
                         :enableEstimatedTime
                         :task="
                             timeEntry.task_id
                         "></TimeTrackerProjectTaskDropdown>
                 </div>
-                <div class="flex items-center font-medium lg:space-x-2">
+                <div
+                    class="flex items-center font-medium space-x-1 lg:space-x-2">
                     <div class="text-sm px-2" v-if="showMember && members">
                         {{ memberName }}
                     </div>
@@ -136,6 +138,7 @@ function onSelectChange(event: Event) {
                         :modelValue="timeEntry.tags"></TimeEntryRowTagDropdown>
                     <BillableToggleButton
                         :modelValue="timeEntry.billable"
+                        class="opacity-50 group-hover:opacity-100 focus-visible:opacity-100"
                         size="small"
                         @changed="
                             updateTimeEntryBillable
@@ -159,7 +162,7 @@ function onSelectChange(event: Event) {
                     <TimeTrackerStartStop
                         @changed="onStartStopClick"
                         :active="!!(timeEntry.start && !timeEntry.end)"
-                        class="opacity-20 hidden sm:flex group-hover:opacity-100"></TimeTrackerStartStop>
+                        class="opacity-20 hidden sm:flex focus-visible:opacity-100 group-hover:opacity-100"></TimeTrackerStartStop>
                     <TimeEntryMoreOptionsDropdown
                         @delete="
                             deleteTimeEntry

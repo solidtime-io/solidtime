@@ -32,6 +32,7 @@ const project = defineModel<string | null>('project', {
 const searchInput = ref<HTMLInputElement | null>(null);
 const open = ref(false);
 const dropdownViewport = ref<HTMLElement | null>(null);
+import { UseFocusTrap } from '@vueuse/integrations/useFocusTrap/component';
 
 const searchValue = ref('');
 
@@ -586,132 +587,139 @@ const showCreateProject = ref(false);
             </ProjectBadge>
         </template>
         <template #content>
-            <input
-                :value="searchValue"
-                @input="updateSearchValue"
-                @keydown.enter="addClientIfNoneExists"
-                @click.prevent="searchInput?.focus()"
-                data-testid="client_dropdown_search"
-                @keydown.up.prevent="moveHighlightUp"
-                @keydown.down.prevent="moveHighlightDown"
-                @keydown.right.prevent="expandProject"
-                @keydown.left.prevent="collapseProject"
-                ref="searchInput"
-                class="bg-card-background border-0 placeholder-muted text-sm text-white py-2.5 focus:ring-0 border-b border-card-background-separator focus:border-card-background-separator w-full"
-                placeholder="Search for a project or task..." />
-            <div
-                ref="dropdownViewport"
-                @mousemove="mouseEnterHighlightActivated = true"
-                class="min-w-[350px] max-h-[350px] overflow-y-scroll relative">
-                <template v-for="client in filteredResults" :key="client.id">
-                    <div
-                        v-if="client.id !== 'no_project_no_client'"
-                        class="w-full pb-1 pt-2 px-2 text-text-tertiary text-xs font-semibold flex space-x-1 items-center">
-                        <span>
-                            {{ client.name }}
-                        </span>
-                    </div>
+            <UseFocusTrap
+                v-if="open"
+                :options="{ immediate: true, allowOutsideClick: true }">
+                <input
+                    :value="searchValue"
+                    @input="updateSearchValue"
+                    @keydown.enter.prevent="addClientIfNoneExists"
+                    data-testid="client_dropdown_search"
+                    @keydown.up.prevent="moveHighlightUp"
+                    @keydown.down.prevent="moveHighlightDown"
+                    @keydown.right.prevent="expandProject"
+                    @keydown.left.prevent="collapseProject"
+                    ref="searchInput"
+                    class="bg-card-background border-0 placeholder-muted text-sm text-white py-2.5 focus:ring-0 border-b border-card-background-separator focus:border-card-background-separator w-full"
+                    placeholder="Search for a project or task..." />
+                <div
+                    ref="dropdownViewport"
+                    @mousemove="mouseEnterHighlightActivated = true"
+                    class="min-w-[350px] max-h-[350px] overflow-y-scroll relative">
                     <template
-                        v-for="projectWithTasks in client.projects"
-                        :key="projectWithTasks.id">
+                        v-for="client in filteredResults"
+                        :key="client.id">
                         <div
-                            role="option"
-                            class="px-1 py-0.5 cursor-default"
-                            :value="projectWithTasks.id"
-                            @click="selectProject(projectWithTasks.id)"
-                            :data-project-id="projectWithTasks.id">
+                            v-if="client.id !== 'no_project_no_client'"
+                            class="w-full pb-1 pt-2 px-2 text-text-tertiary text-xs font-semibold flex space-x-1 items-center">
+                            <span>
+                                {{ client.name }}
+                            </span>
+                        </div>
+                        <template
+                            v-for="projectWithTasks in client.projects"
+                            :key="projectWithTasks.id">
                             <div
-                                class="rounded-lg"
-                                :class="{
-                                    'bg-card-background-active':
-                                        projectWithTasks.id ===
-                                        highlightedItemId,
-                                }">
-                                <ProjectDropdownItem
-                                    class="hover:!bg-transparent"
-                                    :selected="
-                                        isProjectSelected(projectWithTasks)
-                                    "
-                                    @mouseenter="
-                                        setHighlightItemId(projectWithTasks.id)
-                                    "
-                                    :name="projectWithTasks.name"
-                                    :color="projectWithTasks.color">
-                                    <template #actions>
-                                        <button
-                                            tabindex="-1"
-                                            v-if="
-                                                projectWithTasks.tasks.length >
-                                                0
-                                            "
-                                            @click.prevent.stop="
-                                                () => {
-                                                    projectWithTasks.expanded =
-                                                        !projectWithTasks.expanded;
-                                                    searchInput?.focus();
-                                                }
-                                            "
-                                            class="px-2 py-0.5 mr-2 relative transition items-center rounded flex space-x-0.5 text-xs"
-                                            :class="{
-                                                'bg-white/5 text-text-secondary':
-                                                    projectWithTasks.expanded,
-                                                'hover:bg-white/5 hover:text-text-secondary text-text-tertiary':
-                                                    !projectWithTasks.expanded,
-                                            }">
-                                            <span
-                                                >{{
+                                role="option"
+                                class="px-1 py-0.5 cursor-default"
+                                :value="projectWithTasks.id"
+                                @click="selectProject(projectWithTasks.id)"
+                                :data-project-id="projectWithTasks.id">
+                                <div
+                                    class="rounded-lg"
+                                    :class="{
+                                        'bg-card-background-active':
+                                            projectWithTasks.id ===
+                                            highlightedItemId,
+                                    }">
+                                    <ProjectDropdownItem
+                                        class="hover:!bg-transparent"
+                                        :selected="
+                                            isProjectSelected(projectWithTasks)
+                                        "
+                                        @mouseenter="
+                                            setHighlightItemId(
+                                                projectWithTasks.id
+                                            )
+                                        "
+                                        :name="projectWithTasks.name"
+                                        :color="projectWithTasks.color">
+                                        <template #actions>
+                                            <button
+                                                tabindex="-1"
+                                                v-if="
                                                     projectWithTasks.tasks
-                                                        .length
-                                                }}
-                                                Tasks</span
-                                            >
-                                            <ChevronDownIcon
+                                                        .length > 0
+                                                "
+                                                @click.prevent.stop="
+                                                    () => {
+                                                        projectWithTasks.expanded =
+                                                            !projectWithTasks.expanded;
+                                                        searchInput?.focus();
+                                                    }
+                                                "
+                                                class="px-2 py-0.5 mr-2 relative transition items-center rounded flex space-x-0.5 text-xs"
                                                 :class="{
-                                                    'transform rotate-180':
+                                                    'bg-white/5 text-text-secondary':
                                                         projectWithTasks.expanded,
-                                                }"
-                                                class="w-4"></ChevronDownIcon>
-                                        </button>
-                                    </template>
-                                </ProjectDropdownItem>
+                                                    'hover:bg-white/5 hover:text-text-secondary text-text-tertiary':
+                                                        !projectWithTasks.expanded,
+                                                }">
+                                                <span
+                                                    >{{
+                                                        projectWithTasks.tasks
+                                                            .length
+                                                    }}
+                                                    Tasks</span
+                                                >
+                                                <ChevronDownIcon
+                                                    :class="{
+                                                        'transform rotate-180':
+                                                            projectWithTasks.expanded,
+                                                    }"
+                                                    class="w-4"></ChevronDownIcon>
+                                            </button>
+                                        </template>
+                                    </ProjectDropdownItem>
+                                </div>
                             </div>
-                        </div>
-                        <div
-                            v-if="projectWithTasks.expanded"
-                            class="bg-quaternary">
                             <div
-                                v-for="task in projectWithTasks.tasks"
-                                :key="task.id"
-                                @click="selectTask(task.id)"
-                                @mouseenter="setHighlightItemId(task.id)"
-                                :data-task-id="task.id"
-                                :class="{
-                                    'bg-card-background-active':
-                                        task.id === highlightedItemId,
-                                }"
-                                class="flex items-center space-x-2 w-full px-5 py-1.5 text-start text-xs font-semibold leading-5 text-white focus:outline-none focus:bg-card-background-active transition duration-150 ease-in-out">
-                                <MinusIcon
-                                    class="w-3 h-3 text-text-quaternary"></MinusIcon>
-                                <span>{{ task.name }}</span>
+                                v-if="projectWithTasks.expanded"
+                                class="bg-quaternary">
+                                <div
+                                    v-for="task in projectWithTasks.tasks"
+                                    :key="task.id"
+                                    @click="selectTask(task.id)"
+                                    @mouseenter="setHighlightItemId(task.id)"
+                                    :data-task-id="task.id"
+                                    :class="{
+                                        'bg-card-background-active':
+                                            task.id === highlightedItemId,
+                                    }"
+                                    class="flex items-center space-x-2 w-full px-5 py-1.5 text-start text-xs font-semibold leading-5 text-white focus:outline-none focus:bg-card-background-active transition duration-150 ease-in-out">
+                                    <MinusIcon
+                                        class="w-3 h-3 text-text-quaternary"></MinusIcon>
+                                    <span>{{ task.name }}</span>
+                                </div>
                             </div>
-                        </div>
+                        </template>
                     </template>
-                </template>
-            </div>
-            <div
-                v-if="canCreateProject"
-                class="hover:bg-card-background-active rounded-b-lg">
-                <button
-                    @click="
-                        open = false;
-                        showCreateProject = true;
-                    "
-                    class="text-white flex space-x-3 items-center px-4 py-3 text-xs font-semibold border-t border-card-background-separator">
-                    <PlusCircleIcon
-                        class="w-5 flex-shrink-0 text-icon-default"></PlusCircleIcon>
-                    <span>Create new Project</span>
-                </button>
-            </div>
+                </div>
+                <div
+                    v-if="canCreateProject"
+                    class="hover:bg-card-background-active rounded-b-lg">
+                    <button
+                        @click="
+                            open = false;
+                            showCreateProject = true;
+                        "
+                        class="text-white flex space-x-3 items-center px-4 py-3 text-xs font-semibold border-t border-card-background-separator">
+                        <PlusCircleIcon
+                            class="w-5 flex-shrink-0 text-icon-default"></PlusCircleIcon>
+                        <span>Create new Project</span>
+                    </button>
+                </div>
+            </UseFocusTrap>
         </template>
     </Dropdown>
     <ProjectCreateModal
