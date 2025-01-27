@@ -28,10 +28,8 @@ const indicatorClasses = {
 
 <template>
     <Badge :name :size :tag :class="props.class" :color :border>
-        <TagIcon
-            :style="{ color: color }"
-            :class="twMerge(indicatorClasses[size])"></TagIcon>
-        <span>
+        <TagIcon :class="twMerge(indicatorClasses[size])"></TagIcon>
+        <span v-if="name">
             {{ name }}
         </span>
     </Badge>

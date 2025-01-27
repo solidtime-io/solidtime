@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { defineProps, ref, watch } from 'vue';
-import TimePicker from '@/packages/ui/src/Input/TimePicker.vue';
 import { useFocusWithin } from '@vueuse/core';
 import DatePicker from '@/packages/ui/src/Input/DatePicker.vue';
 import {
@@ -8,6 +7,7 @@ import {
     getLocalizedDayJs,
 } from '@/packages/ui/src/utils/time';
 import dayjs from 'dayjs';
+import TimePickerSimple from '@/packages/ui/src/Input/TimePickerSimple.vue';
 
 const props = defineProps<{
     start: string;
@@ -16,7 +16,7 @@ const props = defineProps<{
 }>();
 
 // The timestamps for the changed event are UTC
-const emit = defineEmits(['changed']);
+const emit = defineEmits(['changed', 'close']);
 
 const tempStart = ref(
     props.start ? getLocalizedDayJs(props.start).format() : dayjs().format()
@@ -58,24 +58,26 @@ watch(focused, (newValue, oldValue) => {
         <div class="px-2">
             <div class="font-bold text-white text-sm pb-2">Start</div>
             <div class="space-y-2">
-                <TimePicker
+                <TimePickerSimple
                     data-testid="time_entry_range_start"
+                    tabindex="0"
                     :focus
                     @changed="updateTimeEntry"
-                    v-model="tempStart"></TimePicker>
+                    v-model="tempStart"></TimePickerSimple>
                 <DatePicker
                     class="text-xs text-text-tertiary max-w-24 px-1.5 py-1.5"
                     @changed="updateTimeEntry"
+                    @blur.stop.prevent="emit('close')"
                     v-model="tempStart"></DatePicker>
             </div>
         </div>
         <div class="px-2">
             <div class="font-bold text-white text-sm pb-2">End</div>
             <div v-if="tempEnd !== null" class="space-y-2">
-                <TimePicker
+                <TimePickerSimple
                     data-testid="time_entry_range_end"
                     @changed="updateTimeEntry"
-                    v-model="tempEnd"></TimePicker>
+                    v-model="tempEnd"></TimePickerSimple>
                 <DatePicker
                     class="text-xs text-text-tertiary max-w-24 px-1.5 py-1.5"
                     @changed="updateTimeEntry"

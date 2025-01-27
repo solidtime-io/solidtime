@@ -33,10 +33,10 @@ const open = ref(false);
                     data-testid="time_entry_range_selector"
                     :class="
                         twMerge(
-                            'text-muted w-[110px] px-2 bg-transparent text-center hover:bg-card-background rounded-lg border border-transparent hover:border-card-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80',
+                            'text-muted w-[105px] px-2 bg-transparent text-center hover:bg-card-background rounded-lg border border-transparent hover:border-card-border focus-visible:outline-none focus:outline-none focus-visible:ring-2 focus-visible:text-text-primary focus-visible:ring-ring focus-visible:bg-tertiary',
                             showDate
                                 ? 'text-xs py-1.5 font-semibold'
-                                : 'text-sm py-2 font-medium',
+                                : 'text-sm py-1.5 font-medium',
                             open && 'border-card-border bg-card-background'
                         )
                     ">

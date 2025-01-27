@@ -24,7 +24,7 @@ const model = defineModel();
         ref="input"
         :class="
             twMerge(
-                'border-input-border border bg-input-background text-white focus:ring-input-border-active focus:ring-0 focus-visible:border-input-border-active rounded-md shadow-sm',
+                'border-input-border border bg-input-background text-white focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent rounded-md shadow-sm',
                 props.class
             )
         "

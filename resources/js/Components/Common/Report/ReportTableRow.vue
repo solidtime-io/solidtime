@@ -87,7 +87,7 @@ async function deleteReport() {
                     <span v-else>Copied!</span>
                 </SecondaryButton>
                 <button
-                    class="outline-0 focus-visible:ring-2 w-6 h-6 flex items-center justify-center rounded focus-visible:ring-white/80"
+                    class="outline-0 focus-visible:ring-2 w-6 h-6 flex items-center justify-center rounded focus-visible:ring-ring"
                     @click="openSharableLink">
                     <ArrowTopRightOnSquareIcon
                         class="w-4 text-text-tertiary hover:text-text-secondary transition"></ArrowTopRightOnSquareIcon>
