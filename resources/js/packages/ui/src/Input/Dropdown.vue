@@ -4,7 +4,6 @@ import {
     flip,
     limitShift,
     type Placement,
-    type ReferenceElement,
     shift,
     useFloating,
 } from '@floating-ui/vue';
@@ -45,6 +44,11 @@ watch(open, (value) => {
         layers.value.push(id);
     } else {
         layers.value = layers.value.filter((layer) => layer !== id);
+        reference.value
+            ?.querySelector<HTMLElement>(
+                'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+            )
+            ?.focus();
     }
 });
 
@@ -69,7 +73,7 @@ function onBackgroundClick() {
     open.value = false;
 }
 
-const reference = ref<null | ReferenceElement>(null);
+const reference = ref<null | HTMLElement>(null);
 const floating = ref(null);
 const { floatingStyles } = useFloating(reference, floating, {
     placement: props.align,
