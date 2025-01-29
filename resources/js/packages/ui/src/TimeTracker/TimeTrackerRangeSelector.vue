@@ -28,8 +28,8 @@ function pauseLiveTimerUpdate(event: FocusEvent) {
 
 function onTimeEntryEnterPress() {
     updateTimerAndStartLiveTimerUpdate();
-    //const activeElement = document.activeElement as HTMLElement;
-    // activeElement?.blur();
+    const activeElement = document.activeElement as HTMLElement;
+    activeElement?.blur();
 }
 
 const currentTime = computed({
@@ -147,9 +147,10 @@ function openModalOnTab(e: FocusEvent) {
 function focusNextElement(e: KeyboardEvent) {
     if (open.value) {
         e.preventDefault();
-        const focusableElement = timeRangeSelector.value?.querySelector<HTMLElement>(
-            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-        );
+        const focusableElement =
+            timeRangeSelector.value?.querySelector<HTMLElement>(
+                'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+            );
         focusableElement?.focus();
     }
 }

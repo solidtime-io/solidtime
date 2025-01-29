@@ -20,10 +20,6 @@ const emit = defineEmits<{
 
 const open = ref(false);
 const triggerElement = ref<HTMLButtonElement | null>(null);
-function closeAndFocusButton() {
-    triggerElement.value?.focus();
-    open.value = false;
-}
 </script>
 
 <template>
@@ -59,7 +55,7 @@ function closeAndFocusButton() {
                             emit('changed', newStart, newEnd)
                     "
                     focus
-                    @close="closeAndFocusButton"
+                    @close="open = false"
                     :start="start"
                     :end="end">
                 </TimeRangeSelector>

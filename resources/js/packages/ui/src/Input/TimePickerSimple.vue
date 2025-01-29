@@ -90,7 +90,6 @@ useFocus(timeInput, { initialValue: props.focus });
 const inputValue = ref(
     model.value ? getLocalizedDayJs(model.value).format('HH:mm') : null
 );
-const open = ref(false);
 </script>
 
 <template>
@@ -102,16 +101,10 @@ const open = ref(false);
             twMerge('text-center w-24 px-3 py-2', size === 'large' && 'w-28')
         "
         @blur="updateTime"
-        @keydown.enter="
-            updateTime($event);
-            open = false;
-        "
-        @keydown.tab="open = false"
         @focus="($event.target as HTMLInputElement).select()"
         @mouseup="($event.target as HTMLInputElement).select()"
         @click="($event.target as HTMLInputElement).select()"
         @pointerup="($event.target as HTMLInputElement).select()"
-        @focusin="open = true"
         data-testid="time_picker_input"
         type="text" />
 </template>
