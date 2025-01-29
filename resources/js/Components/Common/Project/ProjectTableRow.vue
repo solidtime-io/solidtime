@@ -83,8 +83,8 @@ const showEditProjectModal = ref(false);
         </div>
         <div class="whitespace-nowrap min-w-0 px-3 py-4 text-sm text-muted">
             <div
-                class="overflow-ellipsis overflow-hidden"
-                v-if="project.client_id">
+                v-if="project.client_id"
+                class="overflow-ellipsis overflow-hidden">
                 {{ client?.name }}
             </div>
             <div v-else>No client</div>
@@ -106,8 +106,8 @@ const showEditProjectModal = ref(false);
             <span v-else> -- </span>
         </div>
         <div
-            class="whitespace-nowrap px-3 py-4 text-sm text-muted"
-            v-if="showBillableRate">
+            v-if="showBillableRate"
+            class="whitespace-nowrap px-3 py-4 text-sm text-muted">
             {{ billableRateInfo }}
         </div>
         <div

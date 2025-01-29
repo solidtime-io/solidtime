@@ -12,8 +12,8 @@ const model = defineModel<string | null>({
 
 const props = withDefaults(
     defineProps<{
-        size: 'base' | 'large';
-        focus: boolean;
+        size?: 'base' | 'large';
+        focus?: boolean;
     }>(),
     {
         size: 'base',
@@ -95,18 +95,18 @@ const inputValue = ref(
 <template>
     <TextInput
         v-bind="$attrs"
-        v-model="inputValue"
         ref="timeInput"
+        v-model="inputValue"
         :class="
             twMerge('text-center w-24 px-3 py-2', size === 'large' && 'w-28')
         "
+        data-testid="time_picker_input"
+        type="text"
         @blur="updateTime"
         @focus="($event.target as HTMLInputElement).select()"
         @mouseup="($event.target as HTMLInputElement).select()"
         @click="($event.target as HTMLInputElement).select()"
-        @pointerup="($event.target as HTMLInputElement).select()"
-        data-testid="time_picker_input"
-        type="text" />
+        @pointerup="($event.target as HTMLInputElement).select()" />
 </template>
 
 <style scoped></style>

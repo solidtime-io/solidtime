@@ -155,7 +155,7 @@ watch(open, () => {
 </script>
 
 <template>
-    <Dropdown v-model="open" :align="align" :closeOnContentClick="false">
+    <Dropdown v-model="open" :align="align" :close-on-content-click="false">
         <template #trigger>
             <slot name="trigger"> </slot>
         </template>
@@ -176,15 +176,15 @@ watch(open, () => {
                     :value="props.getKeyFromItem(item)"
                     :data-item-id="props.getKeyFromItem(item)">
                     <SelectDropdownItem
-                        @mouseenter="
-                            highlightedItemId = props.getKeyFromItem(item)
-                        "
                         :highlighted="
                             props.getKeyFromItem(item) === highlightedItemId
                         "
                         :selected="props.getKeyFromItem(item) === model"
-                        @click="setItem(props.getKeyFromItem(item))"
-                        :name="props.getNameForItem(item)"></SelectDropdownItem>
+                        :name="props.getNameForItem(item)"
+                        @mouseenter="
+                            highlightedItemId = props.getKeyFromItem(item)
+                        "
+                        @click="setItem(props.getKeyFromItem(item))"></SelectDropdownItem>
                 </div>
             </div>
         </template>

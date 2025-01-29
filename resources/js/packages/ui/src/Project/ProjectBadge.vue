@@ -4,12 +4,12 @@ import Badge from '@/packages/ui/src/Badge.vue';
 
 const props = withDefaults(
     defineProps<{
-        name: string;
-        size: 'base' | 'large' | 'xlarge';
-        tag: string;
+        name?: string;
+        size?: 'base' | 'large' | 'xlarge';
+        tag?: string;
         class?: string;
-        color: string;
-        border: boolean;
+        color?: string;
+        border?: boolean;
     }>(),
     {
         name: '',

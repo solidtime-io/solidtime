@@ -110,29 +110,29 @@ const { tags } = storeToRefs(useTagsStore());
     <CardTitle title="Time Tracker" :icon="ClockIcon"></CardTitle>
     <div class="relative">
         <TimeTrackerRunningInDifferentOrganizationOverlay
-            @switchOrganization="switchToTimeEntryOrganization"
             v-if="
                 isRunningInDifferentOrganization
-            "></TimeTrackerRunningInDifferentOrganizationOverlay>
+            "
+            @switch-organization="switchToTimeEntryOrganization"></TimeTrackerRunningInDifferentOrganizationOverlay>
 
         <TimeTrackerControls
-            :createProject
-            :enableEstimatedTime="isAllowedToPerformPremiumAction()"
-            :canCreateProject="canCreateProjects()"
-            :createClient
+            v-model:current-time-entry="currentTimeEntry"
+            v-model:live-timer="now"
+            :create-project
+            :enable-estimated-time="isAllowedToPerformPremiumAction()"
+            :can-create-project="canCreateProjects()"
+            :create-client
             :clients
             :tags
             :tasks
             :projects
-            :createTag
-            :isActive
+            :create-tag
+            :is-active
             :currency="getOrganizationCurrencyString()"
-            v-model:currentTimeEntry="currentTimeEntry"
-            v-model:liveTimer="now"
-            @startLiveTimer="startLiveTimer"
-            @stopLiveTimer="stopLiveTimer"
-            @startTimer="setActiveState(true)"
-            @stopTimer="setActiveState(false)"
-            @updateTimeEntry="updateTimeEntry"></TimeTrackerControls>
+            @start-live-timer="startLiveTimer"
+            @stop-live-timer="stopLiveTimer"
+            @start-timer="setActiveState(true)"
+            @stop-timer="setActiveState(false)"
+            @update-time-entry="updateTimeEntry"></TimeTrackerControls>
     </div>
 </template>

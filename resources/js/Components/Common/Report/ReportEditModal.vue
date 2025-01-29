@@ -96,22 +96,22 @@ async function submit() {
                     <InputLabel for="name" value="Name" />
                     <TextInput
                         id="name"
-                        class="mt-1.5 w-full"
-                        v-model="report.name"></TextInput>
+                        v-model="report.name"
+                        class="mt-1.5 w-full"></TextInput>
                 </div>
                 <div>
                     <InputLabel for="description" value="Description" />
                     <TextInput
                         id="description"
-                        class="mt-1.5 w-full"
-                        v-model="report.description"></TextInput>
+                        v-model="report.description"
+                        class="mt-1.5 w-full"></TextInput>
                 </div>
                 <InputLabel value="Visibility" />
                 <div class="flex items-center space-x-12">
                     <div class="flex items-center space-x-2 px-2 py-3">
                         <Checkbox
-                            v-model:checked="report.is_public"
-                            id="is_public"></Checkbox>
+                            id="is_public"
+                            v-model:checked="report.is_public"></Checkbox>
                         <InputLabel for="is_public" value="Public" />
                     </div>
                     <div

@@ -75,8 +75,8 @@ const showTaskEditModal = ref(false);
                 @delete="deleteTask"></TaskMoreOptionsDropdown>
         </div>
         <TaskEditModal
-            :task="task"
-            v-model:show="showTaskEditModal"></TaskEditModal>
+            v-model:show="showTaskEditModal"
+            :task="task"></TaskEditModal>
     </TableRow>
 </template>
 

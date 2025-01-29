@@ -11,7 +11,7 @@ function toggleBillable() {
 
 const props = withDefaults(
     defineProps<{
-        size: 'small' | 'base';
+        size?: 'small' | 'base';
     }>(),
     {
         size: 'base',
@@ -40,14 +40,14 @@ const iconSizeWrapperClasses =
 
 <template>
     <button
-        @click="toggleBillable"
         :class="
             twMerge(
                 iconColorClasses,
                 iconSizeWrapperClasses,
                 'flex-shrink-0 ring-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring transition focus:bg-card-background-separator hover:bg-card-background-separator rounded-full flex items-center justify-center'
             )
-        ">
+        "
+        @click="toggleBillable">
         <BillableIcon :class="iconSizeClasses"></BillableIcon>
     </button>
 </template>

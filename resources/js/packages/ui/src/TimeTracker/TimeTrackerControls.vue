@@ -97,55 +97,55 @@ function updateTimeEntryDescription() {
             class="flex flex-col @2xl:flex-row w-full justify-between rounded-lg bg-card-background border-card-border border transition shadow-card">
             <div class="flex flex-1 items-center pr-6">
                 <input
-                    placeholder="What are you working on?"
-                    data-testid="time_entry_description"
                     ref="currentTimeEntryDescriptionInput"
                     v-model="tempDescription"
-                    @keydown.enter="startTimerIfNotActive"
-                    @blur="updateTimeEntryDescription"
+                    placeholder="What are you working on?"
+                    data-testid="time_entry_description"
                     class="w-full rounded-l-lg py-4 sm:py-2.5 px-3.5 border-b border-b-card-background-separator @2xl:px-4 text-base @4xl:text-lg text-white font-medium bg-transparent border-none placeholder-muted focus:ring-0 transition"
-                    type="text" />
+                    type="text"
+                    @keydown.enter="startTimerIfNotActive"
+                    @blur="updateTimeEntryDescription" />
             </div>
             <div class="flex items-center justify-between pl-2 shrink min-w-0">
                 <div
                     class="flex items-center w-[130px] @2xl:w-auto shrink min-w-0">
                     <TimeTrackerProjectTaskDropdown
-                        :createClient
-                        :canCreateProject
-                        :clients
-                        :createProject
-                        :currency="currency"
-                        :projects="projects"
-                        :tasks="tasks"
-                        @changed="updateProject"
-                        :enableEstimatedTime="enableEstimatedTime"
                         v-model:project="currentTimeEntry.project_id"
                         v-model:task="
                             currentTimeEntry.task_id
-                        "></TimeTrackerProjectTaskDropdown>
+                        "
+                        :create-client
+                        :can-create-project
+                        :clients
+                        :create-project
+                        :currency="currency"
+                        :projects="projects"
+                        :tasks="tasks"
+                        :enable-estimated-time="enableEstimatedTime"
+                        @changed="updateProject"></TimeTrackerProjectTaskDropdown>
                 </div>
                 <div class="flex items-center @2xl:space-x-2 px-2 @2xl:px-4">
                     <TimeTrackerTagDropdown
-                        @changed="$emit('updateTimeEntry')"
-                        :createTag
-                        :tags="tags"
                         v-model="
                             currentTimeEntry.tags
-                        "></TimeTrackerTagDropdown>
+                        "
+                        :create-tag
+                        :tags="tags"
+                        @changed="$emit('updateTimeEntry')"></TimeTrackerTagDropdown>
                     <BillableToggleButton
-                        @changed="$emit('updateTimeEntry')"
                         v-model="
                             currentTimeEntry.billable
-                        "></BillableToggleButton>
+                        "
+                        @changed="$emit('updateTimeEntry')"></BillableToggleButton>
                 </div>
                 <div class="border-l border-card-border">
                     <TimeTrackerRangeSelector
-                        @startLiveTimer="emit('startLiveTimer')"
-                        @stopLiveTimer="emit('stopLiveTimer')"
-                        @updateTimer="emit('updateTimeEntry')"
-                        @startTimer="emit('startTimer')"
-                        v-model:currentTimeEntry="currentTimeEntry"
-                        v-model:liveTimer="liveTimer"
+                        v-model:current-time-entry="currentTimeEntry"
+                        v-model:live-timer="liveTimer"
+                        @start-live-timer="emit('startLiveTimer')"
+                        @stop-live-timer="emit('stopLiveTimer')"
+                        @update-timer="emit('updateTimeEntry')"
+                        @start-timer="emit('startTimer')"
                         @keydown.enter="
                             startTimerIfNotActive
                         "></TimeTrackerRangeSelector>
@@ -156,8 +156,8 @@ function updateTimeEntryDescription() {
             class="pl-4 @2xl:pl-6 pr-3 absolute sm:relative top-[6px] sm:top-0 right-0">
             <TimeTrackerStartStop
                 :active="isActive"
-                @changed="onToggleButtonPress"
-                size="large"></TimeTrackerStartStop>
+                size="large"
+                @changed="onToggleButtonPress"></TimeTrackerStartStop>
         </div>
     </div>
 </template>

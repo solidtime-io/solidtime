@@ -191,9 +191,9 @@ const showResultModal = ref(false);
                 <div>
                     <InputLabel for="importType" value="Import Type" />
                     <select
-                        name="importType"
                         id="importType"
                         v-model="importType"
+                        name="importType"
                         class="mt-1 block w-full border-input-border bg-input-background text-white focus:border-input-border-active rounded-md shadow-sm">
                         <option :value="null" selected disabled>
                             Select an import type to get instructions...
@@ -206,8 +206,8 @@ const showResultModal = ref(false);
                         </option>
                     </select>
                     <div
-                        class="py-3 text-white"
-                        v-if="currentImporterDescription">
+                        v-if="currentImporterDescription"
+                        class="py-3 text-white">
                         <div class="font-semibold text-muted py-1">
                             Instructions:
                         </div>
@@ -233,12 +233,12 @@ const showResultModal = ref(false);
                                     >Upload a Toggl/Clockify Export</span
                                 >
                                 <input
-                                    ref="importFile"
                                     id="file-upload"
+                                    ref="importFile"
                                     name="file-upload"
-                                    v-on:change="updateFiles"
                                     type="file"
-                                    class="sr-only" />
+                                    class="sr-only"
+                                    @change="updateFiles" />
                             </label>
                         </div>
                         <p class="text-xs leading-5 text-muted">

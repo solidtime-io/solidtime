@@ -86,31 +86,31 @@ const currentClientName = computed(() => {
                     <div class="text-center pr-5">
                         <InputLabel for="color" value="Color" />
                         <ProjectColorSelector
-                            class="mt-2.5"
-                            v-model="project.color"></ProjectColorSelector>
+                            v-model="project.color"
+                            class="mt-2.5"></ProjectColorSelector>
                     </div>
                     <div class="w-full">
                         <InputLabel for="projectName" value="Project name" />
                         <TextInput
                             id="projectName"
-                            name="projectName"
                             ref="projectNameInput"
                             v-model="project.name"
+                            name="projectName"
                             type="text"
                             placeholder="The next big thing"
-                            @keydown.enter="submit()"
                             class="mt-2 block w-full"
                             required
-                            autocomplete="projectName" />
+                            autocomplete="projectName"
+                            @keydown.enter="submit()" />
                     </div>
                 </div>
                 <div>
                     <InputLabel for="client" value="Client" />
                     <ClientDropdown
-                        :createClient="createClient"
+                        v-model="project.client_id"
+                        :create-client="createClient"
                         :clients="activeClients"
-                        class="mt-2"
-                        v-model="project.client_id">
+                        class="mt-2">
                         <template #trigger>
                             <Badge
                                 tag="button"
@@ -131,17 +131,17 @@ const currentClientName = computed(() => {
             <div class="lg:grid grid-cols-2 gap-12">
                 <div>
                     <ProjectEditBillableSection
-                        :currency="currency"
-                        v-model:isBillable="project.is_billable"
-                        v-model:billableRate="
+                        v-model:is-billable="project.is_billable"
+                        v-model:billable-rate="
                             project.billable_rate
-                        "></ProjectEditBillableSection>
+                        "
+                        :currency="currency"></ProjectEditBillableSection>
                 </div>
                 <div>
                     <EstimatedTimeSection
                         v-if="enableEstimatedTime"
-                        @submit="submit()"
-                        v-model="project.estimated_time"></EstimatedTimeSection>
+                        v-model="project.estimated_time"
+                        @submit="submit()"></EstimatedTimeSection>
                 </div>
             </div>
         </template>

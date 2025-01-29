@@ -20,8 +20,8 @@ const props = defineProps<{
     <DashboardCard title="Recently Tracked Tasks" :icon="CheckCircleIcon">
         <RecentlyTrackedTasksCardEntry
             v-for="lastTask in props.latestTasks"
-            :class="props.latestTasks.length === 4 ? 'last:border-0' : ''"
             :key="lastTask.id"
+            :class="props.latestTasks.length === 4 ? 'last:border-0' : ''"
             :project_id="lastTask.project_id"
             :task_id="lastTask.id"
             :title="lastTask.name"></RecentlyTrackedTasksCardEntry>

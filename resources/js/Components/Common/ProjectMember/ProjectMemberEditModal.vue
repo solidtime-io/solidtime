@@ -75,8 +75,8 @@ useFocus(projectNameInput, { initialValue: true });
 
         <template #content>
             <ProjectMemberBillableRateModal
-                :member-name="props.name"
                 v-model:show="showBillableRateModal"
+                :member-name="props.name"
                 :new-billable-rate="projectMemberBody.billable_rate"
                 @close="showBillableRateModal = false"
                 @submit="submitBillableRate"></ProjectMemberBillableRateModal>
@@ -92,12 +92,12 @@ useFocus(projectNameInput, { initialValue: true });
                         class="mb-2"
                         value="Billable Rate"></InputLabel>
                     <BillableRateInput
-                        @keydown.enter="submit"
-                        :currency="getOrganizationCurrencyString()"
-                        name="billable_rate"
                         v-model="
                             projectMemberBody.billable_rate
-                        "></BillableRateInput>
+                        "
+                        :currency="getOrganizationCurrencyString()"
+                        name="billable_rate"
+                        @keydown.enter="submit"></BillableRateInput>
                 </div>
             </div>
         </template>

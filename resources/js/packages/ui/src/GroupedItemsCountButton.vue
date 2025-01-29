@@ -5,7 +5,7 @@ import { computed } from 'vue';
 const props = withDefaults(
     defineProps<{
         expanded?: boolean;
-        size: string;
+        size?: string;
     }>(),
     {
         expanded: false,

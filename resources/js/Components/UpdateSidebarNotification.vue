@@ -12,7 +12,7 @@ function openDesktopGithubRepo() {
 </script>
 
 <template>
-    <div class="py-4 hidden lg:block" v-if="showReleaseInfo">
+    <div v-if="showReleaseInfo" class="py-4 hidden lg:block">
         <div
             class="rounded-lg px-2.5 py-2 bg-card-background border border-border-secondary">
             <div class="flex items-start justify-between">
@@ -23,8 +23,8 @@ function openDesktopGithubRepo() {
                 </div>
                 <button>
                     <XMarkIcon
-                        @click="showReleaseInfo = false"
-                        class="w-3.5 text-text-tertiary hover:text-text-secondary"></XMarkIcon>
+                        class="w-3.5 text-text-tertiary hover:text-text-secondary"
+                        @click="showReleaseInfo = false"></XMarkIcon>
                 </button>
             </div>
 
@@ -34,9 +34,9 @@ function openDesktopGithubRepo() {
                 now.
             </p>
             <SecondaryButton
-                @click="openDesktopGithubRepo"
                 size="small"
                 class="w-full text-center justify-center mt-1.5"
+                @click="openDesktopGithubRepo"
                 >Download now</SecondaryButton
             >
         </div>

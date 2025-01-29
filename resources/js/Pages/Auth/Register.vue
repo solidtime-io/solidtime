@@ -151,7 +151,7 @@ const page = usePage<{
                 </InputLabel>
             </div>
 
-            <div class="mt-4" v-if="page.props.newsletter_consent">
+            <div v-if="page.props.newsletter_consent" class="mt-4">
                 <InputLabel for="newsletter_consent">
                     <div class="flex items-center">
                         <Checkbox

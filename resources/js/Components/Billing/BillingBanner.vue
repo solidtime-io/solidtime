@@ -112,7 +112,7 @@ const showBlackFridayBanner = computed(() => {
                         <span>Upgrade now</span>
                     </div>
                 </Link>
-                <button @click="hideBlackFridayBanner = true" class="p-1">
+                <button class="p-1" @click="hideBlackFridayBanner = true">
                     <XMarkIcon
                         class="w-4 opacity-50 hover:opacity-100"></XMarkIcon>
                 </button>
@@ -142,7 +142,7 @@ const showBlackFridayBanner = computed(() => {
                         <span>Upgrade now</span>
                     </div>
                 </Link>
-                <button @click="hideTrialBanner = true" class="p-1">
+                <button class="p-1" @click="hideTrialBanner = true">
                     <XMarkIcon
                         class="w-4 opacity-50 hover:opacity-100"></XMarkIcon>
                 </button>
@@ -174,7 +174,7 @@ const showBlackFridayBanner = computed(() => {
                         <span>Upgrade now</span>
                     </div>
                 </Link>
-                <button @click="hideBlockedBanner = true" class="p-1">
+                <button class="p-1" @click="hideBlockedBanner = true">
                     <XMarkIcon
                         class="w-4 opacity-50 hover:opacity-100"></XMarkIcon>
                 </button>
@@ -206,7 +206,7 @@ const showBlackFridayBanner = computed(() => {
                         <span>Upgrade now</span>
                     </div>
                 </Link>
-                <button @click="hideFreeUpgradeBanner = true" class="p-1">
+                <button class="p-1" @click="hideFreeUpgradeBanner = true">
                     <XMarkIcon
                         class="w-4 opacity-50 hover:opacity-100"></XMarkIcon>
                 </button>

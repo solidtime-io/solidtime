@@ -127,28 +127,28 @@ const highlightedItem = computed(() => {
 </script>
 
 <template>
-    <Dropdown width="120" v-model="open" :closeOnContentClick="true">
+    <Dropdown v-model="open" width="120" :close-on-content-click="true">
         <template #trigger>
             <slot name="trigger"></slot>
         </template>
         <template #content>
             <input
+                ref="searchInput"
                 :value="searchValue"
+                data-testid="client_dropdown_search"
+                class="bg-card-background border-0 placeholder-muted text-sm text-white py-2.5 focus:ring-0 border-b border-card-background-separator focus:border-card-background-separator w-full"
+                placeholder="Search for a client..."
                 @input="updateSearchValue"
                 @keydown.enter="addClientIfNoneExists"
-                data-testid="client_dropdown_search"
                 @keydown.up.prevent="moveHighlightUp"
-                @keydown.down.prevent="moveHighlightDown"
-                ref="searchInput"
-                class="bg-card-background border-0 placeholder-muted text-sm text-white py-2.5 focus:ring-0 border-b border-card-background-separator focus:border-card-background-separator w-full"
-                placeholder="Search for a client..." />
+                @keydown.down.prevent="moveHighlightDown" />
             <div ref="dropdownViewport" class="w-60 max-h-60 overflow-y-scroll">
                 <div
                     v-if="
                         searchValue.length > 0 && filteredClients.length === 0
                     "
-                    @click="addClientIfNoneExists"
-                    class="bg-card-background-active">
+                    class="bg-card-background-active"
+                    @click="addClientIfNoneExists">
                     <div
                         class="flex space-x-3 items-center px-4 py-3 text-xs text-white font-medium border-t rounded-b-lg border-card-background-separator">
                         <PlusCircleIcon
@@ -170,8 +170,8 @@ const highlightedItem = computed(() => {
                     :data-client-id="client.id">
                     <ClientDropdownItem
                         :selected="isClientSelected(client.id)"
-                        @click="updateClient(client.id)"
-                        :name="client.name"></ClientDropdownItem>
+                        :name="client.name"
+                        @click="updateClient(client.id)"></ClientDropdownItem>
                 </div>
             </div>
         </template>

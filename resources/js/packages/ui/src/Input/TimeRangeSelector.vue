@@ -61,32 +61,32 @@ watch(focused, (newValue, oldValue) => {
             <div class="font-bold text-white text-sm pb-2">Start</div>
             <div class="space-y-2">
                 <TimePickerSimple
+                    v-model="tempStart"
                     data-testid="time_entry_range_start"
                     tabindex="0"
-                    @keydown.exact.tab.shift.stop.prevent="emit('close')"
                     :focus
-                    @changed="updateTimeEntry"
-                    v-model="tempStart"></TimePickerSimple>
+                    @keydown.exact.tab.shift.stop.prevent="emit('close')"
+                    @changed="updateTimeEntry"></TimePickerSimple>
                 <DatePicker
+                    v-model="tempStart"
                     class="text-xs text-text-tertiary max-w-24 px-1.5 py-1.5"
                     @changed="updateTimeEntry"
-                    @blur.stop.prevent="emit('close')"
-                    v-model="tempStart"></DatePicker>
+                    @blur.stop.prevent="emit('close')"></DatePicker>
             </div>
         </div>
         <div class="px-2">
             <div class="font-bold text-white text-sm pb-2">End</div>
             <div v-if="tempEnd !== null" class="space-y-2">
                 <TimePickerSimple
+                    v-model="tempEnd"
                     data-testid="time_entry_range_end"
-                    @changed="updateTimeEntry"
-                    v-model="tempEnd"></TimePickerSimple>
+                    @changed="updateTimeEntry"></TimePickerSimple>
                 <DatePicker
+                    v-model="tempEnd"
                     class="text-xs text-text-tertiary max-w-24 px-1.5 py-1.5"
-                    @changed="updateTimeEntry"
-                    v-model="tempEnd"></DatePicker>
+                    @changed="updateTimeEntry"></DatePicker>
             </div>
-            <div class="text-muted" v-else>-- : --</div>
+            <div v-else class="text-muted">-- : --</div>
             <div tabindex="0" @focusin="emit('close')"></div>
         </div>
     </div>

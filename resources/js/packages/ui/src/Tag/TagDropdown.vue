@@ -11,7 +11,7 @@ const props = withDefaults(
     defineProps<{
         tags: Tag[];
         createTag: (name: string) => Promise<Tag | undefined>;
-        align: Placement;
+        align?: Placement;
     }>(),
     {
         align: 'bottom-start',
@@ -166,27 +166,27 @@ const showCreateTagModal = ref(false);
 
 <template>
     <TagCreateModal
-        :createTag="createAndAddTag"
-        v-model:show="showCreateTagModal"></TagCreateModal>
+        v-model:show="showCreateTagModal"
+        :create-tag="createAndAddTag"></TagCreateModal>
     <Dropdown
-        @submit="emit('submit')"
         v-model="open"
         :align="align"
-        :closeOnContentClick="false">
+        :close-on-content-click="false"
+        @submit="emit('submit')">
         <template #trigger>
             <slot name="trigger"></slot>
         </template>
         <template #content>
             <input
+                ref="searchInput"
                 :value="searchValue"
+                data-testid="tag_dropdown_search"
+                class="bg-card-background border-0 placeholder-muted text-sm text-white py-2.5 focus:ring-0 border-b border-card-background-separator focus:border-card-background-separator w-full"
+                placeholder="Search for a Tag..."
                 @input="updateSearchValue"
                 @keydown.enter="addTagIfNoneExists"
-                data-testid="tag_dropdown_search"
                 @keydown.up.prevent="moveHighlightUp"
-                @keydown.down.prevent="moveHighlightDown"
-                ref="searchInput"
-                class="bg-card-background border-0 placeholder-muted text-sm text-white py-2.5 focus:ring-0 border-b border-card-background-separator focus:border-card-background-separator w-full"
-                placeholder="Search for a Tag..." />
+                @keydown.down.prevent="moveHighlightDown" />
             <div ref="dropdownViewport" class="w-60 max-h-60 overflow-y-scroll">
                 <div
                     v-for="tag in filteredTags"
@@ -201,17 +201,17 @@ const showCreateTagModal = ref(false);
                     :data-tag-id="tag.id">
                     <MultiselectDropdownItem
                         :selected="isTagSelected(tag.id)"
-                        @click="toggleTag(tag.id)"
-                        :name="tag.name"></MultiselectDropdownItem>
+                        :name="tag.name"
+                        @click="toggleTag(tag.id)"></MultiselectDropdownItem>
                 </div>
             </div>
             <div class="hover:bg-card-background-active rounded-b-lg">
                 <button
+                    class="text-white w-full flex space-x-3 items-center px-4 py-3 text-xs font-semibold border-t border-card-background-separator"
                     @click="
                         open = false;
                         showCreateTagModal = true;
-                    "
-                    class="text-white w-full flex space-x-3 items-center px-4 py-3 text-xs font-semibold border-t border-card-background-separator">
+                    ">
                     <PlusCircleIcon
                         class="w-5 flex-shrink-0 text-icon-default"></PlusCircleIcon>
                     <span>Create new Tag</span>

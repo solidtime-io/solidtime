@@ -26,13 +26,13 @@ const triggerElement = ref<HTMLButtonElement | null>(null);
     <div class="relative">
         <Dropdown
             v-model="open"
-            @submit="open = false"
             align="bottom"
-            :close-on-content-click="false">
+            :close-on-content-click="false"
+            @submit="open = false">
             <template #trigger>
                 <button
-                    data-testid="time_entry_range_selector"
                     ref="triggerElement"
+                    data-testid="time_entry_range_selector"
                     :class="
                         twMerge(
                             'text-muted w-[110px] px-2 bg-transparent text-center hover:bg-card-background rounded-lg border border-transparent hover:border-card-border focus-visible:outline-none focus:outline-none focus-visible:ring-2 focus-visible:text-text-primary focus-visible:ring-ring focus-visible:bg-tertiary',
@@ -50,14 +50,14 @@ const triggerElement = ref<HTMLButtonElement | null>(null);
             </template>
             <template #content>
                 <TimeRangeSelector
+                    focus
+                    :start="start"
+                    :end="end"
                     @changed="
                         (newStart: string, newEnd: string) =>
                             emit('changed', newStart, newEnd)
                     "
-                    focus
-                    @close="open = false"
-                    :start="start"
-                    :end="end">
+                    @close="open = false">
                 </TimeRangeSelector>
             </template>
         </Dropdown>

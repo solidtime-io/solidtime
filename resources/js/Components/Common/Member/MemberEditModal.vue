@@ -108,11 +108,11 @@ const roleDescription = computed(() => {
         v-model:saving="saving"
         v-model:show="showBillableRateModal"
         :member-name="member.name"
-        :newBillableRate="memberBody.billable_rate"
+        :new-billable-rate="memberBody.billable_rate"
         @submit="submitBillableRate"></MemberBillableRateModal>
     <MemberOwnershipTransferConfirmModal
-        :member-name="member.name"
         v-model:show="showOwnershipTransferConfirmModal"
+        :member-name="member.name"
         @submit="submit"></MemberOwnershipTransferConfirmModal>
     <DialogModal closeable :show="show" @close="show = false">
         <template #title>
@@ -127,9 +127,9 @@ const roleDescription = computed(() => {
                     <div>
                         <InputLabel for="role" value="Role" />
                         <MemberRoleSelect
+                            v-model="memberBody.role"
                             class="mt-2"
-                            name="role"
-                            v-model="memberBody.role"></MemberRoleSelect>
+                            name="role"></MemberRoleSelect>
                     </div>
                     <div class="flex-1 text-xs flex items-center pt-6">
                         <p>{{ roleDescription }}</p>
@@ -140,28 +140,28 @@ const roleDescription = computed(() => {
                         <div>
                             <InputLabel for="billableType" value="Billable" />
                             <MemberBillableSelect
-                                class="mt-2"
-                                name="billableType"
                                 v-model="
                                     billableRateSelect
-                                "></MemberBillableSelect>
+                                "
+                                class="mt-2"
+                                name="billableType"></MemberBillableSelect>
                         </div>
                         <div
-                            class="flex-1"
-                            v-if="billableRateSelect === 'custom-rate'">
+                            v-if="billableRateSelect === 'custom-rate'"
+                            class="flex-1">
                             <InputLabel
                                 for="memberBillableRate"
                                 class="mb-2"
                                 value="Billable Rate" />
                             <BillableRateInput
+                                v-model="
+                                    memberBody.billable_rate
+                                "
                                 focus
                                 class="w-full"
                                 :currency="getOrganizationCurrencyString()"
-                                @keydown.enter="saveWithChecks()"
                                 name="memberBillableRate"
-                                v-model="
-                                    memberBody.billable_rate
-                                "></BillableRateInput>
+                                @keydown.enter="saveWithChecks()"></BillableRateInput>
                         </div>
                     </div>
                 </div>

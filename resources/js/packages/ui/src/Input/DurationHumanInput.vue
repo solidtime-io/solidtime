@@ -78,11 +78,11 @@ function updateTimeEntryInputValue() {
 <template>
     <TextInput
         ref="inputField"
-        @blur="updateDuration"
-        @keydown.enter="updateDuration"
         v-model="temporaryCustomTimerEntry"
         :class="twMerge('text-text-secondary', props.class)"
-        type="text" />
+        type="text"
+        @blur="updateDuration"
+        @keydown.enter="updateDuration" />
 </template>
 
 <style scoped></style>

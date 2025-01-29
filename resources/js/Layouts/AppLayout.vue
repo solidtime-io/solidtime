@@ -85,8 +85,8 @@ const page = usePage<{
                     class="border-b border-default-background-separator pb-2 flex justify-between">
                     <OrganizationSwitcher class="w-full"></OrganizationSwitcher>
                     <XMarkIcon
-                        @click="showSidebarMenu = false"
-                        class="w-8 lg:hidden"></XMarkIcon>
+                        class="w-8 lg:hidden"
+                        @click="showSidebarMenu = false"></XMarkIcon>
                 </div>
                 <div class="border-b border-default-background-separator">
                     <CurrentSidebarTimer></CurrentSidebarTimer>
@@ -162,8 +162,8 @@ const page = usePage<{
                                     route('clients')
                                 "></NavigationSidebarItem>
                             <NavigationSidebarItem
-                                title="Members"
                                 v-if="canViewMembers()"
+                                title="Members"
                                 :icon="UserGroupIcon"
                                 :current="route().current('members')"
                                 :href="
@@ -238,8 +238,8 @@ const page = usePage<{
             <div
                 class="lg:hidden w-full px-3 py-1 border-b border-b-default-background-separator text-muted flex justify-between items-center">
                 <Bars3Icon
-                    @click="showSidebarMenu = !showSidebarMenu"
-                    class="w-7 text-muted"></Bars3Icon>
+                    class="w-7 text-muted"
+                    @click="showSidebarMenu = !showSidebarMenu"></Bars3Icon>
                 <OrganizationSwitcher></OrganizationSwitcher>
             </div>
 

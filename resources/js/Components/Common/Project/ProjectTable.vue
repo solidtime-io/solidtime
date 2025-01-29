@@ -44,12 +44,12 @@ import { isAllowedToPerformPremiumAction } from '@/utils/billing';
 
 <template>
     <ProjectCreateModal
-        :createProject
-        :createClient
+        v-model:show="showCreateProjectModal"
+        :create-project
+        :create-client
         :currency="getOrganizationCurrencyString()"
         :clients="clients"
-        :enableEstimatedTime="isAllowedToPerformPremiumAction"
-        v-model:show="showCreateProjectModal"></ProjectCreateModal>
+        :enable-estimated-time="isAllowedToPerformPremiumAction"></ProjectCreateModal>
     <div class="flow-root max-w-[100vw] overflow-x-auto">
         <div class="inline-block min-w-full align-middle">
             <div
@@ -57,12 +57,12 @@ import { isAllowedToPerformPremiumAction } from '@/utils/billing';
                 class="grid min-w-full"
                 :style="gridTemplate">
                 <ProjectTableHeading
-                    :showBillableRate="
+                    :show-billable-rate="
                         props.showBillableRate
                     "></ProjectTableHeading>
                 <div
-                    class="col-span-5 py-24 text-center"
-                    v-if="projects.length === 0">
+                    v-if="projects.length === 0"
+                    class="col-span-5 py-24 text-center">
                     <FolderPlusIcon
                         class="w-8 text-icon-default inline pb-2"></FolderPlusIcon>
                     <h3 class="text-white font-semibold">
@@ -81,14 +81,14 @@ import { isAllowedToPerformPremiumAction } from '@/utils/billing';
                     </p>
                     <SecondaryButton
                         v-if="canCreateProjects()"
-                        @click="showCreateProjectModal = true"
                         :icon="PlusIcon"
+                        @click="showCreateProjectModal = true"
                         >Create your First Project
                     </SecondaryButton>
                 </div>
                 <template v-for="project in projects" :key="project.id">
                     <ProjectTableRow
-                        :showBillableRate="props.showBillableRate"
+                        :show-billable-rate="props.showBillableRate"
                         :project="project"></ProjectTableRow>
                 </template>
             </div>

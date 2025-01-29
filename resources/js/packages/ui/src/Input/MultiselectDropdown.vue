@@ -151,20 +151,20 @@ const highlightedItem = computed(() => {
 </script>
 
 <template>
-    <Dropdown v-model="open" align="bottom-start" :closeOnContentClick="false">
+    <Dropdown v-model="open" align="bottom-start" :close-on-content-click="false">
         <template #trigger>
             <slot name="trigger"></slot>
         </template>
         <template #content>
             <input
+                ref="searchInput"
                 :value="searchValue"
+                class="bg-card-background border-0 placeholder-muted text-sm text-white py-2.5 focus:ring-0 border-b border-card-background-separator focus:border-card-background-separator w-full"
+                :placeholder="searchPlaceholder"
                 @input="updateSearchValue"
                 @keydown.up.prevent="moveHighlightUp"
                 @keydown.down.prevent="moveHighlightDown"
-                @keydown.enter="toggleItem(highlightedItemId)"
-                ref="searchInput"
-                class="bg-card-background border-0 placeholder-muted text-sm text-white py-2.5 focus:ring-0 border-b border-card-background-separator focus:border-card-background-separator w-full"
-                :placeholder="searchPlaceholder" />
+                @keydown.enter="toggleItem(highlightedItemId)" />
             <div
                 ref="dropdownViewport"
                 class="min-w-60 max-w-80 max-h-60 overflow-y-scroll">
@@ -180,10 +180,10 @@ const highlightedItem = computed(() => {
                     :data-item-id="props.getKeyFromItem(item)">
                     <MultiselectDropdownItem
                         :selected="isItemSelected(props.getKeyFromItem(item))"
-                        @click="toggleItem(props.getKeyFromItem(item))"
                         :name="
                             props.getNameForItem(item)
-                        "></MultiselectDropdownItem>
+                        "
+                        @click="toggleItem(props.getKeyFromItem(item))"></MultiselectDropdownItem>
                 </div>
             </div>
         </template>

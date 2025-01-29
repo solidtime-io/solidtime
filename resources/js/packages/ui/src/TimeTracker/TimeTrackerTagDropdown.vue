@@ -9,7 +9,7 @@ const emit = defineEmits<{
     changed: [];
 }>();
 
-const model = defineModel({
+const model = defineModel<string[]>({
     default: [],
 });
 const iconColorClasses = computed(() => {
@@ -27,10 +27,10 @@ defineProps<{
 
 <template>
     <TagDropdown
-        :createTag
-        @changed="emit('changed')"
         v-model="model"
-        :tags="tags">
+        :create-tag
+        :tags="tags"
+        @changed="emit('changed')">
         <template #trigger>
             <button
                 data-testid="tag_dropdown"

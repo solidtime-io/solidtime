@@ -18,7 +18,7 @@ function getNameForItem(item: Task) {
 
 <template>
     <MultiselectDropdown
-        searchPlaceholder="Search for a Task..."
+        search-placeholder="Search for a Task..."
         :items="tasks"
         :get-key-from-item="getKeyFromItem"
         :get-name-for-item="getNameForItem">

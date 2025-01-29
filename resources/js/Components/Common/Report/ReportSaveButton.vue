@@ -27,8 +27,8 @@ function onSaveReportClick() {
 
 <template>
     <ReportCreateModal
-        :properties="reportProperties"
-        v-model:show="showCreateReportModal"></ReportCreateModal>
+        v-model:show="showCreateReportModal"
+        :properties="reportProperties"></ReportCreateModal>
     <UpgradeModal v-model:show="showPremiumModal">
         <strong>Sharable Reports</strong> is only available in solidtime
         Professional.

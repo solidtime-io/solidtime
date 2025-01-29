@@ -53,8 +53,8 @@ type ClientsWithProjectsWithTasks = ClientWithProjectsWithTasks[];
 
 const props = withDefaults(
     defineProps<{
-        showBadgeBorder: boolean;
-        size: 'base' | 'large' | 'xlarge';
+        showBadgeBorder?: boolean;
+        size?: 'base' | 'large' | 'xlarge';
         projects: Project[];
         tasks: Task[];
         clients: Client[];
@@ -63,8 +63,8 @@ const props = withDefaults(
         ) => Promise<Project | undefined>;
         createClient: (client: CreateClientBody) => Promise<Client | undefined>;
         currency: string;
-        emptyPlaceholder: string;
-        allowReset: boolean;
+        emptyPlaceholder?: string;
+        allowReset?: boolean;
         enableEstimatedTime: boolean;
         canCreateProject: boolean;
         class?: string;
@@ -539,15 +539,15 @@ const showCreateProject = ref(false);
 <template>
     <div v-if="projects.length === 0 && canCreateProject">
         <Badge
-            @click="showCreateProject = true"
             size="large"
             tag="button"
-            class="cursor-pointer hover:bg-tertiary">
+            class="cursor-pointer hover:bg-tertiary"
+            @click="showCreateProject = true">
             <PlusIcon class="-ml-1 w-5"></PlusIcon>
             <span>Add new project</span>
         </Badge>
     </div>
-    <Dropdown v-else v-model="open" :closeOnContentClick="false" align="bottom">
+    <Dropdown v-else v-model="open" :close-on-content-click="false" align="bottom">
         <template #trigger>
             <ProjectBadge
                 ref="projectDropdownTrigger"
@@ -570,18 +570,18 @@ const showCreateProject = ref(false);
                         v-if="currentTask"
                         class="w-4 lg:w-5 text-muted shrink-0"></ChevronRightIcon>
                     <div
-                        class="min-w-0 shrink text-xs lg:text-sm truncate"
-                        v-if="currentTask">
+                        v-if="currentTask"
+                        class="min-w-0 shrink text-xs lg:text-sm truncate">
                         {{ currentTask.name }}
                     </div>
                 </div>
                 <button
                     v-if="project !== null && allowReset"
+                    class="absolute right-0 top-0 h-full flex items-center pr-3 text-text-quaternary hover:text-text-secondary"
                     @click.stop="
                         project = null;
                         task = null;
-                    "
-                    class="absolute right-0 top-0 h-full flex items-center pr-3 text-text-quaternary hover:text-text-secondary">
+                    ">
                     <XMarkIcon class="w-5"></XMarkIcon>
                 </button>
             </ProjectBadge>
@@ -591,21 +591,21 @@ const showCreateProject = ref(false);
                 v-if="open"
                 :options="{ immediate: true, allowOutsideClick: true }">
                 <input
+                    ref="searchInput"
                     :value="searchValue"
+                    data-testid="client_dropdown_search"
+                    class="bg-card-background border-0 placeholder-muted text-sm text-white py-2.5 focus:ring-0 border-b border-card-background-separator focus:border-card-background-separator w-full"
+                    placeholder="Search for a project or task..."
                     @input="updateSearchValue"
                     @keydown.enter.prevent="addClientIfNoneExists"
-                    data-testid="client_dropdown_search"
                     @keydown.up.prevent="moveHighlightUp"
                     @keydown.down.prevent="moveHighlightDown"
                     @keydown.right.prevent="expandProject"
-                    @keydown.left.prevent="collapseProject"
-                    ref="searchInput"
-                    class="bg-card-background border-0 placeholder-muted text-sm text-white py-2.5 focus:ring-0 border-b border-card-background-separator focus:border-card-background-separator w-full"
-                    placeholder="Search for a project or task..." />
+                    @keydown.left.prevent="collapseProject" />
                 <div
                     ref="dropdownViewport"
-                    @mousemove="mouseEnterHighlightActivated = true"
-                    class="min-w-[350px] max-h-[350px] overflow-y-scroll relative">
+                    class="min-w-[350px] max-h-[350px] overflow-y-scroll relative"
+                    @mousemove="mouseEnterHighlightActivated = true">
                     <template
                         v-for="client in filteredResults"
                         :key="client.id">
@@ -623,8 +623,8 @@ const showCreateProject = ref(false);
                                 role="option"
                                 class="px-1 py-0.5 cursor-default"
                                 :value="projectWithTasks.id"
-                                @click="selectProject(projectWithTasks.id)"
-                                :data-project-id="projectWithTasks.id">
+                                :data-project-id="projectWithTasks.id"
+                                @click="selectProject(projectWithTasks.id)">
                                 <div
                                     class="rounded-lg"
                                     :class="{
@@ -637,34 +637,34 @@ const showCreateProject = ref(false);
                                         :selected="
                                             isProjectSelected(projectWithTasks)
                                         "
+                                        :name="projectWithTasks.name"
+                                        :color="projectWithTasks.color"
                                         @mouseenter="
                                             setHighlightItemId(
                                                 projectWithTasks.id
                                             )
-                                        "
-                                        :name="projectWithTasks.name"
-                                        :color="projectWithTasks.color">
+                                        ">
                                         <template #actions>
                                             <button
-                                                tabindex="-1"
                                                 v-if="
                                                     projectWithTasks.tasks
                                                         .length > 0
                                                 "
-                                                @click.prevent.stop="
-                                                    () => {
-                                                        projectWithTasks.expanded =
-                                                            !projectWithTasks.expanded;
-                                                        searchInput?.focus();
-                                                    }
-                                                "
+                                                tabindex="-1"
                                                 class="px-2 py-0.5 mr-2 relative transition items-center rounded flex space-x-0.5 text-xs"
                                                 :class="{
                                                     'bg-white/5 text-text-secondary':
                                                         projectWithTasks.expanded,
                                                     'hover:bg-white/5 hover:text-text-secondary text-text-tertiary':
                                                         !projectWithTasks.expanded,
-                                                }">
+                                                }"
+                                                @click.prevent.stop="
+                                                    () => {
+                                                        projectWithTasks.expanded =
+                                                            !projectWithTasks.expanded;
+                                                        searchInput?.focus();
+                                                    }
+                                                ">
                                                 <span
                                                     >{{
                                                         projectWithTasks.tasks
@@ -689,14 +689,14 @@ const showCreateProject = ref(false);
                                 <div
                                     v-for="task in projectWithTasks.tasks"
                                     :key="task.id"
-                                    @click="selectTask(task.id)"
-                                    @mouseenter="setHighlightItemId(task.id)"
                                     :data-task-id="task.id"
                                     :class="{
                                         'bg-card-background-active':
                                             task.id === highlightedItemId,
                                     }"
-                                    class="flex items-center space-x-2 w-full px-5 py-1.5 text-start text-xs font-semibold leading-5 text-white focus:outline-none focus:bg-card-background-active transition duration-150 ease-in-out">
+                                    class="flex items-center space-x-2 w-full px-5 py-1.5 text-start text-xs font-semibold leading-5 text-white focus:outline-none focus:bg-card-background-active transition duration-150 ease-in-out"
+                                    @click="selectTask(task.id)"
+                                    @mouseenter="setHighlightItemId(task.id)">
                                     <MinusIcon
                                         class="w-3 h-3 text-text-quaternary"></MinusIcon>
                                     <span>{{ task.name }}</span>
@@ -709,11 +709,11 @@ const showCreateProject = ref(false);
                     v-if="canCreateProject"
                     class="hover:bg-card-background-active rounded-b-lg">
                     <button
+                        class="text-white flex space-x-3 items-center px-4 py-3 text-xs font-semibold border-t border-card-background-separator"
                         @click="
                             open = false;
                             showCreateProject = true;
-                        "
-                        class="text-white flex space-x-3 items-center px-4 py-3 text-xs font-semibold border-t border-card-background-separator">
+                        ">
                         <PlusCircleIcon
                             class="w-5 flex-shrink-0 text-icon-default"></PlusCircleIcon>
                         <span>Create new Project</span>
@@ -723,12 +723,12 @@ const showCreateProject = ref(false);
         </template>
     </Dropdown>
     <ProjectCreateModal
-        :createClient
-        :enableEstimatedTime="enableEstimatedTime"
+        v-model:show="showCreateProject"
+        :create-client
+        :enable-estimated-time="enableEstimatedTime"
         :currency="currency"
         :clients="clients"
-        :createProject
-        v-model:show="showCreateProject"></ProjectCreateModal>
+        :create-project></ProjectCreateModal>
 </template>
 
 <style scoped></style>

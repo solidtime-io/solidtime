@@ -17,8 +17,8 @@ const model = defineModel<string>({
 
 const props = withDefaults(
     defineProps<{
-        hiddenMembers: ProjectMember[];
-        disabled: boolean;
+        hiddenMembers?: ProjectMember[];
+        disabled?: boolean;
     }>(),
     {
         hiddenMembers: () => [] as ProjectMember[],
@@ -76,7 +76,7 @@ const currentValue = computed(() => {
         :items="filteredMembers"
         :get-key-from-item="(member) => member.id"
         :get-name-for-item="(member) => member.name">
-        <template v-slot:trigger>
+        <template #trigger>
             <Badge
                 tag="button"
                 class="flex w-full text-base text-left space-x-3 px-3 text-text-secondary font-normal cursor py-1.5">
@@ -84,7 +84,7 @@ const currentValue = computed(() => {
                 <div v-if="currentValue" class="flex-1 truncate">
                     {{ currentValue }}
                 </div>
-                <div class="flex-1" v-else>Select a member...</div>
+                <div v-else class="flex-1">Select a member...</div>
                 <ChevronDownIcon class="w-4 text-muted"></ChevronDownIcon>
             </Badge>
         </template>

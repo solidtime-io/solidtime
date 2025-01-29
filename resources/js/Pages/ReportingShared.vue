@@ -101,12 +101,12 @@ watch(currentPage, () => {
                         v-if="isBillingActivated() && canManageBilling()"
                         href="/billing">
                         <PrimaryButton
-                            type="button"
-                            class="mt-6"
-                            :icon="CreditCardIcon"
                             v-if="
                                 isBillingActivated() && canUpdateOrganization()
-                            ">
+                            "
+                            type="button"
+                            class="mt-6"
+                            :icon="CreditCardIcon">
                             Go to Billing
                         </PrimaryButton>
                     </Link>
@@ -120,10 +120,10 @@ watch(currentPage, () => {
 
         <PaginationRoot
             v-if="reports.length > 0 || isAllowedToPerformPremiumAction()"
+            v-model:page="currentPage"
             :total="totalPages"
             :items-per-page="pageLimit"
             class="flex justify-center items-center py-8"
-            v-model:page="currentPage"
             :sibling-count="1"
             show-edges>
             <PaginationList

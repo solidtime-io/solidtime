@@ -6,8 +6,8 @@ const emit = defineEmits(['changed']);
 
 const props = withDefaults(
     defineProps<{
-        size: 'base' | 'large' | 'small';
-        active: boolean;
+        size?: 'base' | 'large' | 'small';
+        active?: boolean;
     }>(),
     {
         size: 'base',
@@ -40,7 +40,6 @@ function toggleState() {
 
 <template>
     <button
-        @click="toggleState"
         data-testid="timer_button"
         :class="
             twMerge(
@@ -48,7 +47,8 @@ function toggleState() {
                 buttonColorClasses,
                 'flex items-center justify-center py-1 transition focus:outline-0 rounded-full text-white '
             )
-        ">
+        "
+        @click="toggleState">
         <Transition name="fade" mode="out-in">
             <svg
                 v-if="props.active"

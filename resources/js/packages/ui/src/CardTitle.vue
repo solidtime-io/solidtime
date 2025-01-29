@@ -12,8 +12,8 @@ defineProps<{
         <h3
             class="text-white font-bold text-sm lg:text-base flex items-center space-x-2 lg:space-x-2.5">
             <component
-                v-if="icon"
                 :is="icon"
+                v-if="icon"
                 class="w-5 lg:w-6 text-icon-default"></component>
             <span>
                 {{ title }}

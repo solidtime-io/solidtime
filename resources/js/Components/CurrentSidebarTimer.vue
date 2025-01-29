@@ -32,8 +32,8 @@ const isRunningInDifferentOrganization = computed(() => {
 <template>
     <div class="pt-3 pb-2.5 px-2 flex justify-between items-center relative">
         <div
-            class="absolute w-full h-full backdrop-blur-sm z-10 flex items-center justify-center"
-            v-if="isRunningInDifferentOrganization">
+            v-if="isRunningInDifferentOrganization"
+            class="absolute w-full h-full backdrop-blur-sm z-10 flex items-center justify-center">
             <div
                 class="w-full h-[calc(100%+10px)] absolute bg-default-background opacity-75 backdrop-blur-sm"></div>
             <div class="flex space-x-3 items-center w-full z-20 justify-center">
@@ -50,7 +50,7 @@ const isRunningInDifferentOrganization = computed(() => {
         </div>
         <TimeTrackerStartStop
             :active="isActive"
-            @changed="setActiveState"
-            size="base"></TimeTrackerStartStop>
+            size="base"
+            @changed="setActiveState"></TimeTrackerStartStop>
     </div>
 </template>

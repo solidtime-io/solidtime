@@ -22,12 +22,12 @@ const model = defineModel();
 <template>
     <input
         ref="input"
+        v-model="model"
         :class="
             twMerge(
                 'border-input-border border bg-input-background text-white focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent rounded-md shadow-sm',
                 props.class
             )
         "
-        v-model="model"
         :name="name" />
 </template>

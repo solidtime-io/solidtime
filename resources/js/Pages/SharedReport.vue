@@ -151,8 +151,8 @@ function getGroupLabel(key: string) {
         <MainContainer>
             <div class="pt-10 w-full px-3 relative">
                 <ReportingChart
-                    :groupedType="aggregatedGraphTimeEntries?.grouped_type"
-                    :groupedData="
+                    :grouped-type="aggregatedGraphTimeEntries?.grouped_type"
+                    :grouped-data="
                         aggregatedGraphTimeEntries?.grouped_data
                     "></ReportingChart>
             </div>
@@ -217,8 +217,8 @@ function getGroupLabel(key: string) {
                             </div>
                         </template>
                         <div
-                            class="chart flex flex-col items-center justify-center py-12 col-span-3"
-                            v-else>
+                            v-else
+                            class="chart flex flex-col items-center justify-center py-12 col-span-3">
                             <p class="text-lg text-white font-semibold">
                                 No time entries found
                             </p>

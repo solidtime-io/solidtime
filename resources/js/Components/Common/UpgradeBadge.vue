@@ -11,8 +11,8 @@ const showUpgradeModal = ref(false);
         solidtime Professional.
     </UpgradeModal>
     <button
-        @click.prevent="showUpgradeModal = true"
-        class="inline-flex bg-secondary hover:bg-tertiary px-2 py-1 rounded border border-border-secondary hover:border-border-tertiary items-center space-x-1">
+        class="inline-flex bg-secondary hover:bg-tertiary px-2 py-1 rounded border border-border-secondary hover:border-border-tertiary items-center space-x-1"
+        @click.prevent="showUpgradeModal = true">
         <LockClosedIcon class="w-3 text-text-tertiary"></LockClosedIcon>
         <span class="text-xs text-text-secondary font-semibold"> Upgrade </span>
     </button>

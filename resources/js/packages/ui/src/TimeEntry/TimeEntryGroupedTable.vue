@@ -152,19 +152,32 @@ function unselectAllTimeEntries(value: TimeEntriesGroupedByType[]) {
         <TimeEntryRowHeading
             :date="key"
             :duration="sumDuration(value)"
-            @select-all="selectAllTimeEntries(value)"
-            @unselect-all="unselectAllTimeEntries(value)"
             :checked="
                 value.every((timeEntry: TimeEntry) =>
                     selectedTimeEntries.includes(timeEntry)
                 )
-            "></TimeEntryRowHeading>
+            "
+            @select-all="selectAllTimeEntries(value)"
+            @unselect-all="unselectAllTimeEntries(value)"></TimeEntryRowHeading>
         <template v-for="entry in value" :key="entry.id">
             <TimeEntryAggregateRow
-                :createProject
-                :canCreateProject
-                :enableEstimatedTime
+                v-if="'timeEntries' in entry && entry.timeEntries.length > 1"
+                :create-project
+                :can-create-project
+                :enable-estimated-time
                 :selected-time-entries="selectedTimeEntries"
+                :create-client
+                :projects="projects"
+                :tasks="tasks"
+                :tags="tags"
+                :clients
+                :on-start-stop-click="startTimeEntryFromExisting"
+                :update-time-entries
+                :update-time-entry
+                :delete-time-entries
+                :create-tag
+                :currency="currency"
+                :time-entry="entry"
                 @selected="
                     (timeEntries: TimeEntry[]) => {
                         selectedTimeEntries = [
@@ -183,47 +196,34 @@ function unselectAllTimeEntries(value: TimeEntriesGroupedByType[]) {
                                 )
                         );
                     }
-                "
-                :createClient
-                :projects="projects"
-                :tasks="tasks"
-                :tags="tags"
-                :clients
-                :onStartStopClick="startTimeEntryFromExisting"
-                :updateTimeEntries
-                :updateTimeEntry
-                :deleteTimeEntries
-                :createTag
-                :currency="currency"
-                v-if="'timeEntries' in entry && entry.timeEntries.length > 1"
-                :time-entry="entry"></TimeEntryAggregateRow>
+                "></TimeEntryAggregateRow>
             <TimeEntryRow
-                :createClient
-                :enableEstimatedTime
-                :canCreateProject
-                :createProject
+                v-else
+                :create-client
+                :enable-estimated-time
+                :can-create-project
+                :create-project
                 :projects="projects"
                 :selected="
                     !!selectedTimeEntries.find(
                         (filterEntry: TimeEntry) => filterEntry.id === entry.id
                     )
                 "
+                :tasks="tasks"
+                :tags="tags"
+                :clients
+                :create-tag
+                :update-time-entry
+                :on-start-stop-click="() => startTimeEntryFromExisting(entry)"
+                :delete-time-entry="() => deleteTimeEntries([entry])"
+                :currency="currency"
+                :time-entry="entry.timeEntries[0]"
                 @selected="selectedTimeEntries.push(entry)"
                 @unselected="
                     selectedTimeEntries = selectedTimeEntries.filter(
                         (item: TimeEntry) => item.id !== entry.id
                     )
-                "
-                :tasks="tasks"
-                :tags="tags"
-                :clients
-                :createTag
-                :updateTimeEntry
-                :onStartStopClick="() => startTimeEntryFromExisting(entry)"
-                :deleteTimeEntry="() => deleteTimeEntries([entry])"
-                :currency="currency"
-                v-else
-                :time-entry="entry.timeEntries[0]"></TimeEntryRow>
+                "></TimeEntryRow>
         </template>
     </div>
 </template>
