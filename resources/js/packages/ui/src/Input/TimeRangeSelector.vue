@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps, ref, watch } from 'vue';
+import { defineProps, nextTick, ref, watch } from 'vue';
 import { useFocusWithin } from '@vueuse/core';
 import DatePicker from '@/packages/ui/src/Input/DatePicker.vue';
 import {
@@ -55,7 +55,9 @@ watch(focused, (newValue, oldValue) => {
     <div
         ref="dropdownContent"
         class="grid grid-cols-2 divide-x divide-card-background-separator text-center py-2">
-        <div class="px-2">
+        <div
+            class="px-2"
+            @keydown.enter.prevent="nextTick(() => emit('close'))">
             <div class="font-bold text-white text-sm pb-2">Start</div>
             <div class="space-y-2">
                 <TimePickerSimple
