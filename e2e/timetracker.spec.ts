@@ -152,7 +152,7 @@ test('test that starting and updating the time while running works', async ({
                     JSON.stringify([])
             );
         }),
-        page.getByTestId('time_entry_time').press('Tab'),
+        page.getByTestId('time_entry_time').press('Enter'),
     ]);
 
     await expect(page.getByTestId('time_entry_time')).toHaveValue(/00:20/);
