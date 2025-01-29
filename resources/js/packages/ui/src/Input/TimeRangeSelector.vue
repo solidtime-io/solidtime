@@ -61,6 +61,7 @@ watch(focused, (newValue, oldValue) => {
                 <TimePickerSimple
                     data-testid="time_entry_range_start"
                     tabindex="0"
+                    @keydown.exact.tab.shift.stop.prevent="emit('close')"
                     :focus
                     @changed="updateTimeEntry"
                     v-model="tempStart"></TimePickerSimple>
@@ -84,6 +85,7 @@ watch(focused, (newValue, oldValue) => {
                     v-model="tempEnd"></DatePicker>
             </div>
             <div class="text-muted" v-else>-- : --</div>
+            <div tabindex="0" @focusin="emit('close')"></div>
         </div>
     </div>
 </template>

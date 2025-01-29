@@ -19,6 +19,11 @@ const emit = defineEmits<{
 }>();
 
 const open = ref(false);
+const triggerElement = ref<HTMLButtonElement | null>(null);
+function closeAndFocusButton() {
+    triggerElement.value?.focus();
+    open.value = false;
+}
 </script>
 
 <template>
@@ -31,9 +36,10 @@ const open = ref(false);
             <template #trigger>
                 <button
                     data-testid="time_entry_range_selector"
+                    ref="triggerElement"
                     :class="
                         twMerge(
-                            'text-muted w-[105px] px-2 bg-transparent text-center hover:bg-card-background rounded-lg border border-transparent hover:border-card-border focus-visible:outline-none focus:outline-none focus-visible:ring-2 focus-visible:text-text-primary focus-visible:ring-ring focus-visible:bg-tertiary',
+                            'text-muted w-[110px] px-2 bg-transparent text-center hover:bg-card-background rounded-lg border border-transparent hover:border-card-border focus-visible:outline-none focus:outline-none focus-visible:ring-2 focus-visible:text-text-primary focus-visible:ring-ring focus-visible:bg-tertiary',
                             showDate
                                 ? 'text-xs py-1.5 font-semibold'
                                 : 'text-sm py-1.5 font-medium',
@@ -53,6 +59,7 @@ const open = ref(false);
                             emit('changed', newStart, newEnd)
                     "
                     focus
+                    @close="closeAndFocusButton"
                     :start="start"
                     :end="end">
                 </TimeRangeSelector>

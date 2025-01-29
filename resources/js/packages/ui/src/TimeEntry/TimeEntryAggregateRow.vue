@@ -152,7 +152,7 @@ function onSelectChange(event: Event) {
                     <div class="flex-1">
                         <button
                             @click="expanded = !expanded"
-                            class="hidden lg:block text-muted w-[105px] px-1 py-1.5 bg-transparent text-center hover:bg-card-background rounded-lg border border-transparent hover:border-card-border text-sm font-medium focus-visible:outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:bg-tertiary">
+                            class="hidden lg:block text-muted w-[110px] px-1 py-1.5 bg-transparent text-center hover:bg-card-background rounded-lg border border-transparent hover:border-card-border text-sm font-medium focus-visible:outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:bg-tertiary">
                             {{ formatStartEnd(timeEntry.start, timeEntry.end) }}
                         </button>
                     </div>
