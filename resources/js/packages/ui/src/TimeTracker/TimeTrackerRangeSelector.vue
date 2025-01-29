@@ -139,7 +139,12 @@ const timeRangeSelector = ref<HTMLElement | null>(null);
 function openModalOnTab(e: FocusEvent) {
     // check if the source is inside the dropdown
     const source = e.relatedTarget as HTMLElement;
-    if (source && window.document.body.contains(source)) {
+    if (
+        source &&
+        window.document.body
+            .querySelector<HTMLElement>('#app')
+            ?.contains(source)
+    ) {
         open.value = true;
     }
 }
