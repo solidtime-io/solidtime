@@ -6,10 +6,10 @@ import LoadingSpinner from '../LoadingSpinner.vue';
 
 const props = withDefaults(
     defineProps<{
-        type: HtmlButtonType;
+        type?: HtmlButtonType;
         icon?: Component;
-        size: 'small' | 'base';
-        loading: boolean;
+        size?: 'small' | 'base';
+        loading?: boolean;
         class?: string;
     }>(),
     {
@@ -42,8 +42,8 @@ const sizeClasses = {
             ">
             <LoadingSpinner v-if="loading"></LoadingSpinner>
             <component
-                v-if="props.icon && !loading"
                 :is="props.icon"
+                v-if="props.icon && !loading"
                 class="text-text-tertiary w-4 -ml-0.5 mr-1"></component>
             <span>
                 <slot />

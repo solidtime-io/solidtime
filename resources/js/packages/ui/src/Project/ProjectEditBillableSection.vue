@@ -67,14 +67,14 @@ const emit = defineEmits(['submit']);
                 class="mt-2"></ProjectBillableSelect>
         </div>
         <div
-            class="sm:max-w-[120px]"
-            v-if="billableRateSelect === 'custom-rate'">
+            v-if="billableRateSelect === 'custom-rate'"
+            class="sm:max-w-[120px]">
             <InputLabel for="billableRate" value="Billable Rate" class="mb-2" />
             <BillableRateInput
-                @keydown.enter="emit('submit')"
-                :currency="currency"
                 v-model="billableRate"
-                name="billableRate" />
+                :currency="currency"
+                name="billableRate"
+                @keydown.enter="emit('submit')" />
         </div>
     </div>
     <div class="flex items-center text-muted text-xs pt-2 pl-1">

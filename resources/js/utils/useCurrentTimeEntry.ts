@@ -76,7 +76,7 @@ export const useCurrentTimeEntryStore = defineStore('currentTimeEntry', () => {
                         currentTimeEntry.value = { ...emptyTimeEntry };
                     }
                 }
-            } catch (error) {
+            } catch{
                 currentTimeEntry.value = { ...emptyTimeEntry };
             }
         } else {

@@ -18,10 +18,10 @@ defineEmits<{
 
 <template>
     <BillableRateModal
-        @submit="$emit('submit')"
         v-model:show="show"
         v-model:saving="saving"
-        title="Update Project Member Billable Rate">
+        title="Update Project Member Billable Rate"
+        @submit="$emit('submit')">
         <p class="py-1 text-center">
             The billable rate of {{ memberName }} will be updated to
             <strong>{{

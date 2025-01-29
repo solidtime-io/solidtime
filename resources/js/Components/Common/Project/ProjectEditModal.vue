@@ -90,8 +90,8 @@ async function submitBillableRate() {
                     <div class="text-center">
                         <InputLabel for="color" value="Color" />
                         <ProjectColorSelector
-                            class="mt-1"
-                            v-model="project.color"></ProjectColorSelector>
+                            v-model="project.color"
+                            class="mt-1"></ProjectColorSelector>
                     </div>
                 </div>
                 <div class="w-full">
@@ -102,18 +102,18 @@ async function submitBillableRate() {
                         v-model="project.name"
                         type="text"
                         placeholder="Project Name"
-                        @keydown.enter="submit()"
                         class="mt-1 block w-full"
                         required
-                        autocomplete="projectName" />
+                        autocomplete="projectName"
+                        @keydown.enter="submit()" />
                 </div>
                 <div class="">
                     <InputLabel for="client" value="Client" />
                     <ClientDropdown
-                        :createClient
+                        v-model="project.client_id"
+                        :create-client
                         :clients="clients"
-                        class="mt-1"
-                        v-model="project.client_id">
+                        class="mt-1">
                         <template #trigger>
                             <Badge
                                 class="bg-input-background cursor-pointer hover:bg-tertiary"
@@ -133,18 +133,18 @@ async function submitBillableRate() {
             <div class="lg:grid grid-cols-2 gap-12">
                 <div>
                     <ProjectEditBillableSection
-                        @submit="submit"
-                        :currency="getOrganizationCurrencyString()"
-                        v-model:isBillable="project.is_billable"
-                        v-model:billableRate="
+                        v-model:is-billable="project.is_billable"
+                        v-model:billable-rate="
                             project.billable_rate
-                        "></ProjectEditBillableSection>
+                        "
+                        :currency="getOrganizationCurrencyString()"
+                        @submit="submit"></ProjectEditBillableSection>
                 </div>
                 <div>
                     <EstimatedTimeSection
                         v-if="isAllowedToPerformPremiumAction()"
-                        @submit="submit()"
-                        v-model="project.estimated_time"></EstimatedTimeSection>
+                        v-model="project.estimated_time"
+                        @submit="submit()"></EstimatedTimeSection>
                 </div>
             </div>
         </template>
@@ -163,9 +163,9 @@ async function submitBillableRate() {
     <ProjectBillableRateModal
         v-model:show="showBillableRateModal"
         :currency="getOrganizationCurrencyString()"
-        @submit="submitBillableRate"
         :new-billable-rate="project.billable_rate"
-        :project-name="project.name"></ProjectBillableRateModal>
+        :project-name="project.name"
+        @submit="submitBillableRate"></ProjectBillableRateModal>
 </template>
 
 <style scoped></style>

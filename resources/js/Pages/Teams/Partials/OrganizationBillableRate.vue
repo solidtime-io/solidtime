@@ -62,10 +62,10 @@ function checkForConfirmationModal() {
         <template #form>
             <OrganizationBillableRateModal
                 v-model:show="showConfirmationModal"
-                @submit="submit"
                 :new-billable-rate="
                     organizationBody.billable_rate
-                "></OrganizationBillableRateModal>
+                "
+                @submit="submit"></OrganizationBillableRateModal>
             <!-- Organization Owner Information -->
             <div class="col-span-6">
                 <div class="col-span-6 sm:col-span-4">
@@ -75,8 +75,8 @@ function checkForConfirmationModal() {
                         value="Organization Billable Rate" />
                     <BillableRateInput
                         v-if="organization"
-                        :currency="getOrganizationCurrencyString()"
                         v-model="organizationBody.billable_rate"
+                        :currency="getOrganizationCurrencyString()"
                         name="organizationBillableRate"></BillableRateInput>
                 </div>
             </div>
@@ -86,10 +86,10 @@ function checkForConfirmationModal() {
                     <div class="flex items-center space-x-2">
                         <Checkbox
                             v-if="organization"
+                            id="organizationShowBillableRatesToEmployees"
                             v-model:checked="
                                 organizationBody.employees_can_see_billable_rates
-                            "
-                            id="organizationShowBillableRatesToEmployees"></Checkbox>
+                            "></Checkbox>
                         <InputLabel
                             for="organizationShowBillableRatesToEmployees"
                             value="Show Billable Rates to Employees" />

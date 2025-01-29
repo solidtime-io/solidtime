@@ -204,9 +204,9 @@ const page = usePage<{
             <div class="col-span-6 sm:col-span-4">
                 <InputLabel for="timezone" value="Timezone" />
                 <select
-                    name="timezone"
                     id="timezone"
                     v-model="form.timezone"
+                    name="timezone"
                     required
                     class="mt-1 block w-full border-input-border bg-input-background text-white focus:border-input-border-active rounded-md shadow-sm">
                     <option value="" disabled>Select a Timezone</option>
@@ -225,9 +225,9 @@ const page = usePage<{
             <div class="col-span-6 sm:col-span-4">
                 <InputLabel for="week_start" value="Start of the week" />
                 <select
-                    name="week_start"
                     id="week_start"
                     v-model="form.week_start"
+                    name="week_start"
                     required
                     class="mt-1 block w-full border-input-border bg-input-background text-white focus:border-input-border-active rounded-md shadow-sm">
                     <option value="" disabled>Select a week day</option>

@@ -40,7 +40,7 @@ const shownProjects = computed(() => {
 
 withDefaults(
     defineProps<{
-        border: boolean;
+        border?: boolean;
     }>(),
     {
         border: true,
@@ -123,17 +123,17 @@ function updateValue(project: Project) {
         <template #content>
             <ComboboxRoot
                 :open="open"
-                :modelValue="currentProject"
-                @update:modelValue="updateValue"
-                @update:searchTerm="(e) => console.log(e)"
-                :searchTerm="searchValue"
-                class="relative">
+                :model-value="currentProject"
+                :search-term="searchValue"
+                class="relative"
+                @update:model-value="updateValue"
+                @update:search-term="(e) => console.log(e)">
                 <ComboboxAnchor>
                     <ComboboxInput
-                        @keydown.enter="addProjectIfNoneExists"
                         ref="searchInput"
                         class="bg-card-background border-0 placeholder-muted text-sm text-white py-2.5 focus:ring-0 border-b border-card-background-separator focus:border-card-background-separator w-full"
-                        placeholder="Search for a project..." />
+                        placeholder="Search for a project..."
+                        @keydown.enter="addProjectIfNoneExists" />
                 </ComboboxAnchor>
                 <ComboboxContent>
                     <ComboboxViewport

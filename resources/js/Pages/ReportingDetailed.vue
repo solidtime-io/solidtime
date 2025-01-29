@@ -252,7 +252,7 @@ async function downloadExport(format: ExportFormat) {
         class="overflow-hidden">
         <ReportingExportModal
             v-model:show="showExportModal"
-            :exportUrl="exportUrl"></ReportingExportModal>
+            :export-url="exportUrl"></ReportingExportModal>
         <MainContainer
             class="py-3 sm:py-5 border-b border-default-background-separator flex justify-between items-center">
             <div class="flex items-center space-x-3 sm:space-x-6">
@@ -270,9 +270,9 @@ async function downloadExport(format: ExportFormat) {
                     class="flex flex-wrap items-center space-y-2 sm:space-y-0 space-x-4">
                     <div class="text-sm font-medium">Filters</div>
                     <MemberMultiselectDropdown
-                        @submit="updateFilteredTimeEntries"
-                        v-model="selectedMembers">
-                        <template v-slot:trigger>
+                        v-model="selectedMembers"
+                        @submit="updateFilteredTimeEntries">
+                        <template #trigger>
                             <ReportingFilterBadge
                                 :count="selectedMembers.length"
                                 :active="selectedMembers.length > 0"
@@ -281,9 +281,9 @@ async function downloadExport(format: ExportFormat) {
                         </template>
                     </MemberMultiselectDropdown>
                     <ProjectMultiselectDropdown
-                        @submit="updateFilteredTimeEntries"
-                        v-model="selectedProjects">
-                        <template v-slot:trigger>
+                        v-model="selectedProjects"
+                        @submit="updateFilteredTimeEntries">
+                        <template #trigger>
                             <ReportingFilterBadge
                                 :count="selectedProjects.length"
                                 :active="selectedProjects.length > 0"
@@ -292,9 +292,9 @@ async function downloadExport(format: ExportFormat) {
                         </template>
                     </ProjectMultiselectDropdown>
                     <TaskMultiselectDropdown
-                        @submit="updateFilteredTimeEntries"
-                        v-model="selectedTasks">
-                        <template v-slot:trigger>
+                        v-model="selectedTasks"
+                        @submit="updateFilteredTimeEntries">
+                        <template #trigger>
                             <ReportingFilterBadge
                                 :count="selectedTasks.length"
                                 :active="selectedTasks.length > 0"
@@ -303,20 +303,20 @@ async function downloadExport(format: ExportFormat) {
                         </template>
                     </TaskMultiselectDropdown>
                     <ClientMultiselectDropdown
-                        @submit="updateFilteredTimeEntries"
-                        v-model="selectedClients">
-                        <template v-slot:trigger>
+                        v-model="selectedClients"
+                        @submit="updateFilteredTimeEntries">
+                        <template #trigger>
                             <ReportingFilterBadge
                                 title="Clients"
                                 :icon="FolderIcon"></ReportingFilterBadge>
                         </template>
                     </ClientMultiselectDropdown>
                     <TagDropdown
-                        @submit="updateFilteredTimeEntries"
-                        :createTag
                         v-model="selectedTags"
-                        :tags="tags">
-                        <template v-slot:trigger>
+                        :create-tag
+                        :tags="tags"
+                        @submit="updateFilteredTimeEntries">
+                        <template #trigger>
                             <ReportingFilterBadge
                                 :count="selectedTags.length"
                                 :active="selectedTags.length > 0"
@@ -326,7 +326,6 @@ async function downloadExport(format: ExportFormat) {
                     </TagDropdown>
 
                     <SelectDropdown
-                        @changed="updateFilteredTimeEntries"
                         v-model="billable"
                         :get-key-from-item="(item) => item.value"
                         :get-name-for-item="(item) => item.label"
@@ -343,8 +342,9 @@ async function downloadExport(format: ExportFormat) {
                                 label: 'Non Billable',
                                 value: 'false',
                             },
-                        ]">
-                        <template v-slot:trigger>
+                        ]"
+                        @changed="updateFilteredTimeEntries">
+                        <template #trigger>
                             <ReportingFilterBadge
                                 :active="billable !== null"
                                 :title="
@@ -366,12 +366,9 @@ async function downloadExport(format: ExportFormat) {
         </div>
         <TimeEntryMassActionRow
             :selected-time-entries="selectedTimeEntries"
-            :canCreateProject="canCreateProjects()"
-            :enableEstimatedTime="isAllowedToPerformPremiumAction()"
-            @submit="clearSelectionAndState"
+            :can-create-project="canCreateProjects()"
+            :enable-estimated-time="isAllowedToPerformPremiumAction()"
             :delete-selected="deleteSelected"
-            @select-all="selectedTimeEntries = [...timeEntries]"
-            @unselect-all="selectedTimeEntries = []"
             :all-selected="selectedTimeEntries.length === timeEntries.length"
             :projects="projects"
             :tasks="tasks"
@@ -387,34 +384,37 @@ async function downloadExport(format: ExportFormat) {
             "
             :create-project="createProject"
             :create-client="createClient"
-            :createTag="createTag"></TimeEntryMassActionRow>
+            :create-tag="createTag"
+            @submit="clearSelectionAndState"
+            @select-all="selectedTimeEntries = [...timeEntries]"
+            @unselect-all="selectedTimeEntries = []"></TimeEntryMassActionRow>
         <div class="w-full relative">
             <div v-for="entry in timeEntries" :key="entry.id">
                 <TimeEntryRow
                     :selected="selectedTimeEntries.includes(entry)"
-                    @selected="selectedTimeEntries.push(entry)"
-                    :canCreateProject="canCreateProjects()"
-                    @unselected="
-                        selectedTimeEntries = selectedTimeEntries.filter(
-                            (item) => item.id !== entry.id
-                        )
-                    "
-                    :createClient
-                    :createProject
-                    :enableEstimatedTime="isAllowedToPerformPremiumAction()"
+                    :can-create-project="canCreateProjects()"
+                    :create-client
+                    :create-project
+                    :enable-estimated-time="isAllowedToPerformPremiumAction()"
                     :projects="projects"
                     :tasks="tasks"
                     :tags="tags"
                     :clients
-                    :createTag
-                    :updateTimeEntry
-                    :onStartStopClick="() => startTimeEntryFromExisting(entry)"
-                    :deleteTimeEntry="() => deleteTimeEntries([entry])"
+                    :create-tag
+                    :update-time-entry
+                    :on-start-stop-click="() => startTimeEntryFromExisting(entry)"
+                    :delete-time-entry="() => deleteTimeEntries([entry])"
                     :currency="getOrganizationCurrencyString()"
                     :members="members"
-                    showDate
-                    showMember
-                    :time-entry="entry"></TimeEntryRow>
+                    show-date
+                    show-member
+                    :time-entry="entry"
+                    @selected="selectedTimeEntries.push(entry)"
+                    @unselected="
+                        selectedTimeEntries = selectedTimeEntries.filter(
+                            (item) => item.id !== entry.id
+                        )
+                    "></TimeEntryRow>
             </div>
             <div v-if="timeEntries.length === 0">
                 <div class="text-center pt-12">
@@ -431,10 +431,10 @@ async function downloadExport(format: ExportFormat) {
         </div>
 
         <PaginationRoot
+            v-model:page="currentPage"
             :total="totalPages"
             :items-per-page="pageLimit"
             class="flex justify-center items-center py-8"
-            v-model:page="currentPage"
             :sibling-count="1"
             show-edges>
             <PaginationList

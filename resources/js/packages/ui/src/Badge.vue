@@ -4,11 +4,11 @@ import { computed } from 'vue';
 
 const props = withDefaults(
     defineProps<{
-        size: 'base' | 'large' | 'xlarge';
-        tag: string;
+        size?: 'base' | 'large' | 'xlarge';
+        tag?: string;
         class?: string;
-        color: string;
-        border: boolean;
+        color?: string;
+        border?: boolean;
     }>(),
     {
         size: 'base',

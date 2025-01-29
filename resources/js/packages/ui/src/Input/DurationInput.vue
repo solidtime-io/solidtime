@@ -54,12 +54,12 @@ function updateAndSubmit() {
 <template>
     <div class="relative">
         <TextInput
+            v-model="currentTime"
             class="w-full overflow-hidden pr-14"
             placeholder="0"
             @focus="selectInput"
             @blur="updateDuration"
-            @keydown.enter="updateAndSubmit"
-            v-model="currentTime">
+            @keydown.enter="updateAndSubmit">
         </TextInput>
         <div
             class="absolute top-0 right-0 h-full flex items-center px-4 font-medium">

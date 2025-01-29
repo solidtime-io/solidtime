@@ -15,8 +15,8 @@ const model = defineModel<string | null>({
 
 const props = withDefaults(
     defineProps<{
-        size: 'base' | 'large';
-        focus: boolean;
+        size?: 'base' | 'large';
+        focus?: boolean;
     }>(),
     {
         size: 'base',
@@ -143,22 +143,24 @@ const closestValue = computed({
 <template>
     <div class="flex min-w-0 items-center justify-center text-white">
         <SelectDropdown
-            :class="twMerge('mine-w-0 w-24', size === 'large' && 'w-28')"
             v-model="closestValue"
             v-model:open="open"
+            :class="twMerge('mine-w-0 w-24', size === 'large' && 'w-28')"
             :get-key-from-item="(item: TimeOption) => item.timestamp"
             :get-name-for-item="(item: TimeOption) => item.name"
             :items="getStartOptions">
             <template #trigger>
                 <TextInput
-                    v-model="inputValue"
                     ref="timeInput"
+                    v-model="inputValue"
                     :class="
                         twMerge(
                             'text-center w-24 px-3 py-2',
                             size === 'large' && 'w-28'
                         )
                     "
+                    data-testid="time_picker_input"
+                    type="text"
                     @blur="updateTime"
                     @keydown.enter="
                         updateTime($event);
@@ -169,9 +171,7 @@ const closestValue = computed({
                     @mouseup="($event.target as HTMLInputElement).select()"
                     @click="($event.target as HTMLInputElement).select()"
                     @pointerup="($event.target as HTMLInputElement).select()"
-                    @focusin="open = true"
-                    data-testid="time_picker_input"
-                    type="text" />
+                    @focusin="open = true" />
             </template>
         </SelectDropdown>
     </div>

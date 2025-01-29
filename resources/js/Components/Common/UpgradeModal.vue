@@ -50,12 +50,12 @@ const show = defineModel('show', { default: false });
                         v-if="isBillingActivated() && canManageBilling()"
                         href="/billing">
                         <PrimaryButton
-                            type="button"
-                            class="mt-6"
-                            :icon="CreditCardIcon"
                             v-if="
                                 isBillingActivated() && canUpdateOrganization()
-                            ">
+                            "
+                            type="button"
+                            class="mt-6"
+                            :icon="CreditCardIcon">
                             Go to Billing
                         </PrimaryButton>
                     </Link>

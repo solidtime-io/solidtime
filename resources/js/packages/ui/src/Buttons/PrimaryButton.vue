@@ -6,9 +6,9 @@ import { twMerge } from 'tailwind-merge';
 
 const props = withDefaults(
     defineProps<{
-        type: HtmlButtonType;
+        type?: HtmlButtonType;
         icon?: Component;
-        loading: boolean;
+        loading?: boolean;
     }>(),
     {
         type: 'submit',
@@ -28,8 +28,8 @@ const props = withDefaults(
             ">
             <LoadingSpinner v-if="loading"></LoadingSpinner>
             <component
-                v-if="props.icon && !loading"
                 :is="props.icon"
+                v-if="props.icon && !loading"
                 class="text-text-secondary w-4 -ml-0.5 mr-1"></component>
             <span>
                 <slot />

@@ -19,8 +19,8 @@ defineProps<{
                 'group flex gap-x-2 rounded-md transition leading-6 py-1 px-2 font-medium text-sm items-center',
             ]">
             <component
-                v-if="icon"
                 :is="icon"
+                v-if="icon"
                 :class="[
                     current
                         ? 'text-icon-active'

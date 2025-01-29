@@ -6,11 +6,11 @@ import { TagIcon } from '@heroicons/vue/20/solid';
 const props = withDefaults(
     defineProps<{
         name: string;
-        size: 'base' | 'large';
-        tag: string;
+        size?: 'base' | 'large';
+        tag?: string;
         class?: string;
-        color: string;
-        border: boolean;
+        color?: string;
+        border?: boolean;
     }>(),
     {
         size: 'base',

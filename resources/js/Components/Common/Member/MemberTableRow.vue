@@ -89,8 +89,8 @@ async function invitePlaceholder(id: string) {
                     member.is_placeholder === true &&
                     canInvitePlaceholderMembers()
                 "
-                @click="invitePlaceholder(member.id)"
                 size="small"
+                @click="invitePlaceholder(member.id)"
                 >Invite</SecondaryButton
             >
             <MemberMoreOptionsDropdown
@@ -99,8 +99,8 @@ async function invitePlaceholder(id: string) {
                 @delete="removeMember"></MemberMoreOptionsDropdown>
         </div>
         <MemberEditModal
-            :member="member"
-            v-model:show="showEditMemberModal"></MemberEditModal>
+            v-model:show="showEditMemberModal"
+            :member="member"></MemberEditModal>
     </TableRow>
 </template>
 

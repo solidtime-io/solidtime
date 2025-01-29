@@ -36,9 +36,9 @@ const emit = defineEmits<{
             <SecondaryButton @click="show = false"> Cancel</SecondaryButton>
             <PrimaryButton
                 class="ms-3"
-                @click="emit('submit')"
                 :class="{ 'opacity-25': saving }"
-                :disabled="saving">
+                :disabled="saving"
+                @click="emit('submit')">
                 Confirm Transfer
             </PrimaryButton>
         </template>

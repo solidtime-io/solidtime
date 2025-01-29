@@ -53,19 +53,19 @@ useFocus(taskNameInput, { initialValue: true });
                         v-model="taskName"
                         type="text"
                         placeholder="Task Name"
-                        @keydown.enter="submit()"
                         class="mt-1 block w-full"
                         required
-                        autocomplete="taskName" />
+                        autocomplete="taskName"
+                        @keydown.enter="submit()" />
                 </div>
                 <div class="col-span-6 sm:col-span-4">
-                    <ProjectDropdown :modelValue="projectId"></ProjectDropdown>
+                    <ProjectDropdown :model-value="projectId"></ProjectDropdown>
                 </div>
             </div>
             <EstimatedTimeSection
                 v-if="isAllowedToPerformPremiumAction()"
-                @submit="submit()"
-                v-model="estimatedTime"></EstimatedTimeSection>
+                v-model="estimatedTime"
+                @submit="submit()"></EstimatedTimeSection>
         </template>
         <template #footer>
             <SecondaryButton @click="show = false"> Cancel </SecondaryButton>

@@ -52,8 +52,8 @@ function isActiveTab(tab: string) {
                 >Invite member</SecondaryButton
             >
             <MemberInviteModal
-                :available-roles="availableRoles"
                 v-model:show="inviteMember"
+                :available-roles="availableRoles"
                 @close="activeTab = 'invitations'"></MemberInviteModal>
         </MainContainer>
         <MemberTable v-if="activeTab === 'all'"></MemberTable>

@@ -5,8 +5,8 @@
         <div class="flex w-full flex-col items-center space-y-4 sm:items-end">
             <Notification
                 v-for="notification in notifications"
-                :type="notification.type"
                 :key="notification.uuid"
+                :type="notification.type"
                 :title="notification.title"
                 :message="notification.message"></Notification>
         </div>

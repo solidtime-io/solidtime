@@ -100,44 +100,44 @@ function onSelectChange(event: Event) {
                 class="sm:flex py-2 min-w-0 items-center justify-between group">
                 <div class="flex items-center min-w-0">
                     <Checkbox
-                        @update:checked="onSelectChange"
-                        :checked="selected" />
-                    <div class="w-10 h-7" v-if="indent === true"></div>
+                        :checked="selected"
+                        @update:checked="onSelectChange" />
+                    <div v-if="indent === true" class="w-10 h-7"></div>
                     <TimeEntryDescriptionInput
-                        @changed="updateTimeEntryDescription"
                         class="min-w-0 mr-4"
-                        :modelValue="
+                        :model-value="
                             timeEntry.description
-                        "></TimeEntryDescriptionInput>
+                        "
+                        @changed="updateTimeEntryDescription"></TimeEntryDescriptionInput>
                     <TimeTrackerProjectTaskDropdown
-                        :createProject
-                        :createClient
-                        :canCreateProject
+                        :create-project
+                        :create-client
+                        :can-create-project
                         :clients
                         :projects="projects"
                         :tasks="tasks"
-                        :showBadgeBorder="false"
-                        @changed="updateProjectAndTask"
+                        :show-badge-border="false"
                         :project="timeEntry.project_id"
                         :currency="currency"
                         class="border border-border-primary"
-                        :enableEstimatedTime
+                        :enable-estimated-time
                         :task="
                             timeEntry.task_id
-                        "></TimeTrackerProjectTaskDropdown>
+                        "
+                        @changed="updateProjectAndTask"></TimeTrackerProjectTaskDropdown>
                 </div>
                 <div
                     class="flex items-center font-medium space-x-1 lg:space-x-2">
-                    <div class="text-sm px-2" v-if="showMember && members">
+                    <div v-if="showMember && members" class="text-sm px-2">
                         {{ memberName }}
                     </div>
                     <TimeEntryRowTagDropdown
-                        @changed="updateTimeEntryTags"
-                        :createTag
+                        :create-tag
                         :tags="tags"
-                        :modelValue="timeEntry.tags"></TimeEntryRowTagDropdown>
+                        :model-value="timeEntry.tags"
+                        @changed="updateTimeEntryTags"></TimeEntryRowTagDropdown>
                     <BillableToggleButton
-                        :modelValue="timeEntry.billable"
+                        :model-value="timeEntry.billable"
                         class="opacity-50 group-hover:opacity-100 focus-visible:opacity-100"
                         size="small"
                         @changed="
@@ -148,7 +148,7 @@ function onSelectChange(event: Event) {
                             class="hidden lg:block"
                             :start="timeEntry.start"
                             :end="timeEntry.end"
-                            :showDate
+                            :show-date
                             @changed="
                                 updateStartEndTime
                             "></TimeEntryRangeSelector>
@@ -160,9 +160,9 @@ function onSelectChange(event: Event) {
                             updateStartEndTime
                         "></TimeEntryRowDurationInput>
                     <TimeTrackerStartStop
-                        @changed="onStartStopClick"
                         :active="!!(timeEntry.start && !timeEntry.end)"
-                        class="opacity-20 hidden sm:flex focus-visible:opacity-100 group-hover:opacity-100"></TimeTrackerStartStop>
+                        class="opacity-20 hidden sm:flex focus-visible:opacity-100 group-hover:opacity-100"
+                        @changed="onStartStopClick"></TimeTrackerStartStop>
                     <TimeEntryMoreOptionsDropdown
                         @delete="
                             deleteTimeEntry

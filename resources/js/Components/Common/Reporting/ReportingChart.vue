@@ -157,7 +157,7 @@ const option = ref({
             :autoresize="true"
             class="chart"
             :option="option" />
-        <div class="chart flex flex-col items-center justify-center" v-else>
+        <div v-else class="chart flex flex-col items-center justify-center">
             <p class="text-lg text-white font-semibold">
                 No time entries found
             </p>

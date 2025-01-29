@@ -23,11 +23,11 @@ const timeEntryTags = computed<Tag[]>(() => {
 </script>
 <template>
     <TagDropdown
+        v-model="model"
         :tags="tags"
         align="bottom-end"
-        :createTag
-        @changed="emit('changed', model)"
-        v-model="model">
+        :create-tag
+        @changed="emit('changed', model)">
         <template #trigger>
             <button
                 data-testid="time_entry_tag_dropdown"

@@ -14,9 +14,9 @@ const emit = defineEmits(['submit']);
             <InputLabel for="billable" value="Time Estimated" />
         </div>
         <DurationInput
-            @submit="emit('submit')"
             v-model="model"
-            class="max-w-[150px]"></DurationInput>
+            class="max-w-[150px]"
+            @submit="emit('submit')"></DurationInput>
     </div>
 </template>
 

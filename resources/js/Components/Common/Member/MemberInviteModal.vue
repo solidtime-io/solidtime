@@ -112,11 +112,11 @@ useFocus(clientNameInput, { initialValue: true });
                         v-if="isBillingActivated() && canManageBilling()"
                         href="/billing">
                         <PrimaryButton
-                            type="button"
-                            class="mt-6"
                             v-if="
                                 isBillingActivated() && canUpdateOrganization()
-                            ">
+                            "
+                            type="button"
+                            class="mt-6">
                             <CreditCardIcon class="w-5 h-5 me-2" />
                             Go to Billing
                         </PrimaryButton>
@@ -128,15 +128,15 @@ useFocus(clientNameInput, { initialValue: true });
                     <InputLabel for="email" value="Email" />
                     <TextInput
                         id="email"
-                        name="email"
                         ref="memberEmailInput"
                         v-model="addTeamMemberForm.email"
+                        name="email"
                         type="text"
                         placeholder="Member Email"
-                        @keydown.enter="submit"
                         class="mt-1 block w-full"
                         required
-                        autocomplete="memberName" />
+                        autocomplete="memberName"
+                        @keydown.enter="submit" />
                     <InputError :message="errors.email" class="mt-2" />
                 </div>
 

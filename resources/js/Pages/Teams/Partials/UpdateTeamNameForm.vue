@@ -89,9 +89,9 @@ const updateTeamName = () => {
             <div class="col-span-6 sm:col-span-4">
                 <InputLabel for="currency" value="Currency" />
                 <select
-                    name="currency"
                     id="currency"
                     v-model="form.currency"
+                    name="currency"
                     :disabled="!permissions.canUpdateTeam"
                     class="mt-1 block w-full border-input-border bg-input-background text-white focus:border-input-border-active rounded-md shadow-sm">
                     <option value="" disabled>Select a currency</option>

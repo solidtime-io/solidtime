@@ -170,31 +170,31 @@ function closeAndFocusInput() {
     <div class="relative">
         <Dropdown
             v-model="open"
-            @submit="open = false"
             align="bottom"
-            :close-on-content-click="false">
+            :close-on-content-click="false"
+            @submit="open = false">
             <template #trigger>
                 <input
+                    ref="inputField"
+                    v-model="currentTime"
                     placeholder="00:00:00"
+                    data-testid="time_entry_time"
+                    class="w-[110px] lg:w-[130px] h-full text-white py-2.5 rounded-lg border-border-secondary border text-center px-4 text-base lg:text-lg font-bold bg-card-background border-none placeholder-muted focus:ring-0 transition"
+                    type="text"
                     @focus="pauseLiveTimerUpdate"
                     @focusin="openModalOnTab"
                     @keydown.exact.tab="focusNextElement"
                     @keydown.exact.shift.tab="open = false"
-                    ref="inputField"
-                    data-testid="time_entry_time"
                     @blur="updateTimerAndStartLiveTimerUpdate"
-                    @keydown.enter="onTimeEntryEnterPress"
-                    v-model="currentTime"
-                    class="w-[110px] lg:w-[130px] h-full text-white py-2.5 rounded-lg border-border-secondary border text-center px-4 text-base lg:text-lg font-bold bg-card-background border-none placeholder-muted focus:ring-0 transition"
-                    type="text" />
+                    @keydown.enter="onTimeEntryEnterPress" />
             </template>
             <template #content>
                 <div ref="timeRangeSelector">
                     <TimeRangeSelector
-                        @changed="updateTimeRange"
-                        @close="closeAndFocusInput"
                         :start="startTime"
-                        :end="null">
+                        :end="null"
+                        @changed="updateTimeRange"
+                        @close="closeAndFocusInput">
                     </TimeRangeSelector>
                 </div>
             </template>

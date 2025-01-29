@@ -77,13 +77,13 @@ const inputValue = ref(formatValue(model.value));
             :id="name"
             ref="billableRateInput"
             v-model="inputValue"
-            @blur="updateRate($event.target.value)"
-            @keydown.enter="updateRate($event.target.value)"
             type="text"
             :name="name"
             placeholder="Billable Rate"
             class="block w-full"
-            autocomplete="teamMemberRate" />
+            autocomplete="teamMemberRate"
+            @blur="updateRate($event.target.value)"
+            @keydown.enter="updateRate($event.target.value)" />
         <div
             class="absolute top-0 right-0 h-full flex items-center px-4 font-medium pointer-events-none">
             <span>

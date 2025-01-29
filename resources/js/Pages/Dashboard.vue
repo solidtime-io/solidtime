@@ -74,7 +74,7 @@ function refreshDashboardData() {
         <MainContainer
             class="grid gap-5 sm:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 pt-3 sm:pt-5 pb-4 sm:pb-6 border-b border-default-background-separator items-stretch">
             <RecentlyTrackedTasksCard
-                :latestTasks="props.latestTasks"></RecentlyTrackedTasksCard>
+                :latest-tasks="props.latestTasks"></RecentlyTrackedTasksCard>
             <LastSevenDaysCard
                 :last7-days="props.lastSevenDays"></LastSevenDaysCard>
             <ActivityGraphCard
@@ -84,13 +84,13 @@ function refreshDashboardData() {
             <TeamActivityCard
                 v-if="canViewMembers()"
                 class="flex lg:hidden xl:flex"
-                :latestTeamActivity="
+                :latest-team-activity="
                     props.latestTeamActivity
                 "></TeamActivityCard>
         </MainContainer>
         <MainContainer class="py-5">
             <ThisWeekOverview
-                :weeklyProjectOverview="props.weeklyProjectOverview"
+                :weekly-project-overview="props.weeklyProjectOverview"
                 :total-weekly-billable-amount="props.totalWeeklyBillableAmount"
                 :total-weekly-billable-time="props.totalWeeklyBillableTime"
                 :total-weekly-time="props.totalWeeklyTime"

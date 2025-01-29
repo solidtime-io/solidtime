@@ -38,8 +38,8 @@ const showEditModal = ref(false);
 <template>
     <TableRow>
         <ClientEditModal
-            :client="client"
-            v-model:show="showEditModal"></ClientEditModal>
+            v-model:show="showEditModal"
+            :client="client"></ClientEditModal>
         <div
             class="whitespace-nowrap flex items-center space-x-5 3xl:pl-12 py-4 pr-3 text-sm font-medium text-white pl-4 sm:pl-6 lg:pl-8 3xl:pl-12">
             <span>

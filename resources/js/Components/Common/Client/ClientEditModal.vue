@@ -46,10 +46,10 @@ useFocus(clientNameInput, { initialValue: true });
                         v-model="clientBody.name"
                         type="text"
                         placeholder="Client Name"
-                        @keydown.enter="submit"
                         class="mt-1 block w-full"
                         required
-                        autocomplete="clientName" />
+                        autocomplete="clientName"
+                        @keydown.enter="submit" />
                 </div>
             </div>
         </template>

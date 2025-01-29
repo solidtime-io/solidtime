@@ -48,10 +48,8 @@ const emit = defineEmits(['changed']);
 <template>
     <div class="flex items-center text-muted">
         <input
+            id="start"
             ref="datePicker"
-            @change="updateTempValue"
-            @blur="updateDate"
-            @keydown.enter="updateDate"
             :class="
                 twMerge(
                     'bg-input-background border text-white border-input-border focus-visible:outline-0 focus-visible:border-input-border-active focus-visible:ring-0 rounded-md',
@@ -59,9 +57,11 @@ const emit = defineEmits(['changed']);
                 )
             "
             type="date"
-            id="start"
             name="trip-start"
-            :value="tempDate" />
+            :value="tempDate"
+            @change="updateTempValue"
+            @blur="updateDate"
+            @keydown.enter="updateDate" />
     </div>
 </template>
 

@@ -129,15 +129,15 @@ const shownTasks = computed(() => {
             </nav>
             <div>
                 <SecondaryButton
+                    v-if="canCreateProjects()"
                     :icon="PencilSquareIcon"
-                    @click="showEditProjectModal = true"
-                    v-if="canCreateProjects()">
+                    @click="showEditProjectModal = true">
                     Edit Project
                 </SecondaryButton>
                 <ProjectEditModal
                     v-if="project"
-                    :originalProject="project"
-                    v-model:show="showEditProjectModal"></ProjectEditModal>
+                    v-model:show="showEditProjectModal"
+                    :original-project="project"></ProjectEditModal>
             </div>
         </MainContainer>
         <MainContainer>
@@ -168,8 +168,8 @@ const shownTasks = computed(() => {
                                     >Create Task
                                 </SecondaryButton>
                                 <TaskCreateModal
-                                    :project-id="projectId"
-                                    v-model:show="createTask"></TaskCreateModal>
+                                    v-model:show="createTask"
+                                    :project-id="projectId"></TaskCreateModal>
                             </div>
                         </template>
                     </CardTitle>
@@ -188,11 +188,11 @@ const shownTasks = computed(() => {
                                 Add Member
                             </SecondaryButton>
                             <ProjectMemberCreateModal
-                                :project-id="projectId"
-                                :existing-members="projectMembers"
                                 v-model:show="
                                     createProjectMember
-                                "></ProjectMemberCreateModal>
+                                "
+                                :project-id="projectId"
+                                :existing-members="projectMembers"></ProjectMemberCreateModal>
                         </template>
                     </CardTitle>
                     <Card>

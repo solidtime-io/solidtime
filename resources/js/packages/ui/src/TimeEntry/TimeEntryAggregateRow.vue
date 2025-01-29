@@ -97,7 +97,6 @@ function onSelectChange(event: Event) {
                 class="sm:flex py-2 items-center min-w-0 justify-between group">
                 <div class="flex space-x-3 items-center min-w-0">
                     <Checkbox
-                        @update:checked="onSelectChange"
                         :checked="
                             timeEntry.timeEntries.every(
                                 (aggregateTimeEntry: TimeEntry) =>
@@ -105,7 +104,8 @@ function onSelectChange(event: Event) {
                                         aggregateTimeEntry
                                     )
                             )
-                        " />
+                        "
+                        @update:checked="onSelectChange" />
                     <div class="flex items-center min-w-0">
                         <GroupedItemsCountButton
                             :expanded="expanded"
@@ -114,36 +114,36 @@ function onSelectChange(event: Event) {
                         </GroupedItemsCountButton>
                         <TimeEntryDescriptionInput
                             class="min-w-0 mr-4"
-                            @changed="updateTimeEntryDescription"
-                            :modelValue="
+                            :model-value="
                                 timeEntry.description
-                            "></TimeEntryDescriptionInput>
+                            "
+                            @changed="updateTimeEntryDescription"></TimeEntryDescriptionInput>
                         <TimeTrackerProjectTaskDropdown
                             :clients
-                            :createProject
-                            :createClient
-                            :canCreateProject
+                            :create-project
+                            :create-client
+                            :can-create-project
                             :projects="projects"
                             :tasks="tasks"
-                            :showBadgeBorder="false"
-                            @changed="updateProjectAndTask"
+                            :show-badge-border="false"
                             :project="timeEntry.project_id"
-                            :enableEstimatedTime
+                            :enable-estimated-time
                             :currency="currency"
                             class="border border-border-primary"
                             :task="
                                 timeEntry.task_id
-                            "></TimeTrackerProjectTaskDropdown>
+                            "
+                            @changed="updateProjectAndTask"></TimeTrackerProjectTaskDropdown>
                     </div>
                 </div>
                 <div class="flex items-center font-medium lg:space-x-2">
                     <TimeEntryRowTagDropdown
-                        :createTag
+                        :create-tag
                         :tags="tags"
-                        @changed="updateTimeEntryTags"
-                        :modelValue="timeEntry.tags"></TimeEntryRowTagDropdown>
+                        :model-value="timeEntry.tags"
+                        @changed="updateTimeEntryTags"></TimeEntryRowTagDropdown>
                     <BillableToggleButton
-                        :modelValue="timeEntry.billable"
+                        :model-value="timeEntry.billable"
                         class="opacity-50 focus-visible:opacity-100 group-hover:opacity-100"
                         size="small"
                         @changed="
@@ -151,23 +151,23 @@ function onSelectChange(event: Event) {
                         "></BillableToggleButton>
                     <div class="flex-1">
                         <button
-                            @click="expanded = !expanded"
-                            class="hidden lg:block text-muted w-[110px] px-1 py-1.5 bg-transparent text-center hover:bg-card-background rounded-lg border border-transparent hover:border-card-border text-sm font-medium focus-visible:outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:bg-tertiary">
+                            class="hidden lg:block text-muted w-[110px] px-1 py-1.5 bg-transparent text-center hover:bg-card-background rounded-lg border border-transparent hover:border-card-border text-sm font-medium focus-visible:outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:bg-tertiary"
+                            @click="expanded = !expanded">
                             {{ formatStartEnd(timeEntry.start, timeEntry.end) }}
                         </button>
                     </div>
                     <button
-                        @click="expanded = !expanded"
-                        class="text-white min-w-[90px] px-2 py-1.5 bg-transparent text-center hover:bg-card-background rounded-lg border border-transparent hover:border-card-border text-sm font-semibold focus-visible:outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:bg-tertiary">
+                        class="text-white min-w-[90px] px-2 py-1.5 bg-transparent text-center hover:bg-card-background rounded-lg border border-transparent hover:border-card-border text-sm font-semibold focus-visible:outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:bg-tertiary"
+                        @click="expanded = !expanded">
                         {{
                             formatHumanReadableDuration(timeEntry.duration ?? 0)
                         }}
                     </button>
 
                     <TimeTrackerStartStop
-                        @changed="onStartStopClick(timeEntry)"
                         :active="!!(timeEntry.start && !timeEntry.end)"
-                        class="opacity-20 hidden sm:flex group-hover:opacity-100 focus-visible:opacity-100"></TimeTrackerStartStop>
+                        class="opacity-20 hidden sm:flex group-hover:opacity-100 focus-visible:opacity-100"
+                        @changed="onStartStopClick(timeEntry)"></TimeTrackerStartStop>
                     <TimeEntryMoreOptionsDropdown
                         @delete="
                             deleteTimeEntries(timeEntry?.timeEntries ?? [])
@@ -179,9 +179,11 @@ function onSelectChange(event: Event) {
             v-if="expanded"
             class="w-full border-t border-default-background-separator bg-black/15">
             <TimeEntryRow
+                v-for="subEntry in timeEntry.timeEntries"
+                :key="subEntry.id"
                 :projects="projects"
-                :enableEstimatedTime
-                :canCreateProject
+                :enable-estimated-time
+                :can-create-project
                 :tasks="tasks"
                 :selected="
                     !!selectedTimeEntries.find(
@@ -189,23 +191,21 @@ function onSelectChange(event: Event) {
                             filterEntry.id === subEntry.id
                     )
                 "
-                @selected="emit('selected', [subEntry])"
-                @unselected="emit('unselected', [subEntry])"
-                :createClient
+                :create-client
                 :clients
-                :createProject
+                :create-project
                 :tags="tags"
                 indent
-                :updateTimeEntry="
+                :update-time-entry="
                     (timeEntry: TimeEntry) => updateTimeEntry(timeEntry)
                 "
-                :onStartStopClick="() => onStartStopClick(subEntry)"
-                :deleteTimeEntry="() => deleteTimeEntries([subEntry])"
+                :on-start-stop-click="() => onStartStopClick(subEntry)"
+                :delete-time-entry="() => deleteTimeEntries([subEntry])"
                 :currency="currency"
-                :createTag
-                :key="subEntry.id"
-                v-for="subEntry in timeEntry.timeEntries"
-                :time-entry="subEntry"></TimeEntryRow>
+                :create-tag
+                :time-entry="subEntry"
+                @selected="emit('selected', [subEntry])"
+                @unselected="emit('unselected', [subEntry])"></TimeEntryRow>
         </div>
     </div>
 </template>

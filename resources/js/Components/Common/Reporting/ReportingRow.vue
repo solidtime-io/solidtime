@@ -35,9 +35,9 @@ const expanded = ref(false);
                 )
             ">
             <GroupedItemsCountButton
+                v-if="entry.grouped_data && entry.grouped_data?.length > 0"
                 :expanded="expanded"
-                @click="expanded = !expanded"
-                v-if="entry.grouped_data && entry.grouped_data?.length > 0">
+                @click="expanded = !expanded">
                 {{ entry.grouped_data?.length }}
             </GroupedItemsCountButton>
             <span>
@@ -52,13 +52,13 @@ const expanded = ref(false);
         </div>
     </div>
     <div
+        v-if="expanded && entry.grouped_data"
         class="col-span-3 grid bg-quaternary"
-        style="grid-template-columns: 1fr 150px 150px"
-        v-if="expanded && entry.grouped_data">
+        style="grid-template-columns: 1fr 150px 150px">
         <ReportingRow
-            indent
             v-for="subEntry in entry.grouped_data"
             :key="subEntry.description ?? 'none'"
+            indent
             :entry="subEntry"></ReportingRow>
     </div>
 </template>
