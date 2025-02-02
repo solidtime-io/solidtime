@@ -40,6 +40,7 @@ return [
             'driver' => 'local',
             'root' => storage_path('app'),
             'throw' => true,
+            'server' => true,
         ],
 
         'public' => [
