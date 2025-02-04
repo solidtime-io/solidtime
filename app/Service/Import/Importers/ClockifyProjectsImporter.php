@@ -43,6 +43,7 @@ class ClockifyProjectsImporter extends DefaultImporter
                         'color' => $this->colorService->getRandomColor(),
                         'is_billable' => $record['Billability'] === 'Yes',
                         'billable_rate' => $billableRateKey !== null && $record[$billableRateKey] !== '' ? (int) (((float) $record[$billableRateKey]) * 100) : null,
+                        'estimated_time' => $record['Estimated (h)'] !== '' && is_numeric($record['Estimated (h)']) ? (int) ($record['Estimated (h)'] * 3600) : null,
                     ]);
                 }
 
