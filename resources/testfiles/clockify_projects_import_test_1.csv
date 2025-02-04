@@ -1,3 +1,3 @@
 "Project","Client","Status","Visibility","Billability","Task","Tracked (h)","Estimated (h)","Remaining (h)","Overage (h)","Progress(%)","Billable (h)","Non-billable (h)","Billable Rate (USD)","Amount (USD)","Project members","Project manager","Note"
-"Project for Big Company","Big Company","Active","Public","Yes","Task 1, Task 2, Task 3","0.00","","","","","0.00","0.00","100.01","0.00","Constantin Graf","",""
+"Project for Big Company","Big Company","Active","Public","Yes","Task 1, Task 2, Task 3","0.00","1001.11","","","","0.00","0.00","100.01","0.00","Constantin Graf","",""
 "Project without Client","","Active","Public","Yes","","0.00","","","","","0.00","0.00","","0.00","Constantin Graf","",""
