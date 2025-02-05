@@ -101,7 +101,12 @@ class ReportResource extends Resource
             ->defaultSort('created_at', 'desc')
             ->filters([
                 SelectFilter::make('organization')
+                    ->label('Organization')
                     ->relationship('organization', 'name')
+                    ->searchable(),
+                SelectFilter::make('organization_id')
+                    ->label('Organization ID')
+                    ->relationship('organization', 'id')
                     ->searchable(),
             ])
             ->actions([

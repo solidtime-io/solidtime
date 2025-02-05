@@ -29,7 +29,6 @@ class UserVerifyCommandTest extends TestCaseWithDatabase
         $command = $this->artisan('admin:user:verify', ['email' => $user->email]);
 
         // Assert
-
         $command->expectsOutput('Start verifying user with email "'.$user->email.'"')
             ->expectsOutput('User with email "'.$user->email.'" has been verified.')
             ->assertExitCode(0);

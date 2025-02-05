@@ -72,7 +72,12 @@ class ProjectResource extends Resource
             ])
             ->filters([
                 SelectFilter::make('organization')
+                    ->label('Organization')
                     ->relationship('organization', 'name')
+                    ->searchable(),
+                SelectFilter::make('organization_id')
+                    ->label('Organization ID')
+                    ->relationship('organization', 'id')
                     ->searchable(),
             ])
             ->defaultSort('created_at', 'desc')

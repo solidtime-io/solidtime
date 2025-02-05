@@ -22,7 +22,8 @@ class UserCreateCommand extends Command
     protected $signature = 'admin:user:create
                 { name : The name of the user }
                 { email : The email of the user }
-                { --ask-for-password : Ask for the password, otherwise the command will generate a random one }';
+                { --ask-for-password : Ask for the password, otherwise the command will generate a random one }
+                { --verify-email : Verify the email address of the user }';
 
     /**
      * The console command description.
@@ -39,6 +40,7 @@ class UserCreateCommand extends Command
         $name = $this->argument('name');
         $email = $this->argument('email');
         $askForPassword = (bool) $this->option('ask-for-password');
+        $verifyEmail = (bool) $this->option('verify-email');
 
         if (User::query()->where('email', $email)->where('is_placeholder', '=', false)->exists()) {
             $this->error('User with email "'.$email.'" already exists.');
@@ -69,6 +71,10 @@ class UserCreateCommand extends Command
         $organization = $user->ownedTeams->first();
         if ($organization === null) {
             throw new LogicException('User does not have an organization');
+        }
+
+        if ($verifyEmail) {
+            $user->markEmailAsVerified();
         }
 
         $this->info('Created user "'.$name.'" ("'.$email.'")');

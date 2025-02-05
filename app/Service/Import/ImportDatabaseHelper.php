@@ -196,6 +196,7 @@ class ImportDatabaseHelper
         if ($this->mapKeyToModel === null) {
             return [];
         }
+
         return array_values($this->mapKeyToModel);
     }
 

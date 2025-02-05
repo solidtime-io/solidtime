@@ -7,6 +7,7 @@ namespace Tests\Unit\Filament\Resources;
 use App\Exceptions\Api\CanNotDeleteUserWhoIsOwnerOfOrganizationWithMultipleMembers;
 use App\Filament\Resources\TimeEntryResource;
 use App\Filament\Resources\UserResource;
+use App\Models\Organization;
 use App\Models\User;
 use App\Service\DeletionService;
 use Illuminate\Support\Facades\Config;
@@ -54,6 +55,18 @@ class UserResourceTest extends FilamentTestCase
         $response->assertSuccessful();
     }
 
+    public function test_can_see_view_page_of_user(): void
+    {
+        // Arrange
+        $user = User::factory()->create();
+
+        // Act
+        $response = Livewire::test(UserResource\Pages\ViewUser::class, ['record' => $user->getKey()]);
+
+        // Assert
+        $response->assertSuccessful();
+    }
+
     public function test_can_delete_a_user(): void
     {
         // Arrange
@@ -90,5 +103,43 @@ class UserResourceTest extends FilamentTestCase
         // Assert
         $response->assertNotified(__('exceptions.api.can_not_delete_user_who_is_owner_of_organization_with_multiple_members'));
         $response->assertSuccessful();
+    }
+
+    public function test_can_list_related_organizations(): void
+    {
+        // Arrange
+        $user = User::factory()->create();
+        $ownedOrganization = Organization::factory()->withOwner($user)->create();
+        $organization = Organization::factory()->create();
+
+        // Act
+        $response = Livewire::test(UserResource\RelationManagers\OrganizationsRelationManager::class, [
+            'ownerRecord' => $user,
+            'pageClass' => UserResource\Pages\EditUser::class,
+        ]);
+
+        // Assert
+        $response->assertSuccessful();
+        $response->assertCanSeeTableRecords($user->organizations()->get());
+        $response->assertCanNotSeeTableRecords($user->ownedTeams()->get());
+    }
+
+    public function test_can_list_related_owned_organizations(): void
+    {
+        // Arrange
+        $user = User::factory()->create();
+        $ownedOrganization = Organization::factory()->withOwner($user)->create();
+        $organization = Organization::factory()->create();
+
+        // Act
+        $response = Livewire::test(UserResource\RelationManagers\OwnedOrganizationsRelationManager::class, [
+            'ownerRecord' => $user,
+            'pageClass' => UserResource\Pages\EditUser::class,
+        ]);
+
+        // Assert
+        $response->assertSuccessful();
+        $response->assertCanSeeTableRecords($user->ownedTeams()->get());
+        $response->assertCanNotSeeTableRecords($user->organizations()->get());
     }
 }
