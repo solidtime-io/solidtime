@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Service\Import\Importers;
 
 use App\Enums\Role;
+use App\Jobs\RecalculateSpentTimeForProject;
+use App\Jobs\RecalculateSpentTimeForTask;
 use App\Models\TimeEntry;
 use Carbon\Exceptions\InvalidFormatException;
 use Exception;
@@ -99,6 +101,7 @@ class ClockifyTimeEntriesImporter extends DefaultImporter
                         'project_id' => $projectId,
                         'organization_id' => $this->organization->id,
                     ]);
+                    $this->taskImportHelper->getModelById($taskId);
                 }
                 $timeEntry = new TimeEntry;
                 $timeEntry->disableAuditing();
@@ -157,6 +160,12 @@ class ClockifyTimeEntriesImporter extends DefaultImporter
                 );
                 $timeEntry->save();
                 $this->timeEntriesCreated++;
+            }
+            foreach ($this->projectImportHelper->getCachedModels() as $usedProject) {
+                RecalculateSpentTimeForProject::dispatch($usedProject);
+            }
+            foreach ($this->taskImportHelper->getCachedModels() as $usedTask) {
+                RecalculateSpentTimeForTask::dispatch($usedTask);
             }
         } catch (ImportException $exception) {
             throw $exception;

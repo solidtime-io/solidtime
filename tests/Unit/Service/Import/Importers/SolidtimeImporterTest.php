@@ -4,11 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Service\Import\Importers;
 
+use App\Jobs\RecalculateSpentTimeForProject;
+use App\Jobs\RecalculateSpentTimeForTask;
 use App\Models\Organization;
 use App\Service\Import\Importers\DefaultImporter;
 use App\Service\Import\Importers\ImportException;
 use App\Service\Import\Importers\SolidtimeImporter;
 use Exception;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Queue;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
 
@@ -47,12 +51,20 @@ class SolidtimeImporterTest extends ImporterTestAbstract
         $importer = new SolidtimeImporter;
         $importer->init($organization);
         $data = file_get_contents($zipPath);
+        Queue::fake([
+            RecalculateSpentTimeForProject::class,
+            RecalculateSpentTimeForTask::class,
+        ]);
 
         // Act
+        DB::enableQueryLog();
+        DB::flushQueryLog();
         $importer->importData($data, $timezone);
         $report = $importer->getReport();
+        $queryLog = DB::getQueryLog();
 
         // Assert
+        $this->assertCount(25, $queryLog);
         $testScenario = $this->checkTestScenarioAfterImportExcludingTimeEntries(true);
         $this->checkTimeEntries($testScenario);
         $this->assertSame(2, $report->timeEntriesCreated);
@@ -61,6 +73,8 @@ class SolidtimeImporterTest extends ImporterTestAbstract
         $this->assertSame(1, $report->usersCreated);
         $this->assertSame(3, $report->projectsCreated);
         $this->assertSame(2, $report->clientsCreated);
+        Queue::assertPushed(RecalculateSpentTimeForProject::class, 1);
+        Queue::assertPushed(RecalculateSpentTimeForTask::class, 1);
     }
 
     public function test_import_of_test_file_twice_succeeds(): void
@@ -75,12 +89,20 @@ class SolidtimeImporterTest extends ImporterTestAbstract
         $importer->importData($data, $timezone);
         $importer = new SolidtimeImporter;
         $importer->init($organization);
+        Queue::fake([
+            RecalculateSpentTimeForProject::class,
+            RecalculateSpentTimeForTask::class,
+        ]);
 
         // Act
+        DB::enableQueryLog();
+        DB::flushQueryLog();
         $importer->importData($data, $timezone);
         $report = $importer->getReport();
+        $queryLog = DB::getQueryLog();
 
         // Assert
+        $this->assertCount(13, $queryLog);
         $testScenario = $this->checkTestScenarioAfterImportExcludingTimeEntries(true);
         $this->checkTimeEntries($testScenario, true);
         $this->assertSame(2, $report->timeEntriesCreated);
@@ -89,5 +111,7 @@ class SolidtimeImporterTest extends ImporterTestAbstract
         $this->assertSame(0, $report->usersCreated);
         $this->assertSame(0, $report->projectsCreated);
         $this->assertSame(0, $report->clientsCreated);
+        Queue::assertPushed(RecalculateSpentTimeForProject::class, 1);
+        Queue::assertPushed(RecalculateSpentTimeForTask::class, 1);
     }
 }
