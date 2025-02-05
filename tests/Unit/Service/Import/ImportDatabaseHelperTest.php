@@ -229,4 +229,23 @@ class ImportDatabaseHelperTest extends TestCase
         // Assert
         $this->assertSame($user->getKey(), $model1->getKey());
     }
+
+    public function test_get_cached_models_returns_all_models_where_the_helper_already_fetched_the_model(): void
+    {
+        // Arrange
+        $user1 = User::factory()->create();
+        $user2 = User::factory()->create();
+        $helper = new ImportDatabaseHelper(User::class, ['email'], true);
+        $helper->getModelById($user1->getKey());
+        $helper->getModelById($user2->getKey());
+        $helper->getModelById($user1->getKey());
+
+        // Act
+        $models = $helper->getCachedModels();
+
+        // Assert
+        $this->assertCount(2, $models);
+        $this->assertContains($user1->getKey(), collect($models)->pluck('id')->toArray());
+        $this->assertContains($user2->getKey(), collect($models)->pluck('id')->toArray());
+    }
 }
