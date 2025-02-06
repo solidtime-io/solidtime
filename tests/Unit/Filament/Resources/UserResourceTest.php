@@ -11,6 +11,7 @@ use App\Models\Organization;
 use App\Models\User;
 use App\Service\DeletionService;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Hash;
 use Livewire\Livewire;
 use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\UsesClass;
@@ -65,6 +66,47 @@ class UserResourceTest extends FilamentTestCase
 
         // Assert
         $response->assertSuccessful();
+    }
+
+    public function test_can_see_create_page_of_user(): void
+    {
+        // Act
+        $response = Livewire::test(UserResource\Pages\CreateUser::class);
+
+        // Assert
+        $response->assertSuccessful();
+    }
+
+    public function test_can_create_user(): void
+    {
+        // Arrange
+        $userFake = User::factory()->make();
+
+        // Act
+        $response = Livewire::test(UserResource\Pages\CreateUser::class)
+            ->fillForm([
+                'name' => $userFake->name,
+                'email' => $userFake->email,
+                'password_create' => 'password',
+                'timezone' => $userFake->timezone,
+                'week_start' => $userFake->week_start->value,
+                'currency' => 'EUR',
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        // Assert
+        $response->assertSuccessful();
+        $user = User::where('email', $userFake->email)->first();
+        $this->assertNotNull($user);
+        $this->assertSame($userFake->name, $user->name);
+        $this->assertSame($userFake->email, $user->email);
+        $this->assertSame($userFake->timezone, $user->timezone);
+        $this->assertSame($userFake->week_start->value, $user->week_start->value);
+        $organization = $user->ownedTeams()->first();
+        $this->assertNotNull($organization);
+        $this->assertSame('EUR', $organization->currency);
+        $this->assertTrue(Hash::check('password', $user->password));
     }
 
     public function test_can_delete_a_user(): void

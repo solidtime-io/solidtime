@@ -25,6 +25,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Korridor\LaravelModelValidationRules\Rules\UniqueEloquent;
 use STS\FilamentImpersonate\Tables\Actions\Impersonate;
 
 class UserResource extends Resource
@@ -39,6 +40,8 @@ class UserResource extends Resource
 
     public static function form(Form $form): Form
     {
+        /** @var User|null $record */
+        $record = $form->getRecord();
         return $form
             ->columns(1)
             ->schema([
@@ -55,6 +58,13 @@ class UserResource extends Resource
                 Forms\Components\TextInput::make('email')
                     ->label('Email')
                     ->required()
+                    ->rules($record?->is_placeholder ? [] : [
+                        UniqueEloquent::make(User::class, 'email')
+                            ->ignore($record?->getKey()),
+                    ])
+                    ->rule([
+                        'email',
+                    ])
                     ->maxLength(255),
                 Forms\Components\Toggle::make('is_placeholder')
                     ->label('Is Placeholder?')
@@ -62,7 +72,11 @@ class UserResource extends Resource
                     ->disabledOn(['edit']),
                 Forms\Components\DateTimePicker::make('email_verified_at')
                     ->label('Email Verified At')
+                    ->hiddenOn(['create'])
                     ->nullable(),
+                Forms\Components\Toggle::make('is_email_verified')
+                    ->label('Email Verified?')
+                    ->visibleOn(['create']),
                 Forms\Components\Select::make('timezone')
                     ->label('Timezone')
                     ->options(fn (): array => app(TimezoneService::class)->getSelectOptions())
@@ -74,8 +88,16 @@ class UserResource extends Resource
                     ->required(),
                 TextInput::make('password')
                     ->password()
+                    ->label('Password')
                     ->dehydrateStateUsing(fn ($state) => Hash::make($state))
                     ->dehydrated(fn ($state) => filled($state))
+                    ->hiddenOn(['create'])
+                    ->required(fn (string $context): bool => $context === 'create')
+                    ->maxLength(255),
+                TextInput::make('password_create')
+                    ->password()
+                    ->label('Password')
+                    ->visibleOn(['create'])
                     ->required(fn (string $context): bool => $context === 'create')
                     ->maxLength(255),
                 Forms\Components\Select::make('currency')

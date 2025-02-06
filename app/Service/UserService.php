@@ -12,11 +12,12 @@ use App\Models\Organization;
 use App\Models\ProjectMember;
 use App\Models\TimeEntry;
 use App\Models\User;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
 
 class UserService
 {
-    public function createUser(string $name, string $email, string $password, string $timezone, Weekday $weekStart, string $currency): User
+    public function createUser(string $name, string $email, string $password, string $timezone, Weekday $weekStart, string $currency, bool $verifyEmail = false): User
     {
         $user = new User;
         $user->name = $name;
@@ -24,6 +25,9 @@ class UserService
         $user->password = Hash::make($password);
         $user->timezone = $timezone;
         $user->week_start = $weekStart;
+        if ($verifyEmail) {
+            $user->email_verified_at = Carbon::now();
+        }
         $user->save();
 
         $organization = new Organization;

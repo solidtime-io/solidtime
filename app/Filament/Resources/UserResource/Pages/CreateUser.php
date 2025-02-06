@@ -20,10 +20,11 @@ class CreateUser extends CreateRecord
         $user = $userService->createUser(
             $data['name'],
             $data['email'],
-            $data['password'],
+            $data['password_create'],
             $data['timezone'],
             Weekday::from($data['week_start']),
             $data['currency'],
+            (bool) $data['is_email_verified']
         );
 
         return $user;

@@ -57,7 +57,7 @@ class UserCreateCommand extends Command
         }
 
         $user = null;
-        DB::transaction(function () use (&$user, $name, $email, $password): void {
+        DB::transaction(function () use (&$user, $name, $email, $password, $verifyEmail): void {
             $user = app(UserService::class)->createUser(
                 $name,
                 $email,
@@ -65,16 +65,13 @@ class UserCreateCommand extends Command
                 'UTC',
                 Weekday::Monday,
                 'EUR',
+                $verifyEmail
             );
         });
         /** @var Organization|null $organization */
         $organization = $user->ownedTeams->first();
         if ($organization === null) {
             throw new LogicException('User does not have an organization');
-        }
-
-        if ($verifyEmail) {
-            $user->markEmailAsVerified();
         }
 
         $this->info('Created user "'.$name.'" ("'.$email.'")');
