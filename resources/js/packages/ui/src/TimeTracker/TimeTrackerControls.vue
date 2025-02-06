@@ -56,8 +56,17 @@ function updateProject() {
     emit('updateTimeEntry');
 }
 
+function setAndStartTimer(timeEntry: TimeEntry) {
+    setCurrentTimeEntry(timeEntry);
+    if (!props.isActive) {
+        emit('startTimer');
+    }
+    else {
+        emit('updateTimeEntry');
+    }
+}
+
 function setCurrentTimeEntry(timeEntry: TimeEntry){
-    console.log('asdasd')
     currentTimeEntry.value.description = timeEntry.description;
     currentTimeEntry.value.project_id = timeEntry.project_id;
     currentTimeEntry.value.task_id = timeEntry.task_id;
@@ -198,7 +207,7 @@ useSelectEvents(filteredRecentlyTrackedTimeEntries,
                                 :highlighted="highlightedDropdownEntryId === timeEntry.id"
                                 :projects="projects"
                                 :tasks="tasks"
-                                @mousedown="setCurrentTimeEntry(timeEntry)"
+                                @mousedown="setAndStartTimer(timeEntry)"
                                 @mouseenter="highlightedDropdownEntryId = timeEntry.id"
                             ></TimeTrackerRecentlyTrackedEntry>
                         </div>
