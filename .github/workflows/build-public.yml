@@ -28,9 +28,6 @@ jobs:
         with:
           fetch-depth: 0 # Required for WyriHaximus/github-action-get-previous-tag
 
-      - name: Configure git safe directory
-        run: git config --global --add safe.directory /app
-
       - name: "Get build"
         id: build
         run: echo "build=$(git rev-parse --short=8 HEAD)" >> "$GITHUB_OUTPUT"
