@@ -103,10 +103,14 @@ function setBillableDefaultForProject() {
     }
 }
 
+const blockRefocus = ref(false);
+
 function onToggleButtonPress(newState: boolean) {
     if (newState) {
         emit('startTimer');
-        currentTimeEntryDescriptionInput.value?.focus();
+        if (!blockRefocus.value){
+            currentTimeEntryDescriptionInput.value?.focus();
+        }
     } else {
         emit('stopTimer');
     }
@@ -129,11 +133,27 @@ function updateTimeEntryDescription() {
 
 const {timeEntries} = storeToRefs(useTimeEntriesStore());
 const filteredRecentlyTrackedTimeEntries = computed(() => {
-    return timeEntries.value.filter((item) => {
+    // do not include running time entries
+    const finishedTimeEntries = timeEntries.value.filter((item) => item.end !== null);
+
+    // filter out duplicates based on description, task, project, tags and billable
+    const nonDuplicateTimeEntries = finishedTimeEntries.filter((item, index, self) => {
+        return index === self.findIndex((t) => (
+            t.description === item.description &&
+            t.task_id === item.task_id &&
+            t.project_id === item.project_id &&
+            t.tags.length === item.tags.length &&
+            t.tags.every((tag) => item.tags.includes(tag)) &&
+            t.billable === item.billable
+        ));
+    });
+
+    // filter time entries based on current description
+    return nonDuplicateTimeEntries.filter((item) => {
         return item.description
             ?.toLowerCase()
             ?.includes(tempDescription.value?.toLowerCase()?.trim() || '');
-    }).slice(0, 5);;
+    }).slice(0, 5);
 });
 
 const showDropdown = ref(false);
@@ -143,6 +163,14 @@ watch(focused, (focused) => {
     nextTick(() => {
         // make sure the click event on the dropdown does not get interrupted
         showDropdown.value = focused
+
+        // make sure that the input does not get refocused after the dropdown is closed
+        if(!focused){
+            blockRefocus.value = true;
+            setTimeout(() => {
+                blockRefocus.value = false;
+            }, 100);
+        }
     });
 });
 
