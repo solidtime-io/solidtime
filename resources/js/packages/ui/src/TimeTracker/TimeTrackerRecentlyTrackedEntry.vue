@@ -30,12 +30,13 @@ const task = computed(() => {
         tabindex="-1"
         :data-select-id="timeEntry.id"
         :class="twMerge('px-2 py-1.5 flex justify-between items-center space-x-2 w-full rounded', props.highlighted && 'bg-card-background-active')">
-        <span class="text-sm font-medium">
+        <span v-if="timeEntry.description !== ''" class="text-sm font-medium">
             {{
-                timeEntry.description !== ''
-                    ? timeEntry.description
-                    : 'No Description'
+                    timeEntry.description
             }}
+        </span>
+        <span v-else class="text-sm text-text-tertiary font-medium">
+            No Description
         </span>
         <ProjectBadge
             ref="projectDropdownTrigger"

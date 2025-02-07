@@ -119,7 +119,6 @@ function onSelectChange(event: Event) {
                         :show-badge-border="false"
                         :project="timeEntry.project_id"
                         :currency="currency"
-                        class="border border-border-primary"
                         :enable-estimated-time
                         :task="
                             timeEntry.task_id
