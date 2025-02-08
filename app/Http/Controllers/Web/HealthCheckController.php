@@ -64,6 +64,7 @@ class HealthCheckController extends Controller
             $response['app_env'] = app()->environment();
             $response['app_timezone'] = config('app.timezone');
             $response['app_force_https'] = config('app.force_https');
+            $response['session_secure'] = config('session.secure');
             $response['trusted_proxies'] = config('trustedproxy.proxies');
             $headers = $request->headers->all();
             if (isset($headers['cookie'])) {

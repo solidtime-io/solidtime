@@ -47,6 +47,20 @@ class EnsureEmailIsVerifiedMiddlewareTest extends MiddlewareTestAbstract
         $response->assertRedirect(route('verification.notice'));
     }
 
+    public function test_users_with_unverified_email_get_error_if_the_request_is_json(): void
+    {
+        // Arrange
+        $user = User::factory()->unverified()->create();
+        $route = $this->createTestRoute();
+        $this->actingAs($user);
+
+        // Act
+        $response = $this->getJson($route);
+
+        // Assert
+        $response->assertForbidden();
+    }
+
     public function test_users_with_verified_email_can_access_route(): void
     {
         // Arrange
