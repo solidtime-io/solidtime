@@ -42,6 +42,7 @@ class UserResource extends Resource
     {
         /** @var User|null $record */
         $record = $form->getRecord();
+
         return $form
             ->columns(1)
             ->schema([

@@ -29,7 +29,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -89,12 +88,6 @@ class AppServiceProvider extends ServiceProvider
                     })
             );
         });
-
-        if (config('app.force_https', false)) {
-            URL::forceScheme('https');
-            request()->server->set('HTTPS', 'on');
-            request()->headers->set('X-Forwarded-Proto', 'https');
-        }
 
         $this->app->scoped(PermissionStore::class, function (Application $app): PermissionStore {
             return new PermissionStore;
