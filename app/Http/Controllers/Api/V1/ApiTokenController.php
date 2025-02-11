@@ -37,6 +37,8 @@ class ApiTokenController extends Controller
      * The response will contain the access token that can be used to send authenticated API requests.
      * Please note that the access token is only shown in this response and cannot be retrieved later.
      *
+     * @operationId createApiToken
+     *
      * @throws AuthorizationException
      */
     public function store(ApiTokenStoreRequest $request): ApiTokenWithAccessTokenResource
@@ -53,6 +55,8 @@ class ApiTokenController extends Controller
     /**
      * Revoke an api token
      *
+     * @operationId revokeApiToken
+     *
      * @throws AuthorizationException
      */
     public function revoke(string $apiTokenId): JsonResponse
@@ -68,6 +72,8 @@ class ApiTokenController extends Controller
 
     /**
      * Delete an api token
+     *
+     * @operationId deleteApiToken
      *
      * @throws AuthorizationException
      */

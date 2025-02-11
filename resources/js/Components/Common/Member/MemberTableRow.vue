@@ -32,7 +32,7 @@ async function invitePlaceholder(id: string) {
         await handleApiRequestNotifications(
             () =>
                 api.invitePlaceholder(
-                    {},
+                    undefined,
                     {
                         params: {
                             organization: organizationId,

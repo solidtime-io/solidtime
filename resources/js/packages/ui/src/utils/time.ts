@@ -99,6 +99,10 @@ export function formatDateLocalized(date: string): string {
     return getLocalizedDayJs(date).format('DD.MM.YYYY');
 }
 
+export function formatDateTimeLocalized(date: string): string {
+    return getLocalizedDayJs(date).format('DD.MM.YYYY HH:mm');
+}
+
 export function formatWeek(date: string | null): string {
     return 'Week ' + getDayJsInstance()(date).week();
 }

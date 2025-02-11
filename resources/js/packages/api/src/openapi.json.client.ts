@@ -1,6 +1,21 @@
 import { makeApi, Zodios, type ZodiosOptions } from '@zodios/core';
 import { z } from 'zod';
 
+const ApiTokenResource = z
+    .object({
+        id: z.string(),
+        name: z.string(),
+        revoked: z.string(),
+        scopes: z.string(),
+        created_at: z.union([z.string(), z.null()]),
+        expires_at: z.union([z.string(), z.null()]),
+    })
+    .passthrough();
+const ApiTokenCollection = z.array(ApiTokenResource);
+const ApiTokenStoreRequest = z
+    .object({ name: z.string().min(1).max(255) })
+    .passthrough();
+const ApiTokenWithAccessTokenResource = z.string();
 const ClientResource = z
     .object({
         id: z.string(),
@@ -26,9 +41,11 @@ const ImportRequest = z
 const InvitationResource = z
     .object({ id: z.string(), email: z.string(), role: z.string() })
     .passthrough();
-const Role = z.enum(['owner', 'admin', 'manager', 'employee', 'placeholder']);
 const InvitationStoreRequest = z
-    .object({ email: z.string().email(), role: Role })
+    .object({
+        email: z.string().email(),
+        role: z.enum(['admin', 'manager', 'employee']),
+    })
     .passthrough();
 const MemberResource = z
     .object({
@@ -41,6 +58,7 @@ const MemberResource = z
         billable_rate: z.union([z.number(), z.null()]),
     })
     .passthrough();
+const Role = z.enum(['owner', 'admin', 'manager', 'employee', 'placeholder']);
 const MemberUpdateRequest = z
     .object({ role: Role, billable_rate: z.union([z.number(), z.null()]) })
     .partial()
@@ -190,13 +208,6 @@ const ReportStoreRequest = z
                 timezone: z.union([z.string(), z.null()]).optional(),
             })
             .passthrough(),
-        'properties.member_ids': z.string().optional(),
-        'properties.client_ids': z.string().optional(),
-        'properties.project_ids': z.string().optional(),
-        'properties.tag_ids': z.string().optional(),
-        'properties.task_ids': z.string().optional(),
-        'properties.week_start': z.string().optional(),
-        'properties.timezone': z.string().optional(),
     })
     .passthrough();
 const DetailedReportResource = z
@@ -459,18 +470,21 @@ const PersonalMembershipResource = z
         role: z.string(),
     })
     .passthrough();
-const PersonalMembershipCollection = z.array(PersonalMembershipResource);
 
 export const schemas = {
+    ApiTokenResource,
+    ApiTokenCollection,
+    ApiTokenStoreRequest,
+    ApiTokenWithAccessTokenResource,
     ClientResource,
     ClientCollection,
     ClientStoreRequest,
     ClientUpdateRequest,
     ImportRequest,
     InvitationResource,
-    Role,
     InvitationStoreRequest,
     MemberResource,
+    Role,
     MemberUpdateRequest,
     OrganizationResource,
     OrganizationUpdateRequest,
@@ -502,7 +516,6 @@ export const schemas = {
     TimeEntryUpdateRequest,
     UserResource,
     PersonalMembershipResource,
-    PersonalMembershipCollection,
 };
 
 const endpoints = makeApi([
@@ -786,11 +799,6 @@ const endpoints = makeApi([
         alias: 'exportOrganization',
         requestFormat: 'json',
         parameters: [
-            {
-                name: 'body',
-                type: 'Body',
-                schema: z.object({}).partial().passthrough(),
-            },
             {
                 name: 'organization',
                 type: 'Path',
@@ -1123,11 +1131,6 @@ const endpoints = makeApi([
         requestFormat: 'json',
         parameters: [
             {
-                name: 'body',
-                type: 'Body',
-                schema: z.object({}).partial().passthrough(),
-            },
-            {
                 name: 'organization',
                 type: 'Path',
                 schema: z.string(),
@@ -1346,11 +1349,6 @@ const endpoints = makeApi([
         requestFormat: 'json',
         parameters: [
             {
-                name: 'body',
-                type: 'Body',
-                schema: z.object({}).partial().passthrough(),
-            },
-            {
                 name: 'organization',
                 type: 'Path',
                 schema: z.string(),
@@ -1397,11 +1395,6 @@ const endpoints = makeApi([
         alias: 'v1.members.make-placeholder',
         requestFormat: 'json',
         parameters: [
-            {
-                name: 'body',
-                type: 'Body',
-                schema: z.object({}).partial().passthrough(),
-            },
             {
                 name: 'organization',
                 type: 'Path',
@@ -2615,6 +2608,11 @@ Users with the permission &#x60;time-entries:view:own&#x60; can only use this en
                 schema: z.enum(['true', 'false']).optional(),
             },
             {
+                name: 'user_id',
+                type: 'Query',
+                schema: z.string().optional(),
+            },
+            {
                 name: 'member_ids',
                 type: 'Query',
                 schema: z.array(z.string()).min(1).optional(),
@@ -2638,11 +2636,6 @@ Users with the permission &#x60;time-entries:view:own&#x60; can only use this en
                 name: 'task_ids',
                 type: 'Query',
                 schema: z.array(z.string()).min(1).optional(),
-            },
-            {
-                name: 'user_id',
-                type: 'Query',
-                schema: z.string().optional(),
             },
         ],
         response: z
@@ -3440,12 +3433,126 @@ The report is considered public if the &#x60;is_public&#x60; field is set to &#x
     },
     {
         method: 'get',
+        path: '/v1/users/me/api-tokens',
+        alias: 'getApiTokens',
+        description: `This endpoint is independent of organization.`,
+        requestFormat: 'json',
+        response: z.object({ data: ApiTokenCollection }).passthrough(),
+        errors: [
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 403,
+                description: `Authorization error`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+        ],
+    },
+    {
+        method: 'post',
+        path: '/v1/users/me/api-tokens',
+        alias: 'createApiToken',
+        description: `The response will contain the access token that can be used to send authenticated API requests.
+Please note that the access token is only shown in this response and cannot be retrieved later.`,
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'body',
+                type: 'Body',
+                schema: z
+                    .object({ name: z.string().min(1).max(255) })
+                    .passthrough(),
+            },
+        ],
+        response: z
+            .object({ data: ApiTokenWithAccessTokenResource })
+            .passthrough(),
+        errors: [
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 403,
+                description: `Authorization error`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 422,
+                description: `Validation error`,
+                schema: z
+                    .object({
+                        message: z.string(),
+                        errors: z.record(z.array(z.string())),
+                    })
+                    .passthrough(),
+            },
+        ],
+    },
+    {
+        method: 'delete',
+        path: '/v1/users/me/api-tokens/:apiTokenId',
+        alias: 'deleteApiToken',
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'apiTokenId',
+                type: 'Path',
+                schema: z.string(),
+            },
+        ],
+        response: z.null(),
+        errors: [
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 403,
+                description: `Authorization error`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+        ],
+    },
+    {
+        method: 'post',
+        path: '/v1/users/me/api-tokens/:apiTokenId/revoke',
+        alias: 'revokeApiToken',
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'apiTokenId',
+                type: 'Path',
+                schema: z.string(),
+            },
+        ],
+        response: z.null(),
+        errors: [
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 403,
+                description: `Authorization error`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+        ],
+    },
+    {
+        method: 'get',
         path: '/v1/users/me/memberships',
         alias: 'getMyMemberships',
         description: `This endpoint is independent of organization.`,
         requestFormat: 'json',
         response: z
-            .object({ data: PersonalMembershipCollection })
+            .object({ data: z.array(PersonalMembershipResource) })
             .passthrough(),
         errors: [
             {
