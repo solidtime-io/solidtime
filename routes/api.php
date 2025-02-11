@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Api\V1\ApiTokenController;
 use App\Http\Controllers\Api\V1\ClientController;
 use App\Http\Controllers\Api\V1\ExportController;
 use App\Http\Controllers\Api\V1\ImportController;
@@ -55,6 +56,14 @@ Route::prefix('v1')->name('v1.')->group(static function (): void {
         // User routes
         Route::name('users.')->group(static function (): void {
             Route::get('/users/me', [UserController::class, 'me'])->name('me');
+        });
+
+        // Api token routes
+        Route::name('api-tokens.')->group(static function (): void {
+            Route::get('/users/me/api-tokens', [ApiTokenController::class, 'index'])->name('index');
+            Route::post('/users/me/api-tokens', [ApiTokenController::class, 'store'])->name('store');
+            Route::post('/users/me/api-tokens/{apiTokenId}/revoke', [ApiTokenController::class, 'revoke'])->name('revoke');
+            Route::delete('/users/me/api-tokens/{apiTokenId}', [ApiTokenController::class, 'destroy'])->name('destroy');
         });
 
         // User Member routes

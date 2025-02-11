@@ -7,6 +7,7 @@ namespace App\Models;
 use App\Enums\Weekday;
 use App\Models\Concerns\CustomAuditable;
 use App\Models\Concerns\HasUuids;
+use App\Models\Passport\Token;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
@@ -27,7 +28,6 @@ use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Jetstream\HasTeams;
 use Laravel\Passport\AuthCode;
 use Laravel\Passport\HasApiTokens;
-use Laravel\Passport\Token;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
@@ -44,6 +44,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  * @property-read Organization|null $currentOrganization
  * @property-read Organization|null $currentTeam
  * @property-read string $profile_photo_url
+ * @property-read Collection<int, Token> $tokens
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property string|null $current_team_id
@@ -194,6 +195,17 @@ class User extends Authenticatable implements AuditableContract, FilamentUser, M
     public function authCodes(): HasMany
     {
         return $this->hasMany(AuthCode::class);
+    }
+
+    /**
+     * Get the access tokens for the user.
+     *
+     * @return HasMany<Token>
+     */
+    public function tokens(): HasMany
+    {
+        return $this->hasMany(Token::class, 'user_id')
+            ->orderBy('created_at', 'desc');
     }
 
     /**

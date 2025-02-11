@@ -41,5 +41,7 @@
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="AUDITING_ENABLED" value="true"/>
         <env name="NEWSLETTER_URL" value="null"/>
+        <env name="PASSPORT_PERSONAL_ACCESS_CLIENT_ID" value="null"/>
+        <env name="PASSPORT_PERSONAL_ACCESS_CLIENT_SECRET" value="null"/>
     </php>
 </phpunit>
