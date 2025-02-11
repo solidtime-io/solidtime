@@ -6,6 +6,7 @@ namespace App\Models\Passport;
 
 use Database\Factories\Passport\TokenFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 use Laravel\Passport\Token as PassportToken;
 
@@ -24,4 +25,14 @@ class Token extends PassportToken
 {
     /** @use HasFactory<TokenFactory> */
     use HasFactory;
+
+    /**
+     * Get the client that the token belongs to.
+     *
+     * @return BelongsTo<Client, Token>
+     */
+    public function client(): BelongsTo
+    {
+        return $this->belongsTo(Client::class, 'client_id', 'id');
+    }
 }

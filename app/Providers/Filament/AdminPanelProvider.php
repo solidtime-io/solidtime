@@ -69,6 +69,9 @@ class AdminPanelProvider extends PanelProvider
                 NavigationGroup::make()
                     ->label('System')
                     ->collapsed(),
+                NavigationGroup::make()
+                    ->label('Auth')
+                    ->collapsed(),
             ])
             ->middleware([
                 EncryptCookies::class,
