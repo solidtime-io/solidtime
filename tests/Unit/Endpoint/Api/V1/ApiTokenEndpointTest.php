@@ -54,7 +54,7 @@ class ApiTokenEndpointTest extends ApiEndpointTestAbstract
         Passport::actingAs($data->user);
 
         // Act
-        $response = $this->withoutExceptionHandling()->postJson(route('api.v1.api-tokens.store'), [
+        $response = $this->postJson(route('api.v1.api-tokens.store'), [
             'name' => 'Test Token',
         ]);
 
@@ -118,7 +118,7 @@ class ApiTokenEndpointTest extends ApiEndpointTestAbstract
         $response = $this->postJson(route('api.v1.api-tokens.revoke', $token->id));
 
         // Assert
-        $this->assertResponseCode($response, 404);
+        $this->assertResponseCode($response, 403);
         $this->assertDatabaseHas(Token::class, [
             'id' => $token->id,
             'revoked' => false,
@@ -167,7 +167,7 @@ class ApiTokenEndpointTest extends ApiEndpointTestAbstract
         $response = $this->deleteJson(route('api.v1.api-tokens.destroy', $token->id));
 
         // Assert
-        $this->assertResponseCode($response, 404);
+        $this->assertResponseCode($response, 403);
         $this->assertDatabaseHas(Token::class, [
             'id' => $token->id,
         ]);

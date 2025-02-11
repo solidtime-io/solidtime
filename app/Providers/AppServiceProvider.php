@@ -9,6 +9,7 @@ use App\Models\FailedJob;
 use App\Models\Member;
 use App\Models\Organization;
 use App\Models\OrganizationInvitation;
+use App\Models\Passport\Token;
 use App\Models\Project;
 use App\Models\ProjectMember;
 use App\Models\Tag;
@@ -100,5 +101,6 @@ class AppServiceProvider extends ServiceProvider
         // Routing
         Route::model('member', Member::class);
         Route::model('invitation', OrganizationInvitation::class);
+        Route::model('apiToken', Token::class);
     }
 }
