@@ -39,7 +39,7 @@ async function resendInvitation() {
         await handleApiRequestNotifications(
             () =>
                 api.resendInvitationEmail(
-                    {},
+                    undefined,
                     {
                         params: {
                             invitation: props.invitation.id,

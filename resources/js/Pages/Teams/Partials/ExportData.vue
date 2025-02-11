@@ -29,7 +29,7 @@ async function exportData() {
             const response = await handleApiRequestNotifications(
                 () =>
                     api.exportOrganization(
-                        {},
+                        undefined,
                         {
                             params: {
                                 organization: organizationId,

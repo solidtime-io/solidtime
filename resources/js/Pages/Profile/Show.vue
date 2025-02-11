@@ -9,6 +9,7 @@ import UpdateProfileInformationForm from '@/Pages/Profile/Partials/UpdateProfile
 import { usePage } from '@inertiajs/vue3';
 import type { User } from '@/types/models';
 import type { Session } from '@/types/jetstream';
+import ApiTokensForm from "@/Pages/Profile/Partials/ApiTokensForm.vue";
 
 defineProps<{
     confirmsTwoFactorAuthentication: boolean;
@@ -65,6 +66,9 @@ const page = usePage<{
                 <LogoutOtherBrowserSessionsForm
                     :sessions="sessions"
                     class="mt-10 sm:mt-0" />
+                <SectionBorder />
+
+                <ApiTokensForm></ApiTokensForm>
 
                 <template
                     v-if="page.props.jetstream.hasAccountDeletionFeatures">
