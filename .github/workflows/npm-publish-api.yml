@@ -8,7 +8,8 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - name: "Checkout code"
+        uses: actions/checkout@v4
       # Setup .npmrc file to publish to npm
       - name: Install root project dependencies
         run: npm ci
