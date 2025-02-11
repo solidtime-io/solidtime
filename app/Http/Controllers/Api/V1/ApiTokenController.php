@@ -59,11 +59,13 @@ class ApiTokenController extends Controller
      *
      * @throws AuthorizationException
      */
-    public function revoke(string $apiTokenId): JsonResponse
+    public function revoke(Token $apiToken): JsonResponse
     {
         $user = $this->user();
 
-        $apiToken = $user->tokens()->where('id', $apiTokenId)->firstOrFail();
+        if ($apiToken->user_id !== $user->getKey()) {
+            throw new AuthorizationException('API token does not belong to user');
+        }
 
         $apiToken->revoke();
 
@@ -77,11 +79,13 @@ class ApiTokenController extends Controller
      *
      * @throws AuthorizationException
      */
-    public function destroy(string $apiTokenId): JsonResponse
+    public function destroy(Token $apiToken): JsonResponse
     {
         $user = $this->user();
 
-        $apiToken = $user->tokens()->where('id', $apiTokenId)->firstOrFail();
+        if ($apiToken->user_id !== $user->getKey()) {
+            throw new AuthorizationException('API token does not belong to user');
+        }
 
         $apiToken->delete();
 

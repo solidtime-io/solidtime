@@ -62,8 +62,8 @@ Route::prefix('v1')->name('v1.')->group(static function (): void {
         Route::name('api-tokens.')->group(static function (): void {
             Route::get('/users/me/api-tokens', [ApiTokenController::class, 'index'])->name('index');
             Route::post('/users/me/api-tokens', [ApiTokenController::class, 'store'])->name('store');
-            Route::post('/users/me/api-tokens/{apiTokenId}/revoke', [ApiTokenController::class, 'revoke'])->name('revoke');
-            Route::delete('/users/me/api-tokens/{apiTokenId}', [ApiTokenController::class, 'destroy'])->name('destroy');
+            Route::post('/users/me/api-tokens/{apiToken}/revoke', [ApiTokenController::class, 'revoke'])->name('revoke');
+            Route::delete('/users/me/api-tokens/{apiToken}', [ApiTokenController::class, 'destroy'])->name('destroy');
         });
 
         // User Member routes
