@@ -22,6 +22,7 @@ import {useMutation, useQuery, useQueryClient} from "@tanstack/vue-query";
 import {useNotificationsStore} from "@/utils/notification";
 import {useClipboard} from "@vueuse/core";
 import { formatDateTimeLocalized} from "../../../packages/ui/src/utils/time";
+import {ClockIcon} from "@heroicons/vue/20/solid";
 
 const queryClient = useQueryClient();
 
@@ -165,6 +166,13 @@ const revokeApiTokenMutation = useMutation({
                     <InputError
                         :message="createApiTokenForm.errors.name"
                         class="mt-2" />
+                    <div class="text-text-tertiary text-sm pt-3 flex space-x-1.5 font-medium items-center">
+                        <ClockIcon class="w-4"></ClockIcon>
+                        <span>
+                        API Tokens are valid for 1 year
+                        </span>
+                    </div>
+
                 </div>
 
             </template>
@@ -208,7 +216,10 @@ const revokeApiTokenMutation = useMutation({
                                     <div>{{ token.name }}</div>
                                     <div class="text-sm text-text-tertiary space-x-3">
                                         <span v-if="token.created_at">
-                                            Created on {{ formatDateTimeLocalized(token.created_at) }}
+                                            Created at {{ formatDateTimeLocalized(token.created_at) }}
+                                        </span>
+                                        <span v-if="token.expires_at">
+                                            Expires at {{ formatDateTimeLocalized(token.expires_at) }}
                                         </span>
                                         <span v-if="token.revoked">
                                             Revoked
@@ -249,6 +260,10 @@ const revokeApiTokenMutation = useMutation({
                 <div>
                     Please copy your new API token. For your security, it won't
                     be shown again.
+                    <strong>This token is valid for one year</strong> unless you revoke it.
+                </div>
+
+                <div>
                 </div>
 
                 <div class="flex gap-2 pt-6 w-full">
