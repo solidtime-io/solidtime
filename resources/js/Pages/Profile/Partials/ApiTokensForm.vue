@@ -157,9 +157,9 @@ const revokeApiTokenMutation = useMutation({
             <template #form>
                 <!-- Token Name -->
                 <div class="col-span-6 sm:col-span-4">
-                    <InputLabel for="name" value="Name" />
+                    <InputLabel for="api_key_name" value="API Key Name" />
                     <TextInput
-                        id="name"
+                        id="api_key_name"
                         v-model="createApiTokenForm.name"
                         type="text"
                         class="mt-1 block w-full" />
@@ -172,9 +172,7 @@ const revokeApiTokenMutation = useMutation({
                         API Tokens are valid for 1 year
                         </span>
                     </div>
-
                 </div>
-
             </template>
 
             <template #actions>
@@ -187,7 +185,7 @@ const revokeApiTokenMutation = useMutation({
                 <PrimaryButton
                     :class="{ 'opacity-25': createApiTokenForm.processing }"
                     :disabled="createApiTokenForm.processing">
-                    Create
+                    Create API Key
                 </PrimaryButton>
             </template>
         </FormSection>
@@ -236,11 +234,13 @@ const revokeApiTokenMutation = useMutation({
                                     <button
                                         v-if="!token.revoked"
                                         class="cursor-pointer ms-6 text-sm text-text-secondary"
+                                        :aria-label="'Revoke API Token ' + token.name"
                                         @click="confirmApiTokenRevocation(token)">
                                         Revoke
                                     </button>
                                     <button
                                         class="cursor-pointer ms-6 text-sm text-red-500"
+                                        :aria-label="'Delete API Token ' + token.name"
                                         @click="confirmApiTokenDeletion(token)">
                                         Delete
                                     </button>
@@ -254,7 +254,7 @@ const revokeApiTokenMutation = useMutation({
 
         <!-- Token Value Modal -->
         <DialogModal :show="displayingToken" @close="displayingToken = false">
-            <template #title> API Token </template>
+            <template #title> API Token created successfully </template>
 
             <template #content>
                 <div>
