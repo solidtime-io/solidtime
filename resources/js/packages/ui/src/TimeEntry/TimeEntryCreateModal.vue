@@ -175,7 +175,6 @@ type BillableOption = {
                                         size="xlarge">
                                         <TagIcon
                                             v-if="timeEntry.tags.length === 0"
-                                            tag="button"
                                             class="w-4"></TagIcon>
                                         <div
                                             v-else

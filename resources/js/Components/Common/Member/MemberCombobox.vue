@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useMembersStore } from '@/utils/useMembers';
 import { UserIcon, ChevronDownIcon } from '@heroicons/vue/24/solid';
@@ -45,22 +45,6 @@ const filteredMembers = computed<Member[]>(() => {
         );
     });
 });
-
-watch(filteredMembers, () => {
-    resetHighlightedItem();
-});
-
-onMounted(() => {
-    resetHighlightedItem();
-});
-
-function resetHighlightedItem() {
-    if (filteredMembers.value.length > 0) {
-        highlightedItemId.value = filteredMembers.value[0].id;
-    }
-}
-
-const highlightedItemId = ref<string | null>(null);
 
 const currentValue = computed(() => {
     if (model.value) {
