@@ -14,7 +14,7 @@
         "flowframe/laravel-trend": "^0.3.0",
         "gotenberg/gotenberg-php": "^2.8",
         "guzzlehttp/guzzle": "^7.2",
-        "inertiajs/inertia-laravel": "^1.0",
+        "inertiajs/inertia-laravel": "^2.0",
         "korridor/laravel-computed-attributes": "^3.1",
         "korridor/laravel-model-validation-rules": "^3.0",
         "laravel/framework": "^11.16.0",
