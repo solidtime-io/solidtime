@@ -15,6 +15,11 @@ class ImporterProvider
         'clockify_time_entries' => ClockifyTimeEntriesImporter::class,
         'clockify_projects' => ClockifyProjectsImporter::class,
         'solidtime' => SolidtimeImporter::class,
+        'harvest_projects' => HarvestProjectsImporter::class,
+        'harvest_time_entries' => HarvestTimeEntriesImporter::class,
+        'harvest_clients' => HarvestClientsImporter::class,
+        'generic_projects' => GenericProjectsImporter::class,
+        'generic_time_entries' => GenericTimeEntriesImporter::class,
     ];
 
     /**

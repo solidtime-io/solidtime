@@ -42,6 +42,11 @@ class ImporterProviderTest extends TestCase
             'clockify_time_entries',
             'clockify_projects',
             'solidtime',
+            'harvest_projects',
+            'harvest_time_entries',
+            'harvest_clients',
+            'generic_projects',
+            'generic_time_entries',
         ], $keys);
     }
 }

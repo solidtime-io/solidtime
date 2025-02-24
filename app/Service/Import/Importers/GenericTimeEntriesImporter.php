@@ -15,8 +15,24 @@ use Illuminate\Support\Str;
 use League\Csv\Exception as CsvException;
 use League\Csv\Reader;
 
-class ClockifyTimeEntriesImporter extends DefaultImporter
+class GenericTimeEntriesImporter extends DefaultImporter
 {
+    /**
+     * @var array<string>
+     */
+    private const array REQUIRED_FIELDS = [
+        'description',
+        'billable',
+        'client',
+        'project',
+        'tags',
+        'start',
+        'end',
+        'task',
+        'user_name',
+        'user_email',
+    ];
+
     /**
      * @return array<string>
      *
@@ -27,11 +43,11 @@ class ClockifyTimeEntriesImporter extends DefaultImporter
         if (Str::trim($tags) === '') {
             return [];
         }
-        $tagsParsed = explode(', ', $tags);
+        $tagsParsed = explode(',', $tags);
         $tagIds = [];
         foreach ($tagsParsed as $tagParsed) {
             $tagId = $this->tagImportHelper->getKey([
-                'name' => $tagParsed,
+                'name' => Str::trim($tagParsed),
                 'organization_id' => $this->organization->id,
             ]);
             $tagIds[] = $tagId;
@@ -57,9 +73,9 @@ class ClockifyTimeEntriesImporter extends DefaultImporter
             $records = $reader->getRecords();
             foreach ($records as $record) {
                 $userId = $this->userImportHelper->getKey([
-                    'email' => $record['Email'],
+                    'email' => $record['user_email'],
                 ], [
-                    'name' => $record['User'],
+                    'name' => $record['user_name'],
                     'timezone' => 'UTC',
                     'is_placeholder' => true,
                 ]);
@@ -71,23 +87,23 @@ class ClockifyTimeEntriesImporter extends DefaultImporter
                 ]);
                 $member = $this->memberImportHelper->getModelById($memberId);
                 $clientId = null;
-                if ($record['Client'] !== '') {
+                if ($record['client'] !== '') {
                     $clientId = $this->clientImportHelper->getKey([
-                        'name' => $record['Client'],
+                        'name' => $record['client'],
                         'organization_id' => $this->organization->id,
                     ]);
                 }
                 $projectId = null;
                 $project = null;
                 $projectMember = null;
-                if ($record['Project'] !== '') {
+                if ($record['project'] !== '') {
                     $projectId = $this->projectImportHelper->getKey([
-                        'name' => $record['Project'],
+                        'name' => $record['project'],
                         'organization_id' => $this->organization->id,
                     ], [
                         'client_id' => $clientId,
-                        'color' => $this->colorService->getRandomColor(),
                         'is_billable' => false,
+                        'color' => $this->colorService->getRandomColor(),
                     ]);
                     $project = $this->projectImportHelper->getModelById($projectId);
                     $projectMember = $this->projectMemberImportHelper->getModel([
@@ -96,9 +112,9 @@ class ClockifyTimeEntriesImporter extends DefaultImporter
                     ]);
                 }
                 $taskId = null;
-                if ($record['Task'] !== '') {
+                if ($record['task'] !== '') {
                     $taskId = $this->taskImportHelper->getKey([
-                        'name' => $record['Task'],
+                        'name' => $record['task'],
                         'project_id' => $projectId,
                         'organization_id' => $this->organization->id,
                     ]);
@@ -112,44 +128,30 @@ class ClockifyTimeEntriesImporter extends DefaultImporter
                 $timeEntry->project_id = $projectId;
                 $timeEntry->client_id = $clientId;
                 $timeEntry->organization_id = $this->organization->id;
-                if (strlen($record['Description']) > 500) {
-                    throw new ImportException('Time entry description is too long');
-                }
-                $timeEntry->description = $record['Description'];
-                if (! in_array($record['Billable'], ['Yes', 'No'], true)) {
+                $timeEntry->description = $record['description'];
+                if (! in_array($record['billable'], ['true', 'false'], true)) {
                     throw new ImportException('Invalid billable value');
                 }
-                $timeEntry->billable = $record['Billable'] === 'Yes';
-                $timeEntry->tags = $this->getTags($record['Tags']);
+                $timeEntry->billable = $record['billable'] === 'true';
+                $timeEntry->tags = $this->getTags($record['tags']);
                 $timeEntry->is_imported = true;
-
-                // Start
                 try {
-                    if (preg_match('/^[0-9]{1,2}:[0-9]{1,2} (AM|PM)$/', $record['Start Time']) === 1) {
-                        $start = Carbon::createFromFormat('m/d/Y h:i A', $record['Start Date'].' '.$record['Start Time'], $timezone);
-                    } else {
-                        $start = Carbon::createFromFormat('m/d/Y H:i:s A', $record['Start Date'].' '.$record['Start Time'], $timezone);
-                    }
+                    $start = Carbon::createFromFormat('Y-m-d\TH:i:s\Z', $record['start'], 'UTC');
                 } catch (InvalidFormatException) {
-                    throw new ImportException('Start date ("'.$record['Start Date'].'") or time ("'.$record['Start Time'].'") are invalid');
+                    throw new ImportException('Value of start ("'.$record['start'].'") is invalid');
                 }
                 if ($start === null) {
-                    throw new ImportException('Start date ("'.$record['Start Date'].'") or time ("'.$record['Start Time'].'") are invalid');
+                    throw new ImportException('Value of start ("'.$record['start'].'") is invalid');
                 }
                 $timeEntry->start = $start->utc();
 
-                // End
                 try {
-                    if (preg_match('/^[0-9]{1,2}:[0-9]{1,2} (AM|PM)$/', $record['End Time']) === 1) {
-                        $end = Carbon::createFromFormat('m/d/Y h:i A', $record['End Date'].' '.$record['End Time'], $timezone);
-                    } else {
-                        $end = Carbon::createFromFormat('m/d/Y H:i:s A', $record['End Date'].' '.$record['End Time'], $timezone);
-                    }
+                    $end = Carbon::createFromFormat('Y-m-d\TH:i:s\Z', $record['end'], 'UTC');
                 } catch (InvalidFormatException) {
-                    throw new ImportException('End date ("'.$record['End Date'].'") or time ("'.$record['End Time'].'") are invalid');
+                    throw new ImportException('Value of end ("'.$record['end'].'") is invalid');
                 }
                 if ($end === null) {
-                    throw new ImportException('End date ("'.$record['End Date'].'") or time ("'.$record['End Time'].'") are invalid');
+                    throw new ImportException('Value of end ("'.$record['end'].'") is invalid');
                 }
                 $timeEntry->end = $end->utc();
                 $timeEntry->billable_rate = $this->billableRateService->getBillableRateForTimeEntryWithGivenRelations(
@@ -185,22 +187,7 @@ class ClockifyTimeEntriesImporter extends DefaultImporter
      */
     private function validateHeader(array $header): void
     {
-        $requiredFields = [
-            'Project',
-            'Client',
-            'Description',
-            'Task',
-            'User',
-            'Group',
-            'Email',
-            'Tags',
-            'Billable',
-            'Start Date',
-            'Start Time',
-            'End Date',
-            'End Time',
-        ];
-        foreach ($requiredFields as $requiredField) {
+        foreach (self::REQUIRED_FIELDS as $requiredField) {
             if (! in_array($requiredField, $header, true)) {
                 throw new ImportException('Invalid CSV header, missing field: '.$requiredField);
             }
@@ -210,12 +197,12 @@ class ClockifyTimeEntriesImporter extends DefaultImporter
     #[\Override]
     public function getName(): string
     {
-        return __('importer.clockify_time_entries.name');
+        return __('importer.generic_time_entries.name');
     }
 
     #[\Override]
     public function getDescription(): string
     {
-        return __('importer.clockify_time_entries.description');
+        return __('importer.generic_time_entries.description');
     }
 }
