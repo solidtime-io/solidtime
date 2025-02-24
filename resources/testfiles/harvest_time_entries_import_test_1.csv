@@ -1,0 +1,3 @@
+Date,Client,Project,Project Code,Task,Notes,Hours,Billable?,Invoiced?,Approved?,First Name,Last Name,Roles,Employee?,Billable Rate,Billable Amount,Cost Rate,Cost Amount,Currency,External Reference URL
+2024-03-04,,Project without Client,,,"","20,0",No,No,No,Peter,Tester,,Yes,"100,0","2.000,0","0,0","0,0",Euro - EUR,
+2024-03-04,Big Company,Project for Big Company,,Task 1,Working hard,"0,01",Yes,No,No,Peter,Tester,,Yes,"100,0","1,0","0,0","0,0",Euro - EUR,

@@ -328,7 +328,7 @@ class SolidtimeImporter extends DefaultImporter
      */
     private function getTags(string $tags): array
     {
-        if (trim($tags) === '') {
+        if (Str::trim($tags) === '') {
             return [];
         }
         $tagsParsed = json_decode($tags);

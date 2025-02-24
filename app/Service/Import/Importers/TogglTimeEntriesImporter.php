@@ -11,6 +11,7 @@ use App\Models\TimeEntry;
 use Carbon\Exceptions\InvalidFormatException;
 use Exception;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 use League\Csv\Exception as CsvException;
 use League\Csv\Reader;
 
@@ -23,7 +24,7 @@ class TogglTimeEntriesImporter extends DefaultImporter
      */
     private function getTags(string $tags): array
     {
-        if (trim($tags) === '') {
+        if (Str::trim($tags) === '') {
             return [];
         }
         $tagsParsed = explode(', ', $tags);
