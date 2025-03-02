@@ -28,8 +28,10 @@ class OrganizationDeleteCommandTest extends TestCaseWithDatabase
         });
 
         // Act
-        $this->artisan('admin:organization:delete', ['organization' => $organization->getKey()])
-            ->expectsOutput("Deleting organization with ID {$organization->getKey()}")
+        $command = $this->artisan('admin:organization:delete', ['organization' => $organization->getKey()]);
+
+        // Assert
+        $command->expectsOutput("Deleting organization with ID {$organization->getKey()}")
             ->expectsOutput("Organization with ID {$organization->getKey()} has been deleted.")
             ->assertExitCode(0);
     }
@@ -40,9 +42,11 @@ class OrganizationDeleteCommandTest extends TestCaseWithDatabase
         $organizationId = Str::uuid()->toString();
 
         // Act
-        $this->artisan('admin:organization:delete', ['organization' => $organizationId])
-            ->expectsOutput('Organization with ID '.$organizationId.' not found.')
-            ->assertExitCode(1);
+        $command = $this->artisan('admin:organization:delete', ['organization' => $organizationId]);
+
+        // Assert
+        $command->expectsOutput('Organization with ID '.$organizationId.' not found.');
+        $command->assertExitCode(1);
     }
 
     public function test_it_fails_if_organization_id_is_not_a_valid_uuid(): void
@@ -51,8 +55,10 @@ class OrganizationDeleteCommandTest extends TestCaseWithDatabase
         $organizationId = 'invalid-uuid';
 
         // Act
-        $this->artisan('admin:organization:delete', ['organization' => $organizationId])
-            ->expectsOutput('Organization ID must be a valid UUID.')
+        $command = $this->artisan('admin:organization:delete', ['organization' => $organizationId]);
+
+        // Assert
+        $command->expectsOutput('Organization ID must be a valid UUID.')
             ->assertExitCode(1);
     }
 }

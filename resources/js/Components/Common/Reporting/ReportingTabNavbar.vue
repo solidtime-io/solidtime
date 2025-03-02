@@ -10,18 +10,18 @@ defineProps<{
 <template>
     <TabBar>
         <TabBarItem
-            @click="router.visit(route('reporting'))"
             :active="active === 'reporting'"
+            @click="router.visit(route('reporting'))"
             >Overview</TabBarItem
         >
         <TabBarItem
-            @click="router.visit(route('reporting.detailed'))"
             :active="active === 'detailed'"
+            @click="router.visit(route('reporting.detailed'))"
             >Detailed</TabBarItem
         >
         <TabBarItem
-            @click="router.visit(route('reporting.shared'))"
             :active="active === 'shared'"
+            @click="router.visit(route('reporting.shared'))"
             >Shared</TabBarItem
         >
     </TabBar>

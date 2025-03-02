@@ -162,6 +162,15 @@ export type UpdateReportBody = ZodiosBodyByAlias<SolidTimeApi, 'updateReport'>;
 export type CreateReportBodyProperties = CreateReportBody['properties'];
 export type Report = ReportIndexResponse['data'][0];
 
+export type ApiTokenIndexResponse = ZodiosResponseByAlias<
+    SolidTimeApi,
+    'getApiTokens'
+>;
+
+export type CreateApiTokenBody = ZodiosBodyByAlias<SolidTimeApi, 'createApiToken'>;
+export type ApiToken = ApiTokenIndexResponse['data'][0];
+
+
 const api = createApiClient('/api', { validate: 'none' });
 
 export { createApiClient, api };

@@ -18,9 +18,9 @@ const createProjectMember = ref(false);
 
 <template>
     <ProjectMemberCreateModal
+        v-model:show="createProjectMember"
         :existing-members="projectMembers"
-        :project-id="projectId"
-        v-model:show="createProjectMember"></ProjectMemberCreateModal>
+        :project-id="projectId"></ProjectMemberCreateModal>
     <div class="flow-root">
         <div class="inline-block min-w-full align-middle">
             <div
@@ -29,15 +29,15 @@ const createProjectMember = ref(false);
                 style="grid-template-columns: 1fr 150px 150px 80px">
                 <ProjectMemberTableHeading></ProjectMemberTableHeading>
                 <div
-                    class="col-span-5 py-24 text-center"
-                    v-if="projectMembers.length === 0">
+                    v-if="projectMembers.length === 0"
+                    class="col-span-5 py-24 text-center">
                     <UserGroupIcon
                         class="w-8 text-icon-default inline pb-2"></UserGroupIcon>
                     <h3 class="text-white font-semibold">No project members</h3>
                     <p class="pb-5">Add the first project member!</p>
                     <SecondaryButton
-                        @click="createProjectMember = true"
                         :icon="PlusIcon"
+                        @click="createProjectMember = true"
                         >Add a new Project Member
                     </SecondaryButton>
                 </div>

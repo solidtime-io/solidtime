@@ -23,19 +23,19 @@ const timeEntryTags = computed<Tag[]>(() => {
 </script>
 <template>
     <TagDropdown
+        v-model="model"
         :tags="tags"
         align="bottom-end"
-        :createTag
-        @changed="emit('changed', model)"
-        v-model="model">
+        :create-tag
+        @changed="emit('changed', model)">
         <template #trigger>
             <button
                 data-testid="time_entry_tag_dropdown"
-                class="opacity-50 group-hover:opacity-100 transition">
+                class="opacity-50 group-hover:opacity-100 group/dropdown focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:opacity-100 transition focus:bg-card-background-separator hover:bg-card-background-separator rounded-full flex items-center justify-center">
                 <TagBadge
                     :border="false"
                     size="large"
-                    class="border-0"
+                    class="border-0 sm:px-1.5 text-icon-default group-focus-within/dropdown:text-text-primary"
                     :name="
                         timeEntryTags.map((tag: Tag) => tag.name).join(', ')
                     "></TagBadge>

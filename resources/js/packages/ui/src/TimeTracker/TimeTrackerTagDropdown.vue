@@ -9,7 +9,7 @@ const emit = defineEmits<{
     changed: [];
 }>();
 
-const model = defineModel({
+const model = defineModel<string[]>({
     default: [],
 });
 const iconColorClasses = computed(() => {
@@ -27,17 +27,17 @@ defineProps<{
 
 <template>
     <TagDropdown
-        :createTag
-        @changed="emit('changed')"
         v-model="model"
-        :tags="tags">
+        :create-tag
+        :tags="tags"
+        @changed="emit('changed')">
         <template #trigger>
             <button
                 data-testid="tag_dropdown"
                 :class="
                     twMerge(
                         iconColorClasses,
-                        'flex-shrink-0 ring-0 focus:outline-none focus:ring-0 transition focus-visible:bg-card-background-separator hover:bg-card-background-separator rounded-full w-11 h-11 flex items-center justify-center'
+                        'flex-shrink-0 ring-0 focus:outline-none focus:ring-2 focus:ring-ring transition focus-visible:bg-card-background-separator hover:bg-card-background-separator rounded-full w-10 h-10 flex items-center justify-center'
                     )
                 ">
                 <TagIcon class="w-5 h-5 lg:h-6 lg:w-6"></TagIcon>

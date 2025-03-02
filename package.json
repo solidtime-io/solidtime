@@ -4,53 +4,60 @@
     "scripts": {
         "dev": "vite",
         "build": "vite build",
-        "lint": "eslint --ext .js,.vue,.ts --ignore-path .gitignore resources/js",
-        "lint:fix": "eslint --fix --ext .js,.vue,.ts --ignore-path .gitignore resources/js",
+        "lint": "eslint resources/js",
+        "lint:fix": "eslint --fix resources/js",
         "type-check": "vue-tsc --noEmit",
         "test:e2e": "rm -rf test-results/.auth && npx playwright test",
         "zod:generate": "npx openapi-zod-client http://localhost:80/docs/api.json --output resources/js/packages/api/src/openapi.json.client.ts --base-url /api"
     },
     "devDependencies": {
+        "@eslint/eslintrc": "^3.2.0",
+        "@eslint/js": "^9.19.0",
         "@inertiajs/vue3": "^1.0.0",
         "@playwright/test": "^1.41.1",
         "@tailwindcss/forms": "^0.5.9",
         "@tailwindcss/typography": "^0.5.15",
-        "@types/node": "^20.11.5",
-        "@vitejs/plugin-vue": "^4.5.0",
+        "@types/node": "^22.10.10",
+        "@vitejs/plugin-vue": "^5.2.1",
         "@vue/tsconfig": "^0.5.1",
         "autoprefixer": "^10.4.20",
         "axios": "^1.6.4",
-        "eslint-plugin-unused-imports": "^3.1.0",
+        "eslint-plugin-unused-imports": "^4.1.4",
         "laravel-vite-plugin": "^1.0.0",
         "openapi-zod-client": "^1.16.2",
         "postcss": "^8.4.47",
         "postcss-nesting": "^12.1.5",
         "tailwindcss": "^3.4.13",
-        "typescript": "^5.3.3",
-        "vite": "^5.0.0",
-        "vite-plugin-checker": "^0.7.2",
-        "vue": "^3.4.0",
-        "vue-tsc": "^2.0.28"
+        "typescript": "^5.7.3",
+        "vite": "^6.0.11",
+        "vite-plugin-checker": "^0.8.0",
+        "vue": "^3.5.0",
+        "vue-tsc": "^2.2.0"
     },
     "dependencies": {
         "@floating-ui/core": "^1.6.0",
         "@floating-ui/vue": "^1.0.6",
         "@heroicons/vue": "^2.1.1",
-        "@rushstack/eslint-patch": "^1.7.0",
+        "@rushstack/eslint-patch": "^1.10.5",
         "@tailwindcss/container-queries": "^0.1.1",
         "@tanstack/vue-query": "^5.56.2",
         "@tanstack/vue-query-devtools": "^5.58.0",
-        "@vue/eslint-config-prettier": "^9.0.0",
-        "@vue/eslint-config-typescript": "^13.0.0",
-        "@vueuse/core": "^10.11.0",
-        "@vueuse/integrations": "^11.1.0",
+        "@vue/eslint-config-prettier": "^10.2.0",
+        "@vue/eslint-config-typescript": "^14.3.0",
+        "@vueuse/core": "^12.5.0",
+        "@vueuse/integrations": "^12.5.0",
         "dayjs": "^1.11.11",
         "echarts": "^5.5.0",
         "focus-trap": "^7.6.0",
-        "parse-duration": "^1.1.0",
+        "parse-duration": "^2.0.1",
         "pinia": "^2.1.7",
         "radix-vue": "^1.9.6",
         "tailwind-merge": "^2.2.1",
-        "vue-echarts": "^6.7.2"
+        "vue-echarts": "^7.0.3"
+    },
+    "overrides": {
+        "vite-plugin-checker": {
+            "vue-tsc": "$vue-tsc"
+        }
     }
 }

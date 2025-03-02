@@ -191,7 +191,7 @@ test('test that updating a the start of an existing time entry in the overview w
         'time_entry_range_selector'
     );
     await timeEntryRangeElement.click();
-    await page.getByTestId('time_picker_input').first().fill('1');
+    await page.getByTestId('time_entry_range_start').first().fill('1');
     await Promise.all([
         page.waitForResponse(async (response) => {
             return (
@@ -204,10 +204,7 @@ test('test that updating a the start of an existing time entry in the overview w
                 (await response.json()).data.end !== null
             );
         }),
-        page
-            .getByTestId('time_entry_range_end')
-            .getByTestId('time_picker_input')
-            .press('Enter'),
+        page.getByTestId('time_entry_range_end').press('Enter'),
     ]);
 });
 

@@ -43,12 +43,12 @@ useFocus(tagNameInput, { initialValue: true });
                         id="tagName"
                         ref="tagNameInput"
                         v-model="tag.name"
-                        @keydown.enter="submit"
                         type="text"
                         placeholder="Tag Name"
                         class="mt-1 block w-full"
                         required
-                        autocomplete="tagName" />
+                        autocomplete="tagName"
+                        @keydown.enter="submit" />
                 </div>
             </div>
         </template>

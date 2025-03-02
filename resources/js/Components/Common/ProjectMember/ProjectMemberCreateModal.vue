@@ -52,16 +52,16 @@ useFocus(projectNameInput, { initialValue: true });
             <div class="grid grid-cols-3 items-center space-x-4">
                 <div class="col-span-3 sm:col-span-2">
                     <MemberCombobox
-                        :hidden-members="props.existingMembers"
-                        v-model="projectMember.member_id"></MemberCombobox>
+                        v-model="projectMember.member_id"
+                        :hidden-members="props.existingMembers"></MemberCombobox>
                 </div>
                 <div class="col-span-3 sm:col-span-1 flex-1">
                     <BillableRateInput
-                        name="billable_rate"
-                        :currency="getOrganizationCurrencyString()"
                         v-model="
                             projectMember.billable_rate
-                        "></BillableRateInput>
+                        "
+                        name="billable_rate"
+                        :currency="getOrganizationCurrencyString()"></BillableRateInput>
                 </div>
             </div>
         </template>

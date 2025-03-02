@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Service\Import\Importers;
 
+use App\Jobs\RecalculateSpentTimeForProject;
+use App\Jobs\RecalculateSpentTimeForTask;
 use App\Models\Organization;
 use App\Models\TimeEntry;
 use App\Service\Import\Importers\DefaultImporter;
 use App\Service\Import\Importers\ImportException;
 use App\Service\Import\Importers\TogglTimeEntriesImporter;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
@@ -23,6 +26,10 @@ class TogglTimeEntriesImporterTest extends ImporterTestAbstract
     public function test_import_of_test_file_succeeds(): void
     {
         // Arrange
+        Queue::fake([
+            RecalculateSpentTimeForProject::class,
+            RecalculateSpentTimeForTask::class,
+        ]);
         $organization = Organization::factory()->create();
         $timezone = 'Europe/Vienna';
         $importer = new TogglTimeEntriesImporter;
@@ -37,7 +44,7 @@ class TogglTimeEntriesImporterTest extends ImporterTestAbstract
         $queryLog = DB::getQueryLog();
 
         // Assert
-        $this->assertCount(21, $queryLog);
+        $this->assertCount(22, $queryLog);
         $testScenario = $this->checkTestScenarioAfterImportExcludingTimeEntries();
         $this->checkTimeEntries($testScenario);
         $this->assertSame(2, $report->timeEntriesCreated);
@@ -46,11 +53,17 @@ class TogglTimeEntriesImporterTest extends ImporterTestAbstract
         $this->assertSame(1, $report->usersCreated);
         $this->assertSame(2, $report->projectsCreated);
         $this->assertSame(1, $report->clientsCreated);
+        Queue::assertPushed(RecalculateSpentTimeForProject::class, 2);
+        Queue::assertPushed(RecalculateSpentTimeForTask::class, 1);
     }
 
     public function test_import_of_test_with_special_characters_description_succeeds(): void
     {
         // Arrange
+        Queue::fake([
+            RecalculateSpentTimeForProject::class,
+            RecalculateSpentTimeForTask::class,
+        ]);
         $organization = Organization::factory()->create();
         $timezone = 'Europe/Vienna';
         $importer = new TogglTimeEntriesImporter;
@@ -84,6 +97,10 @@ class TogglTimeEntriesImporterTest extends ImporterTestAbstract
         $importer->importData($data, $timezone);
         $importer = new TogglTimeEntriesImporter;
         $importer->init($organization);
+        Queue::fake([
+            RecalculateSpentTimeForProject::class,
+            RecalculateSpentTimeForTask::class,
+        ]);
 
         // Act
         DB::enableQueryLog();
@@ -93,7 +110,7 @@ class TogglTimeEntriesImporterTest extends ImporterTestAbstract
         $queryLog = DB::getQueryLog();
 
         // Assert
-        $this->assertCount(13, $queryLog);
+        $this->assertCount(14, $queryLog);
         $testScenario = $this->checkTestScenarioAfterImportExcludingTimeEntries();
         $this->checkTimeEntries($testScenario, true);
         $this->assertSame(2, $report->timeEntriesCreated);
@@ -102,5 +119,7 @@ class TogglTimeEntriesImporterTest extends ImporterTestAbstract
         $this->assertSame(0, $report->usersCreated);
         $this->assertSame(0, $report->projectsCreated);
         $this->assertSame(0, $report->clientsCreated);
+        Queue::assertPushed(RecalculateSpentTimeForProject::class, 2);
+        Queue::assertPushed(RecalculateSpentTimeForTask::class, 1);
     }
 }

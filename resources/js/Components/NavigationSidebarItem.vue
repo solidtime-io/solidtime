@@ -29,14 +29,14 @@ const open = useSessionStorage('nav-collapse-state-' + props.title, true);
             :icon
             :current
             :href></NavigationSidebarLink>
-        <CollapsibleRoot v-model:open="open" v-else
+        <CollapsibleRoot v-else v-model:open="open"
             ><CollapsibleTrigger class="w-full group py-0.5">
                 <div
                     class="text-muted group-hover:text-white group-hover:bg-menu-active group flex gap-x-2 rounded-md transition leading-6 py-1 px-2 font-medium text-sm items-center justify-between">
                     <div class="flex items-center gap-x-2">
                         <component
-                            v-if="icon"
                             :is="icon"
+                            v-if="icon"
                             :class="[
                                 current
                                     ? 'text-icon-active'
@@ -59,8 +59,8 @@ const open = useSessionStorage('nav-collapse-state-' + props.title, true);
             <CollapsibleContent class="CollapsibleContent">
                 <div class="px-3.5">
                     <ul
-                        class="flex min-w-0 flex-col border-l border-border-secondary px-3 w-full my-0.5"
-                        v-if="subItems">
+                        v-if="subItems"
+                        class="flex min-w-0 flex-col border-l border-border-secondary px-3 w-full my-0.5">
                         <li
                             v-for="subItem in subItems"
                             :key="subItem.title"

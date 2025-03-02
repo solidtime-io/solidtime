@@ -147,10 +147,12 @@ class ImporterTestAbstract extends TestCase
         $project1 = $projects->firstWhere('name', 'Project without Client');
         $this->assertNotNull($project1);
         $this->assertNull($project1->client_id);
+        $this->assertSame(null, $project1->estimated_time);
         $project2 = $projects->firstWhere('name', 'Project for Big Company');
         $this->assertNotNull($project2);
         $this->assertSame(10001, $project2->billable_rate);
         $this->assertSame($client1->getKey(), $project2->client_id);
+        $this->assertSame(3603996, $project2->estimated_time);
         $tasks = Task::all();
         $this->assertCount(3, $tasks);
         $task1 = $tasks->firstWhere('name', 'Task 1');

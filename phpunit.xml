@@ -29,6 +29,8 @@
     </source>
     <php>
         <env name="APP_ENV" value="testing"/>
+        <env name="APP_FORCE_HTTPS" value="false"/>
+        <env name="TRUSTED_PROXIES" value="0.0.0.0/0,2000:0:0:0:0:0:0:0/3"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="CACHE_DRIVER" value="array"/>
         <env name="DB_CONNECTION" value="pgsql_test"/>
@@ -39,5 +41,7 @@
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="AUDITING_ENABLED" value="true"/>
         <env name="NEWSLETTER_URL" value="null"/>
+        <env name="PASSPORT_PERSONAL_ACCESS_CLIENT_ID" value="null"/>
+        <env name="PASSPORT_PERSONAL_ACCESS_CLIENT_SECRET" value="null"/>
     </php>
 </phpunit>

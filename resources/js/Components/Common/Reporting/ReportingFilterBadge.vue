@@ -21,6 +21,7 @@ const activeClass = computed(() => {
 <template>
     <Badge
         size="large"
+        tag="button"
         :class="
             twMerge(
                 'cursor-pointer hover:bg-card-background transition flex',

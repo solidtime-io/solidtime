@@ -4,7 +4,6 @@ import {
     flip,
     limitShift,
     type Placement,
-    type ReferenceElement,
     shift,
     useFloating,
 } from '@floating-ui/vue';
@@ -15,8 +14,8 @@ import { isLastLayer, layers } from '@/packages/ui/src/utils/dismissableLayer';
 
 const props = withDefaults(
     defineProps<{
-        align: Placement;
-        closeOnContentClick: boolean;
+        align?: Placement;
+        closeOnContentClick?: boolean;
     }>(),
     {
         align: 'bottom-start',
@@ -45,6 +44,11 @@ watch(open, (value) => {
         layers.value.push(id);
     } else {
         layers.value = layers.value.filter((layer) => layer !== id);
+        reference.value
+            ?.querySelector<HTMLElement>(
+                'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+            )
+            ?.focus();
     }
 });
 
@@ -69,7 +73,7 @@ function onBackgroundClick() {
     open.value = false;
 }
 
-const reference = ref<null | ReferenceElement>(null);
+const reference = ref<null | HTMLElement>(null);
 const floating = ref(null);
 const { floatingStyles } = useFloating(reference, floating, {
     placement: props.align,
@@ -90,7 +94,7 @@ const { floatingStyles } = useFloating(reference, floating, {
 
 <template>
     <div class="min-w-0 isolate">
-        <div @click.prevent="toggleOpen" ref="reference" class="min-w-0">
+        <div ref="reference" class="min-w-0" @click.prevent="toggleOpen">
             <slot name="trigger" />
         </div>
 
@@ -109,8 +113,8 @@ const { floatingStyles } = useFloating(reference, floating, {
                 leave-to-class="transform opacity-0 scale-95">
                 <div
                     v-if="open"
-                    class="z-50"
                     ref="floating"
+                    class="z-50"
                     :style="floatingStyles"
                     @click="onContentClick">
                     <div

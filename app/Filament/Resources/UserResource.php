@@ -5,21 +5,27 @@ declare(strict_types=1);
 namespace App\Filament\Resources;
 
 use App\Enums\Weekday;
+use App\Exceptions\Api\ApiException;
 use App\Filament\Resources\UserResource\Pages;
 use App\Filament\Resources\UserResource\RelationManagers\OrganizationsRelationManager;
 use App\Filament\Resources\UserResource\RelationManagers\OwnedOrganizationsRelationManager;
 use App\Models\User;
+use App\Service\DeletionService;
 use App\Service\TimezoneService;
+use Brick\Money\ISOCurrencyProvider;
 use Exception;
 use Filament\Forms;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Korridor\LaravelModelValidationRules\Rules\UniqueEloquent;
 use STS\FilamentImpersonate\Tables\Actions\Impersonate;
 
 class UserResource extends Resource
@@ -34,6 +40,9 @@ class UserResource extends Resource
 
     public static function form(Form $form): Form
     {
+        /** @var User|null $record */
+        $record = $form->getRecord();
+
         return $form
             ->columns(1)
             ->schema([
@@ -50,12 +59,25 @@ class UserResource extends Resource
                 Forms\Components\TextInput::make('email')
                     ->label('Email')
                     ->required()
+                    ->rules($record?->is_placeholder ? [] : [
+                        UniqueEloquent::make(User::class, 'email')
+                            ->ignore($record?->getKey()),
+                    ])
+                    ->rule([
+                        'email',
+                    ])
                     ->maxLength(255),
                 Forms\Components\Toggle::make('is_placeholder')
-                    ->label('Is Placeholder'),
+                    ->label('Is Placeholder?')
+                    ->hiddenOn(['create'])
+                    ->disabledOn(['edit']),
                 Forms\Components\DateTimePicker::make('email_verified_at')
                     ->label('Email Verified At')
+                    ->hiddenOn(['create'])
                     ->nullable(),
+                Forms\Components\Toggle::make('is_email_verified')
+                    ->label('Email Verified?')
+                    ->visibleOn(['create']),
                 Forms\Components\Select::make('timezone')
                     ->label('Timezone')
                     ->options(fn (): array => app(TimezoneService::class)->getSelectOptions())
@@ -67,15 +89,39 @@ class UserResource extends Resource
                     ->required(),
                 TextInput::make('password')
                     ->password()
+                    ->label('Password')
                     ->dehydrateStateUsing(fn ($state) => Hash::make($state))
                     ->dehydrated(fn ($state) => filled($state))
+                    ->hiddenOn(['create'])
                     ->required(fn (string $context): bool => $context === 'create')
                     ->maxLength(255),
+                TextInput::make('password_create')
+                    ->password()
+                    ->label('Password')
+                    ->visibleOn(['create'])
+                    ->required(fn (string $context): bool => $context === 'create')
+                    ->maxLength(255),
+                Forms\Components\Select::make('currency')
+                    ->label('Currency (Personal Organization)')
+                    ->options(function (): array {
+                        $currencies = ISOCurrencyProvider::getInstance()->getAvailableCurrencies();
+                        $select = [];
+                        foreach ($currencies as $currency) {
+                            $select[$currency->getCurrencyCode()] = $currency->getName().' ('.$currency->getCurrencyCode().')';
+                        }
+
+                        return $select;
+                    })
+                    ->required()
+                    ->visibleOn(['create'])
+                    ->searchable(),
                 Forms\Components\DateTimePicker::make('created_at')
                     ->label('Created At')
+                    ->hiddenOn(['create'])
                     ->disabled(),
                 Forms\Components\DateTimePicker::make('updated_at')
                     ->label('Updated At')
+                    ->hiddenOn(['create'])
                     ->disabled(),
             ]);
     }
@@ -145,11 +191,22 @@ class UserResource extends Resource
                     }
                 }),
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make()
+                    ->hidden(fn (User $record) => $record->is(Auth::user()))
+                    ->using(function (User $record): void {
+                        try {
+                            app(DeletionService::class)->deleteUser($record);
+                        } catch (ApiException $exception) {
+                            Notification::make()
+                                ->danger()
+                                ->title('Delete failed')
+                                ->body($exception->getTranslatedMessage())
+                                ->persistent()
+                                ->send();
+                        }
+                    }),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
             ]);
     }
 

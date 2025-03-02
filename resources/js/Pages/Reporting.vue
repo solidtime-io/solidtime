@@ -281,7 +281,7 @@ const tableData = computed(() => {
         class="overflow-hidden">
         <ReportingExportModal
             v-model:show="showExportModal"
-            :exportUrl="exportUrl"></ReportingExportModal>
+            :export-url="exportUrl"></ReportingExportModal>
         <MainContainer
             class="py-3 sm:py-5 border-b border-default-background-separator flex justify-between items-center">
             <div class="flex items-center space-x-3 sm:space-x-6">
@@ -292,7 +292,7 @@ const tableData = computed(() => {
                 <ReportingExportButton
                     :download="downloadExport"></ReportingExportButton>
                 <ReportSaveButton
-                    :reportProperties="reportProperties"></ReportSaveButton>
+                    :report-properties="reportProperties"></ReportSaveButton>
             </div>
         </MainContainer>
         <div class="py-2.5 w-full border-b border-default-background-separator">
@@ -302,9 +302,9 @@ const tableData = computed(() => {
                     class="flex flex-wrap items-center space-y-2 sm:space-y-0 space-x-4">
                     <div class="text-sm font-medium">Filters</div>
                     <MemberMultiselectDropdown
-                        @submit="updateReporting"
-                        v-model="selectedMembers">
-                        <template v-slot:trigger>
+                        v-model="selectedMembers"
+                        @submit="updateReporting">
+                        <template #trigger>
                             <ReportingFilterBadge
                                 :count="selectedMembers.length"
                                 :active="selectedMembers.length > 0"
@@ -313,9 +313,9 @@ const tableData = computed(() => {
                         </template>
                     </MemberMultiselectDropdown>
                     <ProjectMultiselectDropdown
-                        @submit="updateReporting"
-                        v-model="selectedProjects">
-                        <template v-slot:trigger>
+                        v-model="selectedProjects"
+                        @submit="updateReporting">
+                        <template #trigger>
                             <ReportingFilterBadge
                                 :count="selectedProjects.length"
                                 :active="selectedProjects.length > 0"
@@ -324,9 +324,9 @@ const tableData = computed(() => {
                         </template>
                     </ProjectMultiselectDropdown>
                     <TaskMultiselectDropdown
-                        @submit="updateReporting"
-                        v-model="selectedTasks">
-                        <template v-slot:trigger>
+                        v-model="selectedTasks"
+                        @submit="updateReporting">
+                        <template #trigger>
                             <ReportingFilterBadge
                                 :count="selectedTasks.length"
                                 :active="selectedTasks.length > 0"
@@ -335,20 +335,20 @@ const tableData = computed(() => {
                         </template>
                     </TaskMultiselectDropdown>
                     <ClientMultiselectDropdown
-                        @submit="updateReporting"
-                        v-model="selectedClients">
-                        <template v-slot:trigger>
+                        v-model="selectedClients"
+                        @submit="updateReporting">
+                        <template #trigger>
                             <ReportingFilterBadge
                                 title="Clients"
                                 :icon="FolderIcon"></ReportingFilterBadge>
                         </template>
                     </ClientMultiselectDropdown>
                     <TagDropdown
-                        @submit="updateReporting"
-                        :createTag
                         v-model="selectedTags"
-                        :tags="tags">
-                        <template v-slot:trigger>
+                        :create-tag
+                        :tags="tags"
+                        @submit="updateReporting">
+                        <template #trigger>
                             <ReportingFilterBadge
                                 :count="selectedTags.length"
                                 :active="selectedTags.length > 0"
@@ -358,7 +358,6 @@ const tableData = computed(() => {
                     </TagDropdown>
 
                     <SelectDropdown
-                        @changed="updateReporting"
                         v-model="billable"
                         :get-key-from-item="(item) => item.value"
                         :get-name-for-item="(item) => item.label"
@@ -375,8 +374,9 @@ const tableData = computed(() => {
                                 label: 'Non Billable',
                                 value: 'false',
                             },
-                        ]">
-                        <template v-slot:trigger>
+                        ]"
+                        @changed="updateReporting">
+                        <template #trigger>
                             <ReportingFilterBadge
                                 :active="billable !== null"
                                 :title="
@@ -399,8 +399,8 @@ const tableData = computed(() => {
         <MainContainer>
             <div class="pt-10 w-full px-3 relative">
                 <ReportingChart
-                    :groupedType="aggregatedGraphTimeEntries?.grouped_type"
-                    :groupedData="
+                    :grouped-type="aggregatedGraphTimeEntries?.grouped_type"
+                    :grouped-data="
                         aggregatedGraphTimeEntries?.grouped_data
                     "></ReportingChart>
             </div>
@@ -413,18 +413,18 @@ const tableData = computed(() => {
                         class="text-sm flex text-white items-center space-x-3 font-medium px-6 border-b border-card-background-separator pb-3">
                         <span>Group by</span>
                         <ReportingGroupBySelect
+                            v-model="group"
                             :group-by-options="groupByOptions"
-                            @changed="updateTableReporting"
-                            v-model="group"></ReportingGroupBySelect>
+                            @changed="updateTableReporting"></ReportingGroupBySelect>
                         <span>and</span>
                         <ReportingGroupBySelect
+                            v-model="subGroup"
                             :group-by-options="
                                 groupByOptions.filter(
                                     (el) => el.value !== group
                                 )
                             "
-                            @changed="updateTableReporting"
-                            v-model="subGroup"></ReportingGroupBySelect>
+                            @changed="updateTableReporting"></ReportingGroupBySelect>
                     </div>
                     <div
                         class="grid items-center"
@@ -473,8 +473,8 @@ const tableData = computed(() => {
                             </div>
                         </template>
                         <div
-                            class="chart flex flex-col items-center justify-center py-12 col-span-3"
-                            v-else>
+                            v-else
+                            class="chart flex flex-col items-center justify-center py-12 col-span-3">
                             <p class="text-lg text-white font-semibold">
                                 No time entries found
                             </p>

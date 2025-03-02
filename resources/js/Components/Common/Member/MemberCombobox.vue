@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useMembersStore } from '@/utils/useMembers';
 import { UserIcon, ChevronDownIcon } from '@heroicons/vue/24/solid';
@@ -17,8 +17,8 @@ const model = defineModel<string>({
 
 const props = withDefaults(
     defineProps<{
-        hiddenMembers: ProjectMember[];
-        disabled: boolean;
+        hiddenMembers?: ProjectMember[];
+        disabled?: boolean;
     }>(),
     {
         hiddenMembers: () => [] as ProjectMember[],
@@ -46,22 +46,6 @@ const filteredMembers = computed<Member[]>(() => {
     });
 });
 
-watch(filteredMembers, () => {
-    resetHighlightedItem();
-});
-
-onMounted(() => {
-    resetHighlightedItem();
-});
-
-function resetHighlightedItem() {
-    if (filteredMembers.value.length > 0) {
-        highlightedItemId.value = filteredMembers.value[0].id;
-    }
-}
-
-const highlightedItemId = ref<string | null>(null);
-
 const currentValue = computed(() => {
     if (model.value) {
         return members.value.find((member) => member.id === model.value)?.name;
@@ -76,7 +60,7 @@ const currentValue = computed(() => {
         :items="filteredMembers"
         :get-key-from-item="(member) => member.id"
         :get-name-for-item="(member) => member.name">
-        <template v-slot:trigger>
+        <template #trigger>
             <Badge
                 tag="button"
                 class="flex w-full text-base text-left space-x-3 px-3 text-text-secondary font-normal cursor py-1.5">
@@ -84,7 +68,7 @@ const currentValue = computed(() => {
                 <div v-if="currentValue" class="flex-1 truncate">
                     {{ currentValue }}
                 </div>
-                <div class="flex-1" v-else>Select a member...</div>
+                <div v-else class="flex-1">Select a member...</div>
                 <ChevronDownIcon class="w-4 text-muted"></ChevronDownIcon>
             </Badge>
         </template>

@@ -1,6 +1,6 @@
 <script setup lang="ts" generic="T">
 import Dropdown from '@/packages/ui/src/Input/Dropdown.vue';
-import { computed, nextTick, ref, watch } from 'vue';
+import {computed, nextTick, onMounted, ref, watch} from 'vue';
 import SelectDropdownItem from '@/packages/ui/src/Input/SelectDropdownItem.vue';
 import { onKeyStroke } from '@vueuse/core';
 import { type Placement } from '@floating-ui/vue';
@@ -43,10 +43,22 @@ const filteredItems = computed<T[]>(() => {
 const highlightedItemId = ref<string | null>(model.value);
 
 watch(model, () => {
-    highlightedItemId.value = model.value;
+    if(model.value){
+        highlightedItemId.value = model.value;
+    }
+});
+
+onMounted(() => {
+    if (!highlightedItemId.value) {
+        resetHightlightedItem();
+    }
 });
 
 watch(filteredItems, () => {
+    resetHightlightedItem();
+});
+
+function resetHightlightedItem(){
     if (
         filteredItems.value.length > 0 &&
         filteredItems.value.find(
@@ -55,7 +67,7 @@ watch(filteredItems, () => {
     ) {
         highlightedItemId.value = props.getKeyFromItem(filteredItems.value[0]);
     }
-});
+}
 
 watch(highlightedItemId, () => {
     if (highlightedItemId.value) {
@@ -155,7 +167,7 @@ watch(open, () => {
 </script>
 
 <template>
-    <Dropdown v-model="open" :align="align" :closeOnContentClick="false">
+    <Dropdown v-model="open" :align="align" :close-on-content-click="false">
         <template #trigger>
             <slot name="trigger"> </slot>
         </template>
@@ -176,15 +188,15 @@ watch(open, () => {
                     :value="props.getKeyFromItem(item)"
                     :data-item-id="props.getKeyFromItem(item)">
                     <SelectDropdownItem
-                        @mouseenter="
-                            highlightedItemId = props.getKeyFromItem(item)
-                        "
                         :highlighted="
                             props.getKeyFromItem(item) === highlightedItemId
                         "
                         :selected="props.getKeyFromItem(item) === model"
-                        @click="setItem(props.getKeyFromItem(item))"
-                        :name="props.getNameForItem(item)"></SelectDropdownItem>
+                        :name="props.getNameForItem(item)"
+                        @mouseenter="
+                            highlightedItemId = props.getKeyFromItem(item)
+                        "
+                        @click="setItem(props.getKeyFromItem(item))"></SelectDropdownItem>
                 </div>
             </div>
         </template>

@@ -9,6 +9,7 @@ use App\Models\FailedJob;
 use App\Models\Member;
 use App\Models\Organization;
 use App\Models\OrganizationInvitation;
+use App\Models\Passport\Token;
 use App\Models\Project;
 use App\Models\ProjectMember;
 use App\Models\Tag;
@@ -29,7 +30,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -90,12 +90,6 @@ class AppServiceProvider extends ServiceProvider
             );
         });
 
-        if (config('app.force_https', false)) {
-            URL::forceScheme('https');
-            request()->server->set('HTTPS', 'on');
-            request()->headers->set('X-Forwarded-Proto', 'https');
-        }
-
         $this->app->scoped(PermissionStore::class, function (Application $app): PermissionStore {
             return new PermissionStore;
         });
@@ -107,5 +101,6 @@ class AppServiceProvider extends ServiceProvider
         // Routing
         Route::model('member', Member::class);
         Route::model('invitation', OrganizationInvitation::class);
+        Route::model('apiToken', Token::class);
     }
 }

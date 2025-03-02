@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import Dropdown from '@/packages/ui/src/Input/Dropdown.vue';
-import { computed, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 import TimeRangeSelector from '@/packages/ui/src/Input/TimeRangeSelector.vue';
 import dayjs, { Dayjs } from 'dayjs';
 import parse from 'parse-duration';
@@ -111,6 +111,7 @@ function isHHMM(value: string): boolean {
 function parseHHMM(value: string): string[] | null {
     return value.match(HHMMtimeRegex);
 }
+
 const temporaryCustomTimerEntry = ref<string>('');
 
 async function updateTimeRange(newStart: string) {
@@ -132,38 +133,70 @@ const startTime = computed(() => {
     return dayjs().utc().format();
 });
 const inputField = ref<HTMLInputElement | null>(null);
-watch(open, (isOpen) => {
-    if (!isOpen) {
-        inputField.value?.focus();
+
+const timeRangeSelector = ref<HTMLElement | null>(null);
+
+function openModalOnTab(e: FocusEvent) {
+    // check if the source is inside the dropdown
+    const source = e.relatedTarget as HTMLElement;
+    if (
+        source &&
+        window.document.body
+            .querySelector<HTMLElement>('#app')
+            ?.contains(source)
+    ) {
+        open.value = true;
     }
-});
+}
+
+function focusNextElement(e: KeyboardEvent) {
+    if (open.value) {
+        e.preventDefault();
+        const focusableElement =
+            timeRangeSelector.value?.querySelector<HTMLElement>(
+                'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+            );
+        focusableElement?.focus();
+    }
+}
+
+function closeAndFocusInput() {
+    inputField.value?.focus();
+    open.value = false;
+}
 </script>
 
 <template>
     <div class="relative">
         <Dropdown
             v-model="open"
-            @submit="open = false"
             align="bottom"
-            :close-on-content-click="false">
+            :close-on-content-click="false"
+            @submit="open = false">
             <template #trigger>
                 <input
-                    placeholder="00:00:00"
-                    @focus="pauseLiveTimerUpdate"
                     ref="inputField"
-                    data-testid="time_entry_time"
-                    @blur="updateTimerAndStartLiveTimerUpdate"
-                    @keydown.enter="onTimeEntryEnterPress"
                     v-model="currentTime"
-                    class="w-[110px] lg:w-[130px] h-full text-white py-2.5 rounded-r-lg text-center px-4 text-base lg:text-lg font-bold bg-card-background border-none placeholder-muted focus:ring-0 transition"
-                    type="text" />
+                    placeholder="00:00:00"
+                    data-testid="time_entry_time"
+                    class="w-[110px] lg:w-[130px] h-full text-white py-2.5 rounded-lg border-border-secondary border text-center px-4 text-base lg:text-lg font-bold bg-card-background border-none placeholder-muted focus:ring-0 transition"
+                    type="text"
+                    @focus="pauseLiveTimerUpdate"
+                    @focusin="openModalOnTab"
+                    @keydown.exact.tab="focusNextElement"
+                    @keydown.exact.shift.tab="open = false"
+                    @blur="updateTimerAndStartLiveTimerUpdate"
+                    @keydown.enter="onTimeEntryEnterPress" />
             </template>
             <template #content>
-                <TimeRangeSelector
-                    @changed="updateTimeRange"
-                    :start="startTime"
-                    :end="null">
-                </TimeRangeSelector>
+                <div ref="timeRangeSelector">
+                    <TimeRangeSelector
+                        :start="startTime"
+                        :end="null"
+                        @changed="updateTimeRange"
+                        @close="closeAndFocusInput">
+                    </TimeRangeSelector>
+                </div>
             </template>
         </Dropdown>
     </div>

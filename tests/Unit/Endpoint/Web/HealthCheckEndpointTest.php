@@ -82,6 +82,7 @@ class HealthCheckEndpointTest extends EndpointTestAbstract
             'secure',
             'timestamp',
             'timezone',
+            'session_secure',
             'trusted_proxies',
             'url',
         ]);

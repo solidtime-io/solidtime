@@ -4,11 +4,11 @@ import { computed } from 'vue';
 
 const props = withDefaults(
     defineProps<{
-        size: 'base' | 'large' | 'xlarge';
-        tag: string;
+        size?: 'base' | 'large' | 'xlarge';
+        tag?: string;
         class?: string;
-        color: string;
-        border: boolean;
+        color?: string;
+        border?: boolean;
     }>(),
     {
         size: 'base',
@@ -30,6 +30,13 @@ const borderClasses = computed(() => {
     }
     return '';
 });
+
+const tagClasses = computed(() => {
+    if (props.tag === 'button') {
+        return 'hover:bg-tertiary';
+    }
+    return '';
+});
 </script>
 
 <template>
@@ -37,9 +44,10 @@ const borderClasses = computed(() => {
         :is="tag"
         :class="
             twMerge(
+                tagClasses,
                 badgeClasses[size],
                 borderClasses,
-                'rounded inline-flex items-center font-semibold text-white disabled:text-text-quaternary outline-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80',
+                'rounded transition inline-flex items-center font-semibold text-white disabled:text-text-quaternary outline-0  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                 props.class
             )
         ">

@@ -89,7 +89,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
                             onSuccess(response);
                         }
                         return response;
-                    } catch (error) {
+                    } catch {
                         router.get(route('login'));
                     }
                 } else {

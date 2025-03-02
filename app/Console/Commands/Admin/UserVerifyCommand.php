@@ -35,7 +35,9 @@ class UserVerifyCommand extends Command
         $this->info('Start verifying user with email "'.$email.'"');
 
         /** @var User|null $user */
-        $user = User::where('email', $email)->first();
+        $user = User::query()->where('email', $email)
+            ->where('is_placeholder', '=', false)
+            ->first();
 
         if ($user === null) {
             $this->error('User with email "'.$email.'" not found.');

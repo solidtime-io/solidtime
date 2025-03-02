@@ -24,6 +24,7 @@ export default {
                 sans: ['Outfit', ...defaultTheme.fontFamily.sans],
             },
             colors: {
+                'ring': 'rgba(255,255,255,0.5)',
                 'primary': 'var(--color-bg-primary)',
                 'secondary': 'var(--color-bg-secondary)',
                 'tertiary': 'var(--color-bg-tertiary)',

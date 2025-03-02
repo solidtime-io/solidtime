@@ -6,11 +6,11 @@ import { TagIcon } from '@heroicons/vue/20/solid';
 const props = withDefaults(
     defineProps<{
         name: string;
-        size: 'base' | 'large';
-        tag: string;
+        size?: 'base' | 'large';
+        tag?: string;
         class?: string;
-        color: string;
-        border: boolean;
+        color?: string;
+        border?: boolean;
     }>(),
     {
         size: 'base',
@@ -28,10 +28,8 @@ const indicatorClasses = {
 
 <template>
     <Badge :name :size :tag :class="props.class" :color :border>
-        <TagIcon
-            :style="{ color: color }"
-            :class="twMerge(indicatorClasses[size])"></TagIcon>
-        <span>
+        <TagIcon :class="twMerge(indicatorClasses[size])"></TagIcon>
+        <span v-if="name">
             {{ name }}
         </span>
     </Badge>

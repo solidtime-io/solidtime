@@ -12,6 +12,7 @@ use App\Exceptions\Api\OnlyOwnerCanChangeOwnership;
 use App\Exceptions\Api\OrganizationHasNoSubscriptionButMultipleMembersException;
 use App\Exceptions\Api\OrganizationNeedsAtLeastOneOwner;
 use App\Exceptions\Api\PdfRendererIsNotConfiguredException;
+use App\Exceptions\Api\PersonalAccessClientIsNotConfiguredException;
 use App\Exceptions\Api\TimeEntryCanNotBeRestartedApiException;
 use App\Exceptions\Api\TimeEntryStillRunningApiException;
 use App\Exceptions\Api\UserIsAlreadyMemberOfOrganizationApiException;
@@ -37,6 +38,7 @@ return [
         OrganizationHasNoSubscriptionButMultipleMembersException::KEY => 'Organization has no subscription but multiple members',
         PdfRendererIsNotConfiguredException::KEY => 'PDF renderer is not configured',
         FeatureIsNotAvailableInFreePlanApiException::KEY => 'Feature is not available in free plan',
+        PersonalAccessClientIsNotConfiguredException::KEY => 'Personal access client is not configured',
     ],
     'unknown_error_in_admin_panel' => 'An unknown error occurred. Please check the logs.',
 ];

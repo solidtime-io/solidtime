@@ -31,9 +31,9 @@ async function createTag(tag: string) {
                 >Create Tag
             </SecondaryButton>
             <TagCreateModal
-                :createTag="createTag"
-                v-model:show="showCreateTagModal"></TagCreateModal>
+                v-model:show="showCreateTagModal"
+                :create-tag="createTag"></TagCreateModal>
         </MainContainer>
-        <TagTable :createTag="createTag"></TagTable>
+        <TagTable :create-tag="createTag"></TagTable>
     </AppLayout>
 </template>

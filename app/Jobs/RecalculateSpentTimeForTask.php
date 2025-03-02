@@ -7,12 +7,13 @@ namespace App\Jobs;
 use App\Models\Task;
 use Exception;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 
-class RecalculateSpentTimeForTask implements ShouldQueue
+class RecalculateSpentTimeForTask implements ShouldDispatchAfterCommit, ShouldQueue
 {
     use Dispatchable;
     use InteractsWithQueue;

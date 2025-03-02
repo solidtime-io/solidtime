@@ -56,7 +56,7 @@ function selectUnselectAll(value: boolean) {
                         {{ formatDate(date) }}
                     </span>
                 </div>
-                <div class="text-muted pr-[90px] lg:pr-[108px]">
+                <div class="text-muted pr-[90px] lg:pr-[92px]">
                     <span class="font-semibold">
                         {{ formatHumanReadableDuration(duration) }}
                     </span>

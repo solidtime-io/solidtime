@@ -118,7 +118,7 @@ async function submit() {
         billable.value = undefined;
         saving.value = false;
         removeAllTags.value = false;
-    } catch (e) {
+    } catch {
         saving.value = false;
     }
 }
@@ -147,34 +147,34 @@ type SelectOption = { label: string; value: string };
                         id="description"
                         ref="descriptionInput"
                         v-model="description"
-                        @keydown.enter="submit"
                         type="text"
-                        class="mt-1 block w-full" />
+                        class="mt-1 block w-full"
+                        @keydown.enter="submit" />
                 </div>
                 <div class="space-y-2">
                     <InputLabel for="project" value="Project" />
                     <TimeTrackerProjectTaskDropdown
+                        v-model:project="projectId"
+                        v-model:task="taskId"
                         :clients
-                        :createProject
-                        :createClient
+                        :create-project
+                        :create-client
                         :currency="currency"
-                        :canCreateProject
+                        :can-create-project
                         class="mt-1"
                         empty-placeholder="Select project..."
                         allow-reset
                         size="xlarge"
-                        :enableEstimatedTime
+                        :enable-estimated-time
                         :projects="projects"
-                        :tasks="tasks"
-                        v-model:project="projectId"
-                        v-model:task="taskId"></TimeTrackerProjectTaskDropdown>
+                        :tasks="tasks"></TimeTrackerProjectTaskDropdown>
                 </div>
                 <div class="space-y-2">
                     <InputLabel for="project" value="Tag" />
                     <div class="flex space-x-5">
                         <TagDropdown
-                            :createTag
                             v-model="selectedTags"
+                            :create-tag
                             :tags="tags">
                             <template #trigger>
                                 <Badge
@@ -190,8 +190,8 @@ type SelectOption = { label: string; value: string };
                         </TagDropdown>
                         <div class="flex items-center space-x-2">
                             <Checkbox
-                                v-model:checked="removeAllTags"
-                                id="no_tags"></Checkbox>
+                                id="no_tags"
+                                v-model:checked="removeAllTags"></Checkbox>
                             <InputLabel for="no_tags" value="Remove all tags" />
                         </div>
                     </div>
@@ -221,7 +221,7 @@ type SelectOption = { label: string; value: string };
                                     value: 'non-billable',
                                 },
                             ]">
-                            <template v-slot:trigger>
+                            <template #trigger>
                                 <Badge tag="button" size="xlarge">
                                     <span v-if="billable === undefined">
                                         Set billable status

@@ -135,11 +135,11 @@ type BillableOption = {
                     <TextInput
                         id="description"
                         ref="description"
-                        placeholder="What did you work on?"
                         v-model="timeEntry.description"
-                        @keydown.enter="submit"
+                        placeholder="What did you work on?"
                         type="text"
-                        class="mt-1 block w-full" />
+                        class="mt-1 block w-full"
+                        @keydown.enter="submit" />
                 </div>
             </div>
             <div
@@ -147,35 +147,34 @@ type BillableOption = {
                 <div class="flex w-full items-center space-x-2 justify-between">
                     <div class="flex-1 min-w-0">
                         <TimeTrackerProjectTaskDropdown
+                            v-model:project="timeEntry.project_id"
+                            v-model:task="
+                                timeEntry.task_id
+                            "
                             :clients
-                            :createProject
-                            :createClient
-                            :canCreateProject="canCreateProjects()"
+                            :create-project
+                            :create-client
+                            :can-create-project="canCreateProjects()"
                             :currency="getOrganizationCurrencyString()"
                             size="xlarge"
                             class="bg-input-background"
                             :projects="projects"
                             :tasks="tasks"
-                            :enableEstimatedTime="enableEstimatedTime"
-                            v-model:project="timeEntry.project_id"
-                            v-model:task="
-                                timeEntry.task_id
-                            "></TimeTrackerProjectTaskDropdown>
+                            :enable-estimated-time="enableEstimatedTime"></TimeTrackerProjectTaskDropdown>
                     </div>
                     <div class="flex items-center space-x-2">
                         <div class="flex-col">
                             <TagDropdown
-                                :createTag
                                 v-model="timeEntry.tags"
+                                :create-tag
                                 :tags="tags">
-                                <template v-slot:trigger>
+                                <template #trigger>
                                     <Badge
                                         class="bg-input-background"
                                         tag="button"
                                         size="xlarge">
                                         <TagIcon
                                             v-if="timeEntry.tags.length === 0"
-                                            tag="button"
                                             class="w-4"></TagIcon>
                                         <div
                                             v-else
@@ -206,7 +205,7 @@ type BillableOption = {
                                         value: 'false',
                                     },
                                 ]">
-                                <template v-slot:trigger>
+                                <template #trigger>
                                     <Badge
                                         class="bg-input-background"
                                         tag="button"
@@ -246,22 +245,22 @@ type BillableOption = {
                     <InputLabel>Start</InputLabel>
                     <div class="flex flex-col items-center space-y-2 mt-1">
                         <TimePicker
-                            size="large"
-                            v-model="localStart"></TimePicker>
+                            v-model="localStart"
+                            size="large"></TimePicker>
                         <DatePicker
-                            class="text-xs text-text-tertiary max-w-28 px-1.5 py-1.5"
-                            v-model="localStart"></DatePicker>
+                            v-model="localStart"
+                            class="text-xs text-text-tertiary max-w-28 px-1.5 py-1.5"></DatePicker>
                     </div>
                 </div>
                 <div class="">
                     <InputLabel>End</InputLabel>
                     <div class="flex flex-col items-center space-y-2 mt-1">
                         <TimePicker
-                            size="large"
-                            v-model="localEnd"></TimePicker>
+                            v-model="localEnd"
+                            size="large"></TimePicker>
                         <DatePicker
-                            class="text-xs text-text-tertiary max-w-28 px-1.5 py-1.5"
-                            v-model="localEnd"></DatePicker>
+                            v-model="localEnd"
+                            class="text-xs text-text-tertiary max-w-28 px-1.5 py-1.5"></DatePicker>
                     </div>
                 </div>
             </div>

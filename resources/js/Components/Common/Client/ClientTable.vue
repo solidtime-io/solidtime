@@ -25,18 +25,18 @@ const createClient = ref(false);
                 style="grid-template-columns: 1fr 150px 200px 80px">
                 <ClientTableHeading></ClientTableHeading>
                 <div
-                    class="col-span-2 py-24 text-center"
-                    v-if="clients.length === 0">
+                    v-if="clients.length === 0"
+                    class="col-span-2 py-24 text-center">
                     <UserCircleIcon
                         class="w-8 text-icon-default inline pb-2"></UserCircleIcon>
                     <h3 class="text-white font-semibold">No clients found</h3>
-                    <p class="pb-5" v-if="canCreateClients()">
+                    <p v-if="canCreateClients()" class="pb-5">
                         Create your first client now!
                     </p>
                     <SecondaryButton
                         v-if="canCreateClients()"
-                        @click="createClient = true"
                         :icon="PlusIcon as Component"
+                        @click="createClient = true"
                         >Create your First Client
                     </SecondaryButton>
                 </div>

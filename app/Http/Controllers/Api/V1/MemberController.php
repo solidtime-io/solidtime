@@ -6,7 +6,6 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Enums\Role;
 use App\Events\MemberMadeToPlaceholder;
-use App\Events\MemberRemoved;
 use App\Exceptions\Api\CanNotRemoveOwnerFromOrganization;
 use App\Exceptions\Api\ChangingRoleToPlaceholderIsNotAllowed;
 use App\Exceptions\Api\EntityStillInUseApiException;
@@ -19,8 +18,6 @@ use App\Http\Resources\V1\Member\MemberCollection;
 use App\Http\Resources\V1\Member\MemberResource;
 use App\Models\Member;
 use App\Models\Organization;
-use App\Models\ProjectMember;
-use App\Models\TimeEntry;
 use App\Service\BillableRateService;
 use App\Service\InvitationService;
 use App\Service\MemberService;
@@ -80,22 +77,8 @@ class MemberController extends Controller
         }
         if ($request->has('role') && $member->role !== $request->getRole()->value) {
             $newRole = $request->getRole();
-            $oldRole = Role::from($member->role);
-            if ($oldRole === Role::Owner) {
-                throw new OrganizationNeedsAtLeastOneOwner;
-            }
-            if ($newRole === Role::Placeholder) {
-                throw new ChangingRoleToPlaceholderIsNotAllowed;
-            }
-            if ($newRole === Role::Owner) {
-                if ($this->hasPermission($organization, 'members:change-ownership')) {
-                    $memberService->changeOwnership($organization, $member);
-                } else {
-                    throw new OnlyOwnerCanChangeOwnership;
-                }
-            } else {
-                $member->role = $request->getRole()->value;
-            }
+            $allowOwnerChange = $this->hasPermission($organization, 'members:change-ownership');
+            $memberService->changeRole($member, $organization, $newRole, $allowOwnerChange);
         }
         $member->save();
 
@@ -109,22 +92,11 @@ class MemberController extends Controller
      *
      * @operationId removeMember
      */
-    public function destroy(Organization $organization, Member $member): JsonResponse
+    public function destroy(Organization $organization, Member $member, MemberService $memberService): JsonResponse
     {
         $this->checkPermission($organization, 'members:delete', $member);
 
-        if (TimeEntry::query()->where('user_id', $member->user_id)->whereBelongsTo($organization, 'organization')->exists()) {
-            throw new EntityStillInUseApiException('member', 'time_entry');
-        }
-        if (ProjectMember::query()->whereBelongsToOrganization($organization)->where('user_id', $member->user_id)->exists()) {
-            throw new EntityStillInUseApiException('member', 'project_member');
-        }
-        if ($member->role === Role::Owner->value) {
-            throw new CanNotRemoveOwnerFromOrganization;
-        }
-
-        $member->delete();
-        MemberRemoved::dispatch($member, $organization);
+        $memberService->removeMember($member, $organization);
 
         return response()
             ->json(null, 204);

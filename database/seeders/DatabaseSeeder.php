@@ -12,6 +12,7 @@ use App\Models\Organization;
 use App\Models\OrganizationInvitation;
 use App\Models\Project;
 use App\Models\ProjectMember;
+use App\Models\Report;
 use App\Models\Tag;
 use App\Models\Task;
 use App\Models\TimeEntry;
@@ -33,6 +34,29 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->deleteAll();
+
+        app(ClientRepository::class)->create(
+            null,
+            'desktop',
+            'solidtime://oauth/callback',
+            null,
+            false,
+            false,
+            false
+        );
+
+        $personalAccessClient = new PassportClient;
+        $personalAccessClient->id = config('passport.personal_access_client.id');
+        $personalAccessClient->secret = config('passport.personal_access_client.secret');
+        $personalAccessClient->name = 'API';
+        $personalAccessClient->redirect = 'http://localhost';
+        $personalAccessClient->user_id = null;
+        $personalAccessClient->revoked = false;
+        $personalAccessClient->provider = null;
+        $personalAccessClient->personal_access_client = true;
+        $personalAccessClient->password_client = false;
+        $personalAccessClient->save();
+
         $userWithMultipleOrganizations = User::factory()->withPersonalOrganization()->create([
             'name' => 'Mister Overemployed',
             'email' => 'overemployed@acme.test',
@@ -54,6 +78,8 @@ class DatabaseSeeder extends Seeder
             'name' => 'Acme Manager',
             'email' => 'test@example.com',
         ]);
+        $userAcmeManager->createToken('Testing Token 1')->accessToken;
+        $userAcmeManager->createToken('Testing Token 2')->accessToken;
         $userAcmeAdmin = User::factory()->withPersonalOrganization()->create([
             'name' => 'Acme Admin',
             'email' => 'admin@acme.test',
@@ -134,6 +160,7 @@ class DatabaseSeeder extends Seeder
             'personal_team' => true,
             'currency' => 'USD',
         ]);
+        Member::factory()->forUser($rivalOwner)->forOrganization($organizationRival)->role(Role::Owner)->create();
         $userRivalManager = User::factory()->withPersonalOrganization()->create([
             'name' => 'Other User',
             'email' => 'test@rival-company.test',
@@ -157,15 +184,6 @@ class DatabaseSeeder extends Seeder
             'email' => 'admin@example.com',
         ]);
 
-        app(ClientRepository::class)->create(
-            null,
-            'desktop',
-            'solidtime://oauth/callback',
-            null,
-            false,
-            false,
-            false
-        );
     }
 
     private function deleteAll(): void
@@ -186,6 +204,7 @@ class DatabaseSeeder extends Seeder
 
         // Application tables
         DB::table((new Audit)->getTable())->delete();
+        DB::table((new Report)->getTable())->delete();
         DB::table((new TimeEntry)->getTable())->delete();
         DB::table((new Task)->getTable())->delete();
         DB::table((new Tag)->getTable())->delete();

@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\OrganizationResource\Pages;
+use App\Filament\Resources\OrganizationResource\RelationManagers\InvitationsRelationManager;
 use App\Filament\Resources\OrganizationResource\RelationManagers\UsersRelationManager;
 use App\Models\Organization;
+use App\Service\DeletionService;
 use App\Service\Export\ExportService;
 use App\Service\Import\Importers\ImporterProvider;
 use App\Service\Import\Importers\ImportException;
@@ -46,10 +48,13 @@ class OrganizationResource extends Resource
                     ->maxLength(255),
                 Forms\Components\Toggle::make('personal_team')
                     ->label('Is personal?')
+                    ->hiddenOn(['create'])
                     ->required(),
                 Forms\Components\Select::make('user_id')
+                    ->label('Owner')
                     ->relationship(name: 'owner', titleAttribute: 'email')
                     ->searchable(['name', 'email'])
+                    ->disabledOn(['edit'])
                     ->required(),
                 Forms\Components\Select::make('currency')
                     ->label('Currency')
@@ -62,6 +67,7 @@ class OrganizationResource extends Resource
 
                         return $select;
                     })
+                    ->required()
                     ->searchable(),
                 Forms\Components\TextInput::make('billable_rate')
                     ->label('Billable rate (in Cents)')
@@ -75,9 +81,11 @@ class OrganizationResource extends Resource
                     ->numeric(),
                 Forms\Components\DateTimePicker::make('created_at')
                     ->label('Created At')
+                    ->hiddenOn(['create'])
                     ->disabled(),
                 Forms\Components\DateTimePicker::make('updated_at')
                     ->label('Updated At')
+                    ->hiddenOn(['create'])
                     ->disabled(),
             ]);
     }
@@ -97,7 +105,7 @@ class OrganizationResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('currency'),
                 TextColumn::make('billable_rate')
-                    ->money(fn (Organization $resource) => $resource->currency ?? 'EUR', divideBy: 100),
+                    ->money(fn (Organization $resource) => $resource->currency, divideBy: 100),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable(),
@@ -112,6 +120,10 @@ class OrganizationResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make()
+                    ->using(function (Organization $record): void {
+                        app(DeletionService::class)->deleteOrganization($record);
+                    }),
                 Action::make('Export')
                     ->icon('heroicon-o-arrow-down-tray')
                     ->action(function (Organization $record) {
@@ -199,8 +211,6 @@ class OrganizationResource extends Resource
                     ]),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                ]),
             ]);
     }
 
@@ -208,6 +218,7 @@ class OrganizationResource extends Resource
     {
         return [
             UsersRelationManager::class,
+            InvitationsRelationManager::class,
         ];
     }
 

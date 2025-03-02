@@ -19,8 +19,8 @@ defineProps<{
             Progress
         </div>
         <div
-            class="px-3 py-1.5 text-left font-semibold text-white"
-            v-if="showBillableRate">
+            v-if="showBillableRate"
+            class="px-3 py-1.5 text-left font-semibold text-white">
             Billable Rate
         </div>
         <div class="px-3 py-1.5 text-left font-semibold text-white">Status</div>

@@ -19,8 +19,8 @@ const createTask = ref(false);
 
 <template>
     <TaskCreateModal
-        :project-id="props.projectId"
-        v-model:show="createTask"></TaskCreateModal>
+        v-model:show="createTask"
+        :project-id="props.projectId"></TaskCreateModal>
     <div class="flow-root">
         <div class="inline-block min-w-full align-middle">
             <div
@@ -37,18 +37,18 @@ const createTask = ref(false);
                 ">
                 <TaskTableHeading></TaskTableHeading>
                 <div
-                    class="col-span-5 py-24 text-center"
-                    v-if="tasks.length === 0">
+                    v-if="tasks.length === 0"
+                    class="col-span-5 py-24 text-center">
                     <PlusCircleIcon
                         class="w-8 text-icon-default inline pb-2"></PlusCircleIcon>
                     <h3 class="text-white font-semibold">No tasks found</h3>
-                    <p class="pb-5" v-if="canCreateTasks()">
+                    <p v-if="canCreateTasks()" class="pb-5">
                         Create your first task now!
                     </p>
                     <SecondaryButton
                         v-if="canCreateTasks()"
-                        @click="createTask = true"
                         :icon="PlusIcon"
+                        @click="createTask = true"
                         >Create your First Task
                     </SecondaryButton>
                 </div>

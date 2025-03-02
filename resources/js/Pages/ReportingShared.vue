@@ -101,12 +101,12 @@ watch(currentPage, () => {
                         v-if="isBillingActivated() && canManageBilling()"
                         href="/billing">
                         <PrimaryButton
-                            type="button"
-                            class="mt-6"
-                            :icon="CreditCardIcon"
                             v-if="
                                 isBillingActivated() && canUpdateOrganization()
-                            ">
+                            "
+                            type="button"
+                            class="mt-6"
+                            :icon="CreditCardIcon">
                             Go to Billing
                         </PrimaryButton>
                     </Link>
@@ -120,10 +120,10 @@ watch(currentPage, () => {
 
         <PaginationRoot
             v-if="reports.length > 0 || isAllowedToPerformPremiumAction()"
+            v-model:page="currentPage"
             :total="totalPages"
             :items-per-page="pageLimit"
             class="flex justify-center items-center py-8"
-            v-model:page="currentPage"
             :sibling-count="1"
             show-edges>
             <PaginationList
@@ -174,13 +174,13 @@ watch(currentPage, () => {
 </template>
 <style lang="postcss">
 .navigation-item {
-    @apply bg-quaternary h-8 w-8 flex items-center justify-center rounded border border-border-primary text-text-tertiary hover:text-text-primary transition cursor-pointer hover:border-border-secondary hover:bg-secondary focus-visible:text-text-primary focus-visible:outline-0 focus-visible:ring-2 focus-visible:ring-white/80;
+    @apply bg-quaternary h-8 w-8 flex items-center justify-center rounded border border-border-primary text-text-tertiary hover:text-text-primary transition cursor-pointer hover:border-border-secondary hover:bg-secondary focus-visible:text-text-primary focus-visible:outline-0 focus-visible:ring-2 focus-visible:ring-ring;
 }
 
 .pagination-item {
-    @apply bg-secondary h-8 w-8 flex items-center justify-center rounded border border-border-tertiary text-text-secondary hover:text-text-primary transition cursor-pointer hover:border-border-secondary hover:bg-secondary focus-visible:text-text-primary focus-visible:outline-0 focus-visible:ring-2 focus-visible:ring-white/80;
+    @apply bg-secondary h-8 w-8 flex items-center justify-center rounded border border-border-tertiary text-text-secondary hover:text-text-primary transition cursor-pointer hover:border-border-secondary hover:bg-secondary focus-visible:text-text-primary focus-visible:outline-0 focus-visible:ring-2 focus-visible:ring-ring;
 }
 .pagination-item[data-selected] {
-    @apply text-white bg-accent-300/10 border border-accent-300/20 rounded-md font-medium hover:bg-accent-300/20 active:bg-accent-300/20 outline-0 focus-visible:ring-2 focus:ring-white/80 transition ease-in-out duration-150;
+    @apply text-white bg-accent-300/10 border border-accent-300/20 rounded-md font-medium hover:bg-accent-300/20 active:bg-accent-300/20 outline-0 focus-visible:ring-2 focus:ring-ring transition ease-in-out duration-150;
 }
 </style>

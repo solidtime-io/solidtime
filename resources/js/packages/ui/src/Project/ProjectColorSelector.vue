@@ -23,12 +23,12 @@ const model = defineModel<string>({ default: '' });
                     <div
                         v-for="color in colors"
                         :key="color"
-                        @click="model = color"
                         :style="{
                             backgroundColor: color,
                             boxShadow: `var(--tw-ring-inset) 0 0 0 calc(3px + var(--tw-ring-offset-width)) ${color}30`,
                         }"
-                        class="w-4 h-4 rounded-full cursor-pointer"></div>
+                        class="w-4 h-4 rounded-full cursor-pointer"
+                        @click="model = color"></div>
                 </div>
             </template>
         </Dropdown>

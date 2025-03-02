@@ -18,7 +18,7 @@ function getNameForItem(item: Client) {
 
 <template>
     <MultiselectDropdown
-        searchPlaceholder="Search for a Client..."
+        search-placeholder="Search for a Client..."
         :items="clients"
         :get-key-from-item="getKeyFromItem"
         :get-name-for-item="getNameForItem">

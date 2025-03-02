@@ -6,8 +6,6 @@ import {
 import { computed, defineProps, ref } from 'vue';
 import parse from 'parse-duration';
 import dayjs from 'dayjs';
-import Dropdown from '@/packages/ui/src/Input/Dropdown.vue';
-import TimeRangeSelector from '@/packages/ui/src/Input/TimeRangeSelector.vue';
 
 const props = defineProps<{
     start: string;
@@ -63,32 +61,14 @@ function selectInput(event: Event) {
 </script>
 
 <template>
-    <Dropdown
-        v-model="open"
-        @submit="open = false"
-        align="bottom"
-        :close-on-content-click="false">
-        <template #trigger>
-            <input
-                data-testid="time_entry_duration_input"
-                class="text-white w-[100px] px-3 py-2 bg-transparent text-center hover:bg-card-background rounded-lg border border-transparent hover:border-card-border text-sm font-semibold focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-white/80"
-                @focus="selectInput"
-                @keydown.tab="open = false"
-                @blur="updateTimerAndStartLiveTimerUpdate"
-                @keydown.enter="updateTimerAndStartLiveTimerUpdate"
-                v-model="currentTime" />
-        </template>
-        <template #content>
-            <TimeRangeSelector
-                @changed="
-                    (newStart: string, newEnd: string) =>
-                        emit('changed', newStart, newEnd)
-                "
-                :start="start"
-                :end="end">
-            </TimeRangeSelector>
-        </template>
-    </Dropdown>
+    <input
+        v-model="currentTime"
+        data-testid="time_entry_duration_input"
+        class="text-white w-[90px] px-2 py-1.5 bg-transparent text-center hover:bg-card-background rounded-lg border border-transparent hover:border-card-border text-sm font-semibold focus-visible:bg-tertiary focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-ring"
+        @focus="selectInput"
+        @keydown.tab="open = false"
+        @blur="updateTimerAndStartLiveTimerUpdate"
+        @keydown.enter="updateTimerAndStartLiveTimerUpdate" />
 </template>
 
 <style scoped></style>

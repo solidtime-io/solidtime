@@ -27,19 +27,19 @@ const gridTemplate = computed(() => {
                 :style="gridTemplate">
                 <ReportTableHeading></ReportTableHeading>
                 <div
-                    class="col-span-5 py-24 text-center"
-                    v-if="reports.length === 0">
+                    v-if="reports.length === 0"
+                    class="col-span-5 py-24 text-center">
                     <FolderPlusIcon
                         class="w-8 text-icon-default inline pb-2"></FolderPlusIcon>
                     <h3 class="text-white font-semibold">
                         No shared reports found
                     </h3>
-                    <p class="pb-5" v-if="canCreateProjects()">
+                    <p v-if="canCreateProjects()" class="pb-5">
                         Create your first project now!
                     </p>
                     <SecondaryButton
-                        @click="router.visit(route('reporting'))"
                         :icon="PlusIcon"
+                        @click="router.visit(route('reporting'))"
                         >Go to the overview to create a report
                     </SecondaryButton>
                 </div>

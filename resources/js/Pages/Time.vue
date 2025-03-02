@@ -120,16 +120,16 @@ function deleteSelected() {
 
 <template>
     <TimeEntryCreateModal
-        :enableEstimatedTime="isAllowedToPerformPremiumAction()"
-        :createProject="createProject"
-        :createClient="createClient"
-        :createTag="createTag"
-        :createTimeEntry="createTimeEntry"
+        v-model:show="showManualTimeEntryModal"
+        :enable-estimated-time="isAllowedToPerformPremiumAction()"
+        :create-project="createProject"
+        :create-client="createClient"
+        :create-tag="createTag"
+        :create-time-entry="createTimeEntry"
         :projects
         :tasks
         :tags
-        :clients
-        v-model:show="showManualTimeEntryModal"></TimeEntryCreateModal>
+        :clients></TimeEntryCreateModal>
     <AppLayout title="Dashboard" data-testid="time_view">
         <MainContainer
             class="pt-5 lg:pt-8 pb-4 lg:pb-6 border-b border-default-background-separator">
@@ -141,8 +141,8 @@ function deleteSelected() {
                 <div class="pb-2 pt-2 lg:pt-0 lg:pl-4 flex justify-center">
                     <SecondaryButton
                         class="w-full text-center flex justify-center"
-                        @click="showManualTimeEntryModal = true"
                         :icon="PlusIcon"
+                        @click="showManualTimeEntryModal = true"
                         >Manual time entry
                     </SecondaryButton>
                 </div>
@@ -150,12 +150,9 @@ function deleteSelected() {
         </MainContainer>
         <TimeEntryMassActionRow
             :selected-time-entries="selectedTimeEntries"
-            :enableEstimatedTime="isAllowedToPerformPremiumAction()"
-            :canCreateProject="canCreateProjects()"
-            @submit="clearSelectionAndState"
+            :enable-estimated-time="isAllowedToPerformPremiumAction()"
+            :can-create-project="canCreateProjects()"
             :all-selected="selectedTimeEntries.length === timeEntries.length"
-            @select-all="selectedTimeEntries = [...timeEntries]"
-            @unselect-all="selectedTimeEntries = []"
             :delete-selected="deleteSelected"
             :projects="projects"
             :tasks="tasks"
@@ -171,23 +168,26 @@ function deleteSelected() {
             "
             :create-project="createProject"
             :create-client="createClient"
-            :createTag="createTag"></TimeEntryMassActionRow>
+            :create-tag="createTag"
+            @submit="clearSelectionAndState"
+            @select-all="selectedTimeEntries = [...timeEntries]"
+            @unselect-all="selectedTimeEntries = []"></TimeEntryMassActionRow>
         <TimeEntryGroupedTable
             v-model:selected="selectedTimeEntries"
-            :createProject
-            :enableEstimatedTime="isAllowedToPerformPremiumAction()"
-            :canCreateProject="canCreateProjects()"
+            :create-project
+            :enable-estimated-time="isAllowedToPerformPremiumAction()"
+            :can-create-project="canCreateProjects()"
             :clients
-            :createClient
-            :updateTimeEntry
-            :updateTimeEntries
-            :deleteTimeEntries
-            :createTimeEntry="startTimeEntry"
-            :createTag
+            :create-client
+            :update-time-entry
+            :update-time-entries
+            :delete-time-entries
+            :create-time-entry="startTimeEntry"
+            :create-tag
             :projects="projects"
             :tasks="tasks"
             :currency="getOrganizationCurrencyString()"
-            :timeEntries="timeEntries"
+            :time-entries="timeEntries"
             :tags="tags"></TimeEntryGroupedTable>
         <div v-if="timeEntries.length === 0" class="text-center pt-12">
             <ClockIcon class="w-8 text-icon-default inline pb-2"></ClockIcon>

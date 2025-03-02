@@ -189,6 +189,18 @@ class ImportDatabaseHelper
     }
 
     /**
+     * @return array<TModel>
+     */
+    public function getCachedModels(): array
+    {
+        if ($this->mapKeyToModel === null) {
+            return [];
+        }
+
+        return array_values($this->mapKeyToModel);
+    }
+
+    /**
      * @param  array<string, mixed>  $identifierData
      * @return TModel|null
      */

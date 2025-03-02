@@ -23,7 +23,7 @@ const title = computed(() => {
         :get-key-from-item="(item) => item.value"
         :get-name-for-item="(item) => item.label"
         :items="groupByOptions">
-        <template v-slot:trigger>
+        <template #trigger>
             <Badge
                 size="large"
                 class="cursor-pointer hover:bg-card-background transition space-x-5 flex">

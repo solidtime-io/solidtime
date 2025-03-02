@@ -6,6 +6,7 @@ namespace Tests\Unit\Filament\Resources;
 
 use App\Filament\Resources\OrganizationResource;
 use App\Models\Organization;
+use App\Models\OrganizationInvitation;
 use App\Models\User;
 use App\Service\DeletionService;
 use Illuminate\Support\Facades\Config;
@@ -73,5 +74,42 @@ class OrganizationResourceTest extends FilamentTestCase
 
         // Assert
         $response->assertSuccessful();
+    }
+
+    public function test_can_list_related_users(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $user1 = User::factory()->create();
+        $user2 = User::factory()->create();
+        $organization->users()->attach($user1);
+        $organization->users()->attach($user2);
+
+        // Act
+        $response = Livewire::test(OrganizationResource\RelationManagers\UsersRelationManager::class, [
+            'ownerRecord' => $organization,
+            'pageClass' => OrganizationResource\Pages\EditOrganization::class,
+        ]);
+
+        // Assert
+        $response->assertSuccessful();
+        $response->assertCanSeeTableRecords($organization->users()->get());
+    }
+
+    public function test_can_list_related_invitations(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $organizationInvitations = OrganizationInvitation::factory()->forOrganization($organization)->createMany(5);
+
+        // Act
+        $response = Livewire::test(OrganizationResource\RelationManagers\InvitationsRelationManager::class, [
+            'ownerRecord' => $organization,
+            'pageClass' => OrganizationResource\Pages\EditOrganization::class,
+        ]);
+
+        // Assert
+        $response->assertSuccessful();
+        $response->assertCanSeeTableRecords($organizationInvitations);
     }
 }
