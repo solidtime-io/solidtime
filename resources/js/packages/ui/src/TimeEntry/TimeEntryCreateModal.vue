@@ -18,7 +18,6 @@ import type {
     Client,
     CreateTimeEntryBody,
 } from '@/packages/api/src';
-import TimePicker from '@/packages/ui/src/Input/TimePicker.vue';
 import { getOrganizationCurrencyString } from '@/utils/money';
 import { canCreateProjects } from '@/utils/permissions';
 import TagDropdown from '@/packages/ui/src/Tag/TagDropdown.vue';
@@ -30,6 +29,7 @@ import DurationHumanInput from '@/packages/ui/src/Input/DurationHumanInput.vue';
 
 import { InformationCircleIcon } from '@heroicons/vue/20/solid';
 import type { Tag, Task } from '@/packages/api/src';
+import TimePickerSimple from "@/packages/ui/src/Input/TimePickerSimple.vue";
 
 const show = defineModel('show', { default: false });
 const saving = ref(false);
@@ -244,30 +244,34 @@ type BillableOption = {
                 <div class="">
                     <InputLabel>Start</InputLabel>
                     <div class="flex flex-col items-center space-y-2 mt-1">
-                        <TimePicker
+                        <TimePickerSimple
+
                             v-model="localStart"
-                            size="large"></TimePicker>
+                            size="large"></TimePickerSimple>
                         <DatePicker
                             v-model="localStart"
+                            tabindex="1"
                             class="text-xs text-text-tertiary max-w-28 px-1.5 py-1.5"></DatePicker>
                     </div>
                 </div>
                 <div class="">
                     <InputLabel>End</InputLabel>
                     <div class="flex flex-col items-center space-y-2 mt-1">
-                        <TimePicker
+                        <TimePickerSimple
                             v-model="localEnd"
-                            size="large"></TimePicker>
+                            size="large"></TimePickerSimple>
                         <DatePicker
                             v-model="localEnd"
+                            tabindex="1"
                             class="text-xs text-text-tertiary max-w-28 px-1.5 py-1.5"></DatePicker>
                     </div>
                 </div>
             </div>
         </template>
         <template #footer>
-            <SecondaryButton @click="show = false"> Cancel</SecondaryButton>
+            <SecondaryButton tabindex="2" @click="show = false"> Cancel</SecondaryButton>
             <PrimaryButton
+                tabindex="2"
                 class="ms-3"
                 :class="{ 'opacity-25': saving }"
                 :disabled="saving"
