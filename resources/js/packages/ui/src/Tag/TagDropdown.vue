@@ -6,6 +6,7 @@ import TagCreateModal from '@/packages/ui/src/Tag/TagCreateModal.vue';
 import MultiselectDropdownItem from '@/packages/ui/src/Input/MultiselectDropdownItem.vue';
 import type { Tag } from '@/packages/api/src';
 import type { Placement } from '@floating-ui/vue';
+import {UseFocusTrap} from "@vueuse/integrations/useFocusTrap/component";
 
 const props = withDefaults(
     defineProps<{
@@ -177,46 +178,50 @@ const showCreateTagModal = ref(false);
             <slot name="trigger"></slot>
         </template>
         <template #content>
-            <input
-                ref="searchInput"
-                :value="searchValue"
-                data-testid="tag_dropdown_search"
-                class="bg-card-background border-0 placeholder-muted text-sm text-white py-2.5 focus:ring-0 border-b border-card-background-separator focus:border-card-background-separator w-full"
-                placeholder="Search for a Tag..."
-                @input="updateSearchValue"
-                @keydown.enter="addTagIfNoneExists"
-                @keydown.up.prevent="moveHighlightUp"
-                @keydown.down.prevent="moveHighlightDown" />
-            <div ref="dropdownViewport" class="w-60 max-h-60 overflow-y-scroll">
-                <div
-                    v-for="tag in filteredTags"
-                    :key="tag.id"
-                    role="option"
-                    :value="tag.id"
-                    :class="{
+            <UseFocusTrap
+                v-if="open"
+                :options="{ immediate: true, allowOutsideClick: true }">
+                <input
+                    ref="searchInput"
+                    :value="searchValue"
+                    data-testid="tag_dropdown_search"
+                    class="bg-card-background border-0 placeholder-muted text-sm text-white py-2.5 focus:ring-0 border-b border-card-background-separator focus:border-card-background-separator w-full"
+                    placeholder="Search for a Tag..."
+                    @input="updateSearchValue"
+                    @keydown.enter="addTagIfNoneExists"
+                    @keydown.up.prevent="moveHighlightUp"
+                    @keydown.down.prevent="moveHighlightDown" />
+                <div ref="dropdownViewport" class="w-60 max-h-60 overflow-y-scroll">
+                    <div
+                        v-for="tag in filteredTags"
+                        :key="tag.id"
+                        role="option"
+                        :value="tag.id"
+                        :class="{
                         'bg-card-background-active':
                             tag.id === highlightedItemId,
                     }"
-                    data-testid="tag_dropdown_entries"
-                    :data-tag-id="tag.id">
-                    <MultiselectDropdownItem
-                        :selected="isTagSelected(tag.id)"
-                        :name="tag.name"
-                        @click="toggleTag(tag.id)"></MultiselectDropdownItem>
+                        data-testid="tag_dropdown_entries"
+                        :data-tag-id="tag.id">
+                        <MultiselectDropdownItem
+                            :selected="isTagSelected(tag.id)"
+                            :name="tag.name"
+                            @click="toggleTag(tag.id)"></MultiselectDropdownItem>
+                    </div>
                 </div>
-            </div>
-            <div class="hover:bg-card-background-active rounded-b-lg">
-                <button
-                    class="text-white w-full flex space-x-3 items-center px-4 py-3 text-xs font-semibold border-t border-card-background-separator"
-                    @click="
+                <div class="hover:bg-card-background-active rounded-b-lg">
+                    <button
+                        class="text-white w-full flex space-x-3 items-center px-4 py-3 text-xs font-semibold border-t border-card-background-separator"
+                        @click="
                         open = false;
                         showCreateTagModal = true;
                     ">
-                    <PlusCircleIcon
-                        class="w-5 flex-shrink-0 text-icon-default"></PlusCircleIcon>
-                    <span>Create new Tag</span>
-                </button>
-            </div>
+                        <PlusCircleIcon
+                            class="w-5 flex-shrink-0 text-icon-default"></PlusCircleIcon>
+                        <span>Create new Tag</span>
+                    </button>
+                </div>
+            </UseFocusTrap>
         </template>
     </Dropdown>
 </template>
