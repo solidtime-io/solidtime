@@ -4,15 +4,18 @@ declare(strict_types=1);
 
 use App\Exceptions\Api\CanNotDeleteUserWhoIsOwnerOfOrganizationWithMultipleMembers;
 use App\Exceptions\Api\CanNotRemoveOwnerFromOrganization;
+use App\Exceptions\Api\ChangingRoleOfPlaceholderIsNotAllowed;
 use App\Exceptions\Api\ChangingRoleToPlaceholderIsNotAllowed;
 use App\Exceptions\Api\EntityStillInUseApiException;
 use App\Exceptions\Api\FeatureIsNotAvailableInFreePlanApiException;
 use App\Exceptions\Api\InactiveUserCanNotBeUsedApiException;
 use App\Exceptions\Api\OnlyOwnerCanChangeOwnership;
+use App\Exceptions\Api\OnlyPlaceholdersCanBeMergedIntoAnotherMember;
 use App\Exceptions\Api\OrganizationHasNoSubscriptionButMultipleMembersException;
 use App\Exceptions\Api\OrganizationNeedsAtLeastOneOwner;
 use App\Exceptions\Api\PdfRendererIsNotConfiguredException;
 use App\Exceptions\Api\PersonalAccessClientIsNotConfiguredException;
+use App\Exceptions\Api\ThisPlaceholderCanNotBeInvitedUseTheMergeToolInsteadException;
 use App\Exceptions\Api\TimeEntryCanNotBeRestartedApiException;
 use App\Exceptions\Api\TimeEntryStillRunningApiException;
 use App\Exceptions\Api\UserIsAlreadyMemberOfOrganizationApiException;
@@ -39,6 +42,9 @@ return [
         PdfRendererIsNotConfiguredException::KEY => 'PDF renderer is not configured',
         FeatureIsNotAvailableInFreePlanApiException::KEY => 'Feature is not available in free plan',
         PersonalAccessClientIsNotConfiguredException::KEY => 'Personal access client is not configured',
+        ChangingRoleOfPlaceholderIsNotAllowed::KEY => 'Changing role of placeholder is not allowed',
+        OnlyPlaceholdersCanBeMergedIntoAnotherMember::KEY => 'Only placeholders can be merged into another member',
+        ThisPlaceholderCanNotBeInvitedUseTheMergeToolInsteadException::KEY => 'This placeholder can not be invited use the merge tool instead',
     ],
     'unknown_error_in_admin_panel' => 'An unknown error occurred. Please check the logs.',
 ];

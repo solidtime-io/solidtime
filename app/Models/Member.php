@@ -7,6 +7,7 @@ namespace App\Models;
 use App\Models\Concerns\CustomAuditable;
 use App\Models\Concerns\HasUuids;
 use Database\Factories\MemberFactory;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -24,6 +25,8 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  * @property Carbon|null $updated_at
  * @property-read Organization $organization
  * @property-read User $user
+ * @property-read Collection<ProjectMember> $projectMembers
+ * @property-read Collection<TimeEntry> $timeEntries
  *
  * @method static MemberFactory factory()
  */
@@ -57,6 +60,14 @@ class Member extends JetstreamMembership implements AuditableContract
     public function organization(): BelongsTo
     {
         return $this->belongsTo(Organization::class, 'organization_id');
+    }
+
+    /**
+     * @return HasMany<TimeEntry>
+     */
+    public function timeEntries(): HasMany
+    {
+        return $this->hasMany(TimeEntry::class, 'member_id');
     }
 
     /**

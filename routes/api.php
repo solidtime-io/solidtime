@@ -51,6 +51,7 @@ Route::prefix('v1')->name('v1.')->group(static function (): void {
             Route::delete('/members/{member}', [MemberController::class, 'destroy'])->name('destroy');
             Route::post('/members/{member}/invite-placeholder', [MemberController::class, 'invitePlaceholder'])->name('invite-placeholder');
             Route::post('/members/{member}/make-placeholder', [MemberController::class, 'makePlaceholder'])->name('make-placeholder');
+            Route::post('member/{member}/merge-into', [MemberController::class, 'mergeInto'])->name('merge-into');
         });
 
         // User routes
