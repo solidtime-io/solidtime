@@ -13,7 +13,7 @@ return [
             '<br> 4. Now click Export -> Save as CSV. The Export dropdown is in the header of the export table left of the printer symbol. '.
             '<br><br>Before you import make sure that the Timezone settings in Clockify are the same as in solidtime.',
     ],
-    'generic_project' => [
+    'generic_projects' => [
         'name' => 'Generic Projects',
         'description' => 'If you want to import many projects yourself this importer the right choice. Please see our docs for <a href="https://docs.solidtime.io/user-guide/import">more information about the CSV structure</a>',
     ],

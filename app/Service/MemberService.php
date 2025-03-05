@@ -7,6 +7,7 @@ namespace App\Service;
 use App\Enums\Role;
 use App\Events\MemberRemoved;
 use App\Exceptions\Api\CanNotRemoveOwnerFromOrganization;
+use App\Exceptions\Api\ChangingRoleOfPlaceholderIsNotAllowed;
 use App\Exceptions\Api\ChangingRoleToPlaceholderIsNotAllowed;
 use App\Exceptions\Api\EntityStillInUseApiException;
 use App\Exceptions\Api\OnlyOwnerCanChangeOwnership;
@@ -75,12 +76,16 @@ class MemberService
      * @throws ChangingRoleToPlaceholderIsNotAllowed
      * @throws OnlyOwnerCanChangeOwnership
      * @throws OrganizationNeedsAtLeastOneOwner
+     * @throws ChangingRoleOfPlaceholderIsNotAllowed
      */
     public function changeRole(Member $member, Organization $organization, Role $newRole, bool $allowOwnerChange): void
     {
         $oldRole = Role::from($member->role);
         if ($oldRole === Role::Owner) {
             throw new OrganizationNeedsAtLeastOneOwner;
+        }
+        if ($oldRole === Role::Placeholder) {
+            throw new ChangingRoleOfPlaceholderIsNotAllowed;
         }
         if ($newRole === Role::Placeholder) {
             throw new ChangingRoleToPlaceholderIsNotAllowed;
