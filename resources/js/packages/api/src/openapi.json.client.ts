@@ -5,9 +5,9 @@ const ApiTokenResource = z
     .object({
         id: z.string(),
         name: z.string(),
-        revoked: z.string(),
-        scopes: z.string(),
-        created_at: z.union([z.string(), z.null()]),
+        revoked: z.boolean(),
+        scopes: z.array(z.string()),
+        created_at: z.string(),
         expires_at: z.union([z.string(), z.null()]),
     })
     .passthrough();
@@ -15,7 +15,17 @@ const ApiTokenCollection = z.array(ApiTokenResource);
 const ApiTokenStoreRequest = z
     .object({ name: z.string().min(1).max(255) })
     .passthrough();
-const ApiTokenWithAccessTokenResource = z.string();
+const ApiTokenWithAccessTokenResource = z
+    .object({
+        id: z.string(),
+        name: z.string(),
+        revoked: z.boolean(),
+        scopes: z.array(z.string()),
+        created_at: z.string(),
+        expires_at: z.union([z.string(), z.null()]),
+        access_token: z.string(),
+    })
+    .passthrough();
 const ClientResource = z
     .object({
         id: z.string(),
@@ -63,6 +73,10 @@ const MemberUpdateRequest = z
     .object({ role: Role, billable_rate: z.union([z.number(), z.null()]) })
     .partial()
     .passthrough();
+const MemberMergeIntoRequest = z
+    .object({ member_id: z.string() })
+    .partial()
+    .passthrough();
 const OrganizationResource = z
     .object({
         id: z.string(),
@@ -78,6 +92,28 @@ const OrganizationUpdateRequest = z
         name: z.string().max(255),
         billable_rate: z.union([z.number(), z.null()]).optional(),
         employees_can_see_billable_rates: z.boolean().optional(),
+    })
+    .passthrough();
+const VersionRequest = z
+    .object({
+        version: z.string().max(255),
+        build: z.string().max(255),
+        url: z.string().max(255),
+    })
+    .passthrough();
+const TelemetryRequest = z
+    .object({
+        version: z.string().max(255),
+        build: z.string().max(255),
+        url: z.string().max(255).url(),
+        user_count: z.number().int(),
+        organization_count: z.number().int(),
+        audit_count: z.number().int(),
+        project_count: z.number().int(),
+        project_member_count: z.number().int(),
+        client_count: z.number().int(),
+        task_count: z.number().int(),
+        time_entry_count: z.number().int(),
     })
     .passthrough();
 const ProjectResource = z
@@ -486,8 +522,11 @@ export const schemas = {
     MemberResource,
     Role,
     MemberUpdateRequest,
+    MemberMergeIntoRequest,
     OrganizationResource,
     OrganizationUpdateRequest,
+    VersionRequest,
+    TelemetryRequest,
     ProjectResource,
     ProjectStoreRequest,
     ProjectUpdateRequest,
@@ -1157,6 +1196,71 @@ const endpoints = makeApi([
                 status: 404,
                 description: `Not found`,
                 schema: z.object({ message: z.string() }).passthrough(),
+            },
+        ],
+    },
+    {
+        method: 'post',
+        path: '/v1/organizations/:organization/member/:member/merge-into',
+        alias: 'mergeMember',
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'body',
+                type: 'Body',
+                schema: z
+                    .object({ member_id: z.string() })
+                    .partial()
+                    .passthrough(),
+            },
+            {
+                name: 'organization',
+                type: 'Path',
+                schema: z.string(),
+            },
+            {
+                name: 'member',
+                type: 'Path',
+                schema: z.string(),
+            },
+        ],
+        response: z.null(),
+        errors: [
+            {
+                status: 400,
+                description: `API exception`,
+                schema: z
+                    .object({
+                        error: z.boolean(),
+                        key: z.string(),
+                        message: z.string(),
+                    })
+                    .passthrough(),
+            },
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 403,
+                description: `Authorization error`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 404,
+                description: `Not found`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 422,
+                description: `Validation error`,
+                schema: z
+                    .object({
+                        message: z.string(),
+                        errors: z.record(z.array(z.string())),
+                    })
+                    .passthrough(),
             },
         ],
     },
@@ -3395,6 +3499,58 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
         ],
     },
     {
+        method: 'post',
+        path: '/v1/ping/telemetry',
+        alias: 'v1.ping.telemetry',
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'body',
+                type: 'Body',
+                schema: TelemetryRequest,
+            },
+        ],
+        response: z.object({ success: z.boolean() }).passthrough(),
+        errors: [
+            {
+                status: 422,
+                description: `Validation error`,
+                schema: z
+                    .object({
+                        message: z.string(),
+                        errors: z.record(z.array(z.string())),
+                    })
+                    .passthrough(),
+            },
+        ],
+    },
+    {
+        method: 'post',
+        path: '/v1/ping/version',
+        alias: 'v1.ping.version',
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'body',
+                type: 'Body',
+                schema: VersionRequest,
+            },
+        ],
+        response: z.object({ version: z.string() }).passthrough(),
+        errors: [
+            {
+                status: 422,
+                description: `Validation error`,
+                schema: z
+                    .object({
+                        message: z.string(),
+                        errors: z.record(z.array(z.string())),
+                    })
+                    .passthrough(),
+            },
+        ],
+    },
+    {
         method: 'get',
         path: '/v1/public/reports',
         alias: 'getPublicReport',
@@ -3472,6 +3628,17 @@ Please note that the access token is only shown in this response and cannot be r
             .passthrough(),
         errors: [
             {
+                status: 400,
+                description: `API exception`,
+                schema: z
+                    .object({
+                        error: z.boolean(),
+                        key: z.string(),
+                        message: z.string(),
+                    })
+                    .passthrough(),
+            },
+            {
                 status: 401,
                 description: `Unauthenticated`,
                 schema: z.object({ message: z.string() }).passthrough(),
@@ -3495,18 +3662,29 @@ Please note that the access token is only shown in this response and cannot be r
     },
     {
         method: 'delete',
-        path: '/v1/users/me/api-tokens/:apiTokenId',
+        path: '/v1/users/me/api-tokens/:apiToken',
         alias: 'deleteApiToken',
         requestFormat: 'json',
         parameters: [
             {
-                name: 'apiTokenId',
+                name: 'apiToken',
                 type: 'Path',
                 schema: z.string(),
             },
         ],
         response: z.null(),
         errors: [
+            {
+                status: 400,
+                description: `API exception`,
+                schema: z
+                    .object({
+                        error: z.boolean(),
+                        key: z.string(),
+                        message: z.string(),
+                    })
+                    .passthrough(),
+            },
             {
                 status: 401,
                 description: `Unauthenticated`,
@@ -3515,24 +3693,40 @@ Please note that the access token is only shown in this response and cannot be r
             {
                 status: 403,
                 description: `Authorization error`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 404,
+                description: `Not found`,
                 schema: z.object({ message: z.string() }).passthrough(),
             },
         ],
     },
     {
         method: 'post',
-        path: '/v1/users/me/api-tokens/:apiTokenId/revoke',
+        path: '/v1/users/me/api-tokens/:apiToken/revoke',
         alias: 'revokeApiToken',
         requestFormat: 'json',
         parameters: [
             {
-                name: 'apiTokenId',
+                name: 'apiToken',
                 type: 'Path',
                 schema: z.string(),
             },
         ],
         response: z.null(),
         errors: [
+            {
+                status: 400,
+                description: `API exception`,
+                schema: z
+                    .object({
+                        error: z.boolean(),
+                        key: z.string(),
+                        message: z.string(),
+                    })
+                    .passthrough(),
+            },
             {
                 status: 401,
                 description: `Unauthenticated`,
@@ -3541,6 +3735,11 @@ Please note that the access token is only shown in this response and cannot be r
             {
                 status: 403,
                 description: `Authorization error`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 404,
+                description: `Not found`,
                 schema: z.object({ message: z.string() }).passthrough(),
             },
         ],

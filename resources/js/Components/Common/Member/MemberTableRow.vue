@@ -10,16 +10,18 @@ import { getCurrentOrganizationId } from '@/utils/useUser';
 import { useNotificationsStore } from '@/utils/notification';
 import { canInvitePlaceholderMembers } from '@/utils/permissions';
 import { useMembersStore } from '@/utils/useMembers';
-import { ref } from 'vue';
+import {computed, ref} from 'vue';
 import MemberEditModal from '@/Components/Common/Member/MemberEditModal.vue';
 import { getOrganizationCurrencyString } from '@/utils/money';
 import { formatCents } from '@/packages/ui/src/utils/money';
+import MemberMergeModal from "@/Components/Common/Member/MemberMergeModal.vue";
 
 const props = defineProps<{
     member: Member;
 }>();
 
 const showEditMemberModal = ref(false);
+const showMergeMemberModal = ref(false);
 
 function removeMember() {
     useMembersStore().removeMember(props.member.id);
@@ -45,6 +47,11 @@ async function invitePlaceholder(id: string) {
         );
     }
 }
+
+const userHasValidMailAddress = computed(() => {
+    return !props.member.email.endsWith('@solidtime-import.test');
+})
+
 </script>
 
 <template>
@@ -87,7 +94,8 @@ async function invitePlaceholder(id: string) {
             <SecondaryButton
                 v-if="
                     member.is_placeholder === true &&
-                    canInvitePlaceholderMembers()
+                    canInvitePlaceholderMembers() &&
+                    userHasValidMailAddress
                 "
                 size="small"
                 @click="invitePlaceholder(member.id)"
@@ -96,11 +104,14 @@ async function invitePlaceholder(id: string) {
             <MemberMoreOptionsDropdown
                 :member="member"
                 @edit="showEditMemberModal = true"
-                @delete="removeMember"></MemberMoreOptionsDropdown>
+                @delete="removeMember"
+                @merge="showMergeMemberModal = true"
+            ></MemberMoreOptionsDropdown>
         </div>
         <MemberEditModal
             v-model:show="showEditMemberModal"
             :member="member"></MemberEditModal>
+        <MemberMergeModal v-model:show="showMergeMemberModal" :member="member"></MemberMergeModal>
     </TableRow>
 </template>
 

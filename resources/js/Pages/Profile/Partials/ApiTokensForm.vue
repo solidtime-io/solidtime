@@ -45,7 +45,6 @@ async function createApiToken(){
         (response) => {
             createApiTokenForm.name = '';
             displayingToken.value = true;
-            // @ts-expect-error temporary fix until openapi docs type is fixed
             newToken.value = response.data.access_token;
         }
     );
@@ -117,7 +116,7 @@ const deleteApiTokenMutation = useMutation({
     mutationFn: async (apiTokenId: string) => {
         return await api.deleteApiToken(undefined, {
             params: {
-                apiTokenId: apiTokenId,
+                apiToken: apiTokenId,
             },
         });
     },
@@ -130,7 +129,7 @@ const revokeApiTokenMutation = useMutation({
     mutationFn: async (apiTokenId: string) => {
         return await api.revokeApiToken(undefined, {
             params: {
-                apiTokenId: apiTokenId,
+                apiToken: apiTokenId,
             },
         });
     },

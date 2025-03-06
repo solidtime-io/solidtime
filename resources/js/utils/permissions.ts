@@ -77,6 +77,10 @@ export function canDeleteMembers() {
     return currentUserHasPermission('members:delete');
 }
 
+export function canMergeMembers() {
+    return currentUserHasPermission('members:merge-into');
+}
+
 export function canInvitePlaceholderMembers() {
     return currentUserHasPermission('members:invite-placeholder');
 }

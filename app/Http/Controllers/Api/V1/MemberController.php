@@ -138,6 +138,8 @@ class MemberController extends Controller
      * @throws AuthorizationException
      * @throws OnlyPlaceholdersCanBeMergedIntoAnotherMember
      * @throws \Throwable
+     *
+     * @operationId mergeMember
      */
     public function mergeInto(Organization $organization, Member $member, MemberMergeIntoRequest $request): JsonResponse
     {
