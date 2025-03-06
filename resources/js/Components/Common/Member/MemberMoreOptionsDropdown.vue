@@ -1,16 +1,18 @@
 <script setup lang="ts">
-import { TrashIcon, PencilSquareIcon } from '@heroicons/vue/20/solid';
+import { TrashIcon, PencilSquareIcon, ArrowDownOnSquareStackIcon } from '@heroicons/vue/20/solid';
 import type { Member } from '@/packages/api/src';
-import { canDeleteMembers, canUpdateMembers } from '@/utils/permissions';
+import {canDeleteMembers, canMergeMembers, canUpdateMembers} from '@/utils/permissions';
 import MoreOptionsDropdown from '@/packages/ui/src/MoreOptionsDropdown.vue';
 
 const emit = defineEmits<{
     delete: [];
     edit: [];
+    merge: [];
 }>();
 const props = defineProps<{
     member: Member;
 }>();
+
 </script>
 
 <template>
@@ -35,6 +37,15 @@ const props = defineProps<{
                 @click="emit('delete')">
                 <TrashIcon class="w-5 text-icon-active"></TrashIcon>
                 <span>Delete</span>
+            </button>
+            <button
+                v-if="props.member.role === 'placeholder' && canMergeMembers()"
+                :aria-label="'Merge Member ' + props.member.name"
+                data-testid="member_merge"
+                class="flex items-center space-x-3 w-full px-3 py-2.5 text-start text-sm font-medium leading-5 text-white hover:bg-card-background-active focus:outline-none focus:bg-card-background-active transition duration-150 ease-in-out"
+                @click="emit('merge')">
+                <ArrowDownOnSquareStackIcon class="w-5 text-icon-active"></ArrowDownOnSquareStackIcon>
+                <span>Merge</span>
             </button>
         </div>
     </MoreOptionsDropdown>
