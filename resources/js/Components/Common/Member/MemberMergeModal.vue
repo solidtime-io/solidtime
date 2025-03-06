@@ -28,7 +28,7 @@ const mergeMember = useMutation({
             throw new Error('No current organization id - create report');
         }
         return await api.mergeMember({
-            memberId: newMemberId,
+            member_id: newMemberId,
         }, {
             params: {
                 organization: organizationId,
