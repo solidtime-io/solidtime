@@ -94,28 +94,6 @@ const OrganizationUpdateRequest = z
         employees_can_see_billable_rates: z.boolean().optional(),
     })
     .passthrough();
-const VersionRequest = z
-    .object({
-        version: z.string().max(255),
-        build: z.string().max(255),
-        url: z.string().max(255),
-    })
-    .passthrough();
-const TelemetryRequest = z
-    .object({
-        version: z.string().max(255),
-        build: z.string().max(255),
-        url: z.string().max(255).url(),
-        user_count: z.number().int(),
-        organization_count: z.number().int(),
-        audit_count: z.number().int(),
-        project_count: z.number().int(),
-        project_member_count: z.number().int(),
-        client_count: z.number().int(),
-        task_count: z.number().int(),
-        time_entry_count: z.number().int(),
-    })
-    .passthrough();
 const ProjectResource = z
     .object({
         id: z.string(),
@@ -525,8 +503,6 @@ export const schemas = {
     MemberMergeIntoRequest,
     OrganizationResource,
     OrganizationUpdateRequest,
-    VersionRequest,
-    TelemetryRequest,
     ProjectResource,
     ProjectStoreRequest,
     ProjectUpdateRequest,
@@ -3149,7 +3125,7 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
                                     .object({
                                         key: z.union([z.string(), z.null()]),
                                         seconds: z.number().int(),
-                                        cost: z.number().int(),
+                                        cost: z.union([z.number(), z.null()]),
                                         grouped_type: z.union([
                                             z.string(),
                                             z.null(),
@@ -3165,7 +3141,10 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
                                                         seconds: z
                                                             .number()
                                                             .int(),
-                                                        cost: z.number().int(),
+                                                        cost: z.union([
+                                                            z.number(),
+                                                            z.null(),
+                                                        ]),
                                                         grouped_type: z.null(),
                                                         grouped_data: z.null(),
                                                     })
@@ -3179,7 +3158,7 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
                             z.null(),
                         ]),
                         seconds: z.number().int(),
-                        cost: z.number().int(),
+                        cost: z.union([z.number(), z.null()]),
                     })
                     .passthrough(),
             })
@@ -3486,58 +3465,6 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
                 description: `Not found`,
                 schema: z.object({ message: z.string() }).passthrough(),
             },
-            {
-                status: 422,
-                description: `Validation error`,
-                schema: z
-                    .object({
-                        message: z.string(),
-                        errors: z.record(z.array(z.string())),
-                    })
-                    .passthrough(),
-            },
-        ],
-    },
-    {
-        method: 'post',
-        path: '/v1/ping/telemetry',
-        alias: 'v1.ping.telemetry',
-        requestFormat: 'json',
-        parameters: [
-            {
-                name: 'body',
-                type: 'Body',
-                schema: TelemetryRequest,
-            },
-        ],
-        response: z.object({ success: z.boolean() }).passthrough(),
-        errors: [
-            {
-                status: 422,
-                description: `Validation error`,
-                schema: z
-                    .object({
-                        message: z.string(),
-                        errors: z.record(z.array(z.string())),
-                    })
-                    .passthrough(),
-            },
-        ],
-    },
-    {
-        method: 'post',
-        path: '/v1/ping/version',
-        alias: 'v1.ping.version',
-        requestFormat: 'json',
-        parameters: [
-            {
-                name: 'body',
-                type: 'Body',
-                schema: VersionRequest,
-            },
-        ],
-        response: z.object({ version: z.string() }).passthrough(),
-        errors: [
             {
                 status: 422,
                 description: `Validation error`,

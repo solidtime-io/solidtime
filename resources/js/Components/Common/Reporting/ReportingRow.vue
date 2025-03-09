@@ -12,7 +12,7 @@ type AggregatedGroupedData = GroupedData & {
 
 type GroupedData = {
     seconds: number;
-    cost: number;
+    cost: number | null;
     description: string | null | undefined;
 };
 
@@ -48,7 +48,7 @@ const expanded = ref(false);
             {{ formatHumanReadableDuration(entry.seconds) }}
         </div>
         <div class="justify-end pr-6 flex items-center">
-            {{ formatCents(entry.cost, getOrganizationCurrencyString()) }}
+            {{entry.cost ? formatCents(entry.cost, getOrganizationCurrencyString()) : '--' }}
         </div>
     </div>
     <div

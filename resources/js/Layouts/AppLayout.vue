@@ -27,7 +27,7 @@ import {
     canUpdateOrganization,
     canViewClients,
     canViewMembers,
-    canViewProjects,
+    canViewProjects, canViewReport,
     canViewTags,
 } from '@/utils/permissions';
 import { isBillingActivated } from '@/utils/billing';
@@ -118,14 +118,17 @@ const page = usePage<{
                                     {
                                         title: 'Overview',
                                         route: 'reporting',
+                                        show: true
                                     },
                                     {
                                         title: 'Detailed',
                                         route: 'reporting.detailed',
+                                        show: true
                                     },
                                     {
                                         title: 'Shared',
                                         route: 'reporting.shared',
+                                        show: canViewReport()
                                     },
                                 ]"
                                 :current="

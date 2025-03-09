@@ -58,7 +58,7 @@ import {
     PaginationRoot,
 } from 'radix-vue';
 import { useQuery, useQueryClient } from '@tanstack/vue-query';
-import { getCurrentOrganizationId } from '@/utils/useUser';
+import { getCurrentOrganizationId, getCurrentMembershipId } from '@/utils/useUser';
 import { useTimeEntriesStore } from '@/utils/useTimeEntries';
 import ReportingTabNavbar from '@/Components/Common/Reporting/ReportingTabNavbar.vue';
 import ReportingExportButton from '@/Components/Common/Reporting/ReportingExportButton.vue';
@@ -66,7 +66,7 @@ import type { ExportFormat } from '@/types/reporting';
 import { useNotificationsStore } from '@/utils/notification';
 import TimeEntryMassActionRow from '@/packages/ui/src/TimeEntry/TimeEntryMassActionRow.vue';
 import { isAllowedToPerformPremiumAction } from '@/utils/billing';
-import { canCreateProjects } from '@/utils/permissions';
+import {canCreateProjects, canViewAllTimeEntries} from '@/utils/permissions';
 import ReportingExportModal from '@/Components/Common/Reporting/ReportingExportModal.vue';
 
 const startDate = useSessionStorage<string>(
@@ -98,6 +98,7 @@ function getFilterAttributes() {
     };
     const params = {
         ...defaultParams,
+        member_id: !canViewAllTimeEntries() ? getCurrentMembershipId() : undefined,
         member_ids:
             selectedMembers.value.length > 0
                 ? selectedMembers.value

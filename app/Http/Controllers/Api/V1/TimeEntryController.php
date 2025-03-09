@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1;
 
 use App\Enums\ExportFormat;
+use App\Enums\Role;
 use App\Exceptions\Api\FeatureIsNotAvailableInFreePlanApiException;
 use App\Exceptions\Api\PdfRendererIsNotConfiguredException;
 use App\Exceptions\Api\TimeEntryCanNotBeRestartedApiException;
@@ -180,6 +181,7 @@ class TimeEntryController extends Controller
         }
         $user = $this->user();
         $timezone = $user->timezone;
+        $showBillableRate = $this->member($organization)->role !== Role::Employee->value || $organization->employees_can_see_billable_rates;
 
         $timeEntriesQuery = $this->getTimeEntriesQuery($organization, $request, $member);
         $timeEntriesQuery->with([
@@ -211,7 +213,8 @@ class TimeEntryController extends Controller
                 $user->week_start,
                 false,
                 null,
-                null
+                null,
+                $showBillableRate
             );
             $html = Blade::render($viewFile, [
                 'timeEntries' => $timeEntriesQuery->get(),
@@ -285,18 +288,18 @@ class TimeEntryController extends Controller
      *          grouped_data: null|array<array{
      *              key: string|null,
      *              seconds: int,
-     *              cost: int,
+     *              cost: int|null,
      *              grouped_type: string|null,
      *              grouped_data: null|array<array{
      *                  key: string|null,
      *                  seconds: int,
-     *                  cost: int,
+     *                  cost: int|null,
      *                  grouped_type: null,
      *                  grouped_data: null
      *              }>
      *          }>,
      *          seconds: int,
-     *          cost: int
+     *          cost: int|null
      *      }
      * }
      *
@@ -312,6 +315,7 @@ class TimeEntryController extends Controller
             $this->checkPermission($organization, 'time-entries:view:all');
         }
         $user = $this->user();
+        $showBillableRate = $this->member($organization)->role !== Role::Employee->value || $organization->employees_can_see_billable_rates;
 
         $group1Type = $request->getGroup();
         $group2Type = $request->getSubGroup();
@@ -325,7 +329,8 @@ class TimeEntryController extends Controller
             $user->week_start,
             $request->getFillGapsInTimeGroups(),
             $request->getStart(),
-            $request->getEnd()
+            $request->getEnd(),
+            $showBillableRate
         );
 
         return [
@@ -359,6 +364,7 @@ class TimeEntryController extends Controller
         }
         $debug = $request->getDebug();
         $user = $this->user();
+        $showBillableRate = $this->member($organization)->role !== Role::Employee->value || $organization->employees_can_see_billable_rates;
 
         $group = $request->getGroup();
         $subGroup = $request->getSubGroup();
@@ -372,7 +378,8 @@ class TimeEntryController extends Controller
             $user->week_start,
             false,
             $request->getStart(),
-            $request->getEnd()
+            $request->getEnd(),
+            $showBillableRate
         );
         $dataHistoryChart = $timeEntryAggregationService->getAggregatedTimeEntries(
             $timeEntriesAggregateQuery->clone(),
@@ -382,7 +389,8 @@ class TimeEntryController extends Controller
             $user->week_start,
             true,
             $request->getStart(),
-            $request->getEnd()
+            $request->getEnd(),
+            $showBillableRate
         );
         $currency = $organization->currency;
         $timezone = app(TimezoneService::class)->getTimezoneFromUser($this->user());
