@@ -80,7 +80,7 @@ class DashboardEndpointTest extends EndpointTestAbstract
             ->whereNot('dailyTrackedHours', null)
             ->whereNot('totalWeeklyTime', null)
             ->whereNot('totalWeeklyBillableTime', null)
-            ->whereNot('totalWeeklyBillableAmount', null)
+            ->where('totalWeeklyBillableAmount', null)
             ->whereNot('weeklyHistory', null)
         );
     }

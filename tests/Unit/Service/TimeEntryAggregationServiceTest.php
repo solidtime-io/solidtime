@@ -41,7 +41,8 @@ class TimeEntryAggregationServiceTest extends TestCaseWithDatabase
             Weekday::Monday,
             false,
             null,
-            null
+            null,
+            true
         );
 
         // Assert
@@ -88,6 +89,7 @@ class TimeEntryAggregationServiceTest extends TestCaseWithDatabase
             false,
             Carbon::now()->subDays(2)->utc(),
             Carbon::now()->subDay()->utc(),
+            true
         );
 
         // Assert
@@ -137,6 +139,91 @@ class TimeEntryAggregationServiceTest extends TestCaseWithDatabase
         ], $result);
     }
 
+    public function test_aggregate_time_entries_without_billable_amounts(): void
+    {
+        // Arrange
+        $project1 = Project::factory()->create([
+            // Note: To ensure deterministic order
+            'id' => '5de4e6df-9560-4675-95be-18d42c441bfc',
+        ]);
+        $project2 = Project::factory()->create([
+            // Note: To ensure deterministic order
+            'id' => '130bdf66-d370-4564-aec7-7171e9b415f7',
+        ]);
+        TimeEntry::factory()->startWithDuration(now(), 10)->forProject($project1)->create([
+            'description' => 'Test',
+        ]);
+        TimeEntry::factory()->startWithDuration(now(), 10)->forProject($project2)->create([
+            'description' => '',
+        ]);
+        TimeEntry::factory()->startWithDuration(now(), 10)->forProject($project1)->create([
+            'description' => 'Test',
+        ]);
+        TimeEntry::factory()->startWithDuration(now(), 10)->forProject($project2)->create([
+            'description' => 'Test',
+        ]);
+        $query = TimeEntry::query();
+
+        // Act
+        $result = $this->service->getAggregatedTimeEntries(
+            $query,
+            TimeEntryAggregationType::Project,
+            TimeEntryAggregationType::Description,
+            'Europe/Vienna',
+            Weekday::Monday,
+            false,
+            Carbon::now()->subDays(2)->utc(),
+            Carbon::now()->subDay()->utc(),
+            false
+        );
+
+        // Assert
+        $this->assertSame([
+            'seconds' => 40,
+            'cost' => null,
+            'grouped_type' => 'project',
+            'grouped_data' => [
+                [
+                    'key' => $project2->getKey(),
+                    'seconds' => 20,
+                    'cost' => null,
+                    'grouped_type' => 'description',
+                    'grouped_data' => [
+                        [
+                            'key' => null,
+                            'seconds' => 10,
+                            'cost' => null,
+                            'grouped_type' => null,
+                            'grouped_data' => null,
+                        ],
+                        [
+                            'key' => 'Test',
+                            'seconds' => 10,
+                            'cost' => null,
+                            'grouped_type' => null,
+                            'grouped_data' => null,
+                        ],
+                    ],
+                ],
+                [
+                    'key' => $project1->getKey(),
+                    'seconds' => 20,
+                    'cost' => null,
+                    'grouped_type' => 'description',
+                    'grouped_data' => [
+                        [
+                            'key' => 'Test',
+                            'seconds' => 20,
+                            'cost' => null,
+                            'grouped_type' => null,
+                            'grouped_data' => null,
+                        ],
+                    ],
+                ],
+            ],
+        ], $result);
+    }
+
     public function test_aggregate_time_entries_empty_state_by_day_and_project_with_filled_gaps(): void
     {
         // Arrange
@@ -153,6 +240,7 @@ class TimeEntryAggregationServiceTest extends TestCaseWithDatabase
             true,
             Carbon::now()->subDays(2)->utc(),
             Carbon::now()->subDay()->utc(),
+            true
         );
 
         // Assert
@@ -194,6 +282,7 @@ class TimeEntryAggregationServiceTest extends TestCaseWithDatabase
             true,
             Carbon::now()->subDays(2),
             Carbon::now()->subDay(),
+            true
         );
 
         // Assert
@@ -220,6 +309,7 @@ class TimeEntryAggregationServiceTest extends TestCaseWithDatabase
             true,
             Carbon::now()->subDays(2),
             Carbon::now()->subDay(),
+            true
         );
 
         // Assert
@@ -254,7 +344,8 @@ class TimeEntryAggregationServiceTest extends TestCaseWithDatabase
             Weekday::Monday,
             false,
             null,
-            null
+            null,
+            true
         );
 
         // Assert
@@ -342,7 +433,8 @@ class TimeEntryAggregationServiceTest extends TestCaseWithDatabase
             Weekday::Monday,
             true,
             null,
-            null
+            null,
+            true
         );
 
         // Assert

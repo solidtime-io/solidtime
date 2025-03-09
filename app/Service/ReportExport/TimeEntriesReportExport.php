@@ -22,18 +22,18 @@ class TimeEntriesReportExport implements FromView, ShouldAutoSize, WithCustomCsv
      *        grouped_data: null|array<array{
      *            key: string|null,
      *            seconds: int,
-     *            cost: int,
+     *            cost: int|null,
      *            grouped_type: string|null,
      *            grouped_data: null|array<array{
      *                key: string|null,
      *                seconds: int,
-     *                cost: int,
+     *                cost: int|null,
      *                grouped_type: null,
      *                grouped_data: null
      *            }>
      *        }>,
      *        seconds: int,
-     *        cost: int
+     *        cost: int|null
      *  }
      */
     private array $data;
@@ -52,18 +52,18 @@ class TimeEntriesReportExport implements FromView, ShouldAutoSize, WithCustomCsv
      *         grouped_data: null|array<array{
      *             key: string|null,
      *             seconds: int,
-     *             cost: int,
+     *             cost: int|null,
      *             grouped_type: string|null,
      *             grouped_data: null|array<array{
      *                 key: string|null,
      *                 seconds: int,
-     *                 cost: int,
+     *                 cost: int|null,
      *                 grouped_type: null,
      *                 grouped_data: null
      *             }>
      *         }>,
      *         seconds: int,
-     *         cost: int
+     *         cost: int|null
      *   } $data
      */
     public function __construct(array $data, ExportFormat $exportFormat, string $currency, TimeEntryAggregationType $group, TimeEntryAggregationType $subGroup)

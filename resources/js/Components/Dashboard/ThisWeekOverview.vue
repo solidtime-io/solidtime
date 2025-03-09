@@ -43,7 +43,7 @@ const props = defineProps<{
     totalWeeklyBillableAmount: {
         value: number;
         currency: string;
-    };
+    } | null;
     weeklyHistory: {
         date: string;
         duration: number;
@@ -199,10 +199,11 @@ const option = ref({
             <StatCard
                 title="Billable Amount"
                 :value="
+                props.totalWeeklyBillableAmount ?
                     formatCents(
                         props.totalWeeklyBillableAmount.value,
                         getOrganizationCurrencyString()
-                    )
+                    ) : '--'
                 " />
             <ProjectsChartCard
                 :weekly-project-overview="

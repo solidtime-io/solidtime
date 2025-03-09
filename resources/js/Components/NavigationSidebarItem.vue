@@ -14,7 +14,7 @@ const props = defineProps<{
     icon?: Component;
     current?: boolean;
     href: string;
-    subItems?: { title: string; route: string }[];
+    subItems?: { title: string; route: string, show: boolean }[];
 }>();
 
 const open = useSessionStorage('nav-collapse-state-' + props.title, true);
@@ -66,6 +66,7 @@ const open = useSessionStorage('nav-collapse-state-' + props.title, true);
                             :key="subItem.title"
                             class="w-full relative">
                             <NavigationSidebarLink
+                                v-if="subItem.show"
                                 :title="subItem.title"
                                 :current="route().current(subItem.route)"
                                 :href="

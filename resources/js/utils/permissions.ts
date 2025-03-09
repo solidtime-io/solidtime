@@ -105,9 +105,16 @@ export function canManageBilling() {
     return currentUserHasPermission('billing');
 }
 
+export function canViewReport() {
+    return currentUserHasPermission('reports:view');
+}
 export function canUpdateReport() {
     return currentUserHasPermission('reports:update');
 }
 export function canDeleteReport() {
     return currentUserHasPermission('reports:delete');
+}
+
+export function canViewAllTimeEntries() {
+    return currentUserHasPermission('time-entries:view:all');
 }

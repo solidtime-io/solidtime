@@ -464,10 +464,11 @@ const tableData = computed(() => {
                                 <div
                                     class="justify-end pr-6 flex items-center font-medium">
                                     {{
+                                        aggregatedTableTimeEntries.cost ?
                                         formatCents(
                                             aggregatedTableTimeEntries.cost,
                                             getOrganizationCurrencyString()
-                                        )
+                                        ) : '--'
                                     }}
                                 </div>
                             </div>

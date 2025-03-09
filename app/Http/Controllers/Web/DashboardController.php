@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Web;
 
+use App\Enums\Role;
 use App\Service\DashboardService;
 use App\Service\PermissionStore;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -33,6 +34,8 @@ class DashboardController extends Controller
             $latestTeamActivity = $dashboardService->latestTeamActivity($organization);
         }
 
+        $showBillableRate = $this->member($organization)->role !== Role::Employee->value || $organization->employees_can_see_billable_rates;
+
         return Inertia::render('Dashboard', [
             'weeklyProjectOverview' => $weeklyProjectOverview,
             'latestTasks' => $latestTasks,
@@ -41,7 +44,7 @@ class DashboardController extends Controller
             'dailyTrackedHours' => $dailyTrackedHours,
             'totalWeeklyTime' => $totalWeeklyTime,
             'totalWeeklyBillableTime' => $totalWeeklyBillableTime,
-            'totalWeeklyBillableAmount' => $totalWeeklyBillableAmount,
+            'totalWeeklyBillableAmount' => $showBillableRate ? $totalWeeklyBillableAmount : null,
             'weeklyHistory' => $weeklyHistory,
         ]);
     }
