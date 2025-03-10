@@ -53,6 +53,7 @@ onMounted(() => {
     if (canViewProjectMembers()) {
         useProjectMembersStore().fetchProjectMembers(projectId);
     }
+    useTasksStore().fetchTasks();
 });
 
 const showEditProjectModal = ref(false);
