@@ -81,6 +81,10 @@ export function canMergeMembers() {
     return currentUserHasPermission('members:merge-into');
 }
 
+export function canMakeMembersPlaceholders() {
+    return currentUserHasPermission('members:make-placeholder');
+}
+
 export function canInvitePlaceholderMembers() {
     return currentUserHasPermission('members:invite-placeholder');
 }

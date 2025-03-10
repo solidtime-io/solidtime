@@ -1472,7 +1472,7 @@ const endpoints = makeApi([
     {
         method: 'post',
         path: '/v1/organizations/:organization/members/:member/make-placeholder',
-        alias: 'v1.members.make-placeholder',
+        alias: 'makePlaceholder',
         requestFormat: 'json',
         parameters: [
             {
