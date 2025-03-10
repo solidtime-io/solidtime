@@ -26,7 +26,6 @@ use App\Models\Organization;
 use App\Service\BillableRateService;
 use App\Service\InvitationService;
 use App\Service\MemberService;
-use App\Service\UserService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -141,7 +140,7 @@ class MemberController extends Controller
      *
      * @operationId mergeMember
      */
-    public function mergeInto(Organization $organization, Member $member, MemberMergeIntoRequest $request): JsonResponse
+    public function mergeInto(Organization $organization, Member $member, MemberMergeIntoRequest $request, MemberService $memberService): JsonResponse
     {
         $this->checkPermission($organization, 'members:merge-into', $member);
 
@@ -151,8 +150,8 @@ class MemberController extends Controller
         }
         $memberTo = Member::findOrFail($request->getMemberId());
 
-        DB::transaction(function () use ($organization, $member, $user, $memberTo): void {
-            app(UserService::class)->assignOrganizationEntitiesToDifferentMember($organization, $user, $memberTo->user, $memberTo);
+        DB::transaction(function () use ($organization, $member, $user, $memberTo, $memberService): void {
+            $memberService->assignOrganizationEntitiesToDifferentMember($organization, $member, $memberTo);
             $member->delete();
             $user->delete();
         });

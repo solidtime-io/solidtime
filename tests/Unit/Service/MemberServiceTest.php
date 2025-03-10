@@ -113,4 +113,94 @@ class MemberServiceTest extends TestCaseWithDatabase
         $this->assertSame($otherMember->getKey(), $otherTimeEntry->member_id);
         $this->assertSame(1, $otherUser->organizations()->count());
     }
+
+    public function test_assign_organization_entities_to_different_member_without_any_entries(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $project = Project::factory()->forOrganization($organization)->create();
+        $otherUser = User::factory()->create();
+        $fromUser = User::factory()->create();
+        $toUser = User::factory()->create();
+        $otherUserMember = Member::factory()->forOrganization($organization)->forUser($otherUser)->create();
+        $fromUserMember = Member::factory()->forOrganization($organization)->forUser($fromUser)->create();
+        $toUserMember = Member::factory()->forOrganization($organization)->forUser($toUser)->create();
+        TimeEntry::factory()->forOrganization($organization)->forMember($otherUserMember)->createMany(3);
+        TimeEntry::factory()->forOrganization($organization)->forMember($fromUserMember)->createMany(3);
+        ProjectMember::factory()->forProject($project)->forMember($otherUserMember)->create();
+        ProjectMember::factory()->forProject($project)->forMember($fromUserMember)->create();
+
+        // Act
+        $this->memberService->assignOrganizationEntitiesToDifferentMember($organization, $fromUserMember, $toUserMember);
+
+        // Assert
+        $this->assertSame(3, TimeEntry::query()->whereBelongsTo($toUser, 'user')->count());
+        $this->assertSame(3, TimeEntry::query()->whereBelongsTo($otherUser, 'user')->count());
+        $this->assertSame(0, TimeEntry::query()->whereBelongsTo($fromUser, 'user')->count());
+        $this->assertSame(1, ProjectMember::query()->whereBelongsTo($toUser, 'user')->count());
+        $this->assertSame(1, ProjectMember::query()->whereBelongsTo($otherUser, 'user')->count());
+        $this->assertSame(0, ProjectMember::query()->whereBelongsTo($fromUser, 'user')->count());
+
+        $this->assertSame(3, TimeEntry::query()->whereBelongsTo($toUserMember, 'member')->count());
+        $this->assertSame(3, TimeEntry::query()->whereBelongsTo($otherUserMember, 'member')->count());
+        $this->assertSame(0, TimeEntry::query()->whereBelongsTo($fromUserMember, 'member')->count());
+        $this->assertSame(1, ProjectMember::query()->whereBelongsTo($toUserMember, 'member')->count());
+        $this->assertSame(1, ProjectMember::query()->whereBelongsTo($otherUserMember, 'member')->count());
+        $this->assertSame(0, ProjectMember::query()->whereBelongsTo($fromUserMember, 'member')->count());
+    }
+
+    public function test_assign_organization_entities_to_different_member_with_entries(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $project = Project::factory()->forOrganization($organization)->create();
+        $otherUser = User::factory()->create();
+        $fromUser = User::factory()->create();
+        $toUser = User::factory()->create();
+        $otherUserMember = Member::factory()->forOrganization($organization)->forUser($otherUser)->create();
+        $fromUserMember = Member::factory()->forOrganization($organization)->forUser($fromUser)->create();
+        $toUserMember = Member::factory()->forOrganization($organization)->forUser($toUser)->create();
+        TimeEntry::factory()->forOrganization($organization)->forMember($otherUserMember)->createMany(3);
+        TimeEntry::factory()->forOrganization($organization)->forMember($fromUserMember)->createMany(3);
+        TimeEntry::factory()->forOrganization($organization)->forMember($toUserMember)->createMany(3);
+        ProjectMember::factory()->forProject($project)->forMember($otherUserMember)->create([
+            'billable_rate' => 1,
+        ]);
+        ProjectMember::factory()->forProject($project)->forMember($fromUserMember)->create([
+            'billable_rate' => 2,
+        ]);
+        ProjectMember::factory()->forProject($project)->forMember($toUserMember)->create([
+            'billable_rate' => 3,
+        ]);
+
+        // Act
+        $this->memberService->assignOrganizationEntitiesToDifferentMember($organization, $fromUserMember, $toUserMember);
+
+        // Assert
+        $this->assertSame(6, TimeEntry::query()->whereBelongsTo($toUser, 'user')->count());
+        $this->assertSame(3, TimeEntry::query()->whereBelongsTo($otherUser, 'user')->count());
+        $this->assertSame(0, TimeEntry::query()->whereBelongsTo($fromUser, 'user')->count());
+        $this->assertSame(1, ProjectMember::query()->whereBelongsTo($toUser, 'user')->count());
+        $this->assertSame(1, ProjectMember::query()->whereBelongsTo($otherUser, 'user')->count());
+        $this->assertSame(0, ProjectMember::query()->whereBelongsTo($fromUser, 'user')->count());
+
+        $this->assertSame(6, TimeEntry::query()->whereBelongsTo($toUserMember, 'member')->count());
+        $this->assertSame(3, TimeEntry::query()->whereBelongsTo($otherUserMember, 'member')->count());
+        $this->assertSame(0, TimeEntry::query()->whereBelongsTo($fromUserMember, 'member')->count());
+        $this->assertSame(1, ProjectMember::query()->whereBelongsTo($toUserMember, 'member')->count());
+        $this->assertSame(1, ProjectMember::query()->whereBelongsTo($otherUserMember, 'member')->count());
+        $this->assertSame(0, ProjectMember::query()->whereBelongsTo($fromUserMember, 'member')->count());
+
+        $this->assertDatabaseCount(ProjectMember::class, 2);
+        $this->assertDatabaseHas(ProjectMember::class, [
+            'project_id' => $project->id,
+            'member_id' => $toUserMember->id,
+            'billable_rate' => 3,
+        ]);
+        $this->assertDatabaseHas(ProjectMember::class, [
+            'project_id' => $project->id,
+            'member_id' => $otherUserMember->id,
+            'billable_rate' => 1,
+        ]);
+    }
 }

@@ -350,6 +350,58 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
         $memberDestination->refresh();
         $this->assertCount(3, $memberDestination->timeEntries);
         $this->assertCount(1, $memberDestination->projectMembers);
+        $this->assertDatabaseHas(ProjectMember::class, [
+            'project_id' => $project->getKey(),
+            'member_id' => $memberDestination->getKey(),
+            'user_id' => $userDestination->getKey(),
+        ]);
+    }
+
+    public function test_merge_into_assigns_resources_of_source_member_to_destination_member_and_deletes_member_with_existing_destination_resources(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'members:merge-into',
+        ]);
+        $userSource = User::factory()->placeholder()->create();
+        $memberSource = Member::factory()->forUser($userSource)->forOrganization($data->organization)->role(Role::Placeholder)->create();
+        TimeEntry::factory()->forMember($memberSource)->createMany(3);
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        ProjectMember::factory()->forMember($memberSource)->forProject($project)->create([
+            'billable_rate' => 32100,
+        ]);
+
+        $userDestination = User::factory()->create();
+        $memberDestination = Member::factory()->forUser($userDestination)->forOrganization($data->organization)->role(Role::Admin)->create();
+        ProjectMember::factory()->forMember($memberDestination)->forProject($project)->create([
+            'billable_rate' => 12300,
+        ]);
+        TimeEntry::factory()->forMember($memberDestination)->createMany(3);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->withoutExceptionHandling()->postJson(route('api.v1.members.merge-into', [$data->organization->getKey(), $memberSource->getKey()]), [
+            'member_id' => $memberDestination->getKey(),
+        ]);
+
+        // Assert
+        $response->assertStatus(204);
+        $this->assertSame('', $response->getContent());
+        $this->assertDatabaseMissing(Member::class, [
+            'id' => $memberSource->getKey(),
+        ]);
+        $this->assertDatabaseMissing(User::class, [
+            'id' => $userSource->getKey(),
+        ]);
+        $memberDestination->refresh();
+        $this->assertCount(6, $memberDestination->timeEntries);
+        $this->assertCount(1, $memberDestination->projectMembers);
+        $this->assertDatabaseHas(ProjectMember::class, [
+            'project_id' => $project->getKey(),
+            'billable_rate' => 12300,
+            'member_id' => $memberDestination->getKey(),
+            'user_id' => $userDestination->getKey(),
+        ]);
     }
 
     public function test_update_member_fails_if_user_tries_to_change_role_of_the_current_owner(): void
