@@ -114,6 +114,8 @@ class MemberController extends Controller
      * Make a member a placeholder member
      *
      * @throws AuthorizationException|CanNotRemoveOwnerFromOrganization|ChangingRoleOfPlaceholderIsNotAllowed
+     *
+     * @operationId makePlaceholder
      */
     public function makePlaceholder(Organization $organization, Member $member, MemberService $memberService): JsonResponse
     {
