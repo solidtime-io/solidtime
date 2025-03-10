@@ -49,24 +49,10 @@ class UserService
     }
 
     /**
-     * Assign all organization entities (time entries, project members) from one user to another.
-     * This is useful when a placeholder user is replaced with a real user.
+     * This does NOT change the member id.
+     * This should only be used in if you want to change a member to a placeholder!
      */
     public function assignOrganizationEntitiesToDifferentUser(Organization $organization, User $fromUser, User $toUser): void
-    {
-        /** @var Member|null $toMember */
-        $toMember = Member::query()
-            ->whereBelongsTo($organization, 'organization')
-            ->whereBelongsTo($toUser, 'user')
-            ->first();
-        if ($toMember === null) {
-            throw new \InvalidArgumentException('User is not a member of the organization');
-        }
-
-        $this->assignOrganizationEntitiesToDifferentMember($organization, $fromUser, $toUser, $toMember);
-    }
-
-    public function assignOrganizationEntitiesToDifferentMember(Organization $organization, User $fromUser, User $toUser, Member $toMember): void
     {
         // Time entries
         TimeEntry::query()
@@ -74,7 +60,6 @@ class UserService
             ->whereBelongsTo($fromUser, 'user')
             ->update([
                 'user_id' => $toUser->getKey(),
-                'member_id' => $toMember->getKey(),
             ]);
 
         // Project members
@@ -83,7 +68,6 @@ class UserService
             ->whereBelongsTo($fromUser, 'user')
             ->update([
                 'user_id' => $toUser->getKey(),
-                'member_id' => $toMember->getKey(),
             ]);
     }
 

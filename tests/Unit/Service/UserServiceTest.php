@@ -59,22 +59,6 @@ class UserServiceTest extends TestCase
         $this->assertSame(0, ProjectMember::query()->whereBelongsTo($fromUser, 'user')->count());
     }
 
-    public function test_assign_organization_entities_to_different_user_fails_if_new_user_is_not_member_of_organization(): void
-    {
-        // Arrange
-        $organization = Organization::factory()->create();
-        $fromUser = User::factory()->create();
-        $toUser = User::factory()->create();
-        $fromUserMember = Member::factory()->forOrganization($organization)->forUser($fromUser)->create();
-
-        // Act
-        try {
-            $this->userService->assignOrganizationEntitiesToDifferentUser($organization, $fromUser, $toUser);
-        } catch (\InvalidArgumentException $e) {
-            $this->assertSame('User is not a member of the organization', $e->getMessage());
-        }
-    }
-
     public function test_change_ownership_changes_ownership_of_organization_to_new_user(): void
     {
         // Arrange
