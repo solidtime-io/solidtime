@@ -39,6 +39,7 @@ import { ArrowsRightLeftIcon } from '@heroicons/vue/16/solid';
 import { fetchToken, isTokenValid } from '@/utils/session';
 import UpdateSidebarNotification from '@/Components/UpdateSidebarNotification.vue';
 import BillingBanner from '@/Components/Billing/BillingBanner.vue';
+import UserTimezoneMismatchModal from "@/Components/Common/User/UserTimezoneMismatchModal.vue";
 import { useTheme } from '@/utils/theme';
 import { useQuery } from '@tanstack/vue-query';
 import { api } from '@/packages/api/src';
@@ -285,4 +286,5 @@ const page = usePage<{
         </div>
     </div>
     <NotificationContainer></NotificationContainer>
+    <UserTimezoneMismatchModal></UserTimezoneMismatchModal>
 </template>
