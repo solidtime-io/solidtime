@@ -1,0 +1,136 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Controllers\Api\V1;
+
+use App\Enums\Role;
+use App\Models\Organization;
+use App\Service\DashboardService;
+use App\Service\PermissionStore;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Http\JsonResponse;
+
+class ChartController extends Controller
+{
+    /**
+     * @throws AuthorizationException
+     */
+    public function weeklyProjectOverview(Organization $organization, DashboardService $dashboardService): JsonResponse
+    {
+        $this->checkPermission($organization, 'charts:view:own');
+        $user = $this->user();
+
+        $weeklyProjectOverview = $dashboardService->weeklyProjectOverview($user, $organization);
+
+        return response()->json($weeklyProjectOverview);
+    }
+
+    /**
+     * @throws AuthorizationException
+     */
+    public function latestTasks(Organization $organization, DashboardService $dashboardService): JsonResponse
+    {
+        $this->checkPermission($organization, 'charts:view:own');
+        $user = $this->user();
+
+        $latestTasks = $dashboardService->latestTasks($user, $organization);
+
+        return response()->json($latestTasks);
+    }
+
+    /**
+     * @throws AuthorizationException
+     */
+    public function lastSevenDays(Organization $organization, DashboardService $dashboardService): JsonResponse
+    {
+        $this->checkPermission($organization, 'charts:view:own');
+        $user = $this->user();
+
+        $lastSevenDays = $dashboardService->lastSevenDays($user, $organization);
+
+        return response()->json($lastSevenDays);
+    }
+
+    /**
+     * @throws AuthorizationException
+     */
+    public function latestTeamActivity(Organization $organization, DashboardService $dashboardService, PermissionStore $permissionStore): JsonResponse
+    {
+        $this->checkPermission($organization, 'charts:view:all');
+
+        $latestTeamActivity = $dashboardService->latestTeamActivity($organization);
+
+        return response()->json($latestTeamActivity);
+    }
+
+    /**
+     * @throws AuthorizationException
+     */
+    public function dailyTrackedHours(Organization $organization, DashboardService $dashboardService): JsonResponse
+    {
+        $this->checkPermission($organization, 'charts:view:own');
+        $user = $this->user();
+
+        $dailyTrackedHours = $dashboardService->getDailyTrackedHours($user, $organization, 60);
+
+        return response()->json($dailyTrackedHours);
+    }
+
+    /**
+     * @throws AuthorizationException
+     */
+    public function totalWeeklyTime(Organization $organization, DashboardService $dashboardService): JsonResponse
+    {
+        $this->checkPermission($organization, 'charts:view:own');
+        $user = $this->user();
+
+        $totalWeeklyTime = $dashboardService->totalWeeklyTime($user, $organization);
+
+        return response()->json($totalWeeklyTime);
+    }
+
+    /**
+     * @throws AuthorizationException
+     */
+    public function totalWeeklyBillableTime(Organization $organization, DashboardService $dashboardService): JsonResponse
+    {
+        $this->checkPermission($organization, 'charts:view:own');
+        $user = $this->user();
+
+        $totalWeeklyBillableTime = $dashboardService->totalWeeklyBillableTime($user, $organization);
+
+        return response()->json($totalWeeklyBillableTime);
+    }
+
+    /**
+     * @throws AuthorizationException
+     */
+    public function totalWeeklyBillableAmount(Organization $organization, DashboardService $dashboardService): JsonResponse
+    {
+        $this->checkPermission($organization, 'charts:view:own');
+        $user = $this->user();
+
+        $showBillableRate = $this->member($organization)->role !== Role::Employee->value || $organization->employees_can_see_billable_rates;
+        if (! $showBillableRate) {
+            throw new AuthorizationException('You do not have permission to view billable rates.');
+        }
+
+        $totalWeeklyBillableAmount = $dashboardService->totalWeeklyBillableAmount($user, $organization);
+
+        return response()->json($totalWeeklyBillableAmount);
+    }
+
+    /**
+     * @throws AuthorizationException
+     */
+    public function weeklyHistory(Organization $organization, DashboardService $dashboardService): JsonResponse
+    {
+        $this->checkPermission($organization, 'charts:view:own');
+        $user = $this->user();
+
+        $weeklyHistory = $dashboardService->getWeeklyHistory($user, $organization);
+
+        return response()->json($weeklyHistory);
+    }
+}
