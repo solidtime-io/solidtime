@@ -53,6 +53,9 @@ abstract class TestCaseWithDatabase extends TestCase
         ];
     }
 
+    /**
+     * @return object{user: User, organization: Organization, member: Member, owner: User, ownerMember: Member}
+     */
     public function createUserWithRole(Role $role): object
     {
         $owner = User::factory()->create();
