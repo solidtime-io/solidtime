@@ -18,6 +18,7 @@ export function newTimeEntryResponse(
 ) {
     return page.waitForResponse(async (response) => {
         return (
+            response.url().includes('/time-entries') &&
             response.status() === status &&
             (await response.headerValue('Content-Type')) ===
                 'application/json' &&
