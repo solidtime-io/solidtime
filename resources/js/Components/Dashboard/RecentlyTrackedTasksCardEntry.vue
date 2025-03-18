@@ -6,17 +6,16 @@ import { storeToRefs } from 'pinia';
 import { computed } from 'vue';
 import { useCurrentTimeEntryStore } from '@/utils/useCurrentTimeEntry';
 import { getDayJsInstance } from '@/packages/ui/src/utils/time';
+import type { TimeEntry } from "@/packages/api/src";
 
 const props = defineProps<{
-    title: string;
-    project_id: string;
-    task_id: string;
+    timeEntry: TimeEntry
 }>();
 
 const { projects } = storeToRefs(useProjectsStore());
 
 const project = computed(() => {
-    return projects.value.find((project) => project.id === props.project_id);
+    return projects.value.find((project) => project.id === props.timeEntry.project_id);
 });
 
 const { currentTimeEntry } = storeToRefs(useCurrentTimeEntryStore());
@@ -26,23 +25,28 @@ async function startTaskTimer() {
     if (currentTimeEntry.value.id) {
         await setActiveState(false);
     }
-    currentTimeEntry.value.project_id = props.project_id;
-    currentTimeEntry.value.task_id = props.task_id;
+    currentTimeEntry.value.description = props.timeEntry.description;
+    currentTimeEntry.value.project_id = props.timeEntry.project_id;
+    currentTimeEntry.value.task_id = props.timeEntry.task_id;
+    currentTimeEntry.value.tags = props.timeEntry.tags;
+    currentTimeEntry.value.billable = props.timeEntry.billable;
     currentTimeEntry.value.start = getDayJsInstance().utc().format();
     await setActiveState(true);
     useCurrentTimeEntryStore().fetchCurrentTimeEntry();
 }
+
 </script>
 
 <template>
     <div
         class="px-3.5 py-2 grid grid-cols-5 border-b border-b-card-background-separator">
         <div class="col-span-4">
-            <p class="font-semibold text-white text-sm pb-1 overflow-ellipsis">
-                {{ title }}
+            <p class="font-medium text-white text-sm pb-1 truncate">
+                <span v-if="timeEntry.description"> {{ timeEntry.description }}</span>
+                <span v-else class="text-text-tertiary">No description</span>
             </p>
             <ProjectBadge
-                :name="project?.name"
+                :name="project?.name ?? 'No Project'"
                 :color="project?.color"></ProjectBadge>
         </div>
         <div class="flex items-center justify-center">

@@ -16,7 +16,7 @@ use PHPUnit\Framework\Attributes\UsesClass;
 #[UsesClass(DashboardController::class)]
 class DashboardEndpointTest extends EndpointTestAbstract
 {
-    public function test_showing_dashboard_succeeds_for_empty_user_with_no_data_entries(): void
+    public function test_showing_dashboard_succeeds_for_empty_user(): void
     {
         // Arrange
         $user = User::factory()->withPersonalOrganization()->create();
@@ -27,30 +27,9 @@ class DashboardEndpointTest extends EndpointTestAbstract
 
         // Assert
         $response->assertSuccessful();
-        $response->assertInertia(fn (Assert $page) => $page
-            ->has('weeklyProjectOverview')
-            ->has('latestTasks')
-            ->has('lastSevenDays')
-            ->has('latestTeamActivity')
-            ->has('dailyTrackedHours')
-            ->has('totalWeeklyTime')
-            ->has('totalWeeklyBillableTime')
-            ->has('totalWeeklyBillableAmount')
-            ->has('weeklyHistory')
-            ->whereNot('weeklyProjectOverview', null)
-            ->whereNot('latestTasks', null)
-            ->whereNot('lastSevenDays', null)
-            ->whereNot('latestTeamActivity', null)
-            ->whereNot('dailyTrackedHours', null)
-            ->whereNot('totalWeeklyTime', null)
-            ->whereNot('totalWeeklyBillableTime', null)
-            ->whereNot('totalWeeklyBillableAmount', null)
-            ->whereNot('weeklyHistory', null)
-            ->whereNot('latestTeamActivity', null)
-        );
     }
 
-    public function test_showing_dashboard_succeeds_with_less_data_for_user_with_employee_role(): void
+    public function test_showing_dashboard_succeeds_for_user_with_employee_role(): void
     {
         // Arrange
         $organization = Organization::factory()->create();
@@ -63,25 +42,5 @@ class DashboardEndpointTest extends EndpointTestAbstract
 
         // Assert
         $response->assertSuccessful();
-        $response->assertInertia(fn (Assert $page) => $page
-            ->has('weeklyProjectOverview')
-            ->has('latestTasks')
-            ->has('lastSevenDays')
-            ->has('latestTeamActivity')
-            ->has('dailyTrackedHours')
-            ->has('totalWeeklyTime')
-            ->has('totalWeeklyBillableTime')
-            ->has('totalWeeklyBillableAmount')
-            ->has('weeklyHistory')
-            ->whereNot('weeklyProjectOverview', null)
-            ->whereNot('latestTasks', null)
-            ->whereNot('lastSevenDays', null)
-            ->where('latestTeamActivity', null)
-            ->whereNot('dailyTrackedHours', null)
-            ->whereNot('totalWeeklyTime', null)
-            ->whereNot('totalWeeklyBillableTime', null)
-            ->where('totalWeeklyBillableAmount', null)
-            ->whereNot('weeklyHistory', null)
-        );
     }
 }

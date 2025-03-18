@@ -15,6 +15,10 @@ class ChartController extends Controller
 {
     /**
      * @throws AuthorizationException
+     *
+     * @operationId weeklyProjectOverview
+     *
+     * @response array<int, array{value: int, name: string, color: string}>
      */
     public function weeklyProjectOverview(Organization $organization, DashboardService $dashboardService): JsonResponse
     {
@@ -28,6 +32,10 @@ class ChartController extends Controller
 
     /**
      * @throws AuthorizationException
+     *
+     * @operationId latestTasks
+     *
+     * @response array<int, array{task_id: string, name: string, description: string|null, status: bool, time_entry_id: string|null}>
      */
     public function latestTasks(Organization $organization, DashboardService $dashboardService): JsonResponse
     {
@@ -41,6 +49,10 @@ class ChartController extends Controller
 
     /**
      * @throws AuthorizationException
+     *
+     * @operationId lastSevenDays
+     *
+     * @response array<int, array{ date: string, duration: int, history: array<int> }>
      */
     public function lastSevenDays(Organization $organization, DashboardService $dashboardService): JsonResponse
     {
@@ -54,6 +66,10 @@ class ChartController extends Controller
 
     /**
      * @throws AuthorizationException
+     *
+     * @operationId latestTeamActivity
+     *
+     * @response array<int, array{member_id: string, name: string, description: string|null, time_entry_id: string, task_id: string|null, status: bool }>
      */
     public function latestTeamActivity(Organization $organization, DashboardService $dashboardService, PermissionStore $permissionStore): JsonResponse
     {
@@ -66,6 +82,10 @@ class ChartController extends Controller
 
     /**
      * @throws AuthorizationException
+     *
+     * @operationId dailyTrackedHours
+     *
+     * @response array<int, array{date: string, duration: int}>
      */
     public function dailyTrackedHours(Organization $organization, DashboardService $dashboardService): JsonResponse
     {
@@ -79,6 +99,10 @@ class ChartController extends Controller
 
     /**
      * @throws AuthorizationException
+     *
+     * @operationId totalWeeklyTime
+     *
+     * @response int
      */
     public function totalWeeklyTime(Organization $organization, DashboardService $dashboardService): JsonResponse
     {
@@ -92,6 +116,10 @@ class ChartController extends Controller
 
     /**
      * @throws AuthorizationException
+     *
+     * @operationId totalWeeklyBillableTime
+     *
+     * @response int
      */
     public function totalWeeklyBillableTime(Organization $organization, DashboardService $dashboardService): JsonResponse
     {
@@ -105,6 +133,10 @@ class ChartController extends Controller
 
     /**
      * @throws AuthorizationException
+     *
+     * @operationId totalWeeklyBillableAmount
+     *
+     * @response array{value: int, currency: string}
      */
     public function totalWeeklyBillableAmount(Organization $organization, DashboardService $dashboardService): JsonResponse
     {
@@ -123,6 +155,10 @@ class ChartController extends Controller
 
     /**
      * @throws AuthorizationException
+     *
+     * @operationId weeklyHistory
+     *
+     * @response array<int, array{date: string, duration: int}>
      */
     public function weeklyHistory(Organization $organization, DashboardService $dashboardService): JsonResponse
     {
