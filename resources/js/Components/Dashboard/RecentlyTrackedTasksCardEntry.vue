@@ -55,8 +55,8 @@ async function startTaskTimer() {
             </p>
             <ProjectBadge
                 size="base"
+                class="min-w-0 max-w-full"
                 :color="project?.color">
-
                 <div class="flex items-center lg:space-x-0.5 min-w-0">
                     <span class="whitespace-nowrap ">
                         {{ project?.name ?? 'No Project' }}
@@ -70,7 +70,6 @@ async function startTaskTimer() {
                         {{ task.name }}
                     </div>
                 </div>
-
             </ProjectBadge>
         </div>
         <div class="flex items-center justify-center">
