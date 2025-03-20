@@ -7,6 +7,8 @@ import { computed } from 'vue';
 import { useCurrentTimeEntryStore } from '@/utils/useCurrentTimeEntry';
 import { getDayJsInstance } from '@/packages/ui/src/utils/time';
 import type { TimeEntry } from "@/packages/api/src";
+import { useTasksStore } from "@/utils/useTasks";
+import { ChevronRightIcon } from "@heroicons/vue/16/solid";
 
 const props = defineProps<{
     timeEntry: TimeEntry
@@ -16,6 +18,12 @@ const { projects } = storeToRefs(useProjectsStore());
 
 const project = computed(() => {
     return projects.value.find((project) => project.id === props.timeEntry.project_id);
+});
+
+const {tasks} = storeToRefs(useTasksStore());
+
+const task = computed(() => {
+    return tasks.value.find((task) => task.id === props.timeEntry.task_id);
 });
 
 const { currentTimeEntry } = storeToRefs(useCurrentTimeEntryStore());
@@ -46,8 +54,24 @@ async function startTaskTimer() {
                 <span v-else class="text-text-tertiary">No description</span>
             </p>
             <ProjectBadge
-                :name="project?.name ?? 'No Project'"
-                :color="project?.color"></ProjectBadge>
+                size="base"
+                :color="project?.color">
+
+                <div class="flex items-center lg:space-x-0.5 min-w-0">
+                    <span class="whitespace-nowrap ">
+                        {{ project?.name ?? 'No Project' }}
+                    </span>
+                    <ChevronRightIcon
+                        v-if="task"
+                        class="w-4 text-muted shrink-0"></ChevronRightIcon>
+                    <div
+                        v-if="task"
+                        class="min-w-0 shrink truncate">
+                        {{ task.name }}
+                    </div>
+                </div>
+
+            </ProjectBadge>
         </div>
         <div class="flex items-center justify-center">
             <TimeTrackerStartStop
