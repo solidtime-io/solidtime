@@ -12,12 +12,12 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Http;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
-use Tests\TestCase;
+use Tests\TestCaseWithDatabase;
 
 #[CoversClass(SelfHostTelemetryCommand::class)]
 #[CoversClass(ApiService::class)]
 #[UsesClass(SelfHostTelemetryCommand::class)]
-class SelfHostTelemetryCommandTest extends TestCase
+class SelfHostTelemetryCommandTest extends TestCaseWithDatabase
 {
     public function test_telemetry_sends_data_to_telemetry_endpoint_of_solidtime_cloud(): void
     {
@@ -30,9 +30,12 @@ class SelfHostTelemetryCommandTest extends TestCase
         $exitCode = $this->withoutMockingConsoleOutput()->artisan('self-host:telemetry');
 
         // Assert
-        $this->assertSame(Command::SUCCESS, $exitCode);
         $output = Artisan::output();
         $this->assertSame('', $output);
+        if ($exitCode !== Command::SUCCESS) {
+            dump($output);
+        }
+        $this->assertSame(Command::SUCCESS, $exitCode);
     }
 
     public function test_telemetry_sends_fails_gracefully_if_response_has_error_status_code(): void
