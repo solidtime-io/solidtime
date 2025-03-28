@@ -107,7 +107,7 @@ function setLastYear() {
             <button
                 class="px-2 py-1 bg-input-background border border-input-border font-medium rounded-lg flex items-center space-x-2">
                 <CalendarIcon class="w-5"></CalendarIcon>
-                <div class="text-white">
+                <div class="text-text-primary">
                     {{ formatDateLocalized(start) }}
                     <span class="px-1.5 text-muted">-</span>
                     {{ formatDateLocalized(end) }}
@@ -119,7 +119,7 @@ function setLastYear() {
                 <div
                     class="flex divide-x divide-border-secondary justify-between">
                     <div
-                        class="text-white text-sm flex flex-col space-y-0.5 items-start py-2 [&_button:hover]:bg-tertiary [&_button]:rounded [&_button]:px-2 [&_button]:py-1">
+                        class="text-text-primary text-sm flex flex-col space-y-0.5 items-start py-2 [&_button:hover]:bg-tertiary [&_button]:rounded [&_button]:px-2 [&_button]:py-1">
                         <button @click="setToday">Today</button>
                         <button @click="setThisWeek">This Week</button>
                         <button @click="setLastWeek">Last Week</button>

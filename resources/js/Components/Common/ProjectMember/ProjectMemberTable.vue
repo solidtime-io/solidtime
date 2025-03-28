@@ -33,7 +33,7 @@ const createProjectMember = ref(false);
                     class="col-span-5 py-24 text-center">
                     <UserGroupIcon
                         class="w-8 text-icon-default inline pb-2"></UserGroupIcon>
-                    <h3 class="text-white font-semibold">No project members</h3>
+                    <h3 class="text-text-primary font-semibold">No project members</h3>
                     <p class="pb-5">Add the first project member!</p>
                     <SecondaryButton
                         :icon="PlusIcon"

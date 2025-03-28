@@ -24,11 +24,11 @@ const activeClass = computed(() => {
         tag="button"
         :class="
             twMerge(
-                'cursor-pointer hover:bg-card-background transition flex',
+                'cursor-pointer bg-input-background hover:bg-card-background transition flex',
                 activeClass
             )
         ">
-        <component :is="icon" class="h-4 text-muted"></component>
+        <component :is="icon" class="-ml-0.5 h-4 w-4 text-text-quaternary"></component>
         <span> {{ title }} </span>
         <div
             v-if="count"

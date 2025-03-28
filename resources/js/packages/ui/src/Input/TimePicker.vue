@@ -141,7 +141,7 @@ const closestValue = computed({
 </script>
 
 <template>
-    <div class="flex min-w-0 items-center justify-center text-white">
+    <div class="flex min-w-0 items-center justify-center text-text-primary">
         <SelectDropdown
             v-model="closestValue"
             v-model:open="open"

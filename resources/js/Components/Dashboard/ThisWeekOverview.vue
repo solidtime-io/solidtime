@@ -2,12 +2,7 @@
 import { use } from "echarts/core";
 import { CanvasRenderer } from "echarts/renderers";
 import { BarChart } from "echarts/charts";
-import {
-    GridComponent,
-    LegendComponent,
-    TitleComponent,
-    TooltipComponent
-} from "echarts/components";
+import { GridComponent, LegendComponent, TitleComponent, TooltipComponent } from "echarts/components";
 import VChart, { THEME_KEY } from "vue-echarts";
 import { computed, provide } from "vue";
 import StatCard from "@/Components/Common/StatCard.vue";
@@ -34,7 +29,6 @@ use([
 ]);
 
 provide(THEME_KEY, "dark");
-const accentColor = useCssVar("--color-accent-quaternary");
 
 const weekdays = computed(() => {
     const daysOrder = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -47,7 +41,6 @@ const weekdays = computed(() => {
         saturday: "Sat",
         sunday: "Sun"
     };
-
     if (dayMapping[getWeekStart()]) {
         const customOrder = [];
         const startIndex = daysOrder.indexOf(dayMapping[getWeekStart()]);
@@ -60,10 +53,11 @@ const weekdays = computed(() => {
     } else {
         return daysOrder;
     }
+
 });
 
-const markLineColor = useCssVar("--color-border-secondary");
 
+const accentColor = useCssVar("--theme-color-chart", null, { observe: true });
 
 // Get the organization ID using the utility function
 const organizationId = computed(() => getCurrentOrganizationId());
@@ -180,6 +174,8 @@ const seriesData = computed(() => {
 });
 
 
+const markLineColor = useCssVar("--color-border-secondary", null, { observe: true });
+const labelColor = useCssVar("--color-text-secondary", null, { observe: true });
 const option = computed(() => {
     return {
         tooltip: {
@@ -187,34 +183,35 @@ const option = computed(() => {
         },
         grid: {
             top: 0,
-                right: 0,
-                bottom: 50,
-                left: 0
+            right: 0,
+            bottom: 50,
+            left: 0
         },
         backgroundColor: "transparent",
-            xAxis: {
-        type: "category",
+        xAxis: {
+            type: "category",
             data: weekdays.value,
             axisLine: {
-            lineStyle: {
-                color: "transparent" // Set desired color here
-            }
-        },
-        axisLabel: {
-            fontSize: 16,
+                lineStyle: {
+                    color: "transparent" // Set desired color here
+                }
+            },
+            axisLabel: {
+                fontSize: 16,
                 fontWeight: 600,
                 margin: 24,
-                fontFamily: "Outfit, sans-serif"
-        },
-        axisTick: {
-            lineStyle: {
-                color: "transparent" // Set desired color here
+                fontFamily: "Outfit, sans-serif",
+                color: labelColor.value
+            },
+            axisTick: {
+                lineStyle: {
+                    color: "transparent" // Set desired color here
+                }
             }
-        }
-    },
+        },
         yAxis: {
             type: "value",
-                splitLine: {
+            splitLine: {
                 lineStyle: {
                     color: markLineColor.value
                 }
@@ -231,7 +228,7 @@ const option = computed(() => {
                 }
             }
         ]
-    }
+    };
 });
 
 

@@ -49,7 +49,7 @@ async function startTaskTimer() {
     <div
         class="px-3.5 py-2 grid grid-cols-5 border-b border-b-card-background-separator">
         <div class="col-span-4">
-            <p class="font-medium text-white text-sm pb-1 truncate">
+            <p class="font-medium text-text-primary text-sm pb-1 truncate">
                 <span v-if="timeEntry.description"> {{ timeEntry.description }}</span>
                 <span v-else class="text-text-tertiary">No description</span>
             </p>

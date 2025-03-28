@@ -8,7 +8,7 @@ defineProps<{
 
 <template>
     <div
-        class="flex justify-between items-center w-full text-start text-sm font-medium leading-5 text-white hover:bg-card-background-active focus:outline-none focus:bg-card-background-active transition duration-150 ease-in-out">
+        class="flex justify-between items-center w-full text-start text-sm font-medium leading-5 text-text-primary hover:bg-card-background-active focus:outline-none focus:bg-card-background-active transition duration-150 ease-in-out">
         <div class="flex space-x-3 items-center px-3 py-1.5">
             <div
                 :style="{ backgroundColor: color }"

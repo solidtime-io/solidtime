@@ -65,7 +65,7 @@ import { isAllowedToPerformPremiumAction } from '@/utils/billing';
                     class="col-span-5 py-24 text-center">
                     <FolderPlusIcon
                         class="w-8 text-icon-default inline pb-2"></FolderPlusIcon>
-                    <h3 class="text-white font-semibold">
+                    <h3 class="text-text-primary font-semibold">
                         {{
                             canCreateProjects()
                                 ? 'No projects found'

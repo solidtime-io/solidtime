@@ -58,7 +58,7 @@ watch(focused, (newValue, oldValue) => {
         <div
             class="px-2"
             @keydown.enter.prevent="nextTick(() => emit('close'))">
-            <div class="font-bold text-white text-sm pb-2">Start</div>
+            <div class="font-semibold text-text-primary text-sm pb-2">Start</div>
             <div class="space-y-2">
                 <TimePickerSimple
                     v-model="tempStart"
@@ -75,7 +75,7 @@ watch(focused, (newValue, oldValue) => {
             </div>
         </div>
         <div class="px-2">
-            <div class="font-bold text-white text-sm pb-2">End</div>
+            <div class="font-semibold text-text-primary text-sm pb-2">End</div>
             <div v-if="tempEnd !== null" class="space-y-2">
                 <TimePickerSimple
                     v-model="tempEnd"

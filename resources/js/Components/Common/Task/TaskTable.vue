@@ -41,7 +41,7 @@ const createTask = ref(false);
                     class="col-span-5 py-24 text-center">
                     <PlusCircleIcon
                         class="w-8 text-icon-default inline pb-2"></PlusCircleIcon>
-                    <h3 class="text-white font-semibold">No tasks found</h3>
+                    <h3 class="text-text-primary font-semibold">No tasks found</h3>
                     <p v-if="canCreateTasks()" class="pb-5">
                         Create your first task now!
                     </p>

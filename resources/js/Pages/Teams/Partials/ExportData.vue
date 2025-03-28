@@ -89,7 +89,7 @@ async function exportData() {
         </Card>
         <Card>
             <div
-                class="py-6 flex-col bg-card-background items-center flex space-y-5 text-center text-sm">
+                class="py-6 flex-col items-center flex space-y-5 text-center text-sm">
                 <div>
                     The following organization will be exported: <br />
                     <strong class="font-semibold">{{

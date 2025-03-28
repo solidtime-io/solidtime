@@ -52,7 +52,7 @@ const page = usePage<{
                 class="py-8 text-muted text-sm font-medium opacity-90 hover:opacity-100 transition"
                 :href="route('login')">
                 Already have an account?
-                <span class="text-white">Login here!</span>
+                <span class="text-text-primary">Login here!</span>
             </Link>
         </template>
 

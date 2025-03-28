@@ -26,7 +26,7 @@ const expanded = ref(false);
 
 <template>
     <div
-        class="contents text-white [&>*]:transition [&>*]:border-card-background-separator [&>*]:border-b [&>*]:h-[50px]">
+        class="contents text-text-primary [&>*]:transition [&>*]:border-card-background-separator [&>*]:border-b [&>*]:h-[50px]">
         <div
             :class="
                 twMerge(

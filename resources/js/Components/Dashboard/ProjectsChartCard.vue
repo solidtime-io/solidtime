@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import VChart, { THEME_KEY } from 'vue-echarts';
-import { provide, ref } from 'vue';
+import { provide } from 'vue';
 import { use } from 'echarts/core';
 import { CanvasRenderer } from 'echarts/renderers';
 import { PieChart } from 'echarts/charts';
@@ -11,6 +11,7 @@ import {
     TooltipComponent,
 } from 'echarts/components';
 import { formatHumanReadableDuration } from '@/packages/ui/src/utils/time';
+import { useCssVar } from "@vueuse/core";
 
 use([
     CanvasRenderer,
@@ -22,6 +23,7 @@ use([
 ]);
 
 provide(THEME_KEY, 'dark');
+const labelColor = useCssVar('--color-text-secondary', null, { observe: true });
 
 const props = defineProps<{
     weeklyProjectOverview: {
@@ -46,13 +48,18 @@ const seriesData = props.weeklyProjectOverview.map((el) => {
         },
     };
 });
-const option = ref({
+import { computed } from 'vue';
+
+const option = computed(() => ({
     tooltip: {
         trigger: 'item',
     },
     legend: {
         bottom: 'bottom',
         top: '250px',
+        textStyle: {
+            color: labelColor.value,
+        },
     },
     backgroundColor: 'transparent',
     series: [
@@ -71,7 +78,7 @@ const option = ref({
             type: 'pie',
         },
     ],
-});
+}));
 </script>
 
 <template>

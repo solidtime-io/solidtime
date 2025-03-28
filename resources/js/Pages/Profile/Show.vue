@@ -10,6 +10,7 @@ import { usePage } from '@inertiajs/vue3';
 import type { User } from '@/types/models';
 import type { Session } from '@/types/jetstream';
 import ApiTokensForm from "@/Pages/Profile/Partials/ApiTokensForm.vue";
+import ThemeForm from "@/Pages/Profile/Partials/ThemeForm.vue";
 
 defineProps<{
     confirmsTwoFactorAuthentication: boolean;
@@ -32,7 +33,7 @@ const page = usePage<{
 <template>
     <AppLayout title="Profile">
         <template #header>
-            <h2 class="font-semibold text-xl text-white leading-tight">
+            <h2 class="font-semibold text-xl text-text-primary leading-tight">
                 Profile
             </h2>
         </template>
@@ -42,6 +43,12 @@ const page = usePage<{
                 <div v-if="page.props.jetstream.canUpdateProfileInformation">
                     <UpdateProfileInformationForm
                         :user="page.props.auth.user" />
+
+                    <SectionBorder />
+                </div>
+
+                <div>
+                    <ThemeForm />
 
                     <SectionBorder />
                 </div>

@@ -90,7 +90,7 @@ function onSelectChange(event: Event) {
 
 <template>
     <div
-        class="border-b border-default-background-separator min-w-0 transition"
+        class="border-b border-default-background-separator bg-row-background min-w-0 transition"
         data-testid="time_entry_row">
         <MainContainer class="min-w-0">
             <div
@@ -156,7 +156,7 @@ function onSelectChange(event: Event) {
                         </button>
                     </div>
                     <button
-                        class="text-white min-w-[90px] px-2 py-1.5 bg-transparent text-center hover:bg-card-background rounded-lg border border-transparent hover:border-card-border text-sm font-semibold focus-visible:outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:bg-tertiary"
+                        class="text-text-primary min-w-[90px] px-2 py-1.5 bg-transparent text-center hover:bg-card-background rounded-lg border border-transparent hover:border-card-border text-sm font-semibold focus-visible:outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:bg-tertiary"
                         @click="expanded = !expanded">
                         {{
                             formatHumanReadableDuration(timeEntry.duration ?? 0)

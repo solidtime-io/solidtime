@@ -32,7 +32,7 @@ const open = useSessionStorage('nav-collapse-state-' + props.title, true);
         <CollapsibleRoot v-else v-model:open="open"
             ><CollapsibleTrigger class="w-full group py-0.5">
                 <div
-                    class="text-muted group-hover:text-white group-hover:bg-menu-active group flex gap-x-2 rounded-md transition leading-6 py-1 px-2 font-medium text-sm items-center justify-between">
+                    class="text-muted group-hover:text-text-primary group-hover:bg-menu-active group flex gap-x-2 rounded-md transition leading-6 py-1 px-2 font-medium text-sm items-center justify-between">
                     <div class="flex items-center gap-x-2">
                         <component
                             :is="icon"

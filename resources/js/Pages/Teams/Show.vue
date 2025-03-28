@@ -18,7 +18,7 @@ defineProps<{
 <template>
     <AppLayout title="Organization Settings">
         <template #header>
-            <h2 class="font-semibold text-xl text-white leading-tight">
+            <h2 class="font-semibold text-xl text-text-primary leading-tight">
                 Organization Settings
             </h2>
         </template>

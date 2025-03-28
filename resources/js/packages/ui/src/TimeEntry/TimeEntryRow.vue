@@ -93,7 +93,7 @@ function onSelectChange(event: Event) {
 
 <template>
     <div
-        class="border-b border-default-background-separator transition min-w-0"
+        class="border-b border-default-background-separator transition min-w-0 bg-row-background"
         data-testid="time_entry_row">
         <MainContainer class="min-w-0">
             <div

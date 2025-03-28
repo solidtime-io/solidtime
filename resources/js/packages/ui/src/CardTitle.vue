@@ -10,7 +10,7 @@ defineProps<{
 <template>
     <div class="flex w-full items-center justify-between pb-2.5 lg:pb-4">
         <h3
-            class="text-white font-bold text-sm lg:text-base flex items-center space-x-2 lg:space-x-2.5">
+            class="text-text-primary font-semibold text-sm lg:text-base flex items-center space-x-2 lg:space-x-2.5">
             <component
                 :is="icon"
                 v-if="icon"

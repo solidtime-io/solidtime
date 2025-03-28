@@ -51,7 +51,7 @@ const updateTeamName = () => {
                             :alt="team.owner.name" />
 
                         <div class="ms-4 leading-tight">
-                            <div class="text-white">
+                            <div class="text-text-primary">
                                 {{ team.owner.name }}
                             </div>
                             <div class="text-muted text-sm">
@@ -93,7 +93,7 @@ const updateTeamName = () => {
                     v-model="form.currency"
                     name="currency"
                     :disabled="!permissions.canUpdateTeam"
-                    class="mt-1 block w-full border-input-border bg-input-background text-white focus:border-input-border-active rounded-md shadow-sm">
+                    class="mt-1 block w-full border-input-border bg-input-background text-text-primary focus:border-input-border-active rounded-md shadow-sm">
                     <option value="" disabled>Select a currency</option>
                     <option
                         v-for="(currencyTranslated, currencyKey) in $page.props

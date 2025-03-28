@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import VChart, { THEME_KEY } from 'vue-echarts';
-import { computed, provide, ref } from 'vue';
+import { computed, provide } from 'vue';
 import LinearGradient from 'zrender/lib/graphic/LinearGradient';
 import {
     formatDate,
@@ -43,7 +43,8 @@ const xAxisLabels = computed(() => {
     }
     return props?.groupedData?.map((el) => formatDate(el.key ?? ''));
 });
-const accentColor = useCssVar('--color-accent-quaternary');
+const accentColor = useCssVar('--theme-color-chart', null, { observe: true });
+const labelColor = useCssVar('--color-text-secondary', null, { observe: true });
 
 const seriesData = computed(() => {
     return props?.groupedData?.map((el) => {
@@ -90,7 +91,7 @@ const seriesData = computed(() => {
     });
 });
 
-const option = ref({
+const option = computed(() => ({
     tooltip: {
         trigger: 'item',
     },
@@ -103,7 +104,7 @@ const option = ref({
     backgroundColor: 'transparent',
     xAxis: {
         type: 'category',
-        data: xAxisLabels,
+        data: xAxisLabels.value,
         markLine: {
             lineStyle: {
                 color: 'rgba(125,156,188,0.1)',
@@ -118,7 +119,7 @@ const option = ref({
         axisLabel: {
             fontSize: 12,
             fontWeight: 600,
-            color: 'rgba(255,255,255,0.7)',
+            color: labelColor.value,
             margin: 16,
             fontFamily: 'Outfit, sans-serif',
         },
@@ -138,7 +139,7 @@ const option = ref({
     },
     series: [
         {
-            data: seriesData,
+            data: seriesData.value,
             type: 'bar',
             tooltip: {
                 valueFormatter: (value: number) => {
@@ -147,7 +148,7 @@ const option = ref({
             },
         },
     ],
-});
+}));
 </script>
 
 <template>
@@ -158,7 +159,7 @@ const option = ref({
             class="chart"
             :option="option" />
         <div v-else class="chart flex flex-col items-center justify-center">
-            <p class="text-lg text-white font-semibold">
+            <p class="text-lg text-text-primary font-semibold">
                 No time entries found
             </p>
             <p>Try to change the filters and time range</p>

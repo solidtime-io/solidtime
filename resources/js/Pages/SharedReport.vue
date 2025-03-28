@@ -162,7 +162,7 @@ function getGroupLabel(key: string) {
                 <div
                     class="col-span-3 bg-card-background rounded-lg border border-card-border pt-3">
                     <div
-                        class="text-sm flex text-white items-center font-medium px-6 border-b border-card-background-separator pb-3">
+                        class="text-sm flex text-text-primary items-center font-medium px-6 border-b border-card-background-separator pb-3">
                         Group by
                         <strong class="px-2">{{ getGroupLabel(group) }}</strong>
                         and
@@ -219,7 +219,7 @@ function getGroupLabel(key: string) {
                         <div
                             v-else
                             class="chart flex flex-col items-center justify-center py-12 col-span-3">
-                            <p class="text-lg text-white font-semibold">
+                            <p class="text-lg text-text-primary font-semibold">
                                 No time entries found
                             </p>
                             <p>Try to change the filters and time range</p>
