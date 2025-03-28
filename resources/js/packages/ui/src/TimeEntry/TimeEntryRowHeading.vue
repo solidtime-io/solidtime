@@ -27,13 +27,13 @@ function selectUnselectAll(value: boolean) {
 
 <template>
     <div
-        class="bg-card-background border-t border-b border-card-border py-1 text-xs sm:text-sm">
+        class="bg-row-heading-background border-t border-b border-row-heading-border py-1 text-xs sm:text-sm">
         <MainContainer>
             <div class="flex group justify-between items-center">
                 <div class="flex items-center space-x-2">
                     <div class="w-5">
                         <svg
-                            class="w-4 sm:w-5 text-muted group-hover:hidden block"
+                            class="w-4 sm:w-5 text-icon-default group-hover:hidden block"
                             viewBox="0 0 24 24"
                             xmlns="http://www.w3.org/2000/svg">
                             <g fill="none">
@@ -49,7 +49,7 @@ function selectUnselectAll(value: boolean) {
                             class="group-hover:block hidden"
                             @update:checked="selectUnselectAll"></Checkbox>
                     </div>
-                    <span class="font-semibold text-white">
+                    <span class="font-semibold text-text-primary">
                         {{ formatWeekday(date) }}
                     </span>
                     <span class="font-semibold text-muted">

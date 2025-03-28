@@ -19,7 +19,7 @@ import {
 import NavigationSidebarItem from '@/Components/NavigationSidebarItem.vue';
 import UserSettingsIcon from '@/Components/UserSettingsIcon.vue';
 import MainContainer from '@/packages/ui/src/MainContainer.vue';
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from "vue";
 import NotificationContainer from '@/Components/NotificationContainer.vue';
 import { initializeStores, refreshStores } from '@/utils/init';
 import {
@@ -36,6 +36,7 @@ import { ArrowsRightLeftIcon } from '@heroicons/vue/16/solid';
 import { fetchToken, isTokenValid } from '@/utils/session';
 import UpdateSidebarNotification from '@/Components/UpdateSidebarNotification.vue';
 import BillingBanner from '@/Components/Billing/BillingBanner.vue';
+import { theme } from "@/utils/theme";
 
 defineProps({
     title: String,
@@ -44,6 +45,13 @@ defineProps({
 const showSidebarMenu = ref(false);
 const isUnloading = ref(false);
 onMounted(async () => {
+
+    document.documentElement.classList.add(theme.value);
+    watch(theme, (newTheme, oldTheme) => {
+        document.documentElement.classList.remove(oldTheme);
+        document.documentElement.classList.add(newTheme);
+    });
+
     // make sure that the initial requests are only loaded once, this can be removed once we move away from inertia
     if (window.initialDataLoaded !== true) {
         window.initialDataLoaded = true;

@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import VChart from 'vue-echarts';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useCssVar } from '@vueuse/core';
 
 const props = defineProps<{
     history: number[];
 }>();
 
-const accentColor = useCssVar('--color-accent-quaternary');
+const accentColor = useCssVar('--theme-color-chart', null, { observe: true });
 
-const seriesData = props.history.map((el) => {
+const seriesData = computed(() => props.history.map((el) => {
     return {
         value: el,
         ...{
@@ -21,7 +21,7 @@ const seriesData = props.history.map((el) => {
             },
         },
     };
-});
+}));
 const option = ref({
     grid: {
         top: 0,

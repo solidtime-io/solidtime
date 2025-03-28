@@ -2,7 +2,7 @@
 import TextInput from '@/packages/ui/src/Input/TextInput.vue';
 import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
 import DialogModal from '@/packages/ui/src/DialogModal.vue';
-import { ref } from 'vue';
+import { ref, watch } from "vue";
 import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import { useFocus } from '@vueuse/core';
 import { useTasksStore } from '@/utils/useTasks';
@@ -21,10 +21,16 @@ const props = defineProps<{
     projectId: string;
 }>();
 
+const taskProjectId = ref<string>(props.projectId);
+
+watch(() => props.projectId, (value) => {
+    taskProjectId.value = value;
+});
+
 async function submit() {
     await createTask({
         name: taskName.value,
-        project_id: props.projectId,
+        project_id: taskProjectId.value,
         estimated_time: estimatedTime.value,
     });
     show.value = false;
@@ -53,13 +59,13 @@ useFocus(taskNameInput, { initialValue: true });
                         v-model="taskName"
                         type="text"
                         placeholder="Task Name"
-                        class="mt-1 block w-full"
+                        class="block w-full"
                         required
                         autocomplete="taskName"
                         @keydown.enter="submit()" />
                 </div>
                 <div class="col-span-6 sm:col-span-4">
-                    <ProjectDropdown :model-value="projectId"></ProjectDropdown>
+                    <ProjectDropdown v-model="taskProjectId"></ProjectDropdown>
                 </div>
             </div>
             <EstimatedTimeSection

@@ -19,7 +19,7 @@ const props = defineProps<{
             <button
                 v-if="canUpdateReport()"
                 :aria-label="'Edit Report ' + props.report.name"
-                class="flex items-center space-x-3 w-full px-3 py-2.5 text-start text-sm font-medium leading-5 text-white hover:bg-card-background-active focus:outline-none focus:bg-card-background-active transition duration-150 ease-in-out"
+                class="flex items-center space-x-3 w-full px-3 py-2.5 text-start text-sm font-medium leading-5 text-text-primary hover:bg-card-background-active focus:outline-none focus:bg-card-background-active transition duration-150 ease-in-out"
                 @click.prevent="emit('edit')">
                 <PencilSquareIcon
                     class="w-5 text-icon-active"></PencilSquareIcon>
@@ -28,7 +28,7 @@ const props = defineProps<{
             <button
                 v-if="canDeleteReport()"
                 :aria-label="'Delete Report ' + props.report.name"
-                class="border-b border-card-background-separator flex items-center space-x-3 w-full px-3 py-2.5 text-start text-sm font-medium leading-5 text-white hover:bg-card-background-active focus:outline-none focus:bg-card-background-active transition duration-150 ease-in-out"
+                class="border-b border-card-background-separator flex items-center space-x-3 w-full px-3 py-2.5 text-start text-sm font-medium leading-5 text-text-primary hover:bg-card-background-active focus:outline-none focus:bg-card-background-active transition duration-150 ease-in-out"
                 @click.prevent="emit('delete')">
                 <TrashIcon class="w-5 text-icon-active"></TrashIcon>
                 <span>Delete</span>

@@ -47,7 +47,7 @@ watchEffect(async () => {
 
                             <svg
                                 v-if="style == 'danger'"
-                                class="h-5 w-5 text-white"
+                                class="h-5 w-5 text-text-primary"
                                 xmlns="http://www.w3.org/2000/svg"
                                 fill="none"
                                 viewBox="0 0 24 24"
@@ -60,7 +60,7 @@ watchEffect(async () => {
                             </svg>
                         </span>
 
-                        <p class="ms-3 font-medium text-sm text-white truncate">
+                        <p class="ms-3 font-medium text-sm text-text-primary truncate">
                             {{ message }}
                         </p>
                     </div>
@@ -72,7 +72,7 @@ watchEffect(async () => {
                             aria-label="Dismiss"
                             @click.prevent="show = false">
                             <svg
-                                class="h-5 w-5 text-white"
+                                class="h-5 w-5 text-text-primary"
                                 xmlns="http://www.w3.org/2000/svg"
                                 fill="none"
                                 viewBox="0 0 24 24"

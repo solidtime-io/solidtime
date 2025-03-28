@@ -14,7 +14,7 @@ const model = defineModel<string[]>({
 });
 const iconColorClasses = computed(() => {
     if (model.value.length > 0) {
-        return 'text-accent-200/80 focus:text-accent-200 hover:text-accent-200';
+        return 'text-input-select-active focus:text-input-select-active-hover hover:text-input-select-active-hover';
     } else {
         return 'text-icon-default hover:text-icon-active focus:text-icon-active';
     }

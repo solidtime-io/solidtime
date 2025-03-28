@@ -14,8 +14,8 @@ defineProps<{
         <div
             :class="[
                 current
-                    ? 'bg-menu-active text-white'
-                    : 'text-muted group-hover:text-white group-hover:bg-menu-active ',
+                    ? 'bg-menu-active text-text-primary'
+                    : 'text-muted group-hover:text-text-primary group-hover:bg-menu-active ',
                 'group flex gap-x-2 rounded-md transition leading-6 py-1 px-2 font-medium text-sm items-center',
             ]">
             <component

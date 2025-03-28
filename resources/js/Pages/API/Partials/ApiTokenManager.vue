@@ -173,7 +173,7 @@ const deleteApiToken = () => {
                                 v-for="token in tokens"
                                 :key="token.id"
                                 class="flex items-center justify-between">
-                                <div class="break-all text-white">
+                                <div class="break-all text-text-primary">
                                     {{ token.name }}
                                 </div>
 

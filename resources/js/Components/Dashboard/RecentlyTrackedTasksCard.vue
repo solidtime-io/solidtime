@@ -82,7 +82,7 @@ window.addEventListener("dashboard:refresh", () => {
             <div>
                 <PlusCircleIcon
                     class="w-8 text-icon-default inline pb-2"></PlusCircleIcon>
-                <h3 class="text-white font-semibold text-sm">
+                <h3 class="text-text-primary font-semibold text-sm">
                     No recent tasks found
                 </h3>
                 <p class="pb-5 text-sm">Create tasks inside of a project!</p>
@@ -97,7 +97,7 @@ window.addEventListener("dashboard:refresh", () => {
             <div>
                 <PlusCircleIcon
                     class="w-8 text-icon-default inline pb-2"></PlusCircleIcon>
-                <h3 class="text-white font-semibold">Add more tasks</h3>
+                <h3 class="text-text-primary font-semibold">Add more tasks</h3>
                 <p class="pb-5">Create tasks inside of a project!</p>
                 <SecondaryButton @click="router.visit(route('projects'))"
                 >Go to Projects

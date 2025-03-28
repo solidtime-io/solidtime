@@ -64,8 +64,9 @@ const max = computed(() => {
     }
 );
 
-const backgroundColor = useCssVar("--color-bg-secondary");
-const itemBackgroundColor = useCssVar("--color-bg-tertiary");
+const backgroundColor = useCssVar('--color-card-background', null, { observe: true });
+const itemBackgroundColor = useCssVar('--color-bg-tertiary', null, { observe: true });
+
 const option = computed(() => {
         return {
             tooltip: {},

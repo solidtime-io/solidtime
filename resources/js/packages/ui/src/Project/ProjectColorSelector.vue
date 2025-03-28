@@ -19,7 +19,7 @@ const model = defineModel<string>({ default: '' });
                 </button>
             </template>
             <template #content>
-                <div class="text-white grid grid-cols-6 gap-3 px-3 py-3">
+                <div class="text-text-primary grid grid-cols-6 gap-3 px-3 py-3">
                     <div
                         v-for="color in colors"
                         :key="color"

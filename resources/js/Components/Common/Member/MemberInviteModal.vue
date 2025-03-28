@@ -145,7 +145,7 @@ useFocus(clientNameInput, { initialValue: true });
                     <InputError :message="errors.role" class="mt-2" />
 
                     <div
-                        class="relative z-0 mt-1 border border-card-border rounded-lg cursor-pointer">
+                        class="relative z-0 mt-1 border border-card-border rounded-lg bg-card-background cursor-pointer">
                         <button
                             v-for="(role, i) in filterRoles(availableRoles)"
                             :key="role.key"
@@ -167,7 +167,7 @@ useFocus(clientNameInput, { initialValue: true });
                                 <!-- Role Name -->
                                 <div class="flex items-center">
                                     <div
-                                        class="text-sm text-white"
+                                        class="text-sm text-text-primary"
                                         :class="{
                                             'font-semibold':
                                                 addTeamMemberForm.role ==

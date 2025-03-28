@@ -24,7 +24,7 @@ const props = defineProps<{
             <button
                 v-if="canUpdateMembers()"
                 :aria-label="'Edit Member ' + props.member.name"
-                class="flex items-center space-x-3 w-full px-3 py-2.5 text-start text-sm font-medium leading-5 text-white hover:bg-card-background-active focus:outline-none focus:bg-card-background-active transition duration-150 ease-in-out"
+                class="flex items-center space-x-3 w-full px-3 py-2.5 text-start text-sm font-medium leading-5 text-text-primary hover:bg-card-background-active focus:outline-none focus:bg-card-background-active transition duration-150 ease-in-out"
                 @click="emit('edit')">
                 <PencilSquareIcon
                     class="w-5 text-icon-active"></PencilSquareIcon>
@@ -34,7 +34,7 @@ const props = defineProps<{
                 v-if="canDeleteMembers()"
                 :aria-label="'Delete Member ' + props.member.name"
                 data-testid="member_delete"
-                class="flex items-center space-x-3 w-full px-3 py-2.5 text-start text-sm font-medium leading-5 text-white hover:bg-card-background-active focus:outline-none focus:bg-card-background-active transition duration-150 ease-in-out"
+                class="flex items-center space-x-3 w-full px-3 py-2.5 text-start text-sm font-medium leading-5 text-text-primary hover:bg-card-background-active focus:outline-none focus:bg-card-background-active transition duration-150 ease-in-out"
                 @click="emit('delete')">
                 <TrashIcon class="w-5 text-icon-active"></TrashIcon>
                 <span>Delete</span>
@@ -43,7 +43,7 @@ const props = defineProps<{
                 v-if="props.member.role === 'placeholder' && canMergeMembers()"
                 :aria-label="'Merge Member ' + props.member.name"
                 data-testid="member_merge"
-                class="flex items-center space-x-3 w-full px-3 py-2.5 text-start text-sm font-medium leading-5 text-white hover:bg-card-background-active focus:outline-none focus:bg-card-background-active transition duration-150 ease-in-out"
+                class="flex items-center space-x-3 w-full px-3 py-2.5 text-start text-sm font-medium leading-5 text-text-primary hover:bg-card-background-active focus:outline-none focus:bg-card-background-active transition duration-150 ease-in-out"
                 @click="emit('merge')">
                 <ArrowDownOnSquareStackIcon class="w-5 text-icon-active"></ArrowDownOnSquareStackIcon>
                 <span>Merge</span>
@@ -51,7 +51,7 @@ const props = defineProps<{
             <button
                 v-if="props.member.role !== 'placeholder' && canMakeMembersPlaceholders()"
                 :aria-label="'Make Member ' + props.member.name + ' a placeholder'"
-                class="flex items-center space-x-3 w-full px-3 py-2.5 text-start text-sm font-medium leading-5 text-white hover:bg-card-background-active focus:outline-none focus:bg-card-background-active transition duration-150 ease-in-out"
+                class="flex items-center space-x-3 w-full px-3 py-2.5 text-start text-sm font-medium leading-5 text-text-primary hover:bg-card-background-active focus:outline-none focus:bg-card-background-active transition duration-150 ease-in-out"
                 @click="emit('makePlaceholder')">
                 <UserCircleIcon class="w-5 text-icon-active"></UserCircleIcon>
                 <span>Deactivate</span>

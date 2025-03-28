@@ -118,7 +118,7 @@ const { floatingStyles } = useFloating(reference, floating, {
                     :style="floatingStyles"
                     @click="onContentClick">
                     <div
-                        class="rounded-lg ring-1 relative ring-black ring-opacity-5 border border-card-border overflow-none shadow-dropdown bg-card-background">
+                        class="rounded-lg overflow-hidden relative border border-card-border overflow-none shadow-dropdown bg-card-background">
                         <slot name="content" />
                     </div>
                 </div>

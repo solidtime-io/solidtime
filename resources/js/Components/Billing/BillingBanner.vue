@@ -108,7 +108,7 @@ const showBlackFridayBanner = computed(() => {
             <div class="flex items-center space-x-2">
                 <Link v-if="canManageBilling()" href="/billing">
                     <div
-                        class="text-white font-semibold uppercase text-xs flex space-x-1 items-center hover:bg-white/10 rounded-lg px-2 py-1.5">
+                        class="text-text-primary font-semibold uppercase text-xs flex space-x-1 items-center hover:bg-white/10 rounded-lg px-2 py-1.5">
                         <span>Upgrade now</span>
                     </div>
                 </Link>
@@ -124,7 +124,7 @@ const showBlackFridayBanner = computed(() => {
         class="bg-accent-600/50 text-xs lg:text-sm py-0.5 border-b border-border-secondary">
         <MainContainer class="flex items-center justify-between">
             <div class="flex items-center space-x-1.5">
-                <CheckBadgeIcon class="w-4 text-white/50"></CheckBadgeIcon>
+                <CheckBadgeIcon class="w-4 text-text-primary/50"></CheckBadgeIcon>
                 <div class="flex-1 space-x-1">
                     <span class="font-medium">
                         Your trial expires in {{ daysLeftInTrial() }} days.
@@ -138,7 +138,7 @@ const showBlackFridayBanner = computed(() => {
             <div class="flex items-center space-x-2">
                 <Link v-if="canManageBilling()" href="/billing">
                     <div
-                        class="text-white font-semibold uppercase text-xs flex space-x-1 items-center hover:bg-white/10 rounded-lg px-2 py-1.5">
+                        class="text-text-primary font-semibold uppercase text-xs flex space-x-1 items-center hover:bg-white/10 rounded-lg px-2 py-1.5">
                         <span>Upgrade now</span>
                     </div>
                 </Link>
@@ -154,7 +154,7 @@ const showBlackFridayBanner = computed(() => {
         class="bg-red-600/50 text-xs lg:text-sm py-0.5 border-b border-border-secondary">
         <MainContainer class="flex items-center justify-between">
             <div class="flex items-center space-x-1.5">
-                <XCircleIcon class="w-4 text-white/50"></XCircleIcon>
+                <XCircleIcon class="w-4 text-text-primary/50"></XCircleIcon>
                 <div class="flex-1 space-x-1">
                     <span class="font-medium">
                         Your organization is currently blocked.
@@ -170,7 +170,7 @@ const showBlackFridayBanner = computed(() => {
                     v-if="isBillingActivated() && canManageBilling()"
                     href="/billing">
                     <div
-                        class="text-white font-semibold uppercase text-xs flex space-x-1 items-center hover:bg-white/10 rounded-lg px-2 py-1.5">
+                        class="text-text-primary font-semibold uppercase text-xs flex space-x-1 items-center hover:bg-white/10 rounded-lg px-2 py-1.5">
                         <span>Upgrade now</span>
                     </div>
                 </Link>
@@ -186,7 +186,7 @@ const showBlackFridayBanner = computed(() => {
         class="bg-tertiary text-xs lg:text-sm py-0.5 border-b border-border-secondary">
         <MainContainer class="flex items-center justify-between">
             <div class="flex items-center space-x-1.5">
-                <XCircleIcon class="w-4 text-white/50"></XCircleIcon>
+                <XCircleIcon class="w-4 text-text-primary/50"></XCircleIcon>
                 <div class="flex-1 space-x-1">
                     <span class="font-medium">
                         You are currently using the Free Plan.
@@ -202,7 +202,7 @@ const showBlackFridayBanner = computed(() => {
                     v-if="isBillingActivated() && canManageBilling()"
                     href="/billing">
                     <div
-                        class="text-white font-semibold uppercase text-xs flex space-x-1 items-center hover:bg-white/10 rounded-lg px-2 py-1.5">
+                        class="text-text-primary font-semibold uppercase text-xs flex space-x-1 items-center hover:bg-white/10 rounded-lg px-2 py-1.5">
                         <span>Upgrade now</span>
                     </div>
                 </Link>

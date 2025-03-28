@@ -211,7 +211,7 @@ useSelectEvents(filteredRecentlyTrackedTimeEntries,
                     v-model="tempDescription"
                     placeholder="What are you working on?"
                     data-testid="time_entry_description"
-                    class="w-full rounded-l-lg py-4 sm:py-2.5 px-3.5 border-b border-b-card-background-separator @2xl:px-4 text-base @4xl:text-lg text-white font-medium bg-transparent border-none placeholder-muted focus:ring-0 transition"
+                    class="w-full rounded-l-lg py-4 sm:py-2.5 px-3.5 border-b border-b-card-background-separator @2xl:px-4 text-base @4xl:text-lg text-text-primary font-medium bg-transparent border-none placeholder-muted focus:ring-0 transition"
                     type="text"
                     @keydown.enter="startTimerIfNotActive"
                     @keydown.esc="showDropdown = false"
@@ -222,7 +222,7 @@ useSelectEvents(filteredRecentlyTrackedTimeEntries,
                     class="z-50 w-full max-w-2xl"
                     :style="floatingStyles">
                     <div
-                        class="rounded-lg ring-1 w-full fixed min-w-xl top-0 left-0 ring-black ring-opacity-5 border border-card-border overflow-none shadow-dropdown bg-card-background">
+                        class="rounded-lg w-full fixed min-w-xl top-0 left-0  border border-card-border overflow-none shadow-dropdown bg-card-background">
                         <div
                             class="text-text-tertiary text-xs font-semibold border-b border-border-tertiary px-2 py-1.5">
                             Recently Tracked Time Entries

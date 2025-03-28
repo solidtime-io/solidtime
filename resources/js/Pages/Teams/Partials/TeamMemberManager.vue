@@ -191,7 +191,7 @@ const displayableRole = (role: string) => {
                                     <!-- Role Name -->
                                     <div class="flex items-center">
                                         <div
-                                            class="text-sm text-white"
+                                            class="text-sm text-text-primary"
                                             :class="{
                                                 'font-semibold':
                                                     addTeamMemberForm.role ==

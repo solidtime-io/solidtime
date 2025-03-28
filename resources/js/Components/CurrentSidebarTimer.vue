@@ -37,14 +37,14 @@ const isRunningInDifferentOrganization = computed(() => {
             <div
                 class="w-full h-[calc(100%+10px)] absolute bg-default-background opacity-75 backdrop-blur-sm"></div>
             <div class="flex space-x-3 items-center w-full z-20 justify-center">
-                <span class="text-xs text-center text-white">
+                <span class="text-xs text-center text-text-primary">
                     The Timer is running in a different organization.
                 </span>
             </div>
         </div>
         <div>
             <div class="text-muted font-extrabold text-xs">Current Timer</div>
-            <div class="text-white font-medium text-lg">
+            <div class="text-text-primary font-medium text-lg">
                 {{ currentTime }}
             </div>
         </div>

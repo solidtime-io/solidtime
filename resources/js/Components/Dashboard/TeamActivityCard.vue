@@ -51,7 +51,7 @@ const { data: latestTeamActivity, isLoading } = useQuery({
             <div>
                 <UserGroupIcon
                     class="w-8 text-icon-default inline pb-2"></UserGroupIcon>
-                <h3 class="text-white font-semibold text-sm">
+                <h3 class="text-text-primary font-semibold text-sm">
                     Invite your co-workers
                 </h3>
                 <p class="pb-5 text-sm">You can invite your entire team.</p>

@@ -46,7 +46,7 @@ const page = usePage<{
             <Link
                 class="py-8 text-muted text-sm font-medium opacity-90 hover:opacity-100 transition"
                 :href="route('register')">
-                No account yet? <span class="text-white">Register here!</span>
+                No account yet? <span class="text-text-primary">Register here!</span>
             </Link>
         </template>
 
@@ -89,7 +89,7 @@ const page = usePage<{
                 <Link
                     v-if="canResetPassword"
                     :href="route('password.request')"
-                    class="underline text-sm text-muted hover:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    class="underline text-sm text-muted hover:text-text-primary rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                     Forgot your password?
                 </Link>
 

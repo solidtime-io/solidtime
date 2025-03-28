@@ -70,7 +70,7 @@ const closeModal = () => {
                     <div>
                         <svg
                             v-if="session.agent.is_desktop"
-                            class="w-8 h-8 text-white"
+                            class="w-8 h-8 text-text-primary"
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"
                             viewBox="0 0 24 24"
@@ -98,7 +98,7 @@ const closeModal = () => {
                     </div>
 
                     <div class="ms-3">
-                        <div class="text-sm text-white font-medium">
+                        <div class="text-sm text-text-primary font-medium">
                             {{
                                 session.agent.platform
                                     ? session.agent.platform

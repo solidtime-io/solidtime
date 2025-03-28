@@ -10,7 +10,7 @@ defineProps<{
     <div class="px-4 py-2 2xl:py-3 border-b border-card-background-separator">
         <div class="col-span-2">
             <div class="flex justify-between">
-                <p class="font-semibold text-sm text-white">
+                <p class="font-semibold text-sm text-text-primary">
                     {{ name }}
                 </p>
                 <div

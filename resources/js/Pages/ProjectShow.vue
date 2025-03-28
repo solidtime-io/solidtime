@@ -95,7 +95,7 @@ const shownTasks = computed(() => {
                     </li>
                     <li>
                         <div
-                            class="flex items-center space-x-3 text-white font-bold text-base">
+                            class="flex items-center space-x-3 text-text-primary font-semibold text-base">
                             <ChevronRightIcon
                                 class="h-5 w-5 flex-shrink-0 text-muted"
                                 aria-hidden="true" />
