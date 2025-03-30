@@ -30,7 +30,7 @@ const props = withDefaults(
             <component
                 :is="props.icon"
                 v-if="props.icon && !loading"
-                class="text-text-secondary w-4 -ml-0.5 mr-1"></component>
+                class="w-4 -ml-0.5 mr-1"></component>
             <span>
                 <slot />
             </span>
