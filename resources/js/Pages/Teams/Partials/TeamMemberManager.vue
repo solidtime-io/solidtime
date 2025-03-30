@@ -311,7 +311,7 @@ const displayableRole = (role: string) => {
                                     class="w-8 h-8 rounded-full object-cover"
                                     :src="user.profile_photo_url"
                                     :alt="user.name" />
-                                <div class="ms-4 text-whites">
+                                <div class="ms-4 text-text-primary">
                                     {{ user.name }}
                                 </div>
                             </div>

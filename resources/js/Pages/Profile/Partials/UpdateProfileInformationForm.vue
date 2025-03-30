@@ -178,7 +178,7 @@ const page = usePage<{
                         page.props.jetstream.hasEmailVerification &&
                         user.email_verified_at === null
                     ">
-                    <p class="text-sm mt-2 text-white">
+                    <p class="text-sm mt-2 text-text-primary">
                         Your email address is unverified.
 
                         <Link

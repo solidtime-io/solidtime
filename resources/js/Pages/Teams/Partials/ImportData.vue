@@ -147,17 +147,17 @@ const showResultModal = ref(false);
             </div>
             <div
                 class="py-2.5 px-3 border-t border-t-card-background-separator">
-                <span class="text-white font-semibold">Projects created:</span>
+                <span class="text-text-primary font-semibold">Projects created:</span>
                 {{ reportResult?.report.projects.created }}
             </div>
             <div
                 class="py-2.5 px-3 border-t border-t-card-background-separator">
-                <span class="text-white font-semibold">Tasks created:</span>
+                <span class="text-text-primary font-semibold">Tasks created:</span>
                 {{ reportResult?.report.tasks.created }}
             </div>
             <div
                 class="py-2.5 px-3 border-t border-t-card-background-separator">
-                <span class="text-white font-semibold"
+                <span class="text-text-primary font-semibold"
                     >Time entries created:</span
                 >
                 {{ reportResult?.report.time_entries.created }}
@@ -207,7 +207,7 @@ const showResultModal = ref(false);
                     </select>
                     <div
                         v-if="currentImporterDescription"
-                        class="py-3 text-white">
+                        class="py-3 text-text-primary">
                         <div class="font-semibold text-muted py-1">
                             Instructions:
                         </div>

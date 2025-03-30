@@ -209,7 +209,7 @@ const revokeApiTokenMutation = useMutation({
                                 v-for="token in tokens"
                                 :key="token.id"
                                 class="flex items-center py-2.5 justify-between">
-                                <div class="break-all text-white">
+                                <div class="break-all text-text-primary">
                                     <div>{{ token.name }}</div>
                                     <div class="text-sm text-text-tertiary space-x-3">
                                         <span v-if="token.created_at">
