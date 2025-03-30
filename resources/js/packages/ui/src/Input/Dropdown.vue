@@ -94,7 +94,7 @@ const { floatingStyles } = useFloating(reference, floating, {
 
 <template>
     <div class="min-w-0 isolate">
-        <div ref="reference" class="min-w-0" @click.prevent="toggleOpen">
+        <div ref="reference" class="min-w-0 flex items-center" @click.prevent="toggleOpen">
             <slot name="trigger" />
         </div>
 
