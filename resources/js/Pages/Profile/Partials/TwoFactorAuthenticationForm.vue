@@ -127,13 +127,13 @@ const disableTwoFactorAuthentication = () => {
         <template #content>
             <h3
                 v-if="twoFactorEnabled && !confirming"
-                class="text-lg font-medium text-gray-100">
+                class="text-lg font-medium text-text-secondary">
                 You have enabled two factor authentication.
             </h3>
 
             <h3
                 v-else-if="twoFactorEnabled && confirming"
-                class="text-lg font-medium text-gray-100">
+                class="text-lg font-medium text-text-secondary">
                 Finish enabling two factor authentication.
             </h3>
 
@@ -210,7 +210,7 @@ const disableTwoFactorAuthentication = () => {
                     </div>
 
                     <div
-                        class="grid gap-1 max-w-xl mt-4 px-4 py-4 font-mono text-sm bg-input-background text-gray-100 rounded-lg">
+                        class="grid gap-1 max-w-xl mt-4 px-4 py-4 font-mono text-sm bg-input-background text-text-secondary rounded-lg">
                         <div v-for="code in recoveryCodes" :key="code">
                             {{ code }}
                         </div>

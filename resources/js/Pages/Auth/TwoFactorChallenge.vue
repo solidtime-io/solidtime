@@ -87,7 +87,7 @@ const submit = () => {
             <div class="flex items-center justify-end mt-4">
                 <button
                     type="button"
-                    class="text-sm text-muted hover:text-gray-900 underline cursor-pointer"
+                    class="text-sm text-muted hover:text-text-primary underline cursor-pointer"
                     @click.prevent="toggleRecovery">
                     <template v-if="!recovery"> Use a recovery code</template>
 
