@@ -26,6 +26,7 @@
     --theme-shadow-dropdown: 0 4px 7px 0px rgb(0 0 0 / 40%);
 
     --theme-color-muted-text: var(--color-text-secondary);
+    --theme-color-card-background-active: var(--color-bg-tertiary);
 
     --theme-color-row-background: var(--color-bg-primary);
     --theme-color-row-heading-background: var(--theme-color-card-background);
