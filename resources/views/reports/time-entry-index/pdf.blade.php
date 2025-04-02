@@ -130,7 +130,7 @@
 <div>
     <p style="font-size: 32px; font-weight: 600; margin-bottom: 5px;">Detailed Report</p>
     <div style="font-size: 16px; font-weight: 600; color: #71717a;">
-        <span>{{ $start->format('d.m.Y') }} - {{ $end->format('d.m.Y') }}</span><br><br>
+        <span>{{ $start->timezone($timezone)->format('d.m.Y') }} - {{ $end->timezone($timezone)->format('d.m.Y') }}</span><br><br>
     </div>
 </div>
 <div class="table-wrapper">
@@ -179,13 +179,13 @@
                     </td>
                     <td style="overflow-wrap: break-word; min-width: 75px;">{{ $timeEntry->user->name }}</td>
                     <td style="overflow-wrap: break-word; min-width: 150px; text-align: center;">
-                        @if($timeEntry->start->format('Y-m-d') === $timeEntry->end->format('Y-m-d'))
-                            {{ $timeEntry->start->format('Y-m-d') }}
+                        @if($timeEntry->start->timezone($timezone)->format('Y-m-d') === $timeEntry->end->timezone($timezone)->format('Y-m-d'))
+                            {{ $timeEntry->start->timezone($timezone)->format('Y-m-d') }}
                         @else
-                            {{ $timeEntry->start->format('Y-m-d') }} - <br> {{ $timeEntry->end->format('Y-m-d') }}
+                            {{ $timeEntry->start->timezone($timezone)->format('Y-m-d') }} - <br> {{ $timeEntry->end->timezone($timezone)->format('Y-m-d') }}
                         @endif
                         <br>
-                        {{ $timeEntry->start->format('H:i:s') }} - {{ $timeEntry->end->format('H:i:s') }}
+                        {{ $timeEntry->start->timezone($timezone)->format('H:i:s') }} - {{ $timeEntry->end->timezone($timezone)->format('H:i:s') }}
                     </td>
                     <td style="overflow-wrap: break-word; min-width: 75px;">
                         {{ $interval->format($timeEntry->getDuration()) }}

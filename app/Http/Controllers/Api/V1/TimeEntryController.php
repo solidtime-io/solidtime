@@ -419,6 +419,7 @@ class TimeEntryController extends Controller
                 'currency' => $currency,
                 'group' => $group,
                 'subGroup' => $subGroup,
+                'timezone' => $timezone,
                 'start' => $request->getStart()->timezone($timezone),
                 'end' => $request->getEnd()->timezone($timezone),
                 'debug' => $debug,
