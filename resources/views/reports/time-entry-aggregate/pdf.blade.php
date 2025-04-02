@@ -139,7 +139,7 @@
 <div>
     <p style="font-size: 32px; font-weight: 600; margin-bottom: 5px;">Report</p>
     <div style="font-size: 16px; font-weight: 600; color: #71717a;">
-        <span>{{ $start->format('d.m.Y') }} - {{ $end->format('d.m.Y') }}</span><br><br>
+        <span>{{ $start->timezone($timezone)->format('d.m.Y') }} - {{ $end->timezone($timezone)->format('d.m.Y') }}</span><br><br>
     </div>
 
 </div>
