@@ -64,6 +64,17 @@ class LocalizationService
         }
     }
 
+    public function formatNumberWithoutTrailingZeros(BigDecimal|float $number): string
+    {
+        $number = $this->formatNumber($number);
+
+        $number = rtrim($number, '0');
+        $number = rtrim($number, '.');
+        $number = rtrim($number, ',');
+
+        return $number;
+    }
+
     public function formatInterval(CarbonInterval $interval): string
     {
         if ($this->intervalFormat === IntervalFormat::Decimal) {
