@@ -1,30 +1,22 @@
 <script setup lang="ts">
-import { twMerge } from 'tailwind-merge';
-import { computed } from 'vue';
+import { TabsTrigger } from '@/Components/ui/tabs'
+import { twMerge } from 'tailwind-merge'
+import type { Component } from 'vue'
 
 const props = defineProps<{
-    active?: boolean;
-}>();
-
-const activeClass = computed(() => {
-    if (props.active) {
-        return 'bg-tab-background border border-tab-border text-text-primary font-semibold';
-    }
-    return '';
-});
+    value: string
+    class?: string
+    icon?: Component
+}>()
 </script>
 
 <template>
-    <button
-        role="tab"
-        :class="
-            twMerge(
-                'rounded-md px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-medium hover:text-text-primary focus-visible:outline-none',
-                activeClass
-            )
-        ">
+    <TabsTrigger
+        :value="value"
+        :icon="icon"
+        :class="twMerge('rounded-md px-2 sm:px-3 py-1 border sm:py-1.5 text-xs sm:text-sm font-medium text-text-tertiary hover:text-text-primary focus-visible:outline-none data-[state=active]:bg-tab-background data-[state=active]:border-input-border data-[state=active]:text-text-primary border-tab-border', props.class)">
         <slot></slot>
-    </button>
+    </TabsTrigger>
 </template>
 
 <style scoped></style>

@@ -25,7 +25,7 @@ function triggerDownload(format: ExportFormat) {
 </script>
 
 <template>
-    <Dropdown align="bottom-end">
+    <Dropdown align="end">
         <template #trigger>
             <SecondaryButton :icon="ArrowDownTrayIcon" :loading>
                 Export

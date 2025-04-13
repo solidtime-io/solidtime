@@ -30,7 +30,7 @@ defineProps<{
                 </div>
             </div>
             <div
-                class="text-muted text-sm font-medium text-ellipsis whitespace-nowrap max-w-full overflow-hidden">
+                class="text-text-secondary text-sm font-medium text-ellipsis whitespace-nowrap max-w-full overflow-hidden">
                 {{ description }}
             </div>
         </div>

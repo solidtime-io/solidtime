@@ -25,7 +25,7 @@ const timeEntryTags = computed<Tag[]>(() => {
     <TagDropdown
         v-model="model"
         :tags="tags"
-        align="bottom-end"
+        align="end"
         :create-tag
         @changed="emit('changed', model)">
         <template #trigger>

@@ -170,7 +170,7 @@ function closeAndFocusInput() {
     <div class="relative">
         <Dropdown
             v-model="open"
-            align="bottom"
+            align="center"
             :close-on-content-click="false"
             @submit="open = false">
             <template #trigger>

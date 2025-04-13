@@ -20,8 +20,8 @@ const props = withDefaults(
 
 const badgeClasses = {
     base: 'py-1 px-2 space-x-1.5 text-xs',
-    large: 'py-1 sm:py-1.5 px-2 sm:px-3 space-x-1.5 sm:space-x-2 text-xs sm:text-sm text-muted',
-    xlarge: 'py-2 sm:py-2.5 px-3 sm:px-3.5 space-x-2 sm:space-x-3 text-sm sm:text-sm text-muted',
+    large: 'py-1 sm:py-1.5 px-2 sm:px-3 space-x-1.5 sm:space-x-2 text-xs sm:text-sm text-text-secondary',
+    xlarge: 'py-2 sm:py-2.5 px-3 sm:px-3.5 space-x-2 sm:space-x-3 text-sm sm:text-sm text-text-secondary',
 };
 
 const borderClasses = computed(() => {

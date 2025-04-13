@@ -3,7 +3,6 @@ import Dropdown from '@/packages/ui/src/Input/Dropdown.vue';
 import {computed, nextTick, onMounted, ref, watch} from 'vue';
 import SelectDropdownItem from '@/packages/ui/src/Input/SelectDropdownItem.vue';
 import { onKeyStroke } from '@vueuse/core';
-import { type Placement } from '@floating-ui/vue';
 import { twMerge } from 'tailwind-merge';
 const model = defineModel<string | null>({
     default: null,
@@ -18,11 +17,11 @@ const props = withDefaults(
         items: T[];
         getKeyFromItem: (item: T) => string | null;
         getNameForItem: (item: T) => string;
-        align?: Placement;
+        align?: 'center' | 'end' | 'start';
         class?: string;
     }>(),
     {
-        align: 'bottom-start',
+        align: 'start',
     }
 );
 

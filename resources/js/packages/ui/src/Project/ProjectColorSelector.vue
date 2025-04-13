@@ -7,7 +7,7 @@ const model = defineModel<string>({ default: '' });
 
 <template>
     <div>
-        <Dropdown align="bottom">
+        <Dropdown align="center">
             <template #trigger>
                 <button
                     class="p-2 bg-input-background hover:bg-tertiary transition rounded-full border border-input-border">

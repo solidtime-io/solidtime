@@ -26,8 +26,9 @@ const title = computed(() => {
         <template #trigger>
             <Badge
                 size="large"
+                tag="button"
                 class="cursor-pointer hover:bg-card-background transition space-x-5 flex">
-                <component :is="icon" class="h-4 text-muted"></component>
+                <component :is="icon" class="h-4 text-text-secondary"></component>
                 <span> {{ title }} </span>
             </Badge>
         </template>

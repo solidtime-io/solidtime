@@ -79,9 +79,9 @@ const showEditProjectModal = ref(false);
             <span class="overflow-ellipsis overflow-hidden">
                 {{ project.name }}
             </span>
-            <span class="text-muted"> {{ projectTasksCount }} Tasks </span>
+            <span class="text-text-secondary"> {{ projectTasksCount }} Tasks </span>
         </div>
-        <div class="whitespace-nowrap min-w-0 px-3 py-4 text-sm text-muted">
+        <div class="whitespace-nowrap min-w-0 px-3 py-4 text-sm text-text-secondary">
             <div
                 v-if="project.client_id"
                 class="overflow-ellipsis overflow-hidden">
@@ -89,14 +89,14 @@ const showEditProjectModal = ref(false);
             </div>
             <div v-else>No client</div>
         </div>
-        <div class="whitespace-nowrap px-3 py-4 text-sm text-muted">
+        <div class="whitespace-nowrap px-3 py-4 text-sm text-text-secondary">
             <div v-if="project.spent_time">
                 {{ formatHumanReadableDuration(project.spent_time) }}
             </div>
             <div v-else>--</div>
         </div>
         <div
-            class="whitespace-nowrap px-3 flex items-center text-sm text-muted">
+            class="whitespace-nowrap px-3 flex items-center text-sm text-text-secondary">
             <UpgradeBadge
                 v-if="!isAllowedToPerformPremiumAction()"></UpgradeBadge>
             <EstimatedTimeProgress
@@ -107,11 +107,11 @@ const showEditProjectModal = ref(false);
         </div>
         <div
             v-if="showBillableRate"
-            class="whitespace-nowrap px-3 py-4 text-sm text-muted">
+            class="whitespace-nowrap px-3 py-4 text-sm text-text-secondary">
             {{ billableRateInfo }}
         </div>
         <div
-            class="whitespace-nowrap px-3 py-4 text-sm text-muted flex space-x-1 items-center font-medium">
+            class="whitespace-nowrap px-3 py-4 text-sm text-text-secondary flex space-x-1 items-center font-medium">
             <CheckCircleIcon class="w-5"></CheckCircleIcon>
             <span>Active</span>
         </div>

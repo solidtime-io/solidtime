@@ -48,10 +48,10 @@ const showEditModal = ref(false);
         </div>
         <div
             class="whitespace-nowrap flex items-center space-x-5 3xl:pl-12 py-4 pr-3 text-sm font-medium text-text-primary pl-4 sm:pl-6 lg:pl-8 3xl:pl-12">
-            <span class="text-muted"> {{ projectCount }} Projects </span>
+            <span class="text-text-secondary"> {{ projectCount }} Projects </span>
         </div>
         <div
-            class="whitespace-nowrap px-3 py-4 text-sm text-muted flex space-x-1 items-center font-medium">
+            class="whitespace-nowrap px-3 py-4 text-sm text-text-secondary flex space-x-1 items-center font-medium">
             <CheckCircleIcon class="w-5"></CheckCircleIcon>
             <span>Active</span>
         </div>

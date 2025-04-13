@@ -63,7 +63,7 @@ async function startTaskTimer() {
                     </span>
                     <ChevronRightIcon
                         v-if="task"
-                        class="w-4 text-muted shrink-0"></ChevronRightIcon>
+                        class="w-4 text-text-secondary shrink-0"></ChevronRightIcon>
                     <div
                         v-if="task"
                         class="min-w-0 shrink truncate">

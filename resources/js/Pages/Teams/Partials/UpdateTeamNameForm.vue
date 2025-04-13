@@ -54,7 +54,7 @@ const updateTeamName = () => {
                             <div class="text-text-primary">
                                 {{ team.owner.name }}
                             </div>
-                            <div class="text-muted text-sm">
+                            <div class="text-text-secondary text-sm">
                                 {{ team.owner.email }}
                             </div>
                         </div>

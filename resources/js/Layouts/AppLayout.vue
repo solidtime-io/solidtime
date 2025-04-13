@@ -15,6 +15,7 @@ import {
     UserCircleIcon,
     UserGroupIcon,
     XMarkIcon,
+    DocumentTextIcon
 } from '@heroicons/vue/20/solid';
 import NavigationSidebarItem from '@/Components/NavigationSidebarItem.vue';
 import UserSettingsIcon from '@/Components/UserSettingsIcon.vue';
@@ -81,7 +82,7 @@ const page = usePage<{
 </script>
 
 <template>
-    <div v-bind="$attrs" class="flex flex-wrap bg-background text-muted">
+    <div v-bind="$attrs" class="flex flex-wrap bg-background text-text-secondary">
         <div
             :class="{
                 '!flex bg-default-background w-full z-[9999999999]':
@@ -186,6 +187,11 @@ const page = usePage<{
                                 :icon="TagIcon"
                                 :current="route().current('tags')"
                                 :href="route('tags')"></NavigationSidebarItem>
+                            <NavigationSidebarItem
+                                title="Invoices"
+                                :icon="DocumentTextIcon"
+                                :current="route().current('invoices')"
+                                href="/invoices"></NavigationSidebarItem>
                         </ul>
                     </nav>
                     <div
@@ -247,9 +253,9 @@ const page = usePage<{
         </div>
         <div class="flex-1 lg:ml-[230px] 2xl:ml-[250px] min-w-0">
             <div
-                class="lg:hidden w-full px-3 py-1 border-b border-b-default-background-separator text-muted flex justify-between items-center">
+                class="lg:hidden w-full px-3 py-1 border-b border-b-default-background-separator text-text-secondary flex justify-between items-center">
                 <Bars3Icon
-                    class="w-7 text-muted"
+                    class="w-7 text-text-secondary"
                     @click="showSidebarMenu = !showSidebarMenu"></Bars3Icon>
                 <OrganizationSwitcher></OrganizationSwitcher>
             </div>
@@ -266,6 +272,8 @@ const page = usePage<{
                     v-if="$slots.header"
                     class="bg-default-background border-b border-default-background-separator shadow">
                     <div class="pt-8 pb-3">
+
+
                         <MainContainer>
                             <slot name="header" />
                         </MainContainer>
@@ -275,6 +283,7 @@ const page = usePage<{
                 <!-- Page Content -->
                 <main class="pb-28">
                     <slot />
+
                 </main>
             </div>
         </div>

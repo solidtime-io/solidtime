@@ -5,7 +5,7 @@
                 <slot name="title" />
             </h3>
 
-            <p class="mt-1 text-sm text-muted">
+            <p class="mt-1 text-sm text-text-secondary">
                 <slot name="description" />
             </p>
         </div>

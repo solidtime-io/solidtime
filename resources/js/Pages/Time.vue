@@ -203,7 +203,7 @@ function deleteSelected() {
             </div>
             <div
                 v-else-if="allTimeEntriesLoaded"
-                class="flex justify-center items-center py-5 text-muted font-medium">
+                class="flex justify-center items-center py-5 text-text-secondary font-medium">
                 All time entries are loaded!
             </div>
         </div>

@@ -77,7 +77,7 @@ const emit = defineEmits(['submit']);
                 @keydown.enter="emit('submit')" />
         </div>
     </div>
-    <div class="flex items-center text-muted text-xs pt-2 pl-1">
+    <div class="flex items-center text-text-secondary text-xs pt-2 pl-1">
         <span>
             <span class="font-semibold"> Info: </span>
             {{ billableOptionInfoText }}

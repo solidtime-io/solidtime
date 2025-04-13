@@ -170,6 +170,10 @@ export type ApiTokenIndexResponse = ZodiosResponseByAlias<
 export type CreateApiTokenBody = ZodiosBodyByAlias<SolidTimeApi, 'createApiToken'>;
 export type ApiToken = ApiTokenIndexResponse['data'][0];
 
+export type DetailedInvoiceResponse = ZodiosResponseByAlias<
+    SolidTimeApi,
+    'getInvoice'
+>;
 
 const api = createApiClient('/api', { validate: 'none' });
 

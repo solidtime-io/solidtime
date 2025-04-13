@@ -150,7 +150,7 @@ function onSelectChange(event: Event) {
                         "></BillableToggleButton>
                     <div class="flex-1">
                         <button
-                            class="hidden lg:block text-muted w-[110px] px-1 py-1.5 bg-transparent text-center hover:bg-card-background rounded-lg border border-transparent hover:border-card-border text-sm font-medium focus-visible:outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:bg-tertiary"
+                            class="hidden lg:block text-text-secondary w-[110px] px-1 py-1.5 bg-transparent text-center hover:bg-card-background rounded-lg border border-transparent hover:border-card-border text-sm font-medium focus-visible:outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:bg-tertiary"
                             @click="expanded = !expanded">
                             {{ formatStartEnd(timeEntry.start, timeEntry.end) }}
                         </button>

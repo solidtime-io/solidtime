@@ -194,7 +194,7 @@ useFocus(clientNameInput, { initialValue: true });
                                 </div>
 
                                 <!-- Role Description -->
-                                <div class="mt-2 text-xs text-muted text-start">
+                                <div class="mt-2 text-xs text-text-secondary text-start">
                                     {{ role.description }}
                                 </div>
                             </div>

@@ -1,1 +1,914 @@
-{"openapi":"3.1.0","info":{"title":"Laravel","version":"0.0.1"},"servers":[{"url":"https:\/\/app.solidtime.io\/api","description":"Production"},{"url":"https:\/\/app.staging.solidtime.io\/api","description":"Staging"},{"url":"https:\/\/soldtime.test\/api","description":"Local"}],"security":[{"oauth2":[]}],"paths":{"\/v1\/organization\/{organization}\/projects":{"get":{"operationId":"getProjects","summary":"Get projects","tags":["Project"],"parameters":[{"name":"organization","in":"path","required":true,"description":"The organization ID","schema":{"type":"string","format":"uuid"}}],"responses":{"200":{"description":"`ProjectCollection`","content":{"application\/json":{"schema":{"type":"object","properties":{"data":{"$ref":"#\/components\/schemas\/ProjectCollection"}},"required":["data"]}}}},"403":{"$ref":"#\/components\/responses\/AuthorizationException"},"404":{"$ref":"#\/components\/responses\/ModelNotFoundException"}}},"post":{"operationId":"createProject","summary":"Create project","tags":["Project"],"parameters":[{"name":"organization","in":"path","required":true,"description":"The organization ID","schema":{"type":"string","format":"uuid"}}],"requestBody":{"content":{"application\/json":{"schema":{"type":"object","properties":{"name":{"type":"string"},"color":{"type":"string"}},"required":["name","color"]}}}},"responses":{"200":{"description":"`ProjectResource`","content":{"application\/json":{"schema":{"type":"object","properties":{"data":{"$ref":"#\/components\/schemas\/ProjectResource"}},"required":["data"]}}}},"403":{"$ref":"#\/components\/responses\/AuthorizationException"},"404":{"$ref":"#\/components\/responses\/ModelNotFoundException"},"422":{"$ref":"#\/components\/responses\/ValidationException"}}}},"\/v1\/organization\/{organization}\/projects\/{project}":{"get":{"operationId":"getProject","summary":"Get project","tags":["Project"],"parameters":[{"name":"organization","in":"path","required":true,"description":"The organization ID","schema":{"type":"string","format":"uuid"}},{"name":"project","in":"path","required":true,"description":"The project ID","schema":{"type":"string","format":"uuid"}}],"responses":{"200":{"description":"`ProjectResource`","content":{"application\/json":{"schema":{"type":"object","properties":{"data":{"$ref":"#\/components\/schemas\/ProjectResource"}},"required":["data"]}}}},"403":{"$ref":"#\/components\/responses\/AuthorizationException"},"404":{"$ref":"#\/components\/responses\/ModelNotFoundException"}}},"put":{"operationId":"updateProject","summary":"Update project","tags":["Project"],"parameters":[{"name":"organization","in":"path","required":true,"description":"The organization ID","schema":{"type":"string","format":"uuid"}},{"name":"project","in":"path","required":true,"description":"The project ID","schema":{"type":"string","format":"uuid"}}],"requestBody":{"content":{"application\/json":{"schema":{"type":"object","properties":{"name":{"type":"string"},"color":{"type":"string"}},"required":["name","color"]}}}},"responses":{"200":{"description":"`ProjectResource`","content":{"application\/json":{"schema":{"type":"object","properties":{"data":{"$ref":"#\/components\/schemas\/ProjectResource"}},"required":["data"]}}}},"403":{"$ref":"#\/components\/responses\/AuthorizationException"},"404":{"$ref":"#\/components\/responses\/ModelNotFoundException"},"422":{"$ref":"#\/components\/responses\/ValidationException"}}},"delete":{"operationId":"v1.projects.destroy","summary":"Delete project","tags":["Project"],"parameters":[{"name":"organization","in":"path","required":true,"description":"The organization ID","schema":{"type":"string","format":"uuid"}},{"name":"project","in":"path","required":true,"description":"The project ID","schema":{"type":"string","format":"uuid"}}],"requestBody":{"content":{"application\/json":{"schema":{"type":"object"}}}},"responses":{"204":{"description":"No content","content":{"application\/json":{"schema":{"type":"null"}}}},"403":{"$ref":"#\/components\/responses\/AuthorizationException"},"404":{"$ref":"#\/components\/responses\/ModelNotFoundException"}}}},"\/v1\/organization\/{organization}\/time-entries":{"get":{"operationId":"v1.time-entries.index","summary":"Get time entries","tags":["TimeEntry"],"parameters":[{"name":"organization","in":"path","required":true,"description":"The organization ID","schema":{"type":"string","format":"uuid"}},{"name":"user_id","in":"query","description":"Filter by user ID","schema":{"type":"string","format":"uuid"}},{"name":"before","in":"query","description":"Filter only time entries that have a start date before (not including) the given date (example: 2021-12-31)","schema":{"type":["string","null"]}},{"name":"after","in":"query","description":"Filter only time entries that have a start date after (not including) the given date (example: 2021-12-31)","schema":{"type":["string","null"]}},{"name":"active","in":"query","description":"Filter only time entries that are active (have no end date, are still running)","schema":{"type":"boolean"}},{"name":"limit","in":"query","description":"Limit the number of returned time entries","schema":{"type":"integer","minimum":1,"maximum":500}},{"name":"only_full_dates","in":"query","description":"Filter makes sure that only time entries of a whole date are returned","schema":{"type":"boolean"}}],"responses":{"200":{"description":"`TimeEntryCollection`","content":{"application\/json":{"schema":{"type":"object","properties":{"data":{"$ref":"#\/components\/schemas\/TimeEntryCollection"}},"required":["data"]}}}},"403":{"$ref":"#\/components\/responses\/AuthorizationException"},"404":{"$ref":"#\/components\/responses\/ModelNotFoundException"},"422":{"$ref":"#\/components\/responses\/ValidationException"}}},"post":{"operationId":"v1.time-entries.store","summary":"Create time entry","tags":["TimeEntry"],"parameters":[{"name":"organization","in":"path","required":true,"description":"The organization ID","schema":{"type":"string","format":"uuid"}}],"requestBody":{"content":{"application\/json":{"schema":{"type":"object","properties":{"user_id":{"type":"string","format":"uuid","description":"ID of the user that the time entry should belong to"},"task_id":{"type":["string","null"],"format":"uuid","description":"ID of the task that the time entry should belong to"},"start":{"type":"string","description":"Start of time entry (ISO 8601 format, UTC timezone)"},"end":{"type":["string","null"],"description":"End of time entry (ISO 8601 format, UTC timezone)"},"description":{"type":["string","null"],"description":"Description of time entry"},"tags":{"type":["array","null"],"description":"List of tag IDs","items":{"type":"string","format":"uuid"}}},"required":["user_id","start","end"]}}}},"responses":{"200":{"description":"`TimeEntryResource`","content":{"application\/json":{"schema":{"type":"object","properties":{"data":{"$ref":"#\/components\/schemas\/TimeEntryResource"}},"required":["data"]}}}},"403":{"$ref":"#\/components\/responses\/AuthorizationException"},"404":{"$ref":"#\/components\/responses\/ModelNotFoundException"},"422":{"$ref":"#\/components\/responses\/ValidationException"}}}},"\/v1\/organization\/{organization}\/time-entries\/{timeEntry}":{"put":{"operationId":"v1.time-entries.update","summary":"Update time entry","tags":["TimeEntry"],"parameters":[{"name":"organization","in":"path","required":true,"description":"The organization ID","schema":{"type":"string","format":"uuid"}},{"name":"timeEntry","in":"path","required":true,"description":"The time entry ID","schema":{"type":"string","format":"uuid"}}],"requestBody":{"content":{"application\/json":{"schema":{"type":"object","properties":{"task_id":{"type":["string","null"],"format":"uuid","description":"ID of the task that the time entry should belong to"},"start":{"type":"string","description":"Start of time entry (ISO 8601 format, UTC timezone)"},"end":{"type":["string","null"],"description":"End of time entry (ISO 8601 format, UTC timezone)"},"description":{"type":["string","null"],"description":"Description of time entry"},"tags":{"type":["array","null"],"description":"List of tag IDs","items":{"type":"string","format":"uuid"}}},"required":["start","end"]}}}},"responses":{"200":{"description":"`TimeEntryResource`","content":{"application\/json":{"schema":{"type":"object","properties":{"data":{"$ref":"#\/components\/schemas\/TimeEntryResource"}},"required":["data"]}}}},"403":{"$ref":"#\/components\/responses\/AuthorizationException"},"404":{"$ref":"#\/components\/responses\/ModelNotFoundException"},"422":{"$ref":"#\/components\/responses\/ValidationException"}}},"delete":{"operationId":"v1.time-entries.destroy","summary":"Delete time entry","tags":["TimeEntry"],"parameters":[{"name":"organization","in":"path","required":true,"description":"The organization ID","schema":{"type":"string","format":"uuid"}},{"name":"timeEntry","in":"path","required":true,"description":"The time entry ID","schema":{"type":"string","format":"uuid"}}],"requestBody":{"content":{"application\/json":{"schema":{"type":"object"}}}},"responses":{"204":{"description":"No content","content":{"application\/json":{"schema":{"type":"null"}}}},"403":{"$ref":"#\/components\/responses\/AuthorizationException"},"404":{"$ref":"#\/components\/responses\/ModelNotFoundException"}}}}},"components":{"securitySchemes":{"oauth2":{"type":"oauth2","flows":{"authorizationCode":{"authorizationUrl":"https:\/\/solidtime.test\/oauth\/authorize"}}}},"schemas":{"ProjectCollection":{"type":"array","items":{"$ref":"#\/components\/schemas\/ProjectResource"},"title":"ProjectCollection"},"ProjectResource":{"type":"object","properties":{"id":{"type":"string","description":"ID of project"},"name":{"type":"string","description":"Name of project"},"color":{"type":"string","description":"Color of project"},"client_id":{"type":["string","null"],"description":"ID of client"}},"required":["id","name","color","client_id"],"title":"ProjectResource"},"TimeEntryCollection":{"type":"array","items":{"$ref":"#\/components\/schemas\/TimeEntryResource"},"title":"TimeEntryCollection"},"TimeEntryResource":{"type":"object","properties":{"id":{"type":"string","description":"ID of time entry"},"start":{"type":"string","description":"Start of time entry (ISO 8601 format, UTC timezone, example: 2024-02-26T17:17:17Z)"},"end":{"type":["string","null"],"description":"End of time entry (ISO 8601 format, UTC timezone, example: 2024-02-26T17:17:17Z)"},"duration":{"type":"integer","description":"Duration of time entry in seconds"},"description":{"type":["string","null"],"description":"Description of time entry"},"task_id":{"type":["string","null"],"description":"ID of task"},"project_id":{"type":["string","null"],"description":"ID of project"},"user_id":{"type":"string","description":"ID of user"},"tags":{"type":"array","description":"List of tag IDs","items":{"type":"string"}}},"required":["id","start","end","duration","description","task_id","project_id","user_id","tags"],"title":"TimeEntryResource"}},"responses":{"AuthorizationException":{"description":"Authorization error","content":{"application\/json":{"schema":{"type":"object","properties":{"message":{"type":"string","description":"Error overview."}},"required":["message"]}}}},"ModelNotFoundException":{"description":"Not found","content":{"application\/json":{"schema":{"type":"object","properties":{"message":{"type":"string","description":"Error overview."}},"required":["message"]}}}},"ValidationException":{"description":"Validation error","content":{"application\/json":{"schema":{"type":"object","properties":{"message":{"type":"string","description":"Errors overview."},"errors":{"type":"object","description":"A detailed description of each field that failed validation.","additionalProperties":{"type":"array","items":{"type":"string"}}}},"required":["message","errors"]}}}}}}}
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "Laravel",
+        "version": "0.0.1"
+    },
+    "servers": [
+        {
+            "url": "https:\/\/app.solidtime.io\/api",
+            "description": "Production"
+        },
+        {
+            "url": "https:\/\/app.staging.solidtime.io\/api",
+            "description": "Staging"
+        },
+        {
+            "url": "https:\/\/soldtime.test\/api",
+            "description": "Local"
+        }
+    ],
+    "security": [
+        {
+            "oauth2": []
+        }
+    ],
+    "paths": {
+        "\/v1\/organization\/{organization}\/projects": {
+            "get": {
+                "operationId": "getProjects",
+                "summary": "Get projects",
+                "tags": [
+                    "Project"
+                ],
+                "parameters": [
+                    {
+                        "name": "organization",
+                        "in": "path",
+                        "required": true,
+                        "description": "The organization ID",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`ProjectCollection`",
+                        "content": {
+                            "application\/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#\/components\/schemas\/ProjectCollection"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "$ref": "#\/components\/responses\/AuthorizationException"
+                    },
+                    "404": {
+                        "$ref": "#\/components\/responses\/ModelNotFoundException"
+                    }
+                }
+            },
+            "post": {
+                "operationId": "createProject",
+                "summary": "Create project",
+                "tags": [
+                    "Project"
+                ],
+                "parameters": [
+                    {
+                        "name": "organization",
+                        "in": "path",
+                        "required": true,
+                        "description": "The organization ID",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application\/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "color": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "name",
+                                    "color"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "`ProjectResource`",
+                        "content": {
+                            "application\/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#\/components\/schemas\/ProjectResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "$ref": "#\/components\/responses\/AuthorizationException"
+                    },
+                    "404": {
+                        "$ref": "#\/components\/responses\/ModelNotFoundException"
+                    },
+                    "422": {
+                        "$ref": "#\/components\/responses\/ValidationException"
+                    }
+                }
+            }
+        },
+        "\/v1\/organization\/{organization}\/projects\/{project}": {
+            "get": {
+                "operationId": "getProject",
+                "summary": "Get project",
+                "tags": [
+                    "Project"
+                ],
+                "parameters": [
+                    {
+                        "name": "organization",
+                        "in": "path",
+                        "required": true,
+                        "description": "The organization ID",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "project",
+                        "in": "path",
+                        "required": true,
+                        "description": "The project ID",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`ProjectResource`",
+                        "content": {
+                            "application\/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#\/components\/schemas\/ProjectResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "$ref": "#\/components\/responses\/AuthorizationException"
+                    },
+                    "404": {
+                        "$ref": "#\/components\/responses\/ModelNotFoundException"
+                    }
+                }
+            },
+            "put": {
+                "operationId": "updateProject",
+                "summary": "Update project",
+                "tags": [
+                    "Project"
+                ],
+                "parameters": [
+                    {
+                        "name": "organization",
+                        "in": "path",
+                        "required": true,
+                        "description": "The organization ID",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "project",
+                        "in": "path",
+                        "required": true,
+                        "description": "The project ID",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application\/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "color": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "name",
+                                    "color"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "`ProjectResource`",
+                        "content": {
+                            "application\/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#\/components\/schemas\/ProjectResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "$ref": "#\/components\/responses\/AuthorizationException"
+                    },
+                    "404": {
+                        "$ref": "#\/components\/responses\/ModelNotFoundException"
+                    },
+                    "422": {
+                        "$ref": "#\/components\/responses\/ValidationException"
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "v1.projects.destroy",
+                "summary": "Delete project",
+                "tags": [
+                    "Project"
+                ],
+                "parameters": [
+                    {
+                        "name": "organization",
+                        "in": "path",
+                        "required": true,
+                        "description": "The organization ID",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "project",
+                        "in": "path",
+                        "required": true,
+                        "description": "The project ID",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application\/json": {
+                            "schema": {
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "204": {
+                        "description": "No content",
+                        "content": {
+                            "application\/json": {
+                                "schema": {
+                                    "type": "null"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "$ref": "#\/components\/responses\/AuthorizationException"
+                    },
+                    "404": {
+                        "$ref": "#\/components\/responses\/ModelNotFoundException"
+                    }
+                }
+            }
+        },
+        "\/v1\/organization\/{organization}\/time-entries": {
+            "get": {
+                "operationId": "v1.time-entries.index",
+                "summary": "Get time entries",
+                "tags": [
+                    "TimeEntry"
+                ],
+                "parameters": [
+                    {
+                        "name": "organization",
+                        "in": "path",
+                        "required": true,
+                        "description": "The organization ID",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "user_id",
+                        "in": "query",
+                        "description": "Filter by user ID",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "before",
+                        "in": "query",
+                        "description": "Filter only time entries that have a start date before (not including) the given date (example: 2021-12-31)",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "after",
+                        "in": "query",
+                        "description": "Filter only time entries that have a start date after (not including) the given date (example: 2021-12-31)",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "active",
+                        "in": "query",
+                        "description": "Filter only time entries that are active (have no end date, are still running)",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Limit the number of returned time entries",
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 500
+                        }
+                    },
+                    {
+                        "name": "only_full_dates",
+                        "in": "query",
+                        "description": "Filter makes sure that only time entries of a whole date are returned",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`TimeEntryCollection`",
+                        "content": {
+                            "application\/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#\/components\/schemas\/TimeEntryCollection"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "$ref": "#\/components\/responses\/AuthorizationException"
+                    },
+                    "404": {
+                        "$ref": "#\/components\/responses\/ModelNotFoundException"
+                    },
+                    "422": {
+                        "$ref": "#\/components\/responses\/ValidationException"
+                    }
+                }
+            },
+            "post": {
+                "operationId": "v1.time-entries.store",
+                "summary": "Create time entry",
+                "tags": [
+                    "TimeEntry"
+                ],
+                "parameters": [
+                    {
+                        "name": "organization",
+                        "in": "path",
+                        "required": true,
+                        "description": "The organization ID",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application\/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "user_id": {
+                                        "type": "string",
+                                        "format": "uuid",
+                                        "description": "ID of the user that the time entry should belong to"
+                                    },
+                                    "task_id": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ],
+                                        "format": "uuid",
+                                        "description": "ID of the task that the time entry should belong to"
+                                    },
+                                    "start": {
+                                        "type": "string",
+                                        "description": "Start of time entry (ISO 8601 format, UTC timezone)"
+                                    },
+                                    "end": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ],
+                                        "description": "End of time entry (ISO 8601 format, UTC timezone)"
+                                    },
+                                    "description": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ],
+                                        "description": "Description of time entry"
+                                    },
+                                    "tags": {
+                                        "type": [
+                                            "array",
+                                            "null"
+                                        ],
+                                        "description": "List of tag IDs",
+                                        "items": {
+                                            "type": "string",
+                                            "format": "uuid"
+                                        }
+                                    }
+                                },
+                                "required": [
+                                    "user_id",
+                                    "start",
+                                    "end"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "`TimeEntryResource`",
+                        "content": {
+                            "application\/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#\/components\/schemas\/TimeEntryResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "$ref": "#\/components\/responses\/AuthorizationException"
+                    },
+                    "404": {
+                        "$ref": "#\/components\/responses\/ModelNotFoundException"
+                    },
+                    "422": {
+                        "$ref": "#\/components\/responses\/ValidationException"
+                    }
+                }
+            }
+        },
+        "\/v1\/organization\/{organization}\/time-entries\/{timeEntry}": {
+            "put": {
+                "operationId": "v1.time-entries.update",
+                "summary": "Update time entry",
+                "tags": [
+                    "TimeEntry"
+                ],
+                "parameters": [
+                    {
+                        "name": "organization",
+                        "in": "path",
+                        "required": true,
+                        "description": "The organization ID",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "timeEntry",
+                        "in": "path",
+                        "required": true,
+                        "description": "The time entry ID",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application\/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "task_id": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ],
+                                        "format": "uuid",
+                                        "description": "ID of the task that the time entry should belong to"
+                                    },
+                                    "start": {
+                                        "type": "string",
+                                        "description": "Start of time entry (ISO 8601 format, UTC timezone)"
+                                    },
+                                    "end": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ],
+                                        "description": "End of time entry (ISO 8601 format, UTC timezone)"
+                                    },
+                                    "description": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ],
+                                        "description": "Description of time entry"
+                                    },
+                                    "tags": {
+                                        "type": [
+                                            "array",
+                                            "null"
+                                        ],
+                                        "description": "List of tag IDs",
+                                        "items": {
+                                            "type": "string",
+                                            "format": "uuid"
+                                        }
+                                    }
+                                },
+                                "required": [
+                                    "start",
+                                    "end"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "`TimeEntryResource`",
+                        "content": {
+                            "application\/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#\/components\/schemas\/TimeEntryResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "$ref": "#\/components\/responses\/AuthorizationException"
+                    },
+                    "404": {
+                        "$ref": "#\/components\/responses\/ModelNotFoundException"
+                    },
+                    "422": {
+                        "$ref": "#\/components\/responses\/ValidationException"
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "v1.time-entries.destroy",
+                "summary": "Delete time entry",
+                "tags": [
+                    "TimeEntry"
+                ],
+                "parameters": [
+                    {
+                        "name": "organization",
+                        "in": "path",
+                        "required": true,
+                        "description": "The organization ID",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "timeEntry",
+                        "in": "path",
+                        "required": true,
+                        "description": "The time entry ID",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application\/json": {
+                            "schema": {
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "204": {
+                        "description": "No content",
+                        "content": {
+                            "application\/json": {
+                                "schema": {
+                                    "type": "null"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "$ref": "#\/components\/responses\/AuthorizationException"
+                    },
+                    "404": {
+                        "$ref": "#\/components\/responses\/ModelNotFoundException"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "oauth2": {
+                "type": "oauth2",
+                "flows": {
+                    "authorizationCode": {
+                        "authorizationUrl": "https:\/\/solidtime.test\/oauth\/authorize"
+                    }
+                }
+            }
+        },
+        "schemas": {
+            "ProjectCollection": {
+                "type": "array",
+                "items": {
+                    "$ref": "#\/components\/schemas\/ProjectResource"
+                },
+                "title": "ProjectCollection"
+            },
+            "ProjectResource": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "description": "ID of project"
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "Name of project"
+                    },
+                    "color": {
+                        "type": "string",
+                        "description": "Color of project"
+                    },
+                    "client_id": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "description": "ID of client"
+                    }
+                },
+                "required": [
+                    "id",
+                    "name",
+                    "color",
+                    "client_id"
+                ],
+                "title": "ProjectResource"
+            },
+            "TimeEntryCollection": {
+                "type": "array",
+                "items": {
+                    "$ref": "#\/components\/schemas\/TimeEntryResource"
+                },
+                "title": "TimeEntryCollection"
+            },
+            "TimeEntryResource": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "description": "ID of time entry"
+                    },
+                    "start": {
+                        "type": "string",
+                        "description": "Start of time entry (ISO 8601 format, UTC timezone, example: 2024-02-26T17:17:17Z)"
+                    },
+                    "end": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "description": "End of time entry (ISO 8601 format, UTC timezone, example: 2024-02-26T17:17:17Z)"
+                    },
+                    "duration": {
+                        "type": "integer",
+                        "description": "Duration of time entry in seconds"
+                    },
+                    "description": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "description": "Description of time entry"
+                    },
+                    "task_id": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "description": "ID of task"
+                    },
+                    "project_id": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "description": "ID of project"
+                    },
+                    "user_id": {
+                        "type": "string",
+                        "description": "ID of user"
+                    },
+                    "tags": {
+                        "type": "array",
+                        "description": "List of tag IDs",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "required": [
+                    "id",
+                    "start",
+                    "end",
+                    "duration",
+                    "description",
+                    "task_id",
+                    "project_id",
+                    "user_id",
+                    "tags"
+                ],
+                "title": "TimeEntryResource"
+            }
+        },
+        "responses": {
+            "AuthorizationException": {
+                "description": "Authorization error",
+                "content": {
+                    "application\/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "description": "Error overview."
+                                }
+                            },
+                            "required": [
+                                "message"
+                            ]
+                        }
+                    }
+                }
+            },
+            "ModelNotFoundException": {
+                "description": "Not found",
+                "content": {
+                    "application\/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "description": "Error overview."
+                                }
+                            },
+                            "required": [
+                                "message"
+                            ]
+                        }
+                    }
+                }
+            },
+            "ValidationException": {
+                "description": "Validation error",
+                "content": {
+                    "application\/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "description": "Errors overview."
+                                },
+                                "errors": {
+                                    "type": "object",
+                                    "description": "A detailed description of each field that failed validation.",
+                                    "additionalProperties": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            },
+                            "required": [
+                                "message",
+                                "errors"
+                            ]
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

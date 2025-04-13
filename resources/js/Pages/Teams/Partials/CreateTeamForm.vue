@@ -50,7 +50,7 @@ const page = usePage<{
                         <div class="text-text-primary">
                             {{ page.props.auth.user.name }}
                         </div>
-                        <div class="text-sm text-muted">
+                        <div class="text-sm text-text-secondary">
                             {{ page.props.auth.user.email }}
                         </div>
                     </div>
