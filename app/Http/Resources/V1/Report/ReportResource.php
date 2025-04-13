@@ -30,13 +30,13 @@ class ReportResource extends BaseResource
             /** @var bool $is_public Whether the report can be accessed via an external link */
             'is_public' => $this->resource->is_public,
             /** @var string|null $public_until Date until the report is public */
-            'public_until' => $this->resource->public_until?->toIso8601ZuluString(),
+            'public_until' => $this->formatDateTime($this->resource->public_until),
             /** @var string|null $shareable_link Get link to access the report externally, not set if the report is private */
             'shareable_link' => $this->resource->getShareableLink(),
             /** @var string $created_at Date when the report was created */
-            'created_at' => $this->resource->created_at?->toIso8601ZuluString(),
+            'created_at' => $this->formatDateTime($this->resource->created_at),
             /** @var string $updated_at Date when the report was last updated */
-            'updated_at' => $this->resource->updated_at?->toIso8601ZuluString(),
+            'updated_at' => $this->formatDateTime($this->resource->updated_at),
         ];
     }
 }

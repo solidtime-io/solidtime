@@ -70,7 +70,7 @@ class DetailedWithDataReportResource extends BaseResource
             /** @var string|null $email Description */
             'description' => $this->resource->description,
             /** @var string|null $public_until Date until the report is public */
-            'public_until' => $this->resource->public_until?->toIso8601ZuluString(),
+            'public_until' => $this->formatDateTime($this->resource->public_until),
             /** @var string $currency Currency code (ISO 4217) */
             'currency' => $this->resource->organization->currency,
             'properties' => [
@@ -81,9 +81,9 @@ class DetailedWithDataReportResource extends BaseResource
                 /** @var string $history_group Type of grouping of the historic aggregation (time chart) */
                 'history_group' => $this->resource->properties->historyGroup->value,
                 /** @var string $start Start date of the report */
-                'start' => $this->resource->properties->start->toIso8601ZuluString(),
+                'start' => $this->formatDateTime($this->resource->properties->start),
                 /** @var string $end End date of the report */
-                'end' => $this->resource->properties->end->toIso8601ZuluString(),
+                'end' => $this->formatDateTime($this->resource->properties->end),
             ],
             /** @var array{
              *        grouped_type: string|null,

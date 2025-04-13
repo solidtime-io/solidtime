@@ -2,7 +2,6 @@
 @use('Brick\Money\Money')
 @use('PhpOffice\PhpSpreadsheet\Cell\DataType')
 @use('Carbon\CarbonInterval')
-@inject('interval', 'App\Service\IntervalService')
 @inject('colorService', 'App\Service\ColorService')
 <!DOCTYPE html>
 <html lang="en">
@@ -139,7 +138,7 @@
 <div>
     <p style="font-size: 32px; font-weight: 600; margin-bottom: 5px;">Report</p>
     <div style="font-size: 16px; font-weight: 600; color: #71717a;">
-        <span>{{ $start->timezone($timezone)->format('d.m.Y') }} - {{ $end->timezone($timezone)->format('d.m.Y') }}</span><br><br>
+        <span>{{ $localization->formatDate($start->timezone($timezone)) }} - {{ $localization->formatDate($end->timezone($timezone)) }}</span><br><br>
     </div>
 
 </div>
@@ -151,12 +150,12 @@
         <div style="padding: 8px 12px; border-radius: 8px;">
             <div style="color: #71717a; font-weight: 600;">Duration</div>
             <div
-                style="font-size: 24px; font-weight: 500; margin-top: 2px;">{{ $interval->format(CarbonInterval::seconds($aggregatedData['seconds'])) }} </div>
+                style="font-size: 24px; font-weight: 500; margin-top: 2px;">{{ $localization->formatInterval(CarbonInterval::seconds($aggregatedData['seconds'])) }} </div>
         </div>
         <div style="padding: 8px 12px; border-radius: 8px;">
             <div style="color: #71717a; font-weight: 600;">Total cost</div>
             <div
-                style="font-size: 24px; font-weight: 500; margin-top: 2px;">{{ Money::of(BigDecimal::ofUnscaledValue($aggregatedData['cost'], 2)->__toString(), $currency)->formatTo('en_US') }} </div>
+                style="font-size: 24px; font-weight: 500; margin-top: 2px;">{{ $localization->formatCurrency(Money::of(BigDecimal::ofUnscaledValue($aggregatedData['cost'], 2)->__toString(), $currency)) }} </div>
         </div>
 
     </div>
@@ -200,10 +199,10 @@
                     </span>
                         </td>
                         <td style="text-align: left;">
-                            {{ $interval->format(CarbonInterval::seconds($group1Entry['seconds'])) }}
+                            {{ $localization->formatInterval(CarbonInterval::seconds($group1Entry['seconds'])) }}
                         </td>
                         <td style="text-align: right;">
-                            {{ Money::of(BigDecimal::ofUnscaledValue($group1Entry['cost'], 2)->__toString(), $currency)->formatTo('en_US') }}
+                            {{ $localization->formatCurrency(Money::of(BigDecimal::ofUnscaledValue($group1Entry['cost'], 2)->__toString(), $currency)) }}
                         </td>
 
                     </tr>
@@ -214,10 +213,10 @@
                         Total
                     </td>
                     <td style="font-weight: 500;color: #18181b;">
-                        {{ $interval->format(CarbonInterval::seconds($aggregatedData['seconds'])) }}
+                        {{ $localization->formatInterval(CarbonInterval::seconds($aggregatedData['seconds'])) }}
                     </td>
                     <td style="text-align: right; font-weight: 500;color: #18181b;">
-                        {{ Money::of(BigDecimal::ofUnscaledValue($aggregatedData['cost'], 2)->__toString(), $currency)->formatTo('en_US') }}
+                        {{ $localization->formatCurrency(Money::of(BigDecimal::ofUnscaledValue($aggregatedData['cost'], 2)->__toString(), $currency)) }}
                     </td>
                 </tr>
                 </tfoot>
@@ -278,13 +277,13 @@
                             @endif
                         </td>
                         <td>
-                            {{ $interval->format($duration) }}
+                            {{ $localization->formatInterval($duration) }}
                         </td>
                         <td>
-                            {{ round($duration->totalHours, 2) }}
+                            {{ $localization->formatNumber($duration->totalHours) }}
                         </td>
                         <td>
-                            {{ Money::of(BigDecimal::ofUnscaledValue($group2Entry['cost'], 2)->__toString(), $currency)->formatTo('en_US') }}
+                            {{ $localization->formatCurrency(Money::of(BigDecimal::ofUnscaledValue($group2Entry['cost'], 2)->__toString(), $currency)) }}
                         </td>
                     </tr>
                     @php

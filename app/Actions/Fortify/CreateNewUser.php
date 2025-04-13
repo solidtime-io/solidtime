@@ -76,6 +76,11 @@ class CreateNewUser implements CreatesNewUsers
         $ipLookupResponse = app(IpLookupServiceContract::class)->lookup(request()->ip());
 
         $startOfWeek = Weekday::Monday;
+        $numberFormat = null;
+        $currencyFormat = null;
+        $dateFormat = null;
+        $intervalFormat = null;
+        $timeFormat = null;
         $currency = null;
         if ($ipLookupResponse !== null) {
             $startOfWeek = $ipLookupResponse->startOfWeek ?? Weekday::Monday;
@@ -85,7 +90,7 @@ class CreateNewUser implements CreatesNewUsers
             $currency = $ipLookupResponse->currency;
         }
         $user = null;
-        DB::transaction(function () use (&$user, $input, $timezone, $startOfWeek, $currency): void {
+        DB::transaction(function () use (&$user, $input, $timezone, $startOfWeek, $currency, $numberFormat, $currencyFormat, $dateFormat, $intervalFormat, $timeFormat): void {
             $userService = app(UserService::class);
             $user = $userService->createUser(
                 $input['name'],
@@ -93,7 +98,12 @@ class CreateNewUser implements CreatesNewUsers
                 $input['password'],
                 $timezone ?? 'UTC',
                 $startOfWeek,
-                $currency ?? 'EUR',
+                $currency,
+                $numberFormat,
+                $currencyFormat,
+                $dateFormat,
+                $intervalFormat,
+                $timeFormat
             );
         });
 

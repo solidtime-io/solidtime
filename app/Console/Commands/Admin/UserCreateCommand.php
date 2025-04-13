@@ -64,8 +64,8 @@ class UserCreateCommand extends Command
                 $password,
                 'UTC',
                 Weekday::Monday,
-                'EUR',
-                $verifyEmail
+                null,
+                verifyEmail: $verifyEmail
             );
         });
         /** @var Organization|null $organization */

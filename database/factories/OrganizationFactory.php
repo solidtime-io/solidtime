@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Enums\CurrencyFormat;
+use App\Enums\DateFormat;
+use App\Enums\IntervalFormat;
+use App\Enums\NumberFormat;
+use App\Enums\TimeFormat;
 use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -27,6 +32,11 @@ class OrganizationFactory extends Factory
             'user_id' => User::factory(),
             'personal_team' => true,
             'employees_can_see_billable_rates' => false,
+            'number_format' => $this->faker->randomElement(NumberFormat::values()),
+            'currency_format' => $this->faker->randomElement(CurrencyFormat::values()),
+            'date_format' => $this->faker->randomElement(DateFormat::values()),
+            'interval_format' => $this->faker->randomElement(IntervalFormat::values()),
+            'time_format' => $this->faker->randomElement(TimeFormat::values()),
         ];
     }
 
