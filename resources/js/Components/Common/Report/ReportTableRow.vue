@@ -67,16 +67,16 @@ async function deleteReport() {
                 {{ report.name }}
             </span>
         </div>
-        <div class="whitespace-nowrap min-w-0 px-3 py-4 text-sm text-muted">
+        <div class="whitespace-nowrap min-w-0 px-3 py-4 text-sm text-text-secondary">
             <span class="overflow-ellipsis overflow-hidden">
                 {{ report.description }}
             </span>
         </div>
-        <div class="whitespace-nowrap px-3 py-4 text-sm text-muted">
+        <div class="whitespace-nowrap px-3 py-4 text-sm text-text-secondary">
             {{ report.is_public ? 'Public' : 'Private' }}
         </div>
         <div
-            class="whitespace-nowrap px-3 flex items-center text-sm text-muted">
+            class="whitespace-nowrap px-3 flex items-center text-sm text-text-secondary">
             <div
                 v-if="report.shareable_link"
                 class="space-x-2 flex items-center">

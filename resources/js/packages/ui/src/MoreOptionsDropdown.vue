@@ -7,10 +7,10 @@ defineProps<{
 </script>
 
 <template>
-    <Dropdown align="bottom-end">
+    <Dropdown align="end">
         <template #trigger>
             <button
-                class="focus-visible:outline-none focus-visible:bg-card-background rounded-full focus-visible:ring-2 focus-visible:ring-ring focus-visible:opacity-100 hover:bg-card-background group-hover:opacity-100 opacity-20 transition-opacity text-muted"
+                class="focus-visible:outline-none focus-visible:bg-card-background rounded-full focus-visible:ring-2 focus-visible:ring-ring focus-visible:opacity-100 hover:bg-card-background group-hover:opacity-100 opacity-20 transition-opacity text-text-secondary"
                 :aria-label="label">
                 <svg
                     class="h-8 w-8 p-1 rounded-full"

@@ -129,7 +129,7 @@ const deleteApiToken = () => {
                                         createApiTokenForm.permissions
                                     "
                                     :value="permission" />
-                                <span class="ms-2 text-sm text-muted">{{
+                                <span class="ms-2 text-sm text-text-secondary">{{
                                     permission
                                 }}</span>
                             </label>

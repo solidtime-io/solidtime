@@ -141,7 +141,7 @@ const disableTwoFactorAuthentication = () => {
                 You have not enabled two factor authentication.
             </h3>
 
-            <div class="mt-3 max-w-xl text-sm text-muted">
+            <div class="mt-3 max-w-xl text-sm text-text-secondary">
                 <p>
                     When two factor authentication is enabled, you will be
                     prompted for a secure, random token during authentication.
@@ -152,7 +152,7 @@ const disableTwoFactorAuthentication = () => {
 
             <div v-if="twoFactorEnabled">
                 <div v-if="qrCode">
-                    <div class="mt-4 max-w-xl text-sm text-muted">
+                    <div class="mt-4 max-w-xl text-sm text-text-secondary">
                         <p v-if="confirming" class="font-semibold">
                             To finish enabling two factor authentication, scan
                             the following QR code using your phone's
@@ -173,7 +173,7 @@ const disableTwoFactorAuthentication = () => {
 
                     <div
                         v-if="setupKey"
-                        class="mt-4 max-w-xl text-sm text-muted">
+                        class="mt-4 max-w-xl text-sm text-text-secondary">
                         <p class="font-semibold">
                             Setup Key: <span v-html="setupKey"></span>
                         </p>

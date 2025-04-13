@@ -27,14 +27,14 @@
                         <p class="text-sm font-medium text-text-primary">
                             {{ title }}
                         </p>
-                        <p v-if="message" class="mt-1 text-sm text-muted">
+                        <p v-if="message" class="mt-1 text-sm text-text-secondary">
                             {{ message }}
                         </p>
                     </div>
                     <div class="ml-4 flex flex-shrink-0">
                         <button
                             type="button"
-                            class="inline-flex rounded-md bg-card-background text-muted hover:text-text-primary focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                            class="inline-flex rounded-md bg-card-background text-text-secondary hover:text-text-primary focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                             @click="show = false">
                             <span class="sr-only">Close</span>
                             <XMarkIcon class="h-5 w-5" aria-hidden="true" />

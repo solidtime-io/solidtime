@@ -52,11 +52,11 @@ function selectUnselectAll(value: boolean) {
                     <span class="font-semibold text-text-primary">
                         {{ formatWeekday(date) }}
                     </span>
-                    <span class="font-semibold text-muted">
+                    <span class="font-semibold text-text-secondary">
                         {{ formatDate(date) }}
                     </span>
                 </div>
-                <div class="text-muted pr-[90px] lg:pr-[92px]">
+                <div class="text-text-secondary pr-[90px] lg:pr-[92px]">
                     <span class="font-semibold">
                         {{ formatHumanReadableDuration(duration) }}
                     </span>

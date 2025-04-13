@@ -76,7 +76,7 @@ async function submit() {
             <div class="py-5 flex flex-col md:flex-row gap-6 items-center">
                 <div class="flex-1">
                     <Badge class="flex w-full text-base text-left space-x-3 px-3 text-text-secondary font-normal cursor py-1.5">
-                        <UserIcon class="relative z-10 w-4 text-muted"></UserIcon>
+                        <UserIcon class="relative z-10 w-4 text-text-secondary"></UserIcon>
                         <div class="flex-1 font-medium truncate">
                             {{ member.name }}
                         </div>

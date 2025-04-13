@@ -12,20 +12,22 @@ const showSharedReports = computed(() => canViewReport());
 </script>
 
 <template>
-    <TabBar>
+    <TabBar
+    :model-value="active"
+    >
         <TabBarItem
-            :active="active === 'reporting'"
+            value="reporting"
             @click="router.visit(route('reporting'))"
             >Overview</TabBarItem
         >
         <TabBarItem
-            :active="active === 'detailed'"
+            value="detailed"
             @click="router.visit(route('reporting.detailed'))"
             >Detailed</TabBarItem
         >
         <TabBarItem
             v-if="showSharedReports"
-            :active="active === 'shared'"
+            value="shared"
             @click="router.visit(route('reporting.shared'))"
             >Shared</TabBarItem
         >

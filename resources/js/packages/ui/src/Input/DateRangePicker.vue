@@ -101,7 +101,7 @@ function setLastYear() {
     <Dropdown
         v-model="open"
         :close-on-content-click="false"
-        align="bottom-end"
+        align="end"
         @submit="emit('submit')">
         <template #trigger>
             <button
@@ -109,7 +109,7 @@ function setLastYear() {
                 <CalendarIcon class="w-5"></CalendarIcon>
                 <div class="text-text-primary">
                     {{ formatDateLocalized(start) }}
-                    <span class="px-1.5 text-muted">-</span>
+                    <span class="px-1.5 text-text-secondary">-</span>
                     {{ formatDateLocalized(end) }}
                 </div>
             </button>
@@ -134,13 +134,13 @@ function setLastYear() {
                     </div>
                     <div class="pl-5">
                         <div class="space-y-1 flex-col flex items-start">
-                            <div class="text-xs font-semibold text-muted">
+                            <div class="text-xs font-semibold text-text-secondary">
                                 Start Date
                             </div>
                             <DatePicker v-model="start"></DatePicker>
                         </div>
                         <div class="mt-2 space-y-1 flex-col flex items-start">
-                            <div class="text-sm font-medium text-muted">
+                            <div class="text-sm font-medium text-text-secondary">
                                 End Date
                             </div>
                             <DatePicker v-model="end"></DatePicker>

@@ -64,13 +64,13 @@ const userHasValidMailAddress = computed(() => {
                 {{ member.name }}
             </span>
         </div>
-        <div class="whitespace-nowrap px-3 py-4 text-sm text-muted">
+        <div class="whitespace-nowrap px-3 py-4 text-sm text-text-secondary">
             {{ member.email }}
         </div>
-        <div class="whitespace-nowrap px-3 py-4 text-sm text-muted">
+        <div class="whitespace-nowrap px-3 py-4 text-sm text-text-secondary">
             {{ capitalizeFirstLetter(member.role) }}
         </div>
-        <div class="whitespace-nowrap px-3 py-4 text-sm text-muted">
+        <div class="whitespace-nowrap px-3 py-4 text-sm text-text-secondary">
             {{
                 member.billable_rate
                     ? formatCents(
@@ -81,7 +81,7 @@ const userHasValidMailAddress = computed(() => {
             }}
         </div>
         <div
-            class="whitespace-nowrap px-3 py-4 text-sm text-muted flex space-x-1 items-center font-medium">
+            class="whitespace-nowrap px-3 py-4 text-sm text-text-secondary flex space-x-1 items-center font-medium">
             <CheckCircleIcon
                 v-if="member.is_placeholder === false"
                 class="w-5"></CheckCircleIcon>

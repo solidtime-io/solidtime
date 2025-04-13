@@ -30,7 +30,7 @@ const switchToTeam = (organization: Organization) => {
 <template>
     <Dropdown
         v-if="page.props.jetstream.hasTeamFeatures"
-        align="bottom"
+        align="center"
         width="60">
         <template #trigger>
             <div
@@ -63,7 +63,7 @@ const switchToTeam = (organization: Organization) => {
         <template #content>
             <div class="w-60">
                 <!-- Organization Management -->
-                <div class="block px-4 py-2 text-xs text-muted">
+                <div class="block px-4 py-2 text-xs text-text-secondary">
                     Manage Organization
                 </div>
 
@@ -94,7 +94,7 @@ const switchToTeam = (organization: Organization) => {
                 <template v-if="page.props.auth.user.all_teams.length > 1">
                     <div class="border-t border-card-background-separator" />
 
-                    <div class="block px-4 py-2 text-xs text-muted">
+                    <div class="block px-4 py-2 text-xs text-text-secondary">
                         Switch Organizations
                     </div>
 

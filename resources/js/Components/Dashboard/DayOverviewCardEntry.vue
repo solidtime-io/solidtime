@@ -24,7 +24,7 @@ import {
             <DayOverviewCardChart :history="history"></DayOverviewCardChart>
         </div>
         <div
-            class="flex text-sm items-center justify-center text-muted min-w-[65px] font-semibold">
+            class="flex text-sm items-center justify-center text-text-secondary min-w-[65px] font-semibold">
             {{ formatHumanReadableDuration(duration) }}
         </div>
     </div>

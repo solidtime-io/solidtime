@@ -5,17 +5,16 @@ import { type Component, computed, nextTick, ref, watch } from 'vue';
 import TagCreateModal from '@/packages/ui/src/Tag/TagCreateModal.vue';
 import MultiselectDropdownItem from '@/packages/ui/src/Input/MultiselectDropdownItem.vue';
 import type { Tag } from '@/packages/api/src';
-import type { Placement } from '@floating-ui/vue';
 import {UseFocusTrap} from "@vueuse/integrations/useFocusTrap/component";
 
 const props = withDefaults(
     defineProps<{
         tags: Tag[];
         createTag: (name: string) => Promise<Tag | undefined>;
-        align?: Placement;
+        align?: 'center' | 'end' | 'start';
     }>(),
     {
-        align: 'bottom-start',
+        align: 'start',
     }
 );
 

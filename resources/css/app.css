@@ -6,7 +6,7 @@
     --color-bg-secondary: #17181a;
     --color-bg-tertiary: #2A2C32;
     --color-bg-quaternary: #141518;
-    --color-bg-background: #080808;
+    --color-bg-background: #0B0B0B;
     --color-text-primary: #ffffff;
     --color-text-secondary: #e3e4e6;
     --color-text-tertiary: #969799;
@@ -25,7 +25,6 @@
     --theme-shadow-card: 0 4px 7px 0px rgb(0 0 0 / 30%);
     --theme-shadow-dropdown: 0 4px 7px 0px rgb(0 0 0 / 40%);
 
-    --theme-color-muted-text: var(--color-text-secondary);
     --theme-color-card-background-active: var(--color-bg-tertiary);
 
     --theme-color-row-background: var(--color-bg-primary);
@@ -70,8 +69,6 @@
 
     --theme-shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.05);
     --theme-shadow-dropdown: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-
-    --theme-color-muted-text: var(--color-text-secondary);
 
     --theme-color-row-background: var(--theme-color-card-background);
     --theme-color-row-heading-background: var(--color-bg-secondary);
@@ -120,6 +117,7 @@
 
     --theme-button-secondary-background: var(--theme-color-card-background);
     --theme-button-secondary-background-active: var(--theme-color-card-background-active);
+    --popover-border: var(--color-border-secondary);
 }
 
 * {
@@ -180,4 +178,69 @@ body {
     font-family: 'Outfit';
     src: url('/fonts/Outfit-ExtraBold.ttf');
     font-weight: 800;
+}
+
+@layer base {
+  :root {
+        --background: var(--color-bg-background);
+        --foreground: var(--color-text-primary);
+        --card: var(--theme-color-card-background);
+        --card-foreground: var(--color-text-primary);
+        --popover: var(--theme-color-card-background);
+        --popover-foreground: var(--color-text-primary);
+        --primary: var(--theme-color-button-primary-background);
+        --primary-foreground: var(--theme-color-button-primary-text);
+        --secondary: var(--color-bg-secondary);
+        --secondary-foreground: var(--color-text-primary);
+        --muted: var(--color-bg-tertiary);
+        --muted-foreground: var(--color-text-tertiary);
+        --accent: var(--theme-color-button-primary-background);
+        --accent-foreground: var(--theme-color-button-primary-text);
+        --destructive: 0 84.2% 60.2%;
+        --destructive-foreground: var(--color-text-primary);
+        --border: var(--color-border-primary);
+        --input: var(--theme-color-input-background);
+        --ring: var(--theme-color-ring);
+        --chart-1: var(--color-accent-400);
+        --chart-2: var(--color-accent-500);
+        --chart-3: var(--color-accent-600);
+        --chart-4: var(--color-accent-700);
+        --chart-5: var(--color-accent-800);
+        --radius: 0.5rem;
+    }
+  .dark {
+        --background: var(--color-bg-background);
+        --foreground: var(--color-text-primary);
+        --card: var(--theme-color-card-background);
+        --card-foreground: var(--color-text-primary);
+        --popover: var(--theme-color-card-background);
+        --popover-foreground: var(--color-text-primary);
+        --primary: var(--theme-color-button-primary-background);
+        --primary-foreground: var(--theme-color-button-primary-text);
+        --secondary: var(--color-bg-secondary);
+        --secondary-foreground: var(--color-text-primary);
+        --muted: var(--color-bg-tertiary);
+        --muted-foreground: var(--color-text-tertiary);
+        --accent: var(--theme-color-button-primary-background);
+        --accent-foreground: var(--theme-color-button-primary-text);
+        --destructive: 0 62.8% 30.6%;
+        --destructive-foreground: var(--color-text-primary);
+        --border: var(--color-border-primary);
+        --input: var(--theme-color-input-background);
+        --ring: var(--theme-color-ring);
+        --chart-1: var(--color-accent-200);
+        --chart-2: var(--color-accent-300);
+        --chart-3: var(--color-accent-400);
+        --chart-4: var(--color-accent-500);
+        --chart-5: var(--color-accent-600);
+    }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+    }
+  body {
+    @apply bg-background text-foreground;
+    }
 }

@@ -39,14 +39,14 @@ const showTaskEditModal = ref(false);
             </span>
         </div>
         <div
-            class="whitespace-nowrap px-3 py-4 text-sm text-muted flex space-x-1 items-center font-medium">
+            class="whitespace-nowrap px-3 py-4 text-sm text-text-secondary flex space-x-1 items-center font-medium">
             <span v-if="task.spent_time">
                 {{ formatHumanReadableDuration(task.spent_time) }}
             </span>
             <span v-else> -- </span>
         </div>
         <div
-            class="whitespace-nowrap px-3 flex items-center text-sm text-muted">
+            class="whitespace-nowrap px-3 flex items-center text-sm text-text-secondary">
             <UpgradeBadge
                 v-if="!isAllowedToPerformPremiumAction()"></UpgradeBadge>
             <EstimatedTimeProgress
@@ -56,7 +56,7 @@ const showTaskEditModal = ref(false);
             <span v-else> -- </span>
         </div>
         <div
-            class="whitespace-nowrap px-3 py-4 text-sm text-muted flex space-x-1 items-center font-medium">
+            class="whitespace-nowrap px-3 py-4 text-sm text-text-secondary flex space-x-1 items-center font-medium">
             <template v-if="task.is_done">
                 <CheckCircleIcon class="w-5"></CheckCircleIcon>
                 <span>Done</span>

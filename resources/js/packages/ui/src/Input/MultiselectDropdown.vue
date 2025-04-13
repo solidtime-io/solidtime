@@ -151,7 +151,7 @@ const highlightedItem = computed(() => {
 </script>
 
 <template>
-    <Dropdown v-model="open" align="bottom-start" :close-on-content-click="false">
+    <Dropdown v-model="open" align="start" :close-on-content-click="false">
         <template #trigger>
             <slot name="trigger"></slot>
         </template>

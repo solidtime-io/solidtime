@@ -141,7 +141,7 @@ function getGroupLabel(key: string) {
 <template>
     <Head :title="sharedReportResponseData?.name" />
 
-    <div class="text-muted">
+    <div class="text-text-secondary">
         <MainContainer
             class="py-3 sm:py-5 border-b border-default-background-separator flex justify-between items-center">
             <div class="flex items-center space-x-3 sm:space-x-6">
@@ -174,7 +174,7 @@ function getGroupLabel(key: string) {
                         class="grid items-center"
                         style="grid-template-columns: 1fr 100px 150px">
                         <div
-                            class="contents [&>*]:border-card-background-separator [&>*]:border-b [&>*]:bg-tertiary [&>*]:pb-1.5 [&>*]:pt-1 text-muted text-sm">
+                            class="contents [&>*]:border-card-background-separator [&>*]:border-b [&>*]:bg-tertiary [&>*]:pb-1.5 [&>*]:pt-1 text-text-secondary text-sm">
                             <div class="pl-6">Name</div>
                             <div class="text-right">Duration</div>
                             <div class="text-right pr-6">Cost</div>

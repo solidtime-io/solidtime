@@ -208,7 +208,7 @@ const showResultModal = ref(false);
                     <div
                         v-if="currentImporterDescription"
                         class="py-3 text-text-primary">
-                        <div class="font-semibold text-muted py-1">
+                        <div class="font-semibold text-text-secondary py-1">
                             Instructions:
                         </div>
                         <div
@@ -221,10 +221,10 @@ const showResultModal = ref(false);
                     class="mt-2 flex justify-center rounded-lg border border-dashed border-border-primary px-6 py-10">
                     <div class="text-center">
                         <DocumentIcon
-                            class="mx-auto h-8 w-8 text-muted"
+                            class="mx-auto h-8 w-8 text-text-secondary"
                             aria-hidden="true" />
 
-                        <div class="mt-4 flex text-sm leading-6 text-muted">
+                        <div class="mt-4 flex text-sm leading-6 text-text-secondary">
                             <label
                                 for="file-upload"
                                 class="relative cursor-pointer rounded-md font-semibold text-text-primary focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2 focus-within:ring-offset-gray-900 hover:text-indigo-500">
@@ -241,7 +241,7 @@ const showResultModal = ref(false);
                                     @change="updateFiles" />
                             </label>
                         </div>
-                        <p class="text-xs leading-5 text-muted">
+                        <p class="text-xs leading-5 text-text-secondary">
                             CSV and ZIP are supported
                         </p>
                     </div>

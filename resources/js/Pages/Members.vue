@@ -21,9 +21,6 @@ defineProps<{
 }>();
 
 const activeTab = ref<'all' | 'invitations'>('all');
-function isActiveTab(tab: string) {
-    return activeTab.value === tab;
-}
 </script>
 
 <template>
@@ -32,15 +29,15 @@ function isActiveTab(tab: string) {
             class="py-5 border-b border-default-background-separator flex justify-between items-center">
             <div class="flex items-center space-x-4 sm:space-x-6">
                 <PageTitle :icon="UserGroupIcon" title="Members"> </PageTitle>
-                <TabBar>
+                <TabBar
+                v-model="activeTab"
+                >
                     <TabBarItem
-                        :active="isActiveTab('all')"
-                        @click="activeTab = 'all'"
+                        value="all"
                         >All</TabBarItem
                     >
                     <TabBarItem
-                        :active="isActiveTab('invitations')"
-                        @click="activeTab = 'invitations'"
+                        value="invitations"
                         >Invitations</TabBarItem
                     >
                 </TabBar>
