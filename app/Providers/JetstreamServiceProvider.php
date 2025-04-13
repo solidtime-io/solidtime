@@ -138,6 +138,8 @@ class JetstreamServiceProvider extends ServiceProvider
             'invoices:update',
             'invoices:download',
             'invoices:delete',
+            'invoice-settings:view',
+            'invoice-settings:update',
         ])->description('Owner users can perform any action. There is only one owner per organization.');
 
         Jetstream::role(Role::Admin->value, 'Administrator', [
@@ -195,6 +197,8 @@ class JetstreamServiceProvider extends ServiceProvider
             'invoices:update',
             'invoices:download',
             'invoices:delete',
+            'invoice-settings:view',
+            'invoice-settings:update',
         ])->description('Administrator users can perform any action, except accessing the billing dashboard.');
 
         Jetstream::role(Role::Manager->value, 'Manager', [
@@ -242,6 +246,8 @@ class JetstreamServiceProvider extends ServiceProvider
             'invoices:update',
             'invoices:download',
             'invoices:delete',
+            'invoice-settings:view',
+            'invoice-settings:update',
         ])->description('Managers have full access to all projects, time entries, ect. but cannot manage the organization (add/remove member, edit the organization, ect.).');
 
         Jetstream::role(Role::Employee->value, 'Employee', [

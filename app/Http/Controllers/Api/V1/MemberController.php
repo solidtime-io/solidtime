@@ -136,6 +136,8 @@ class MemberController extends Controller
     }
 
     /**
+     * Merge one member into another
+     *
      * @throws AuthorizationException
      * @throws OnlyPlaceholdersCanBeMergedIntoAnotherMember
      * @throws \Throwable
