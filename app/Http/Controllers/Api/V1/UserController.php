@@ -6,7 +6,6 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Resources\V1\User\UserResource;
 use Illuminate\Auth\Access\AuthorizationException;
-use Illuminate\Http\Resources\Json\JsonResource;
 
 class UserController extends Controller
 {
@@ -19,7 +18,7 @@ class UserController extends Controller
      *
      * @throws AuthorizationException
      */
-    public function me(): JsonResource
+    public function me(): UserResource
     {
         $user = $this->user();
 

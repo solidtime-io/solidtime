@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\CurrencyFormat;
+use App\Enums\DateFormat;
+use App\Enums\IntervalFormat;
+use App\Enums\NumberFormat;
+use App\Enums\TimeFormat;
 use App\Models\Concerns\CustomAuditable;
 use App\Models\Concerns\HasUuids;
 use Database\Factories\OrganizationFactory;
@@ -18,7 +23,6 @@ use Illuminate\Support\Str;
 use Laravel\Jetstream\Events\TeamCreated;
 use Laravel\Jetstream\Events\TeamDeleted;
 use Laravel\Jetstream\Events\TeamUpdated;
-use Laravel\Jetstream\Jetstream;
 use Laravel\Jetstream\Team as JetstreamTeam;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
@@ -37,6 +41,11 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  * @property Collection<int, User> $realUsers
  * @property-read Collection<int, OrganizationInvitation> $teamInvitations
  * @property Member $membership
+ * @property NumberFormat $number_format
+ * @property CurrencyFormat $currency_format
+ * @property DateFormat $date_format
+ * @property IntervalFormat $interval_format
+ * @property TimeFormat $time_format
  *
  * @method HasMany<OrganizationInvitation> teamInvitations()
  * @method static OrganizationFactory factory()
@@ -60,6 +69,11 @@ class Organization extends JetstreamTeam implements AuditableContract
         'personal_team' => 'boolean',
         'currency' => 'string',
         'employees_can_see_billable_rates' => 'boolean',
+        'number_format' => NumberFormat::class,
+        'currency_format' => CurrencyFormat::class,
+        'date_format' => DateFormat::class,
+        'interval_format' => IntervalFormat::class,
+        'time_format' => TimeFormat::class,
     ];
 
     /**
@@ -89,7 +103,6 @@ class Organization extends JetstreamTeam implements AuditableContract
      * @var array<string, mixed>
      */
     protected $attributes = [
-        'currency' => 'EUR',
     ];
 
     /**

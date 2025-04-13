@@ -110,7 +110,7 @@ class OrganizationEndpointTest extends ApiEndpointTestAbstract
         $response->assertForbidden();
     }
 
-    public function test_update_endpoint_updates_project(): void
+    public function test_update_endpoint_can_update_the_organization_name(): void
     {
         // Arrange
         $data = $this->createUserWithPermission([
@@ -123,14 +123,55 @@ class OrganizationEndpointTest extends ApiEndpointTestAbstract
         // Act
         $response = $this->putJson(route('api.v1.organizations.update', [$data->organization->getKey()]), [
             'name' => $organizationFake->name,
-            'billable_rate' => $organizationFake->billable_rate,
+            'billable_rate' => null,
         ]);
 
         // Assert
         $response->assertStatus(200);
         $this->assertDatabaseHas(Organization::class, [
             'name' => $organizationFake->name,
-            'billable_rate' => $organizationFake->billable_rate,
+        ]);
+    }
+
+    public function test_update_endpoint_can_update_formats(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'organizations:update',
+        ]);
+        $this->assertBillableRateServiceIsUnused();
+        $organizationFake = Organization::factory()->make();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.organizations.update', [$data->organization->getKey()]), [
+            'name' => $organizationFake->name,
+            'number_format' => $organizationFake->number_format->value,
+            'currency_format' => $organizationFake->currency_format->value,
+            'date_format' => $organizationFake->date_format->value,
+            'interval_format' => $organizationFake->interval_format->value,
+            'time_format' => $organizationFake->time_format->value,
+        ]);
+
+        // Assert
+        $response->assertStatus(200);
+        $response->assertJson([
+            'data' => [
+                'id' => $data->organization->getKey(),
+                'number_format' => $organizationFake->number_format->value,
+                'currency_format' => $organizationFake->currency_format->value,
+                'date_format' => $organizationFake->date_format->value,
+                'interval_format' => $organizationFake->interval_format->value,
+                'time_format' => $organizationFake->time_format->value,
+            ],
+        ]);
+        $this->assertDatabaseHas(Organization::class, [
+            'name' => $organizationFake->name,
+            'number_format' => $organizationFake->number_format,
+            'currency_format' => $organizationFake->currency_format,
+            'date_format' => $organizationFake->date_format,
+            'interval_format' => $organizationFake->interval_format,
+            'time_format' => $organizationFake->time_format,
         ]);
     }
 
@@ -146,14 +187,21 @@ class OrganizationEndpointTest extends ApiEndpointTestAbstract
 
         // Act
         $response = $this->putJson(route('api.v1.organizations.update', [$data->organization->getKey()]), [
-            'name' => $organizationFake->name,
             'billable_rate' => $organizationFake->billable_rate,
         ]);
 
         // Assert
         $response->assertStatus(200);
+        $response->assertJson([
+            'data' => [
+                'id' => $data->organization->getKey(),
+                'name' => $data->organization->name,
+                'billable_rate' => $organizationFake->billable_rate,
+            ],
+        ]);
         $this->assertDatabaseHas(Organization::class, [
-            'name' => $organizationFake->name,
+            'id' => $data->organization->getKey(),
+            'name' => $data->organization->name,
             'billable_rate' => $organizationFake->billable_rate,
         ]);
     }

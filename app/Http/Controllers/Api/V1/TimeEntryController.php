@@ -27,6 +27,7 @@ use App\Models\Organization;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\TimeEntry;
+use App\Service\LocalizationService;
 use App\Service\ReportExport\TimeEntriesDetailedCsvExport;
 use App\Service\ReportExport\TimeEntriesDetailedExport;
 use App\Service\ReportExport\TimeEntriesReportExport;
@@ -194,6 +195,7 @@ class TimeEntryController extends Controller
         $filename = 'time-entries-export-'.now()->format('Y-m-d_H-i-s').'.'.$format->getFileExtension();
         $folderPath = 'exports';
         $path = $folderPath.'/'.$filename;
+        $localizationService = LocalizationService::forOrganization($organization);
         if ($format === ExportFormat::CSV) {
             $export = new TimeEntriesDetailedCsvExport(config('filesystems.private'), $folderPath, $filename, $timeEntriesQuery, 1000, $timezone);
             $export->export();
@@ -223,6 +225,7 @@ class TimeEntryController extends Controller
                 'currency' => $organization->currency,
                 'start' => $request->getStart()->timezone($timezone),
                 'end' => $request->getEnd()->timezone($timezone),
+                'localization' => $localizationService,
             ]);
             $footerViewFile = file_get_contents(resource_path('views/reports/time-entry-index/pdf-footer.blade.php'));
             if ($footerViewFile === false) {
@@ -257,7 +260,7 @@ class TimeEntryController extends Controller
                 ->putFileAs($folderPath, new File($tempFolder->path($filenameTemp)), $filename);
         } else {
             Excel::store(
-                new TimeEntriesDetailedExport($timeEntriesQuery, $format, $timezone),
+                new TimeEntriesDetailedExport($timeEntriesQuery, $format, $timezone, $localizationService),
                 $path,
                 config('filesystems.private'),
                 $format->getExportPackageType(),
@@ -394,6 +397,7 @@ class TimeEntryController extends Controller
         );
         $currency = $organization->currency;
         $timezone = app(TimezoneService::class)->getTimezoneFromUser($this->user());
+        $localizationService = LocalizationService::forOrganization($organization);
 
         $filename = 'time-entries-report-'.now()->format('Y-m-d_H-i-s').'.'.$format->getFileExtension();
         $folderPath = 'exports';
@@ -423,6 +427,7 @@ class TimeEntryController extends Controller
                 'start' => $request->getStart()->timezone($timezone),
                 'end' => $request->getEnd()->timezone($timezone),
                 'debug' => $debug,
+                'localization' => $localizationService,
             ]);
             $footerViewFile = file_get_contents(resource_path('views/reports/time-entry-aggregate/pdf-footer.blade.php'));
             if ($footerViewFile === false) {

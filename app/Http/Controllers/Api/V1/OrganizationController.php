@@ -40,15 +40,35 @@ class OrganizationController extends Controller
     {
         $this->checkPermission($organization, 'organizations:update');
 
-        $organization->name = $request->input('name');
-        $oldBillableRate = $organization->billable_rate;
-        if ($request->has('employees_can_see_billable_rates')) {
-            $organization->employees_can_see_billable_rates = $request->validated('employees_can_see_billable_rates');
+        if ($request->getName() !== null) {
+            $organization->name = $request->getName();
         }
-        $organization->billable_rate = $request->getBillableRate();
+        if ($request->getEmployeesCanSeeBillableRates() !== null) {
+            $organization->employees_can_see_billable_rates = $request->getEmployeesCanSeeBillableRates();
+        }
+        if ($request->getNumberFormat() !== null) {
+            $organization->number_format = $request->getNumberFormat();
+        }
+        if ($request->getCurrencyFormat() !== null) {
+            $organization->currency_format = $request->getCurrencyFormat();
+        }
+        if ($request->getDateFormat() !== null) {
+            $organization->date_format = $request->getDateFormat();
+        }
+        if ($request->getIntervalFormat() !== null) {
+            $organization->interval_format = $request->getIntervalFormat();
+        }
+        if ($request->getTimeFormat() !== null) {
+            $organization->time_format = $request->getTimeFormat();
+        }
+        $hasBillableRate = $request->has('billable_rate');
+        if ($hasBillableRate) {
+            $oldBillableRate = $organization->billable_rate;
+            $organization->billable_rate = $request->getBillableRate();
+        }
         $organization->save();
 
-        if ($oldBillableRate !== $request->getBillableRate()) {
+        if ($hasBillableRate && $oldBillableRate !== $request->getBillableRate()) {
             $billableRateService->updateTimeEntriesBillableRateForOrganization($organization);
         }
 

@@ -47,6 +47,16 @@ class OrganizationResource extends BaseResource
             'employees_can_see_billable_rates' => $this->resource->employees_can_see_billable_rates,
             /** @var string $currency Currency code (ISO 4217) */
             'currency' => $this->resource->currency,
+            /** @var string $number_format Number format */
+            'number_format' => $this->resource->number_format->value,
+            /** @var string $currency_format Currency format */
+            'currency_format' => $this->resource->currency_format->value,
+            /** @var string $date_format Date format */
+            'date_format' => $this->resource->date_format->value,
+            /** @var string $interval_format Interval format */
+            'interval_format' => $this->resource->interval_format->value,
+            /** @var string $time_format Time format */
+            'time_format' => $this->resource->time_format->value,
         ];
     }
 }
