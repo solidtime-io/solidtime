@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e02eaa279f99a886be314748daa0b234",
+    "content-hash": "c13d9dae01d6d8fc2df37c8d599d0b9f",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -3779,6 +3779,73 @@
                 "source": "https://github.com/korridor/laravel-computed-attributes/tree/3.1.0"
             },
             "time": "2024-03-01T14:15:47+00:00"
+        },
+        {
+            "name": "korridor/laravel-has-many-sync",
+            "version": "3.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/korridor/laravel-has-many-sync.git",
+                "reference": "32344956730d306d9753f5d3c455650ed828fd4e"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/korridor/laravel-has-many-sync/zipball/32344956730d306d9753f5d3c455650ed828fd4e",
+                "reference": "32344956730d306d9753f5d3c455650ed828fd4e",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/database": "^10|^11|^12",
+                "illuminate/support": "^10|^11|^12",
+                "php": ">=8.1"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^3",
+                "larastan/larastan": "^2|^3.0",
+                "orchestra/testbench": "^8|^9|^10",
+                "phpunit/phpunit": "^10.0|^11.5",
+                "squizlabs/php_codesniffer": "^3.5"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Korridor\\LaravelHasManySync\\ServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Korridor\\LaravelHasManySync\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "korridor",
+                    "email": "26689068+korridor@users.noreply.github.com"
+                },
+                {
+                    "name": "Alfa Adhitya",
+                    "email": "alfa2159@gmail.com"
+                }
+            ],
+            "description": "Laravel has many sync",
+            "homepage": "https://github.com/korridor/laravel-has-many-sync",
+            "keywords": [
+                "eloquent",
+                "has-many",
+                "laravel",
+                "relations",
+                "sync"
+            ],
+            "support": {
+                "source": "https://github.com/korridor/laravel-has-many-sync/tree/3.1.0"
+            },
+            "time": "2025-03-03T20:58:17+00:00"
         },
         {
             "name": "korridor/laravel-model-validation-rules",
