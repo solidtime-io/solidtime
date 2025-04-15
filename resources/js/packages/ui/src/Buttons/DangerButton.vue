@@ -10,7 +10,6 @@ withDefaults(
     }
 );
 </script>
-Modal.vue
 <template>
     <button
         :type="type"

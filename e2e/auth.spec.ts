@@ -36,7 +36,7 @@ test('can register and delete account', async ({ page }) => {
     await page.goto(PLAYWRIGHT_BASE_URL + '/user/profile');
     await page.getByRole('button', { name: 'Delete Account' }).click();
     await page.getByPlaceholder('Password').fill(password);
-    await page.getByRole('button', { name: 'Delete Account' }).nth(1).click();
+    await page.getByRole('button', { name: 'Delete Account' }).click();
     await page.waitForURL(PLAYWRIGHT_BASE_URL + '/login');
     await page.goto(PLAYWRIGHT_BASE_URL + '/login');
     await page.getByLabel('Email').fill(email);

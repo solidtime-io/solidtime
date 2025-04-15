@@ -15,7 +15,7 @@ test('test that creating and deleting a new client via the modal works', async (
     await page.getByRole('button', { name: 'Create Tag' }).click();
     await page.getByPlaceholder('Tag Name').fill(newTagName);
     await Promise.all([
-        page.getByRole('button', { name: 'Create Tag' }).nth(1).click(),
+        page.getByRole('button', { name: 'Create Tag' }).click(),
         page.waitForResponse(
             async (response) =>
                 response.url().includes('/tags') &&

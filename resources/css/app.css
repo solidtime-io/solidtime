@@ -2,11 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 :root.dark {
-    --color-bg-primary: #0f1011;
-    --color-bg-secondary: #17181a;
+    --color-bg-primary: #101012;
+    --color-bg-secondary: #17181B;
     --color-bg-tertiary: #2A2C32;
     --color-bg-quaternary: #141518;
-    --color-bg-background: #0B0B0B;
+    --color-bg-background: #090909;
     --color-text-primary: #ffffff;
     --color-text-secondary: #e3e4e6;
     --color-text-tertiary: #969799;
@@ -22,7 +22,7 @@
 
     --theme-color-menu-active: var(--color-bg-secondary);
     --theme-color-card-background: var(--color-bg-secondary);
-    --theme-shadow-card: 0 4px 7px 0px rgb(0 0 0 / 30%);
+    --theme-shadow-card: 0 4px 7px 0px rgb(0 0 0 / 15%);
     --theme-shadow-dropdown: 0 4px 7px 0px rgb(0 0 0 / 40%);
 
     --theme-color-card-background-active: var(--color-bg-tertiary);
