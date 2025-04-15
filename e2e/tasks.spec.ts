@@ -16,7 +16,7 @@ test('test that creating and deleting a new tag in a new project works', async (
     await page.getByRole('button', { name: 'Create Project' }).click();
     await page.getByLabel('Project Name').fill(newProjectName);
     await Promise.all([
-        page.getByRole('button', { name: 'Create Project' }).nth(1).click(),
+        page.getByRole('button', { name: 'Create Project' }).click(),
         page.waitForResponse(
             async (response) =>
                 response.url().includes('/projects') &&
@@ -41,7 +41,7 @@ test('test that creating and deleting a new tag in a new project works', async (
     await page.getByPlaceholder('Task Name').fill(newTaskName);
 
     await Promise.all([
-        page.getByRole('button', { name: 'Create Task' }).nth(1).click(),
+        page.getByRole('button', { name: 'Create Task' }).click(),
         page.waitForResponse(
             async (response) =>
                 response.url().includes('/tasks') &&
@@ -107,20 +107,20 @@ test('test that archiving and unarchiving tasks works', async ({ page }) => {
     await page.getByRole('button', { name: 'Create Project' }).click();
     await page.getByLabel('Project Name').fill(newProjectName);
 
-    await page.getByRole('button', { name: 'Create Project' }).nth(1).click();
+    await page.getByRole('button', { name: 'Create Project' }).click();
     await expect(page.getByText(newProjectName)).toBeVisible();
 
     await page.getByText(newProjectName).click();
 
     await page.getByRole('button', { name: 'Create Task' }).click();
     await page.getByPlaceholder('Task Name').fill(newTaskName);
-    await page.getByRole('button', { name: 'Create Task' }).nth(1).click();
+    await page.getByRole('button', { name: 'Create Task' }).click();
 
     await expect(page.getByRole('table')).toContainText(newTaskName);
 
     await page.getByRole('row').first().getByRole('button').click();
     await Promise.all([
-        page.getByRole('button').getByText('Mark as done').first().click(),
+        page.getByRole('menuitem').getByText('Mark as done').first().click(),
         expect(page.getByText(newTaskName)).not.toBeVisible(),
     ]);
     await Promise.all([
@@ -130,7 +130,7 @@ test('test that archiving and unarchiving tasks works', async ({ page }) => {
 
     await page.getByRole('row').first().getByRole('button').click();
     await Promise.all([
-        page.getByRole('button').getByText('Mark as active').first().click(),
+        page.getByRole('menuitem').getByText('Mark as active').first().click(),
         expect(page.getByText(newTaskName)).not.toBeVisible(),
     ]);
     await Promise.all([

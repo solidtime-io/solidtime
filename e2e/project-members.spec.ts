@@ -17,7 +17,7 @@ test('test that updating project member billable rate works for existing time en
     await page.getByRole('button', { name: 'Create Project' }).click();
     await page.getByLabel('Project Name').fill(newProjectName);
 
-    await page.getByRole('button', { name: 'Create Project' }).nth(1).click();
+    await page.getByRole('button', { name: 'Create Project' }).click();
     await expect(page.getByText(newProjectName)).toBeVisible();
 
     await page.getByText(newProjectName).click();
@@ -35,8 +35,7 @@ test('test that updating project member billable rate works for existing time en
         .getByRole('button')
         .click();
     await page
-        .getByRole('button', { name: 'Edit Project Member' })
-        .first()
+        .getByRole('menuitem', { name: 'Edit Project Member' })
         .click();
     await page.getByLabel('Billable Rate').fill(newBillableRate.toString());
     await page.getByRole('button', { name: 'Update Project Member' }).click();

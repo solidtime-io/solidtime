@@ -16,7 +16,7 @@ test('test that creating and deleting a new client via the modal works', async (
     await page.getByRole('button', { name: 'Create Client' }).click();
     await page.getByPlaceholder('Client Name').fill(newClientName);
     await Promise.all([
-        page.getByRole('button', { name: 'Create Client' }).nth(1).click(),
+        page.getByRole('button', { name: 'Create Client' }).click(),
         page.waitForResponse(
             async (response) =>
                 response.url().includes('/clients') &&
@@ -56,12 +56,12 @@ test('test that archiving and unarchiving clients works', async ({ page }) => {
     await page.getByRole('button', { name: 'Create Client' }).click();
     await page.getByLabel('Client Name').fill(newClientName);
 
-    await page.getByRole('button', { name: 'Create Client' }).nth(1).click();
+    await page.getByRole('button', { name: 'Create Client' }).click();
     await expect(page.getByText(newClientName)).toBeVisible();
 
     await page.getByRole('row').first().getByRole('button').click();
     await Promise.all([
-        page.getByRole('button').getByText('Archive').first().click(),
+        page.getByRole('menuitem').getByText('Archive').click(),
         expect(page.getByText(newClientName)).not.toBeVisible(),
     ]);
     await Promise.all([
@@ -71,7 +71,7 @@ test('test that archiving and unarchiving clients works', async ({ page }) => {
 
     await page.getByRole('row').first().getByRole('button').click();
     await Promise.all([
-        page.getByRole('button').getByText('Unarchive').first().click(),
+        page.getByRole('menuitem').getByText('Unarchive').click(),
         expect(page.getByText(newClientName)).not.toBeVisible(),
     ]);
     await Promise.all([

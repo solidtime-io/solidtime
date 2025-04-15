@@ -266,7 +266,7 @@ const page = usePage<{
             <BillingBanner v-if="isBillingActivated()" />
 
             <div
-                class="min-h-screen bg-default-background border-l border-default-background-separator">
+                class="min-h-screen flex flex-col bg-default-background border-l border-default-background-separator">
                 <!-- Page Heading -->
                 <header
                     v-if="$slots.header"
@@ -281,7 +281,7 @@ const page = usePage<{
                 </header>
 
                 <!-- Page Content -->
-                <main class="pb-28">
+                <main class="pb-28 flex-1">
                     <slot />
 
                 </main>
