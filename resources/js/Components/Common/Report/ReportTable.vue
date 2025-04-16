@@ -35,12 +35,12 @@ const gridTemplate = computed(() => {
                         No shared reports found
                     </h3>
                     <p v-if="canCreateProjects()" class="pb-5">
-                        Create your first project now!
+                        Go to the overview to create a report
                     </p>
                     <SecondaryButton
                         :icon="PlusIcon"
                         @click="router.visit(route('reporting'))"
-                        >Go to the overview to create a report
+                        >Go to overview
                     </SecondaryButton>
                 </div>
                 <template v-for="report in reports" :key="report.id">
