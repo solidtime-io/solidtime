@@ -66,14 +66,16 @@ const InvoiceResource = z
         buyer_name: z.string(),
         status: z.string(),
         date: z.string(),
-        created_at: z.string(),
-        updated_at: z.string(),
+        created_at: z.union([z.string(), z.null()]),
+        updated_at: z.union([z.string(), z.null()]),
     })
     .passthrough();
 const InvoiceCollection = z.array(InvoiceResource);
 const InvoiceDiscountType = z.enum(['percentage', 'fixed']);
 const InvoiceStoreRequest = z
     .object({
+        due_at: z.union([z.string(), z.null()]).optional(),
+        paid_at: z.union([z.string(), z.null()]).optional(),
         seller_name: z.string(),
         seller_vatin: z.union([z.string(), z.null()]).optional(),
         seller_address_line_1: z.union([z.string(), z.null()]).optional(),
@@ -85,6 +87,7 @@ const InvoiceStoreRequest = z
         seller_phone: z.union([z.string(), z.null()]).optional(),
         seller_email: z.union([z.string(), z.null()]).optional(),
         buyer_name: z.string(),
+        buyer_vatin: z.union([z.string(), z.null()]).optional(),
         buyer_address_line_1: z.union([z.string(), z.null()]).optional(),
         buyer_address_line_2: z.union([z.string(), z.null()]).optional(),
         buyer_address_line_3: z.union([z.string(), z.null()]).optional(),
@@ -111,7 +114,6 @@ const InvoiceStoreRequest = z
                         description: z.union([z.string(), z.null()]).optional(),
                         unit_price: z.number().int().gte(0).lte(99999999),
                         quantity: z.number().gte(0),
-                        order_index: z.number().int().gte(0).lte(1000000),
                     })
                     .passthrough()
             )
@@ -127,8 +129,8 @@ const InvoiceEntryResource = z
         unit_price: z.number().int(),
         quantity: z.number().int(),
         order_index: z.number().int(),
-        created_at: z.string(),
-        updated_at: z.string(),
+        created_at: z.union([z.string(), z.null()]),
+        updated_at: z.union([z.string(), z.null()]),
     })
     .passthrough();
 const DetailedInvoiceResource = z
@@ -147,6 +149,7 @@ const DetailedInvoiceResource = z
         seller_phone: z.string(),
         seller_email: z.string(),
         buyer_name: z.string(),
+        buyer_vatin: z.string(),
         buyer_address_line_1: z.string(),
         buyer_address_line_2: z.string(),
         buyer_address_line_3: z.string(),
@@ -155,17 +158,29 @@ const DetailedInvoiceResource = z
         buyer_address_country: z.string(),
         buyer_phone: z.string(),
         buyer_email: z.string(),
+        paid_at: z.string(),
+        due_at: z.string(),
+        discount_type: z.string(),
+        discount_amount: z.string(),
+        tax_rate: z.string(),
         status: z.string(),
+        currency: z.string(),
         date: z.string(),
+        footer: z.string(),
+        notes: z.string(),
         billing_period_start: z.string(),
         billing_period_end: z.string(),
-        created_at: z.string(),
-        updated_at: z.string(),
+        created_at: z.union([z.string(), z.null()]),
+        updated_at: z.union([z.string(), z.null()]),
         entries: z.array(InvoiceEntryResource),
     })
     .passthrough();
+const InvoiceStatus = z.enum(['draft', 'sent', 'cancelled']);
 const InvoiceUpdateRequest = z
     .object({
+        status: InvoiceStatus,
+        due_at: z.union([z.string(), z.null()]),
+        paid_at: z.union([z.string(), z.null()]),
         seller_name: z.string(),
         seller_vatin: z.union([z.string(), z.null()]),
         seller_address_line_1: z.union([z.string(), z.null()]),
@@ -177,6 +192,7 @@ const InvoiceUpdateRequest = z
         seller_phone: z.union([z.string(), z.null()]),
         seller_email: z.union([z.string(), z.null()]),
         buyer_name: z.string(),
+        buyer_vatin: z.union([z.string(), z.null()]),
         buyer_address_line_1: z.union([z.string(), z.null()]),
         buyer_address_line_2: z.union([z.string(), z.null()]),
         buyer_address_line_3: z.union([z.string(), z.null()]),
@@ -203,10 +219,47 @@ const InvoiceUpdateRequest = z
                     description: z.union([z.string(), z.null()]).optional(),
                     unit_price: z.number().int().gte(0).lte(99999999),
                     quantity: z.number().gte(0),
-                    order_index: z.number().int().gte(0).lte(1000000),
                 })
                 .passthrough()
         ),
+    })
+    .partial()
+    .passthrough();
+const InvoiceSettingResource = z
+    .object({
+        seller_name: z.union([z.string(), z.null()]),
+        seller_vatin: z.union([z.string(), z.null()]),
+        seller_address_line_1: z.union([z.string(), z.null()]),
+        seller_address_line_2: z.union([z.string(), z.null()]),
+        seller_address_line_3: z.union([z.string(), z.null()]),
+        seller_address_post_code: z.union([z.string(), z.null()]),
+        seller_address_city: z.union([z.string(), z.null()]),
+        seller_address_country: z.union([z.string(), z.null()]),
+        seller_phone: z.union([z.string(), z.null()]),
+        seller_email: z.union([z.string(), z.null()]),
+        footer_default: z.union([z.string(), z.null()]),
+        notes_default: z.union([z.string(), z.null()]),
+        tax_rate_default: z.union([z.number(), z.null()]),
+        e_invoicing_enabled: z.boolean(),
+        organization_id: z.string(),
+    })
+    .passthrough();
+const InvoiceSettingUpdateRequest = z
+    .object({
+        seller_name: z.union([z.string(), z.null()]),
+        seller_vatin: z.union([z.string(), z.null()]),
+        seller_address_line_1: z.union([z.string(), z.null()]),
+        seller_address_line_2: z.union([z.string(), z.null()]),
+        seller_address_line_3: z.union([z.string(), z.null()]),
+        seller_address_post_code: z.union([z.string(), z.null()]),
+        seller_address_city: z.union([z.string(), z.null()]),
+        seller_address_country: z.union([z.string(), z.null()]),
+        seller_phone: z.union([z.string(), z.null()]),
+        seller_email: z.union([z.string(), z.null()]),
+        footer_default: z.union([z.string(), z.null()]),
+        notes_default: z.union([z.string(), z.null()]),
+        tax_rate_default: z.union([z.number(), z.null()]),
+        e_invoicing_enabled: z.boolean(),
     })
     .partial()
     .passthrough();
@@ -238,14 +291,55 @@ const OrganizationResource = z
         billable_rate: z.union([z.number(), z.null()]),
         employees_can_see_billable_rates: z.boolean(),
         currency: z.string(),
+        number_format: z.string(),
+        currency_format: z.string(),
+        date_format: z.string(),
+        interval_format: z.string(),
+        time_format: z.string(),
     })
     .passthrough();
+const NumberFormat = z.enum([
+    'point-comma',
+    'comma-point',
+    'space-comma',
+    'space-point',
+    'apostrophe-point',
+]);
+const CurrencyFormat = z.enum([
+    'iso-code-before-with-space',
+    'iso-code-after-with-space',
+    'symbol-before',
+    'symbol-after',
+    'symbol-before-with-space',
+    'symbol-after-with-space',
+]);
+const DateFormat = z.enum([
+    'point-seperated-d-m-yyyy',
+    'slash-seperated-mm-dd-yyyy',
+    'slash-seperated-dd-mm-yyyy',
+    'hyphen-seperated-dd-mm-yyyy',
+    'hyphen-seperated-mm-dd-yyyy',
+    'hyphen-seperated-yyyy-mm-dd',
+]);
+const IntervalFormat = z.enum([
+    'decimal',
+    'hours-minutes',
+    'hours-minutes-colon-seperated',
+    'hours-minutes-seconds-colon-seperated',
+]);
+const TimeFormat = z.enum(['12-hours', '24-hours']);
 const OrganizationUpdateRequest = z
     .object({
         name: z.string().max(255),
-        billable_rate: z.union([z.number(), z.null()]).optional(),
-        employees_can_see_billable_rates: z.boolean().optional(),
+        billable_rate: z.union([z.number(), z.null()]),
+        employees_can_see_billable_rates: z.boolean(),
+        number_format: NumberFormat,
+        currency_format: CurrencyFormat,
+        date_format: DateFormat,
+        interval_format: IntervalFormat,
+        time_format: TimeFormat,
     })
+    .partial()
     .passthrough();
 const ProjectResource = z
     .object({
@@ -656,12 +750,20 @@ export const schemas = {
     InvoiceStoreRequest,
     InvoiceEntryResource,
     DetailedInvoiceResource,
+    InvoiceStatus,
     InvoiceUpdateRequest,
+    InvoiceSettingResource,
+    InvoiceSettingUpdateRequest,
     MemberResource,
     Role,
     MemberUpdateRequest,
     MemberMergeIntoRequest,
     OrganizationResource,
+    NumberFormat,
+    CurrencyFormat,
+    DateFormat,
+    IntervalFormat,
+    TimeFormat,
     OrganizationUpdateRequest,
     ProjectResource,
     ProjectStoreRequest,
@@ -1658,6 +1760,83 @@ const endpoints = makeApi([
                 status: 404,
                 description: `Not found`,
                 schema: z.object({ message: z.string() }).passthrough(),
+            },
+        ],
+    },
+    {
+        method: 'get',
+        path: '/v1/organizations/:organization/invoice-settings',
+        alias: 'getInvoiceSettings',
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'organization',
+                type: 'Path',
+                schema: z.string(),
+            },
+        ],
+        response: z.object({ data: InvoiceSettingResource }).passthrough(),
+        errors: [
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 403,
+                description: `Authorization error`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 404,
+                description: `Not found`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+        ],
+    },
+    {
+        method: 'put',
+        path: '/v1/organizations/:organization/invoice-settings',
+        alias: 'updateInvoiceSettings',
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'body',
+                type: 'Body',
+                schema: InvoiceSettingUpdateRequest,
+            },
+            {
+                name: 'organization',
+                type: 'Path',
+                schema: z.string(),
+            },
+        ],
+        response: z.object({ data: InvoiceSettingResource }).passthrough(),
+        errors: [
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 403,
+                description: `Authorization error`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 404,
+                description: `Not found`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 422,
+                description: `Validation error`,
+                schema: z
+                    .object({
+                        message: z.string(),
+                        errors: z.record(z.array(z.string())),
+                    })
+                    .passthrough(),
             },
         ],
     },
