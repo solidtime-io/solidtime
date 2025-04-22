@@ -209,8 +209,8 @@ const InvoiceUpdateRequest = z
         tax_rate: z.number().int(),
         discount_amount: z.number().int(),
         discount_type: InvoiceDiscountType,
-        footer: z.string(),
-        notes: z.string(),
+        footer: z.union([z.string(), z.null()]),
+        notes: z.union([z.string(), z.null()]),
         entries: z.array(
             z
                 .object({
@@ -796,6 +796,20 @@ export const schemas = {
 };
 
 const endpoints = makeApi([
+    {
+        method: 'get',
+        path: '/v1/countries',
+        alias: 'getCountries',
+        requestFormat: 'json',
+        response: z.string(),
+        errors: [
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+        ],
+    },
     {
         method: 'get',
         path: '/v1/organizations/:organization',
