@@ -33,7 +33,10 @@ async function submit() {
         props.projectMember.billable_rate !==
         projectMemberBody.value.billable_rate
     ) {
-        showBillableRateModal.value = true;
+        // make sure that the alert modal is not immediately submitted when user presses enter
+        setTimeout(() => {
+            showBillableRateModal.value = true;
+        }, 0);
         return;
     }
     await updateProjectMember(props.projectMember.id, projectMemberBody.value);
