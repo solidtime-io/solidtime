@@ -107,7 +107,7 @@ jobs:
       - name: "Install npm dependencies in services extension"
         run: cd extensions/Services && npm ci
 
-      - name: "Checkout services extension"
+      - name: "Checkout invoicing extension"
         uses: actions/checkout@v4
         with:
           repository: solidtime-io/extension-invoicing
