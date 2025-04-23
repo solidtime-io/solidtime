@@ -187,6 +187,7 @@ const showCreateTagModal = ref(false);
                     class="bg-card-background border-0 placeholder-muted text-sm text-text-primary py-2.5 focus:ring-0 border-b border-card-background-separator focus:border-card-background-separator w-full"
                     placeholder="Search for a Tag..."
                     @input="updateSearchValue"
+                    @keydown.esc.prevent="open = false"
                     @keydown.enter="addTagIfNoneExists"
                     @keydown.up.prevent="moveHighlightUp"
                     @keydown.down.prevent="moveHighlightDown" />
