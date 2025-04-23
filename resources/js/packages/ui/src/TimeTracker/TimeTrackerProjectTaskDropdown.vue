@@ -598,6 +598,7 @@ const showCreateProject = ref(false);
                     placeholder="Search for a project or task..."
                     @input="updateSearchValue"
                     @keydown.enter.prevent="addClientIfNoneExists"
+                    @keydown.esc.prevent="open = false"
                     @keydown.up.prevent="moveHighlightUp"
                     @keydown.down.prevent="moveHighlightDown"
                     @keydown.right.prevent="expandProject"
