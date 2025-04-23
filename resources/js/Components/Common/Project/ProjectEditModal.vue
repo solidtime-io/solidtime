@@ -48,7 +48,10 @@ const project = ref<CreateProjectBody>({
 
 async function submit() {
     if (props.originalProject.billable_rate !== project.value.billable_rate) {
-        showBillableRateModal.value = true;
+        // 
+        setTimeout(() => {
+            showBillableRateModal.value = true;
+        }, 0);
         return;
     }
     await updateProject(props.originalProject.id, project.value);
