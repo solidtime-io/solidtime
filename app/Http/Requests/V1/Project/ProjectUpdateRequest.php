@@ -11,6 +11,7 @@ use App\Rules\ColorRule;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Str;
 use Korridor\LaravelModelValidationRules\Rules\ExistsEloquent;
 use Korridor\LaravelModelValidationRules\Rules\UniqueEloquent;
 
@@ -34,7 +35,13 @@ class ProjectUpdateRequest extends FormRequest
                 'max:255',
                 UniqueEloquent::make(Project::class, 'name', function (Builder $builder): Builder {
                     /** @var Builder<Project> $builder */
-                    return $builder->whereBelongsTo($this->organization, 'organization');
+                    $clientId = $this->input('client_id');
+                    if (! is_string($clientId) || ! Str::isUuid($clientId)) {
+                        $clientId = null;
+                    }
+
+                    return $builder->whereBelongsTo($this->organization, 'organization')
+                        ->where('client_id', $clientId);
                 })->ignore($this->project?->getKey())->withCustomTranslation('validation.project_name_already_exists'),
             ],
             'color' => [
@@ -54,6 +61,7 @@ class ProjectUpdateRequest extends FormRequest
                 'boolean',
             ],
             'client_id' => [
+                'present',
                 'nullable',
                 ExistsEloquent::make(Client::class, null, function (Builder $builder): Builder {
                     /** @var Builder<Client> $builder */

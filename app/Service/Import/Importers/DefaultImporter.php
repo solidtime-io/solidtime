@@ -97,7 +97,7 @@ abstract class DefaultImporter implements ImporterContract
                 'in:placeholder',
             ],
         ]);
-        $this->projectImportHelper = new ImportDatabaseHelper(Project::class, ['name', 'organization_id'], true, function (Builder $builder) {
+        $this->projectImportHelper = new ImportDatabaseHelper(Project::class, ['name', 'client_id', 'organization_id'], true, function (Builder $builder) {
             /** @var Builder<Project> $builder */
             return $builder->where('organization_id', $this->organization->id);
         }, validate: [
@@ -113,6 +113,11 @@ abstract class DefaultImporter implements ImporterContract
                 'nullable',
                 'integer',
                 'max:2147483647',
+            ],
+            'client_id' => [
+                'nullable',
+                'string',
+                'uuid',
             ],
         ], beforeSave: function (Project $project): void {
             if ($project->billable_rate === 0) {

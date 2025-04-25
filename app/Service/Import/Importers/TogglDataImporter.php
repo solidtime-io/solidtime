@@ -137,9 +137,9 @@ class TogglDataImporter extends DefaultImporter
 
                 $projectId = $this->projectImportHelper->getKey([
                     'name' => $project->name,
+                    'client_id' => $clientId,
                     'organization_id' => $this->organization->getKey(),
                 ], [
-                    'client_id' => $clientId,
                     'color' => $project->color,
                     'is_billable' => $project->billable,
                     'is_public' => ! $project->is_private,

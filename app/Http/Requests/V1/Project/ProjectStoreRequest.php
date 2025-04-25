@@ -11,6 +11,7 @@ use App\Rules\ColorRule;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Str;
 use Korridor\LaravelModelValidationRules\Rules\ExistsEloquent;
 use Korridor\LaravelModelValidationRules\Rules\UniqueEloquent;
 
@@ -27,6 +28,7 @@ class ProjectStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
+            // Name of the project, the name needs to be unique per client and organization
             'name' => [
                 'required',
                 'string',
@@ -34,7 +36,13 @@ class ProjectStoreRequest extends FormRequest
                 'max:255',
                 UniqueEloquent::make(Project::class, 'name', function (Builder $builder): Builder {
                     /** @var Builder<Project> $builder */
-                    return $builder->whereBelongsTo($this->organization, 'organization');
+                    $clientId = $this->input('client_id');
+                    if (! is_string($clientId) || ! Str::isUuid($clientId)) {
+                        $clientId = null;
+                    }
+
+                    return $builder->whereBelongsTo($this->organization, 'organization')
+                        ->where('client_id', $clientId);
                 })->withCustomTranslation('validation.project_name_already_exists'),
             ],
             'color' => [
@@ -55,6 +63,7 @@ class ProjectStoreRequest extends FormRequest
             ],
             // ID of the client
             'client_id' => [
+                'present',
                 'nullable',
                 ExistsEloquent::make(Client::class, null, function (Builder $builder): Builder {
                     /** @var Builder<Client> $builder */
