@@ -83,9 +83,9 @@ class ClockifyTimeEntriesImporter extends DefaultImporter
                 if ($record['Project'] !== '') {
                     $projectId = $this->projectImportHelper->getKey([
                         'name' => $record['Project'],
+                        'client_id' => $clientId,
                         'organization_id' => $this->organization->id,
                     ], [
-                        'client_id' => $clientId,
                         'color' => $this->colorService->getRandomColor(),
                         'is_billable' => false,
                     ]);

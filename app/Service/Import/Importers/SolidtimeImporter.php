@@ -176,12 +176,12 @@ class SolidtimeImporter extends DefaultImporter
 
                 $this->projectImportHelper->getKey([
                     'name' => $project['name'],
+                    'client_id' => $clientId,
                     'organization_id' => $this->organization->getKey(),
                 ], [
                     'color' => $project['color'],
                     'billable_rate' => $project['billable_rate'] === '' ? null : (int) $project['billable_rate'],
                     'is_public' => $project['is_public'] === 'true',
-                    'client_id' => $clientId,
                     'is_billable' => $project['is_billable'] === 'true',
                     'archived_at' => $project['archived_at'] !== '' ? Carbon::createFromFormat('Y-m-d\TH:i:s\Z', $project['archived_at'], 'UTC') : null,
                 ], $project['id']);

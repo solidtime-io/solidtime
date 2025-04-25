@@ -60,10 +60,10 @@ class HarvestProjectsImporter extends DefaultImporter
                     $billableHours = $billableHoursField !== '' && is_numeric($billableHoursField) ? (int) ((float) $billableHoursField) : null;
                     $this->projectImportHelper->getKey([
                         'name' => $record['Project'],
+                        'client_id' => $clientId,
                         'organization_id' => $this->organization->id,
                     ], [
                         'color' => $this->colorService->getRandomColor(),
-                        'client_id' => $clientId,
                         'estimated_time' => $estimatedTime,
                         'is_billable' => $billableHours > 0,
                     ]);

@@ -83,9 +83,9 @@ class TogglTimeEntriesImporter extends DefaultImporter
                 if ($record['Project'] !== '') {
                     $projectId = $this->projectImportHelper->getKey([
                         'name' => $record['Project'],
+                        'client_id' => $clientId,
                         'organization_id' => $this->organization->id,
                     ], [
-                        'client_id' => $clientId,
                         'is_billable' => false,
                         'color' => $this->colorService->getRandomColor(),
                     ]);

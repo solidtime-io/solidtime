@@ -99,9 +99,9 @@ class GenericTimeEntriesImporter extends DefaultImporter
                 if ($record['project'] !== '') {
                     $projectId = $this->projectImportHelper->getKey([
                         'name' => $record['project'],
+                        'client_id' => $clientId,
                         'organization_id' => $this->organization->id,
                     ], [
-                        'client_id' => $clientId,
                         'is_billable' => false,
                         'color' => $this->colorService->getRandomColor(),
                     ]);
