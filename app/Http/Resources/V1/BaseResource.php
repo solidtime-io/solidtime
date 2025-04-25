@@ -12,6 +12,10 @@ abstract class BaseResource extends JsonResource
     protected function formatDateTime(?Carbon $carbon): ?string
     {
         return $carbon?->toIso8601ZuluString();
+    }
 
+    protected function formatDate(?Carbon $carbon): ?string
+    {
+        return $carbon?->format('Y-m-d');
     }
 }
