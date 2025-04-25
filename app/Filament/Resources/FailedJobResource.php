@@ -20,7 +20,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Artisan;
-use Novadaemon\FilamentPrettyJson\PrettyJson;
+use Novadaemon\FilamentPrettyJson\Form\PrettyJsonField;
 
 /**
  * @source https://gitlab.com/amvisor/filament-failed-jobs
@@ -50,7 +50,7 @@ class FailedJobResource extends Resource
 
                 // make text a little bit smaller because often a complete Stack Trace is shown:
                 TextArea::make('exception')->disabled()->columnSpan(4)->extraInputAttributes(['style' => 'font-size: 80%;']),
-                PrettyJson::make('payload')->disabled()->columnSpan(4),
+                PrettyJsonField::make('payload')->disabled()->columnSpan(4),
             ])->columns(4);
     }
 
