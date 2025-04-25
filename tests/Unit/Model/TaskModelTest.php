@@ -114,4 +114,19 @@ class TaskModelTest extends ModelTestAbstract
         // Assert
         $this->assertFalse($task->is_done);
     }
+
+    public function test_task_can_store_big_amounts_of_spent_time(): void
+    {
+        // Arrange
+        $task = Task::factory()->create();
+        $spentTime = 100 * 365 * 24 * 60 * 60; // 100 years in seconds
+
+        // Act
+        $task->spent_time = $spentTime;
+        $task->save();
+        $task->refresh();
+
+        // Assert
+        $this->assertSame($spentTime, $task->spent_time);
+    }
 }
