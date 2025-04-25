@@ -59,12 +59,12 @@ class TimeEntryStoreRequest extends FormRequest
                         ->where('project_id', $this->input('project_id'));
                 })->uuid()->withMessage(__('validation.task_belongs_to_project')),
             ],
-            // Start of time entry (ISO 8601 format, UTC timezone)
+            // Start of time entry (Format: "Y-m-d\TH:i:s\Z", UTC timezone, Example: "2000-02-22T14:58:59Z")
             'start' => [
                 'required',
                 'date_format:Y-m-d\TH:i:s\Z',
             ],
-            // End of time entry (ISO 8601 format, UTC timezone)
+            // End of time entry (Format: "Y-m-d\TH:i:s\Z", UTC timezone, Example: "2000-02-22T14:58:59Z")
             'end' => [
                 'nullable',
                 'date_format:Y-m-d\TH:i:s\Z',
