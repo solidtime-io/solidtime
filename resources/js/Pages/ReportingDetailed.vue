@@ -308,6 +308,8 @@ async function downloadExport(format: ExportFormat) {
                         @submit="updateFilteredTimeEntries">
                         <template #trigger>
                             <ReportingFilterBadge
+                                :count="selectedClients.length"
+                                :active="selectedClients.length > 0"
                                 title="Clients"
                                 :icon="FolderIcon"></ReportingFilterBadge>
                         </template>

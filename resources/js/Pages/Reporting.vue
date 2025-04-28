@@ -339,6 +339,8 @@ const tableData = computed(() => {
                         @submit="updateReporting">
                         <template #trigger>
                             <ReportingFilterBadge
+                                :count="selectedClients.length"
+                                :active="selectedClients.length > 0"
                                 title="Clients"
                                 :icon="FolderIcon"></ReportingFilterBadge>
                         </template>
