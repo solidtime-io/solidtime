@@ -66,6 +66,7 @@ const InvoiceResource = z
         buyer_name: z.string(),
         status: z.string(),
         date: z.string(),
+        due_at: z.string(),
         created_at: z.union([z.string(), z.null()]),
         updated_at: z.union([z.string(), z.null()]),
     })
@@ -106,6 +107,8 @@ const InvoiceStoreRequest = z
         discount_type: InvoiceDiscountType.optional(),
         footer: z.union([z.string(), z.null()]).optional(),
         notes: z.union([z.string(), z.null()]).optional(),
+        payment_terms: z.union([z.string(), z.null()]).optional(),
+        is_eu_reverse_charge: z.boolean().optional(),
         entries: z
             .array(
                 z
@@ -127,7 +130,7 @@ const InvoiceEntryResource = z
         name: z.string(),
         description: z.union([z.string(), z.null()]),
         unit_price: z.number().int(),
-        quantity: z.number().int(),
+        quantity: z.string(),
         order_index: z.number().int(),
         created_at: z.union([z.string(), z.null()]),
         updated_at: z.union([z.string(), z.null()]),
@@ -158,7 +161,7 @@ const DetailedInvoiceResource = z
         buyer_address_country: z.string(),
         buyer_phone: z.string(),
         buyer_email: z.string(),
-        paid_at: z.string(),
+        paid_at: z.union([z.string(), z.null()]),
         due_at: z.string(),
         discount_type: z.string(),
         discount_amount: z.string(),
@@ -168,6 +171,8 @@ const DetailedInvoiceResource = z
         date: z.string(),
         footer: z.string(),
         notes: z.string(),
+        payment_terms: z.string(),
+        is_eu_reverse_charge: z.string(),
         billing_period_start: z.string(),
         billing_period_end: z.string(),
         created_at: z.union([z.string(), z.null()]),
@@ -211,6 +216,8 @@ const InvoiceUpdateRequest = z
         discount_type: InvoiceDiscountType,
         footer: z.union([z.string(), z.null()]),
         notes: z.union([z.string(), z.null()]),
+        payment_terms: z.union([z.string(), z.null()]),
+        is_eu_reverse_charge: z.boolean(),
         entries: z.array(
             z
                 .object({
@@ -224,6 +231,9 @@ const InvoiceUpdateRequest = z
         ),
     })
     .partial()
+    .passthrough();
+const InvoiceDownloadRequest = z
+    .object({ with_e_invoice: z.boolean() })
     .passthrough();
 const InvoiceSettingResource = z
     .object({
@@ -462,9 +472,9 @@ const ReportStoreRequest = z
                 task_ids: z
                     .union([z.array(z.string().uuid()), z.null()])
                     .optional(),
-                group: TimeEntryAggregationType.optional(),
-                sub_group: TimeEntryAggregationType.optional(),
-                history_group: TimeEntryAggregationTypeInterval.optional(),
+                group: TimeEntryAggregationType,
+                sub_group: TimeEntryAggregationType,
+                history_group: TimeEntryAggregationTypeInterval,
                 week_start: Weekday.optional(),
                 timezone: z.union([z.string(), z.null()]).optional(),
             })
@@ -752,6 +762,7 @@ export const schemas = {
     DetailedInvoiceResource,
     InvoiceStatus,
     InvoiceUpdateRequest,
+    InvoiceDownloadRequest,
     InvoiceSettingResource,
     InvoiceSettingUpdateRequest,
     MemberResource,
@@ -1380,7 +1391,7 @@ const endpoints = makeApi([
                 schema: z.string(),
             },
         ],
-        response: z.null(),
+        response: z.void(),
         errors: [
             {
                 status: 400,
@@ -1665,7 +1676,7 @@ const endpoints = makeApi([
                 schema: z.string(),
             },
         ],
-        response: z.null(),
+        response: z.void(),
         errors: [
             {
                 status: 400,
@@ -1722,7 +1733,7 @@ const endpoints = makeApi([
                 schema: z.string(),
             },
         ],
-        response: z.null(),
+        response: z.void(),
         errors: [
             {
                 status: 401,
@@ -1758,7 +1769,7 @@ const endpoints = makeApi([
                 schema: z.string(),
             },
         ],
-        response: z.null(),
+        response: z.void(),
         errors: [
             {
                 status: 401,
@@ -2050,7 +2061,7 @@ const endpoints = makeApi([
                 schema: z.string(),
             },
         ],
-        response: z.null(),
+        response: z.void(),
         errors: [
             {
                 status: 401,
@@ -2075,6 +2086,11 @@ const endpoints = makeApi([
         alias: 'downloadInvoice',
         requestFormat: 'json',
         parameters: [
+            {
+                name: 'body',
+                type: 'Body',
+                schema: z.object({ with_e_invoice: z.boolean() }).passthrough(),
+            },
             {
                 name: 'organization',
                 type: 'Path',
@@ -2102,6 +2118,16 @@ const endpoints = makeApi([
                 status: 404,
                 description: `Not found`,
                 schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 422,
+                description: `Validation error`,
+                schema: z
+                    .object({
+                        message: z.string(),
+                        errors: z.record(z.array(z.string())),
+                    })
+                    .passthrough(),
             },
         ],
     },
@@ -2166,7 +2192,7 @@ const endpoints = makeApi([
                 schema: z.string(),
             },
         ],
-        response: z.null(),
+        response: z.void(),
         errors: [
             {
                 status: 400,
@@ -2358,7 +2384,7 @@ const endpoints = makeApi([
                 schema: z.string(),
             },
         ],
-        response: z.null(),
+        response: z.void(),
         errors: [
             {
                 status: 400,
@@ -2405,7 +2431,7 @@ const endpoints = makeApi([
                 schema: z.string(),
             },
         ],
-        response: z.null(),
+        response: z.void(),
         errors: [
             {
                 status: 400,
@@ -2452,7 +2478,7 @@ const endpoints = makeApi([
                 schema: z.string(),
             },
         ],
-        response: z.null(),
+        response: z.void(),
         errors: [
             {
                 status: 400,
@@ -2550,7 +2576,7 @@ const endpoints = makeApi([
                 schema: z.string(),
             },
         ],
-        response: z.null(),
+        response: z.void(),
         errors: [
             {
                 status: 401,
@@ -2802,7 +2828,7 @@ const endpoints = makeApi([
                 schema: z.string(),
             },
         ],
-        response: z.null(),
+        response: z.void(),
         errors: [
             {
                 status: 400,
@@ -3175,7 +3201,7 @@ const endpoints = makeApi([
                 schema: z.string(),
             },
         ],
-        response: z.null(),
+        response: z.void(),
         errors: [
             {
                 status: 401,
@@ -3343,7 +3369,7 @@ const endpoints = makeApi([
                 schema: z.string(),
             },
         ],
-        response: z.null(),
+        response: z.void(),
         errors: [
             {
                 status: 400,
@@ -3570,7 +3596,7 @@ const endpoints = makeApi([
                 schema: z.string(),
             },
         ],
-        response: z.null(),
+        response: z.void(),
         errors: [
             {
                 status: 400,
@@ -3950,7 +3976,7 @@ Users with the permission &#x60;time-entries:view:own&#x60; can only use this en
                 schema: z.string(),
             },
         ],
-        response: z.null(),
+        response: z.void(),
         errors: [
             {
                 status: 401,
@@ -4565,7 +4591,7 @@ Please note that the access token is only shown in this response and cannot be r
                 schema: z.string(),
             },
         ],
-        response: z.null(),
+        response: z.void(),
         errors: [
             {
                 status: 400,
@@ -4607,7 +4633,7 @@ Please note that the access token is only shown in this response and cannot be r
                 schema: z.string(),
             },
         ],
-        response: z.null(),
+        response: z.void(),
         errors: [
             {
                 status: 400,
@@ -4670,6 +4696,11 @@ Please note that the access token is only shown in this response and cannot be r
             {
                 status: 401,
                 description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 403,
+                description: `Authorization error`,
                 schema: z.object({ message: z.string() }).passthrough(),
             },
             {
