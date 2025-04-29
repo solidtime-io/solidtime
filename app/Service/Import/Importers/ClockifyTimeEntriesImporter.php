@@ -124,34 +124,59 @@ class ClockifyTimeEntriesImporter extends DefaultImporter
                 $timeEntry->is_imported = true;
 
                 // Start
+                $start = null;
                 try {
-                    if (preg_match('/^[0-9]{1,2}:[0-9]{1,2} (AM|PM)$/', $record['Start Time']) === 1) {
-                        $start = Carbon::createFromFormat('m/d/Y h:i A', $record['Start Date'].' '.$record['Start Time'], $timezone);
-                    } else {
-                        $start = Carbon::createFromFormat('m/d/Y H:i:s A', $record['Start Date'].' '.$record['Start Time'], $timezone);
+                    $startDateStr = $record['Start Date'];
+                    $startTimeStr = $record['Start Time'];
+                    $startStr = $startDateStr.' '.$startTimeStr;
+                    $matches = [];
+                    $checkResult = preg_match('/^([0-9]{1,2})\/([0-9]{1,2})\/([0-9]{4}) ([0-9]{1,2}):([0-9]{1,2})(:[0-9]{1,2})? (AM|PM)$/', $startStr, $matches);
+
+                    if ($checkResult === 1) {
+                        if ((int) $matches[1] > 12) {
+                            throw new ImportException('Start date ("'.$startDateStr.'") is invalid, please select the correct date format before exporting from Clockify');
+                        }
+                        if ($matches[6] === '') {
+                            $start = Carbon::createFromFormat('m/d/Y h:i A', $startStr, $timezone);
+                        } else {
+                            $start = Carbon::createFromFormat('m/d/Y H:i:s A', $startStr, $timezone);
+                        }
                     }
                 } catch (InvalidFormatException) {
-                    throw new ImportException('Start date ("'.$record['Start Date'].'") or time ("'.$record['Start Time'].'") are invalid');
+                    throw new ImportException('Start date ("'.$startDateStr.'") or time ("'.$startTimeStr.'") are invalid');
                 }
                 if ($start === null) {
-                    throw new ImportException('Start date ("'.$record['Start Date'].'") or time ("'.$record['Start Time'].'") are invalid');
+                    throw new ImportException('Start date ("'.$startDateStr.'") or time ("'.$startTimeStr.'") are invalid');
                 }
                 $timeEntry->start = $start->utc();
 
                 // End
+                $end = null;
                 try {
-                    if (preg_match('/^[0-9]{1,2}:[0-9]{1,2} (AM|PM)$/', $record['End Time']) === 1) {
-                        $end = Carbon::createFromFormat('m/d/Y h:i A', $record['End Date'].' '.$record['End Time'], $timezone);
-                    } else {
-                        $end = Carbon::createFromFormat('m/d/Y H:i:s A', $record['End Date'].' '.$record['End Time'], $timezone);
+                    $endDateStr = $record['End Date'];
+                    $endTimeStr = $record['End Time'];
+                    $endStr = $endDateStr.' '.$endTimeStr;
+                    $matches = [];
+                    $checkResult = preg_match('/^([0-9]{1,2})\/([0-9]{1,2})\/([0-9]{4}) ([0-9]{1,2}):([0-9]{1,2})(:[0-9]{1,2})? (AM|PM)$/', $endStr, $matches);
+
+                    if ($checkResult === 1) {
+                        if ((int) $matches[1] > 12) {
+                            throw new ImportException('Start date ("'.$endDateStr.'") is invalid, please select the correct date format before exporting from Clockify');
+                        }
+                        if ($matches[6] === '') {
+                            $end = Carbon::createFromFormat('m/d/Y h:i A', $endStr, $timezone);
+                        } else {
+                            $end = Carbon::createFromFormat('m/d/Y H:i:s A', $endStr, $timezone);
+                        }
                     }
                 } catch (InvalidFormatException) {
-                    throw new ImportException('End date ("'.$record['End Date'].'") or time ("'.$record['End Time'].'") are invalid');
+                    throw new ImportException('End date ("'.$endDateStr.'") or time ("'.$endTimeStr.'") are invalid');
                 }
                 if ($end === null) {
-                    throw new ImportException('End date ("'.$record['End Date'].'") or time ("'.$record['End Time'].'") are invalid');
+                    throw new ImportException('End date ("'.$endDateStr.'") or time ("'.$endTimeStr.'") are invalid');
                 }
                 $timeEntry->end = $end->utc();
+
                 $timeEntry->billable_rate = $this->billableRateService->getBillableRateForTimeEntryWithGivenRelations(
                     $timeEntry,
                     $projectMember,
