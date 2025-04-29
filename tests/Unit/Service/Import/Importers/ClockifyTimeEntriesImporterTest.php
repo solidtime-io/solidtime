@@ -94,4 +94,25 @@ class ClockifyTimeEntriesImporterTest extends ImporterTestAbstract
         $this->assertSame(0, $report->projectsCreated);
         $this->assertSame(0, $report->clientsCreated);
     }
+
+    public function test_import_fails_if_month_in_date_is_bigger_than_12(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $timezone = 'Europe/Vienna';
+        $importer = new ClockifyTimeEntriesImporter;
+        $importer->init($organization);
+        $data = Storage::disk('testfiles')->get('clockify_time_entries_import_test_3.csv');
+
+        // Act
+        try {
+            $importer->importData($data, $timezone);
+        } catch (ImportException $e) {
+            // Assert
+            $this->assertSame('Start date ("13/15/2024") is invalid, please select the correct date format before exporting from Clockify', $e->getMessage());
+
+            return;
+        }
+        $this->fail();
+    }
 }
