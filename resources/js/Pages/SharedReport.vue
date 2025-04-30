@@ -14,6 +14,7 @@ import { api } from '@/packages/api/src';
 import { getRandomColorWithSeed } from '@/packages/ui/src/utils/color';
 import { useReportingStore } from '@/utils/useReporting';
 import { Head } from '@inertiajs/vue3';
+import { useTheme } from "@/utils/theme";
 
 const sharedSecret = ref<string | null>(null);
 
@@ -136,6 +137,10 @@ function getGroupLabel(key: string) {
         return option.value === key;
     })?.label;
 }
+onMounted(async () => {
+    useTheme();
+})
+
 </script>
 
 <template>

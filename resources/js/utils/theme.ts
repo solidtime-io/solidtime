@@ -22,4 +22,12 @@ const theme = computed(() => {
     return themeSetting.value
 });
 
-export { type themeOption, themeSetting, theme };
+function useTheme() {
+    document.documentElement.classList.add(theme.value);
+    watch(theme, (newTheme, oldTheme) => {
+        document.documentElement.classList.remove(oldTheme);
+        document.documentElement.classList.add(newTheme);
+    });
+}
+
+export { type themeOption, themeSetting, theme, useTheme };
