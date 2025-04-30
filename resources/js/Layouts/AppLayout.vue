@@ -26,12 +26,12 @@ import { initializeStores, refreshStores } from '@/utils/init';
 import {
     canManageBilling,
     canUpdateOrganization,
-    canViewClients,
+    canViewClients, canViewInvoices,
     canViewMembers,
     canViewProjects, canViewReport,
     canViewTags,
 } from '@/utils/permissions';
-import { isBillingActivated } from '@/utils/billing';
+import {isBillingActivated, isInvoicingActivated} from '@/utils/billing';
 import type { User } from '@/types/models';
 import { ArrowsRightLeftIcon } from '@heroicons/vue/16/solid';
 import { fetchToken, isTokenValid } from '@/utils/session';
@@ -188,6 +188,7 @@ const page = usePage<{
                                 :current="route().current('tags')"
                                 :href="route('tags')"></NavigationSidebarItem>
                             <NavigationSidebarItem
+                                v-if="isInvoicingActivated() && canViewInvoices()"
                                 title="Invoices"
                                 :icon="DocumentTextIcon"
                                 :current="route().current('invoices')"
@@ -272,8 +273,6 @@ const page = usePage<{
                     v-if="$slots.header"
                     class="bg-default-background border-b border-default-background-separator shadow">
                     <div class="pt-8 pb-3">
-
-
                         <MainContainer>
                             <slot name="header" />
                         </MainContainer>

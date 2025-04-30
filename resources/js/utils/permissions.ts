@@ -122,3 +122,7 @@ export function canDeleteReport() {
 export function canViewAllTimeEntries() {
     return currentUserHasPermission('time-entries:view:all');
 }
+export function canViewInvoices() {
+    return currentUserHasPermission('invoices:view');
+}
+

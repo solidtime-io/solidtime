@@ -9,6 +9,14 @@ export function isBillingActivated() {
     return page.props.has_billing_extension;
 }
 
+export function isInvoicingActivated() {
+    const page = usePage<{
+        has_invoicing_extension: boolean;
+    }>();
+
+    return page.props.has_invoicing_extension;
+}
+
 export function isInTrial() {
     const page = usePage<{
         billing: {
