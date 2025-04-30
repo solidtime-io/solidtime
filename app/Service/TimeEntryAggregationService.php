@@ -280,6 +280,20 @@ class TimeEntryAggregationService
                     'color' => null,
                 ];
             }
+        } elseif ($type === TimeEntryAggregationType::Description) {
+            foreach ($keys as $key) {
+                $descriptorMap[$key] = [
+                    'description' => $key,
+                    'color' => null,
+                ];
+            }
+        } elseif ($type === TimeEntryAggregationType::Billable) {
+            foreach ($keys as $key) {
+                $descriptorMap[$key] = [
+                    'description' => $key === '0' ? 'Non-billable' : 'Billable',
+                    'color' => null,
+                ];
+            }
         }
 
         return $descriptorMap;
