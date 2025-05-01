@@ -75,7 +75,7 @@ watch(currentPage, () => {
         data-testid="reporting_view"
         class="overflow-hidden">
         <MainContainer
-            class="py-3 sm:py-5 border-b border-default-background-separator flex justify-between items-center">
+            class="py-3 sm:py-5 min-h-[79px] border-b border-default-background-separator flex justify-between items-center">
             <div class="flex items-center space-x-3 sm:space-x-6">
                 <PageTitle :icon="ChartBarIcon" title="Reporting"></PageTitle>
                 <ReportingTabNavbar active="shared"></ReportingTabNavbar>
