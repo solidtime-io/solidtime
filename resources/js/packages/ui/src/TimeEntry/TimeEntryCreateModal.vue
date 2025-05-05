@@ -230,7 +230,8 @@ type BillableOption = {
                     <div class="space-y-2 mt-1 flex flex-col">
                         <DurationHumanInput
                             v-model:start="localStart"
-                            v-model:end="localEnd"></DurationHumanInput>
+                            v-model:end="localEnd"
+                            name="Duration"></DurationHumanInput>
                         <div class="text-sm flex space-x-1">
                             <InformationCircleIcon
                                 class="w-4 text-text-quaternary"></InformationCircleIcon>

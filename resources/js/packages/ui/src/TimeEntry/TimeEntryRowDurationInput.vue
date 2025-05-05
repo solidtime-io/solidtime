@@ -63,7 +63,7 @@ function selectInput(event: Event) {
 <template>
     <input
         v-model="currentTime"
-        data-testid="time_entry_duration_input"
+        name="Duration"
         class="text-text-primary w-[90px] px-2 py-1.5 bg-transparent text-center hover:bg-card-background rounded-lg border border-transparent hover:border-card-border text-sm font-semibold focus-visible:bg-tertiary focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-ring"
         @focus="selectInput"
         @keydown.tab="open = false"
