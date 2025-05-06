@@ -6,6 +6,7 @@ namespace App\Service\Dto;
 
 use App\Enums\TimeEntryAggregationType;
 use App\Enums\TimeEntryAggregationTypeInterval;
+use App\Enums\TimeEntryRoundingType;
 use App\Enums\Weekday;
 use Illuminate\Contracts\Database\Eloquent\Castable;
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
@@ -58,6 +59,10 @@ class ReportPropertiesDto implements Castable
      * @var Collection<int, string>|null
      */
     public ?Collection $taskIds = null;
+
+    public ?TimeEntryRoundingType $roundingType = null;
+
+    public ?int $roundingMinutes = null;
 
     /**
      * Get the caster class to use when casting from / to this cast target.
@@ -115,6 +120,10 @@ class ReportPropertiesDto implements Castable
                 $dto->historyGroup = TimeEntryAggregationTypeInterval::from($data->historyGroup);
                 $dto->weekStart = Weekday::from($data->weekStart);
                 $dto->timezone = $data->timezone;
+                // Note: roundingType was added later so it is possible that the value is missing in persisted reports in the DB
+                $dto->roundingType = isset($data->roundingType) ? TimeEntryRoundingType::from($data->roundingType) : null;
+                // Note: roundingMinutes was added later so it is possible that the value is missing in persisted reports in the DB
+                $dto->roundingMinutes = isset($data->roundingMinutes) ? (int) $data->roundingMinutes : null;
 
                 return $dto;
             }
@@ -140,6 +149,8 @@ class ReportPropertiesDto implements Castable
                     'historyGroup' => $value->historyGroup->value,
                     'weekStart' => $value->weekStart->value,
                     'timezone' => $value->timezone,
+                    'roundingType' => $value->roundingType?->value,
+                    'roundingMinutes' => $value->roundingMinutes,
                 ];
 
                 $jsonString = json_encode($data);
