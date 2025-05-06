@@ -5,7 +5,6 @@ import { ChartBarIcon } from '@heroicons/vue/20/solid';
 import ReportingChart from '@/Components/Common/Reporting/ReportingChart.vue';
 import { formatHumanReadableDuration } from '@/packages/ui/src/utils/time';
 import ReportingRow from '@/Components/Common/Reporting/ReportingRow.vue';
-import { getOrganizationCurrencyString } from '@/utils/money';
 import ReportingPieChart from '@/Components/Common/Reporting/ReportingPieChart.vue';
 import { formatCents } from '@/packages/ui/src/utils/money';
 import { computed, onMounted, ref } from 'vue';
@@ -39,6 +38,13 @@ onMounted(() => {
     if (currentUrl.split('#').length === 2) {
         sharedSecret.value = currentUrl.split('#')[1];
     }
+});
+
+const reportCurrency = computed(() => {
+    if (sharedReportResponseData.value) {
+        return sharedReportResponseData.value?.currency;
+    }
+    return 'EUR';
 });
 
 const aggregatedTableTimeEntries = computed(() => {
@@ -193,6 +199,7 @@ onMounted(async () => {
                             <ReportingRow
                                 v-for="entry in tableData"
                                 :key="entry.description ?? 'none'"
+                                :currency="reportCurrency"
                                 :entry="entry"
                                 :type="
                                     aggregatedTableTimeEntries.grouped_type
@@ -206,7 +213,7 @@ onMounted(async () => {
                                     class="justify-end flex items-center font-medium">
                                     {{
                                         formatHumanReadableDuration(
-                                            aggregatedTableTimeEntries.seconds
+                                            aggregatedTableTimeEntries.seconds,
                                         )
                                     }}
                                 </div>
@@ -215,7 +222,7 @@ onMounted(async () => {
                                     {{
                                         formatCents(
                                             aggregatedTableTimeEntries.cost,
-                                            getOrganizationCurrencyString()
+                                            reportCurrency,
                                         )
                                     }}
                                 </div>
