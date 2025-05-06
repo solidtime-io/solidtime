@@ -11,9 +11,9 @@ import { useMutation, useQueryClient } from '@tanstack/vue-query';
 
 type NumberFormat = 'point-comma' | 'comma-point' | 'space-comma' | 'space-point' | 'apostrophe-point';
 type CurrencyFormat = 'iso-code-before-with-space' | 'iso-code-after-with-space' | 'symbol-before' | 'symbol-after' | 'symbol-before-with-space' | 'symbol-after-with-space';
-type DateFormat = 'point-seperated-d-m-yyyy' | 'slash-seperated-mm-dd-yyyy' | 'slash-seperated-dd-mm-yyyy' | 'hyphen-seperated-dd-mm-yyyy' | 'hyphen-seperated-mm-dd-yyyy' | 'hyphen-seperated-yyyy-mm-dd';
+type DateFormat = 'point-separated-d-m-yyyy' | 'slash-separated-mm-dd-yyyy' | 'slash-separated-dd-mm-yyyy' | 'hyphen-separated-dd-mm-yyyy' | 'hyphen-separated-mm-dd-yyyy' | 'hyphen-separated-yyyy-mm-dd';
 type TimeFormat = '12-hours' | '24-hours';
-type IntervalFormat = 'decimal' | 'hours-minutes' | 'hours-minutes-colon-seperated' | 'hours-minutes-seconds-colon-seperated';
+type IntervalFormat = 'decimal' | 'hours-minutes' | 'hours-minutes-colon-separated' | 'hours-minutes-seconds-colon-separated';
 
 interface FormValues {
     number_format: NumberFormat | undefined;
@@ -118,12 +118,12 @@ async function submit() {
                             <SelectValue placeholder="Select date format" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="point-seperated-d-m-yyyy">D.M.YYYY</SelectItem>
-                            <SelectItem value="slash-seperated-mm-dd-yyyy">MM/DD/YYYY</SelectItem>
-                            <SelectItem value="slash-seperated-dd-mm-yyyy">DD/MM/YYYY</SelectItem>
-                            <SelectItem value="hyphen-seperated-dd-mm-yyyy">DD-MM-YYYY</SelectItem>
-                            <SelectItem value="hyphen-seperated-mm-dd-yyyy">MM-DD-YYYY</SelectItem>
-                            <SelectItem value="hyphen-seperated-yyyy-mm-dd">YYYY-MM-DD</SelectItem>
+                            <SelectItem value="point-separated-d-m-yyyy">D.M.YYYY</SelectItem>
+                            <SelectItem value="slash-separated-mm-dd-yyyy">MM/DD/YYYY</SelectItem>
+                            <SelectItem value="slash-separated-dd-mm-yyyy">DD/MM/YYYY</SelectItem>
+                            <SelectItem value="hyphen-separated-dd-mm-yyyy">DD-MM-YYYY</SelectItem>
+                            <SelectItem value="hyphen-separated-mm-dd-yyyy">MM-DD-YYYY</SelectItem>
+                            <SelectItem value="hyphen-separated-yyyy-mm-dd">YYYY-MM-DD</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
@@ -156,8 +156,8 @@ async function submit() {
                         <SelectContent>
                             <SelectItem value="decimal">Decimal</SelectItem>
                             <SelectItem value="hours-minutes">12h 3m</SelectItem>
-                            <SelectItem value="hours-minutes-colon-seperated">12:03</SelectItem>
-                            <SelectItem value="hours-minutes-seconds-colon-seperated">12:03:45</SelectItem>
+                            <SelectItem value="hours-minutes-colon-separated">12:03</SelectItem>
+                            <SelectItem value="hours-minutes-seconds-colon-separated">12:03:45</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
@@ -165,11 +165,11 @@ async function submit() {
         </template>
 
         <template #actions>
-            <PrimaryButton 
-                :disabled="mutation.isPending.value" 
+            <PrimaryButton
+                :disabled="mutation.isPending.value"
                 @click="submit">
                 {{ mutation.isPending.value ? 'Saving...' : 'Save' }}
             </PrimaryButton>
         </template>
     </FormSection>
-</template> 
+</template>
