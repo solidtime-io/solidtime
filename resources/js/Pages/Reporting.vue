@@ -446,6 +446,7 @@ const tableData = computed(() => {
                             <ReportingRow
                                 v-for="entry in tableData"
                                 :key="entry.description ?? 'none'"
+                                :currency="getOrganizationCurrencyString()"
                                 :entry="entry"
                                 :type="
                                     aggregatedTableTimeEntries.grouped_type

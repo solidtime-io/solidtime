@@ -4,7 +4,6 @@ import { formatCents } from '@/packages/ui/src/utils/money';
 import GroupedItemsCountButton from '@/packages/ui/src/GroupedItemsCountButton.vue';
 import { ref } from 'vue';
 import { twMerge } from 'tailwind-merge';
-import { getOrganizationCurrencyString } from '@/utils/money';
 
 type AggregatedGroupedData = GroupedData & {
     grouped_data?: GroupedData[] | null;
@@ -19,6 +18,7 @@ type GroupedData = {
 const props = defineProps<{
     entry: AggregatedGroupedData;
     indent?: boolean;
+    currency: string;
 }>();
 
 const expanded = ref(false);
@@ -48,7 +48,7 @@ const expanded = ref(false);
             {{ formatHumanReadableDuration(entry.seconds) }}
         </div>
         <div class="justify-end pr-6 flex items-center">
-            {{entry.cost ? formatCents(entry.cost, getOrganizationCurrencyString()) : '--' }}
+            {{entry.cost ? formatCents(entry.cost, props.currency) : '--' }}
         </div>
     </div>
     <div
@@ -58,6 +58,7 @@ const expanded = ref(false);
         <ReportingRow
             v-for="subEntry in entry.grouped_data"
             :key="subEntry.description ?? 'none'"
+            :currency="props.currency"
             indent
             :entry="subEntry"></ReportingRow>
     </div>
