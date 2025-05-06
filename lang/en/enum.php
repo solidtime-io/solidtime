@@ -30,12 +30,12 @@ return [
     ],
 
     'date_format' => [
-        DateFormat::PointSeperatedDMYYYY->value => 'D.M.YYYY',
-        DateFormat::SlashSeperatedMMDDYYYY->value => 'MM/DD/YYYY',
-        DateFormat::SlashSeperatedDDMMYYYY->value => 'DD/MM/YYYY',
-        DateFormat::HyphenSeperatedDDMMYYY->value => 'DD-MM-YYYY',
-        DateFormat::HyphenSeperatedMMDDDYYYY->value => 'MM-DD-YYYY',
-        DateFormat::HyphenSeperatedYYYYMMDD->value => 'YYYY-MM-DD',
+        DateFormat::PointSeparatedDMYYYY->value => 'D.M.YYYY',
+        DateFormat::SlashSeparatedMMDDYYYY->value => 'MM/DD/YYYY',
+        DateFormat::SlashSeparatedDDMMYYYY->value => 'DD/MM/YYYY',
+        DateFormat::HyphenSeparatedDDMMYYY->value => 'DD-MM-YYYY',
+        DateFormat::HyphenSeparatedMMDDDYYYY->value => 'MM-DD-YYYY',
+        DateFormat::HyphenSeparatedYYYYMMDD->value => 'YYYY-MM-DD',
     ],
 
     'time_format' => [
@@ -46,8 +46,8 @@ return [
     'interval_format' => [
         IntervalFormat::Decimal->value => 'Decimal',
         IntervalFormat::HoursMinutes->value => '12h 3m',
-        IntervalFormat::HoursMinutesColonSeperated->value => '12:03',
-        IntervalFormat::HoursMinutesSecondsColonSeperated->value => '12:03:45',
+        IntervalFormat::HoursMinutesColonSeparated->value => '12:03',
+        IntervalFormat::HoursMinutesSecondsColonSeparated->value => '12:03:45',
     ],
 
     'currency_format' => [

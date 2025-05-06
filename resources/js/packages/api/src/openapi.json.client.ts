@@ -324,18 +324,18 @@ const CurrencyFormat = z.enum([
     'symbol-after-with-space',
 ]);
 const DateFormat = z.enum([
-    'point-seperated-d-m-yyyy',
-    'slash-seperated-mm-dd-yyyy',
-    'slash-seperated-dd-mm-yyyy',
-    'hyphen-seperated-dd-mm-yyyy',
-    'hyphen-seperated-mm-dd-yyyy',
-    'hyphen-seperated-yyyy-mm-dd',
+    'point-separated-d-m-yyyy',
+    'slash-separated-mm-dd-yyyy',
+    'slash-separated-dd-mm-yyyy',
+    'hyphen-separated-dd-mm-yyyy',
+    'hyphen-separated-mm-dd-yyyy',
+    'hyphen-separated-yyyy-mm-dd',
 ]);
 const IntervalFormat = z.enum([
     'decimal',
     'hours-minutes',
-    'hours-minutes-colon-seperated',
-    'hours-minutes-seconds-colon-seperated',
+    'hours-minutes-colon-separated',
+    'hours-minutes-seconds-colon-separated',
 ]);
 const TimeFormat = z.enum(['12-hours', '24-hours']);
 const OrganizationUpdateRequest = z

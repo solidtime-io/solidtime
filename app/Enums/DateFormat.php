@@ -10,26 +10,26 @@ enum DateFormat: string
 {
     use LaravelEnumHelper;
 
-    case PointSeperatedDMYYYY = 'point-seperated-d-m-yyyy';
-    case SlashSeperatedMMDDYYYY = 'slash-seperated-mm-dd-yyyy';
+    case PointSeparatedDMYYYY = 'point-separated-d-m-yyyy';
+    case SlashSeparatedMMDDYYYY = 'slash-separated-mm-dd-yyyy';
 
-    case SlashSeperatedDDMMYYYY = 'slash-seperated-dd-mm-yyyy';
+    case SlashSeparatedDDMMYYYY = 'slash-separated-dd-mm-yyyy';
 
-    case HyphenSeperatedDDMMYYY = 'hyphen-seperated-dd-mm-yyyy';
+    case HyphenSeparatedDDMMYYY = 'hyphen-separated-dd-mm-yyyy';
 
-    case HyphenSeperatedMMDDDYYYY = 'hyphen-seperated-mm-dd-yyyy';
+    case HyphenSeparatedMMDDDYYYY = 'hyphen-separated-mm-dd-yyyy';
 
-    case HyphenSeperatedYYYYMMDD = 'hyphen-seperated-yyyy-mm-dd';
+    case HyphenSeparatedYYYYMMDD = 'hyphen-separated-yyyy-mm-dd';
 
     public function toCarbonFormat(): string
     {
         return match ($this->value) {
-            self::PointSeperatedDMYYYY->value => 'j.n.Y',
-            self::SlashSeperatedMMDDYYYY->value => 'm/d/Y',
-            self::SlashSeperatedDDMMYYYY->value => 'd/m/Y',
-            self::HyphenSeperatedDDMMYYY->value => 'd-m-Y',
-            self::HyphenSeperatedMMDDDYYYY->value => 'm-d-Y',
-            self::HyphenSeperatedYYYYMMDD->value => 'Y-m-d',
+            self::PointSeparatedDMYYYY->value => 'j.n.Y',
+            self::SlashSeparatedMMDDYYYY->value => 'm/d/Y',
+            self::SlashSeparatedDDMMYYYY->value => 'd/m/Y',
+            self::HyphenSeparatedDDMMYYY->value => 'd-m-Y',
+            self::HyphenSeparatedMMDDDYYYY->value => 'm-d-Y',
+            self::HyphenSeparatedYYYYMMDD->value => 'Y-m-d',
         };
     }
 
