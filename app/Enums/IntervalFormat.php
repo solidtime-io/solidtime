@@ -13,9 +13,9 @@ enum IntervalFormat: string
     case Decimal = 'decimal';
     case HoursMinutes = 'hours-minutes';
 
-    case HoursMinutesColonSeperated = 'hours-minutes-colon-seperated';
+    case HoursMinutesColonSeparated = 'hours-minutes-colon-separated';
 
-    case HoursMinutesSecondsColonSeperated = 'hours-minutes-seconds-colon-seperated';
+    case HoursMinutesSecondsColonSeparated = 'hours-minutes-seconds-colon-separated';
 
     /**
      * @return array<string, string>
