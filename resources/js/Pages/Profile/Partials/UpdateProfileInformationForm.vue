@@ -241,25 +241,6 @@ const page = usePage<{
                 </select>
                 <InputError :message="form.errors.week_start" class="mt-2" />
             </div>
-            <div class="col-span-6 sm:col-span-4">
-                <InputLabel for="week_start" value="Start of the week" />
-                <select
-                    id="week_start"
-                    v-model="form.week_start"
-                    name="week_start"
-                    required
-                    class="mt-1 block w-full border-input-border bg-input-background text-text-primary focus:border-input-border-active rounded-md shadow-sm">
-                    <option value="" disabled>Select a week day</option>
-                    <option
-                        v-for="(weekdayTranslated, weekdayKey) in $page.props
-                            .weekdays"
-                        :key="weekdayKey"
-                        :value="weekdayKey">
-                        {{ weekdayTranslated }}
-                    </option>
-                </select>
-                <InputError :message="form.errors.week_start" class="mt-2" />
-            </div>
         </template>
 
         <template #actions>
