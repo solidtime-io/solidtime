@@ -185,7 +185,7 @@
                             {{ $localization->formatDate($timeEntry->start->timezone($timezone)) }} - <br> {{ $localization->formatDate($timeEntry->end->timezone($timezone)) }}
                         @endif
                         <br>
-                        {{ $localization->formatDate($timeEntry->start->timezone($timezone)) }} - {{ $localization->formatDate($timeEntry->end->timezone($timezone)) }}
+                        {{ $localization->formatTime($timeEntry->start->timezone($timezone)) }} - {{ $localization->formatTime($timeEntry->end->timezone($timezone)) }}
                     </td>
                     <td style="overflow-wrap: break-word; min-width: 75px;">
                         {{ $localization->formatInterval($timeEntry->getDuration()) }}
