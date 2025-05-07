@@ -43,7 +43,7 @@ async function createTimeEntryWithProject(page: Page, projectName: string, durat
     // Submit the time entry
     await Promise.all([
         page.getByRole('button', { name: 'Create Time Entry' }).click(),
-        page.waitForLoadState('networkidle')
+        page.waitForResponse(response => response.url().includes('/time-entries') && response.status() === 201)
     ]);
 }
 
@@ -181,6 +181,30 @@ test('test that detailed view shows time entries correctly', async ({ page }) =>
     await expect(page.getByText(projectName, { exact: true })).toBeVisible();
     await expect(page.locator('input[name="Duration"]')).toHaveValue('1h 00min');
     await expect(page.getByText('Time entry for ' + projectName, { exact: true })).toBeVisible();
+});
+
+test('test that updating duration in detailed view works correctly', async ({ page }) => {
+    const projectName = 'Duration Update Project ' + Math.floor(Math.random() * 10000);
+    const initialDuration = '1h';
+    const updatedDuration = '2h 30min';
+
+    // Create a time entry with initial duration
+    await createTimeEntryWithProject(page, projectName, initialDuration);
+
+    // Go to detailed reporting view
+    await goToReportingDetailed(page);
+
+    // Find and update the duration
+    const durationInput = page.locator('input[name="Duration"]').first();
+    await durationInput.click();
+    await durationInput.fill(updatedDuration);
+    await durationInput.press('Enter');
+
+    // Wait for the update to be processed
+    await page.waitForLoadState('networkidle');
+
+    // Verify the new duration is displayed
+    await expect(durationInput).toHaveValue(updatedDuration);
 });
 
 // TODO: test that date range filtering works in reporting
