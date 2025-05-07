@@ -2,8 +2,9 @@
 import { formatHumanReadableDuration } from '@/packages/ui/src/utils/time';
 import { formatCents } from '@/packages/ui/src/utils/money';
 import GroupedItemsCountButton from '@/packages/ui/src/GroupedItemsCountButton.vue';
-import { ref } from 'vue';
+import { ref, inject, type ComputedRef } from 'vue';
 import { twMerge } from 'tailwind-merge';
+import type { Organization } from '@/packages/api/src';
 
 type AggregatedGroupedData = GroupedData & {
     grouped_data?: GroupedData[] | null;
@@ -22,6 +23,8 @@ const props = defineProps<{
 }>();
 
 const expanded = ref(false);
+
+const organization = inject<ComputedRef<Organization>>('organization');
 </script>
 
 <template>
@@ -45,10 +48,16 @@ const expanded = ref(false);
             </span>
         </div>
         <div class="justify-end flex items-center">
-            {{ formatHumanReadableDuration(entry.seconds) }}
+            {{
+                formatHumanReadableDuration(
+                    entry.seconds,
+                    organization?.interval_format,
+                    organization?.number_format
+                )
+            }}
         </div>
         <div class="justify-end pr-6 flex items-center">
-            {{entry.cost ? formatCents(entry.cost, props.currency) : '--' }}
+            {{ entry.cost ? formatCents(entry.cost, props.currency) : '--' }}
         </div>
     </div>
     <div

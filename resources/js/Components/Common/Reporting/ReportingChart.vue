@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import VChart, { THEME_KEY } from 'vue-echarts';
-import { computed, provide } from 'vue';
+import { computed, provide, inject, shallowRef, type ComputedRef } from 'vue';
 import LinearGradient from 'zrender/lib/graphic/LinearGradient';
 import {
     formatDate,
@@ -16,7 +16,7 @@ import {
     TitleComponent,
     TooltipComponent,
 } from 'echarts/components';
-import type { AggregatedTimeEntries } from '@/packages/api/src';
+import type { AggregatedTimeEntries, Organization } from '@/packages/api/src';
 import { useCssVar } from '@vueuse/core';
 
 use([
@@ -30,6 +30,8 @@ use([
 
 provide(THEME_KEY, 'dark');
 
+const organization = inject<ComputedRef<Organization>>('organization');
+const chart = shallowRef(null);
 type GroupedData = AggregatedTimeEntries['grouped_data'];
 
 const props = defineProps<{
@@ -143,7 +145,11 @@ const option = computed(() => ({
             type: 'bar',
             tooltip: {
                 valueFormatter: (value: number) => {
-                    return formatHumanReadableDuration(value);
+                    return formatHumanReadableDuration(
+                        value,
+                        organization?.value?.interval_format,
+                        organization?.value?.number_format
+                    );
                 },
             },
         },
@@ -155,6 +161,7 @@ const option = computed(() => ({
     <div class="w-[calc(100%-1px)]">
         <v-chart
             v-if="groupedData && groupedData?.length > 0"
+            ref="chart"
             :autoresize="true"
             class="chart"
             :option="option" />

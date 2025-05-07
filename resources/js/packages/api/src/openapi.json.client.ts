@@ -524,6 +524,11 @@ const DetailedWithDataReportResource = z
         description: z.union([z.string(), z.null()]),
         public_until: z.union([z.string(), z.null()]),
         currency: z.string(),
+        number_format: z.string(),
+        currency_format: z.string(),
+        date_format: z.string(),
+        interval_format: z.string(),
+        time_format: z.string(),
         properties: z
             .object({
                 group: z.string(),
