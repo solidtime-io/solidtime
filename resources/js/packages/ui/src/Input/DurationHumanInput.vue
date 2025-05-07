@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import parse from 'parse-duration';
-import { onMounted, ref, watch } from 'vue';
+import { onMounted, ref, watch, inject } from 'vue';
 import {
     formatHumanReadableDuration,
     getDayJsInstance,
@@ -8,6 +8,9 @@ import {
 import dayjs from 'dayjs';
 import { twMerge } from 'tailwind-merge';
 import { TextInput } from '@/packages/ui/src';
+import type { Organization } from '@/packages/api/src';
+import { type ComputedRef } from 'vue';
+
 const temporaryCustomTimerEntry = ref<string>('');
 
 const start = defineModel('start', {
@@ -17,6 +20,8 @@ const start = defineModel('start', {
 const end = defineModel('end', {
     default: '',
 });
+
+const organization = inject<ComputedRef<Organization>>('organization');
 
 function isHHMM(value: string): boolean {
     return HHMMtimeRegex.test(value);
@@ -70,7 +75,11 @@ function updateTimeEntryInputValue() {
     if (start.value && end.value) {
         const startTime = dayjs(start.value);
         const diff = getDayJsInstance()(end.value).diff(startTime, 'seconds');
-        temporaryCustomTimerEntry.value = formatHumanReadableDuration(diff);
+        temporaryCustomTimerEntry.value = formatHumanReadableDuration(
+            diff,
+            organization?.value?.interval_format,
+            organization?.value?.number_format
+        );
     }
 }
 </script>

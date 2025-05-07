@@ -1,23 +1,28 @@
 <script setup lang="ts">
-import { use } from "echarts/core";
-import { CanvasRenderer } from "echarts/renderers";
-import { BarChart } from "echarts/charts";
-import { GridComponent, LegendComponent, TitleComponent, TooltipComponent } from "echarts/components";
-import VChart, { THEME_KEY } from "vue-echarts";
-import { computed, provide } from "vue";
-import StatCard from "@/Components/Common/StatCard.vue";
-import { ClockIcon } from "@heroicons/vue/20/solid";
-import CardTitle from "@/packages/ui/src/CardTitle.vue";
-import LinearGradient from "zrender/lib/graphic/LinearGradient";
-import ProjectsChartCard from "@/Components/Dashboard/ProjectsChartCard.vue";
-import { formatHumanReadableDuration } from "@/packages/ui/src/utils/time";
-import { formatCents } from "@/packages/ui/src/utils/money";
-import { getWeekStart } from "@/packages/ui/src/utils/settings";
-import { useCssVar } from "@vueuse/core";
-import { getOrganizationCurrencyString } from "@/utils/money";
-import { useQuery } from "@tanstack/vue-query";
-import { getCurrentOrganizationId } from "@/utils/useUser";
-import { api } from "@/packages/api/src";
+import { use } from 'echarts/core';
+import { CanvasRenderer } from 'echarts/renderers';
+import { BarChart } from 'echarts/charts';
+import {
+    GridComponent,
+    LegendComponent,
+    TitleComponent,
+    TooltipComponent,
+} from 'echarts/components';
+import VChart, { THEME_KEY } from 'vue-echarts';
+import { computed, provide, inject, type ComputedRef } from 'vue';
+import StatCard from '@/Components/Common/StatCard.vue';
+import { ClockIcon } from '@heroicons/vue/20/solid';
+import CardTitle from '@/packages/ui/src/CardTitle.vue';
+import LinearGradient from 'zrender/lib/graphic/LinearGradient';
+import ProjectsChartCard from '@/Components/Dashboard/ProjectsChartCard.vue';
+import { formatHumanReadableDuration } from '@/packages/ui/src/utils/time';
+import { formatCents } from '@/packages/ui/src/utils/money';
+import { getWeekStart } from '@/packages/ui/src/utils/settings';
+import { useCssVar } from '@vueuse/core';
+import { getOrganizationCurrencyString } from '@/utils/money';
+import { useQuery } from '@tanstack/vue-query';
+import { getCurrentOrganizationId } from '@/utils/useUser';
+import { api, type Organization } from '@/packages/api/src';
 
 use([
     CanvasRenderer,
@@ -25,21 +30,21 @@ use([
     TitleComponent,
     GridComponent,
     TooltipComponent,
-    LegendComponent
+    LegendComponent,
 ]);
 
-provide(THEME_KEY, "dark");
+provide(THEME_KEY, 'dark');
 
 const weekdays = computed(() => {
-    const daysOrder = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    const daysOrder = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     const dayMapping: Record<string, string> = {
-        monday: "Mon",
-        tuesday: "Tue",
-        wednesday: "Wed",
-        thursday: "Thu",
-        friday: "Fri",
-        saturday: "Sat",
-        sunday: "Sun"
+        monday: 'Mon',
+        tuesday: 'Tue',
+        wednesday: 'Wed',
+        thursday: 'Thu',
+        friday: 'Fri',
+        saturday: 'Sat',
+        sunday: 'Sun',
     };
     if (dayMapping[getWeekStart()]) {
         const customOrder = [];
@@ -53,77 +58,75 @@ const weekdays = computed(() => {
     } else {
         return daysOrder;
     }
-
 });
 
-
-const accentColor = useCssVar("--theme-color-chart", null, { observe: true });
+const accentColor = useCssVar('--theme-color-chart', null, { observe: true });
 
 // Get the organization ID using the utility function
 const organizationId = computed(() => getCurrentOrganizationId());
 
+const organization = inject<ComputedRef<Organization>>('organization');
 
 // Set up the queries
 const { data: weeklyProjectOverview } = useQuery({
-    queryKey: ["weeklyProjectOverview", organizationId],
+    queryKey: ['weeklyProjectOverview', organizationId],
     queryFn: () => {
         return api.weeklyProjectOverview({
             params: {
-                organization: organizationId.value!
-            }
+                organization: organizationId.value!,
+            },
         });
     },
-    enabled: computed(() => !!organizationId.value)
+    enabled: computed(() => !!organizationId.value),
 });
 
 const { data: totalWeeklyTime } = useQuery({
-    queryKey: ["totalWeeklyTime", organizationId],
+    queryKey: ['totalWeeklyTime', organizationId],
     queryFn: () => {
         return api.totalWeeklyTime({
             params: {
-                organization: organizationId.value!
-            }
+                organization: organizationId.value!,
+            },
         });
     },
-    enabled: computed(() => !!organizationId.value)
+    enabled: computed(() => !!organizationId.value),
 });
 
 const { data: totalWeeklyBillableTime } = useQuery({
-    queryKey: ["totalWeeklyBillableTime", organizationId],
+    queryKey: ['totalWeeklyBillableTime', organizationId],
     queryFn: () => {
         return api.totalWeeklyBillableTime({
             params: {
-                organization: organizationId.value!
-            }
+                organization: organizationId.value!,
+            },
         });
     },
-    enabled: computed(() => !!organizationId.value)
+    enabled: computed(() => !!organizationId.value),
 });
 
 const { data: totalWeeklyBillableAmount } = useQuery({
-    queryKey: ["totalWeeklyBillableAmount", organizationId],
+    queryKey: ['totalWeeklyBillableAmount', organizationId],
     queryFn: () => {
         return api.totalWeeklyBillableAmount({
             params: {
-                organization: organizationId.value!
-            }
+                organization: organizationId.value!,
+            },
         });
     },
-    enabled: computed(() => !!organizationId.value)
+    enabled: computed(() => !!organizationId.value),
 });
 
 const { data: weeklyHistory } = useQuery({
-    queryKey: ["weeklyHistory", organizationId],
+    queryKey: ['weeklyHistory', organizationId],
     queryFn: () => {
         return api.weeklyHistory({
             params: {
-                organization: organizationId.value!
-            }
+                organization: organizationId.value!,
+            },
         });
     },
-    enabled: computed(() => !!organizationId.value)
+    enabled: computed(() => !!organizationId.value),
 });
-
 
 const seriesData = computed(() => {
     if (!weeklyHistory.value) {
@@ -137,101 +140,104 @@ const seriesData = computed(() => {
                     borderColor: new LinearGradient(0, 0, 0, 1, [
                         {
                             offset: 0,
-                            color: "rgba(" + accentColor.value + ",0.7)"
+                            color: 'rgba(' + accentColor.value + ',0.7)',
                         },
                         {
                             offset: 1,
-                            color: "rgba(" + accentColor.value + ",0.5)"
-                        }
+                            color: 'rgba(' + accentColor.value + ',0.5)',
+                        },
                     ]),
                     emphasis: {
                         color: new LinearGradient(0, 0, 0, 1, [
                             {
                                 offset: 0,
-                                color: "rgba(" + accentColor.value + ",0.9)"
+                                color: 'rgba(' + accentColor.value + ',0.9)',
                             },
                             {
                                 offset: 1,
-                                color: "rgba(" + accentColor.value + ",0.7)"
-                            }
-                        ])
+                                color: 'rgba(' + accentColor.value + ',0.7)',
+                            },
+                        ]),
                     },
                     borderRadius: [12, 12, 0, 0],
                     color: new LinearGradient(0, 0, 0, 1, [
                         {
                             offset: 0,
-                            color: "rgba(" + accentColor.value + ",0.7)"
+                            color: 'rgba(' + accentColor.value + ',0.7)',
                         },
                         {
                             offset: 1,
-                            color: "rgba(" + accentColor.value + ",0.5)"
-                        }
-                    ])
-                }
-            }
+                            color: 'rgba(' + accentColor.value + ',0.5)',
+                        },
+                    ]),
+                },
+            },
         };
     });
 });
 
-
-const markLineColor = useCssVar("--color-border-secondary", null, { observe: true });
-const labelColor = useCssVar("--color-text-secondary", null, { observe: true });
+const markLineColor = useCssVar('--color-border-secondary', null, {
+    observe: true,
+});
+const labelColor = useCssVar('--color-text-secondary', null, { observe: true });
 const option = computed(() => {
     return {
         tooltip: {
-            trigger: "item"
+            trigger: 'item',
         },
         grid: {
             top: 0,
             right: 0,
             bottom: 50,
-            left: 0
+            left: 0,
         },
-        backgroundColor: "transparent",
+        backgroundColor: 'transparent',
         xAxis: {
-            type: "category",
+            type: 'category',
             data: weekdays.value,
             axisLine: {
                 lineStyle: {
-                    color: "transparent" // Set desired color here
-                }
+                    color: 'transparent', // Set desired color here
+                },
             },
             axisLabel: {
                 fontSize: 16,
                 fontWeight: 600,
                 margin: 24,
-                fontFamily: "Outfit, sans-serif",
-                color: labelColor.value
+                fontFamily: 'Outfit, sans-serif',
+                color: labelColor.value,
             },
             axisTick: {
                 lineStyle: {
-                    color: "transparent" // Set desired color here
-                }
-            }
+                    color: 'transparent', // Set desired color here
+                },
+            },
         },
         yAxis: {
-            type: "value",
+            type: 'value',
             splitLine: {
                 lineStyle: {
-                    color: markLineColor.value
-                }
-            }
+                    color: markLineColor.value,
+                },
+            },
         },
         series: [
             {
                 data: seriesData.value,
-                type: "bar",
+                type: 'bar',
                 tooltip: {
                     valueFormatter: (value: number) => {
-                        return formatHumanReadableDuration(value);
-                    }
-                }
-            }
-        ]
+                        return formatHumanReadableDuration(
+                            value,
+                            organization?.value?.interval_format,
+                            organization?.value?.number_format
+                        );
+                    },
+                },
+            },
+        ],
     };
 });
-
-
 </script>
 
 <template>
@@ -244,28 +250,42 @@ const option = computed(() => {
                 :icon="ClockIcon"></CardTitle>
             <v-chart
                 v-if="weeklyHistory"
-                :autoresize="true" class="chart" :option="option" />
+                :autoresize="true"
+                class="chart"
+                :option="option" />
         </div>
         <div class="space-y-6">
             <StatCard
                 title="Spent Time"
                 :value="
-                totalWeeklyTime ?
-                    formatHumanReadableDuration(totalWeeklyTime) : '--'" />
+                    totalWeeklyTime
+                        ? formatHumanReadableDuration(
+                              totalWeeklyTime,
+                              organization?.interval_format,
+                              organization?.number_format
+                          )
+                        : '--'
+                " />
             <StatCard
                 title="Billable Time"
                 :value="
-                totalWeeklyBillableTime ?
-                    formatHumanReadableDuration(totalWeeklyBillableTime) : '--'
+                    totalWeeklyBillableTime
+                        ? formatHumanReadableDuration(
+                              totalWeeklyBillableTime,
+                              organization?.interval_format,
+                              organization?.number_format
+                          )
+                        : '--'
                 " />
             <StatCard
                 title="Billable Amount"
                 :value="
-                totalWeeklyBillableAmount ?
-                    formatCents(
-                        totalWeeklyBillableAmount.value,
-                        getOrganizationCurrencyString()
-                    ) : '--'
+                    totalWeeklyBillableAmount
+                        ? formatCents(
+                              totalWeeklyBillableAmount.value,
+                              getOrganizationCurrencyString()
+                          )
+                        : '--'
                 " />
             <ProjectsChartCard
                 v-if="weeklyProjectOverview"

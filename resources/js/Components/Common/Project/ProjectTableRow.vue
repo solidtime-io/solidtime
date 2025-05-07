@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import ProjectMoreOptionsDropdown from '@/Components/Common/Project/ProjectMoreOptionsDropdown.vue';
 import type { Project } from '@/packages/api/src';
-import { computed, ref } from 'vue';
+import { computed, ref, inject, type ComputedRef } from 'vue';
 import { CheckCircleIcon } from '@heroicons/vue/20/solid';
 import { useClientsStore } from '@/utils/useClients';
 import { storeToRefs } from 'pinia';
@@ -15,6 +15,7 @@ import EstimatedTimeProgress from '@/packages/ui/src/EstimatedTimeProgress.vue';
 import UpgradeBadge from '@/Components/Common/UpgradeBadge.vue';
 import { formatHumanReadableDuration } from '../../../packages/ui/src/utils/time';
 import { isAllowedToPerformPremiumAction } from '@/utils/billing';
+import type { Organization } from '@/packages/api/src';
 
 const { clients } = storeToRefs(useClientsStore());
 const { tasks } = storeToRefs(useTasksStore());
@@ -61,6 +62,8 @@ const billableRateInfo = computed(() => {
 });
 
 const showEditProjectModal = ref(false);
+
+const organization = inject<ComputedRef<Organization>>('organization');
 </script>
 
 <template>
@@ -79,9 +82,12 @@ const showEditProjectModal = ref(false);
             <span class="overflow-ellipsis overflow-hidden">
                 {{ project.name }}
             </span>
-            <span class="text-text-secondary"> {{ projectTasksCount }} Tasks </span>
+            <span class="text-text-secondary">
+                {{ projectTasksCount }} Tasks
+            </span>
         </div>
-        <div class="whitespace-nowrap min-w-0 px-3 py-4 text-sm text-text-secondary">
+        <div
+            class="whitespace-nowrap min-w-0 px-3 py-4 text-sm text-text-secondary">
             <div
                 v-if="project.client_id"
                 class="overflow-ellipsis overflow-hidden">
@@ -91,7 +97,13 @@ const showEditProjectModal = ref(false);
         </div>
         <div class="whitespace-nowrap px-3 py-4 text-sm text-text-secondary">
             <div v-if="project.spent_time">
-                {{ formatHumanReadableDuration(project.spent_time) }}
+                {{
+                    formatHumanReadableDuration(
+                        project.spent_time,
+                        organization?.interval_format,
+                        organization?.number_format
+                    )
+                }}
             </div>
             <div v-else>--</div>
         </div>

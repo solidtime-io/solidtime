@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import VChart, { THEME_KEY } from 'vue-echarts';
-import { provide } from 'vue';
+import { provide, inject, type ComputedRef } from 'vue';
 import { use } from 'echarts/core';
 import { CanvasRenderer } from 'echarts/renderers';
 import { PieChart } from 'echarts/charts';
@@ -12,6 +12,7 @@ import {
 } from 'echarts/components';
 import { formatHumanReadableDuration } from '@/packages/ui/src/utils/time';
 import { useCssVar } from "@vueuse/core";
+import type { Organization } from "@/packages/api/src";
 
 use([
     CanvasRenderer,
@@ -32,6 +33,8 @@ const props = defineProps<{
         color: string;
     }[];
 }>();
+
+const organization = inject<ComputedRef<Organization>>('organization');
 
 const seriesData = props.weeklyProjectOverview.map((el) => {
     return {
@@ -69,7 +72,7 @@ const option = computed(() => ({
             },
             tooltip: {
                 valueFormatter: (value: number) => {
-                    return formatHumanReadableDuration(value);
+                    return formatHumanReadableDuration(value, organization?.value?.interval_format, organization?.value?.number_format);
                 },
             },
             data: seriesData,
