@@ -1,15 +1,19 @@
 <script setup lang="ts">
 import DayOverviewCardChart from '@/Components/Dashboard/DayOverviewCardChart.vue';
+import {
+    formatHumanReadableDate,
+    formatHumanReadableDuration,
+} from '@/packages/ui/src/utils/time';
+import { inject, type ComputedRef } from 'vue';
+import type { Organization } from '@/packages/api/src';
+
+const organization = inject<ComputedRef<Organization>>('organization');
 
 defineProps<{
     date: string;
     duration: number;
     history: number[];
 }>();
-import {
-    formatHumanReadableDate,
-    formatHumanReadableDuration,
-} from '@/packages/ui/src/utils/time';
 </script>
 
 <template>
@@ -25,7 +29,13 @@ import {
         </div>
         <div
             class="flex text-sm items-center justify-center text-text-secondary min-w-[65px] font-semibold">
-            {{ formatHumanReadableDuration(duration) }}
+            {{
+                formatHumanReadableDuration(
+                    duration,
+                    organization?.interval_format,
+                    organization?.number_format
+                )
+            }}
         </div>
     </div>
 </template>

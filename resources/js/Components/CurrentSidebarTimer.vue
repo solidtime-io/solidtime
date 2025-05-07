@@ -3,9 +3,10 @@ import { useCurrentTimeEntryStore } from '@/utils/useCurrentTimeEntry';
 import { storeToRefs } from 'pinia';
 import { computed } from 'vue';
 import dayjs from 'dayjs';
-import { formatHumanReadableDuration } from '@/packages/ui/src/utils/time';
+import { formatDuration } from '@/packages/ui/src/utils/time';
 import TimeTrackerStartStop from '@/packages/ui/src/TimeTrackerStartStop.vue';
 import { getCurrentOrganizationId } from '@/utils/useUser';
+
 const store = useCurrentTimeEntryStore();
 const { currentTimeEntry, now, isActive } = storeToRefs(store);
 const { setActiveState } = store;
@@ -14,10 +15,9 @@ const currentTime = computed(() => {
     if (now.value && currentTimeEntry.value.start) {
         const startTime = dayjs(currentTimeEntry.value.start);
         const diff = now.value.diff(startTime, 's');
-        // return dayjs(diff).utc().format('HH:mm:ss');
-        return formatHumanReadableDuration(diff);
+        return formatDuration(diff);
     }
-    return formatHumanReadableDuration(0);
+    return formatDuration(0);
 });
 
 const isRunningInDifferentOrganization = computed(() => {
@@ -43,7 +43,9 @@ const isRunningInDifferentOrganization = computed(() => {
             </div>
         </div>
         <div>
-            <div class="text-text-secondary font-extrabold text-xs">Current Timer</div>
+            <div class="text-text-secondary font-extrabold text-xs">
+                Current Timer
+            </div>
             <div class="text-text-primary font-medium text-lg">
                 {{ currentTime }}
             </div>

@@ -2,10 +2,18 @@
 import {
     calculateDifference,
     formatHumanReadableDuration,
+    parseTimeInput,
 } from '@/packages/ui/src/utils/time';
-import { computed, defineProps, ref } from 'vue';
-import parse from 'parse-duration';
+import { computed, defineProps, ref, inject, type ComputedRef } from 'vue';
 import dayjs from 'dayjs';
+import type { Organization } from '@/packages/api/src';
+
+const organization = inject<ComputedRef<Organization>>('organization');
+
+const organizationSettings = computed(() => ({
+    intervalFormat: organization?.value?.interval_format ?? 'hours-minutes',
+    numberFormat: organization?.value?.number_format ?? 'point',
+}));
 
 const props = defineProps<{
     start: string;
@@ -19,15 +27,22 @@ const temporaryCustomTimerEntry = ref<string>('');
 const open = ref(false);
 
 function updateTimerAndStartLiveTimerUpdate() {
-    const time = parse(temporaryCustomTimerEntry.value, 's');
-    if (time && time > 0) {
+    const defaultUnit =
+        organizationSettings?.value?.intervalFormat === 'decimal'
+            ? 'hours'
+            : 'minutes';
+    const { seconds } = parseTimeInput(
+        temporaryCustomTimerEntry.value,
+        defaultUnit
+    );
+    if (seconds && seconds > 0) {
         let newEndDate = props.end;
         let newStartDate = props.start;
         if (props.end) {
             // only update end for time entries that are already finished
-            newEndDate = dayjs(props.start).utc().add(time, 's').format();
+            newEndDate = dayjs(props.start).utc().add(seconds, 's').format();
         } else {
-            newStartDate = dayjs().utc().subtract(time, 's').format();
+            newStartDate = dayjs().utc().subtract(seconds, 's').format();
         }
         emit('changed', newStartDate, newEndDate);
     }
@@ -40,7 +55,9 @@ const currentTime = computed({
             return temporaryCustomTimerEntry.value;
         }
         return formatHumanReadableDuration(
-            calculateDifference(props.start, props.end)
+            calculateDifference(props.start, props.end),
+            organizationSettings.value.intervalFormat,
+            organizationSettings.value.numberFormat
         );
     },
     // setter
@@ -63,8 +80,9 @@ function selectInput(event: Event) {
 <template>
     <input
         v-model="currentTime"
+        data-testid="time_entry_duration_input"
         name="Duration"
-        class="text-text-primary w-[90px] px-2 py-1.5 bg-transparent text-center hover:bg-card-background rounded-lg border border-transparent hover:border-card-border text-sm font-semibold focus-visible:bg-tertiary focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-ring"
+        class="text-text-primary w-[90px] px-2.5 py-1.5 bg-transparent text-right hover:bg-card-background rounded-lg border border-transparent hover:border-card-border text-sm font-semibold focus-visible:bg-tertiary focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-ring"
         @focus="selectInput"
         @keydown.tab="open = false"
         @blur="updateTimerAndStartLiveTimerUpdate"

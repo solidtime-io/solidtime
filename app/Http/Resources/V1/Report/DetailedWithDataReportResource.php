@@ -73,6 +73,16 @@ class DetailedWithDataReportResource extends BaseResource
             'public_until' => $this->formatDateTime($this->resource->public_until),
             /** @var string $currency Currency code (ISO 4217) */
             'currency' => $this->resource->organization->currency,
+            /** @var string $number_format Number format */
+            'number_format' => $this->resource->organization->number_format,
+            /** @var string $currency_format Currency format */
+            'currency_format' => $this->resource->organization->currency_format,
+            /** @var string $date_format Date format */
+            'date_format' => $this->resource->organization->date_format,
+            /** @var string $interval_format Interval format */
+            'interval_format' => $this->resource->organization->interval_format,
+            /** @var string $time_format Time format */
+            'time_format' => $this->resource->organization->time_format,
             'properties' => [
                 /** @var string $group Type of first grouping */
                 'group' => $this->resource->properties->group->value,
