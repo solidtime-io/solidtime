@@ -13,13 +13,7 @@ import updateLocale from 'dayjs/plugin/updateLocale';
 import { computed } from 'vue';
 import { formatNumber } from './number';
 
-export type CurrencyFormat =
-    | 'iso-code-before-with-space'
-    | 'iso-code-after-with-space'
-    | 'symbol-before'
-    | 'symbol-after'
-    | 'symbol-before-with-space'
-    | 'symbol-after-with-space';
+
 export type DateFormat =
     | 'point-separated-d-m-yyyy'
     | 'slash-separated-mm-dd-yyyy'
@@ -27,6 +21,16 @@ export type DateFormat =
     | 'hyphen-separated-dd-mm-yyyy'
     | 'hyphen-separated-mm-dd-yyyy'
     | 'hyphen-separated-yyyy-mm-dd';
+
+const dateFormatMap: Record<DateFormat, string> = {
+    'point-separated-d-m-yyyy': 'D.M.YYYY',
+    'slash-separated-mm-dd-yyyy': 'MM/DD/YYYY',
+    'slash-separated-dd-mm-yyyy': 'DD/MM/YYYY',
+    'hyphen-separated-dd-mm-yyyy': 'DD-MM-YYYY',
+    'hyphen-separated-mm-dd-yyyy': 'MM-DD-YYYY',
+    'hyphen-separated-yyyy-mm-dd': 'YYYY-MM-DD'
+};
+
 export type TimeFormat = '12-hours' | '24-hours';
 export type IntervalFormat =
     | 'decimal'
@@ -123,21 +127,21 @@ export function getLocalizedDateFromTimestamp(timestamp: string) {
  * Returns a formatted date.
  * @param date - date in the format of 'YYYY-MM-DD'
  */
-export function formatDate(date: string): string {
+export function formatDate(date: string, format: DateFormat = 'point-separated-d-m-yyyy'): string {
     if (date?.includes('+')) {
         console.warn(
             'Date contains timezone information, use formatDateLocalized instead'
         );
     }
-    return getDayJsInstance()(date).format('DD.MM.YYYY');
+    return getDayJsInstance()(date).format(dateFormatMap[format]);
 }
 
 /*
  * Returns a formatted date.
  * @param date - date in the format of 'YYYY-MM-DD'
  */
-export function formatDateLocalized(date: string): string {
-    return getLocalizedDayJs(date).format('DD.MM.YYYY');
+export function formatDateLocalized(date: string, format: DateFormat = 'point-separated-d-m-yyyy'): string {
+    return getLocalizedDayJs(date).format(dateFormatMap[format]);
 }
 
 export function formatDateTimeLocalized(date: string): string {
