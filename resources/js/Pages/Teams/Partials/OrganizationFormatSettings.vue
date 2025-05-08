@@ -15,11 +15,11 @@ import {
 } from '@/Components/ui/select';
 import { useMutation, useQueryClient } from '@tanstack/vue-query';
 import type {
-    CurrencyFormat,
     DateFormat,
     TimeFormat,
     IntervalFormat,
 } from '@/packages/ui/src/utils/time';
+import type { CurrencyFormat } from '@/packages/ui/src/utils/money';
 import type { NumberFormat } from '@/packages/ui/src/utils/number';
 
 interface FormValues {

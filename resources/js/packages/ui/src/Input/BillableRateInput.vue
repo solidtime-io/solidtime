@@ -1,17 +1,17 @@
 <script setup lang="ts">
 import TextInput from '@/packages/ui/src/Input/TextInput.vue';
-import {
-    formatCents,
-    getOrganizationCurrencySymbol,
-} from '@/packages/ui/src/utils/money';
-import { ref, watch } from 'vue';
+import { formatCents } from '@/packages/ui/src/utils/money';
+import { ref, watch, inject, type ComputedRef } from 'vue';
 import { useFocus } from '@vueuse/core';
+import type { Organization } from '@/packages/api/src';
 
 const props = defineProps<{
     name: string;
     focus?: boolean;
     currency: string;
 }>();
+
+const organization = inject<ComputedRef<Organization>>('organization');
 
 const model = defineModel<number | null>({
     default: null,
@@ -58,9 +58,15 @@ function updateRate(value: string) {
 }
 
 function formatValue(modelValue: number | null) {
-    const formattedValue = formatCents(modelValue ?? 0, props.currency);
+    const formattedValue = formatCents(
+        modelValue ?? 0,
+        props.currency,
+        organization?.value?.currency_format,
+        organization?.value?.currency_symbol,
+        organization?.value?.number_format
+    );
     return formattedValue
-        .replace(getOrganizationCurrencySymbol(props.currency), '')
+        ?.replace(organization?.value?.currency_symbol ?? '', '')
         .trim();
 }
 

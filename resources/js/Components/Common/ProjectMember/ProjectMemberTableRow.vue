@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { ProjectMember } from '@/packages/api/src';
-import { computed, ref } from 'vue';
+import { computed, ref, inject, type ComputedRef } from 'vue';
 import { storeToRefs } from 'pinia';
 import TableRow from '@/Components/TableRow.vue';
 import { useMembersStore } from '@/utils/useMembers';
@@ -10,10 +10,14 @@ import { formatCents } from '@/packages/ui/src/utils/money';
 import { capitalizeFirstLetter } from '@/utils/format';
 import ProjectMemberEditModal from '@/Components/Common/ProjectMember/ProjectMemberEditModal.vue';
 import { getOrganizationCurrencyString } from '@/utils/money';
+import type { Organization } from '@/packages/api/src';
 
 const props = defineProps<{
     projectMember: ProjectMember;
 }>();
+
+const organization = inject<ComputedRef<Organization>>('organization');
+
 function deleteProjectMember() {
     useProjectMembersStore().deleteProjectMember(
         props.projectMember.project_id,
@@ -51,7 +55,10 @@ const showEditModal = ref(false);
                 projectMember.billable_rate
                     ? formatCents(
                           projectMember.billable_rate,
-                          getOrganizationCurrencyString()
+                          getOrganizationCurrencyString(),
+                          organization?.currency_format,
+                          organization?.currency_symbol,
+                          organization?.number_format
                       )
                     : '--'
             }}
