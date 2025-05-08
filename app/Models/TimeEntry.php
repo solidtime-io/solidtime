@@ -77,6 +77,26 @@ class TimeEntry extends Model implements AuditableContract
         'still_active_email_sent_at' => 'datetime',
     ];
 
+    public const array SELECT_COLUMNS = [
+        'id',
+        'description',
+        'start',
+        'end',
+        'billable_rate',
+        'billable',
+        'user_id',
+        'organization_id',
+        'project_id',
+        'task_id',
+        'tags',
+        'created_at',
+        'updated_at',
+        'member_id',
+        'client_id',
+        'is_imported',
+        'still_active_email_sent_at',
+    ];
+
     /**
      * The attributes that are computed. (f.e. for performance reasons)
      * These attributes can be regenerated at any time.
