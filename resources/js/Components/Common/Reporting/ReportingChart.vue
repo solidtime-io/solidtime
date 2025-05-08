@@ -43,7 +43,7 @@ const xAxisLabels = computed(() => {
     if (props.groupedType === 'week') {
         return props?.groupedData?.map((el) => formatWeek(el.key));
     }
-    return props?.groupedData?.map((el) => formatDate(el.key ?? ''));
+    return props?.groupedData?.map((el) => formatDate(el.key ?? '', organization?.value?.date_format));
 });
 const accentColor = useCssVar('--theme-color-chart', null, { observe: true });
 const labelColor = useCssVar('--color-text-secondary', null, { observe: true });

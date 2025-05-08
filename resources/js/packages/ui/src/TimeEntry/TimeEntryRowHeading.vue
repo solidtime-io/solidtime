@@ -58,7 +58,7 @@ function selectUnselectAll(value: boolean) {
                         {{ formatWeekday(date) }}
                     </span>
                     <span class="font-semibold text-text-secondary">
-                        {{ formatDate(date) }}
+                        {{ formatDate(date, organization?.date_format) }}
                     </span>
                 </div>
                 <div class="text-text-secondary pr-[90px] lg:pr-[92px]">

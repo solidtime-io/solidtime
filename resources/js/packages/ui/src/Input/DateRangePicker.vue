@@ -7,8 +7,8 @@ import {
     getDayJsInstance,
     getLocalizedDayJs,
 } from '@/packages/ui/src/utils/time';
-import { ref } from 'vue';
-
+import { ref, inject, type ComputedRef } from 'vue';
+import { type Organization } from '@/packages/api/src';
 const start = defineModel('start', { default: '' });
 const end = defineModel('end', { default: '' });
 
@@ -95,6 +95,8 @@ function setLastYear() {
     emit('submit');
     open.value = false;
 }
+
+const organization = inject<ComputedRef<Organization>>('organization');
 </script>
 
 <template>
@@ -108,9 +110,9 @@ function setLastYear() {
                 class="px-2 py-1 bg-input-background border border-input-border font-medium rounded-lg flex items-center space-x-2">
                 <CalendarIcon class="w-5"></CalendarIcon>
                 <div class="text-text-primary">
-                    {{ formatDateLocalized(start) }}
+                    {{ formatDateLocalized(start, organization?.date_format) }}
                     <span class="px-1.5 text-text-secondary">-</span>
-                    {{ formatDateLocalized(end) }}
+                    {{ formatDateLocalized(end, organization?.date_format) }}
                 </div>
             </button>
         </template>
