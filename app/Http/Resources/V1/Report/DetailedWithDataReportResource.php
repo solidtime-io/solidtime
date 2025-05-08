@@ -4,8 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Resources\V1\Report;
 
+use App\Enums\CurrencyFormat;
+use App\Enums\DateFormat;
+use App\Enums\IntervalFormat;
+use App\Enums\NumberFormat;
+use App\Enums\TimeFormat;
 use App\Http\Resources\V1\BaseResource;
 use App\Models\Report;
+use App\Service\CurrencyService;
 use Illuminate\Http\Request;
 
 /**
@@ -64,6 +70,8 @@ class DetailedWithDataReportResource extends BaseResource
      */
     public function toArray(Request $request): array
     {
+        $currencyService = app(CurrencyService::class);
+
         return [
             /** @var string $name Name */
             'name' => $this->resource->name,
@@ -73,16 +81,18 @@ class DetailedWithDataReportResource extends BaseResource
             'public_until' => $this->formatDateTime($this->resource->public_until),
             /** @var string $currency Currency code (ISO 4217) */
             'currency' => $this->resource->organization->currency,
-            /** @var string $number_format Number format */
-            'number_format' => $this->resource->organization->number_format,
-            /** @var string $currency_format Currency format */
-            'currency_format' => $this->resource->organization->currency_format,
-            /** @var string $date_format Date format */
-            'date_format' => $this->resource->organization->date_format,
-            /** @var string $interval_format Interval format */
-            'interval_format' => $this->resource->organization->interval_format,
-            /** @var string $time_format Time format */
-            'time_format' => $this->resource->organization->time_format,
+            /** @var NumberFormat $number_format Number format */
+            'number_format' => $this->resource->organization->number_format->value,
+            /** @var CurrencyFormat $currency_format Currency format */
+            'currency_format' => $this->resource->organization->currency_format->value,
+            /** @var string $currency_symbol Currency symbol */
+            'currency_symbol' => $currencyService->getCurrencySymbol($this->resource->organization->currency),
+            /** @var DateFormat $date_format Date format */
+            'date_format' => $this->resource->organization->date_format->value,
+            /** @var IntervalFormat $interval_format Interval format */
+            'interval_format' => $this->resource->organization->interval_format->value,
+            /** @var TimeFormat $time_format Time format */
+            'time_format' => $this->resource->organization->time_format->value,
             'properties' => [
                 /** @var string $group Type of first grouping */
                 'group' => $this->resource->properties->group->value,

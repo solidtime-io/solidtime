@@ -47,12 +47,17 @@ function archiveProject() {
     });
 }
 
+const organization = inject<ComputedRef<Organization>>('organization');
+
 const billableRateInfo = computed(() => {
     if (props.project.is_billable) {
         if (props.project.billable_rate) {
             return formatCents(
                 props.project.billable_rate,
-                getOrganizationCurrencyString()
+                getOrganizationCurrencyString(),
+                organization?.value?.currency_format,
+                organization?.value?.currency_symbol,
+                organization?.value?.number_format
             );
         } else {
             return 'Default Rate';
@@ -63,7 +68,6 @@ const billableRateInfo = computed(() => {
 
 const showEditProjectModal = ref(false);
 
-const organization = inject<ComputedRef<Organization>>('organization');
 </script>
 
 <template>

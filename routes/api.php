@@ -173,6 +173,8 @@ Route::prefix('v1')->name('v1.')->group(static function (): void {
         });
     });
 
+    Route::get('/currencies', [\App\Http\Controllers\Api\V1\CurrencyController::class, 'index'])->name('currencies.index');
+
     // Public routes
     Route::name('public.')->prefix('/public')->group(static function (): void {
         Route::get('/reports', [PublicReportController::class, 'show'])->name('reports.show');

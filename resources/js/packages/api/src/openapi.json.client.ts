@@ -130,7 +130,7 @@ const InvoiceEntryResource = z
         name: z.string(),
         description: z.union([z.string(), z.null()]),
         unit_price: z.number().int(),
-        quantity: z.string(),
+        quantity: z.number(),
         order_index: z.number().int(),
         created_at: z.union([z.string(), z.null()]),
         updated_at: z.union([z.string(), z.null()]),
@@ -293,21 +293,6 @@ const MemberMergeIntoRequest = z
     .object({ member_id: z.string() })
     .partial()
     .passthrough();
-const OrganizationResource = z
-    .object({
-        id: z.string(),
-        name: z.string(),
-        is_personal: z.boolean(),
-        billable_rate: z.union([z.number(), z.null()]),
-        employees_can_see_billable_rates: z.boolean(),
-        currency: z.string(),
-        number_format: z.string(),
-        currency_format: z.string(),
-        date_format: z.string(),
-        interval_format: z.string(),
-        time_format: z.string(),
-    })
-    .passthrough();
 const NumberFormat = z.enum([
     'point-comma',
     'comma-point',
@@ -338,6 +323,22 @@ const IntervalFormat = z.enum([
     'hours-minutes-seconds-colon-separated',
 ]);
 const TimeFormat = z.enum(['12-hours', '24-hours']);
+const OrganizationResource = z
+    .object({
+        id: z.string(),
+        name: z.string(),
+        is_personal: z.boolean(),
+        billable_rate: z.union([z.number(), z.null()]),
+        employees_can_see_billable_rates: z.boolean(),
+        currency: z.string(),
+        currency_symbol: z.string(),
+        number_format: NumberFormat,
+        currency_format: CurrencyFormat,
+        date_format: DateFormat,
+        interval_format: IntervalFormat,
+        time_format: TimeFormat,
+    })
+    .passthrough();
 const OrganizationUpdateRequest = z
     .object({
         name: z.string().max(255),
@@ -524,11 +525,12 @@ const DetailedWithDataReportResource = z
         description: z.union([z.string(), z.null()]),
         public_until: z.union([z.string(), z.null()]),
         currency: z.string(),
-        number_format: z.string(),
-        currency_format: z.string(),
-        date_format: z.string(),
-        interval_format: z.string(),
-        time_format: z.string(),
+        number_format: NumberFormat,
+        currency_format: CurrencyFormat,
+        currency_symbol: z.string(),
+        date_format: DateFormat,
+        interval_format: IntervalFormat,
+        time_format: TimeFormat,
         properties: z
             .object({
                 group: z.string(),
@@ -774,12 +776,12 @@ export const schemas = {
     Role,
     MemberUpdateRequest,
     MemberMergeIntoRequest,
-    OrganizationResource,
     NumberFormat,
     CurrencyFormat,
     DateFormat,
     IntervalFormat,
     TimeFormat,
+    OrganizationResource,
     OrganizationUpdateRequest,
     ProjectResource,
     ProjectStoreRequest,
@@ -817,7 +819,9 @@ const endpoints = makeApi([
         path: '/v1/countries',
         alias: 'getCountries',
         requestFormat: 'json',
-        response: z.string(),
+        response: z.array(
+            z.object({ code: z.string(), name: z.string() }).passthrough()
+        ),
         errors: [
             {
                 status: 401,
@@ -825,6 +829,21 @@ const endpoints = makeApi([
                 schema: z.object({ message: z.string() }).passthrough(),
             },
         ],
+    },
+    {
+        method: 'get',
+        path: '/v1/currencies',
+        alias: 'getCurrencies',
+        requestFormat: 'json',
+        response: z.array(
+            z
+                .object({
+                    code: z.string(),
+                    name: z.string(),
+                    symbol: z.string(),
+                })
+                .passthrough()
+        ),
     },
     {
         method: 'get',

@@ -7,6 +7,7 @@ import { formatHumanReadableDuration } from '@/packages/ui/src/utils/time';
 import ReportingRow from '@/Components/Common/Reporting/ReportingRow.vue';
 import ReportingPieChart from '@/Components/Common/Reporting/ReportingPieChart.vue';
 import { formatCents } from '@/packages/ui/src/utils/money';
+import type { CurrencyFormat } from '@/packages/ui/src/utils/money';
 import { computed, onMounted, provide, ref } from 'vue';
 import { useQuery } from '@tanstack/vue-query';
 import { api } from '@/packages/api/src';
@@ -55,11 +56,21 @@ const reportNumberFormat = computed(() => {
     return sharedReportResponseData.value?.number_format;
 });
 
+const reportCurrencyFormat = computed(() => {
+    return (sharedReportResponseData.value?.currency_format ?? 'symbol-before') as CurrencyFormat;
+});
+
+const reportCurrencySymbol = computed(() => {
+    return sharedReportResponseData.value?.currency_symbol;
+});
+
 provide(
     'organization',
     computed(() => ({
         'number_format': reportNumberFormat.value,
         'interval_format': reportIntervalFormat.value,
+        'currency_format': reportCurrencyFormat.value,
+        'currency_symbol': reportCurrencySymbol.value,
     }))
 );
 
@@ -217,10 +228,8 @@ onMounted(async () => {
                                 v-for="entry in tableData"
                                 :key="entry.description ?? 'none'"
                                 :currency="reportCurrency"
-                                :entry="entry"
-                                :type="
-                                    aggregatedTableTimeEntries.grouped_type
-                                "></ReportingRow>
+                                :currency-format="reportCurrencyFormat"
+                                :entry="entry"></ReportingRow>
                             <div
                                 class="contents [&>*]:transition text-text-tertiary [&>*]:h-[50px]">
                                 <div class="flex items-center pl-6 font-medium">
@@ -241,7 +250,9 @@ onMounted(async () => {
                                     {{
                                         formatCents(
                                             aggregatedTableTimeEntries.cost,
-                                            reportCurrency
+                                            reportCurrency,
+                                            reportCurrencyFormat,
+                                            reportCurrencySymbol,
                                         )
                                     }}
                                 </div>
