@@ -8,7 +8,11 @@ import {
 import { FolderIcon } from '@heroicons/vue/16/solid';
 import BillableIcon from '@/packages/ui/src/Icons/BillableIcon.vue';
 import { getOrganizationCurrencyString } from '@/utils/money';
-import { formatHumanReadableDuration } from '@/packages/ui/src/utils/time';
+import {
+    formatHumanReadableDuration,
+    getDayJsInstance,
+    getLocalizedDayJs,
+} from '@/packages/ui/src/utils/time';
 import { formatCents } from '@/packages/ui/src/utils/money';
 import ReportingTabNavbar from '@/Components/Common/Reporting/ReportingTabNavbar.vue';
 import ReportingExportButton from '@/Components/Common/Reporting/ReportingExportButton.vue';
@@ -29,17 +33,13 @@ import ReportSaveButton from '@/Components/Common/Report/ReportSaveButton.vue';
 import TagDropdown from '@/packages/ui/src/Tag/TagDropdown.vue';
 import ReportingPieChart from '@/Components/Common/Reporting/ReportingPieChart.vue';
 
-import { computed, onMounted, ref, inject, type ComputedRef } from 'vue';
-import {
-    getDayJsInstance,
-    getLocalizedDayJs,
-} from '@/packages/ui/src/utils/time';
+import { computed, type ComputedRef, inject, onMounted, ref } from 'vue';
 import { type GroupingOption, useReportingStore } from '@/utils/useReporting';
 import { storeToRefs } from 'pinia';
 import {
     type AggregatedTimeEntriesQueryParams,
-    type CreateReportBodyProperties,
     api,
+    type CreateReportBodyProperties,
     type Organization,
 } from '@/packages/api/src';
 import {
@@ -52,6 +52,7 @@ import { useSessionStorage, useStorage } from '@vueuse/core';
 import { useNotificationsStore } from '@/utils/notification';
 import type { ExportFormat } from '@/types/reporting';
 import { getRandomColorWithSeed } from '@/packages/ui/src/utils/color';
+import { useProjectsStore } from '@/utils/useProjects';
 
 const { handleApiRequestNotifications } = useNotificationsStore();
 
@@ -213,7 +214,6 @@ async function downloadExport(format: ExportFormat) {
 }
 
 const { getNameForReportingRowEntry, emptyPlaceholder } = useReportingStore();
-import { useProjectsStore } from '@/utils/useProjects';
 
 const projectsStore = useProjectsStore();
 const { projects } = storeToRefs(projectsStore);
@@ -450,10 +450,8 @@ const tableData = computed(() => {
                             v-for="entry in tableData"
                             :key="entry.description ?? 'none'"
                             :currency="getOrganizationCurrencyString()"
-                            :entry="entry"
-                            :type="
-                                aggregatedTableTimeEntries.grouped_type
-                            "></ReportingRow>
+                            :type="aggregatedTableTimeEntries.grouped_type"
+                            :entry="entry"></ReportingRow>
                         <div
                             class="contents [&>*]:transition text-text-tertiary [&>*]:h-[50px]">
                             <div class="flex items-center pl-6 font-medium">
@@ -475,7 +473,10 @@ const tableData = computed(() => {
                                     aggregatedTableTimeEntries.cost
                                         ? formatCents(
                                               aggregatedTableTimeEntries.cost,
-                                              getOrganizationCurrencyString()
+                                              getOrganizationCurrencyString(),
+                                              organization?.currency_format,
+                                              organization?.currency_symbol,
+                                              organization?.number_format
                                           )
                                         : '--'
                                 }}

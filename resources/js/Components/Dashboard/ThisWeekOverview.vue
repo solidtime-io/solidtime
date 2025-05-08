@@ -283,7 +283,10 @@ const option = computed(() => {
                     totalWeeklyBillableAmount
                         ? formatCents(
                               totalWeeklyBillableAmount.value,
-                              getOrganizationCurrencyString()
+                              getOrganizationCurrencyString(),
+                              organization?.currency_format,
+                              organization?.currency_symbol,
+                              organization?.number_format
                           )
                         : '--'
                 " />

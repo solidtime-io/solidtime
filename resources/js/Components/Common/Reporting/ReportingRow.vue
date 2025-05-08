@@ -57,7 +57,13 @@ const organization = inject<ComputedRef<Organization>>('organization');
             }}
         </div>
         <div class="justify-end pr-6 flex items-center">
-            {{ entry.cost ? formatCents(entry.cost, props.currency) : '--' }}
+            {{ entry.cost ? formatCents(
+                entry.cost,
+                props.currency,
+                organization?.currency_format,
+                organization?.currency_symbol,
+                organization?.number_format
+            ) : '--' }}
         </div>
     </div>
     <div
