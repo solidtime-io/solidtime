@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import Dropdown from '@/packages/ui/src/Input/Dropdown.vue';
-import { defineProps, ref } from 'vue';
+import { defineProps, ref, inject, type ComputedRef } from 'vue';
 import {
     formatDateLocalized,
     formatStartEnd,
 } from '@/packages/ui/src/utils/time';
 import TimeRangeSelector from '@/packages/ui/src/Input/TimeRangeSelector.vue';
 import { twMerge } from 'tailwind-merge';
-
+import { type Organization } from '@/packages/api/src';
 defineProps<{
     start: string;
     end: string | null;
@@ -20,6 +20,9 @@ const emit = defineEmits<{
 
 const open = ref(false);
 const triggerElement = ref<HTMLButtonElement | null>(null);
+
+const organization = inject<ComputedRef<Organization>>('organization');
+
 </script>
 
 <template>
@@ -44,7 +47,7 @@ const triggerElement = ref<HTMLButtonElement | null>(null);
                     ">
                     {{ formatStartEnd(start, end) }}
                     <span v-if="showDate" class="text-text-tertiary font-medium"
-                        >{{ formatDateLocalized(start) }}
+                        >{{ formatDateLocalized(start, organization?.date_format) }}
                     </span>
                 </button>
             </template>
