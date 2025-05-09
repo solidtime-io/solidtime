@@ -1,7 +1,7 @@
 import { expect, Page } from '@playwright/test';
 import { PLAYWRIGHT_BASE_URL } from '../playwright/config';
 import { test } from '../playwright/fixtures';
-import { formatCents, getOrganizationCurrencySymbol } from '../resources/js/packages/ui/src/utils/money';
+import { formatCentsWithOrganizationDefaults } from './utils/money';
 import type { CurrencyFormat } from '../resources/js/packages/ui/src/utils/money';
 
 async function goToProjectsOverview(page: Page) {
@@ -132,13 +132,7 @@ test('test that updating billable rate works with existing time entries', async 
         page
             .getByRole('row')
             .first()
-            .getByText(formatCents(
-                newBillableRate * 100,
-                'EUR',
-                'symbol-before' as CurrencyFormat,
-                '€',
-                'space-point'
-            ))
+            .getByText(formatCentsWithOrganizationDefaults(newBillableRate * 100))
     ).toBeVisible();
 });
 
