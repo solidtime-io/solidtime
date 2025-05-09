@@ -27,9 +27,11 @@ test('test that organization billable rate can be updated with all existing time
         .getByLabel('Organization Billable Rate')
         .fill(newBillableRate.toString());
     await page
-        .locator('button')
-        .filter({ hasText: /^Save$/ })
+        .locator('form')
+        .filter({ hasText: 'Organization Billable' })
+        .getByRole('button')
         .click();
+
     await Promise.all([
         page
             .getByRole('button', { name: 'Yes, update existing time entries' })
