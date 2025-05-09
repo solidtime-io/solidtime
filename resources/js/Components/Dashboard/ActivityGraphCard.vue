@@ -128,7 +128,8 @@ const option = computed(() => {
                     if (dailyHoursTracked?.value) {
                         return (
                             formatDate(
-                                dailyHoursTracked?.value[dataIndex].date
+                                dailyHoursTracked?.value[dataIndex].date,
+                                organization?.value?.date_format
                             ) +
                             ': ' +
                             formatHumanReadableDuration(
