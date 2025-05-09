@@ -9,7 +9,8 @@ import { Calendar } from '@/Components/ui/calendar';
 import { CalendarIcon } from 'lucide-vue-next';
 import { formatDateLocalized } from '@/packages/ui/src/utils/time';
 import { parseDate } from '@internationalized/date';
-import { computed } from 'vue';
+import { computed, inject, type ComputedRef } from 'vue';
+import { type Organization } from '@/packages/api/src';
 
 const model = defineModel<string | null>();
 const emit = defineEmits<{
@@ -27,6 +28,8 @@ const handleBlur = () => {
 const date = computed(() => {
     return model.value ? parseDate(model.value) : undefined;
 });
+
+const organization = inject<ComputedRef<Organization>>('organization');
 </script>
 
 <template>
@@ -41,7 +44,7 @@ const date = computed(() => {
                 ]"
             >
                 <CalendarIcon class="mr-2 h-4 w-4" />
-                {{ model ? formatDateLocalized(model) : 'Pick a date' }}
+                {{ model ? formatDateLocalized(model, organization?.date_format) : 'Pick a date' }}
             </Button>
         </PopoverTrigger>
         <PopoverContent class="w-auto p-0">

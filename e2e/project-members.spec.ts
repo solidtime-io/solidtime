@@ -1,7 +1,9 @@
 import { expect, Page } from '@playwright/test';
 import { PLAYWRIGHT_BASE_URL } from '../playwright/config';
 import { test } from '../playwright/fixtures';
-import { formatCents } from '../resources/js/packages/ui/src/utils/money';
+import { formatCentsWithOrganizationDefaults } from './utils/money';
+import type { CurrencyFormat } from '../resources/js/packages/ui/src/utils/money';
+import { NumberFormat } from '@/packages/ui/src/utils/number';
 
 async function goToProjectsOverview(page: Page) {
     await page.goto(PLAYWRIGHT_BASE_URL + '/projects');
@@ -61,6 +63,6 @@ test('test that updating project member billable rate works for existing time en
         page
             .getByRole('row')
             .first()
-            .getByText(formatCents(newBillableRate * 100, 'EUR'))
+            .getByText(formatCentsWithOrganizationDefaults(newBillableRate * 100))
     ).toBeVisible();
 });

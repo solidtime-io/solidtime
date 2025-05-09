@@ -1,9 +1,13 @@
 <script setup lang="ts">
 import { formatCents } from '@/packages/ui/src/utils/money';
 import BillableRateModal from '@/packages/ui/src/BillableRateModal.vue';
+import { inject, type ComputedRef } from 'vue';
+import type { Organization } from '@/packages/api/src';
 
 const show = defineModel('show', { default: false });
 const saving = defineModel('saving', { default: false });
+
+const organization = inject<ComputedRef<Organization>>('organization');
 
 defineProps<{
     newBillableRate?: number | null;
@@ -26,7 +30,13 @@ defineEmits<{
             The billable rate of {{ projectName }} will be updated to
             <strong>{{
                 newBillableRate
-                    ? formatCents(newBillableRate, currency)
+                    ? formatCents(
+                          newBillableRate,
+                          currency,
+                          organization?.currency_format,
+                          organization?.currency_symbol,
+                          organization?.number_format
+                      )
                     : ' the default rate of the organization member'
             }}</strong
             >.

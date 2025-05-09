@@ -18,5 +18,8 @@
     "resources/js/**/*.d.ts",
     "resources/js/**/*.vue",
     "resources/js/ziggy.d.ts",
+    "extensions/Invoicing/resources/js/**/*.ts",
+    "extensions/Invoicing/resources/js/**/*.d.ts",
+    "extensions/Invoicing/resources/js/**/*.vue",
   ]
 }

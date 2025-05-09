@@ -15,20 +15,22 @@ import {
     UserCircleIcon,
     UserGroupIcon,
     XMarkIcon,
-    DocumentTextIcon
+    DocumentTextIcon,
 } from '@heroicons/vue/20/solid';
 import NavigationSidebarItem from '@/Components/NavigationSidebarItem.vue';
 import UserSettingsIcon from '@/Components/UserSettingsIcon.vue';
 import MainContainer from '@/packages/ui/src/MainContainer.vue';
-import { onMounted, ref } from "vue";
+import { computed, onMounted, provide, ref } from 'vue';
 import NotificationContainer from '@/Components/NotificationContainer.vue';
 import { initializeStores, refreshStores } from '@/utils/init';
 import {
     canManageBilling,
     canUpdateOrganization,
-    canViewClients, canViewInvoices,
+    canViewClients,
+    canViewInvoices,
     canViewMembers,
-    canViewProjects, canViewReport,
+    canViewProjects,
+    canViewReport,
     canViewTags,
 } from '@/utils/permissions';
 import { isBillingActivated, isInvoicingActivated } from '@/utils/billing';
@@ -37,7 +39,11 @@ import { ArrowsRightLeftIcon } from '@heroicons/vue/16/solid';
 import { fetchToken, isTokenValid } from '@/utils/session';
 import UpdateSidebarNotification from '@/Components/UpdateSidebarNotification.vue';
 import BillingBanner from '@/Components/Billing/BillingBanner.vue';
-import { useTheme } from "@/utils/theme";
+import { useTheme } from '@/utils/theme';
+import { useQuery } from '@tanstack/vue-query';
+import { api } from '@/packages/api/src';
+import { getCurrentOrganizationId } from '@/utils/useUser';
+import LoadingSpinner from '@/packages/ui/src/LoadingSpinner.vue';
 
 defineProps({
     title: String,
@@ -45,9 +51,25 @@ defineProps({
 
 const showSidebarMenu = ref(false);
 const isUnloading = ref(false);
-onMounted(async () => {
 
-    useTheme()
+const { data: organization, isLoading: isOrganizationLoading } = useQuery({
+    queryKey: ['organization', getCurrentOrganizationId()],
+    queryFn: () =>
+        api.getOrganization({
+            params: {
+                organization: getCurrentOrganizationId()!,
+            },
+        }),
+    enabled: !!getCurrentOrganizationId(),
+});
+
+provide(
+    'organization',
+    computed(() => organization.value?.data)
+);
+
+onMounted(async () => {
+    useTheme();
     // make sure that the initial requests are only loaded once, this can be removed once we move away from inertia
     if (window.initialDataLoaded !== true) {
         window.initialDataLoaded = true;
@@ -77,7 +99,9 @@ const page = usePage<{
 </script>
 
 <template>
-    <div v-bind="$attrs" class="flex flex-wrap bg-background text-text-secondary">
+    <div
+        v-bind="$attrs"
+        class="flex flex-wrap bg-background text-text-secondary">
         <div
             :class="{
                 '!flex bg-default-background w-full z-[9999999999]':
@@ -122,17 +146,17 @@ const page = usePage<{
                                     {
                                         title: 'Overview',
                                         route: 'reporting',
-                                        show: true
+                                        show: true,
                                     },
                                     {
                                         title: 'Detailed',
                                         route: 'reporting.detailed',
-                                        show: true
+                                        show: true,
                                     },
                                     {
                                         title: 'Shared',
                                         route: 'reporting.shared',
-                                        show: canViewReport()
+                                        show: canViewReport(),
                                     },
                                 ]"
                                 :current="
@@ -183,7 +207,9 @@ const page = usePage<{
                                 :current="route().current('tags')"
                                 :href="route('tags')"></NavigationSidebarItem>
                             <NavigationSidebarItem
-                                v-if="isInvoicingActivated() && canViewInvoices()"
+                                v-if="
+                                    isInvoicingActivated() && canViewInvoices()
+                                "
                                 title="Invoices"
                                 :icon="DocumentTextIcon"
                                 :current="route().current('invoices')"
@@ -276,8 +302,12 @@ const page = usePage<{
 
                 <!-- Page Content -->
                 <main class="pb-28 flex-1">
-                    <slot />
-
+                    <div
+                        v-if="isOrganizationLoading"
+                        class="flex items-center justify-center h-screen">
+                        <LoadingSpinner />
+                    </div>
+                    <slot v-else />
                 </main>
             </div>
         </div>

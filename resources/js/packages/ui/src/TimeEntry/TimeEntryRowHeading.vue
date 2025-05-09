@@ -6,6 +6,11 @@ import {
     formatWeekday,
 } from '@/packages/ui/src/utils/time';
 import Checkbox from '../Input/Checkbox.vue';
+import { inject, type ComputedRef } from 'vue';
+import type { Organization } from '@/packages/api/src';
+
+const organization = inject<ComputedRef<Organization>>('organization');
+
 defineProps<{
     date: string;
     duration: number;
@@ -53,12 +58,18 @@ function selectUnselectAll(value: boolean) {
                         {{ formatWeekday(date) }}
                     </span>
                     <span class="font-semibold text-text-secondary">
-                        {{ formatDate(date) }}
+                        {{ formatDate(date, organization?.date_format) }}
                     </span>
                 </div>
                 <div class="text-text-secondary pr-[90px] lg:pr-[92px]">
                     <span class="font-semibold">
-                        {{ formatHumanReadableDuration(duration) }}
+                        {{
+                            formatHumanReadableDuration(
+                                duration,
+                                organization?.interval_format,
+                                organization?.number_format
+                            )
+                        }}
                     </span>
                 </div>
             </div>
