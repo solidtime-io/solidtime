@@ -40,9 +40,9 @@ class OrganizationResource extends BaseResource
      */
     public function toArray(Request $request): array
     {
-            $currencyService = app(CurrencyService::class);
+        $currencyService = app(CurrencyService::class);
 
-            return [
+        return [
             /** @var string $id ID */
             'id' => $this->resource->id,
             /** @var string $name Name */

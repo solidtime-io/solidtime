@@ -15,6 +15,7 @@ class CurrencyController extends Controller
      * Get all currencies
      *
      * @response array{code: string, name: string, symbol: string}[]
+     *
      * @operationId getCurrencies
      */
     public function index(): JsonResponse
@@ -26,7 +27,7 @@ class CurrencyController extends Controller
                 'code' => $currency->getCurrencyCode(),
                 'name' => $currency->getName(),
                 'symbol' => $currencyService->getCurrencySymbol($currency->getCurrencyCode()),
-                ],
+            ],
             ISOCurrencyProvider::getInstance()->getAvailableCurrencies()
         ));
 
