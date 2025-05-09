@@ -178,6 +178,11 @@ export type DetailedInvoiceResponse = ZodiosResponseByAlias<
     'getInvoice'
 >;
 
+export type InvoiceIndexEntry = ZodiosResponseByAlias<
+    SolidTimeApi,
+    'getInvoices'
+>['data'][0];
+
 export type UpdateInvoiceSettings = ZodiosBodyByAlias<
     SolidTimeApi,
     'updateInvoiceSettings'
