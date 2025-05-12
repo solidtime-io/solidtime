@@ -110,9 +110,11 @@ export function calculateDifference(start: string, end: string | null) {
 /**
  * Returns a formatted time.
  * @param date - A UTC date time string.
+ * @param timeFormat - The time format to use ('12-hours' or '24-hours')
  */
-export function formatTime(date: string) {
-    return dayjs.utc(date).tz(getUserTimezone()).format('HH:mm');
+export function formatTime(date: string, timeFormat: TimeFormat = '24-hours') {
+    const format = timeFormat === '12-hours' ? 'hh:mm A' : 'HH:mm';
+    return dayjs.utc(date).tz(getUserTimezone()).format(format);
 }
 
 export function getLocalizedDayJs(timestamp?: string | null) {
@@ -169,11 +171,11 @@ export function formatWeekday(date: string) {
     return dayjs(date).format('dddd');
 }
 
-export function formatStartEnd(start: string, end: string | null) {
+export function formatStartEnd(start: string, end: string | null, timeFormat: TimeFormat = '24-hours') {
     if (end) {
-        return `${formatTime(start)} - ${formatTime(end)}`;
+        return `${formatTime(start, timeFormat)} - ${formatTime(end, timeFormat)}`;
     } else {
-        return `${formatTime(start)} - ...`;
+        return `${formatTime(start, timeFormat)} - ...`;
     }
 }
 
