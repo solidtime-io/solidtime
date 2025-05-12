@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Controllers\Api\V1\ApiTokenController;
 use App\Http\Controllers\Api\V1\ChartController;
 use App\Http\Controllers\Api\V1\ClientController;
+use App\Http\Controllers\Api\V1\CurrencyController;
 use App\Http\Controllers\Api\V1\ExportController;
 use App\Http\Controllers\Api\V1\ImportController;
 use App\Http\Controllers\Api\V1\InvitationController;
@@ -173,7 +174,7 @@ Route::prefix('v1')->name('v1.')->group(static function (): void {
         });
     });
 
-    Route::get('/currencies', [\App\Http\Controllers\Api\V1\CurrencyController::class, 'index'])->name('currencies.index');
+    Route::get('/currencies', [CurrencyController::class, 'index'])->name('currencies.index');
 
     // Public routes
     Route::name('public.')->prefix('/public')->group(static function (): void {
