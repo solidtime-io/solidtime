@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Service\CurrencyService;
+use Brick\Money\Currency;
 use Brick\Money\ISOCurrencyProvider;
 use Illuminate\Http\JsonResponse;
 
@@ -23,7 +24,7 @@ class CurrencyController extends Controller
         $currencyService = app(CurrencyService::class);
 
         $currencies = array_values(array_map(
-            fn ($currency) => [
+            fn (Currency $currency): array => [
                 'code' => $currency->getCurrencyCode(),
                 'name' => $currency->getName(),
                 'symbol' => $currencyService->getCurrencySymbol($currency->getCurrencyCode()),
