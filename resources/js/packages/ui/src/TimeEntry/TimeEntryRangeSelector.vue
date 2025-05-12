@@ -39,10 +39,11 @@ const organization = inject<ComputedRef<Organization>>('organization');
                     data-testid="time_entry_range_selector"
                     :class="
                         twMerge(
-                            'text-text-secondary w-[110px] px-2 bg-transparent text-center hover:bg-card-background rounded-lg border border-transparent hover:border-card-border focus-visible:outline-none focus:outline-none focus-visible:ring-2 focus-visible:text-text-primary focus-visible:ring-ring focus-visible:bg-tertiary',
+                            'text-text-secondary px-2 bg-transparent text-center hover:bg-card-background rounded-lg border border-transparent hover:border-card-border focus-visible:outline-none focus:outline-none focus-visible:ring-2 focus-visible:text-text-primary focus-visible:ring-ring focus-visible:bg-tertiary',
                             showDate
                                 ? 'text-xs py-1.5 font-semibold'
                                 : 'text-sm py-1.5 font-medium',
+                            organization?.time_format === '12-hours' ? 'w-[160px]' : 'w-[110px]',
                             open && 'border-card-border bg-card-background'
                         )
                     ">
