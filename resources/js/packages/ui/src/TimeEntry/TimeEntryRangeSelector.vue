@@ -7,7 +7,8 @@ import {
 } from '@/packages/ui/src/utils/time';
 import TimeRangeSelector from '@/packages/ui/src/Input/TimeRangeSelector.vue';
 import { twMerge } from 'tailwind-merge';
-import { type Organization } from '@/packages/api/src';
+import type { Organization } from '@/packages/api/src';
+
 defineProps<{
     start: string;
     end: string | null;
@@ -45,7 +46,7 @@ const organization = inject<ComputedRef<Organization>>('organization');
                             open && 'border-card-border bg-card-background'
                         )
                     ">
-                    {{ formatStartEnd(start, end) }}
+                    {{ formatStartEnd(start, end, organization?.time_format) }}
                     <span v-if="showDate" class="text-text-tertiary font-medium"
                         >{{ formatDateLocalized(start, organization?.date_format) }}
                     </span>
