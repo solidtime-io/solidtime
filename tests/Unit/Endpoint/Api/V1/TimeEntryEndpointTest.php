@@ -8,6 +8,7 @@ use App\Enums\ExportFormat;
 use App\Enums\Role;
 use App\Enums\TimeEntryAggregationType;
 use App\Enums\TimeEntryAggregationTypeInterval;
+use App\Enums\TimeEntryRoundingType;
 use App\Exceptions\Api\TimeEntryCanNotBeRestartedApiException;
 use App\Http\Controllers\Api\V1\TimeEntryController;
 use App\Jobs\RecalculateSpentTimeForProject;
@@ -386,6 +387,141 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
             ->where('data.1.id', $timeEntriesBeforeSorted->get(0)->getKey())
             ->where('data.2.id', $timeEntriesBeforeSorted->get(1)->getKey())
             ->where('data.3.id', $timeEntriesBeforeSorted->get(2)->getKey())
+        );
+    }
+
+    public function test_index_endpoint_can_round_up(): void
+    {
+        // Arrange
+        $this->travelTo(Carbon::createFromFormat('Y-m-d H:i:s', '2020-01-01 00:15:04'));
+        $data = $this->createUserWithPermission([
+            'time-entries:view:own',
+        ]);
+        $timeEntry1 = TimeEntry::factory()->forOrganization($data->organization)
+            ->forMember($data->member)
+            ->create([
+                'start' => Carbon::createFromFormat('Y-m-d H:i:s', '2020-01-01 00:00:08'),
+                'end' => Carbon::createFromFormat('Y-m-d H:i:s', '2020-01-01 00:00:01'),
+            ]);
+        $timeEntry2 = TimeEntry::factory()->forOrganization($data->organization)
+            ->forMember($data->member)
+            ->create([
+                'start' => Carbon::createFromFormat('Y-m-d H:i:s', '2020-01-01 00:00:07'),
+                'end' => null,
+            ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.time-entries.index', [
+            $data->organization->getKey(),
+            'member_id' => $data->member->getKey(),
+            'rounding_type' => TimeEntryRoundingType::Up,
+            'rounding_minutes' => 6,
+        ]));
+
+        // Assert
+        $this->assertResponseCode($response, 200);
+        $response->assertJson(fn (AssertableJson $json) => $json
+            ->has('data')
+            ->has('meta')
+            ->where('meta.total', 2)
+            ->count('data', 2)
+            ->where('data.0.id', $timeEntry1->getKey())
+            ->where('data.0.start', '2020-01-01T00:00:00Z')
+            ->where('data.0.end', '2020-01-01T00:06:00Z')
+            ->where('data.1.id', $timeEntry2->getKey())
+            ->where('data.1.start', '2020-01-01T00:00:00Z')
+            ->where('data.1.end', '2020-01-01T00:18:00Z')
+        );
+    }
+
+    public function test_index_endpoint_can_round_down(): void
+    {
+        // Arrange
+        $this->travelTo(Carbon::createFromFormat('Y-m-d H:i:s', '2020-01-01 00:15:04'));
+        $data = $this->createUserWithPermission([
+            'time-entries:view:own',
+        ]);
+        $timeEntry1 = TimeEntry::factory()->forOrganization($data->organization)
+            ->forMember($data->member)
+            ->create([
+                'start' => Carbon::createFromFormat('Y-m-d H:i:s', '2020-01-01 00:00:08'),
+                'end' => Carbon::createFromFormat('Y-m-d H:i:s', '2020-01-01 00:00:01'),
+            ]);
+        $timeEntry2 = TimeEntry::factory()->forOrganization($data->organization)
+            ->forMember($data->member)
+            ->create([
+                'start' => Carbon::createFromFormat('Y-m-d H:i:s', '2020-01-01 00:00:07'),
+                'end' => null,
+            ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.time-entries.index', [
+            $data->organization->getKey(),
+            'member_id' => $data->member->getKey(),
+            'rounding_type' => TimeEntryRoundingType::Down,
+            'rounding_minutes' => 6,
+        ]));
+
+        // Assert
+        $this->assertResponseCode($response, 200);
+        $response->assertJson(fn (AssertableJson $json) => $json
+            ->has('data')
+            ->has('meta')
+            ->where('meta.total', 2)
+            ->count('data', 2)
+            ->where('data.0.id', $timeEntry1->getKey())
+            ->where('data.0.start', '2020-01-01T00:00:00Z')
+            ->where('data.0.end', '2020-01-01T00:00:00Z')
+            ->where('data.1.id', $timeEntry2->getKey())
+            ->where('data.1.start', '2020-01-01T00:00:00Z')
+            ->where('data.1.end', '2020-01-01T00:12:00Z')
+        );
+    }
+
+    public function test_index_endpoint_can_round_nearest(): void
+    {
+        // Arrange
+        $this->travelTo(Carbon::createFromFormat('Y-m-d H:i:s', '2020-01-01 00:15:00'));
+        $data = $this->createUserWithPermission([
+            'time-entries:view:own',
+        ]);
+        $timeEntry1 = TimeEntry::factory()->forOrganization($data->organization)
+            ->forMember($data->member)
+            ->create([
+                'start' => Carbon::createFromFormat('Y-m-d H:i:s', '2020-01-01 00:00:08'),
+                'end' => Carbon::createFromFormat('Y-m-d H:i:s', '2020-01-01 00:02:59'),
+            ]);
+        $timeEntry2 = TimeEntry::factory()->forOrganization($data->organization)
+            ->forMember($data->member)
+            ->create([
+                'start' => Carbon::createFromFormat('Y-m-d H:i:s', '2020-01-01 00:00:07'),
+                'end' => null,
+            ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.time-entries.index', [
+            $data->organization->getKey(),
+            'member_id' => $data->member->getKey(),
+            'rounding_type' => TimeEntryRoundingType::Nearest,
+            'rounding_minutes' => 6,
+        ]));
+
+        // Assert
+        $this->assertResponseCode($response, 200);
+        $response->assertJson(fn (AssertableJson $json) => $json
+            ->has('data')
+            ->has('meta')
+            ->where('meta.total', 2)
+            ->count('data', 2)
+            ->where('data.0.id', $timeEntry1->getKey())
+            ->where('data.0.start', '2020-01-01T00:00:00Z')
+            ->where('data.0.end', '2020-01-01T00:00:00Z')
+            ->where('data.1.id', $timeEntry2->getKey())
+            ->where('data.1.start', '2020-01-01T00:00:00Z')
+            ->where('data.1.end', '2020-01-01T00:18:00Z')
         );
     }
 
