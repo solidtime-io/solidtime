@@ -57,7 +57,12 @@ const reportNumberFormat = computed(() => {
 });
 
 const reportCurrencyFormat = computed(() => {
-    return (sharedReportResponseData.value?.currency_format ?? 'symbol-before') as CurrencyFormat;
+    return (sharedReportResponseData.value?.currency_format ??
+        'symbol-before') as CurrencyFormat;
+});
+
+const reportDateFormat = computed(() => {
+    return sharedReportResponseData.value?.date_format;
 });
 
 const reportCurrencySymbol = computed(() => {
@@ -71,6 +76,7 @@ provide(
         'interval_format': reportIntervalFormat.value,
         'currency_format': reportCurrencyFormat.value,
         'currency_symbol': reportCurrencySymbol.value,
+        'date_format': reportDateFormat.value,
     }))
 );
 
@@ -252,7 +258,7 @@ onMounted(async () => {
                                             aggregatedTableTimeEntries.cost,
                                             reportCurrency,
                                             reportCurrencyFormat,
-                                            reportCurrencySymbol,
+                                            reportCurrencySymbol
                                         )
                                     }}
                                 </div>
