@@ -1,12 +1,12 @@
 @use('Brick\Math\BigDecimal')
 @use('Brick\Money\Money')
-@use('PhpOffice\PhpSpreadsheet\Cell\DataType')
+@use('Illuminate\Support\Carbon')
 @use('Carbon\CarbonInterval')
 @inject('colorService', 'App\Service\ColorService')
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
+    <meta charset="utf-8"/>
     <title>Report</title>
     <style>
         html, body, div, span, applet, object, iframe,
@@ -130,7 +130,7 @@
 
     @if($debug)
         <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=outfit:200,300,400,500,600,700,800" rel="stylesheet" />
+        <link href="https://fonts.bunny.net/css?family=outfit:200,300,400,500,600,700,800" rel="stylesheet"/>
     @endif
 
 </head>
@@ -356,7 +356,12 @@
         animation: false,
         tooltip: {},
         xAxis: {
-            data: ['{!! collect($dataHistoryChart['grouped_data'])->pluck('key')->implode("', '") !!}'],
+            data: {!!
+                json_encode(collect($dataHistoryChart['grouped_data'])
+                    ->pluck('key')
+                    ->map(fn($value) => $localization->formatDate(Carbon::parse($value)))
+                    ->toArray())
+            !!},
             axisLabel: {
                 fontSize: 10,
                 fontWeight: 400,
@@ -381,26 +386,16 @@
             axisLabel: {
                 show: false,
                 inside: true,
-                formatter: function(value, index) {
-                    let totalSeconds = value;
-                    let hours = Math.floor(totalSeconds / 3600);
-                    if (hours < 10) {
-                        hours = "0" + hours;
-                    }
-                    totalSeconds %= 3600;
-                    let minutes = Math.floor(totalSeconds / 60);
-                    if (minutes < 10) {
-                        minutes = "0" + minutes;
-                    }
-                    return hours + ":" + minutes;
-                }
             }
         },
         series: [
             {
                 name: "time",
                 type: "bar",
-                data: [{!! collect($dataHistoryChart['grouped_data'])->pluck('seconds')->implode(', ') !!}],
+                data: {!! json_encode(collect($dataHistoryChart['grouped_data'])->map(fn($value) => (object) [
+                            'value' => $value['seconds'],
+                            'name' => ((int) $value['seconds']) === 0 ? '' : $localization->formatInterval(CarbonInterval::seconds((int) $value['seconds']))
+                        ])->toArray()) !!},
                 itemStyle: {
                     borderColor: "#7dd3fc",
                     color: "#7dd3fc"
@@ -413,22 +408,8 @@
                     @endif
                     fontSize: 10,
                     position: "top",
-                    formatter: function(params) {
-                        let value = params.value;
-                        if (value === 0) {
-                            return "";
-                        }
-                        let totalSeconds = value;
-                        let hours = Math.floor(totalSeconds / 3600);
-                        if (hours < 10) {
-                            hours = "0" + hours;
-                        }
-                        totalSeconds %= 3600;
-                        let minutes = Math.floor(totalSeconds / 60);
-                        if (minutes < 10) {
-                            minutes = "0" + minutes;
-                        }
-                        return hours + ":" + minutes;
+                    formatter: function (params) {
+                        return params.name;
                     }
                 }
             }

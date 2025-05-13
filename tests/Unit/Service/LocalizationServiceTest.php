@@ -47,7 +47,7 @@ class LocalizationServiceTest extends TestCaseWithDatabase
         $formatted = $this->localizationService->formatInterval($interval);
 
         // Assert
-        $this->assertSame('30,001.05', $formatted);
+        $this->assertSame('30,001.05 h', $formatted);
     }
 
     public function test_format_interval_with_type_decimal_and_number_format_thousands_space_decimal_point(): void
@@ -61,7 +61,7 @@ class LocalizationServiceTest extends TestCaseWithDatabase
         $formatted = $this->localizationService->formatInterval($interval);
 
         // Assert
-        $this->assertSame('30 001.05', $formatted);
+        $this->assertSame('30 001.05 h', $formatted);
     }
 
     public function test_format_interval_with_type_decimal_and_number_format_thousands_point_decimal_comma(): void
@@ -75,7 +75,7 @@ class LocalizationServiceTest extends TestCaseWithDatabase
         $formatted = $this->localizationService->formatInterval($interval);
 
         // Assert
-        $this->assertSame('30.001,05', $formatted);
+        $this->assertSame('30.001,05 h', $formatted);
     }
 
     public function test_format_interval_with_type_decimal_and_number_format_thousands_apostrophe_decimal_point(): void
@@ -89,7 +89,7 @@ class LocalizationServiceTest extends TestCaseWithDatabase
         $formatted = $this->localizationService->formatInterval($interval);
 
         // Assert
-        $this->assertSame('30\'001.05', $formatted);
+        $this->assertSame('30\'001.05 h', $formatted);
     }
 
     public function test_format_interval_with_type_hours_minutes(): void

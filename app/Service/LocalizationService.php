@@ -80,7 +80,7 @@ class LocalizationService
         if ($this->intervalFormat === IntervalFormat::Decimal) {
             $interval->cascade();
 
-            return $this->formatNumber($interval->totalHours);
+            return $this->formatNumber($interval->totalHours).' h';
         } elseif ($this->intervalFormat === IntervalFormat::HoursMinutes) {
             $interval->cascade();
 

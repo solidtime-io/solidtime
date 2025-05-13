@@ -1,6 +1,5 @@
 @use('Brick\Math\BigDecimal')
 @use('Brick\Money\Money')
-@use('PhpOffice\PhpSpreadsheet\Cell\DataType')
 @use('Carbon\CarbonInterval')
 @inject('interval', 'App\Service\IntervalService')
 <!DOCTYPE html>
