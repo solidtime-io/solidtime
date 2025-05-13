@@ -128,7 +128,7 @@ const currentClientName = computed(() => {
                     </ClientDropdown>
                 </div>
             </div>
-            <div class="lg:grid grid-cols-2 gap-12">
+            <div>
                 <div>
                     <ProjectEditBillableSection
                         v-model:is-billable="project.is_billable"

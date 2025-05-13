@@ -48,7 +48,7 @@ const project = ref<CreateProjectBody>({
 
 async function submit() {
     if (props.originalProject.billable_rate !== project.value.billable_rate) {
-        // 
+        // make sure that the alert modal is not immediately submitted when user presses enter
         setTimeout(() => {
             showBillableRateModal.value = true;
         }, 0);
@@ -133,7 +133,7 @@ async function submitBillableRate() {
                     </ClientDropdown>
                 </div>
             </div>
-            <div class="lg:grid grid-cols-2 gap-12">
+            <div>
                 <div>
                     <ProjectEditBillableSection
                         v-model:is-billable="project.is_billable"

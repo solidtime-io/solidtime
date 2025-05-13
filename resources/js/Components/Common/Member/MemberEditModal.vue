@@ -154,7 +154,6 @@ const roleDescription = computed(() => {
                             class="flex-1">
                             <InputLabel
                                 for="memberBillableRate"
-                                class="mb-2"
                                 value="Billable Rate" />
                             <BillableRateInput
                                 v-model="
