@@ -26,10 +26,12 @@ const createClient = ref(false);
                 <ClientTableHeading></ClientTableHeading>
                 <div
                     v-if="clients.length === 0"
-                    class="col-span-2 py-24 text-center">
+                    class="col-span-3 py-24 text-center">
                     <UserCircleIcon
                         class="w-8 text-icon-default inline pb-2"></UserCircleIcon>
-                    <h3 class="text-text-primary font-semibold">No clients found</h3>
+                    <h3 class="text-text-primary font-semibold">
+                        No clients found
+                    </h3>
                     <p v-if="canCreateClients()" class="pb-5">
                         Create your first client now!
                     </p>

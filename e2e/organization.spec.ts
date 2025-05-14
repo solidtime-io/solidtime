@@ -52,7 +52,7 @@ test('test that organization billable rate can be updated with all existing time
     await page
         .locator('form')
         .filter({ hasText: 'Organization Billable' })
-        .getByRole('button')
+        .getByRole('button', { name: 'Save' })
         .click();
 
     await Promise.all([
@@ -179,7 +179,9 @@ test('test that format settings are reflected in the dashboard', async ({
     page,
 }) => {
     // check that 0h 00min is displayed
-    await expect(page.getByText('0h 00min', { exact: true }).nth(0)).toBeVisible();
+    await expect(
+        page.getByText('0h 00min', { exact: true }).nth(0)
+    ).toBeVisible();
 
     // First set the format settings
     await goToOrganizationSettings(page);
@@ -230,11 +232,17 @@ test('test that format settings are reflected in the dashboard', async ({
     // check that 00:00 is displayed
     await expect(page.getByText('0:00', { exact: true }).nth(0)).toBeVisible();
     // check that 0h 00min is not displayed
-    await expect(page.getByText('0h 00min', { exact: true }).nth(0)).not.toBeVisible();
+    await expect(
+        page.getByText('0h 00min', { exact: true }).nth(0)
+    ).not.toBeVisible();
 
     // check that the current date is displayed in the dd/mm/yyyy format on the time page
     await page.goto(PLAYWRIGHT_BASE_URL + '/time');
-    await expect(page.getByText(new Date().toLocaleDateString('en-GB'), { exact: true }).nth(0)).toBeVisible();
+    await expect(
+        page
+            .getByText(new Date().toLocaleDateString('en-GB'), { exact: true })
+            .nth(0)
+    ).toBeVisible();
 });
 
 // TODO: Test 12-hour clock format
