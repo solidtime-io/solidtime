@@ -87,8 +87,8 @@ export default {
                     "800": "rgba(var(--color-accent-800), <alpha-value>)",
                     "900": "rgba(var(--color-accent-900), <alpha-value>)",
                     "950": "rgba(var(--color-accent-950), <alpha-value>)",
-                    DEFAULT: "var(--color-bg-tertiary)",
-                    foreground: "rgb(var(--color-accent-200))"
+                    DEFAULT: "var(--color-accent-default)",
+                    foreground: "var(--color-accent-foreground)",
                 },
                 "button-primary-background": "var(--theme-color-button-primary-background)",
                 "button-primary-background-hover": "var(--theme-color-button-primary-background-hover)",

@@ -41,10 +41,10 @@ function formatValue(modelValue: number | null) {
                 currencyDisplay: 'code',
                 currencySign: 'accounting',
             }"
-            @update:model-value="(value) => model = value * 100">
+            @update:model-value="(value) => (model = value * 100)">
             <NumberFieldContent>
                 <NumberFieldDecrement />
-                <NumberFieldInput />
+                <NumberFieldInput placeholder="Billable Rate" />
                 <NumberFieldIncrement />
             </NumberFieldContent>
         </NumberField>

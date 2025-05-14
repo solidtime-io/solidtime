@@ -43,6 +43,9 @@
 
     --theme-color-input-select-active: rgb(var(--color-accent-300));
     --theme-color-input-select-active-hover: rgb(var(--color-accent-200));
+
+    --color-accent-default: rgb(var(--color-accent-900));
+    --color-accent-foreground: rgb(var(--color-accent-100));
 }
 
 :root.light {
@@ -86,6 +89,9 @@
 
     --theme-color-input-select-active: rgb(var(--color-accent-400));
     --theme-color-input-select-active-hover: rgb(var(--color-accent-500));
+
+    --color-accent-default: rgb(var(--color-accent-100));
+    --color-accent-foreground: rgb(var(--color-accent-800));
 }
 
 :root {
