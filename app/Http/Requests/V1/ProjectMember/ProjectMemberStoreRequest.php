@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\V1\ProjectMember;
 
+use App\Http\Requests\V1\BaseFormRequest;
 use App\Models\Member;
 use App\Models\Organization;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Foundation\Http\FormRequest;
 use Korridor\LaravelModelValidationRules\Rules\ExistsEloquent;
 
 /**
  * @property Organization $organization Organization from model binding
  */
-class ProjectMemberStoreRequest extends FormRequest
+class ProjectMemberStoreRequest extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -31,12 +31,12 @@ class ProjectMemberStoreRequest extends FormRequest
                     return $builder->whereBelongsTo($this->organization, 'organization');
                 })->uuid(),
             ],
-            'billable_rate' => [
-                'nullable',
-                'integer',
-                'min:0',
-                'max:2147483647',
-            ],
+            'billable_rate' => array_merge(
+                [
+                    'nullable',
+                ],
+                $this->moneyRules()
+            ),
         ];
     }
 

@@ -9,14 +9,14 @@ use App\Enums\DateFormat;
 use App\Enums\IntervalFormat;
 use App\Enums\NumberFormat;
 use App\Enums\TimeFormat;
+use App\Http\Requests\V1\BaseFormRequest;
 use App\Models\Organization;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 /**
  * @property Organization $organization Organization from model binding
  */
-class OrganizationUpdateRequest extends FormRequest
+class OrganizationUpdateRequest extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -30,12 +30,12 @@ class OrganizationUpdateRequest extends FormRequest
                 'string',
                 'max:255',
             ],
-            'billable_rate' => [
-                'nullable',
-                'integer',
-                'min:0',
-                'max:2147483647',
-            ],
+            'billable_rate' => array_merge(
+                [
+                    'nullable',
+                ],
+                $this->moneyRules()
+            ),
             'employees_can_see_billable_rates' => [
                 'boolean',
             ],

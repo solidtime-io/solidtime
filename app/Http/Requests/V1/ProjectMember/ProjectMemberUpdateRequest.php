@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\V1\ProjectMember;
 
+use App\Http\Requests\V1\BaseFormRequest;
 use App\Models\Organization;
 use Illuminate\Contracts\Validation\ValidationRule;
-use Illuminate\Foundation\Http\FormRequest;
 
 /**
  * @property Organization $organization Organization from model binding
  */
-class ProjectMemberUpdateRequest extends FormRequest
+class ProjectMemberUpdateRequest extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -21,12 +21,12 @@ class ProjectMemberUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'billable_rate' => [
-                'nullable',
-                'integer',
-                'min:0',
-                'max:2147483647',
-            ],
+            'billable_rate' => array_merge(
+                [
+                    'nullable',
+                ],
+                $this->moneyRules()
+            ),
         ];
     }
 

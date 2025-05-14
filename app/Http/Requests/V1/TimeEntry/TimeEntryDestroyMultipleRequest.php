@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\V1\TimeEntry;
 
+use App\Http\Requests\V1\BaseFormRequest;
 use App\Models\Organization;
 use Illuminate\Contracts\Validation\ValidationRule;
-use Illuminate\Foundation\Http\FormRequest;
 
 /**
  * @property Organization $organization Organization from model binding
  */
-class TimeEntryDestroyMultipleRequest extends FormRequest
+class TimeEntryDestroyMultipleRequest extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.

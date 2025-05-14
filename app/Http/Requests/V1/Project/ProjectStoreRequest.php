@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\V1\Project;
 
+use App\Http\Requests\V1\BaseFormRequest;
 use App\Models\Client;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Rules\ColorRule;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Str;
 use Korridor\LaravelModelValidationRules\Rules\ExistsEloquent;
 use Korridor\LaravelModelValidationRules\Rules\UniqueEloquent;
@@ -18,7 +18,7 @@ use Korridor\LaravelModelValidationRules\Rules\UniqueEloquent;
 /**
  * @property Organization $organization Organization from model binding
  */
-class ProjectStoreRequest extends FormRequest
+class ProjectStoreRequest extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -55,12 +55,12 @@ class ProjectStoreRequest extends FormRequest
                 'required',
                 'boolean',
             ],
-            'billable_rate' => [
-                'nullable',
-                'integer',
-                'min:0',
-                'max:2147483647',
-            ],
+            'billable_rate' => array_merge(
+                [
+                    'nullable',
+                ],
+                $this->moneyRules()
+            ),
             // ID of the client
             'client_id' => [
                 'present',
