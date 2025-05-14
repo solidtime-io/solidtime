@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\V1\TimeEntry;
 
+use App\Http\Requests\V1\BaseFormRequest;
 use App\Models\Member;
 use App\Models\Organization;
 use App\Models\Project;
@@ -11,13 +12,12 @@ use App\Models\Tag;
 use App\Models\Task;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Foundation\Http\FormRequest;
 use Korridor\LaravelModelValidationRules\Rules\ExistsEloquent;
 
 /**
  * @property Organization $organization Organization from model binding
  */
-class TimeEntryUpdateRequest extends FormRequest
+class TimeEntryUpdateRequest extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.

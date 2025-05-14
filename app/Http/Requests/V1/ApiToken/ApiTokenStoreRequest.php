@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\V1\ApiToken;
 
-use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Requests\V1\BaseFormRequest;
 
-class ApiTokenStoreRequest extends FormRequest
+class ApiTokenStoreRequest extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.

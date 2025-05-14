@@ -7,17 +7,17 @@ namespace App\Http\Requests\V1\Report;
 use App\Enums\TimeEntryAggregationType;
 use App\Enums\TimeEntryAggregationTypeInterval;
 use App\Enums\Weekday;
+use App\Http\Requests\V1\BaseFormRequest;
 use App\Models\Organization;
 use Illuminate\Contracts\Validation\Rule as LegacyValidationRule;
 use Illuminate\Contracts\Validation\ValidationRule;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
 
 /**
  * @property Organization $organization Organization from model binding
  */
-class ReportStoreRequest extends FormRequest
+class ReportStoreRequest extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.

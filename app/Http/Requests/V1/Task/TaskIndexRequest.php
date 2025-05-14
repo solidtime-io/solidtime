@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\V1\Task;
 
+use App\Http\Requests\V1\BaseFormRequest;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Service\PermissionStore;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 use Korridor\LaravelModelValidationRules\Rules\ExistsEloquent;
 
 /**
  * @property Organization $organization Organization from model binding
  */
-class TaskIndexRequest extends FormRequest
+class TaskIndexRequest extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.

@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\V1\Client;
 
+use App\Http\Requests\V1\BaseFormRequest;
 use App\Models\Client;
 use App\Models\Organization;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Foundation\Http\FormRequest;
 use Korridor\LaravelModelValidationRules\Rules\UniqueEloquent;
 
 /**
  * @property Organization $organization Organization from model binding
  */
-class ClientStoreRequest extends FormRequest
+class ClientStoreRequest extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.
