@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import FormSection from '@/Components/FormSection.vue';
 import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
-import {computed, ref} from 'vue';
+import {computed, ref, inject, type ComputedRef} from 'vue';
 import InputLabel from '@/packages/ui/src/Input/InputLabel.vue';
 import {
     api,
@@ -23,6 +23,7 @@ import {useNotificationsStore} from "@/utils/notification";
 import {useClipboard} from "@vueuse/core";
 import { formatDateTimeLocalized} from "../../../packages/ui/src/utils/time";
 import {ClockIcon} from "@heroicons/vue/20/solid";
+import type { Organization } from '@/packages/api/src';
 
 const queryClient = useQueryClient();
 
@@ -33,6 +34,8 @@ const { handleApiRequestNotifications } = useNotificationsStore();
 const newToken = ref('');
 
 const { copy, copied, isSupported } = useClipboard();
+
+const organization = inject<ComputedRef<Organization>>('organization');
 
 async function createApiToken(){
     await handleApiRequestNotifications(
@@ -213,10 +216,10 @@ const revokeApiTokenMutation = useMutation({
                                     <div>{{ token.name }}</div>
                                     <div class="text-sm text-text-tertiary space-x-3">
                                         <span v-if="token.created_at">
-                                            Created at {{ formatDateTimeLocalized(token.created_at) }}
+                                            Created at {{ formatDateTimeLocalized(token.created_at, organization?.date_format, organization?.time_format) }}
                                         </span>
                                         <span v-if="token.expires_at">
-                                            Expires at {{ formatDateTimeLocalized(token.expires_at) }}
+                                            Expires at {{ formatDateTimeLocalized(token.expires_at, organization?.date_format, organization?.time_format) }}
                                         </span>
                                         <span v-if="token.revoked">
                                             Revoked

@@ -146,8 +146,9 @@ export function formatDateLocalized(date: string, format: DateFormat = 'point-se
     return getLocalizedDayJs(date).format(dateFormatMap[format]);
 }
 
-export function formatDateTimeLocalized(date: string): string {
-    return getLocalizedDayJs(date).format('DD.MM.YYYY HH:mm');
+export function formatDateTimeLocalized(date: string, dateFormat?: DateFormat, timeFormat?: TimeFormat): string {
+    const format = `${dateFormatMap[dateFormat ?? 'point-separated-d-m-yyyy']} ${timeFormat === '12-hours' ? 'hh:mm A' : 'HH:mm'}`;
+    return getLocalizedDayJs(date).format(format);
 }
 
 export function formatWeek(date: string | null): string {
