@@ -152,12 +152,13 @@
             <div
                 style="font-size: 24px; font-weight: 500; margin-top: 2px;">{{ $localization->formatInterval(CarbonInterval::seconds($aggregatedData['seconds'])) }} </div>
         </div>
+        @if($showBillableRate)
         <div style="padding: 8px 12px; border-radius: 8px;">
             <div style="color: #71717a; font-weight: 600;">Total cost</div>
             <div
                 style="font-size: 24px; font-weight: 500; margin-top: 2px;">{{ $localization->formatCurrency(Money::of(BigDecimal::ofUnscaledValue($aggregatedData['cost'], 2)->__toString(), $currency)) }} </div>
         </div>
-
+        @endif
     </div>
     <div id="main-chart" style="width: 700px; height: 300px; margin: 20px auto;"></div>
 
@@ -177,7 +178,9 @@
                         {{ $group->description() }}
                     </th>
                     <th>Duration</th>
+                    @if($showBillableRate)
                     <th style="text-align: right;">Cost</th>
+                    @endif
                 </tr>
                 </thead>
                 @foreach($aggregatedData['grouped_data'] as $group1Entry)
@@ -188,23 +191,21 @@
  }};">
                             </div>
                             <span style="padding-left: 8px;">
-
                                 @if($group->is(\App\Enums\TimeEntryAggregationType::Billable))
                                     {{ $group1Entry['key'] === '1' ? 'Billable' : 'Non-billable' }}
                                 @else
                                     {{ $group1Entry['description'] ?? $group1Entry['key'] ?? 'No '.Str::lower($group->description()) }}
                                 @endif
-
-
-                    </span>
+                            </span>
                         </td>
                         <td style="text-align: left;">
                             {{ $localization->formatInterval(CarbonInterval::seconds($group1Entry['seconds'])) }}
                         </td>
+                        @if($showBillableRate)
                         <td style="text-align: right;">
                             {{ $localization->formatCurrency(Money::of(BigDecimal::ofUnscaledValue($group1Entry['cost'], 2)->__toString(), $currency)) }}
                         </td>
-
+                        @endif
                     </tr>
                 @endforeach
                 <tfoot>
@@ -215,9 +216,11 @@
                     <td style="font-weight: 500;color: #18181b;">
                         {{ $localization->formatInterval(CarbonInterval::seconds($aggregatedData['seconds'])) }}
                     </td>
+                    @if($showBillableRate)
                     <td style="text-align: right; font-weight: 500;color: #18181b;">
                         {{ $localization->formatCurrency(Money::of(BigDecimal::ofUnscaledValue($aggregatedData['cost'], 2)->__toString(), $currency)) }}
                     </td>
+                    @endif
                 </tr>
                 </tfoot>
             </table>
@@ -253,9 +256,11 @@
                     <th>
                         Duration (h)
                     </th>
+                    @if($showBillableRate)
                     <th>
                         Cost
                     </th>
+                    @endif
                 </tr>
                 </thead>
                 <tbody>
@@ -282,13 +287,17 @@
                         <td>
                             {{ $localization->formatNumber($duration->totalHours) }}
                         </td>
+                        @if($showBillableRate)
                         <td>
                             {{ $localization->formatCurrency(Money::of(BigDecimal::ofUnscaledValue($group2Entry['cost'], 2)->__toString(), $currency)) }}
                         </td>
+                        @endif
                     </tr>
                     @php
                         $totalDuration += $group2Entry['seconds'];
-                        $totalCost += $group2Entry['cost'];
+                        if ($showBillableRate) {
+                            $totalCost += $group2Entry['cost'];
+                        }
                     @endphp
                 @endforeach
                 </tbody>

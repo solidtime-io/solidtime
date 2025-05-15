@@ -62,9 +62,11 @@
                     <td style="border: 1px solid black;" data-type="{{ DataType::TYPE_STRING }}">
                         {{ round($duration->totalHours, 2) }}
                     </td>
+                    @if($showBillableRate)
                     <td style="border: 1px solid black;" data-type="{{ DataType::TYPE_STRING }}">
                         {{ round(BigDecimal::ofUnscaledValue($group2Entry['cost'], 2)->toFloat(), 2) }}
                     </td>
+                    @endif
                 @else
                     @if ($group === TimeEntryAggregationType::Billable)
                         <td style="border: 1px solid black;" data-type="{{ DataType::TYPE_STRING }}">
@@ -92,16 +94,20 @@
                         data-format="{{ NumberFormat::FORMAT_NUMBER_00 }}">
                         {{ $duration->totalHours }}
                     </td>
+                    @if($showBillableRate)
                     <td style="border: 1px solid black;" data-type="{{ DataType::TYPE_NUMERIC }}"
                         data-format="{{ NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1 }}">
                         {{ BigDecimal::ofUnscaledValue($group2Entry['cost'], 2)->__toString() }}
                     </td>
+                    @endif
                 @endif
             </tr>
             @php
                 ++$counter;
                 $totalDuration += $group2Entry['seconds'];
-                $totalCost += $group2Entry['cost'];
+                if ($showBillableRate) {
+                    $totalCost += $group2Entry['cost'];
+                }
             @endphp
         @endforeach
     @endforeach
@@ -120,9 +126,11 @@
             <td style="border: 1px solid black; font-weight: bold;" data-type="{{ DataType::TYPE_STRING }}">
                 {{ round($totalDurationInterval->totalHours, 2) }}
             </td>
+            @if($showBillableRate)
             <td style="border: 1px solid black; font-weight: bold;" data-type="{{ DataType::TYPE_STRING }}">
                 {{ round(BigDecimal::ofUnscaledValue($totalCost, 2)->toFloat(), 2) }}
             </td>
+            @endif
         @else
             <td style="border: 1px solid black; font-weight: bold;" data-type="{{ DataType::TYPE_FORMULA }}"
                 data-format="[hh]:mm:ss">
