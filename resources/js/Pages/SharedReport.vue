@@ -160,10 +160,7 @@ const tableData = computed(() => {
                         cost: el.cost,
                         description:
                             el.description ??
-                            emptyPlaceholder[
-                                aggregatedTableTimeEntries.value
-                                    ?.grouped_type ?? 'project'
-                            ],
+                            emptyPlaceholder[entry.grouped_type ?? 'project'],
                     };
                 }) ?? [],
         };
