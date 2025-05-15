@@ -6,7 +6,11 @@ import type {
     AggregatedTimeEntriesQueryParams,
     ReportingResponse,
 } from '@/packages/api/src';
-import { getCurrentOrganizationId } from '@/utils/useUser';
+import {
+    getCurrentOrganizationId,
+    getCurrentRole,
+    getCurrentUser,
+} from '@/utils/useUser';
 import { useNotificationsStore } from '@/utils/notification';
 import { useProjectsStore } from '@/utils/useProjects';
 import { useMembersStore } from '@/utils/useMembers';
@@ -106,6 +110,9 @@ export const useReportingStore = defineStore('reporting', () => {
             return projects.value.find((project) => project.id === key)?.name;
         }
         if (type === 'user') {
+            if (getCurrentRole() === 'employee') {
+                return getCurrentUser().name;
+            }
             const memberStore = useMembersStore();
             const { members } = storeToRefs(memberStore);
             return members.value.find((member) => member.user_id === key)?.name;
