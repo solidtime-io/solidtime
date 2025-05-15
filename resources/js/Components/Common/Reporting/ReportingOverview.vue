@@ -107,6 +107,10 @@ function getFilterAttributes(): AggregatedTimeEntriesQueryParams {
                 : undefined,
         tag_ids: selectedTags.value.length > 0 ? selectedTags.value : undefined,
         billable: billable.value !== null ? billable.value : undefined,
+        member_id:
+            getCurrentRole() === 'employee'
+                ? getCurrentMembershipId()
+                : undefined,
     };
     return params;
 }

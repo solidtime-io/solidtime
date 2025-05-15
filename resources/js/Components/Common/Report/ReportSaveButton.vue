@@ -5,6 +5,7 @@ import { h, ref } from 'vue';
 import type { CreateReportBodyProperties } from '@/packages/api/src';
 import { isAllowedToPerformPremiumAction } from '@/utils/billing';
 import UpgradeModal from '@/Components/Common/UpgradeModal.vue';
+import { canCreateReports } from '@/utils/permissions';
 defineProps<{
     reportProperties: CreateReportBodyProperties;
 }>();
@@ -33,7 +34,10 @@ function onSaveReportClick() {
         <strong>Sharable Reports</strong> is only available in solidtime
         Professional.
     </UpgradeModal>
-    <SecondaryButton :icon="SaveIcon" @click="onSaveReportClick"
+    <SecondaryButton
+        v-if="canCreateReports()"
+        :icon="SaveIcon"
+        @click="onSaveReportClick"
         >Save Report</SecondaryButton
     >
 </template>
