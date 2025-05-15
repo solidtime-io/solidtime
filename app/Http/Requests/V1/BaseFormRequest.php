@@ -8,9 +8,7 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class BaseFormRequest extends FormRequest
 {
-
     /**
-     * @param bool $bigInt
      * @return list<string>
      */
     protected function moneyRules(bool $bigInt = false): array

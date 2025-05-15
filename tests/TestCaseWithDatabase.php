@@ -56,10 +56,12 @@ abstract class TestCaseWithDatabase extends TestCase
     /**
      * @return object{user: User, organization: Organization, member: Member, owner: User, ownerMember: Member}
      */
-    public function createUserWithRole(Role $role): object
+    public function createUserWithRole(Role $role, bool $employeesCanSeeBillableRates = false): object
     {
         $owner = User::factory()->create();
-        $organization = Organization::factory()->withOwner($owner)->create();
+        $organization = Organization::factory()->withOwner($owner)->create([
+            'employees_can_see_billable_rates' => $employeesCanSeeBillableRates,
+        ]);
         $ownerMember = Member::factory()->forUser($owner)->forOrganization($organization)->role(Role::Owner)->create();
         $owner->currentOrganization()->associate($organization);
         $owner->save();
