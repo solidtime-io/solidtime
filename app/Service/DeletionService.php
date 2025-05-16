@@ -100,12 +100,18 @@ class DeletionService
 
         // Make sure all users have at least one organization and delete placeholders
         foreach ($users as $user) {
+            /** @var User $user */
             if ($ignoreUser !== null && $user->is($ignoreUser)) {
                 continue;
             }
             if ($user->is_placeholder) {
                 $user->delete();
             } else {
+                if ($user->current_team_id === $organization->getKey()) {
+                    $user->currentOrganization()->disassociate();
+                    $user->save();
+                }
+
                 $this->userService->makeSureUserHasAtLeastOneOrganization($user);
                 $this->userService->makeSureUserHasCurrentOrganization($user);
             }
