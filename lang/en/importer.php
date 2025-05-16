@@ -9,7 +9,8 @@ return [
             '2. In the same preferences page change the language of Clockfiy to English.<br>'.
             '3. Go to REPORTS -> TIME -> Detailed in the navigation on the left. <br>'.
             '4. Now select the date range that you want to export in the right top. '.
-            'It is currently not possible to select more than one year. You can export each year separately and import them one after another .'.
+            'In the free Clockify plan it\'s currently not possible to select more than one year. '.
+            'You can export each year separately and import them one after another.'.
             '<br> 4. Now click Export -> Save as CSV. The Export dropdown is in the header of the export table left of the printer symbol. '.
             '<br><br>Before you import make sure that the Timezone settings in Clockify are the same as in solidtime.',
     ],
