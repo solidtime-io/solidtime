@@ -140,12 +140,14 @@
             <div
                 style="font-size: 24px; font-weight: 500; margin-top: 2px;">{{ $localization->formatInterval(CarbonInterval::seconds($aggregatedData['seconds'])) }} </div>
         </div>
+        @if($showBillableRate)
         <div style="padding: 8px 12px; border-radius: 8px;">
             <div style="color: #71717a; font-weight: 600;">Total cost</div>
-            <div
-                style="font-size: 24px; font-weight: 500; margin-top: 2px;">{{ $localization->formatCurrency(Money::of(BigDecimal::ofUnscaledValue($aggregatedData['cost'], 2)->__toString(), $currency)) }} </div>
+            <div style="font-size: 24px; font-weight: 500; margin-top: 2px;">
+                {{ $localization->formatCurrency(Money::of(BigDecimal::ofUnscaledValue($aggregatedData['cost'], 2)->__toString(), $currency)) }}
+            </div>
         </div>
-
+        @endif
     </div>
     <div>
         <table style="width: 100%;">
