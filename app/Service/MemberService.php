@@ -164,6 +164,11 @@ class MemberService
     public function makeMemberToPlaceholder(Member $member, bool $makeSureUserHasAtLeastOneOrganization = true): void
     {
         $user = $member->user;
+        if ($user->current_team_id === $member->organization_id) {
+            $user->currentTeam()->disassociate();
+            $user->save();
+        }
+
         $placeholderUser = $user->replicate();
         $placeholderUser->is_placeholder = true;
         $placeholderUser->save();
@@ -175,6 +180,7 @@ class MemberService
         $this->userService->assignOrganizationEntitiesToDifferentUser($member->organization, $user, $placeholderUser);
         if ($makeSureUserHasAtLeastOneOrganization) {
             $this->userService->makeSureUserHasAtLeastOneOrganization($user);
+            $this->userService->makeSureUserHasCurrentOrganization($user);
         }
     }
 }

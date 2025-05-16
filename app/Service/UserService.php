@@ -114,13 +114,15 @@ class UserService
 
     public function makeSureUserHasCurrentOrganization(User $user): void
     {
-        if ($user->currentOrganization !== null) {
+        if ($user->current_team_id !== null) {
             return;
         }
 
         $organization = $user->organizations()->first();
-        $user->currentOrganization()->associate($organization);
-        $user->save();
+        if ($organization !== null) {
+            $user->currentOrganization()->associate($organization);
+            $user->save();
+        }
     }
 
     /**
