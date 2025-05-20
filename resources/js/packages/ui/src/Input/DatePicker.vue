@@ -1,76 +1,84 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
 import {
-    getDayJsInstance,
-    getLocalizedDayJs,
-} from '@/packages/ui/src/utils/time';
-import { twMerge } from 'tailwind-merge';
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/Components/ui/popover';
+import { Button } from '@/Components/ui/button';
+import { Calendar } from '@/Components/ui/calendar';
+import { CalendarIcon } from 'lucide-vue-next';
+import { formatDateLocalized } from '@/packages/ui/src/utils/time';
+import { parseDate, type DateValue } from '@internationalized/date';
+import { computed, inject, type ComputedRef } from 'vue';
+import { type Organization } from '@/packages/api/src';
+import { getLocalizedDayJs } from '@/packages/ui/src/utils/time';
 
 const props = defineProps<{
     class?: string;
     tabindex?: string;
 }>();
 
-// This has to be a localized timestamp, not UTC
-const model = defineModel<string | null>({
-    default: null,
-});
+const model = defineModel<string | null>();
+const emit = defineEmits<{
+    changed: [string];
+}>();
 
-const tempDate = ref(getLocalizedDayJs(model.value).format('YYYY-MM-DD'));
-
-watch(model, (value) => {
-    tempDate.value = getLocalizedDayJs(value).format('YYYY-MM-DD');
-});
-
-function updateDate(event: Event) {
-    const target = event.target as HTMLInputElement;
-    const newValue = target.value;
-    const newDate = getDayJsInstance()(newValue);
-    if (newDate.isValid()) {
-        model.value = getLocalizedDayJs(model.value)
-            .set('year', newDate.year())
-            .set('month', newDate.month())
-            .set('date', newDate.date())
-            .format();
-        emit('changed', model.value);
+const handleChange = (date: DateValue | undefined) => {
+    if (!date) {
+        model.value = null;
+        return;
     }
-}
 
-const datePicker = ref<HTMLInputElement | null>(null);
+    const dayjs = getLocalizedDayJs(model.value);
+    model.value = dayjs
+        .year(date.year)
+        .month(date.month - 1) // CalendarDate uses 1-based months
+        .date(date.day)
+        .format();
+    emit('changed', model.value);
+};
 
-function updateTempValue(event: Event) {
-    const target = event.target as HTMLInputElement;
-    tempDate.value = target.value;
-}
+const date = computed(() => {
+    return model.value
+        ? parseDate(getLocalizedDayJs(model.value).format('YYYY-MM-DD'))
+        : undefined;
+});
 
-const emit = defineEmits(['changed']);
+const organization = inject<ComputedRef<Organization>>('organization');
 </script>
 
 <template>
-    <div class="flex items-center text-text-secondary">
-        <input
-            id="start"
-            ref="datePicker"
-            :tabindex="tabindex"
-            :class="
-                twMerge(
-                    'bg-input-background border text-text-primary border-input-border focus-visible:outline-0 focus-visible:border-input-border-active focus-visible:ring-0 rounded-md',
-                    props.class
-                )
-            "
-            type="date"
-            name="trip-start"
-            :value="tempDate"
-            @change="updateTempValue"
-            @blur="updateDate"
-            @keydown.enter="updateDate" />
-    </div>
+    <Popover>
+        <PopoverTrigger as-child>
+            <Button
+                variant="input"
+                size="sm"
+                :class="[
+                    'w-full gap-1.5 justify-center text-left font-normal',
+                    !model && 'text-muted-foreground',
+                    props.class,
+                ]"
+                :tabindex="tabindex">
+                <CalendarIcon class="h-3 w-3" />
+                <span class="text-center">
+                    {{
+                        model
+                            ? formatDateLocalized(
+                                  model,
+                                  organization?.date_format
+                              )
+                            : 'Pick a date'
+                    }}
+                </span>
+            </Button>
+        </PopoverTrigger>
+        <PopoverContent class="w-auto p-0">
+            <Calendar
+                mode="single"
+                :model-value="date"
+                :initial-focus="true"
+                @update:model-value="handleChange"
+                />
+        </PopoverContent>
+    </Popover>
 </template>
-
-<style scoped>
-input::-webkit-calendar-picker-indicator {
-    filter: invert(1);
-
-    opacity: 0.2;
-}
-</style>

@@ -29,7 +29,7 @@ import DurationHumanInput from '@/packages/ui/src/Input/DurationHumanInput.vue';
 
 import { InformationCircleIcon } from '@heroicons/vue/20/solid';
 import type { Tag, Task } from '@/packages/api/src';
-import TimePickerSimple from "@/packages/ui/src/Input/TimePickerSimple.vue";
+import TimePickerSimple from '@/packages/ui/src/Input/TimePickerSimple.vue';
 
 const show = defineModel('show', { default: false });
 const saving = ref(false);
@@ -148,9 +148,7 @@ type BillableOption = {
                     <div class="flex-1 min-w-0">
                         <TimeTrackerProjectTaskDropdown
                             v-model:project="timeEntry.project_id"
-                            v-model:task="
-                                timeEntry.task_id
-                            "
+                            v-model:task="timeEntry.task_id"
                             :clients
                             :create-project
                             :create-client
@@ -160,7 +158,9 @@ type BillableOption = {
                             class="bg-input-background"
                             :projects="projects"
                             :tasks="tasks"
-                            :enable-estimated-time="enableEstimatedTime"></TimeTrackerProjectTaskDropdown>
+                            :enable-estimated-time="
+                                enableEstimatedTime
+                            "></TimeTrackerProjectTaskDropdown>
                     </div>
                     <div class="flex items-center space-x-2">
                         <div class="flex-col">
@@ -242,37 +242,31 @@ type BillableOption = {
                         </div>
                     </div>
                 </div>
-                <div class="">
-                    <InputLabel>Start</InputLabel>
-                    <div class="flex flex-col items-center space-y-2 mt-1">
+                <div class="grid gap-2 grid-cols-2">
+                    <div class="space-y-1">
+                        <InputLabel>Start</InputLabel>
                         <TimePickerSimple
-
                             v-model="localStart"
                             size="large"></TimePickerSimple>
-                        <DatePicker
-                            v-model="localStart"
-                            tabindex="1"
-                            class="text-xs text-text-tertiary max-w-28 px-1.5 py-1.5"></DatePicker>
                     </div>
-                </div>
-                <div class="">
-                    <InputLabel>End</InputLabel>
-                    <div class="flex flex-col items-center space-y-2 mt-1">
+                    <div class="space-y-1">
+                        <InputLabel>End</InputLabel>
                         <TimePickerSimple
                             v-model="localEnd"
                             size="large"></TimePickerSimple>
-                        <DatePicker
-                            v-model="localEnd"
-                            tabindex="1"
-                            class="text-xs text-text-tertiary max-w-28 px-1.5 py-1.5"></DatePicker>
                     </div>
+                    <DatePicker
+                        v-model="localStart"
+                        class="text-xs text-text-tertiary max-w-28 px-1.5 py-1.5"></DatePicker>
+                    <DatePicker
+                        v-model="localEnd"
+                        class="text-xs text-text-tertiary max-w-28 px-1.5 py-1.5"></DatePicker>
                 </div>
             </div>
         </template>
         <template #footer>
-            <SecondaryButton tabindex="2" @click="show = false"> Cancel</SecondaryButton>
+            <SecondaryButton @click="show = false">Cancel</SecondaryButton>
             <PrimaryButton
-                tabindex="2"
                 class="ms-3"
                 :class="{ 'opacity-25': saving }"
                 :disabled="saving"

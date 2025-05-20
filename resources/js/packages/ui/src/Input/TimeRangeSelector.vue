@@ -52,26 +52,22 @@ watch(focused, (newValue, oldValue) => {
 </script>
 
 <template>
-    <div
+    <form
         ref="dropdownContent"
         class="grid grid-cols-2 divide-x divide-card-background-separator text-center py-2">
-        <div
-            class="px-2"
-            @keydown.enter.prevent="nextTick(() => emit('close'))">
-            <div class="font-semibold text-text-primary text-sm pb-2">Start</div>
+        <div class="px-2">
+            <div class="font-semibold text-text-primary text-sm pb-2">
+                Start
+            </div>
             <div class="space-y-2">
                 <TimePickerSimple
                     v-model="tempStart"
                     data-testid="time_entry_range_start"
                     tabindex="0"
                     :focus
+                    @keydown.enter.prevent="nextTick(() => emit('close'))"
                     @keydown.exact.tab.shift.stop.prevent="emit('close')"
                     @changed="updateTimeEntry"></TimePickerSimple>
-                <DatePicker
-                    v-model="tempStart"
-                    class="text-xs text-text-tertiary max-w-24 px-1.5 py-1.5"
-                    @changed="updateTimeEntry"
-                    @blur.stop.prevent="emit('close')"></DatePicker>
             </div>
         </div>
         <div class="px-2">
@@ -80,16 +76,29 @@ watch(focused, (newValue, oldValue) => {
                 <TimePickerSimple
                     v-model="tempEnd"
                     data-testid="time_entry_range_end"
+                    @keydown.enter.prevent="nextTick(() => emit('close'))"
                     @changed="updateTimeEntry"></TimePickerSimple>
-                <DatePicker
-                    v-model="tempEnd"
-                    class="text-xs text-text-tertiary max-w-24 px-1.5 py-1.5"
-                    @changed="updateTimeEntry"></DatePicker>
             </div>
             <div v-else class="text-text-secondary">-- : --</div>
-            <div tabindex="0" @focusin="emit('close')"></div>
         </div>
-    </div>
+        <div class="px-2 pt-2">
+            <DatePicker
+                v-model="tempStart"
+                class="text-xs text-text-tertiary max-w-28 px-1.5 py-1.5"
+                @changed="updateTimeEntry"></DatePicker>
+        </div>
+        <div class="px-2 pt-2">
+            <DatePicker
+                v-if="tempEnd !== null"
+                v-model="tempEnd"
+                class="text-xs text-text-tertiary max-w-28 px-1.5 py-1.5"
+                @changed="updateTimeEntry"></DatePicker>
+        </div>
+        <div
+            tabindex="0"
+            class="focus-visible:outline-none"
+            @focusin="emit('close')"></div>
+    </form>
 </template>
 
 <style></style>
