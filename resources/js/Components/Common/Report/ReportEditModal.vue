@@ -118,7 +118,9 @@ async function submit() {
                         v-if="report.is_public"
                         class="flex items-center space-x-4">
                         <InputLabel for="public_until" value="Expires at" />
-                        <DatePicker id="public_until"></DatePicker>
+                        <DatePicker 
+                        id="public_until"
+                        size="input"></DatePicker>
                     </div>
                 </div>
             </div>

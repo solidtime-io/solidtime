@@ -4,7 +4,7 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from '@/Components/ui/popover';
-import { Button } from '@/Components/ui/button';
+import { Button, type ButtonVariants } from '@/Components/ui/button';
 import { Calendar } from '@/Components/ui/calendar';
 import { CalendarIcon } from 'lucide-vue-next';
 import { formatDateLocalized } from '@/packages/ui/src/utils/time';
@@ -16,6 +16,7 @@ import { getLocalizedDayJs } from '@/packages/ui/src/utils/time';
 const props = defineProps<{
     class?: string;
     tabindex?: string;
+    size: ButtonVariants['size'];
 }>();
 
 const model = defineModel<string | null>();
@@ -52,14 +53,21 @@ const organization = inject<ComputedRef<Organization>>('organization');
         <PopoverTrigger as-child>
             <Button
                 variant="input"
-                size="sm"
+                :size="size"
                 :class="[
-                    'w-full gap-1.5 justify-center text-left font-normal',
+                    size === 'sm' ? 'gap-1.5' : 'gap-2',
+                    'w-full justify-center text-left font-normal',
                     !model && 'text-muted-foreground',
                     props.class,
                 ]"
                 :tabindex="tabindex">
-                <CalendarIcon class="h-3 w-3" />
+                <CalendarIcon
+:class="[
+                    size === 'xs' ? 'h-3 w-3' : 
+                    size === 'sm' ? 'h-3 w-3' : 
+                    size === 'lg' ? 'h-4.5 w-4.5' : 
+                    'h-4 w-4'
+                ]" />
                 <span class="text-center">
                     {{
                         model
@@ -77,8 +85,7 @@ const organization = inject<ComputedRef<Organization>>('organization');
                 mode="single"
                 :model-value="date"
                 :initial-focus="true"
-                @update:model-value="handleChange"
-                />
+                @update:model-value="handleChange" />
         </PopoverContent>
     </Popover>
 </template>

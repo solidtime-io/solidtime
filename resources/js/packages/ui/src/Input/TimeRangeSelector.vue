@@ -84,6 +84,7 @@ watch(focused, (newValue, oldValue) => {
         <div class="px-2 pt-2">
             <DatePicker
                 v-model="tempStart"
+                size="sm"
                 class="text-xs text-text-tertiary max-w-28 px-1.5 py-1.5"
                 @changed="updateTimeEntry"></DatePicker>
         </div>
@@ -91,6 +92,7 @@ watch(focused, (newValue, oldValue) => {
             <DatePicker
                 v-if="tempEnd !== null"
                 v-model="tempEnd"
+                size="sm"
                 class="text-xs text-text-tertiary max-w-28 px-1.5 py-1.5"
                 @changed="updateTimeEntry"></DatePicker>
         </div>

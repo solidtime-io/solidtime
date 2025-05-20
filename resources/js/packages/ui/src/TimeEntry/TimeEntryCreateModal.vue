@@ -257,9 +257,11 @@ type BillableOption = {
                     </div>
                     <DatePicker
                         v-model="localStart"
+                        size="sm"
                         class="text-xs text-text-tertiary max-w-28 px-1.5 py-1.5"></DatePicker>
                     <DatePicker
                         v-model="localEnd"
+                        size="sm"
                         class="text-xs text-text-tertiary max-w-28 px-1.5 py-1.5"></DatePicker>
                 </div>
             </div>
