@@ -5,10 +5,7 @@ import {
     PopoverTrigger,
 } from '@/Components/ui/popover';
 import { RangeCalendar } from '@/Components/ui/range-calendar';
-import {
-    CalendarDate,
-    getLocalTimeZone,
-} from '@internationalized/date';
+import { CalendarDate } from '@internationalized/date';
 import { CalendarIcon } from 'lucide-vue-next';
 import { computed, ref, inject, type ComputedRef, watch } from 'vue';
 import { twMerge } from 'tailwind-merge';
@@ -16,8 +13,9 @@ import {
     getDayJsInstance,
     getLocalizedDayJs,
 } from '@/packages/ui/src/utils/time';
-import { formatDateLocalized } from '@/packages/ui/src/utils/time';
 import { type Organization } from '@/packages/api/src';
+import { getUserTimezone } from '@/packages/ui/src/utils/settings';
+import { formatDate } from '@/packages/ui/src/utils/time';
 
 const props = defineProps<{
     start: string;
@@ -59,12 +57,13 @@ const modelValue = computed<CalendarDateRange>({
     }),
     set: (newValue) => {
         if (newValue.start) {
-            const date = newValue.start.toDate(getLocalTimeZone());
-            emit('update:start', getDayJsInstance()(date).format('YYYY-MM-DD'));
+            console.log(newValue.start);
+            const date = newValue.start.toDate(getUserTimezone());
+            emit('update:start', getLocalizedDayJs(date.toString()).format());
         }
         if (newValue.end) {
-            const date = newValue.end.toDate(getLocalTimeZone());
-            emit('update:end', getDayJsInstance()(date).format('YYYY-MM-DD'));
+            const date = newValue.end.toDate(getUserTimezone());
+            emit('update:end', getLocalizedDayJs(date.toString()).format());
         }
     },
 });
@@ -219,12 +218,27 @@ watch(open, (value) => {
                 <CalendarIcon class="mr-2 h-4 w-4" />
                 <template v-if="modelValue.start">
                     <template v-if="modelValue.end">
-                        {{ formatDateLocalized(modelValue.start.toString(), organization?.date_format) }}
+                        {{
+                            formatDate(
+                                modelValue.start.toString(),
+                                organization?.date_format
+                            )
+                        }}
                         -
-                        {{ formatDateLocalized(modelValue.end.toString(), organization?.date_format) }}
+                        {{
+                            formatDate(
+                                modelValue.end.toString(),
+                                organization?.date_format
+                            )
+                        }}
                     </template>
                     <template v-else>
-                        {{ formatDateLocalized(modelValue.start.toString(), organization?.date_format) }}
+                        {{
+                            formatDate(
+                                modelValue.start.toString(),
+                                organization?.date_format
+                            )
+                        }}
                     </template>
                 </template>
                 <template v-else> Pick a date </template>
