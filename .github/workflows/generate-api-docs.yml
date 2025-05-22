@@ -3,6 +3,9 @@ on:
   push:
     branches:
       - main
+permissions:
+  contents: read
+
 jobs:
   api_docs:
     runs-on: ubuntu-latest
