@@ -11,6 +11,12 @@ on:
       - 'docker/prod/**'
   workflow_dispatch:
 
+permissions:
+  packages: write
+  contents: read
+  attestations: write
+  id-token: write
+
 env:
   DOCKERHUB_REPO: solidtime/solidtime
   GHCR_REPO: ghcr.io/solidtime-io/solidtime
@@ -26,11 +32,6 @@ jobs:
           - runs-on: "ubuntu-24.04"
             platform: "linux/amd64"
     runs-on: ${{ matrix.runs-on }}
-    permissions:
-      packages: write
-      contents: read
-      attestations: write
-      id-token: write
     timeout-minutes: 90
 
     steps:
@@ -163,11 +164,6 @@ jobs:
 
   merge:
     runs-on: ubuntu-latest
-    permissions:
-      packages: write
-      contents: read
-      attestations: write
-      id-token: write
     timeout-minutes: 90
     needs:
       - build
