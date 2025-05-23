@@ -119,7 +119,8 @@ function deleteSelected() {
 </script>
 
 <template>
-    <TimeEntryCreateModal
+    <AppLayout title="Dashboard" data-testid="time_view">
+        <TimeEntryCreateModal
         v-model:show="showManualTimeEntryModal"
         :enable-estimated-time="isAllowedToPerformPremiumAction()"
         :create-project="createProject"
@@ -130,7 +131,6 @@ function deleteSelected() {
         :tasks
         :tags
         :clients></TimeEntryCreateModal>
-    <AppLayout title="Dashboard" data-testid="time_view">
         <MainContainer
             class="pt-5 lg:pt-8 pb-4 lg:pb-6">
             <div
