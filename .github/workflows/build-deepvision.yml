@@ -10,12 +10,15 @@ on:
       - '.github/workflows/build-private.yml'
       - 'docker/prod/**'
   workflow_dispatch:
+permissions:
+  contents: read
 
 name: Build - DeepVision Image
 jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+
 
     steps:
       - name: "Check out code"

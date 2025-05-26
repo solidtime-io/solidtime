@@ -1,4 +1,4 @@
-# solidtime - The modern Open-Source Time Tracker
+# solidtime - The modern Open-Source Time Tracker (DeepVision fork)
 
 [![GitHub License](https://img.shields.io/github/license/solidtime-io/solidtime?style=flat-square)](https://github.com/solidtime-io/solidtime/blob/main/LICENSE.md)
 [![Codecov](https://img.shields.io/codecov/c/github/solidtime-io/solidtime?style=flat-square&logo=codecov)](https://codecov.io/gh/solidtime-io/solidtime)
@@ -49,3 +49,28 @@ Looking to report a vulnerability? Please refer our [SECURITY.md](./SECURITY.md)
 ## License
 
 This project is open-source and available under the GNU Affero General Public License v3.0 (AGPL v3). Please see the [license file](LICENSE.md) for more information.
+
+## How to sync
+
+### Sync with upstream
+To keep fork up to date with the upstream repository, use following command and resolve conflicts
+```bash
+git pull upstream main
+```
+
+### Changed files
+#### GitHub Actions
+Existing GitHub Action workflows are disabled
+* `.github/workflows/*.yml`
+
+```yaml
+...
+# DeepVision Patch: disable private build
+if: false
+...
+```
+New GitHub Action workflow [build-deepvision.yml](.github/workflows/build-deepvision.yml) is copied from [build-private.yml](.github/workflows/build-private.yml). 
+Need to keep it in sync with upstream.
+
+#### Logo
+The logo is replaced with the DeepVision logo in [AuthenticationCardLogo.vue](resources/js/Components/AuthenticationCardLogo.vue)
