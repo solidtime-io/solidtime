@@ -58,6 +58,12 @@ To keep fork up to date with the upstream repository, use following command and 
 git pull upstream main
 ```
 
+Update `composer.lock` file after merge. Use php 8.3
+```bash
+rm -f composer.lock
+composer install
+```
+
 ### Changed files
 #### GitHub Actions
 Existing GitHub Action workflows are disabled
