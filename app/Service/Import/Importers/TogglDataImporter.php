@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace App\Service\Import\Importers;
 
 use App\Enums\Role;
+use App\Service\TimezoneService;
 use Exception;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Override;
 use Spatie\TemporaryDirectory\TemporaryDirectory;
 use ValueError;
@@ -93,11 +96,22 @@ class TogglDataImporter extends DefaultImporter
             }
 
             foreach ($workspaceUsers as $workspaceUser) {
+                $timezone = Str::trim($workspaceUser->timezone);
+                if ($timezone === '') {
+                    $timezone = 'UTC';
+                }
+                if (! app(TimezoneService::class)->isValid($timezone)) {
+                    Log::warning('TogglDateImporter: Invalid timezone', [
+                        'timezone' => $timezone,
+                    ]);
+                    $timezone = 'UTC';
+                }
+
                 $userId = $this->userImportHelper->getKey([
                     'email' => $workspaceUser->email,
                 ], [
                     'name' => $workspaceUser->name,
-                    'timezone' => $workspaceUser->timezone ?? 'UTC',
+                    'timezone' => $timezone,
                     'is_placeholder' => true,
                 ], (string) $workspaceUser->uid);
                 $this->memberImportHelper->getKey([
@@ -123,9 +137,9 @@ class TogglDataImporter extends DefaultImporter
 
                 $projectId = $this->projectImportHelper->getKey([
                     'name' => $project->name,
+                    'client_id' => $clientId,
                     'organization_id' => $this->organization->getKey(),
                 ], [
-                    'client_id' => $clientId,
                     'color' => $project->color,
                     'is_billable' => $project->billable,
                     'is_public' => ! $project->is_private,

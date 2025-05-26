@@ -49,7 +49,10 @@ const showOwnershipTransferConfirmModal = ref(false);
 
 function saveWithChecks() {
     if (memberBody.value.billable_rate !== props.member.billable_rate) {
-        showBillableRateModal.value = true;
+        // make sure that the alert modal is not immediately submitted when user presses enter
+        setTimeout(() => {
+            showBillableRateModal.value = true;
+        }, 0);
         show.value = false;
     } else if (
         memberBody.value.role === 'owner' &&
@@ -151,7 +154,6 @@ const roleDescription = computed(() => {
                             class="flex-1">
                             <InputLabel
                                 for="memberBillableRate"
-                                class="mb-2"
                                 value="Billable Rate" />
                             <BillableRateInput
                                 v-model="

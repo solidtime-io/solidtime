@@ -33,6 +33,11 @@ class ColorService
 
     private const string VALID_REGEX = '/^#[0-9a-f]{6}$/';
 
+    public function isBuiltInColor(string $color): bool
+    {
+        return in_array($color, self::COLORS, true);
+    }
+
     public function getRandomColor(?string $seed = null): string
     {
         if ($seed !== null) {

@@ -127,21 +127,21 @@ const disableTwoFactorAuthentication = () => {
         <template #content>
             <h3
                 v-if="twoFactorEnabled && !confirming"
-                class="text-lg font-medium text-gray-100">
+                class="text-lg font-medium text-text-secondary">
                 You have enabled two factor authentication.
             </h3>
 
             <h3
                 v-else-if="twoFactorEnabled && confirming"
-                class="text-lg font-medium text-gray-100">
+                class="text-lg font-medium text-text-secondary">
                 Finish enabling two factor authentication.
             </h3>
 
-            <h3 v-else class="text-lg font-medium text-white">
+            <h3 v-else class="text-lg font-medium text-text-primary">
                 You have not enabled two factor authentication.
             </h3>
 
-            <div class="mt-3 max-w-xl text-sm text-muted">
+            <div class="mt-3 max-w-xl text-sm text-text-secondary">
                 <p>
                     When two factor authentication is enabled, you will be
                     prompted for a secure, random token during authentication.
@@ -152,7 +152,7 @@ const disableTwoFactorAuthentication = () => {
 
             <div v-if="twoFactorEnabled">
                 <div v-if="qrCode">
-                    <div class="mt-4 max-w-xl text-sm text-muted">
+                    <div class="mt-4 max-w-xl text-sm text-text-secondary">
                         <p v-if="confirming" class="font-semibold">
                             To finish enabling two factor authentication, scan
                             the following QR code using your phone's
@@ -173,7 +173,7 @@ const disableTwoFactorAuthentication = () => {
 
                     <div
                         v-if="setupKey"
-                        class="mt-4 max-w-xl text-sm text-muted">
+                        class="mt-4 max-w-xl text-sm text-text-secondary">
                         <p class="font-semibold">
                             Setup Key: <span v-html="setupKey"></span>
                         </p>
@@ -210,7 +210,7 @@ const disableTwoFactorAuthentication = () => {
                     </div>
 
                     <div
-                        class="grid gap-1 max-w-xl mt-4 px-4 py-4 font-mono text-sm bg-input-background text-gray-100 rounded-lg">
+                        class="grid gap-1 max-w-xl mt-4 px-4 py-4 font-mono text-sm bg-input-background text-text-secondary rounded-lg">
                         <div v-for="code in recoveryCodes" :key="code">
                             {{ code }}
                         </div>

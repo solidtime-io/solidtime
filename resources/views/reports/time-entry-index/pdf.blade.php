@@ -1,6 +1,5 @@
 @use('Brick\Math\BigDecimal')
 @use('Brick\Money\Money')
-@use('PhpOffice\PhpSpreadsheet\Cell\DataType')
 @use('Carbon\CarbonInterval')
 @inject('interval', 'App\Service\IntervalService')
 <!DOCTYPE html>
@@ -130,7 +129,7 @@
 <div>
     <p style="font-size: 32px; font-weight: 600; margin-bottom: 5px;">Detailed Report</p>
     <div style="font-size: 16px; font-weight: 600; color: #71717a;">
-        <span>{{ $start->format('d.m.Y') }} - {{ $end->format('d.m.Y') }}</span><br><br>
+        <span>{{ $localization->formatDate($start->timezone($timezone)) }} - {{ $localization->formatDate($end->timezone($timezone)) }}</span><br><br>
     </div>
 </div>
 <div class="table-wrapper">
@@ -139,14 +138,16 @@
         <div style="padding: 8px 12px; border-radius: 8px;">
             <div style="color: #71717a; font-weight: 600;">Duration</div>
             <div
-                style="font-size: 24px; font-weight: 500; margin-top: 2px;">{{ $interval->format(CarbonInterval::seconds($aggregatedData['seconds'])) }} </div>
+                style="font-size: 24px; font-weight: 500; margin-top: 2px;">{{ $localization->formatInterval(CarbonInterval::seconds($aggregatedData['seconds'])) }} </div>
         </div>
+        @if($showBillableRate)
         <div style="padding: 8px 12px; border-radius: 8px;">
             <div style="color: #71717a; font-weight: 600;">Total cost</div>
-            <div
-                style="font-size: 24px; font-weight: 500; margin-top: 2px;">{{ Money::of(BigDecimal::ofUnscaledValue($aggregatedData['cost'], 2)->__toString(), $currency)->formatTo('en_US') }} </div>
+            <div style="font-size: 24px; font-weight: 500; margin-top: 2px;">
+                {{ $localization->formatCurrency(Money::of(BigDecimal::ofUnscaledValue($aggregatedData['cost'], 2)->__toString(), $currency)) }}
+            </div>
         </div>
-
+        @endif
     </div>
     <div>
         <table style="width: 100%;">
@@ -179,16 +180,16 @@
                     </td>
                     <td style="overflow-wrap: break-word; min-width: 75px;">{{ $timeEntry->user->name }}</td>
                     <td style="overflow-wrap: break-word; min-width: 150px; text-align: center;">
-                        @if($timeEntry->start->format('Y-m-d') === $timeEntry->end->format('Y-m-d'))
-                            {{ $timeEntry->start->format('Y-m-d') }}
+                        @if($timeEntry->start->timezone($timezone)->format('Y-m-d') === $timeEntry->end->timezone($timezone)->format('Y-m-d'))
+                            {{ $localization->formatDate($timeEntry->start->timezone($timezone)) }}
                         @else
-                            {{ $timeEntry->start->format('Y-m-d') }} - <br> {{ $timeEntry->end->format('Y-m-d') }}
+                            {{ $localization->formatDate($timeEntry->start->timezone($timezone)) }} - <br> {{ $localization->formatDate($timeEntry->end->timezone($timezone)) }}
                         @endif
                         <br>
-                        {{ $timeEntry->start->format('H:i:s') }} - {{ $timeEntry->end->format('H:i:s') }}
+                        {{ $localization->formatTime($timeEntry->start->timezone($timezone)) }} - {{ $localization->formatTime($timeEntry->end->timezone($timezone)) }}
                     </td>
                     <td style="overflow-wrap: break-word; min-width: 75px;">
-                        {{ $interval->format($timeEntry->getDuration()) }}
+                        {{ $localization->formatInterval($timeEntry->getDuration()) }}
                     </td>
                     <td style="overflow-wrap: break-word;">{{ $timeEntry->billable ? 'Yes' : 'No' }}</td>
                     <td style="overflow-wrap: break-word; min-width: 75px;">{{ count($timeEntry->tagsRelation) === 0 ? '-' : $timeEntry->tagsRelation->implode('name', ', ') }}</td>

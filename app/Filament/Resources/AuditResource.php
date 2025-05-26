@@ -13,7 +13,7 @@ use Filament\Tables;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Table;
 use Illuminate\Support\Str;
-use Novadaemon\FilamentPrettyJson\PrettyJson;
+use Novadaemon\FilamentPrettyJson\Form\PrettyJsonField;
 
 class AuditResource extends Resource
 {
@@ -38,8 +38,8 @@ class AuditResource extends Resource
                     ->maxLength(255),
                 Forms\Components\TextInput::make('auditable_id')
                     ->required(),
-                PrettyJson::make('old_values'),
-                PrettyJson::make('new_values'),
+                PrettyJsonField::make('old_values'),
+                PrettyJsonField::make('new_values'),
                 Forms\Components\Textarea::make('url'),
                 Forms\Components\TextInput::make('ip_address'),
                 Forms\Components\TextInput::make('user_agent')

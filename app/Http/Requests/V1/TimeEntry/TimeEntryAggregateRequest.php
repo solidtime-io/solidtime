@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\V1\TimeEntry;
 
 use App\Enums\TimeEntryAggregationType;
+use App\Http\Requests\V1\BaseFormRequest;
 use App\Models\Client;
 use App\Models\Member;
 use App\Models\Organization;
@@ -14,7 +15,6 @@ use App\Models\Task;
 use App\Models\User;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
 use Korridor\LaravelModelValidationRules\Rules\ExistsEloquent;
@@ -22,7 +22,7 @@ use Korridor\LaravelModelValidationRules\Rules\ExistsEloquent;
 /**
  * @property Organization $organization
  */
-class TimeEntryAggregateRequest extends FormRequest
+class TimeEntryAggregateRequest extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.

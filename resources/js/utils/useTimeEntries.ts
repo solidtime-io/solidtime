@@ -14,12 +14,15 @@ import {
 import dayjs from 'dayjs';
 import { useNotificationsStore } from '@/utils/notification';
 import type { UpdateMultipleTimeEntriesChangeset } from '@/packages/api/src';
+import { useQueryClient } from "@tanstack/vue-query";
 
 export const useTimeEntriesStore = defineStore('timeEntries', () => {
     const timeEntries = ref<TimeEntry[]>(reactive([]));
 
     const allTimeEntriesLoaded = ref(false);
     const { handleApiRequestNotifications } = useNotificationsStore();
+
+    const queryClient = useQueryClient();
 
     async function patchTimeEntries(
         queryParams: TimeEntriesQueryParams = {
@@ -157,6 +160,7 @@ export const useTimeEntriesStore = defineStore('timeEntries', () => {
             timeEntries.value = timeEntries.value.map((entry) =>
                 entry.id === timeEntry.id ? response.data : entry
             );
+            queryClient.invalidateQueries({queryKey: ['timeEntry']});
         }
     }
 

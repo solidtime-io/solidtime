@@ -3,8 +3,11 @@ import Dropdown from '@/packages/ui/src/Input/Dropdown.vue';
 import { computed, ref } from 'vue';
 import TimeRangeSelector from '@/packages/ui/src/Input/TimeRangeSelector.vue';
 import dayjs, { Dayjs } from 'dayjs';
-import parse from 'parse-duration';
-import { formatDuration, getDayJsInstance } from '@/packages/ui/src/utils/time';
+import {
+    formatDuration,
+    getDayJsInstance,
+    parseTimeInput,
+} from '@/packages/ui/src/utils/time';
 import type { TimeEntry } from '@/packages/api/src';
 
 const currentTimeEntry = defineModel<TimeEntry>('currentTimeEntry', {
@@ -28,6 +31,7 @@ function pauseLiveTimerUpdate(event: FocusEvent) {
 
 function onTimeEntryEnterPress() {
     updateTimerAndStartLiveTimerUpdate();
+    open.value = false;
     const activeElement = document.activeElement as HTMLElement;
     activeElement?.blur();
 }
@@ -55,36 +59,13 @@ const currentTime = computed({
 });
 
 function updateTimerAndStartLiveTimerUpdate() {
-    const time = parse(temporaryCustomTimerEntry.value, 's');
+    const { seconds } = parseTimeInput(
+        temporaryCustomTimerEntry.value,
+        'minutes'
+    );
 
-    if (isNumeric(temporaryCustomTimerEntry.value)) {
-        const newStartDate = dayjs().subtract(
-            parseInt(temporaryCustomTimerEntry.value),
-            'm'
-        );
-        currentTimeEntry.value.start = newStartDate.utc().format();
-        if (currentTimeEntry.value.id !== '') {
-            emit('updateTimer');
-        } else {
-            emit('startTimer');
-        }
-    } else if (isHHMM(temporaryCustomTimerEntry.value)) {
-        const results = parseHHMM(temporaryCustomTimerEntry.value);
-        if (results) {
-            const newStartDate = dayjs()
-                .subtract(parseInt(results[1]), 'h')
-                .subtract(parseInt(results[2]), 'm');
-            currentTimeEntry.value.start = newStartDate.utc().format();
-            if (currentTimeEntry.value.id !== '') {
-                emit('updateTimer');
-            } else {
-                emit('startTimer');
-            }
-        }
-    }
-    // try to parse natural language like "1h 30m"
-    else if (time && time > 1) {
-        const newStartDate = dayjs().subtract(time, 's');
+    if (seconds && seconds > 0) {
+        const newStartDate = dayjs().subtract(seconds, 's');
         currentTimeEntry.value.start = newStartDate.utc().format();
         if (currentTimeEntry.value.id !== '') {
             emit('updateTimer');
@@ -92,24 +73,9 @@ function updateTimerAndStartLiveTimerUpdate() {
             emit('startTimer');
         }
     }
-    // fallback to minutes if just a number is given
     now.value = dayjs().utc();
     temporaryCustomTimerEntry.value = '';
     emit('startLiveTimer');
-}
-
-function isNumeric(value: string) {
-    return /^-?\d+$/.test(value);
-}
-
-const HHMMtimeRegex = /^([0-9]{1,2}):([0-5]?[0-9])$/;
-
-function isHHMM(value: string): boolean {
-    return HHMMtimeRegex.test(value);
-}
-
-function parseHHMM(value: string): string[] | null {
-    return value.match(HHMMtimeRegex);
 }
 
 const temporaryCustomTimerEntry = ref<string>('');
@@ -161,8 +127,8 @@ function focusNextElement(e: KeyboardEvent) {
 }
 
 function closeAndFocusInput() {
-    inputField.value?.focus();
     open.value = false;
+    inputField.value?.focus();
 }
 </script>
 
@@ -170,16 +136,17 @@ function closeAndFocusInput() {
     <div class="relative">
         <Dropdown
             v-model="open"
-            align="bottom"
+            align="center"
+            :auto-focus="false"
             :close-on-content-click="false"
-            @submit="open = false">
+            @submit="closeAndFocusInput">
             <template #trigger>
                 <input
                     ref="inputField"
                     v-model="currentTime"
                     placeholder="00:00:00"
                     data-testid="time_entry_time"
-                    class="w-[110px] lg:w-[130px] h-full text-white py-2.5 rounded-lg border-border-secondary border text-center px-4 text-base lg:text-lg font-bold bg-card-background border-none placeholder-muted focus:ring-0 transition"
+                    class="w-[110px] lg:w-[130px] h-full text-text-primary py-2.5 rounded-lg border-border-secondary border text-center px-4 text-base lg:text-lg font-semibold bg-card-background border-none placeholder-muted focus:ring-0 transition"
                     type="text"
                     @focus="pauseLiveTimerUpdate"
                     @focusin="openModalOnTab"

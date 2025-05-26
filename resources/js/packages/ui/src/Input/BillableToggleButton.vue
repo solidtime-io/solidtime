@@ -20,7 +20,7 @@ const props = withDefaults(
 
 const iconColorClasses = computed(() => {
     if (active.value) {
-        return 'text-accent-300 focus:text-accent-200 hover:text-accent-200';
+        return 'text-input-select-active focus:text-input-select-active-hover hover:text-input-select-active-hover';
     } else {
         return 'text-icon-default focus:text-icon-active hover:text-icon-active';
     }

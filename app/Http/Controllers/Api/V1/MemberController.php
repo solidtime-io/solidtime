@@ -7,12 +7,17 @@ namespace App\Http\Controllers\Api\V1;
 use App\Enums\Role;
 use App\Events\MemberMadeToPlaceholder;
 use App\Exceptions\Api\CanNotRemoveOwnerFromOrganization;
+use App\Exceptions\Api\ChangingRoleOfPlaceholderIsNotAllowed;
 use App\Exceptions\Api\ChangingRoleToPlaceholderIsNotAllowed;
 use App\Exceptions\Api\EntityStillInUseApiException;
 use App\Exceptions\Api\OnlyOwnerCanChangeOwnership;
+use App\Exceptions\Api\OnlyPlaceholdersCanBeMergedIntoAnotherMember;
 use App\Exceptions\Api\OrganizationNeedsAtLeastOneOwner;
+use App\Exceptions\Api\ThisPlaceholderCanNotBeInvitedUseTheMergeToolInsteadException;
+use App\Exceptions\Api\UserIsAlreadyMemberOfOrganizationApiException;
 use App\Exceptions\Api\UserNotPlaceholderApiException;
 use App\Http\Requests\V1\Member\MemberIndexRequest;
+use App\Http\Requests\V1\Member\MemberMergeIntoRequest;
 use App\Http\Requests\V1\Member\MemberUpdateRequest;
 use App\Http\Resources\V1\Member\MemberCollection;
 use App\Http\Resources\V1\Member\MemberResource;
@@ -24,6 +29,8 @@ use App\Service\MemberService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class MemberController extends Controller
 {
@@ -63,6 +70,7 @@ class MemberController extends Controller
      * @throws OrganizationNeedsAtLeastOneOwner
      * @throws OnlyOwnerCanChangeOwnership
      * @throws ChangingRoleToPlaceholderIsNotAllowed
+     * @throws ChangingRoleOfPlaceholderIsNotAllowed
      *
      * @operationId updateMember
      */
@@ -105,7 +113,9 @@ class MemberController extends Controller
     /**
      * Make a member a placeholder member
      *
-     * @throws AuthorizationException|CanNotRemoveOwnerFromOrganization
+     * @throws AuthorizationException|CanNotRemoveOwnerFromOrganization|ChangingRoleOfPlaceholderIsNotAllowed
+     *
+     * @operationId makePlaceholder
      */
     public function makePlaceholder(Organization $organization, Member $member, MemberService $memberService): JsonResponse
     {
@@ -113,6 +123,9 @@ class MemberController extends Controller
 
         if ($member->role === Role::Owner->value) {
             throw new CanNotRemoveOwnerFromOrganization;
+        }
+        if ($member->role === Role::Placeholder->value) {
+            throw new ChangingRoleOfPlaceholderIsNotAllowed;
         }
 
         $memberService->makeMemberToPlaceholder($member);
@@ -123,9 +136,40 @@ class MemberController extends Controller
     }
 
     /**
+     * Merge one member into another
+     *
+     * @throws AuthorizationException
+     * @throws OnlyPlaceholdersCanBeMergedIntoAnotherMember
+     * @throws \Throwable
+     *
+     * @operationId mergeMember
+     */
+    public function mergeInto(Organization $organization, Member $member, MemberMergeIntoRequest $request, MemberService $memberService): JsonResponse
+    {
+        $this->checkPermission($organization, 'members:merge-into', $member);
+
+        $user = $member->user;
+        if ($member->role !== Role::Placeholder->value || ! $user->is_placeholder) {
+            throw new OnlyPlaceholdersCanBeMergedIntoAnotherMember;
+        }
+        $memberTo = Member::findOrFail($request->getMemberId());
+
+        DB::transaction(function () use ($organization, $member, $user, $memberTo, $memberService): void {
+            $memberService->assignOrganizationEntitiesToDifferentMember($organization, $member, $memberTo);
+            $member->delete();
+            $user->delete();
+        });
+
+        return response()->json(null, 204);
+    }
+
+    /**
      * Invite a placeholder member to become a real member of the organization
      *
-     * @throws AuthorizationException|UserNotPlaceholderApiException
+     * @throws AuthorizationException
+     * @throws UserNotPlaceholderApiException
+     * @throws UserIsAlreadyMemberOfOrganizationApiException
+     * @throws ThisPlaceholderCanNotBeInvitedUseTheMergeToolInsteadException
      *
      * @operationId invitePlaceholder
      */
@@ -136,6 +180,10 @@ class MemberController extends Controller
 
         if (! $user->is_placeholder) {
             throw new UserNotPlaceholderApiException;
+        }
+
+        if (Str::endsWith($user->email, '@solidtime-import.test')) {
+            throw new ThisPlaceholderCanNotBeInvitedUseTheMergeToolInsteadException;
         }
 
         $invitationService->inviteUser($organization, $user->email, Role::Employee);

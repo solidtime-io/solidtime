@@ -49,7 +49,7 @@ const task = computed(() => {
                     </span>
                 <ChevronRightIcon
                     v-if="task"
-                    class="w-4 lg:w-5 text-muted shrink-0"></ChevronRightIcon>
+                    class="w-4 lg:w-5 text-text-secondary shrink-0"></ChevronRightIcon>
                 <div
                     v-if="task"
                     class="min-w-0 shrink text-xs truncate">

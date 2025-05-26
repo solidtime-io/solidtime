@@ -218,9 +218,7 @@ test('test that updating a the duration in the overview works on blur', async ({
     const newTimeEntry = timeEntryRows.first();
     await assertThatTimeEntryRowIsStopped(newTimeEntry);
     await page.waitForTimeout(1500);
-    const timeEntryDurationInput = newTimeEntry.getByTestId(
-        'time_entry_duration_input'
-    );
+    const timeEntryDurationInput = newTimeEntry.locator('input[name="Duration"]');
     await timeEntryDurationInput.fill('20min');
 
     await Promise.all([
@@ -238,9 +236,7 @@ test('test that updating a the duration in the overview works on blur', async ({
         timeEntryDurationInput.press('Tab'),
     ]);
 
-    await expect(
-        newTimeEntry.getByTestId('time_entry_duration_input')
-    ).toHaveValue('0h 20min');
+    await expect(timeEntryDurationInput).toHaveValue('0h 20min');
 });
 
 // Test that start stop button stops running timer

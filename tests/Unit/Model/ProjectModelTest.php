@@ -185,4 +185,19 @@ class ProjectModelTest extends ModelTestAbstract
         // Assert
         $this->assertFalse($isArchived);
     }
+
+    public function test_project_can_store_big_amounts_of_spent_time(): void
+    {
+        // Arrange
+        $project = Project::factory()->create();
+        $spentTime = 100 * 365 * 24 * 60 * 60; // 100 years in seconds
+
+        // Act
+        $project->spent_time = $spentTime;
+        $project->save();
+        $project->refresh();
+
+        // Assert
+        $this->assertSame($spentTime, $project->spent_time);
+    }
 }

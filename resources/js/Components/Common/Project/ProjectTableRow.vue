@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import ProjectMoreOptionsDropdown from '@/Components/Common/Project/ProjectMoreOptionsDropdown.vue';
 import type { Project } from '@/packages/api/src';
-import { computed, ref } from 'vue';
+import { computed, ref, inject, type ComputedRef } from 'vue';
 import { CheckCircleIcon } from '@heroicons/vue/20/solid';
 import { useClientsStore } from '@/utils/useClients';
 import { storeToRefs } from 'pinia';
@@ -15,6 +15,7 @@ import EstimatedTimeProgress from '@/packages/ui/src/EstimatedTimeProgress.vue';
 import UpgradeBadge from '@/Components/Common/UpgradeBadge.vue';
 import { formatHumanReadableDuration } from '../../../packages/ui/src/utils/time';
 import { isAllowedToPerformPremiumAction } from '@/utils/billing';
+import type { Organization } from '@/packages/api/src';
 
 const { clients } = storeToRefs(useClientsStore());
 const { tasks } = storeToRefs(useTasksStore());
@@ -46,12 +47,17 @@ function archiveProject() {
     });
 }
 
+const organization = inject<ComputedRef<Organization>>('organization');
+
 const billableRateInfo = computed(() => {
     if (props.project.is_billable) {
         if (props.project.billable_rate) {
             return formatCents(
                 props.project.billable_rate,
-                getOrganizationCurrencyString()
+                getOrganizationCurrencyString(),
+                organization?.value?.currency_format,
+                organization?.value?.currency_symbol,
+                organization?.value?.number_format
             );
         } else {
             return 'Default Rate';
@@ -61,6 +67,7 @@ const billableRateInfo = computed(() => {
 });
 
 const showEditProjectModal = ref(false);
+
 </script>
 
 <template>
@@ -69,7 +76,7 @@ const showEditProjectModal = ref(false);
         :original-project="project"></ProjectEditModal>
     <TableRow :href="route('projects.show', { project: project.id })">
         <div
-            class="whitespace-nowrap min-w-0 flex items-center space-x-5 3xl:pl-12 py-4 pr-3 text-sm font-medium text-white pl-4 sm:pl-6 lg:pl-8 3xl:pl-12">
+            class="whitespace-nowrap min-w-0 flex items-center space-x-5 3xl:pl-12 py-4 pr-3 text-sm font-medium text-text-primary pl-4 sm:pl-6 lg:pl-8 3xl:pl-12">
             <div
                 :style="{
                     backgroundColor: project.color,
@@ -79,9 +86,12 @@ const showEditProjectModal = ref(false);
             <span class="overflow-ellipsis overflow-hidden">
                 {{ project.name }}
             </span>
-            <span class="text-muted"> {{ projectTasksCount }} Tasks </span>
+            <span class="text-text-secondary">
+                {{ projectTasksCount }} Tasks
+            </span>
         </div>
-        <div class="whitespace-nowrap min-w-0 px-3 py-4 text-sm text-muted">
+        <div
+            class="whitespace-nowrap min-w-0 px-3 py-4 text-sm text-text-secondary">
             <div
                 v-if="project.client_id"
                 class="overflow-ellipsis overflow-hidden">
@@ -89,14 +99,20 @@ const showEditProjectModal = ref(false);
             </div>
             <div v-else>No client</div>
         </div>
-        <div class="whitespace-nowrap px-3 py-4 text-sm text-muted">
+        <div class="whitespace-nowrap px-3 py-4 text-sm text-text-secondary">
             <div v-if="project.spent_time">
-                {{ formatHumanReadableDuration(project.spent_time) }}
+                {{
+                    formatHumanReadableDuration(
+                        project.spent_time,
+                        organization?.interval_format,
+                        organization?.number_format
+                    )
+                }}
             </div>
             <div v-else>--</div>
         </div>
         <div
-            class="whitespace-nowrap px-3 flex items-center text-sm text-muted">
+            class="whitespace-nowrap px-3 flex items-center text-sm text-text-secondary">
             <UpgradeBadge
                 v-if="!isAllowedToPerformPremiumAction()"></UpgradeBadge>
             <EstimatedTimeProgress
@@ -107,11 +123,11 @@ const showEditProjectModal = ref(false);
         </div>
         <div
             v-if="showBillableRate"
-            class="whitespace-nowrap px-3 py-4 text-sm text-muted">
+            class="whitespace-nowrap px-3 py-4 text-sm text-text-secondary">
             {{ billableRateInfo }}
         </div>
         <div
-            class="whitespace-nowrap px-3 py-4 text-sm text-muted flex space-x-1 items-center font-medium">
+            class="whitespace-nowrap px-3 py-4 text-sm text-text-secondary flex space-x-1 items-center font-medium">
             <CheckCircleIcon class="w-5"></CheckCircleIcon>
             <span>Active</span>
         </div>

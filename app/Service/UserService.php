@@ -4,7 +4,12 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\Enums\CurrencyFormat;
+use App\Enums\DateFormat;
+use App\Enums\IntervalFormat;
+use App\Enums\NumberFormat;
 use App\Enums\Role;
+use App\Enums\TimeFormat;
 use App\Enums\Weekday;
 use App\Events\AfterCreateOrganization;
 use App\Models\Member;
@@ -17,8 +22,20 @@ use Illuminate\Support\Facades\Hash;
 
 class UserService
 {
-    public function createUser(string $name, string $email, string $password, string $timezone, Weekday $weekStart, string $currency, bool $verifyEmail = false): User
-    {
+    public function createUser(
+        string $name,
+        string $email,
+        string $password,
+        string $timezone,
+        Weekday $weekStart,
+        ?string $currency,
+        ?NumberFormat $numberFormat = null,
+        ?CurrencyFormat $currencyFormat = null,
+        ?DateFormat $dateFormat = null,
+        ?IntervalFormat $intervalFormat = null,
+        ?TimeFormat $timeFormat = null,
+        bool $verifyEmail = false
+    ): User {
         $user = new User;
         $user->name = $name;
         $user->email = $email;
@@ -30,17 +47,16 @@ class UserService
         }
         $user->save();
 
-        $organization = new Organization;
-        $organization->name = explode(' ', $user->name, 2)[0]."'s Organization";
-        $organization->personal_team = true;
-        $organization->currency = $currency;
-        $organization->owner()->associate($user);
-        $organization->save();
-
-        $organization->users()->attach(
-            $user, [
-                'role' => Role::Owner->value,
-            ]
+        $organization = app(OrganizationService::class)->createOrganization(
+            $this->getOrganizationNameForUserName($user->name),
+            $user,
+            true,
+            $currency,
+            $numberFormat,
+            $currencyFormat,
+            $dateFormat,
+            $intervalFormat,
+            $timeFormat,
         );
 
         $user->ownedTeams()->save($organization);
@@ -49,24 +65,10 @@ class UserService
     }
 
     /**
-     * Assign all organization entities (time entries, project members) from one user to another.
-     * This is useful when a placeholder user is replaced with a real user.
+     * This does NOT change the member id.
+     * This should only be used in if you want to change a member to a placeholder!
      */
     public function assignOrganizationEntitiesToDifferentUser(Organization $organization, User $fromUser, User $toUser): void
-    {
-        /** @var Member|null $toMember */
-        $toMember = Member::query()
-            ->whereBelongsTo($organization, 'organization')
-            ->whereBelongsTo($toUser, 'user')
-            ->first();
-        if ($toMember === null) {
-            throw new \InvalidArgumentException('User is not a member of the organization');
-        }
-
-        $this->assignOrganizationEntitiesToDifferentMember($organization, $fromUser, $toUser, $toMember);
-    }
-
-    public function assignOrganizationEntitiesToDifferentMember(Organization $organization, User $fromUser, User $toUser, Member $toMember): void
     {
         // Time entries
         TimeEntry::query()
@@ -74,7 +76,6 @@ class UserService
             ->whereBelongsTo($fromUser, 'user')
             ->update([
                 'user_id' => $toUser->getKey(),
-                'member_id' => $toMember->getKey(),
             ]);
 
         // Project members
@@ -83,7 +84,6 @@ class UserService
             ->whereBelongsTo($fromUser, 'user')
             ->update([
                 'user_id' => $toUser->getKey(),
-                'member_id' => $toMember->getKey(),
             ]);
     }
 
@@ -94,14 +94,11 @@ class UserService
         }
 
         // Create a new organization
-        $organization = new Organization;
-        $organization->name = $user->name."'s Organization";
-        $organization->personal_team = true;
-        $organization->user_id = $user->id;
-        $organization->save();
-
-        // Attach the user to the organization
-        $organization->users()->attach($user, ['role' => Role::Owner->value]);
+        $organization = app(OrganizationService::class)->createOrganization(
+            $this->getOrganizationNameForUserName($user->name),
+            $user,
+            true
+        );
 
         // Set the organization as the user's current organization
         $user->currentOrganization()->associate($organization);
@@ -110,15 +107,22 @@ class UserService
         AfterCreateOrganization::dispatch($organization);
     }
 
+    public function getOrganizationNameForUserName(string $username): string
+    {
+        return explode(' ', $username, 2)[0]."'s Organization";
+    }
+
     public function makeSureUserHasCurrentOrganization(User $user): void
     {
-        if ($user->currentOrganization !== null) {
+        if ($user->current_team_id !== null) {
             return;
         }
 
         $organization = $user->organizations()->first();
-        $user->currentOrganization()->associate($organization);
-        $user->save();
+        if ($organization !== null) {
+            $user->currentOrganization()->associate($organization);
+            $user->save();
+        }
     }
 
     /**

@@ -18,7 +18,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
-use Novadaemon\FilamentPrettyJson\PrettyJson;
+use Novadaemon\FilamentPrettyJson\Form\PrettyJsonField;
 
 class ReportResource extends Resource
 {
@@ -58,7 +58,7 @@ class ReportResource extends Resource
                 Forms\Components\TextInput::make('share_secret')
                     ->label('Share Secret')
                     ->nullable(),
-                PrettyJson::make('properties')
+                PrettyJsonField::make('properties')
                     ->formatStateUsing(function (ReportPropertiesDto $state, Report $record): string {
                         return $record->getRawOriginal('properties');
                     })

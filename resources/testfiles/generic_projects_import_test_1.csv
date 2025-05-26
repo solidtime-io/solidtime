@@ -1,0 +1,4 @@
+name,color,billable_rate,is_public,client,billable_default,estimated_time,archived_at
+"Project for Big Company",,10001,false,"Big Company",true,,
+"Project without Client",#ef5350,,false,,false,1000,
+"Project (Archived)",#6a407f,,true,"Some client",true,0,2024-08-25T10:00:00Z

@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources;
 
+use App\Enums\CurrencyFormat;
+use App\Enums\DateFormat;
+use App\Enums\IntervalFormat;
+use App\Enums\NumberFormat;
+use App\Enums\TimeFormat;
 use App\Filament\Resources\OrganizationResource\Pages;
 use App\Filament\Resources\OrganizationResource\RelationManagers\InvitationsRelationManager;
 use App\Filament\Resources\OrganizationResource\RelationManagers\UsersRelationManager;
@@ -55,6 +60,21 @@ class OrganizationResource extends Resource
                     ->relationship(name: 'owner', titleAttribute: 'email')
                     ->searchable(['name', 'email'])
                     ->disabledOn(['edit'])
+                    ->required(),
+                Select::make('date_format')
+                    ->options(DateFormat::toSelectArray())
+                    ->required(),
+                Select::make('currency_format')
+                    ->options(CurrencyFormat::toSelectArray())
+                    ->required(),
+                Select::make('interval_format')
+                    ->options(IntervalFormat::toSelectArray())
+                    ->required(),
+                Select::make('number_format')
+                    ->options(NumberFormat::toSelectArray())
+                    ->required(),
+                Select::make('time_format')
+                    ->options(TimeFormat::toSelectArray())
                     ->required(),
                 Forms\Components\Select::make('currency')
                     ->label('Currency')

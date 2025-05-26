@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use App\Enums\Role;
+use App\Events\DatabaseSeederAfterSeed;
+use App\Events\DatabaseSeederBeforeDelete;
 use App\Models\Audit;
 use App\Models\Client;
 use App\Models\Member;
@@ -184,10 +186,13 @@ class DatabaseSeeder extends Seeder
             'email' => 'admin@example.com',
         ]);
 
+        DatabaseSeederAfterSeed::dispatch();
     }
 
     private function deleteAll(): void
     {
+        DatabaseSeederBeforeDelete::dispatch();
+
         // Laravel Passport tables
         DB::table((new RefreshToken)->getTable())->delete();
         DB::table((new Token)->getTable())->delete();
@@ -213,6 +218,9 @@ class DatabaseSeeder extends Seeder
         DB::table((new Client)->getTable())->delete();
         DB::table((new Member)->getTable())->delete();
         DB::table((new OrganizationInvitation)->getTable())->delete();
+        DB::table((new User)->getTable())->update([
+            'current_team_id' => null,
+        ]);
         DB::table((new Organization)->getTable())->delete();
         DB::table((new User)->getTable())->delete();
     }

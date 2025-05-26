@@ -73,6 +73,7 @@ class ReportController extends Controller
             false,
             $report->properties->start,
             $report->properties->end,
+            true
         );
         $historyData = $timeEntryAggregationService->getAggregatedTimeEntriesWithDescriptions(
             $timeEntriesQuery->clone(),
@@ -83,6 +84,7 @@ class ReportController extends Controller
             true,
             $report->properties->start,
             $report->properties->end,
+            true
         );
 
         return new DetailedWithDataReportResource($report, $data, $historyData);

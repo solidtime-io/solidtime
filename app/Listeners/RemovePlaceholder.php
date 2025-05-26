@@ -6,7 +6,7 @@ namespace App\Listeners;
 
 use App\Models\Member;
 use App\Models\User;
-use App\Service\UserService;
+use App\Service\MemberService;
 use Illuminate\Database\Eloquent\Builder;
 use Laravel\Jetstream\Events\TeamMemberAdded;
 
@@ -17,8 +17,11 @@ class RemovePlaceholder
      */
     public function handle(TeamMemberAdded $event): void
     {
-        /** @var UserService $userService */
-        $userService = app(UserService::class);
+        $memberService = app(MemberService::class);
+        $member = Member::query()
+            ->whereBelongsTo($event->team, 'organization')
+            ->whereBelongsTo($event->user, 'user')
+            ->firstOrFail();
         $placeholders = Member::query()
             ->whereHas('user', function (Builder $query) use ($event): void {
                 /** @var Builder<User> $query */
@@ -32,7 +35,7 @@ class RemovePlaceholder
         foreach ($placeholders as $placeholder) {
             /** @var Member $placeholder */
             $placeholderUser = $placeholder->user;
-            $userService->assignOrganizationEntitiesToDifferentUser($event->team, $placeholderUser, $event->user);
+            $memberService->assignOrganizationEntitiesToDifferentMember($event->team, $placeholder, $member);
             $placeholder->delete();
             $placeholderUser->delete();
         }

@@ -8,6 +8,7 @@ import { twMerge } from 'tailwind-merge';
 
 const props = defineProps<{
     class?: string;
+    tabindex?: string;
 }>();
 
 // This has to be a localized timestamp, not UTC
@@ -46,13 +47,14 @@ const emit = defineEmits(['changed']);
 </script>
 
 <template>
-    <div class="flex items-center text-muted">
+    <div class="flex items-center text-text-secondary">
         <input
             id="start"
             ref="datePicker"
+            :tabindex="tabindex"
             :class="
                 twMerge(
-                    'bg-input-background border text-white border-input-border focus-visible:outline-0 focus-visible:border-input-border-active focus-visible:ring-0 rounded-md',
+                    'bg-input-background border text-text-primary border-input-border focus-visible:outline-0 focus-visible:border-input-border-active focus-visible:ring-0 rounded-md',
                     props.class
                 )
             "

@@ -43,7 +43,7 @@ function getNameForKey(key: string | undefined) {
                 <span>
                     {{ getNameForKey(model) }}
                 </span>
-                <ChevronDownIcon class="text-muted w-5"></ChevronDownIcon>
+                <ChevronDownIcon class="text-text-secondary w-5"></ChevronDownIcon>
             </Badge>
         </template>
     </SelectDropdown>

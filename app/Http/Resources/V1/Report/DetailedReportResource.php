@@ -30,7 +30,7 @@ class DetailedReportResource extends BaseResource
             /** @var bool $is_public Whether the report can be accessed via an external link */
             'is_public' => $this->resource->is_public,
             /** @var string|null $public_until Date until the report is public */
-            'public_until' => $this->resource->public_until?->toIso8601ZuluString(),
+            'public_until' => $this->formatDateTime($this->resource->public_until),
             /** @var string|null $shareable_link Get link to access the report externally, not set if the report is private */
             'shareable_link' => $this->resource->getShareableLink(),
             'properties' => [
@@ -41,9 +41,9 @@ class DetailedReportResource extends BaseResource
                 /** @var string $history_group Type of grouping of the historic aggregation (time chart) */
                 'history_group' => $this->resource->properties->historyGroup->value,
                 /** @var string $start Start date of the report */
-                'start' => $this->resource->properties->start->toIso8601ZuluString(),
+                'start' => $this->formatDateTime($this->resource->properties->start),
                 /** @var string $end End date of the report */
-                'end' => $this->resource->properties->end->toIso8601ZuluString(),
+                'end' => $this->formatDateTime($this->resource->properties->end),
                 /** @var bool|null $active Whether the report is active */
                 'active' => $this->resource->properties->active,
                 /** @var array<string>|null $member_ids Filter by multiple member IDs, member IDs are OR combined */
@@ -60,9 +60,9 @@ class DetailedReportResource extends BaseResource
                 'task_ids' => $this->resource->properties->taskIds?->toArray(),
             ],
             /** @var string $created_at Date when the report was created */
-            'created_at' => $this->resource->created_at?->toIso8601ZuluString(),
+            'created_at' => $this->formatDateTime($this->resource->created_at),
             /** @var string $updated_at Date when the report was last updated */
-            'updated_at' => $this->resource->updated_at?->toIso8601ZuluString(),
+            'updated_at' => $this->formatDateTime($this->resource->updated_at),
         ];
     }
 }

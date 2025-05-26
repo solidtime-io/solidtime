@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import VChart, { THEME_KEY } from 'vue-echarts';
-import { provide, ref } from 'vue';
+import { provide, inject, type ComputedRef } from 'vue';
 import { use } from 'echarts/core';
 import { CanvasRenderer } from 'echarts/renderers';
 import { PieChart } from 'echarts/charts';
@@ -11,6 +11,8 @@ import {
     TooltipComponent,
 } from 'echarts/components';
 import { formatHumanReadableDuration } from '@/packages/ui/src/utils/time';
+import { useCssVar } from "@vueuse/core";
+import type { Organization } from "@/packages/api/src";
 
 use([
     CanvasRenderer,
@@ -22,6 +24,7 @@ use([
 ]);
 
 provide(THEME_KEY, 'dark');
+const labelColor = useCssVar('--color-text-secondary', null, { observe: true });
 
 const props = defineProps<{
     weeklyProjectOverview: {
@@ -30,6 +33,8 @@ const props = defineProps<{
         color: string;
     }[];
 }>();
+
+const organization = inject<ComputedRef<Organization>>('organization');
 
 const seriesData = props.weeklyProjectOverview.map((el) => {
     return {
@@ -46,13 +51,18 @@ const seriesData = props.weeklyProjectOverview.map((el) => {
         },
     };
 });
-const option = ref({
+import { computed } from 'vue';
+
+const option = computed(() => ({
     tooltip: {
         trigger: 'item',
     },
     legend: {
         bottom: 'bottom',
         top: '250px',
+        textStyle: {
+            color: labelColor.value,
+        },
     },
     backgroundColor: 'transparent',
     series: [
@@ -62,7 +72,7 @@ const option = ref({
             },
             tooltip: {
                 valueFormatter: (value: number) => {
-                    return formatHumanReadableDuration(value);
+                    return formatHumanReadableDuration(value, organization?.value?.interval_format, organization?.value?.number_format);
                 },
             },
             data: seriesData,
@@ -71,7 +81,7 @@ const option = ref({
             type: 'pie',
         },
     ],
-});
+}));
 </script>
 
 <template>

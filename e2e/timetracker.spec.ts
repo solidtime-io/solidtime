@@ -136,6 +136,7 @@ test('test that starting and updating the time while running works', async ({
     await Promise.all([
         page.waitForResponse(async (response) => {
             return (
+                response.url().includes('/time-entries') &&
                 response.status() === 200 &&
                 (await response.headerValue('Content-Type')) ===
                     'application/json' &&

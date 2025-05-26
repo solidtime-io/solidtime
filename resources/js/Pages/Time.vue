@@ -132,7 +132,7 @@ function deleteSelected() {
         :clients></TimeEntryCreateModal>
     <AppLayout title="Dashboard" data-testid="time_view">
         <MainContainer
-            class="pt-5 lg:pt-8 pb-4 lg:pb-6 border-b border-default-background-separator">
+            class="pt-5 lg:pt-8 pb-4 lg:pb-6">
             <div
                 class="lg:flex items-end lg:divide-x divide-default-background-separator divide-y lg:divide-y-0 space-y-2 lg:space-y-0 lg:space-x-2">
                 <div class="flex-1">
@@ -191,19 +191,19 @@ function deleteSelected() {
             :tags="tags"></TimeEntryGroupedTable>
         <div v-if="timeEntries.length === 0" class="text-center pt-12">
             <ClockIcon class="w-8 text-icon-default inline pb-2"></ClockIcon>
-            <h3 class="text-white font-semibold">No time entries found</h3>
+            <h3 class="text-text-primary font-semibold">No time entries found</h3>
             <p class="pb-5">Create your first time entry now!</p>
         </div>
         <div ref="loadMoreContainer">
             <div
                 v-if="loading && !allTimeEntriesLoaded"
-                class="flex justify-center items-center py-5 text-white font-medium">
+                class="flex justify-center items-center py-5 text-text-primary font-medium">
                 <LoadingSpinner></LoadingSpinner>
                 <span> Loading more time entries... </span>
             </div>
             <div
                 v-else-if="allTimeEntriesLoaded"
-                class="flex justify-center items-center py-5 text-muted font-medium">
+                class="flex justify-center items-center py-5 text-text-secondary font-medium">
                 All time entries are loaded!
             </div>
         </div>

@@ -33,7 +33,10 @@ async function submit() {
         props.projectMember.billable_rate !==
         projectMemberBody.value.billable_rate
     ) {
-        showBillableRateModal.value = true;
+        // make sure that the alert modal is not immediately submitted when user presses enter
+        setTimeout(() => {
+            showBillableRateModal.value = true;
+        }, 0);
         return;
     }
     await updateProjectMember(props.projectMember.id, projectMemberBody.value);
@@ -83,7 +86,7 @@ useFocus(projectNameInput, { initialValue: true });
             <div class="grid grid-cols-3 items-center space-x-4">
                 <div
                     class="col-span-3 sm:col-span-2 space-x-2 flex items-center">
-                    <UserIcon class="w-4 text-muted"></UserIcon>
+                    <UserIcon class="w-4 text-text-secondary"></UserIcon>
                     <span>{{ props.name }}</span>
                 </div>
                 <div class="col-span-3 sm:col-span-1 flex-1">

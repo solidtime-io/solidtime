@@ -82,7 +82,7 @@ test('test that organization billable rate can be updated with all existing time
     await goToMembersPage(page);
     const newBillableRate = Math.round(Math.random() * 10000);
     await page.getByRole('row').first().getByRole('button').click();
-    await page.getByRole('button').getByText('Edit').first().click();
+    await page.getByRole('menuitem').getByText('Edit').click();
     await page.getByText('Organization Default Rate').click();
     await page.getByText('Custom Rate').click();
     await page

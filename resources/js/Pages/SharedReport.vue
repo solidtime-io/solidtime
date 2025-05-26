@@ -5,15 +5,16 @@ import { ChartBarIcon } from '@heroicons/vue/20/solid';
 import ReportingChart from '@/Components/Common/Reporting/ReportingChart.vue';
 import { formatHumanReadableDuration } from '@/packages/ui/src/utils/time';
 import ReportingRow from '@/Components/Common/Reporting/ReportingRow.vue';
-import { getOrganizationCurrencyString } from '@/utils/money';
 import ReportingPieChart from '@/Components/Common/Reporting/ReportingPieChart.vue';
 import { formatCents } from '@/packages/ui/src/utils/money';
-import { computed, onMounted, ref } from 'vue';
+import type { CurrencyFormat } from '@/packages/ui/src/utils/money';
+import { computed, onMounted, provide, ref } from 'vue';
 import { useQuery } from '@tanstack/vue-query';
 import { api } from '@/packages/api/src';
 import { getRandomColorWithSeed } from '@/packages/ui/src/utils/color';
 import { useReportingStore } from '@/utils/useReporting';
 import { Head } from '@inertiajs/vue3';
+import { useTheme } from '@/utils/theme';
 
 const sharedSecret = ref<string | null>(null);
 
@@ -39,6 +40,45 @@ onMounted(() => {
         sharedSecret.value = currentUrl.split('#')[1];
     }
 });
+
+const reportCurrency = computed(() => {
+    if (sharedReportResponseData.value) {
+        return sharedReportResponseData.value?.currency;
+    }
+    return 'EUR';
+});
+
+const reportIntervalFormat = computed(() => {
+    return sharedReportResponseData.value?.interval_format;
+});
+
+const reportNumberFormat = computed(() => {
+    return sharedReportResponseData.value?.number_format;
+});
+
+const reportCurrencyFormat = computed(() => {
+    return (sharedReportResponseData.value?.currency_format ??
+        'symbol-before') as CurrencyFormat;
+});
+
+const reportDateFormat = computed(() => {
+    return sharedReportResponseData.value?.date_format;
+});
+
+const reportCurrencySymbol = computed(() => {
+    return sharedReportResponseData.value?.currency_symbol;
+});
+
+provide(
+    'organization',
+    computed(() => ({
+        'number_format': reportNumberFormat.value,
+        'interval_format': reportIntervalFormat.value,
+        'currency_format': reportCurrencyFormat.value,
+        'currency_symbol': reportCurrencySymbol.value,
+        'date_format': reportDateFormat.value,
+    }))
+);
 
 const aggregatedTableTimeEntries = computed(() => {
     if (sharedReportResponseData.value) {
@@ -120,10 +160,7 @@ const tableData = computed(() => {
                         cost: el.cost,
                         description:
                             el.description ??
-                            emptyPlaceholder[
-                                aggregatedTableTimeEntries.value
-                                    ?.grouped_type ?? 'project'
-                            ],
+                            emptyPlaceholder[entry.grouped_type ?? 'project'],
                     };
                 }) ?? [],
         };
@@ -131,17 +168,22 @@ const tableData = computed(() => {
 });
 
 const { groupByOptions } = useReportingStore();
+
 function getGroupLabel(key: string) {
     return groupByOptions.find((option) => {
         return option.value === key;
     })?.label;
 }
+
+onMounted(async () => {
+    useTheme();
+});
 </script>
 
 <template>
     <Head :title="sharedReportResponseData?.name" />
 
-    <div class="text-muted">
+    <div class="text-text-secondary">
         <MainContainer
             class="py-3 sm:py-5 border-b border-default-background-separator flex justify-between items-center">
             <div class="flex items-center space-x-3 sm:space-x-6">
@@ -162,7 +204,7 @@ function getGroupLabel(key: string) {
                 <div
                     class="col-span-3 bg-card-background rounded-lg border border-card-border pt-3">
                     <div
-                        class="text-sm flex text-white items-center font-medium px-6 border-b border-card-background-separator pb-3">
+                        class="text-sm flex text-text-primary items-center font-medium px-6 border-b border-card-background-separator pb-3">
                         Group by
                         <strong class="px-2">{{ getGroupLabel(group) }}</strong>
                         and
@@ -174,7 +216,7 @@ function getGroupLabel(key: string) {
                         class="grid items-center"
                         style="grid-template-columns: 1fr 100px 150px">
                         <div
-                            class="contents [&>*]:border-card-background-separator [&>*]:border-b [&>*]:bg-tertiary [&>*]:pb-1.5 [&>*]:pt-1 text-muted text-sm">
+                            class="contents [&>*]:border-card-background-separator [&>*]:border-b [&>*]:bg-tertiary [&>*]:pb-1.5 [&>*]:pt-1 text-text-secondary text-sm">
                             <div class="pl-6">Name</div>
                             <div class="text-right">Duration</div>
                             <div class="text-right pr-6">Cost</div>
@@ -188,10 +230,9 @@ function getGroupLabel(key: string) {
                             <ReportingRow
                                 v-for="entry in tableData"
                                 :key="entry.description ?? 'none'"
-                                :entry="entry"
-                                :type="
-                                    aggregatedTableTimeEntries.grouped_type
-                                "></ReportingRow>
+                                :currency="reportCurrency"
+                                :currency-format="reportCurrencyFormat"
+                                :entry="entry"></ReportingRow>
                             <div
                                 class="contents [&>*]:transition text-text-tertiary [&>*]:h-[50px]">
                                 <div class="flex items-center pl-6 font-medium">
@@ -201,7 +242,9 @@ function getGroupLabel(key: string) {
                                     class="justify-end flex items-center font-medium">
                                     {{
                                         formatHumanReadableDuration(
-                                            aggregatedTableTimeEntries.seconds
+                                            aggregatedTableTimeEntries.seconds,
+                                            reportIntervalFormat,
+                                            reportNumberFormat
                                         )
                                     }}
                                 </div>
@@ -210,7 +253,9 @@ function getGroupLabel(key: string) {
                                     {{
                                         formatCents(
                                             aggregatedTableTimeEntries.cost,
-                                            getOrganizationCurrencyString()
+                                            reportCurrency,
+                                            reportCurrencyFormat,
+                                            reportCurrencySymbol
                                         )
                                     }}
                                 </div>
@@ -219,7 +264,7 @@ function getGroupLabel(key: string) {
                         <div
                             v-else
                             class="chart flex flex-col items-center justify-center py-12 col-span-3">
-                            <p class="text-lg text-white font-semibold">
+                            <p class="text-lg text-text-primary font-semibold">
                                 No time entries found
                             </p>
                             <p>Try to change the filters and time range</p>

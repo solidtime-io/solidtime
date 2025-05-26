@@ -6,7 +6,7 @@ namespace App\Service\ReportExport;
 
 use App\Enums\ExportFormat;
 use App\Models\TimeEntry;
-use App\Service\IntervalService;
+use App\Service\LocalizationService;
 use Illuminate\Database\Eloquent\Builder;
 use LogicException;
 use Maatwebsite\Excel\Concerns\Exportable;
@@ -37,14 +37,17 @@ class TimeEntriesDetailedExport implements FromQuery, ShouldAutoSize, WithColumn
 
     private string $timezone;
 
+    private LocalizationService $localizationService;
+
     /**
      * @param  Builder<TimeEntry>  $builder
      */
-    public function __construct(Builder $builder, ExportFormat $exportFormat, string $timezone)
+    public function __construct(Builder $builder, ExportFormat $exportFormat, string $timezone, LocalizationService $localizationService)
     {
         $this->builder = $builder;
         $this->exportFormat = $exportFormat;
         $this->timezone = $timezone;
+        $this->localizationService = $localizationService;
     }
 
     /**
@@ -113,7 +116,6 @@ class TimeEntriesDetailedExport implements FromQuery, ShouldAutoSize, WithColumn
      */
     public function map($model): array
     {
-        $interval = app(IntervalService::class);
         $duration = $model->getDuration();
 
         if ($this->exportFormat === ExportFormat::XLSX) {
@@ -125,7 +127,7 @@ class TimeEntriesDetailedExport implements FromQuery, ShouldAutoSize, WithColumn
                 $model->user->name,
                 Date::dateTimeToExcel($model->start->timezone($this->timezone)),
                 $model->end !== null ? Date::dateTimeToExcel($model->end->timezone($this->timezone)) : null,
-                $duration !== null ? $interval->format($duration) : null,
+                $duration !== null ? $this->localizationService->formatInterval($duration) : null,
                 $duration?->totalHours,
                 $model->billable ? 'Yes' : 'No',
                 $model->tagsRelation->pluck('name')->implode(', '),
@@ -139,7 +141,7 @@ class TimeEntriesDetailedExport implements FromQuery, ShouldAutoSize, WithColumn
                 $model->user->name,
                 $model->start->timezone($this->timezone)->format('Y-m-d H:i:s'),
                 $model->end?->timezone($this->timezone)?->format('Y-m-d H:i:s'),
-                $duration !== null ? (int) floor($duration->totalHours).':'.$duration->format('%I:%S') : null,
+                $duration !== null ? $this->localizationService->formatInterval($duration) : null,
                 $duration?->totalHours,
                 $model->billable ? 'Yes' : 'No',
                 $model->tagsRelation->pluck('name')->implode(', '),

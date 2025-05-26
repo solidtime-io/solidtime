@@ -1,7 +1,8 @@
 import { expect, Page } from '@playwright/test';
 import { PLAYWRIGHT_BASE_URL } from '../playwright/config';
 import { test } from '../playwright/fixtures';
-import { formatCents } from '../resources/js/packages/ui/src/utils/money';
+import { formatCentsWithOrganizationDefaults } from './utils/money';
+import type { CurrencyFormat } from '../resources/js/packages/ui/src/utils/money';
 
 async function goToProjectsOverview(page: Page) {
     await page.goto(PLAYWRIGHT_BASE_URL + '/projects');
@@ -17,7 +18,7 @@ test('test that creating and deleting a new project via the modal works', async 
     await page.getByRole('button', { name: 'Create Project' }).click();
     await page.getByLabel('Project Name').fill(newProjectName);
     await Promise.all([
-        page.getByRole('button', { name: 'Create Project' }).nth(1).click(),
+        page.getByRole('button', { name: 'Create Project' }).click(),
         page.waitForResponse(
             async (response) =>
                 response.url().includes('/projects') &&
@@ -62,12 +63,12 @@ test('test that archiving and unarchiving projects works', async ({ page }) => {
     await page.getByRole('button', { name: 'Create Project' }).click();
     await page.getByLabel('Project Name').fill(newProjectName);
 
-    await page.getByRole('button', { name: 'Create Project' }).nth(1).click();
+    await page.getByRole('button', { name: 'Create Project' }).click();
     await expect(page.getByText(newProjectName)).toBeVisible();
 
     await page.getByRole('row').first().getByRole('button').click();
     await Promise.all([
-        page.getByRole('button').getByText('Archive').first().click(),
+        page.getByRole('menuitem').getByText('Archive').first().click(),
         expect(page.getByText(newProjectName)).not.toBeVisible(),
     ]);
     await Promise.all([
@@ -77,7 +78,7 @@ test('test that archiving and unarchiving projects works', async ({ page }) => {
 
     await page.getByRole('row').first().getByRole('button').click();
     await Promise.all([
-        page.getByRole('button').getByText('Unarchive').first().click(),
+        page.getByRole('menuitem').getByText('Unarchive').first().click(),
         expect(page.getByText(newProjectName)).not.toBeVisible(),
     ]);
     await Promise.all([
@@ -96,11 +97,11 @@ test('test that updating billable rate works with existing time entries', async 
     await page.getByRole('button', { name: 'Create Project' }).click();
     await page.getByLabel('Project Name').fill(newProjectName);
 
-    await page.getByRole('button', { name: 'Create Project' }).nth(1).click();
+    await page.getByRole('button', { name: 'Create Project' }).click();
     await expect(page.getByText(newProjectName)).toBeVisible();
 
     await page.getByRole('row').first().getByRole('button').click();
-    await page.getByRole('button').getByText('Edit').first().click(),
+    await page.getByRole('menuitem').getByText('Edit').first().click();
         await page.getByText('Non-Billable').click();
     await page.getByText('Custom Rate').click();
     await page
@@ -131,7 +132,7 @@ test('test that updating billable rate works with existing time entries', async 
         page
             .getByRole('row')
             .first()
-            .getByText(formatCents(newBillableRate * 100, 'EUR'))
+            .getByText(formatCentsWithOrganizationDefaults(newBillableRate * 100))
     ).toBeVisible();
 });
 

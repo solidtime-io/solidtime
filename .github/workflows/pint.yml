@@ -1,5 +1,7 @@
 name: PHP Linting
 on: push
+permissions:
+  contents: read
 jobs:
   pint:
     # DeepVision Patch: disable api docs

@@ -58,7 +58,7 @@ import {
     PaginationRoot,
 } from 'radix-vue';
 import { useQuery, useQueryClient } from '@tanstack/vue-query';
-import { getCurrentOrganizationId } from '@/utils/useUser';
+import { getCurrentOrganizationId, getCurrentMembershipId } from '@/utils/useUser';
 import { useTimeEntriesStore } from '@/utils/useTimeEntries';
 import ReportingTabNavbar from '@/Components/Common/Reporting/ReportingTabNavbar.vue';
 import ReportingExportButton from '@/Components/Common/Reporting/ReportingExportButton.vue';
@@ -66,7 +66,7 @@ import type { ExportFormat } from '@/types/reporting';
 import { useNotificationsStore } from '@/utils/notification';
 import TimeEntryMassActionRow from '@/packages/ui/src/TimeEntry/TimeEntryMassActionRow.vue';
 import { isAllowedToPerformPremiumAction } from '@/utils/billing';
-import { canCreateProjects } from '@/utils/permissions';
+import {canCreateProjects, canViewAllTimeEntries} from '@/utils/permissions';
 import ReportingExportModal from '@/Components/Common/Reporting/ReportingExportModal.vue';
 
 const startDate = useSessionStorage<string>(
@@ -98,6 +98,7 @@ function getFilterAttributes() {
     };
     const params = {
         ...defaultParams,
+        member_id: !canViewAllTimeEntries() ? getCurrentMembershipId() : undefined,
         member_ids:
             selectedMembers.value.length > 0
                 ? selectedMembers.value
@@ -307,6 +308,8 @@ async function downloadExport(format: ExportFormat) {
                         @submit="updateFilteredTimeEntries">
                         <template #trigger>
                             <ReportingFilterBadge
+                                :count="selectedClients.length"
+                                :active="selectedClients.length > 0"
                                 title="Clients"
                                 :icon="FolderIcon"></ReportingFilterBadge>
                         </template>
@@ -420,7 +423,7 @@ async function downloadExport(format: ExportFormat) {
                 <div class="text-center pt-12">
                     <ClockIcon
                         class="w-8 text-icon-default inline pb-2"></ClockIcon>
-                    <h3 class="text-white font-semibold">
+                    <h3 class="text-text-primary font-semibold">
                         No time entries found
                     </h3>
                     <p class="pb-5">
@@ -492,6 +495,6 @@ async function downloadExport(format: ExportFormat) {
     @apply bg-secondary h-8 w-8 flex items-center justify-center rounded border border-border-tertiary text-text-secondary hover:text-text-primary transition cursor-pointer hover:border-border-secondary hover:bg-secondary focus-visible:text-text-primary focus-visible:outline-0 focus-visible:ring-2 focus-visible:ring-ring;
 }
 .pagination-item[data-selected] {
-    @apply text-white bg-accent-300/10 border border-accent-300/20 rounded-md font-medium hover:bg-accent-300/20 active:bg-accent-300/20 outline-0 focus-visible:ring-2 focus:ring-ring transition ease-in-out duration-150;
+    @apply text-text-primary bg-accent-300/10 border border-accent-300/20 rounded-md font-medium hover:bg-accent-300/20 active:bg-accent-300/20 outline-0 focus-visible:ring-2 focus:ring-ring transition ease-in-out duration-150;
 }
 </style>

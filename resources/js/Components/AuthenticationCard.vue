@@ -1,3 +1,12 @@
+<script setup lang="ts">
+import { onMounted } from "vue";
+import { useTheme } from "@/utils/theme.js";
+
+onMounted(async () => {
+    useTheme()
+});
+</script>
+
 <template>
     <div
         class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-default-background">

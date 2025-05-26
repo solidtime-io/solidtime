@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\V1\TimeEntry;
 
+use App\Http\Requests\V1\BaseFormRequest;
 use App\Models\Member;
 use App\Models\Organization;
 use App\Models\Project;
@@ -11,13 +12,12 @@ use App\Models\Tag;
 use App\Models\Task;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Foundation\Http\FormRequest;
 use Korridor\LaravelModelValidationRules\Rules\ExistsEloquent;
 
 /**
  * @property Organization $organization Organization from model binding
  */
-class TimeEntryStoreRequest extends FormRequest
+class TimeEntryStoreRequest extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -59,12 +59,12 @@ class TimeEntryStoreRequest extends FormRequest
                         ->where('project_id', $this->input('project_id'));
                 })->uuid()->withMessage(__('validation.task_belongs_to_project')),
             ],
-            // Start of time entry (ISO 8601 format, UTC timezone)
+            // Start of time entry (Format: "Y-m-d\TH:i:s\Z", UTC timezone, Example: "2000-02-22T14:58:59Z")
             'start' => [
                 'required',
                 'date_format:Y-m-d\TH:i:s\Z',
             ],
-            // End of time entry (ISO 8601 format, UTC timezone)
+            // End of time entry (Format: "Y-m-d\TH:i:s\Z", UTC timezone, Example: "2000-02-22T14:58:59Z")
             'end' => [
                 'nullable',
                 'date_format:Y-m-d\TH:i:s\Z',

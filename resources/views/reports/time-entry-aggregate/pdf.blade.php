@@ -1,13 +1,12 @@
 @use('Brick\Math\BigDecimal')
 @use('Brick\Money\Money')
-@use('PhpOffice\PhpSpreadsheet\Cell\DataType')
+@use('Illuminate\Support\Carbon')
 @use('Carbon\CarbonInterval')
-@inject('interval', 'App\Service\IntervalService')
 @inject('colorService', 'App\Service\ColorService')
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
+    <meta charset="utf-8"/>
     <title>Report</title>
     <style>
         html, body, div, span, applet, object, iframe,
@@ -131,7 +130,7 @@
 
     @if($debug)
         <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=outfit:200,300,400,500,600,700,800" rel="stylesheet" />
+        <link href="https://fonts.bunny.net/css?family=outfit:200,300,400,500,600,700,800" rel="stylesheet"/>
     @endif
 
 </head>
@@ -139,7 +138,7 @@
 <div>
     <p style="font-size: 32px; font-weight: 600; margin-bottom: 5px;">Report</p>
     <div style="font-size: 16px; font-weight: 600; color: #71717a;">
-        <span>{{ $start->format('d.m.Y') }} - {{ $end->format('d.m.Y') }}</span><br><br>
+        <span>{{ $localization->formatDate($start->timezone($timezone)) }} - {{ $localization->formatDate($end->timezone($timezone)) }}</span><br><br>
     </div>
 
 </div>
@@ -151,14 +150,15 @@
         <div style="padding: 8px 12px; border-radius: 8px;">
             <div style="color: #71717a; font-weight: 600;">Duration</div>
             <div
-                style="font-size: 24px; font-weight: 500; margin-top: 2px;">{{ $interval->format(CarbonInterval::seconds($aggregatedData['seconds'])) }} </div>
+                style="font-size: 24px; font-weight: 500; margin-top: 2px;">{{ $localization->formatInterval(CarbonInterval::seconds($aggregatedData['seconds'])) }} </div>
         </div>
+        @if($showBillableRate)
         <div style="padding: 8px 12px; border-radius: 8px;">
             <div style="color: #71717a; font-weight: 600;">Total cost</div>
             <div
-                style="font-size: 24px; font-weight: 500; margin-top: 2px;">{{ Money::of(BigDecimal::ofUnscaledValue($aggregatedData['cost'], 2)->__toString(), $currency)->formatTo('en_US') }} </div>
+                style="font-size: 24px; font-weight: 500; margin-top: 2px;">{{ $localization->formatCurrency(Money::of(BigDecimal::ofUnscaledValue($aggregatedData['cost'], 2)->__toString(), $currency)) }} </div>
         </div>
-
+        @endif
     </div>
     <div id="main-chart" style="width: 700px; height: 300px; margin: 20px auto;"></div>
 
@@ -178,7 +178,9 @@
                         {{ $group->description() }}
                     </th>
                     <th>Duration</th>
+                    @if($showBillableRate)
                     <th style="text-align: right;">Cost</th>
+                    @endif
                 </tr>
                 </thead>
                 @foreach($aggregatedData['grouped_data'] as $group1Entry)
@@ -189,23 +191,21 @@
  }};">
                             </div>
                             <span style="padding-left: 8px;">
-
                                 @if($group->is(\App\Enums\TimeEntryAggregationType::Billable))
                                     {{ $group1Entry['key'] === '1' ? 'Billable' : 'Non-billable' }}
                                 @else
                                     {{ $group1Entry['description'] ?? $group1Entry['key'] ?? 'No '.Str::lower($group->description()) }}
                                 @endif
-
-
-                    </span>
+                            </span>
                         </td>
                         <td style="text-align: left;">
-                            {{ $interval->format(CarbonInterval::seconds($group1Entry['seconds'])) }}
+                            {{ $localization->formatInterval(CarbonInterval::seconds($group1Entry['seconds'])) }}
                         </td>
+                        @if($showBillableRate)
                         <td style="text-align: right;">
-                            {{ Money::of(BigDecimal::ofUnscaledValue($group1Entry['cost'], 2)->__toString(), $currency)->formatTo('en_US') }}
+                            {{ $localization->formatCurrency(Money::of(BigDecimal::ofUnscaledValue($group1Entry['cost'], 2)->__toString(), $currency)) }}
                         </td>
-
+                        @endif
                     </tr>
                 @endforeach
                 <tfoot>
@@ -214,11 +214,13 @@
                         Total
                     </td>
                     <td style="font-weight: 500;color: #18181b;">
-                        {{ $interval->format(CarbonInterval::seconds($aggregatedData['seconds'])) }}
+                        {{ $localization->formatInterval(CarbonInterval::seconds($aggregatedData['seconds'])) }}
                     </td>
+                    @if($showBillableRate)
                     <td style="text-align: right; font-weight: 500;color: #18181b;">
-                        {{ Money::of(BigDecimal::ofUnscaledValue($aggregatedData['cost'], 2)->__toString(), $currency)->formatTo('en_US') }}
+                        {{ $localization->formatCurrency(Money::of(BigDecimal::ofUnscaledValue($aggregatedData['cost'], 2)->__toString(), $currency)) }}
                     </td>
+                    @endif
                 </tr>
                 </tfoot>
             </table>
@@ -254,9 +256,11 @@
                     <th>
                         Duration (h)
                     </th>
+                    @if($showBillableRate)
                     <th>
                         Cost
                     </th>
+                    @endif
                 </tr>
                 </thead>
                 <tbody>
@@ -278,18 +282,22 @@
                             @endif
                         </td>
                         <td>
-                            {{ $interval->format($duration) }}
+                            {{ $localization->formatInterval($duration) }}
                         </td>
                         <td>
-                            {{ round($duration->totalHours, 2) }}
+                            {{ $localization->formatNumber($duration->totalHours) }}
                         </td>
+                        @if($showBillableRate)
                         <td>
-                            {{ Money::of(BigDecimal::ofUnscaledValue($group2Entry['cost'], 2)->__toString(), $currency)->formatTo('en_US') }}
+                            {{ $localization->formatCurrency(Money::of(BigDecimal::ofUnscaledValue($group2Entry['cost'], 2)->__toString(), $currency)) }}
                         </td>
+                        @endif
                     </tr>
                     @php
                         $totalDuration += $group2Entry['seconds'];
-                        $totalCost += $group2Entry['cost'];
+                        if ($showBillableRate) {
+                            $totalCost += $group2Entry['cost'];
+                        }
                     @endphp
                 @endforeach
                 </tbody>
@@ -357,7 +365,12 @@
         animation: false,
         tooltip: {},
         xAxis: {
-            data: ['{!! collect($dataHistoryChart['grouped_data'])->pluck('key')->implode("', '") !!}'],
+            data: {!!
+                json_encode(collect($dataHistoryChart['grouped_data'])
+                    ->pluck('key')
+                    ->map(fn($value) => $localization->formatDate(Carbon::parse($value)))
+                    ->toArray())
+            !!},
             axisLabel: {
                 fontSize: 10,
                 fontWeight: 400,
@@ -382,26 +395,16 @@
             axisLabel: {
                 show: false,
                 inside: true,
-                formatter: function(value, index) {
-                    let totalSeconds = value;
-                    let hours = Math.floor(totalSeconds / 3600);
-                    if (hours < 10) {
-                        hours = "0" + hours;
-                    }
-                    totalSeconds %= 3600;
-                    let minutes = Math.floor(totalSeconds / 60);
-                    if (minutes < 10) {
-                        minutes = "0" + minutes;
-                    }
-                    return hours + ":" + minutes;
-                }
             }
         },
         series: [
             {
                 name: "time",
                 type: "bar",
-                data: [{!! collect($dataHistoryChart['grouped_data'])->pluck('seconds')->implode(', ') !!}],
+                data: {!! json_encode(collect($dataHistoryChart['grouped_data'])->map(fn($value) => (object) [
+                            'value' => $value['seconds'],
+                            'name' => ((int) $value['seconds']) === 0 ? '' : $localization->formatInterval(CarbonInterval::seconds((int) $value['seconds']))
+                        ])->toArray()) !!},
                 itemStyle: {
                     borderColor: "#7dd3fc",
                     color: "#7dd3fc"
@@ -414,22 +417,8 @@
                     @endif
                     fontSize: 10,
                     position: "top",
-                    formatter: function(params) {
-                        let value = params.value;
-                        if (value === 0) {
-                            return "";
-                        }
-                        let totalSeconds = value;
-                        let hours = Math.floor(totalSeconds / 3600);
-                        if (hours < 10) {
-                            hours = "0" + hours;
-                        }
-                        totalSeconds %= 3600;
-                        let minutes = Math.floor(totalSeconds / 60);
-                        if (minutes < 10) {
-                            minutes = "0" + minutes;
-                        }
-                        return hours + ":" + minutes;
+                    formatter: function (params) {
+                        return params.name;
                     }
                 }
             }

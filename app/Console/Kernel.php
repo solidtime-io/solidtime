@@ -25,6 +25,10 @@ class Kernel extends ConsoleKernel
         $schedule->command('self-host:telemetry')
             ->when(fn (): bool => config('scheduling.tasks.self_hosting_telemetry'))
             ->twiceDaily();
+
+        $schedule->command('self-host:database-consistency')
+            ->when(fn (): bool => config('scheduling.tasks.self_hosting_database_consistency'))
+            ->twiceDaily();
     }
 
     /**

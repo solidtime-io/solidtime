@@ -24,7 +24,7 @@ const logout = () => {
 </script>
 <template>
     <div class="ms-3 relative">
-        <Dropdown align="top" width="48">
+        <Dropdown align="center" width="48">
             <template #trigger>
                 <button
                     v-if="page.props.jetstream.managesProfilePhotos"

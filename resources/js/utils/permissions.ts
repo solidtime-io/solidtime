@@ -77,6 +77,14 @@ export function canDeleteMembers() {
     return currentUserHasPermission('members:delete');
 }
 
+export function canMergeMembers() {
+    return currentUserHasPermission('members:merge-into');
+}
+
+export function canMakeMembersPlaceholders() {
+    return currentUserHasPermission('members:make-placeholder');
+}
+
 export function canInvitePlaceholderMembers() {
     return currentUserHasPermission('members:invite-placeholder');
 }
@@ -101,9 +109,22 @@ export function canManageBilling() {
     return currentUserHasPermission('billing');
 }
 
+export function canViewReport() {
+    return currentUserHasPermission('reports:view');
+}
 export function canUpdateReport() {
     return currentUserHasPermission('reports:update');
 }
 export function canDeleteReport() {
     return currentUserHasPermission('reports:delete');
+}
+
+export function canViewAllTimeEntries() {
+    return currentUserHasPermission('time-entries:view:all');
+}
+export function canViewInvoices() {
+    return currentUserHasPermission('invoices:view');
+}
+export function canCreateReports() {
+    return currentUserHasPermission('reports:create');
 }

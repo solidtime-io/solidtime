@@ -27,21 +27,21 @@ class TimeEntryAggregationService
      *       grouped_data: null|array<array{
      *           key: string|null,
      *           seconds: int,
-     *           cost: int,
+     *           cost: int|null,
      *           grouped_type: string|null,
      *           grouped_data: null|array<array{
      *               key: string|null,
      *               seconds: int,
-     *               cost: int,
+     *               cost: int|null,
      *               grouped_type: null,
      *               grouped_data: null
      *           }>
      *       }>,
      *       seconds: int,
-     *       cost: int
+     *       cost: int|null
      * }
      */
-    public function getAggregatedTimeEntries(Builder $timeEntriesQuery, ?TimeEntryAggregationType $group1Type, ?TimeEntryAggregationType $group2Type, string $timezone, Weekday $startOfWeek, bool $fillGapsInTimeGroups, ?Carbon $start, ?Carbon $end): array
+    public function getAggregatedTimeEntries(Builder $timeEntriesQuery, ?TimeEntryAggregationType $group1Type, ?TimeEntryAggregationType $group2Type, string $timezone, Weekday $startOfWeek, bool $fillGapsInTimeGroups, ?Carbon $start, ?Carbon $end, bool $showBillableRate): array
     {
         $fillGapsInTimeGroupsIsPossible = $fillGapsInTimeGroups && $start !== null && $end !== null;
         $group1Select = null;
@@ -96,7 +96,7 @@ class TimeEntryAggregationService
                         $group2Response[] = [
                             'key' => $group2 === '' ? null : (string) $group2,
                             'seconds' => (int) $aggregate->get(0)->aggregate,
-                            'cost' => (int) $aggregate->get(0)->cost,
+                            'cost' => $showBillableRate ? (int) $aggregate->get(0)->cost : null,
                             'grouped_type' => null,
                             'grouped_data' => null,
                         ];
@@ -113,7 +113,7 @@ class TimeEntryAggregationService
                 $group1Response[] = [
                     'key' => $group1 === '' ? null : (string) $group1,
                     'seconds' => $group2ResponseSum,
-                    'cost' => $group2ResponseCost,
+                    'cost' => $showBillableRate ? $group2ResponseCost : null,
                     'grouped_type' => $group2Type?->value,
                     'grouped_data' => $group2Response,
                 ];
@@ -133,7 +133,7 @@ class TimeEntryAggregationService
 
         return [
             'seconds' => $group1ResponseSum,
-            'cost' => $group1ResponseCost,
+            'cost' => $showBillableRate ? $group1ResponseCost : null,
             'grouped_type' => $group1Type?->value,
             'grouped_data' => $group1Response,
         ];
@@ -148,25 +148,25 @@ class TimeEntryAggregationService
      *           description: string|null,
      *           color: string|null,
      *           seconds: int,
-     *           cost: int,
+     *           cost: int|null,
      *           grouped_type: string|null,
      *           grouped_data: null|array<array{
      *               key: string|null,
      *               description: string|null,
      *               color: string|null,
      *               seconds: int,
-     *               cost: int,
+     *               cost: int|null,
      *               grouped_type: null,
      *               grouped_data: null
      *           }>
      *       }>,
      *       seconds: int,
-     *       cost: int
+     *       cost: int|null
      * }
      */
-    public function getAggregatedTimeEntriesWithDescriptions(Builder $timeEntriesQuery, ?TimeEntryAggregationType $group1Type, ?TimeEntryAggregationType $group2Type, string $timezone, Weekday $startOfWeek, bool $fillGapsInTimeGroups, ?Carbon $start, ?Carbon $end): array
+    public function getAggregatedTimeEntriesWithDescriptions(Builder $timeEntriesQuery, ?TimeEntryAggregationType $group1Type, ?TimeEntryAggregationType $group2Type, string $timezone, Weekday $startOfWeek, bool $fillGapsInTimeGroups, ?Carbon $start, ?Carbon $end, bool $showBillableRate): array
     {
-        $aggregatedTimeEntries = $this->getAggregatedTimeEntries($timeEntriesQuery, $group1Type, $group2Type, $timezone, $startOfWeek, $fillGapsInTimeGroups, $start, $end);
+        $aggregatedTimeEntries = $this->getAggregatedTimeEntries($timeEntriesQuery, $group1Type, $group2Type, $timezone, $startOfWeek, $fillGapsInTimeGroups, $start, $end, $showBillableRate);
 
         $keysGroup1 = [];
         $keysGroup2 = [];
@@ -280,6 +280,20 @@ class TimeEntryAggregationService
                     'color' => null,
                 ];
             }
+        } elseif ($type === TimeEntryAggregationType::Description) {
+            foreach ($keys as $key) {
+                $descriptorMap[$key] = [
+                    'description' => $key,
+                    'color' => null,
+                ];
+            }
+        } elseif ($type === TimeEntryAggregationType::Billable) {
+            foreach ($keys as $key) {
+                $descriptorMap[$key] = [
+                    'description' => $key === '0' ? 'Non-billable' : 'Billable',
+                    'color' => null,
+                ];
+            }
         }
 
         return $descriptorMap;
@@ -289,12 +303,12 @@ class TimeEntryAggregationService
      * @param array<array{
      *            key: string|null,
      *            seconds: int,
-     *            cost: int,
+     *            cost: int|null,
      *            grouped_type: string|null,
      *            grouped_data: null|array<array{
      *                key: string|null,
      *                seconds: int,
-     *                cost: int,
+     *                cost: int|null,
      *                grouped_type: null|mixed,
      *                grouped_data: null|mixed
      *            }>
@@ -302,12 +316,12 @@ class TimeEntryAggregationService
      * @return array<array{
      *            key: string|null,
      *            seconds: int,
-     *            cost: int,
+     *            cost: int|null,
      *            grouped_type: string|null,
      *            grouped_data: null|array<array{
      *                key: string|null,
      *                seconds: int,
-     *                cost: int,
+     *                cost: int|null,
      *                grouped_type: null|mixed,
      *                grouped_data: null|mixed
      *            }>

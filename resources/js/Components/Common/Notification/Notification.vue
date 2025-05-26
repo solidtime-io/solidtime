@@ -10,7 +10,7 @@
         leave-to-class="opacity-0">
         <div
             v-if="show"
-            class="pointer-events-auto w-full max-w-sm overflow-hidden rounded-lg border border-card-border bg-card-background shadow-lg ring-1 ring-black text-white ring-opacity-5">
+            class="pointer-events-auto w-full max-w-sm overflow-hidden rounded-lg border border-card-border bg-card-background shadow-lg ring-1 ring-black text-text-primary ring-opacity-5">
             <div class="p-4">
                 <div class="flex items-start">
                     <div class="flex-shrink-0">
@@ -24,17 +24,17 @@
                             aria-hidden="true" />
                     </div>
                     <div class="ml-3 w-0 flex-1 pt-0.5">
-                        <p class="text-sm font-medium text-white">
+                        <p class="text-sm font-medium text-text-primary">
                             {{ title }}
                         </p>
-                        <p v-if="message" class="mt-1 text-sm text-muted">
+                        <p v-if="message" class="mt-1 text-sm text-text-secondary">
                             {{ message }}
                         </p>
                     </div>
                     <div class="ml-4 flex flex-shrink-0">
                         <button
                             type="button"
-                            class="inline-flex rounded-md bg-card-background text-muted hover:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                            class="inline-flex rounded-md bg-card-background text-text-secondary hover:text-text-primary focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                             @click="show = false">
                             <span class="sr-only">Close</span>
                             <XMarkIcon class="h-5 w-5" aria-hidden="true" />

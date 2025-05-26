@@ -10,6 +10,8 @@ on:
       - '.github/workflows/build-private.yml'
       - 'docker/prod/**'
   workflow_dispatch:
+permissions:
+  contents: read
 
 name: Build - Private
 jobs:
@@ -19,6 +21,7 @@ jobs:
 
     runs-on: ubuntu-latest
     timeout-minutes: 20
+
 
     steps:
       - name: "Check out code"
@@ -110,6 +113,24 @@ jobs:
       - name: "Install npm dependencies in services extension"
         run: cd extensions/Services && npm ci
 
+      - name: "Checkout invoicing extension"
+        uses: actions/checkout@v4
+        with:
+          repository: solidtime-io/extension-invoicing
+          path: extensions/Invoicing
+          ssh-key: ${{ secrets.SSH_PRIVATE_KEY_INVOICING_EXTENSION }}
+
+      - name: "Install composer dependencies in invoicing extension"
+        uses: php-actions/composer@v6
+        with:
+          working_dir: "extensions/Invoicing"
+          command: install
+          only_args: --no-dev --no-ansi --no-interaction --prefer-dist --ignore-platform-reqs --classmap-authoritative
+          php_version: 8.3
+
+      - name: "Install npm dependencies in invoicing extension"
+        run: cd extensions/Invoicing && npm ci
+
       - name: "Setup PHP with PECL extension"
         uses: shivammathur/setup-php@v2
         with:
@@ -129,6 +150,9 @@ jobs:
 
       - name: "Activate services extension"
         run: php artisan module:enable Services
+
+      - name: "Activate invoicing extension"
+        run: php artisan module:enable Invoicing
 
       - name: "Install npm dependencies"
         run: npm ci

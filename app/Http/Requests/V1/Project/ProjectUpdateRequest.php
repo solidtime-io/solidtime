@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\V1\Project;
 
+use App\Http\Requests\V1\BaseFormRequest;
 use App\Models\Client;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Rules\ColorRule;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Str;
 use Korridor\LaravelModelValidationRules\Rules\ExistsEloquent;
 use Korridor\LaravelModelValidationRules\Rules\UniqueEloquent;
 
@@ -18,7 +19,7 @@ use Korridor\LaravelModelValidationRules\Rules\UniqueEloquent;
  * @property Organization $organization Organization from model binding
  * @property Project|null $project Project from model binding
  */
-class ProjectUpdateRequest extends FormRequest
+class ProjectUpdateRequest extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -34,7 +35,13 @@ class ProjectUpdateRequest extends FormRequest
                 'max:255',
                 UniqueEloquent::make(Project::class, 'name', function (Builder $builder): Builder {
                     /** @var Builder<Project> $builder */
-                    return $builder->whereBelongsTo($this->organization, 'organization');
+                    $clientId = $this->input('client_id');
+                    if (! is_string($clientId) || ! Str::isUuid($clientId)) {
+                        $clientId = null;
+                    }
+
+                    return $builder->whereBelongsTo($this->organization, 'organization')
+                        ->where('client_id', $clientId);
                 })->ignore($this->project?->getKey())->withCustomTranslation('validation.project_name_already_exists'),
             ],
             'color' => [
@@ -54,18 +61,18 @@ class ProjectUpdateRequest extends FormRequest
                 'boolean',
             ],
             'client_id' => [
+                'present',
                 'nullable',
                 ExistsEloquent::make(Client::class, null, function (Builder $builder): Builder {
                     /** @var Builder<Client> $builder */
                     return $builder->whereBelongsTo($this->organization, 'organization');
                 })->uuid(),
             ],
-            'billable_rate' => [
+            'billable_rate' => array_merge([
                 'nullable',
-                'integer',
-                'min:0',
-                'max:2147483647',
             ],
+                $this->moneyRules()
+            ),
             // Estimated time in seconds
             'estimated_time' => [
                 'nullable',

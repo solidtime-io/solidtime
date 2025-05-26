@@ -178,14 +178,14 @@ const page = usePage<{
                         page.props.jetstream.hasEmailVerification &&
                         user.email_verified_at === null
                     ">
-                    <p class="text-sm mt-2 text-white">
+                    <p class="text-sm mt-2 text-text-primary">
                         Your email address is unverified.
 
                         <Link
                             :href="route('verification.send')"
                             method="post"
                             as="button"
-                            class="underline text-sm text-muted hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800"
+                            class="underline text-sm text-text-secondary hover:text-text-secondary rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800"
                             @click.prevent="sendEmailVerification">
                             Click here to re-send the verification email.
                         </Link>
@@ -208,7 +208,7 @@ const page = usePage<{
                     v-model="form.timezone"
                     name="timezone"
                     required
-                    class="mt-1 block w-full border-input-border bg-input-background text-white focus:border-input-border-active rounded-md shadow-sm">
+                    class="mt-1 block w-full border-input-border bg-input-background text-text-primary focus:border-input-border-active rounded-md shadow-sm">
                     <option value="" disabled>Select a Timezone</option>
                     <option
                         v-for="(timezoneTranslated, timezoneKey) in $page.props
@@ -229,7 +229,7 @@ const page = usePage<{
                     v-model="form.week_start"
                     name="week_start"
                     required
-                    class="mt-1 block w-full border-input-border bg-input-background text-white focus:border-input-border-active rounded-md shadow-sm">
+                    class="mt-1 block w-full border-input-border bg-input-background text-text-primary focus:border-input-border-active rounded-md shadow-sm">
                     <option value="" disabled>Select a week day</option>
                     <option
                         v-for="(weekdayTranslated, weekdayKey) in $page.props

@@ -20,6 +20,7 @@ import BillableToggleButton from '@/packages/ui/src/Input/BillableToggleButton.v
 import { computed } from 'vue';
 import TimeTrackerProjectTaskDropdown from '@/packages/ui/src/TimeTracker/TimeTrackerProjectTaskDropdown.vue';
 import { Checkbox } from '@/packages/ui/src';
+import { twMerge } from 'tailwind-merge';
 
 const props = defineProps<{
     timeEntry: TimeEntry;
@@ -81,9 +82,8 @@ const memberName = computed(() => {
     return '';
 });
 
-function onSelectChange(event: Event) {
-    const target = event.target as HTMLInputElement;
-    if (target.checked) {
+function onSelectChange(checked : boolean) {
+    if (checked) {
         emit('selected');
     } else {
         emit('unselected');
@@ -93,7 +93,7 @@ function onSelectChange(event: Event) {
 
 <template>
     <div
-        class="border-b border-default-background-separator transition min-w-0"
+        class="border-b border-default-background-separator transition min-w-0 bg-row-background"
         data-testid="time_entry_row">
         <MainContainer class="min-w-0">
             <div
@@ -137,7 +137,7 @@ function onSelectChange(event: Event) {
                         @changed="updateTimeEntryTags"></TimeEntryRowTagDropdown>
                     <BillableToggleButton
                         :model-value="timeEntry.billable"
-                        class="opacity-50 group-hover:opacity-100 focus-visible:opacity-100"
+                        :class="twMerge('opacity-50 group-hover:opacity-100 focus-visible:opacity-100')"
                         size="small"
                         @changed="
                             updateTimeEntryBillable

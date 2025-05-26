@@ -49,10 +49,10 @@ const page = usePage<{
 
         <template #actions>
             <Link
-                class="py-8 text-muted text-sm font-medium opacity-90 hover:opacity-100 transition"
+                class="py-8 text-text-secondary text-sm font-medium opacity-90 hover:opacity-100 transition"
                 :href="route('login')">
                 Already have an account?
-                <span class="text-white">Login here!</span>
+                <span class="text-text-primary">Login here!</span>
             </Link>
         </template>
 
@@ -135,14 +135,14 @@ const page = usePage<{
                             <a
                                 target="_blank"
                                 :href="page.props.terms_url"
-                                class="underline text-sm text-muted hover:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                class="underline text-sm text-text-secondary hover:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                                 >Terms of Service</a
                             >
                             and
                             <a
                                 target="_blank"
                                 :href="page.props.privacy_policy_url"
-                                class="underline text-sm text-muted hover:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                class="underline text-sm text-text-secondary hover:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                                 >Privacy Policy</a
                             >
                         </div>
@@ -173,7 +173,7 @@ const page = usePage<{
             <div class="flex items-center justify-end mt-4">
                 <Link
                     :href="route('login')"
-                    class="underline text-sm text-muted hover:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    class="underline text-sm text-text-secondary hover:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                     Already registered?
                 </Link>
 

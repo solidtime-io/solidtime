@@ -1,7 +1,8 @@
 name: NPM Typecheck
 
 on: [push]
-
+permissions:
+  contents: read
 jobs:
   build:
     # DeepVision Patch: disable api docs

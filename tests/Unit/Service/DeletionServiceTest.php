@@ -150,6 +150,24 @@ class DeletionServiceTest extends TestCaseWithDatabase
         $this->assertSame($specialCase ? 7 : 6, TimeEntry::query()->whereBelongsTo($organization, 'organization')->count());
     }
 
+    public function test_delete_organization_resets_the_current_organization_of_users_that_had_the_deleted_organization_as_current_organization(): void
+    {
+        // Arrange
+        $userOwner = User::factory()->create();
+        $organization = Organization::factory()->withOwner($userOwner)->create();
+        $userOwner->currentOrganization()->associate($organization);
+        $userOwner->save();
+
+        // Act
+        $this->deletionService->deleteOrganization($organization);
+
+        // Assert
+        $this->assertOrganizationDeleted($organization);
+        $userOwner->refresh();
+        $this->assertNull($userOwner->current_team_id);
+        $this->assertNotSame($organization->id, $userOwner->current_team_id);
+    }
+
     public function test_delete_organization_deletes_all_resources_of_the_organization_but_does_not_delete_other_resources(): void
     {
         // Arrange

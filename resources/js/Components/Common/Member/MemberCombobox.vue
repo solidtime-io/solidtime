@@ -63,13 +63,13 @@ const currentValue = computed(() => {
         <template #trigger>
             <Badge
                 tag="button"
-                class="flex w-full text-base text-left space-x-3 px-3 text-text-secondary font-normal cursor py-1.5">
-                <UserIcon class="relative z-10 w-4 text-muted"></UserIcon>
+                class="flex w-full text-base text-left space-x-3 px-3 text-text-secondary bg-input-background font-normal cursor py-1.5">
+                <UserIcon class="relative z-10 w-4 text-text-secondary"></UserIcon>
                 <div v-if="currentValue" class="flex-1 truncate">
                     {{ currentValue }}
                 </div>
                 <div v-else class="flex-1">Select a member...</div>
-                <ChevronDownIcon class="w-4 text-muted"></ChevronDownIcon>
+                <ChevronDownIcon class="w-4 text-text-secondary"></ChevronDownIcon>
             </Badge>
         </template>
     </SelectDropdown>

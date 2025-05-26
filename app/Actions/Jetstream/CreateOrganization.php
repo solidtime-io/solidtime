@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace App\Actions\Jetstream;
 
-use App\Enums\Role;
 use App\Events\AfterCreateOrganization;
 use App\Models\Organization;
 use App\Models\User;
+use App\Service\IpLookup\IpLookupServiceContract;
+use App\Service\OrganizationService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
@@ -33,16 +34,18 @@ class CreateOrganization implements CreatesTeams
             'name' => ['required', 'string', 'max:255'],
         ])->validateWithBag('createTeam');
 
-        $organization = new Organization;
-        $organization->name = $input['name'];
-        $organization->personal_team = false;
-        $organization->owner()->associate($user);
-        $organization->save();
+        $ipLookupResponse = app(IpLookupServiceContract::class)->lookup(request()->ip());
 
-        $organization->users()->attach(
-            $user, [
-                'role' => Role::Owner->value,
-            ]
+        $currency = null;
+        if ($ipLookupResponse !== null) {
+            $currency = $ipLookupResponse->currency;
+        }
+
+        $organization = app(OrganizationService::class)->createOrganization(
+            $input['name'],
+            $user,
+            false,
+            $currency
         );
 
         $user->switchTeam($organization);

@@ -1,49 +1,129 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-:root {
-    --color-bg-primary: #0f1011;
-    --color-bg-secondary: #17181a;
+:root.dark {
+    --color-bg-primary: #101012;
+    --color-bg-secondary: #17181B;
     --color-bg-tertiary: #2A2C32;
     --color-bg-quaternary: #141518;
-    --color-bg-background: #080808;
+    --color-bg-background: #090909;
     --color-text-primary: #ffffff;
     --color-text-secondary: #e3e4e6;
     --color-text-tertiary: #969799;
     --color-text-quaternary: #595a5c;
+
     --color-border-primary: #191b1f;
     --color-border-secondary: #23252a;
     --color-border-tertiary: #2c2e33;
     --color-border-quaternary: #393B42;
     --color-input-border-active: rgba(255,255,255,0.3);
 
-    --color-accent-primary: 14, 165, 233;  /* sky-500 */
-    --color-accent-secondary: 56, 189, 248;
-    --color-accent-tertiary: 125, 211, 252;
-    --color-accent-quaternary: 186, 230, 253;
+    --theme-color-chart: var(--color-accent-200);
 
-    --theme-color-default-background: var(--color-bg-primary);
-    --theme-color-icon-default: var(--color-text-tertiary);
-    --theme-color-icon-active: rgb(var(--color-text-tertiary));
+    --theme-color-menu-active: var(--color-bg-secondary);
     --theme-color-card-background: var(--color-bg-secondary);
+    --theme-shadow-card: 0 4px 7px 0px rgb(0 0 0 / 15%);
+    --theme-shadow-dropdown: 0 4px 7px 0px rgb(0 0 0 / 40%);
+
     --theme-color-card-background-active: var(--color-bg-tertiary);
+
+    --theme-color-row-background: var(--color-bg-primary);
+    --theme-color-row-heading-background: var(--theme-color-card-background);
+    --theme-color-row-heading-border: var(--theme-color-card-border);
+    --theme-color-icon-default: var(--color-text-tertiary);
+
+    --theme-color-ring: rgba(255,255,255,0.5);
+
+    --theme-color-button-primary-background: rgba(var(--color-accent-300), 0.1);
+    --theme-color-button-primary-background-hover: rgba(var(--color-accent-300), 0.2);
+    --theme-color-button-primary-border: rgba(var(--color-accent-300), 0.2);
+    --theme-color-button-primary-text: var(--color-text-primary);
+
+    --theme-color-input-background: var(--color-bg-secondary);
+
+    --theme-color-input-select-active: rgb(var(--color-accent-300));
+    --theme-color-input-select-active-hover: rgb(var(--color-accent-200));
+
+    --color-accent-default: rgba(var(--color-accent-300), 0.2);
+    --color-accent-foreground: rgb(var(--color-accent-100));
+}
+
+:root.light {
+    --color-bg-primary: #F5F5F5;
+    --color-bg-secondary: #f7f7f8;
+    --color-bg-tertiary: #e1e1e3;
+    --color-bg-quaternary: #ffffff;
+    --color-bg-background: #ffffff;
+    --color-text-primary: #18181b;
+    --color-text-secondary: #3f3f46;
+    --color-text-tertiary: #57575C;
+    --color-text-quaternary: #a1a1aa;
+    --color-border-primary: #e7e7e7;
+    --color-border-secondary: #e5e5e5;
+    --color-border-tertiary: #dfdfdf;
+    --color-border-quaternary: #d1d1d1;
+    --color-input-border-active: rgba(0,0,0,0.3);
+    --theme-color-menu-active: var(--color-bg-tertiary);
+
+    --theme-color-card-background: var(--color-bg-quaternary);
+    --theme-color-card-background-active: var(--color-bg-primary);
+
+    --theme-color-chart: var(--color-accent-400);
+
+    --theme-shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --theme-shadow-dropdown: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+
+    --theme-color-row-background: var(--theme-color-card-background);
+    --theme-color-row-heading-background: var(--color-bg-secondary);
+    --theme-color-row-heading-border: var(--color-border-tertiary);
+    --theme-color-icon-default: var(--color-text-quaternary);
+
+    --theme-color-ring: rgba(0,0,0, 0.7);
+
+    --theme-color-button-primary-background: rgba(var(--color-accent-600), 0.9);
+    --theme-color-button-primary-background-hover: rgba(var(--color-accent-600), 1);
+    --theme-color-button-primary-border: rgba(var(--color-accent-600), 1);
+    --theme-color-button-primary-text: #FFFFFF;
+
+    --theme-color-input-background: var(--color-bg-quaternary);
+
+    --theme-color-input-select-active: rgb(var(--color-accent-400));
+    --theme-color-input-select-active-hover: rgb(var(--color-accent-500));
+
+    --color-accent-default: rgb(var(--color-accent-100));
+    --color-accent-foreground: rgb(var(--color-accent-800));
+}
+
+:root {
+    --theme-color-default-background: var(--color-bg-primary);
+    --theme-color-icon-active: rgb(var(--color-text-tertiary));
     --theme-color-card-background-separator: var(--color-border-tertiary);
     --theme-color-card-border: var(--color-border-secondary);
     --theme-color-card-border-active: var(--color-border-tertiary);
     --theme-color-default-background-separator: var(--color-border-primary);
     --theme-color-primary-text: var(--color-text-primary);
-    --theme-color-muted-text: var(--color-text-secondary);
-    --theme-color-menu-active: var(--color-bg-secondary);
     --theme-color-input-border: var(--color-border-quaternary);
-    --theme-color-input-background: var(--color-bg-secondary);
     --theme-color-tab-background: var(--theme-color-card-background);
     --theme-color-tab-background-active: var(--theme-color-card-background-active);
     --theme-color-tab-border: var(--theme-color-card-border);
     --theme-color-row-separator-background: var(--theme-color-default-background-separator);
-    --theme-color-row-heading-background: var(--theme-color-card-background);
     --theme-color-row-border: var(--theme-color-card-border);
-    --theme-color-row-heading-border: var(--theme-color-card-border);
+
+    --color-accent-50: 240, 249, 255;    /* sky-50 */
+    --color-accent-100: 224, 242, 254;   /* sky-100 */
+    --color-accent-200: 186, 230, 253;   /* sky-200 */
+    --color-accent-300: 125, 211, 252;   /* sky-300 */
+    --color-accent-400: 56, 189, 248;    /* sky-400 */
+    --color-accent-500: 14, 165, 233;    /* sky-500 */
+    --color-accent-600: 2, 132, 199;     /* sky-600 */
+    --color-accent-700: 3, 105, 161;     /* sky-700 */
+    --color-accent-800: 7, 89, 133;      /* sky-800 */
+    --color-accent-900: 12, 74, 110;     /* sky-900 */
+    --color-accent-950: 8, 47, 73;       /* sky-950 */
+
+    --theme-button-secondary-background: var(--theme-color-card-background);
+    --theme-button-secondary-background-active: var(--theme-color-card-background-active);
+    --popover-border: var(--color-border-secondary);
 }
 
 * {
@@ -104,4 +184,69 @@ body {
     font-family: 'Outfit';
     src: url('/fonts/Outfit-ExtraBold.ttf');
     font-weight: 800;
+}
+
+@layer base {
+  :root {
+        --background: var(--color-bg-background);
+        --foreground: var(--color-text-primary);
+        --card: var(--theme-color-card-background);
+        --card-foreground: var(--color-text-primary);
+        --popover: var(--theme-color-card-background);
+        --popover-foreground: var(--color-text-primary);
+        --primary: var(--theme-color-button-primary-background);
+        --primary-foreground: var(--theme-color-button-primary-text);
+        --secondary: var(--color-bg-secondary);
+        --secondary-foreground: var(--color-text-primary);
+        --muted: var(--color-bg-tertiary);
+        --muted-foreground: var(--color-text-tertiary);
+        --accent: var(--theme-color-button-primary-background);
+        --accent-foreground: var(--theme-color-button-primary-text);
+        --destructive: 0 84.2% 60.2%;
+        --destructive-foreground: var(--color-text-primary);
+        --border: var(--color-border-primary);
+        --input: var(--theme-color-input-background);
+        --ring: var(--theme-color-ring);
+        --chart-1: var(--color-accent-400);
+        --chart-2: var(--color-accent-500);
+        --chart-3: var(--color-accent-600);
+        --chart-4: var(--color-accent-700);
+        --chart-5: var(--color-accent-800);
+        --radius: 0.5rem;
+    }
+  .dark {
+        --background: var(--color-bg-background);
+        --foreground: var(--color-text-primary);
+        --card: var(--theme-color-card-background);
+        --card-foreground: var(--color-text-primary);
+        --popover: var(--theme-color-card-background);
+        --popover-foreground: var(--color-text-primary);
+        --primary: var(--theme-color-button-primary-background);
+        --primary-foreground: var(--theme-color-button-primary-text);
+        --secondary: var(--color-bg-secondary);
+        --secondary-foreground: var(--color-text-primary);
+        --muted: var(--color-bg-tertiary);
+        --muted-foreground: var(--color-text-tertiary);
+        --accent: var(--theme-color-button-primary-background);
+        --accent-foreground: var(--theme-color-button-primary-text);
+        --destructive: 0 62.8% 30.6%;
+        --destructive-foreground: var(--color-text-primary);
+        --border: var(--color-border-primary);
+        --input: var(--theme-color-input-background);
+        --ring: var(--theme-color-ring);
+        --chart-1: var(--color-accent-200);
+        --chart-2: var(--color-accent-300);
+        --chart-3: var(--color-accent-400);
+        --chart-4: var(--color-accent-500);
+        --chart-5: var(--color-accent-600);
+    }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+    }
+  body {
+    @apply bg-background text-foreground;
+    }
 }

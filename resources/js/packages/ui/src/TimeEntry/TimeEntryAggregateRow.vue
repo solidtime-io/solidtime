@@ -9,13 +9,14 @@ import type {
     Task,
     TimeEntry,
     Client,
+    Organization,
 } from '@/packages/api/src';
 import TimeEntryDescriptionInput from '@/packages/ui/src/TimeEntry/TimeEntryDescriptionInput.vue';
 import TimeEntryRowTagDropdown from '@/packages/ui/src/TimeEntry/TimeEntryRowTagDropdown.vue';
 import TimeEntryMoreOptionsDropdown from '@/packages/ui/src/TimeEntry/TimeEntryMoreOptionsDropdown.vue';
 import TimeTrackerProjectTaskDropdown from '@/packages/ui/src/TimeTracker/TimeTrackerProjectTaskDropdown.vue';
 import BillableToggleButton from '@/packages/ui/src/Input/BillableToggleButton.vue';
-import { ref } from 'vue';
+import { ref, inject, type ComputedRef } from 'vue';
 import {
     formatHumanReadableDuration,
     formatStartEnd,
@@ -24,7 +25,7 @@ import TimeEntryRow from '@/packages/ui/src/TimeEntry/TimeEntryRow.vue';
 import GroupedItemsCountButton from '@/packages/ui/src/GroupedItemsCountButton.vue';
 import type { TimeEntriesGroupedByType } from '@/types/time-entries';
 import { Checkbox } from '@/packages/ui/src';
-
+import { twMerge } from 'tailwind-merge';
 const props = defineProps<{
     timeEntry: TimeEntriesGroupedByType;
     projects: Project[];
@@ -47,6 +48,8 @@ const emit = defineEmits<{
     selected: [TimeEntry[]];
     unselected: [TimeEntry[]];
 }>();
+
+const organization = inject<ComputedRef<Organization>>('organization');
 
 function updateTimeEntryDescription(description: string) {
     props.updateTimeEntries(
@@ -78,9 +81,8 @@ function updateProjectAndTask(projectId: string, taskId: string) {
 
 const expanded = ref(false);
 
-function onSelectChange(event: Event) {
-    const target = event.target as HTMLInputElement;
-    if (target.checked) {
+function onSelectChange(checked: boolean) {
+    if (checked) {
         emit('selected', [...props.timeEntry.timeEntries]);
     } else {
         emit('unselected', [...props.timeEntry.timeEntries]);
@@ -90,11 +92,11 @@ function onSelectChange(event: Event) {
 
 <template>
     <div
-        class="border-b border-default-background-separator min-w-0 transition"
+        class="border-b border-default-background-separator bg-row-background min-w-0 transition"
         data-testid="time_entry_row">
         <MainContainer class="min-w-0">
             <div
-                class="sm:flex py-2 items-center min-w-0 justify-between group">
+                class="sm:flex py-1.5 items-center min-w-0 justify-between group">
                 <div class="flex space-x-3 items-center min-w-0">
                     <Checkbox
                         :checked="
@@ -114,10 +116,10 @@ function onSelectChange(event: Event) {
                         </GroupedItemsCountButton>
                         <TimeEntryDescriptionInput
                             class="min-w-0 mr-4"
-                            :model-value="
-                                timeEntry.description
-                            "
-                            @changed="updateTimeEntryDescription"></TimeEntryDescriptionInput>
+                            :model-value="timeEntry.description"
+                            @changed="
+                                updateTimeEntryDescription
+                            "></TimeEntryDescriptionInput>
                         <TimeTrackerProjectTaskDropdown
                             :clients
                             :create-project
@@ -129,10 +131,10 @@ function onSelectChange(event: Event) {
                             :project="timeEntry.project_id"
                             :enable-estimated-time
                             :currency="currency"
-                            :task="
-                                timeEntry.task_id
-                            "
-                            @changed="updateProjectAndTask"></TimeTrackerProjectTaskDropdown>
+                            :task="timeEntry.task_id"
+                            @changed="
+                                updateProjectAndTask
+                            "></TimeTrackerProjectTaskDropdown>
                     </div>
                 </div>
                 <div class="flex items-center font-medium lg:space-x-2">
@@ -140,7 +142,9 @@ function onSelectChange(event: Event) {
                         :create-tag
                         :tags="tags"
                         :model-value="timeEntry.tags"
-                        @changed="updateTimeEntryTags"></TimeEntryRowTagDropdown>
+                        @changed="
+                            updateTimeEntryTags
+                        "></TimeEntryRowTagDropdown>
                     <BillableToggleButton
                         :model-value="timeEntry.billable"
                         class="opacity-50 focus-visible:opacity-100 group-hover:opacity-100"
@@ -150,23 +154,29 @@ function onSelectChange(event: Event) {
                         "></BillableToggleButton>
                     <div class="flex-1">
                         <button
-                            class="hidden lg:block text-muted w-[110px] px-1 py-1.5 bg-transparent text-center hover:bg-card-background rounded-lg border border-transparent hover:border-card-border text-sm font-medium focus-visible:outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:bg-tertiary"
+                            :class="twMerge('hidden lg:block text-text-secondary w-[110px] px-1 py-1.5 bg-transparent text-center hover:bg-card-background rounded-lg border border-transparent hover:border-card-border text-sm font-medium focus-visible:outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:bg-tertiary', organization?.time_format === '12-hours' ? 'w-[160px]' : 'w-[110px]')"
                             @click="expanded = !expanded">
-                            {{ formatStartEnd(timeEntry.start, timeEntry.end) }}
+                            {{ formatStartEnd(timeEntry.start, timeEntry.end, organization?.time_format) }}
                         </button>
                     </div>
                     <button
-                        class="text-white min-w-[90px] px-2 py-1.5 bg-transparent text-center hover:bg-card-background rounded-lg border border-transparent hover:border-card-border text-sm font-semibold focus-visible:outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:bg-tertiary"
+                        class="text-text-primary min-w-[90px] px-2.5 py-1.5 bg-transparent text-right hover:bg-card-background rounded-lg border border-transparent hover:border-card-border text-sm font-semibold focus-visible:outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:bg-tertiary"
                         @click="expanded = !expanded">
                         {{
-                            formatHumanReadableDuration(timeEntry.duration ?? 0)
+                            formatHumanReadableDuration(
+                                timeEntry.duration ?? 0,
+                                organization?.interval_format,
+                                organization?.number_format
+                            )
                         }}
                     </button>
 
                     <TimeTrackerStartStop
                         :active="!!(timeEntry.start && !timeEntry.end)"
                         class="opacity-20 hidden sm:flex group-hover:opacity-100 focus-visible:opacity-100"
-                        @changed="onStartStopClick(timeEntry)"></TimeTrackerStartStop>
+                        @changed="
+                            onStartStopClick(timeEntry)
+                        "></TimeTrackerStartStop>
                     <TimeEntryMoreOptionsDropdown
                         @delete="
                             deleteTimeEntries(timeEntry?.timeEntries ?? [])

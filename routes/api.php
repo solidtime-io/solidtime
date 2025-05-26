@@ -3,7 +3,9 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Api\V1\ApiTokenController;
+use App\Http\Controllers\Api\V1\ChartController;
 use App\Http\Controllers\Api\V1\ClientController;
+use App\Http\Controllers\Api\V1\CurrencyController;
 use App\Http\Controllers\Api\V1\ExportController;
 use App\Http\Controllers\Api\V1\ImportController;
 use App\Http\Controllers\Api\V1\InvitationController;
@@ -51,6 +53,7 @@ Route::prefix('v1')->name('v1.')->group(static function (): void {
             Route::delete('/members/{member}', [MemberController::class, 'destroy'])->name('destroy');
             Route::post('/members/{member}/invite-placeholder', [MemberController::class, 'invitePlaceholder'])->name('invite-placeholder');
             Route::post('/members/{member}/make-placeholder', [MemberController::class, 'makePlaceholder'])->name('make-placeholder');
+            Route::post('member/{member}/merge-into', [MemberController::class, 'mergeInto'])->name('merge-into');
         });
 
         // User routes
@@ -122,6 +125,19 @@ Route::prefix('v1')->name('v1.')->group(static function (): void {
             Route::delete('/reports/{report}', [ReportController::class, 'destroy'])->name('destroy');
         });
 
+        // Chart routes
+        Route::name('charts.')->prefix('/organizations/{organization}/charts')->group(static function (): void {
+            Route::get('/weekly-project-overview', [ChartController::class, 'weeklyProjectOverview'])->name('weekly-project-overview');
+            Route::get('/latest-tasks', [ChartController::class, 'latestTasks'])->name('latest-tasks');
+            Route::get('/last-seven-days', [ChartController::class, 'lastSevenDays'])->name('last-seven-days');
+            Route::get('/latest-team-activity', [ChartController::class, 'latestTeamActivity'])->name('latest-team-activity');
+            Route::get('/daily-tracked-hours', [ChartController::class, 'dailyTrackedHours'])->name('daily-tracked-hours');
+            Route::get('/total-weekly-time', [ChartController::class, 'totalWeeklyTime'])->name('total-weekly-time');
+            Route::get('/total-weekly-billable-time', [ChartController::class, 'totalWeeklyBillableTime'])->name('total-weekly-billable-time');
+            Route::get('/total-weekly-billable-amount', [ChartController::class, 'totalWeeklyBillableAmount'])->name('total-weekly-billable-amount');
+            Route::get('/weekly-history', [ChartController::class, 'weeklyHistory'])->name('weekly-history');
+        });
+
         // Tag routes
         Route::name('tags.')->prefix('/organizations/{organization}')->group(static function (): void {
             Route::get('/tags', [TagController::class, 'index'])->name('index');
@@ -157,6 +173,8 @@ Route::prefix('v1')->name('v1.')->group(static function (): void {
             Route::post('/export', [ExportController::class, 'export'])->name('export');
         });
     });
+
+    Route::get('/currencies', [CurrencyController::class, 'index'])->name('currencies.index');
 
     // Public routes
     Route::name('public.')->prefix('/public')->group(static function (): void {

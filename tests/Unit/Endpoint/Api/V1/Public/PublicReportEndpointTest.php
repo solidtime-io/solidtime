@@ -14,6 +14,7 @@ use App\Models\Report;
 use App\Models\Tag;
 use App\Models\Task;
 use App\Models\TimeEntry;
+use App\Service\CurrencyService;
 use App\Service\Dto\ReportPropertiesDto;
 use Illuminate\Support\Str;
 use Tests\Unit\Endpoint\Api\V1\ApiEndpointTestAbstract;
@@ -104,6 +105,8 @@ class PublicReportEndpointTest extends ApiEndpointTestAbstract
         TimeEntry::factory()->forOrganization($organization)->forTask($task2)->startWithDuration(now()->subDay(), 100)->create();
         TimeEntry::factory()->forOrganization($organization)->startWithDuration(now()->subDay(), 100)->create();
 
+        $currencyService = app(CurrencyService::class);
+
         // Act
         $response = $this->getJson(route('api.v1.public.reports.show'), [
             'X-Api-Key' => $report->share_secret,
@@ -116,6 +119,12 @@ class PublicReportEndpointTest extends ApiEndpointTestAbstract
             'description' => $report->description,
             'public_until' => $report->public_until?->toIso8601ZuluString(),
             'currency' => $organization->currency,
+            'number_format' => $organization->number_format,
+            'interval_format' => $organization->interval_format,
+            'currency_format' => $organization->currency_format,
+            'currency_symbol' => $currencyService->getCurrencySymbol($organization->currency),
+            'time_format' => $organization->time_format,
+            'date_format' => $organization->date_format,
             'properties' => [
                 'group' => $reportDto->group->value,
                 'sub_group' => $reportDto->subGroup->value,

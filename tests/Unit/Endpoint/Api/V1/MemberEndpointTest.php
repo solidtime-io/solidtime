@@ -194,6 +194,216 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
         $response->assertJsonPath('message', 'Only owner can change ownership');
     }
 
+    public function test_update_member_fails_if_user_tries_to_change_the_role_of_a_placeholder(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'members:update',
+        ]);
+        $user = User::factory()->placeholder()->create();
+        $member = Member::factory()->forOrganization($data->organization)->forUser($user)->role(Role::Placeholder)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.members.update', [$data->organization->getKey(), $member->getKey()]), [
+            'role' => Role::Admin->value,
+        ]);
+
+        // Assert
+        $response->assertStatus(400);
+        $response->assertExactJson([
+            'error' => true,
+            'key' => 'changing_role_of_placeholder_is_not_allowed',
+            'message' => 'Changing role of placeholder is not allowed',
+        ]);
+    }
+
+    public function test_merge_into_fails_if_url_member_is_not_part_of_organization(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'members:merge-into',
+        ]);
+        $userSource = User::factory()->placeholder()->create();
+        $memberSource = Member::factory()->forUser($userSource)->role(Role::Placeholder)->create();
+
+        $userDestination = User::factory()->create();
+        $memberDestination = Member::factory()->forUser($userDestination)->forOrganization($data->organization)->role(Role::Admin)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.members.merge-into', [$data->organization->getKey(), $memberSource->getKey()]), [
+            'member_id' => $memberDestination->getKey(),
+        ]);
+
+        // Assert
+        $response->assertForbidden();
+    }
+
+    public function test_merge_into_returns_validation_error_if_member_in_body_does_not_belong_to_organization(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'members:merge-into',
+        ]);
+        $userSource = User::factory()->placeholder()->create();
+        $memberSource = Member::factory()->forUser($userSource)->forOrganization($data->organization)->role(Role::Placeholder)->create();
+
+        $userDestination = User::factory()->create();
+        $memberDestination = Member::factory()->forUser($userDestination)->role(Role::Admin)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.members.merge-into', [$data->organization->getKey(), $memberSource->getKey()]), [
+            'member_id' => $memberDestination->getKey(),
+        ]);
+
+        // Assert
+        $response->assertStatus(422);
+        $response->assertExactJson([
+            'errors' => [
+                'member_id' => [
+                    'The resource does not exist.',
+                ],
+            ],
+            'message' => 'The resource does not exist.',
+        ]);
+    }
+
+    public function test_merge_into_fails_if_from_member_is_not_a_placeholder(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'members:merge-into',
+        ]);
+        $userSource = User::factory()->placeholder()->create();
+        $memberSource = Member::factory()->forUser($userSource)->forOrganization($data->organization)->role(Role::Admin)->create();
+
+        $userDestination = User::factory()->create();
+        $memberDestination = Member::factory()->forUser($userDestination)->forOrganization($data->organization)->role(Role::Admin)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.members.merge-into', [$data->organization->getKey(), $memberSource->getKey()]), [
+            'member_id' => $memberDestination->getKey(),
+        ]);
+
+        // Assert
+        $response->assertStatus(400);
+        $response->assertExactJson([
+            'error' => true,
+            'key' => 'only_placeholders_can_be_merged_into_another_member',
+            'message' => 'Only placeholders can be merged into another member',
+        ]);
+    }
+
+    public function test_merge_into_fails_if_user_has_no_permission_to_merge_members(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([]);
+        $userSource = User::factory()->placeholder()->create();
+        $memberSource = Member::factory()->forUser($userSource)->forOrganization($data->organization)->role(Role::Placeholder)->create();
+
+        $userDestination = User::factory()->create();
+        $memberDestination = Member::factory()->forUser($userDestination)->forOrganization($data->organization)->role(Role::Admin)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.members.merge-into', [$data->organization->getKey(), $memberSource->getKey()]), [
+            'member_id' => $memberDestination->getKey(),
+        ]);
+
+        // Assert
+        $response->assertForbidden();
+    }
+
+    public function test_merge_into_assigns_resources_of_source_member_to_destination_member_and_deletes_member(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'members:merge-into',
+        ]);
+        $userSource = User::factory()->placeholder()->create();
+        $memberSource = Member::factory()->forUser($userSource)->forOrganization($data->organization)->role(Role::Placeholder)->create();
+        TimeEntry::factory()->forMember($memberSource)->createMany(3);
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        ProjectMember::factory()->forMember($memberSource)->forProject($project)->create();
+
+        $userDestination = User::factory()->create();
+        $memberDestination = Member::factory()->forUser($userDestination)->forOrganization($data->organization)->role(Role::Admin)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.members.merge-into', [$data->organization->getKey(), $memberSource->getKey()]), [
+            'member_id' => $memberDestination->getKey(),
+        ]);
+
+        // Assert
+        $response->assertStatus(204);
+        $this->assertSame('', $response->getContent());
+        $this->assertDatabaseMissing(Member::class, [
+            'id' => $memberSource->getKey(),
+        ]);
+        $this->assertDatabaseMissing(User::class, [
+            'id' => $userSource->getKey(),
+        ]);
+        $memberDestination->refresh();
+        $this->assertCount(3, $memberDestination->timeEntries);
+        $this->assertCount(1, $memberDestination->projectMembers);
+        $this->assertDatabaseHas(ProjectMember::class, [
+            'project_id' => $project->getKey(),
+            'member_id' => $memberDestination->getKey(),
+            'user_id' => $userDestination->getKey(),
+        ]);
+    }
+
+    public function test_merge_into_assigns_resources_of_source_member_to_destination_member_and_deletes_member_with_existing_destination_resources(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'members:merge-into',
+        ]);
+        $userSource = User::factory()->placeholder()->create();
+        $memberSource = Member::factory()->forUser($userSource)->forOrganization($data->organization)->role(Role::Placeholder)->create();
+        TimeEntry::factory()->forMember($memberSource)->createMany(3);
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        ProjectMember::factory()->forMember($memberSource)->forProject($project)->create([
+            'billable_rate' => 32100,
+        ]);
+
+        $userDestination = User::factory()->create();
+        $memberDestination = Member::factory()->forUser($userDestination)->forOrganization($data->organization)->role(Role::Admin)->create();
+        ProjectMember::factory()->forMember($memberDestination)->forProject($project)->create([
+            'billable_rate' => 12300,
+        ]);
+        TimeEntry::factory()->forMember($memberDestination)->createMany(3);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->withoutExceptionHandling()->postJson(route('api.v1.members.merge-into', [$data->organization->getKey(), $memberSource->getKey()]), [
+            'member_id' => $memberDestination->getKey(),
+        ]);
+
+        // Assert
+        $response->assertStatus(204);
+        $this->assertSame('', $response->getContent());
+        $this->assertDatabaseMissing(Member::class, [
+            'id' => $memberSource->getKey(),
+        ]);
+        $this->assertDatabaseMissing(User::class, [
+            'id' => $userSource->getKey(),
+        ]);
+        $memberDestination->refresh();
+        $this->assertCount(6, $memberDestination->timeEntries);
+        $this->assertCount(1, $memberDestination->projectMembers);
+        $this->assertDatabaseHas(ProjectMember::class, [
+            'project_id' => $project->getKey(),
+            'billable_rate' => 12300,
+            'member_id' => $memberDestination->getKey(),
+            'user_id' => $userDestination->getKey(),
+        ]);
+    }
+
     public function test_update_member_fails_if_user_tries_to_change_role_of_the_current_owner(): void
     {
         // Arrange
@@ -281,6 +491,7 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
 
     public function test_invite_placeholder_succeeds_if_data_is_valid(): void
     {
+        // Arrange
         $data = $this->createUserWithPermission([
             'members:invite-placeholder',
         ]);
@@ -299,6 +510,38 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
         // Assert
         $response->assertValid();
         $response->assertStatus(204);
+    }
+
+    public function test_invite_placeholder_fails_if_the_placeholder_has_a_invalid_email_from_an_import(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'members:invite-placeholder',
+        ]);
+        $user = User::factory()->create([
+            'is_placeholder' => true,
+            'email' => 'some.user@solidtime-import.test',
+        ]);
+        $member = Member::factory()
+            ->forUser($user)
+            ->forOrganization($data->organization)
+            ->role(Role::Placeholder)
+            ->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.members.invite-placeholder', [
+            'organization' => $data->organization->getKey(),
+            'member' => $member->getKey(),
+        ]));
+
+        // Assert
+        $response->assertStatus(400);
+        $response->assertExactJson([
+            'error' => true,
+            'key' => 'this_placeholder_can_not_be_invited_use_the_merge_tool_instead_api_exception',
+            'message' => 'This placeholder can not be invited use the merge tool instead',
+        ]);
     }
 
     public function test_destroy_member_fails_if_user_has_no_permission_to_delete_members(): void
@@ -453,6 +696,34 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
         // Assert
         $response->assertForbidden();
         Event::assertNotDispatched(MemberMadeToPlaceholder::class);
+    }
+
+    public function test_make_placeholder_fails_if_user_is_already_a_placeholder(): void
+    {
+        // Arrange
+        Event::fake([
+            MemberMadeToPlaceholder::class,
+        ]);
+        $data = $this->createUserWithPermission([
+            'members:make-placeholder',
+        ]);
+        $user = User::factory()->placeholder()->create();
+        $member = Member::factory()->forUser($user)->forOrganization($data->organization)->role(Role::Placeholder)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.members.make-placeholder', [
+            'organization' => $data->organization->getKey(),
+            'member' => $member->getKey(),
+        ]));
+
+        // Assert
+        $response->assertStatus(400);
+        $response->assertExactJson([
+            'error' => true,
+            'key' => 'changing_role_of_placeholder_is_not_allowed',
+            'message' => 'Changing role of placeholder is not allowed',
+        ]);
     }
 
     public function test_make_placeholder_fails_if_member_is_owner(): void

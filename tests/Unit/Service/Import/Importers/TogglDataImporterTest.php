@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Service\Import\Importers;
 
 use App\Models\Organization;
+use App\Models\User;
 use App\Service\Import\Importers\DefaultImporter;
 use App\Service\Import\Importers\ImportException;
 use App\Service\Import\Importers\TogglDataImporter;
@@ -87,5 +88,31 @@ class TogglDataImporterTest extends ImporterTestAbstract
         $this->assertSame(0, $report->usersCreated);
         $this->assertSame(0, $report->projectsCreated);
         $this->assertSame(0, $report->clientsCreated);
+    }
+
+    public function test_import_of_user_with_unknown_timezone_will_be_mapped_to_utc(): void
+    {
+        // Arrange
+        $zipPath = $this->createTestZip('toggl_data_import_test_2');
+        $timezone = 'Europe/Vienna';
+        $organization = Organization::factory()->create();
+        $importer = new TogglDataImporter;
+        $importer->init($organization);
+        $data = file_get_contents($zipPath);
+
+        // Act
+        $importer->importData($data, $timezone);
+        $report = $importer->getReport();
+
+        // Assert
+        $this->assertSame(0, $report->timeEntriesCreated);
+        $this->assertSame(2, $report->tagsCreated);
+        $this->assertSame(2, $report->tasksCreated);
+        $this->assertSame(1, $report->usersCreated);
+        $this->assertSame(3, $report->projectsCreated);
+        $this->assertSame(2, $report->clientsCreated);
+        $user = User::query()->where('email', '=', 'peter.test@email.test')->first();
+        $this->assertSame('UTC', $user->timezone);
+        $this->assertTrue($user->is_placeholder);
     }
 }

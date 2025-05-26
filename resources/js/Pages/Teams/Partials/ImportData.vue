@@ -142,22 +142,22 @@ const showResultModal = ref(false);
 
             <div
                 class="py-2.5 px-3 border-t border-t-card-background-separator">
-                <span class="text-white font-semibold">Clients created:</span>
+                <span class="text-text-primary font-semibold">Clients created:</span>
                 {{ reportResult?.report.clients.created }}
             </div>
             <div
                 class="py-2.5 px-3 border-t border-t-card-background-separator">
-                <span class="text-white font-semibold">Projects created:</span>
+                <span class="text-text-primary font-semibold">Projects created:</span>
                 {{ reportResult?.report.projects.created }}
             </div>
             <div
                 class="py-2.5 px-3 border-t border-t-card-background-separator">
-                <span class="text-white font-semibold">Tasks created:</span>
+                <span class="text-text-primary font-semibold">Tasks created:</span>
                 {{ reportResult?.report.tasks.created }}
             </div>
             <div
                 class="py-2.5 px-3 border-t border-t-card-background-separator">
-                <span class="text-white font-semibold"
+                <span class="text-text-primary font-semibold"
                     >Time entries created:</span
                 >
                 {{ reportResult?.report.time_entries.created }}
@@ -187,14 +187,14 @@ const showResultModal = ref(false);
 
         <Card>
             <div
-                class="px-4 py-5 sm:px-5 bg-card-background shadow sm:rounded-tl-md sm:rounded-tr-md">
+                class="px-4 py-5 sm:px-5">
                 <div>
                     <InputLabel for="importType" value="Import Type" />
                     <select
                         id="importType"
                         v-model="importType"
                         name="importType"
-                        class="mt-1 block w-full border-input-border bg-input-background text-white focus:border-input-border-active rounded-md shadow-sm">
+                        class="mt-1 block w-full border-input-border bg-input-background text-text-primary focus:border-input-border-active rounded-md shadow-sm">
                         <option :value="null" selected disabled>
                             Select an import type to get instructions...
                         </option>
@@ -207,8 +207,8 @@ const showResultModal = ref(false);
                     </select>
                     <div
                         v-if="currentImporterDescription"
-                        class="py-3 text-white">
-                        <div class="font-semibold text-muted py-1">
+                        class="py-3 text-text-primary">
+                        <div class="font-semibold text-text-secondary py-1">
                             Instructions:
                         </div>
                         <div
@@ -218,16 +218,16 @@ const showResultModal = ref(false);
                 </div>
 
                 <div
-                    class="mt-2 flex justify-center rounded-lg border border-dashed border-white/30 px-6 py-10">
+                    class="mt-2 flex justify-center rounded-lg border border-dashed border-border-primary px-6 py-10">
                     <div class="text-center">
                         <DocumentIcon
-                            class="mx-auto h-8 w-8 text-muted"
+                            class="mx-auto h-8 w-8 text-text-secondary"
                             aria-hidden="true" />
 
-                        <div class="mt-4 flex text-sm leading-6 text-muted">
+                        <div class="mt-4 flex text-sm leading-6 text-text-secondary">
                             <label
                                 for="file-upload"
-                                class="relative cursor-pointer rounded-md bg-gray-900 font-semibold text-white focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2 focus-within:ring-offset-gray-900 hover:text-indigo-500">
+                                class="relative cursor-pointer rounded-md font-semibold text-text-primary focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2 focus-within:ring-offset-gray-900 hover:text-indigo-500">
                                 <span v-if="files">{{ filenames }}</span>
                                 <span v-else
                                     >Upload a Toggl/Clockify Export</span
@@ -241,7 +241,7 @@ const showResultModal = ref(false);
                                     @change="updateFiles" />
                             </label>
                         </div>
-                        <p class="text-xs leading-5 text-muted">
+                        <p class="text-xs leading-5 text-text-secondary">
                             CSV and ZIP are supported
                         </p>
                     </div>

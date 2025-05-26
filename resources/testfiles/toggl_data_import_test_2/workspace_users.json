@@ -1,0 +1,19 @@
+[
+    {
+        "active": true,
+        "admin": true,
+        "email": "peter.test@email.test",
+        "group_ids": [],
+        "id": 201,
+        "inactive": false,
+        "labour_cost": null,
+        "name": "Peter Tester",
+        "rate": null,
+        "rate_last_updated": null,
+        "role": "admin",
+        "timezone": "Etc/UTC",
+        "uid": 2001,
+        "wid": 0,
+        "working_hours_in_minutes": null
+    }
+]

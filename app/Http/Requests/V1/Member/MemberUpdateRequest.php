@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace App\Http\Requests\V1\Member;
 
 use App\Enums\Role;
+use App\Http\Requests\V1\BaseFormRequest;
 use App\Models\Organization;
 use Illuminate\Contracts\Validation\ValidationRule;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 /**
  * @property Organization $organization
  */
-class MemberUpdateRequest extends FormRequest
+class MemberUpdateRequest extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -27,12 +27,12 @@ class MemberUpdateRequest extends FormRequest
                 'string',
                 Rule::enum(Role::class),
             ],
-            'billable_rate' => [
-                'nullable',
-                'integer',
-                'min:0',
-                'max:2147483647',
-            ],
+            'billable_rate' => array_merge(
+                [
+                    'nullable',
+                ],
+                $this->moneyRules()
+            ),
         ];
     }
 

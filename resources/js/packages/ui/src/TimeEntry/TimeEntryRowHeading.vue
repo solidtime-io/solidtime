@@ -6,6 +6,11 @@ import {
     formatWeekday,
 } from '@/packages/ui/src/utils/time';
 import Checkbox from '../Input/Checkbox.vue';
+import { inject, type ComputedRef } from 'vue';
+import type { Organization } from '@/packages/api/src';
+
+const organization = inject<ComputedRef<Organization>>('organization');
+
 defineProps<{
     date: string;
     duration: number;
@@ -27,13 +32,13 @@ function selectUnselectAll(value: boolean) {
 
 <template>
     <div
-        class="bg-card-background border-t border-b border-card-border py-1 text-xs sm:text-sm">
+        class="bg-row-heading-background border-t border-b border-row-heading-border py-1 text-xs sm:text-sm">
         <MainContainer>
             <div class="flex group justify-between items-center">
                 <div class="flex items-center space-x-2">
                     <div class="w-5">
                         <svg
-                            class="w-4 sm:w-5 text-muted group-hover:hidden block"
+                            class="w-4 sm:w-5 text-icon-default group-hover:hidden block"
                             viewBox="0 0 24 24"
                             xmlns="http://www.w3.org/2000/svg">
                             <g fill="none">
@@ -49,16 +54,22 @@ function selectUnselectAll(value: boolean) {
                             class="group-hover:block hidden"
                             @update:checked="selectUnselectAll"></Checkbox>
                     </div>
-                    <span class="font-semibold text-white">
+                    <span class="font-semibold text-text-primary">
                         {{ formatWeekday(date) }}
                     </span>
-                    <span class="font-semibold text-muted">
-                        {{ formatDate(date) }}
+                    <span class="font-semibold text-text-secondary">
+                        {{ formatDate(date, organization?.date_format) }}
                     </span>
                 </div>
-                <div class="text-muted pr-[90px] lg:pr-[92px]">
+                <div class="text-text-secondary pr-[90px] lg:pr-[92px]">
                     <span class="font-semibold">
-                        {{ formatHumanReadableDuration(duration) }}
+                        {{
+                            formatHumanReadableDuration(
+                                duration,
+                                organization?.interval_format,
+                                organization?.number_format
+                            )
+                        }}
                     </span>
                 </div>
             </div>

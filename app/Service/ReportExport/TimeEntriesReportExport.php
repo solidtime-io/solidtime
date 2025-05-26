@@ -22,18 +22,18 @@ class TimeEntriesReportExport implements FromView, ShouldAutoSize, WithCustomCsv
      *        grouped_data: null|array<array{
      *            key: string|null,
      *            seconds: int,
-     *            cost: int,
+     *            cost: int|null,
      *            grouped_type: string|null,
      *            grouped_data: null|array<array{
      *                key: string|null,
      *                seconds: int,
-     *                cost: int,
+     *                cost: int|null,
      *                grouped_type: null,
      *                grouped_data: null
      *            }>
      *        }>,
      *        seconds: int,
-     *        cost: int
+     *        cost: int|null
      *  }
      */
     private array $data;
@@ -46,33 +46,36 @@ class TimeEntriesReportExport implements FromView, ShouldAutoSize, WithCustomCsv
 
     private TimeEntryAggregationType $subGroup;
 
+    private bool $showBillableRate;
+
     /**
      * @param array{
      *         grouped_type: string|null,
      *         grouped_data: null|array<array{
      *             key: string|null,
      *             seconds: int,
-     *             cost: int,
+     *             cost: int|null,
      *             grouped_type: string|null,
      *             grouped_data: null|array<array{
      *                 key: string|null,
      *                 seconds: int,
-     *                 cost: int,
+     *                 cost: int|null,
      *                 grouped_type: null,
      *                 grouped_data: null
      *             }>
      *         }>,
      *         seconds: int,
-     *         cost: int
+     *         cost: int|null
      *   } $data
      */
-    public function __construct(array $data, ExportFormat $exportFormat, string $currency, TimeEntryAggregationType $group, TimeEntryAggregationType $subGroup)
+    public function __construct(array $data, ExportFormat $exportFormat, string $currency, TimeEntryAggregationType $group, TimeEntryAggregationType $subGroup, bool $showBillableRate)
     {
         $this->data = $data;
         $this->exportFormat = $exportFormat;
         $this->currency = $currency;
         $this->group = $group;
         $this->subGroup = $subGroup;
+        $this->showBillableRate = $showBillableRate;
     }
 
     public function view(): View
@@ -83,6 +86,7 @@ class TimeEntriesReportExport implements FromView, ShouldAutoSize, WithCustomCsv
             'group' => $this->group,
             'subGroup' => $this->subGroup,
             'exportFormat' => $this->exportFormat,
+            'showBillableRate' => $this->showBillableRate,
         ]);
     }
 

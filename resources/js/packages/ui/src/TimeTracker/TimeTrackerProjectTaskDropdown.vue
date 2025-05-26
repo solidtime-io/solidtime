@@ -547,7 +547,7 @@ const showCreateProject = ref(false);
             <span>Add new project</span>
         </Badge>
     </div>
-    <Dropdown v-else v-model="open" :close-on-content-click="false" align="bottom">
+    <Dropdown v-else v-model="open" :close-on-content-click="false" align="center">
         <template #trigger>
             <ProjectBadge
                 ref="projectDropdownTrigger"
@@ -568,7 +568,7 @@ const showCreateProject = ref(false);
                     </span>
                     <ChevronRightIcon
                         v-if="currentTask"
-                        class="w-4 lg:w-5 text-muted shrink-0"></ChevronRightIcon>
+                        class="w-4 lg:w-5 text-text-secondary shrink-0"></ChevronRightIcon>
                     <div
                         v-if="currentTask"
                         class="min-w-0 shrink text-xs lg:text-sm truncate">
@@ -594,10 +594,11 @@ const showCreateProject = ref(false);
                     ref="searchInput"
                     :value="searchValue"
                     data-testid="client_dropdown_search"
-                    class="bg-card-background border-0 placeholder-muted text-sm text-white py-2.5 focus:ring-0 border-b border-card-background-separator focus:border-card-background-separator w-full"
+                    class="bg-card-background border-0 placeholder-muted text-sm text-text-primary py-2.5 focus:ring-0 border-b border-card-background-separator focus:border-card-background-separator w-full"
                     placeholder="Search for a project or task..."
                     @input="updateSearchValue"
                     @keydown.enter.prevent="addClientIfNoneExists"
+                    @keydown.esc.prevent="open = false"
                     @keydown.up.prevent="moveHighlightUp"
                     @keydown.down.prevent="moveHighlightDown"
                     @keydown.right.prevent="expandProject"
@@ -694,7 +695,7 @@ const showCreateProject = ref(false);
                                         'bg-card-background-active':
                                             task.id === highlightedItemId,
                                     }"
-                                    class="flex items-center space-x-2 w-full px-5 py-1.5 text-start text-xs font-semibold leading-5 text-white focus:outline-none focus:bg-card-background-active transition duration-150 ease-in-out"
+                                    class="flex items-center space-x-2 w-full px-5 py-1.5 text-start text-xs font-semibold leading-5 text-text-primary focus:outline-none focus:bg-card-background-active transition duration-150 ease-in-out"
                                     @click="selectTask(task.id)"
                                     @mouseenter="setHighlightItemId(task.id)">
                                     <MinusIcon
@@ -709,7 +710,7 @@ const showCreateProject = ref(false);
                     v-if="canCreateProject"
                     class="hover:bg-card-background-active rounded-b-lg">
                     <button
-                        class="text-white flex space-x-3 items-center px-4 py-3 text-xs font-semibold border-t border-card-background-separator"
+                        class="text-text-primary flex space-x-3 items-center px-4 py-3 text-xs font-semibold border-t border-card-background-separator"
                         @click="
                             open = false;
                             showCreateProject = true;

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1;
 
 use App\Enums\ExportFormat;
+use App\Enums\Role;
 use App\Exceptions\Api\FeatureIsNotAvailableInFreePlanApiException;
 use App\Exceptions\Api\PdfRendererIsNotConfiguredException;
 use App\Exceptions\Api\TimeEntryCanNotBeRestartedApiException;
@@ -26,6 +27,7 @@ use App\Models\Organization;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\TimeEntry;
+use App\Service\LocalizationService;
 use App\Service\ReportExport\TimeEntriesDetailedCsvExport;
 use App\Service\ReportExport\TimeEntriesDetailedExport;
 use App\Service\ReportExport\TimeEntriesReportExport;
@@ -180,6 +182,7 @@ class TimeEntryController extends Controller
         }
         $user = $this->user();
         $timezone = $user->timezone;
+        $showBillableRate = $this->member($organization)->role !== Role::Employee->value || $organization->employees_can_see_billable_rates;
 
         $timeEntriesQuery = $this->getTimeEntriesQuery($organization, $request, $member);
         $timeEntriesQuery->with([
@@ -192,6 +195,7 @@ class TimeEntryController extends Controller
         $filename = 'time-entries-export-'.now()->format('Y-m-d_H-i-s').'.'.$format->getFileExtension();
         $folderPath = 'exports';
         $path = $folderPath.'/'.$filename;
+        $localizationService = LocalizationService::forOrganization($organization);
         if ($format === ExportFormat::CSV) {
             $export = new TimeEntriesDetailedCsvExport(config('filesystems.private'), $folderPath, $filename, $timeEntriesQuery, 1000, $timezone);
             $export->export();
@@ -211,7 +215,8 @@ class TimeEntryController extends Controller
                 $user->week_start,
                 false,
                 null,
-                null
+                null,
+                $showBillableRate
             );
             $html = Blade::render($viewFile, [
                 'timeEntries' => $timeEntriesQuery->get(),
@@ -220,6 +225,8 @@ class TimeEntryController extends Controller
                 'currency' => $organization->currency,
                 'start' => $request->getStart()->timezone($timezone),
                 'end' => $request->getEnd()->timezone($timezone),
+                'localization' => $localizationService,
+                'showBillableRate' => $showBillableRate,
             ]);
             $footerViewFile = file_get_contents(resource_path('views/reports/time-entry-index/pdf-footer.blade.php'));
             if ($footerViewFile === false) {
@@ -254,7 +261,7 @@ class TimeEntryController extends Controller
                 ->putFileAs($folderPath, new File($tempFolder->path($filenameTemp)), $filename);
         } else {
             Excel::store(
-                new TimeEntriesDetailedExport($timeEntriesQuery, $format, $timezone),
+                new TimeEntriesDetailedExport($timeEntriesQuery, $format, $timezone, $localizationService),
                 $path,
                 config('filesystems.private'),
                 $format->getExportPackageType(),
@@ -285,18 +292,18 @@ class TimeEntryController extends Controller
      *          grouped_data: null|array<array{
      *              key: string|null,
      *              seconds: int,
-     *              cost: int,
+     *              cost: int|null,
      *              grouped_type: string|null,
      *              grouped_data: null|array<array{
      *                  key: string|null,
      *                  seconds: int,
-     *                  cost: int,
+     *                  cost: int|null,
      *                  grouped_type: null,
      *                  grouped_data: null
      *              }>
      *          }>,
      *          seconds: int,
-     *          cost: int
+     *          cost: int|null
      *      }
      * }
      *
@@ -312,6 +319,7 @@ class TimeEntryController extends Controller
             $this->checkPermission($organization, 'time-entries:view:all');
         }
         $user = $this->user();
+        $showBillableRate = $this->member($organization)->role !== Role::Employee->value || $organization->employees_can_see_billable_rates;
 
         $group1Type = $request->getGroup();
         $group2Type = $request->getSubGroup();
@@ -325,7 +333,8 @@ class TimeEntryController extends Controller
             $user->week_start,
             $request->getFillGapsInTimeGroups(),
             $request->getStart(),
-            $request->getEnd()
+            $request->getEnd(),
+            $showBillableRate
         );
 
         return [
@@ -359,6 +368,7 @@ class TimeEntryController extends Controller
         }
         $debug = $request->getDebug();
         $user = $this->user();
+        $showBillableRate = $this->member($organization)->role !== Role::Employee->value || $organization->employees_can_see_billable_rates;
 
         $group = $request->getGroup();
         $subGroup = $request->getSubGroup();
@@ -372,7 +382,8 @@ class TimeEntryController extends Controller
             $user->week_start,
             false,
             $request->getStart(),
-            $request->getEnd()
+            $request->getEnd(),
+            $showBillableRate
         );
         $dataHistoryChart = $timeEntryAggregationService->getAggregatedTimeEntries(
             $timeEntriesAggregateQuery->clone(),
@@ -382,10 +393,12 @@ class TimeEntryController extends Controller
             $user->week_start,
             true,
             $request->getStart(),
-            $request->getEnd()
+            $request->getEnd(),
+            $showBillableRate
         );
         $currency = $organization->currency;
         $timezone = app(TimezoneService::class)->getTimezoneFromUser($this->user());
+        $localizationService = LocalizationService::forOrganization($organization);
 
         $filename = 'time-entries-report-'.now()->format('Y-m-d_H-i-s').'.'.$format->getFileExtension();
         $folderPath = 'exports';
@@ -411,9 +424,12 @@ class TimeEntryController extends Controller
                 'currency' => $currency,
                 'group' => $group,
                 'subGroup' => $subGroup,
+                'timezone' => $timezone,
                 'start' => $request->getStart()->timezone($timezone),
                 'end' => $request->getEnd()->timezone($timezone),
                 'debug' => $debug,
+                'localization' => $localizationService,
+                'showBillableRate' => $showBillableRate,
             ]);
             $footerViewFile = file_get_contents(resource_path('views/reports/time-entry-aggregate/pdf-footer.blade.php'));
             if ($footerViewFile === false) {
@@ -442,7 +458,7 @@ class TimeEntryController extends Controller
                 ->putFileAs($folderPath, new File($tempFolder->path($filenameTemp)), $filename);
         } else {
             Excel::store(
-                new TimeEntriesReportExport($aggregatedData, $format, $currency, $group, $subGroup),
+                new TimeEntriesReportExport($aggregatedData, $format, $currency, $group, $subGroup, $showBillableRate),
                 $path,
                 config('filesystems.private'),
                 $format->getExportPackageType(),

@@ -23,6 +23,7 @@ use Filament\Tables;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Korridor\LaravelModelValidationRules\Rules\UniqueEloquent;
@@ -207,6 +208,14 @@ class UserResource extends Resource
                     }),
             ])
             ->bulkActions([
+                Tables\Actions\BulkAction::make('Resend verification email')
+                    ->icon('heroicon-o-paper-airplane')
+                    ->action(function (Collection $records): void {
+                        foreach ($records as $user) {
+                            /** @var User $user */
+                            $user->sendEmailVerificationNotification();
+                        }
+                    }),
             ]);
     }
 

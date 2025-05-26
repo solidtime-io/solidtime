@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\V1\Member;
 
+use App\Http\Requests\V1\BaseFormRequest;
 use App\Models\Organization;
 use Illuminate\Contracts\Validation\ValidationRule;
-use Illuminate\Foundation\Http\FormRequest;
 
 /**
  * @property Organization $organization
  */
-class MemberIndexRequest extends FormRequest
+class MemberIndexRequest extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.
