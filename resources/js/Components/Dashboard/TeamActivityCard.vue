@@ -40,6 +40,7 @@ const { data: latestTeamActivity, isLoading } = useQuery({
                 :class="latestTeamActivity.length === 4 ? 'last:border-0' : ''"
                 :name="activity.name"
                 :description="activity.description"
+                :task-name="activity.task_name"
                 :working="activity.status"></TeamActivityCardEntry>
         </div>
         <div v-else class="text-center text-gray-500 py-8">
