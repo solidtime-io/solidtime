@@ -230,7 +230,9 @@ test('test that format settings are reflected in the dashboard', async ({
     await expect(page.getByText('0.00€')).toBeVisible();
 
     // check that 00:00 is displayed
-    await expect(page.getByText('0:00', { exact: true }).nth(0)).toBeVisible();
+    await expect(
+        page.getByText('0:00 h', { exact: true }).nth(0)
+    ).toBeVisible();
     // check that 0h 00min is not displayed
     await expect(
         page.getByText('0h 00min', { exact: true }).nth(0)
