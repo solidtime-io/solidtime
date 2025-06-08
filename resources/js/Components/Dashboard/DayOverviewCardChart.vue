@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import VChart from 'vue-echarts';
-import { computed, ref } from 'vue';
-import { useCssVar } from '@vueuse/core';
+import { computed } from 'vue';
+import { useCssVariable } from '@/utils/useCssVariable';
 
 const props = defineProps<{
     history: number[];
 }>();
 
-const accentColor = useCssVar('--theme-color-chart', null, { observe: true });
+const accentColor = useCssVariable('--theme-color-chart');
+const markLineColor = useCssVariable('--color-border-secondary');
 
 const seriesData = computed(() => props.history.map((el) => {
     return {
@@ -22,7 +23,7 @@ const seriesData = computed(() => props.history.map((el) => {
         },
     };
 }));
-const option = ref({
+const option = computed(() => ({
     grid: {
         top: 0,
         right: 0,
@@ -35,7 +36,7 @@ const option = ref({
         data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
         markLine: {
             lineStyle: {
-                color: 'rgba(125,156,188,0.1)',
+                color: markLineColor.value,
                 type: 'dashed',
             },
         },
@@ -66,11 +67,11 @@ const option = ref({
     },
     series: [
         {
-            data: seriesData,
+            data: seriesData.value,
             type: 'bar',
         },
     ],
-});
+}));
 </script>
 
 <template>
