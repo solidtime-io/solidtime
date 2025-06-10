@@ -3,13 +3,6 @@ import { computed, watch } from "vue";
 
 type themeOption = "system" | "light" | "dark";
 const themeSetting = useStorage<themeOption>("theme", "system");
-// reload page when themeSettingChanges
-watch(
-    themeSetting,
-    () => {
-        location.reload();
-    }
-)
 const preferredColor = usePreferredColorScheme();
 const theme = computed(() => {
     if(themeSetting.value === "system"){

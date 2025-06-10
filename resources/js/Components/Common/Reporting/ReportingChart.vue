@@ -17,7 +17,7 @@ import {
     TooltipComponent,
 } from 'echarts/components';
 import type { AggregatedTimeEntries, Organization } from '@/packages/api/src';
-import { useCssVar } from '@vueuse/core';
+import { useCssVariable } from '@/utils/useCssVariable';
 
 use([
     CanvasRenderer,
@@ -47,8 +47,10 @@ const xAxisLabels = computed(() => {
         formatDate(el.key ?? '', organization?.value?.date_format)
     );
 });
-const accentColor = useCssVar('--theme-color-chart', null, { observe: true });
-const labelColor = useCssVar('--color-text-secondary', null, { observe: true });
+const accentColor = useCssVariable('--theme-color-chart');
+const labelColor = useCssVariable('--color-text-secondary');
+const markLineColor = useCssVariable('--color-border-secondary');
+const splitLineColor = useCssVariable('--color-border-tertiary');
 
 const seriesData = computed(() => {
     return props?.groupedData?.map((el) => {
@@ -111,7 +113,7 @@ const option = computed(() => ({
         data: xAxisLabels.value,
         markLine: {
             lineStyle: {
-                color: 'rgba(125,156,188,0.1)',
+                color: markLineColor.value,
                 type: 'dashed',
             },
         },
@@ -135,9 +137,13 @@ const option = computed(() => ({
     },
     yAxis: {
         type: 'value',
+        axisLabel: {
+            color: labelColor.value,
+            fontFamily: 'Outfit, sans-serif',
+        },
         splitLine: {
             lineStyle: {
-                color: 'rgba(125,156,188,0.2)', // Set desired color here
+                color: splitLineColor.value,
             },
         },
     },

@@ -19,7 +19,7 @@ import {
     formatHumanReadableDuration,
     getDayJsInstance,
 } from '@/packages/ui/src/utils/time';
-import { useCssVar } from '@vueuse/core';
+import { useCssVariable } from '@/utils/useCssVariable';
 import { useQuery } from '@tanstack/vue-query';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import { api, type Organization } from '@/packages/api/src';
@@ -64,12 +64,9 @@ const max = computed(() => {
     }
 });
 
-const backgroundColor = useCssVar('--color-card-background', null, {
-    observe: true,
-});
-const itemBackgroundColor = useCssVar('--color-bg-tertiary', null, {
-    observe: true,
-});
+const backgroundColor = useCssVariable('--theme-color-card-background');
+const itemBackgroundColor = useCssVariable('--color-bg-tertiary');
+const borderColor = useCssVariable('--color-border');
 
 const option = computed(() => {
     return {
@@ -120,7 +117,7 @@ const option = computed(() => {
                 [],
             itemStyle: {
                 borderRadius: 5,
-                borderColor: 'rgba(255,255,255,0.05)',
+                borderColor: borderColor.value,
                 borderWidth: 1,
             },
             tooltip: {
