@@ -45,6 +45,9 @@ class MemberService
             $member->organization()->associate($organization);
             $member->role = $role->value;
             $member->save();
+
+            $user->currentOrganization()->associate($organization);
+            $user->save();
         });
 
         if (! $asSuperAdmin) {
