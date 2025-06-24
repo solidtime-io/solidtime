@@ -30,7 +30,9 @@ const handleChange = (date: DateValue | undefined) => {
         return;
     }
 
-    const dayjs = getLocalizedDayJs(model.value);
+    const dayjs = model.value
+        ? getLocalizedDayJs(model.value)
+        : getLocalizedDayJs();
     model.value = dayjs
         .year(date.year)
         .month(date.month - 1) // CalendarDate uses 1-based months
@@ -62,12 +64,15 @@ const organization = inject<ComputedRef<Organization>>('organization');
                 ]"
                 :tabindex="tabindex">
                 <CalendarIcon
-:class="[
-                    size === 'xs' ? 'h-3 w-3' : 
-                    size === 'sm' ? 'h-3 w-3' : 
-                    size === 'lg' ? 'h-4.5 w-4.5' : 
-                    'h-4 w-4'
-                ]" />
+                    :class="[
+                        size === 'xs'
+                            ? 'h-3 w-3'
+                            : size === 'sm'
+                              ? 'h-3 w-3'
+                              : size === 'lg'
+                                ? 'h-4.5 w-4.5'
+                                : 'h-4 w-4',
+                    ]" />
                 <span class="text-center">
                     {{
                         model

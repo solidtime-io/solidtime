@@ -15,6 +15,7 @@ import { api } from '@/packages/api/src';
 import { Checkbox } from '@/packages/ui/src';
 import DatePicker from '@/packages/ui/src/Input/DatePicker.vue';
 import { useNotificationsStore } from '@/utils/notification';
+import { getLocalizedDayJs } from '@/packages/ui/src/utils/time';
 
 const show = defineModel('show', { default: false });
 const saving = ref(false);
@@ -47,10 +48,14 @@ const report = ref({
 const { handleApiRequestNotifications } = useNotificationsStore();
 
 async function submit() {
+    const { public_until, ...reportProperties } = report.value;
     await handleApiRequestNotifications(
         () =>
             createReportMutation.mutateAsync({
-                ...report.value,
+                ...reportProperties,
+                public_until: public_until
+                    ? getLocalizedDayJs(public_until).utc().format()
+                    : null,
                 properties: { ...props.properties },
             }),
         'Success',
@@ -109,7 +114,10 @@ async function submit() {
                                 (optional)
                             </div>
                         </div>
-                        <DatePicker id="public_until" size="input"></DatePicker>
+                        <DatePicker
+                            id="public_until"
+                            v-model="report.public_until"
+                            size="input"></DatePicker>
                     </div>
                 </div>
             </div>

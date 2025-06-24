@@ -148,6 +148,8 @@ class ReportController extends Controller
                 $report->share_secret = null;
                 $report->public_until = null;
             }
+        } elseif ($report->is_public && $request->has('public_until')) {
+            $report->public_until = $request->getPublicUntil();
         }
         $report->save();
 
