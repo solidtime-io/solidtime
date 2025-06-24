@@ -653,6 +653,85 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
         Event::assertNotDispatched(MemberRemoved::class);
     }
 
+    public function test_destroy_endpoint_succeeds_if_member_is_still_in_use_by_a_project_member_and_delete_related_is_active(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'members:delete',
+        ]);
+        $otherMember = Member::factory()->forOrganization($data->organization)->role(Role::Employee)->create();
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        $projectMember = ProjectMember::factory()->forProject($project)->forMember($data->member)->create();
+        $otherProjectMember = ProjectMember::factory()->forProject($project)->forMember($otherMember)->create();
+        Passport::actingAs($data->user);
+        Event::fake([
+            MemberRemoved::class,
+        ]);
+
+        // Act
+        $response = $this->deleteJson(route('api.v1.members.destroy', [
+            'organization' => $data->organization->getKey(),
+            'member' => $data->member->getKey(),
+            'delete_related' => 'true',
+        ]));
+
+        // Assert
+        $response->assertStatus(204);
+        $this->assertDatabaseMissing(Member::class, [
+            'id' => $data->member->getKey(),
+        ]);
+        $this->assertDatabaseHas(ProjectMember::class, [
+            'id' => $otherProjectMember->getKey(),
+            'member_id' => $otherMember->getKey(),
+            'user_id' => $otherMember->user_id,
+        ]);
+        $this->assertDatabaseMissing(ProjectMember::class, [
+            'id' => $projectMember->getKey(),
+        ]);
+        Event::assertDispatched(function (MemberRemoved $event) use ($data): bool {
+            return $event->organization->is($data->organization) &&
+                $event->member->is($data->member);
+        }, 1);
+    }
+
+    public function test_destroy_endpoint_succeeds_if_member_is_still_in_use_by_a_time_entry_and_delete_related_is_active(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'members:delete',
+        ]);
+        $otherMember = Member::factory()->forOrganization($data->organization)->role(Role::Employee)->create();
+        $timeEntry = TimeEntry::factory()->forMember($data->member)->forOrganization($data->organization)->create();
+        $otherTimeEntry = TimeEntry::factory()->forMember($otherMember)->forOrganization($data->organization)->create();
+        Passport::actingAs($data->user);
+        Event::fake([
+            MemberRemoved::class,
+        ]);
+
+        // Act
+        $response = $this->deleteJson(route('api.v1.members.destroy', [
+            'organization' => $data->organization->getKey(),
+            'member' => $data->member->getKey(),
+            'delete_related' => 'true',
+        ]));
+
+        // Assert
+        $response->assertStatus(204);
+        $this->assertDatabaseMissing(Member::class, [
+            'id' => $data->member->getKey(),
+        ]);
+        $this->assertDatabaseHas(TimeEntry::class, [
+            'id' => $otherTimeEntry->getKey(),
+        ]);
+        $this->assertDatabaseMissing(TimeEntry::class, [
+            'id' => $timeEntry->getKey(),
+        ]);
+        Event::assertDispatched(function (MemberRemoved $event) use ($data): bool {
+            return $event->organization->is($data->organization) &&
+                $event->member->is($data->member);
+        }, 1);
+    }
+
     public function test_destroy_member_succeeds_if_data_is_valid(): void
     {
         // Arrange
