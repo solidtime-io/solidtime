@@ -11,9 +11,10 @@ const emit = defineEmits(['submit']);
     <div class="pt-6">
         <div class="flex items-center space-x-1 mb-2">
             <ClockIcon class="text-text-quaternary w-4"></ClockIcon>
-            <InputLabel for="billable" value="Time Estimated" />
+            <InputLabel for="time-estimated" value="Time Estimated" />
         </div>
         <DurationInput
+            id="time-estimated"
             v-model="model"
             class="max-w-[150px]"
             @submit="emit('submit')"></DurationInput>

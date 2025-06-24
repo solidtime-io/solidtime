@@ -2,6 +2,10 @@
 import { computed, ref } from 'vue';
 import { TextInput } from '@/packages/ui/src';
 
+defineProps<{
+    id?: string;
+}>();
+
 const model = defineModel<number | null>({
     default: null,
 });
@@ -16,6 +20,8 @@ function updateDuration() {
     const hours = parseInt(temporaryCustomTimerEntry.value);
     if (!isNaN(hours)) {
         model.value = hours * 60 * 60;
+    } else {
+        model.value = null;
     }
     temporaryCustomTimerEntry.value = '';
 }
@@ -54,6 +60,7 @@ function updateAndSubmit() {
 <template>
     <div class="relative">
         <TextInput
+            :id="id"
             v-model="currentTime"
             class="w-full overflow-hidden pr-14"
             placeholder="0"
