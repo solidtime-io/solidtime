@@ -2407,6 +2407,11 @@ const endpoints = makeApi([
                 type: 'Path',
                 schema: z.string(),
             },
+            {
+                name: 'delete_related',
+                type: 'Query',
+                schema: z.enum(['true', 'false']).optional(),
+            },
         ],
         response: z.void(),
         errors: [
@@ -2435,6 +2440,16 @@ const endpoints = makeApi([
                 status: 404,
                 description: `Not found`,
                 schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 422,
+                description: `Validation error`,
+                schema: z
+                    .object({
+                        message: z.string(),
+                        errors: z.record(z.array(z.string())),
+                    })
+                    .passthrough(),
             },
         ],
     },
