@@ -30,22 +30,22 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits)
     <div
                             class="absolute inset-0 bg-default-background opacity-30" />
 </DialogOverlay>
-    <DialogContent
-      v-bind="forwarded"
+    <div
       :class="
         cn(
-          'fixed top-0 left-0 z-50 w-screen h-screen flex items-start pt-6 md:pt-20 xl:pt-32 justify-center overflow-auto data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
-          
+          'fixed top-0 left-0 z-50 pointer-events-none w-screen h-screen flex items-start pt-6 md:pt-20 xl:pt-32 justify-center overflow-auto data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
         )"
     >
-    <div
+    <DialogContent
+    v-bind="forwarded"
+
 :class="cn(
-          'bg-default-background grid w-full max-w-lg border shadow-lg duration-200 sm:rounded-lg',
+          'bg-default-background grid w-full max-w-lg border border-border-tertiary shadow-lg duration-200 sm:rounded-lg',
           props.class,
         )"
       >
         <slot />
+      </DialogContent>
     </div>
-    </DialogContent>
   </DialogPortal>
 </template>

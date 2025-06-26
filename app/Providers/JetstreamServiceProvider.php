@@ -187,6 +187,7 @@ class JetstreamServiceProvider extends ServiceProvider
             'members:invite-placeholder',
             'members:make-placeholder',
             'members:merge-into',
+            'members:delete',
             'members:update',
             'reports:view',
             'reports:create',

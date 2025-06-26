@@ -61,16 +61,22 @@ class MemberService
      * @throws CanNotRemoveOwnerFromOrganization
      * @throws EntityStillInUseApiException
      */
-    public function removeMember(Member $member, Organization $organization): void
+    public function removeMember(Member $member, Organization $organization, bool $withRelations = false): void
     {
-        if (TimeEntry::query()->where('user_id', $member->user_id)->whereBelongsTo($organization, 'organization')->exists()) {
-            throw new EntityStillInUseApiException('member', 'time_entry');
-        }
-        if (ProjectMember::query()->whereBelongsToOrganization($organization)->where('user_id', $member->user_id)->exists()) {
-            throw new EntityStillInUseApiException('member', 'project_member');
-        }
         if ($member->role === Role::Owner->value) {
             throw new CanNotRemoveOwnerFromOrganization;
+        }
+
+        if ($withRelations) {
+            TimeEntry::query()->where('user_id', $member->user_id)->whereBelongsTo($organization, 'organization')->delete();
+            ProjectMember::query()->whereBelongsToOrganization($organization)->where('user_id', $member->user_id)->delete();
+        } else {
+            if (TimeEntry::query()->where('user_id', $member->user_id)->whereBelongsTo($organization, 'organization')->exists()) {
+                throw new EntityStillInUseApiException('member', 'time_entry');
+            }
+            if (ProjectMember::query()->whereBelongsToOrganization($organization)->where('user_id', $member->user_id)->exists()) {
+                throw new EntityStillInUseApiException('member', 'project_member');
+            }
         }
 
         $member->delete();
