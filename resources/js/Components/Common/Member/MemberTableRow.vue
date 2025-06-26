@@ -8,26 +8,30 @@ import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import { useNotificationsStore } from '@/utils/notification';
 import { canInvitePlaceholderMembers } from '@/utils/permissions';
-import { useMembersStore } from '@/utils/useMembers';
 import { computed, type ComputedRef, inject, ref } from 'vue';
 import MemberEditModal from '@/Components/Common/Member/MemberEditModal.vue';
 import MemberMergeModal from '@/Components/Common/Member/MemberMergeModal.vue';
 import MemberMakePlaceholderModal from '@/Components/Common/Member/MemberMakePlaceholderModal.vue';
+import MemberDeleteModal from '@/Components/Common/Member/MemberDeleteModal.vue';
 import { capitalizeFirstLetter } from '../../../utils/format';
 import { formatCents } from '../../../packages/ui/src/utils/money';
+import { useMembersStore } from '@/utils/useMembers';
 
 const props = defineProps<{
     member: Member;
 }>();
 
 const organization = inject<ComputedRef<Organization>>('organization');
+const memberStore = useMembersStore();
 
 const showEditMemberModal = ref(false);
 const showMergeMemberModal = ref(false);
 const showMakeMemberPlaceholderModal = ref(false);
+const showDeleteMemberModal = ref(false);
 
 function removeMember() {
-    useMembersStore().removeMember(props.member.id);
+    showDeleteMemberModal.value = true;
+    memberStore.fetchMembers();
 }
 
 async function invitePlaceholder(id: string) {
@@ -121,6 +125,9 @@ const userHasValidMailAddress = computed(() => {
         <MemberMakePlaceholderModal
             v-model:show="showMakeMemberPlaceholderModal"
             :member="member"></MemberMakePlaceholderModal>
+        <MemberDeleteModal
+            v-model:show="showDeleteMemberModal"
+            :member="member"></MemberDeleteModal>
     </TableRow>
 </template>
 
