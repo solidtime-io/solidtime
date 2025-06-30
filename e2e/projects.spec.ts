@@ -102,7 +102,7 @@ test('test that updating billable rate works with existing time entries', async 
 
     await page.getByRole('row').first().getByRole('button').click();
     await page.getByRole('menuitem').getByText('Edit').first().click();
-        await page.getByText('Non-Billable').click();
+    await page.getByText('Non-Billable').click();
     await page.getByText('Custom Rate').click();
     await page
         .getByPlaceholder('Billable Rate')
@@ -111,8 +111,8 @@ test('test that updating billable rate works with existing time entries', async 
 
     await Promise.all([
         page
-            .getByRole('button', { name: 'Yes, update existing time entries' })
-            .click(),
+        .locator('button').filter({ hasText: 'Yes, update existing time' })
+        .click(),    
         page.waitForRequest(
             async (request) =>
                 request.url().includes('/projects/') &&
