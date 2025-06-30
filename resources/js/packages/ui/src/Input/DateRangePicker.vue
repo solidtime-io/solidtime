@@ -73,18 +73,18 @@ const open = ref(false);
 function setToday() {
     emit(
         'update:start',
-        getLocalizedDayJs().startOf('day').format('YYYY-MM-DD')
+        getLocalizedDayJs().startOf('day').format()
     );
-    emit('update:end', getLocalizedDayJs().endOf('day').format('YYYY-MM-DD'));
+    emit('update:end', getLocalizedDayJs().endOf('day').format());
     open.value = false;
 }
 
 function setThisWeek() {
     emit(
         'update:start',
-        getLocalizedDayJs().startOf('week').format('YYYY-MM-DD')
+        getLocalizedDayJs().startOf('week').format()
     );
-    emit('update:end', getLocalizedDayJs().endOf('week').format('YYYY-MM-DD'));
+    emit('update:end', getLocalizedDayJs().endOf('week').format());
     open.value = false;
 }
 
@@ -94,14 +94,14 @@ function setLastWeek() {
         getLocalizedDayJs()
             .subtract(1, 'week')
             .startOf('week')
-            .format('YYYY-MM-DD')
+            .format()
     );
     emit(
         'update:end',
         getLocalizedDayJs()
             .subtract(1, 'week')
             .endOf('week')
-            .format('YYYY-MM-DD')
+            .format()
     );
     open.value = false;
 }
@@ -109,18 +109,18 @@ function setLastWeek() {
 function setLast14Days() {
     emit(
         'update:start',
-        getLocalizedDayJs().subtract(14, 'days').format('YYYY-MM-DD')
+        getLocalizedDayJs().subtract(14, 'days').format()
     );
-    emit('update:end', getLocalizedDayJs().format('YYYY-MM-DD'));
+    emit('update:end', getLocalizedDayJs().format());
     open.value = false;
 }
 
 function setThisMonth() {
     emit(
         'update:start',
-        getLocalizedDayJs().startOf('month').format('YYYY-MM-DD')
+        getLocalizedDayJs().startOf('month').format()
     );
-    emit('update:end', getLocalizedDayJs().endOf('month').format('YYYY-MM-DD'));
+    emit('update:end', getLocalizedDayJs().endOf('month').format());
     open.value = false;
 }
 
@@ -130,14 +130,14 @@ function setLastMonth() {
         getLocalizedDayJs()
             .subtract(1, 'month')
             .startOf('month')
-            .format('YYYY-MM-DD')
+            .format()
     );
     emit(
         'update:end',
         getLocalizedDayJs()
             .subtract(1, 'month')
             .endOf('month')
-            .format('YYYY-MM-DD')
+            .format()
     );
     open.value = false;
 }
@@ -145,36 +145,36 @@ function setLastMonth() {
 function setLast30Days() {
     emit(
         'update:start',
-        getLocalizedDayJs().subtract(30, 'days').format('YYYY-MM-DD')
+        getLocalizedDayJs().subtract(30, 'days').format()
     );
-    emit('update:end', getLocalizedDayJs().format('YYYY-MM-DD'));
+    emit('update:end', getLocalizedDayJs().format());
     open.value = false;
 }
 
 function setLast90Days() {
     emit(
         'update:start',
-        getDayJsInstance()().subtract(90, 'days').format('YYYY-MM-DD')
+        getDayJsInstance()().subtract(90, 'days').format()
     );
-    emit('update:end', getDayJsInstance()().format('YYYY-MM-DD'));
+    emit('update:end', getDayJsInstance()().format());
     open.value = false;
 }
 
 function setLast12Months() {
     emit(
         'update:start',
-        getLocalizedDayJs().subtract(12, 'months').format('YYYY-MM-DD')
+        getLocalizedDayJs().subtract(12, 'months').format()
     );
-    emit('update:end', getLocalizedDayJs().format('YYYY-MM-DD'));
+    emit('update:end', getLocalizedDayJs().format());
     open.value = false;
 }
 
 function setThisYear() {
     emit(
         'update:start',
-        getLocalizedDayJs().startOf('year').format('YYYY-MM-DD')
+        getLocalizedDayJs().startOf('year').format()
     );
-    emit('update:end', getLocalizedDayJs().endOf('year').format('YYYY-MM-DD'));
+    emit('update:end', getLocalizedDayJs().endOf('year').format());
     open.value = false;
 }
 
@@ -184,14 +184,14 @@ function setLastYear() {
         getLocalizedDayJs()
             .subtract(1, 'year')
             .startOf('year')
-            .format('YYYY-MM-DD')
+            .format()
     );
     emit(
         'update:end',
         getLocalizedDayJs()
             .subtract(1, 'year')
             .endOf('year')
-            .format('YYYY-MM-DD')
+            .format()
     );
     open.value = false;
 }
