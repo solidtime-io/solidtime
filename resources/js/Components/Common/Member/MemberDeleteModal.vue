@@ -87,8 +87,9 @@ const close = () => {
                         <li>Their project assignments</li>
                         <li>Their organization membership</li>
                     </ul>
-                <p class="font-medium pt-4">
-                    Note: Deleting time entries will affect all reports and statistics.
+                <p class="pt-4">
+                    <strong>Note:</strong> Deleting time entries will affect all reports and statistics.
+                    If you want to keep the time entries but remove the member from your organization, you can convert them to a placeholder user instead. Placeholder users are not charged and their time entries remain intact for reporting purposes.
                 </p>
             </div>
 
