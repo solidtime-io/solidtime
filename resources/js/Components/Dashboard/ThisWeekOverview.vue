@@ -163,11 +163,11 @@ const seriesData = computed(() => {
                     color: new LinearGradient(0, 0, 0, 1, [
                         {
                             offset: 0,
-                            color: 'rgba(' + accentColor.value + ',0.7)',
+                            color: 'rgba(' + accentColor.value + ')',
                         },
                         {
                             offset: 1,
-                            color: 'rgba(' + accentColor.value + ',0.5)',
+                            color: 'rgba(' + accentColor.value + '',
                         },
                     ]),
                 },
@@ -243,59 +243,39 @@ const option = computed(() => {
 </script>
 
 <template>
-    <div
-        class="grid space-y-5 sm:space-y-0 sm:gap-x-6 xl:gap-x-6 grid-cols-1 lg:grid-cols-3 xl:grid-cols-4">
+    <div class="grid space-y-5 sm:space-y-0 sm:gap-x-6 xl:gap-x-6 grid-cols-1 lg:grid-cols-3 xl:grid-cols-4">
         <div class="col-span-2 xl:col-span-3">
-            <CardTitle
-                title="This Week"
-                class="pb-8"
-                :icon="ClockIcon"></CardTitle>
-            <v-chart
-                v-if="weeklyHistory"
-                :autoresize="true"
-                class="chart"
-                :option="option" />
+            <CardTitle title="This Week" class="pb-8" :icon="ClockIcon"></CardTitle>
+            <v-chart v-if="weeklyHistory" :autoresize="true" class="chart" :option="option" />
         </div>
         <div class="space-y-6">
-            <StatCard
-                title="Spent Time"
-                :value="
-                    totalWeeklyTime
-                        ? formatHumanReadableDuration(
-                              totalWeeklyTime,
-                              organization?.interval_format,
-                              organization?.number_format
-                          )
-                        : '--'
+            <StatCard title="Spent Time" :value="totalWeeklyTime
+                ? formatHumanReadableDuration(
+                    totalWeeklyTime,
+                    organization?.interval_format,
+                    organization?.number_format
+                )
+                : '--'
                 " />
-            <StatCard
-                title="Billable Time"
-                :value="
-                    totalWeeklyBillableTime
-                        ? formatHumanReadableDuration(
-                              totalWeeklyBillableTime,
-                              organization?.interval_format,
-                              organization?.number_format
-                          )
-                        : '--'
+            <StatCard title="Billable Time" :value="totalWeeklyBillableTime
+                ? formatHumanReadableDuration(
+                    totalWeeklyBillableTime,
+                    organization?.interval_format,
+                    organization?.number_format
+                )
+                : '--'
                 " />
-            <StatCard
-                title="Billable Amount"
-                :value="
-                    totalWeeklyBillableAmount
-                        ? formatCents(
-                              totalWeeklyBillableAmount.value,
-                              getOrganizationCurrencyString(),
-                              organization?.currency_format,
-                              organization?.currency_symbol,
-                              organization?.number_format
-                          )
-                        : '--'
+            <StatCard title="Billable Amount" :value="totalWeeklyBillableAmount
+                ? formatCents(
+                    totalWeeklyBillableAmount.value,
+                    getOrganizationCurrencyString(),
+                    organization?.currency_format,
+                    organization?.currency_symbol,
+                    organization?.number_format
+                )
+                : '--'
                 " />
-            <ProjectsChartCard
-                v-if="weeklyProjectOverview"
-                :weekly-project-overview="
-                    weeklyProjectOverview
+            <ProjectsChartCard v-if="weeklyProjectOverview" :weekly-project-overview="weeklyProjectOverview
                 "></ProjectsChartCard>
         </div>
     </div>

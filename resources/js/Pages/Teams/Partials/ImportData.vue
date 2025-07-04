@@ -129,10 +129,7 @@ const showResultModal = ref(false);
 </script>
 
 <template>
-    <DialogModal
-        closeable
-        :show="showResultModal"
-        @close="showResultModal = false">
+    <DialogModal closeable :show="showResultModal" @close="showResultModal = false">
         <template #title>Import Result</template>
         <template #content>
             <div class="pb-6">
@@ -140,26 +137,20 @@ const showResultModal = ref(false);
                 data:
             </div>
 
-            <div
-                class="py-2.5 px-3 border-t border-t-card-background-separator">
+            <div class="py-2.5 px-3 border-t border-t-card-background-separator">
                 <span class="text-text-primary font-semibold">Clients created:</span>
                 {{ reportResult?.report.clients.created }}
             </div>
-            <div
-                class="py-2.5 px-3 border-t border-t-card-background-separator">
+            <div class="py-2.5 px-3 border-t border-t-card-background-separator">
                 <span class="text-text-primary font-semibold">Projects created:</span>
                 {{ reportResult?.report.projects.created }}
             </div>
-            <div
-                class="py-2.5 px-3 border-t border-t-card-background-separator">
+            <div class="py-2.5 px-3 border-t border-t-card-background-separator">
                 <span class="text-text-primary font-semibold">Tasks created:</span>
                 {{ reportResult?.report.tasks.created }}
             </div>
-            <div
-                class="py-2.5 px-3 border-t border-t-card-background-separator">
-                <span class="text-text-primary font-semibold"
-                    >Time entries created:</span
-                >
+            <div class="py-2.5 px-3 border-t border-t-card-background-separator">
+                <span class="text-text-primary font-semibold">Time entries created:</span>
                 {{ reportResult?.report.time_entries.created }}
             </div>
         </template>
@@ -170,74 +161,50 @@ const showResultModal = ref(false);
         </template>
     </DialogModal>
     <div>
-        <CardTitle
-            title="Import Data"
-            :icon="ArrowDownOnSquareIcon"></CardTitle>
+        <CardTitle title="Import Data" :icon="ArrowDownOnSquareIcon"></CardTitle>
         <Card class="mb-3">
             <div class="py-2 px-3 sm:px-4 text-sm flex items-center space-x-3">
-                <InformationCircleIcon
-                    class="h-5 min-w-0 w-5 text-bg-tertiary" />
+                <InformationCircleIcon class="h-5 min-w-0 w-5 text-bg-tertiary" />
                 <p class="flex-1">
                     Import existing data from Toggl, Clockify or a different
-                    solidtime instance. Please select the type of data you want
+                    instance. Please select the type of data you want
                     to import and follow the instructions.
                 </p>
             </div>
         </Card>
 
         <Card>
-            <div
-                class="px-4 py-5 sm:px-5">
+            <div class="px-4 py-5 sm:px-5">
                 <div>
                     <InputLabel for="importType" value="Import Type" />
-                    <select
-                        id="importType"
-                        v-model="importType"
-                        name="importType"
+                    <select id="importType" v-model="importType" name="importType"
                         class="mt-1 block w-full border-input-border bg-input-background text-text-primary focus:border-input-border-active rounded-md shadow-sm">
                         <option :value="null" selected disabled>
                             Select an import type to get instructions...
                         </option>
-                        <option
-                            v-for="importTypeOption in importTypeOptions"
-                            :key="importTypeOption.key"
+                        <option v-for="importTypeOption in importTypeOptions" :key="importTypeOption.key"
                             :value="importTypeOption">
                             {{ importTypeOption.name }}
                         </option>
                     </select>
-                    <div
-                        v-if="currentImporterDescription"
-                        class="py-3 text-text-primary">
+                    <div v-if="currentImporterDescription" class="py-3 text-text-primary">
                         <div class="font-semibold text-text-secondary py-1">
                             Instructions:
                         </div>
-                        <div
-                            class="max-w-2xl"
-                            v-html="currentImporterDescription"></div>
+                        <div class="max-w-2xl" v-html="currentImporterDescription"></div>
                     </div>
                 </div>
 
-                <div
-                    class="mt-2 flex justify-center rounded-lg border border-dashed border-border-primary px-6 py-10">
+                <div class="mt-2 flex justify-center rounded-lg border border-dashed border-border-primary px-6 py-10">
                     <div class="text-center">
-                        <DocumentIcon
-                            class="mx-auto h-8 w-8 text-text-secondary"
-                            aria-hidden="true" />
+                        <DocumentIcon class="mx-auto h-8 w-8 text-text-secondary" aria-hidden="true" />
 
                         <div class="mt-4 flex text-sm leading-6 text-text-secondary">
-                            <label
-                                for="file-upload"
+                            <label for="file-upload"
                                 class="relative cursor-pointer rounded-md font-semibold text-text-primary focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2 focus-within:ring-offset-gray-900 hover:text-indigo-500">
                                 <span v-if="files">{{ filenames }}</span>
-                                <span v-else
-                                    >Upload a Toggl/Clockify Export</span
-                                >
-                                <input
-                                    id="file-upload"
-                                    ref="importFile"
-                                    name="file-upload"
-                                    type="file"
-                                    class="sr-only"
+                                <span v-else>Upload a Toggl/Clockify Export</span>
+                                <input id="file-upload" ref="importFile" name="file-upload" type="file" class="sr-only"
                                     @change="updateFiles" />
                             </label>
                         </div>
@@ -250,8 +217,7 @@ const showResultModal = ref(false);
 
             <div
                 class="flex items-center justify-end px-4 py-3 bg-card-background border-t border-card-background-separator text-end sm:px-6 shadow sm:rounded-bl-md sm:rounded-br-md">
-                <PrimaryButton :loading @click="importData"
-                    >Import Data
+                <PrimaryButton :loading @click="importData">Import Data
                 </PrimaryButton>
             </div>
         </Card>

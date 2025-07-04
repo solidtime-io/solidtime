@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
@@ -19,7 +20,13 @@
 
         <!-- Scripts -->
         @routes
-        @vite(array_filter(\Nwidart\Modules\Module::getAssets(), fn($asset) => $asset !== 'resources/css/filament/admin/theme.css'))
+        @vite([
+            'resources/js/app.ts',
+            'resources/css/app.css',
+            'resources/css/filament/admin/theme.css',
+        ])
+
+        {{-- @vite(array_filter(\Nwidart\Modules\Module::getAssets(), fn($asset) => $asset !== 'resources/css/filament/admin/theme.css')) --}}
         @inertiaHead
     </head>
     <body class="font-sans antialiased">

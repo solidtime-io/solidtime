@@ -52,20 +52,13 @@ async function exportData() {
 </script>
 
 <template>
-    <DialogModal
-        closeable
-        :show="showResultModal"
-        @close="showResultModal = false">
+    <DialogModal closeable :show="showResultModal" @close="showResultModal = false">
         <template #title>The export was successful!</template>
         <template #content>
             <div class="pb-6">
                 The download should start automatically. If it does not
-                <a
-                    class="font-semibold text-accent-200 hover:text-accent-300"
-                    target="_self"
-                    :href="exportResponse?.download_url"
-                    >click here</a
-                >
+                <a class="font-semibold text-accent-200 hover:text-accent-300" target="_self"
+                    :href="exportResponse?.download_url">click here</a>
             </div>
         </template>
         <template #footer>
@@ -78,26 +71,23 @@ async function exportData() {
         <CardTitle title="Export Data" :icon="ArrowUpOnSquareIcon"></CardTitle>
         <Card class="mb-3">
             <div class="py-2 px-3 sm:px-4 text-sm flex items-center space-x-3">
-                <InformationCircleIcon
-                    class="h-5 min-w-0 w-5 text-bg-tertiary" />
+                <InformationCircleIcon class="h-5 min-w-0 w-5 text-bg-tertiary" />
                 <p class="flex-1">
-                    Export your solidtime organization data. This will include
+                    Export your organization data. This will include
                     all clients, projects, tasks, and time entries. You will
                     receive a zip file with json files for each entity.
                 </p>
             </div>
         </Card>
         <Card>
-            <div
-                class="py-6 flex-col items-center flex space-y-5 text-center text-sm">
+            <div class="py-6 flex-col items-center flex space-y-5 text-center text-sm">
                 <div>
                     The following organization will be exported: <br />
                     <strong class="font-semibold">{{
                         organization?.name
-                    }}</strong>
+                        }}</strong>
                 </div>
-                <PrimaryButton :loading @click="exportData"
-                    >Export Organization Data
+                <PrimaryButton :loading @click="exportData">Export Organization Data
                 </PrimaryButton>
             </div>
         </Card>
