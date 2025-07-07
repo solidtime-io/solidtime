@@ -160,12 +160,29 @@ export function formatWeek(date: string | null): string {
  * @param date - date in the format of 'YYYY-MM-DD'
  */
 export function formatHumanReadableDate(date: string) {
-    if (dayjs(date).isToday()) {
+    const dateObj = dayjs(date);
+    const today = dayjs();
+    
+    if (dateObj.isToday()) {
         return 'Today';
-    } else if (dayjs(date).isYesterday()) {
+    } else if (dateObj.isYesterday()) {
         return 'Yesterday';
     }
-    return dayjs(date).fromNow();
+    
+    // Calculate difference in days
+    const diffInDays = today.diff(dateObj, 'day');
+    
+    if (diffInDays > 0 && diffInDays <= 30) {
+        // For dates in the past (2-30 days ago)
+        return `${diffInDays} ${diffInDays === 1 ? 'day' : 'days'} ago`;
+    } else if (diffInDays < 0 && diffInDays >= -30) {
+        // For dates in the future (within 30 days)
+        const futureDays = Math.abs(diffInDays);
+        return `In ${futureDays} ${futureDays === 1 ? 'day' : 'days'}`;
+    }
+    
+    // For dates older than 30 days, show the actual date
+    return dateObj.format('MMM D, YYYY');
 }
 
 export function formatWeekday(date: string) {
