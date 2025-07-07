@@ -10,6 +10,7 @@ use App\Exceptions\Api\CanNotRemoveOwnerFromOrganization;
 use App\Exceptions\Api\ChangingRoleOfPlaceholderIsNotAllowed;
 use App\Exceptions\Api\ChangingRoleToPlaceholderIsNotAllowed;
 use App\Exceptions\Api\EntityStillInUseApiException;
+use App\Exceptions\Api\InvitationForTheEmailAlreadyExistsApiException;
 use App\Exceptions\Api\OnlyOwnerCanChangeOwnership;
 use App\Exceptions\Api\OnlyPlaceholdersCanBeMergedIntoAnotherMember;
 use App\Exceptions\Api\OrganizationNeedsAtLeastOneOwner;
@@ -173,6 +174,7 @@ class MemberController extends Controller
      * @throws UserNotPlaceholderApiException
      * @throws UserIsAlreadyMemberOfOrganizationApiException
      * @throws ThisPlaceholderCanNotBeInvitedUseTheMergeToolInsteadException
+     * @throws InvitationForTheEmailAlreadyExistsApiException
      *
      * @operationId invitePlaceholder
      */

@@ -67,6 +67,14 @@ class MemberService
             throw new CanNotRemoveOwnerFromOrganization;
         }
 
+        $user = $member->user;
+        $isPlaceholder = $user->is_placeholder;
+
+        if (! $isPlaceholder && $user->current_team_id === $member->organization_id) {
+            $user->currentTeam()->disassociate();
+            $user->save();
+        }
+
         if ($withRelations) {
             TimeEntry::query()->where('user_id', $member->user_id)->whereBelongsTo($organization, 'organization')->delete();
             ProjectMember::query()->whereBelongsToOrganization($organization)->where('user_id', $member->user_id)->delete();
@@ -80,6 +88,14 @@ class MemberService
         }
 
         $member->delete();
+
+        if ($isPlaceholder) {
+            $user->delete();
+        } else {
+            $this->userService->makeSureUserHasAtLeastOneOrganization($user);
+            $this->userService->makeSureUserHasCurrentOrganization($user);
+        }
+
         MemberRemoved::dispatch($member, $organization);
     }
 
