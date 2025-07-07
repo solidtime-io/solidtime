@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Exceptions\Api\InvitationForTheEmailAlreadyExistsApiException;
 use App\Exceptions\Api\UserIsAlreadyMemberOfOrganizationApiException;
 use App\Http\Requests\V1\Invitation\InvitationIndexRequest;
 use App\Http\Requests\V1\Invitation\InvitationStoreRequest;
@@ -50,6 +51,7 @@ class InvitationController extends Controller
      *
      * @throws AuthorizationException
      * @throws UserIsAlreadyMemberOfOrganizationApiException
+     * @throws InvitationForTheEmailAlreadyExistsApiException
      *
      * @operationId invite
      */

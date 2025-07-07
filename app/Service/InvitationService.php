@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Enums\Role;
+use App\Exceptions\Api\InvitationForTheEmailAlreadyExistsApiException;
 use App\Exceptions\Api\UserIsAlreadyMemberOfOrganizationApiException;
 use App\Mail\OrganizationInvitationMail;
 use App\Models\Member;
@@ -16,7 +17,7 @@ use Laravel\Jetstream\Events\InvitingTeamMember;
 class InvitationService
 {
     /**
-     * @throws UserIsAlreadyMemberOfOrganizationApiException
+     * @throws UserIsAlreadyMemberOfOrganizationApiException|InvitationForTheEmailAlreadyExistsApiException
      */
     public function inviteUser(Organization $organization, string $email, Role $role): OrganizationInvitation
     {
@@ -26,6 +27,13 @@ class InvitationService
             ->where('role', '!=', Role::Placeholder->value)
             ->exists()) {
             throw new UserIsAlreadyMemberOfOrganizationApiException;
+        }
+
+        if (OrganizationInvitation::query()
+            ->where('email', $email)
+            ->whereBelongsTo($organization, 'organization')
+            ->exists()) {
+            throw new InvitationForTheEmailAlreadyExistsApiException;
         }
 
         InvitingTeamMember::dispatch($organization, $email, $role->value);

@@ -129,26 +129,31 @@ class InvitationEndpointTest extends ApiEndpointTestAbstract
         $response->assertJsonPath('message', 'User is already a member of the organization');
     }
 
-    public function test_store_fails_if_user_invites_user_who_is_already_invited_to_organization(): void
+    public function test_store_fails_if_an_invitation_with_the_same_email_already_exists(): void
     {
         // Arrange
         $data = $this->createUserWithPermission([
             'invitations:create',
         ]);
         Passport::actingAs($data->user);
-        $invitation = OrganizationInvitation::factory()->forOrganization($data->organization)->create();
+        $email = 'user@email.test';
+        $invitation = OrganizationInvitation::factory()->forOrganization($data->organization)->create([
+            'email' => $email,
+        ]);
 
         // Act
         $response = $this->postJson(route('api.v1.invitations.store', $data->organization->getKey()), [
-            'email' => $invitation->email,
+            'email' => $email,
             'role' => Role::Employee->value,
         ]);
 
         // Assert
-        $response->assertInvalid([
-            'email' => 'The email has already been invited to the organization. Please wait for the user to accept the invitation or resend the invitation email.',
+        $response->assertStatus(400);
+        $response->assertExactJson([
+            'error' => true,
+            'key' => 'invitation_for_the_email_already_exists',
+            'message' => 'The email has already been invited to the organization. Please wait for the user to accept the invitation or resend the invitation email.',
         ]);
-        $response->assertStatus(422);
     }
 
     public function test_store_works_if_user_invites_user_who_is_also_a_placeholder(): void
