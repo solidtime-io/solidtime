@@ -6,8 +6,8 @@ import {
 } from '@/Components/ui/popover';
 import { Button } from '@/Components/ui/button';
 import { Calendar } from '@/Components/ui/calendar';
-import { CalendarIcon } from 'lucide-vue-next';
-import { formatDateLocalized } from '@/packages/ui/src/utils/time';
+import { CalendarIcon, XIcon } from 'lucide-vue-next';
+import { formatDate } from '@/packages/ui/src/utils/time';
 import { parseDate } from '@internationalized/date';
 import { computed, inject, type ComputedRef } from 'vue';
 import { type Organization } from '@/packages/api/src';
@@ -17,12 +17,21 @@ const emit = defineEmits<{
     blur: [];
 }>();
 
+defineProps<{
+    clearable?: boolean;
+}>();
+
 const handleChange = (date: string) => {
     model.value = date;
 };
 
 const handleBlur = () => {
     emit('blur');
+};
+
+const handleClear = (event: Event) => {
+    event.stopPropagation();
+    model.value = null;
 };
 
 const date = computed(() => {
@@ -44,7 +53,17 @@ const organization = inject<ComputedRef<Organization>>('organization');
                 ]"
             >
                 <CalendarIcon class="mr-2 h-4 w-4" />
-                {{ model ? formatDateLocalized(model, organization?.date_format) : 'Pick a date' }}
+                <span class="flex-1">
+                    {{ model ? formatDate(model, organization?.date_format) : 'Pick a date' }}
+                </span>
+                <button
+                    v-if="clearable && model"
+                    class="ml-2 hover:bg-muted rounded p-1 transition-colors"
+                    type="button"
+                    @click="handleClear"
+                >
+                    <XIcon class="h-4 w-4" />
+                </button>
             </Button>
         </PopoverTrigger>
         <PopoverContent class="w-auto p-0">

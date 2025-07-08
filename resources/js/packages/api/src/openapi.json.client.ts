@@ -67,6 +67,7 @@ const InvoiceResource = z
         status: z.string(),
         date: z.string(),
         due_at: z.string(),
+        paid_date: z.string(),
         created_at: z.union([z.string(), z.null()]),
         updated_at: z.union([z.string(), z.null()]),
     })
@@ -76,7 +77,7 @@ const InvoiceDiscountType = z.enum(['percentage', 'fixed']);
 const InvoiceStoreRequest = z
     .object({
         due_at: z.union([z.string(), z.null()]).optional(),
-        paid_at: z.union([z.string(), z.null()]).optional(),
+        paid_date: z.union([z.string(), z.null()]).optional(),
         seller_name: z.string(),
         seller_vatin: z.union([z.string(), z.null()]).optional(),
         seller_address_line_1: z.union([z.string(), z.null()]).optional(),
@@ -102,8 +103,13 @@ const InvoiceStoreRequest = z
         billing_period_end: z.union([z.string(), z.null()]).optional(),
         reference: z.string(),
         currency: z.string(),
-        tax_rate: z.number().int().optional(),
-        discount_amount: z.number().int().optional(),
+        tax_rate: z.number().int().gte(0).lte(2147483647).optional(),
+        discount_amount: z
+            .number()
+            .int()
+            .gte(0)
+            .lte(9223372036854776000)
+            .optional(),
         discount_type: InvoiceDiscountType.optional(),
         footer: z.union([z.string(), z.null()]).optional(),
         notes: z.union([z.string(), z.null()]).optional(),
@@ -115,8 +121,12 @@ const InvoiceStoreRequest = z
                     .object({
                         name: z.string(),
                         description: z.union([z.string(), z.null()]).optional(),
-                        unit_price: z.number().int().gte(0).lte(99999999),
-                        quantity: z.number().gte(0),
+                        unit_price: z
+                            .number()
+                            .int()
+                            .gte(0)
+                            .lte(9223372036854776000),
+                        quantity: z.number().gte(0).lte(99999999),
                     })
                     .passthrough()
             )
@@ -161,7 +171,7 @@ const DetailedInvoiceResource = z
         buyer_address_country: z.string(),
         buyer_phone: z.string(),
         buyer_email: z.string(),
-        paid_at: z.union([z.string(), z.null()]),
+        paid_date: z.string(),
         due_at: z.string(),
         discount_type: z.string(),
         discount_amount: z.number().int(),
@@ -185,7 +195,7 @@ const InvoiceUpdateRequest = z
     .object({
         status: InvoiceStatus,
         due_at: z.union([z.string(), z.null()]),
-        paid_at: z.union([z.string(), z.null()]),
+        paid_date: z.union([z.string(), z.null()]),
         seller_name: z.string(),
         seller_vatin: z.union([z.string(), z.null()]),
         seller_address_line_1: z.union([z.string(), z.null()]),
@@ -211,8 +221,8 @@ const InvoiceUpdateRequest = z
         billing_period_end: z.union([z.string(), z.null()]),
         reference: z.string(),
         currency: z.string(),
-        tax_rate: z.number().int(),
-        discount_amount: z.number().int(),
+        tax_rate: z.number().int().gte(0).lte(2147483647),
+        discount_amount: z.number().int().gte(0).lte(9223372036854776000),
         discount_type: InvoiceDiscountType,
         footer: z.union([z.string(), z.null()]),
         notes: z.union([z.string(), z.null()]),
@@ -224,8 +234,12 @@ const InvoiceUpdateRequest = z
                     id: z.union([z.string(), z.null()]).optional(),
                     name: z.string(),
                     description: z.union([z.string(), z.null()]).optional(),
-                    unit_price: z.number().int().gte(0).lte(99999999),
-                    quantity: z.number().gte(0),
+                    unit_price: z
+                        .number()
+                        .int()
+                        .gte(0)
+                        .lte(9223372036854776000),
+                    quantity: z.number().gte(0).lte(99999999),
                 })
                 .passthrough()
         ),
