@@ -144,7 +144,6 @@ function onSelectChange(checked : boolean) {
                         "></BillableToggleButton>
                     <div class="flex-1">
                         <TimeEntryRangeSelector
-                            class="hidden lg:block"
                             :start="timeEntry.start"
                             :end="timeEntry.end"
                             :show-date
@@ -160,7 +159,7 @@ function onSelectChange(checked : boolean) {
                         "></TimeEntryRowDurationInput>
                     <TimeTrackerStartStop
                         :active="!!(timeEntry.start && !timeEntry.end)"
-                        class="opacity-20 hidden sm:flex focus-visible:opacity-100 group-hover:opacity-100"
+                        class="opacity-20 flex focus-visible:opacity-100 group-hover:opacity-100"
                         @changed="onStartStopClick"></TimeTrackerStartStop>
                     <TimeEntryMoreOptionsDropdown
                         @delete="

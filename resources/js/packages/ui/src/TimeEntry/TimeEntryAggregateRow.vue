@@ -154,13 +154,13 @@ function onSelectChange(checked: boolean) {
                         "></BillableToggleButton>
                     <div class="flex-1">
                         <button
-                            :class="twMerge('hidden lg:block text-text-secondary w-[110px] px-1 py-1.5 bg-transparent text-center hover:bg-card-background rounded-lg border border-transparent hover:border-card-border text-sm font-medium focus-visible:outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:bg-tertiary', organization?.time_format === '12-hours' ? 'w-[160px]' : 'w-[110px]')"
+                            :class="twMerge('text-text-secondary w-[110px] px-1 py-1.5 bg-transparent text-center hover:bg-card-background rounded-lg border border-transparent hover:border-card-border text-sm font-medium focus-visible:outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:bg-tertiary', organization?.time_format === '12-hours' ? 'w-[160px]' : 'w-[110px]')"
                             @click="expanded = !expanded">
                             {{ formatStartEnd(timeEntry.start, timeEntry.end, organization?.time_format) }}
                         </button>
                     </div>
                     <button
-                        class="text-text-primary min-w-[90px] px-2.5 py-1.5 bg-transparent text-right hover:bg-card-background rounded-lg border border-transparent hover:border-card-border text-sm font-semibold focus-visible:outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:bg-tertiary"
+                        class="text-text-primary min-w-[90px] px-2.5 py-1.5 bg-transparent text-right hover:bg-card-background rounded-lg border border-transparent hover:border-card-border text-sm font-medium focus-visible:outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:bg-tertiary"
                         @click="expanded = !expanded">
                         {{
                             formatHumanReadableDuration(
@@ -173,7 +173,7 @@ function onSelectChange(checked: boolean) {
 
                     <TimeTrackerStartStop
                         :active="!!(timeEntry.start && !timeEntry.end)"
-                        class="opacity-20 hidden sm:flex group-hover:opacity-100 focus-visible:opacity-100"
+                        class="opacity-20 flex group-hover:opacity-100 focus-visible:opacity-100"
                         @changed="
                             onStartStopClick(timeEntry)
                         "></TimeTrackerStartStop>
