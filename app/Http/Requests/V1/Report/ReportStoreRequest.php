@@ -6,6 +6,7 @@ namespace App\Http\Requests\V1\Report;
 
 use App\Enums\TimeEntryAggregationType;
 use App\Enums\TimeEntryAggregationTypeInterval;
+use App\Enums\TimeEntryRoundingType;
 use App\Enums\Weekday;
 use App\Http\Requests\V1\BaseFormRequest;
 use App\Models\Organization;
@@ -128,6 +129,18 @@ class ReportStoreRequest extends BaseFormRequest
                 'nullable',
                 'timezone:all',
             ],
+            // Rounding type defined where the end of each time entry should be rounded to. For example: nearest rounds the end to the nearest x minutes group. Rounding per time entry is activated if `rounding_type` and `rounding_minutes` is not null.
+            'properties.rounding_type' => [
+                'nullable',
+                'string',
+                Rule::enum(TimeEntryRoundingType::class),
+            ],
+            // Defines the length of the interval that the time entry rounding rounds to.
+            'properties.rounding_minutes' => [
+                'nullable',
+                'numeric',
+                'integer',
+            ],
         ];
     }
 
@@ -204,5 +217,23 @@ class ReportStoreRequest extends BaseFormRequest
     public function getPropertyHistoryGroup(): TimeEntryAggregationTypeInterval
     {
         return TimeEntryAggregationTypeInterval::from($this->input('properties.history_group'));
+    }
+
+    public function getPropertyRoundingType(): ?TimeEntryRoundingType
+    {
+        if (! $this->has('properties.rounding_type') || $this->input('properties.rounding_type') === null) {
+            return null;
+        }
+
+        return TimeEntryRoundingType::from($this->input('properties.rounding_type'));
+    }
+
+    public function getPropertyRoundingMinutes(): ?int
+    {
+        if (! $this->has('properties.rounding_minutes') || $this->input('properties.rounding_minutes') === null) {
+            return null;
+        }
+
+        return (int) $this->input('properties.rounding_minutes');
     }
 }
