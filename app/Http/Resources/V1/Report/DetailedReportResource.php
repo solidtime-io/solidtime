@@ -58,6 +58,10 @@ class DetailedReportResource extends BaseResource
                 'tag_ids' => $this->resource->properties->tagIds?->toArray(),
                 /** @var array<string>|null $task_ids Filter by task IDs, task IDs are OR combined */
                 'task_ids' => $this->resource->properties->taskIds?->toArray(),
+                /** @var string|null $rounding_type Rounding type for time entries */
+                'rounding_type' => $this->resource->properties->roundingType?->value,
+                /** @var int|null $rounding_minutes Rounding minutes for time entries */
+                'rounding_minutes' => $this->resource->properties->roundingMinutes,
             ],
             /** @var string $created_at Date when the report was created */
             'created_at' => $this->formatDateTime($this->resource->created_at),

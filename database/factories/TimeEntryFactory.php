@@ -153,6 +153,16 @@ class TimeEntryFactory extends Factory
         });
     }
 
+    public function endWithDuration(Carbon $end, int $durationInSeconds): self
+    {
+        return $this->state(function (array $attributes) use ($end, $durationInSeconds): array {
+            return [
+                'start' => $end->copy()->utc()->subSeconds($durationInSeconds),
+                'end' => $end->copy()->utc(),
+            ];
+        });
+    }
+
     public function start(Carbon $start): self
     {
         return $this->state(function (array $attributes) use ($start): array {

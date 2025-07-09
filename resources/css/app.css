@@ -205,7 +205,7 @@ body {
         --destructive: 0 84.2% 60.2%;
         --destructive-foreground: var(--color-text-primary);
         --border: var(--color-border-primary);
-        --input: var(--theme-color-input-background);
+        --input: var(--color-border-tertiary);
         --ring: var(--theme-color-ring);
         --chart-1: var(--color-accent-400);
         --chart-2: var(--color-accent-500);
@@ -232,7 +232,7 @@ body {
         --destructive: 0 62.8% 30.6%;
         --destructive-foreground: var(--color-text-primary);
         --border: var(--color-border-primary);
-        --input: var(--theme-color-input-background);
+        --input: var(--color-border-tertiary);
         --ring: var(--theme-color-ring);
         --chart-1: var(--color-accent-200);
         --chart-2: var(--color-accent-300);
