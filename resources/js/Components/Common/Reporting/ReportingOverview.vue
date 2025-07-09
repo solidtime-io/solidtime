@@ -16,6 +16,7 @@ import {
 import { formatCents } from '@/packages/ui/src/utils/money';
 import ReportingTabNavbar from '@/Components/Common/Reporting/ReportingTabNavbar.vue';
 import ReportingExportButton from '@/Components/Common/Reporting/ReportingExportButton.vue';
+import ReportingRoundingControls from '@/Components/Common/Reporting/ReportingRoundingControls.vue';
 import TaskMultiselectDropdown from '@/Components/Common/Task/TaskMultiselectDropdown.vue';
 import ClientMultiselectDropdown from '@/Components/Common/Client/ClientMultiselectDropdown.vue';
 import ReportingRow from '@/Components/Common/Reporting/ReportingRow.vue';
@@ -33,7 +34,7 @@ import ReportSaveButton from '@/Components/Common/Report/ReportSaveButton.vue';
 import TagDropdown from '@/packages/ui/src/Tag/TagDropdown.vue';
 import ReportingPieChart from '@/Components/Common/Reporting/ReportingPieChart.vue';
 
-import { computed, type ComputedRef, inject, onMounted, ref } from 'vue';
+import { computed, type ComputedRef, inject, onMounted, ref, watch } from 'vue';
 import { type GroupingOption, useReportingStore } from '@/utils/useReporting';
 import { storeToRefs } from 'pinia';
 import {
@@ -54,6 +55,9 @@ import type { ExportFormat } from '@/types/reporting';
 import { getRandomColorWithSeed } from '@/packages/ui/src/utils/color';
 import { useProjectsStore } from '@/utils/useProjects';
 
+// TimeEntryRoundingType is now defined in ReportingRoundingControls component
+type TimeEntryRoundingType = 'up' | 'down' | 'nearest';
+
 const { handleApiRequestNotifications } = useNotificationsStore();
 
 const startDate = useSessionStorage<string>(
@@ -71,6 +75,9 @@ const selectedTasks = ref<string[]>([]);
 const selectedClients = ref<string[]>([]);
 
 const billable = ref<'true' | 'false' | null>(null);
+const roundingEnabled = ref<boolean>(false);
+const roundingType = ref<TimeEntryRoundingType>('nearest');
+const roundingMinutes = ref<number>(15);
 
 const group = useStorage<GroupingOption>('reporting-group', 'project');
 const subGroup = useStorage<GroupingOption>('reporting-sub-group', 'task');
@@ -83,6 +90,11 @@ const { aggregatedGraphTimeEntries, aggregatedTableTimeEntries } =
 const { groupByOptions } = reportingStore;
 
 const organization = inject<ComputedRef<Organization>>('organization');
+
+// Watch rounding enabled state to trigger updates
+watch(roundingEnabled, () => {
+    updateReporting();
+});
 
 function getFilterAttributes(): AggregatedTimeEntriesQueryParams {
     let params: AggregatedTimeEntriesQueryParams = {
@@ -111,6 +123,8 @@ function getFilterAttributes(): AggregatedTimeEntriesQueryParams {
             getCurrentRole() === 'employee'
                 ? getCurrentMembershipId()
                 : undefined,
+        rounding_type: roundingEnabled.value ? roundingType.value : undefined,
+        rounding_minutes: roundingEnabled.value ? roundingMinutes.value : undefined,
     };
     return params;
 }
@@ -395,6 +409,11 @@ const tableData = computed(() => {
                             :icon="BillableIcon"></ReportingFilterBadge>
                     </template>
                 </SelectDropdown>
+                <ReportingRoundingControls
+                    v-model:enabled="roundingEnabled"
+                    v-model:type="roundingType"
+                    v-model:minutes="roundingMinutes"
+                    @change="updateReporting"></ReportingRoundingControls>
             </div>
             <div>
                 <DateRangePicker
@@ -490,7 +509,7 @@ const tableData = computed(() => {
                     <div
                         v-else
                         class="chart flex flex-col items-center justify-center py-12 col-span-3">
-                        <p class="text-lg text-text-primary font-semibold">
+                        <p class="text-lg text-text-primary font-medium">
                             No time entries found
                         </p>
                         <p>Try to change the filters and time range</p>

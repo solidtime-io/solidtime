@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Endpoint\Api\V1;
 
 use App\Enums\TimeEntryAggregationType;
+use App\Enums\TimeEntryRoundingType;
 use App\Enums\Weekday;
 use App\Http\Controllers\Api\V1\ReportController;
 use App\Models\Report;
@@ -160,6 +161,61 @@ class ReportEndpointTest extends ApiEndpointTestAbstract
             ->where('data.properties.group', TimeEntryAggregationType::Project->value)
             ->where('data.properties.sub_group', TimeEntryAggregationType::Task->value)
         );
+    }
+
+    public function test_store_endpoint_creates_new_report_with_rounding_properties(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'reports:create',
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->withoutExceptionHandling()->postJson(route('api.v1.reports.store', [$data->organization->getKey()]), [
+            'name' => 'Test Report with Rounding',
+            'description' => 'Test description',
+            'is_public' => true,
+            'public_until' => Carbon::now()->addDays(30)->toIso8601ZuluString(),
+            'properties' => [
+                'start' => Carbon::now()->subDays(30)->toIso8601ZuluString(),
+                'end' => Carbon::now()->toIso8601ZuluString(),
+                'active' => true,
+                'member_ids' => [],
+                'billable' => true,
+                'client_ids' => [],
+                'project_ids' => [],
+                'tag_ids' => [],
+                'task_ids' => [],
+                'group' => TimeEntryAggregationType::Project->value,
+                'sub_group' => TimeEntryAggregationType::Task->value,
+                'history_group' => TimeEntryAggregationType::Day->value,
+                'week_start' => Weekday::Monday->value,
+                'timezone' => 'Europe/Berlin',
+                'rounding_type' => 'nearest',
+                'rounding_minutes' => 15,
+            ],
+        ]);
+
+        // Assert
+        $response->assertStatus(201);
+        /** @var Report $report */
+        $report = Report::query()->findOrFail($response->json('data.id'));
+        $response->assertJson(fn (AssertableJson $json) => $json
+            ->has('data')
+            ->where('data.name', 'Test Report with Rounding')
+            ->where('data.description', 'Test description')
+            ->where('data.is_public', true)
+            ->where('data.shareable_link', $report->getShareableLink())
+            ->where('data.properties.group', TimeEntryAggregationType::Project->value)
+            ->where('data.properties.sub_group', TimeEntryAggregationType::Task->value)
+            ->where('data.properties.rounding_type', 'nearest')
+            ->where('data.properties.rounding_minutes', 15)
+        );
+
+        // Also verify the properties are saved in the database
+        $this->assertSame(TimeEntryRoundingType::Nearest, $report->properties->roundingType);
+        $this->assertSame(15, $report->properties->roundingMinutes);
     }
 
     public function test_update_endpoint_fails_if_user_has_no_permission_to_update_report(): void
