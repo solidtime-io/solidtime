@@ -5,7 +5,7 @@
     "keywords": [],
     "license": "AGPL-3.0-or-later",
     "require": {
-        "php": "8.3.*",
+        "php": "^8.3",
         "ext-zip": "*",
         "brick/money": "^0.10.0",
         "datomatic/laravel-enum-helper": "^2.0.0",
