@@ -8,10 +8,8 @@ use App\Http\Middleware\EnsureEmailIsVerified;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\UsesClass;
 
 #[CoversClass(EnsureEmailIsVerified::class)]
-#[UsesClass(EnsureEmailIsVerified::class)]
 class EnsureEmailIsVerifiedMiddlewareTest extends MiddlewareTestAbstract
 {
     private function createTestRoute(): string

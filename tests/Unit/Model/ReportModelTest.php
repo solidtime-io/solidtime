@@ -8,10 +8,8 @@ use App\Models\Organization;
 use App\Models\Report;
 use App\Service\ReportService;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\UsesClass;
 
 #[CoversClass(Report::class)]
-#[UsesClass(Report::class)]
 class ReportModelTest extends ModelTestAbstract
 {
     public function test_it_belongs_to_a_organization(): void

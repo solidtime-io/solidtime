@@ -119,9 +119,6 @@ class ReportPropertiesDto implements Castable
                 return $dto;
             }
 
-            /**
-             * @param  ReportPropertiesDto  $value
-             */
             public function set(Model $model, string $key, mixed $value, array $attributes): string
             {
                 if (! ($value instanceof ReportPropertiesDto)) {

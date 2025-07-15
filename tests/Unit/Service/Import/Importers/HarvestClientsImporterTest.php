@@ -11,12 +11,10 @@ use App\Service\Import\Importers\HarvestClientsImporter;
 use App\Service\Import\Importers\ImportException;
 use Illuminate\Support\Facades\Storage;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\UsesClass;
 
 #[CoversClass(HarvestClientsImporter::class)]
 #[CoversClass(ImportException::class)]
 #[CoversClass(DefaultImporter::class)]
-#[UsesClass(HarvestClientsImporter::class)]
 class HarvestClientsImporterTest extends ImporterTestAbstract
 {
     public function test_import_of_test_file_succeeds(): void

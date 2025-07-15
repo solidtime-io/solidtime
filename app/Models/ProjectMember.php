@@ -48,7 +48,7 @@ class ProjectMember extends Model implements AuditableContract
     ];
 
     /**
-     * @return BelongsTo<Project, ProjectMember>
+     * @return BelongsTo<Project, $this>
      */
     public function project(): BelongsTo
     {
@@ -58,7 +58,7 @@ class ProjectMember extends Model implements AuditableContract
     /**
      * @deprecated Use member relationship instead
      *
-     * @return BelongsTo<User, ProjectMember>
+     * @return BelongsTo<User, $this>
      */
     public function user(): BelongsTo
     {
@@ -66,7 +66,7 @@ class ProjectMember extends Model implements AuditableContract
     }
 
     /**
-     * @return BelongsTo<Member, ProjectMember>
+     * @return BelongsTo<Member, $this>
      */
     public function member(): BelongsTo
     {

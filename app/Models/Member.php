@@ -25,8 +25,8 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  * @property Carbon|null $updated_at
  * @property-read Organization $organization
  * @property-read User $user
- * @property-read Collection<ProjectMember> $projectMembers
- * @property-read Collection<TimeEntry> $timeEntries
+ * @property-read Collection<int, ProjectMember> $projectMembers
+ * @property-read Collection<int, TimeEntry> $timeEntries
  *
  * @method static MemberFactory factory()
  */
@@ -47,7 +47,7 @@ class Member extends JetstreamMembership implements AuditableContract
     protected $table = 'members';
 
     /**
-     * @return BelongsTo<User, Member>
+     * @return BelongsTo<User, $this>
      */
     public function user(): BelongsTo
     {
@@ -55,7 +55,7 @@ class Member extends JetstreamMembership implements AuditableContract
     }
 
     /**
-     * @return BelongsTo<Organization, Member>
+     * @return BelongsTo<Organization, $this>
      */
     public function organization(): BelongsTo
     {
@@ -63,7 +63,7 @@ class Member extends JetstreamMembership implements AuditableContract
     }
 
     /**
-     * @return HasMany<TimeEntry>
+     * @return HasMany<TimeEntry, $this>
      */
     public function timeEntries(): HasMany
     {
@@ -71,7 +71,7 @@ class Member extends JetstreamMembership implements AuditableContract
     }
 
     /**
-     * @return HasMany<ProjectMember>
+     * @return HasMany<ProjectMember, $this>
      */
     public function projectMembers(): HasMany
     {

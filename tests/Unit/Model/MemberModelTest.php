@@ -10,10 +10,8 @@ use App\Models\Project;
 use App\Models\ProjectMember;
 use App\Models\User;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\UsesClass;
 
 #[CoversClass(Member::class)]
-#[UsesClass(Member::class)]
 class MemberModelTest extends ModelTestAbstract
 {
     public function test_it_belongs_to_a_user(): void

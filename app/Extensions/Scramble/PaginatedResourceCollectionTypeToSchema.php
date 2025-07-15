@@ -41,9 +41,7 @@ class PaginatedResourceCollectionTypeToSchema extends TypeToSchemaExtension
             return null;
         }
 
-        if (! ($collectingType = $this->openApiTransformer->transform($collectingClassType))) {
-            return null;
-        }
+        $collectingType = $this->openApiTransformer->transform($collectingClassType);
 
         $newType = new OpenApiObjectType;
         $newType->addProperty('data', (new ArrayType)->setItems($collectingType));

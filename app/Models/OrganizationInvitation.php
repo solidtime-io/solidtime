@@ -53,7 +53,7 @@ class OrganizationInvitation extends JetstreamTeamInvitation implements Auditabl
     /**
      * Get the organization that the invitation belongs to.
      *
-     * @return BelongsTo<Organization, OrganizationInvitation>
+     * @return BelongsTo<Organization, $this>
      */
     public function organization(): BelongsTo
     {
@@ -63,7 +63,7 @@ class OrganizationInvitation extends JetstreamTeamInvitation implements Auditabl
     /**
      * Get the organization that the invitation belongs to.
      *
-     * @return BelongsTo<Organization, OrganizationInvitation>
+     * @return BelongsTo<Organization, $this>
      */
     public function team(): BelongsTo
     {

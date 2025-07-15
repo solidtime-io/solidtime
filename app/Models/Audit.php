@@ -16,8 +16,8 @@ use OwenIt\Auditing\Models\Audit as PackageAuditModel;
  * @property string $event
  * @property string $auditable_type
  * @property string $auditable_id
- * @property array|null $old_values
- * @property array|null $new_values
+ * @property array<string, mixed>|null $old_values
+ * @property array<string, mixed>|null $new_values
  * @property string|null $url
  * @property string|null $ip_address
  * @property string|null $user_agent

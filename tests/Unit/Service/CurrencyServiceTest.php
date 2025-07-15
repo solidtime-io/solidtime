@@ -8,11 +8,9 @@ use App\Service\CurrencyService;
 use Brick\Money\Currency;
 use Brick\Money\Money;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\UsesClass;
 use Tests\TestCaseWithDatabase;
 
 #[CoversClass(CurrencyService::class)]
-#[UsesClass(CurrencyService::class)]
 class CurrencyServiceTest extends TestCaseWithDatabase
 {
     private CurrencyService $currencyService;

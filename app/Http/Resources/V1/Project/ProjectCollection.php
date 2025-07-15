@@ -8,15 +8,11 @@ use App\Http\Resources\PaginatedResourceCollection;
 use App\Models\Project;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
-use Illuminate\Pagination\LengthAwarePaginator;
 
 class ProjectCollection extends ResourceCollection implements PaginatedResourceCollection
 {
     private bool $showBillableRates;
 
-    /**
-     * @param  LengthAwarePaginator<Project>  $resource
-     */
     public function __construct($resource, bool $showBillableRates)
     {
         parent::__construct($resource);

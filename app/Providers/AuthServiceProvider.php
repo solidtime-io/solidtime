@@ -7,7 +7,6 @@ namespace App\Providers;
 use App\Models\Organization;
 use App\Models\Passport\AuthCode;
 use App\Models\Passport\Client;
-use App\Models\Passport\PersonalAccessClient;
 use App\Models\Passport\RefreshToken;
 use App\Models\Passport\Token;
 use App\Policies\OrganizationPolicy;
@@ -51,7 +50,8 @@ class AuthServiceProvider extends ServiceProvider
         Passport::useRefreshTokenModel(RefreshToken::class);
         Passport::useAuthCodeModel(AuthCode::class);
         Passport::useClientModel(Client::class);
-        Passport::usePersonalAccessClientModel(PersonalAccessClient::class);
+
+        Passport::authorizationView('auth.oauth.authorize');
 
         // Passport::tokensExpireIn(now()->addDays(15));
         // Passport::refreshTokensExpireIn(now()->addDays(30));

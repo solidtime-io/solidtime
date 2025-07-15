@@ -8,10 +8,8 @@ use App\Models\Organization;
 use App\Models\Tag;
 use App\Models\TimeEntry;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\UsesClass;
 
 #[CoversClass(Tag::class)]
-#[UsesClass(Tag::class)]
 class TagModelTest extends ModelTestAbstract
 {
     public function test_it_belongs_to_a_organization(): void

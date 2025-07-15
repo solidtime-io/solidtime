@@ -8,10 +8,8 @@ use App\Models\Client;
 use App\Models\Organization;
 use App\Models\Project;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\UsesClass;
 
 #[CoversClass(Client::class)]
-#[UsesClass(Client::class)]
 class ClientModelTest extends ModelTestAbstract
 {
     public function test_it_belongs_to_a_organization(): void

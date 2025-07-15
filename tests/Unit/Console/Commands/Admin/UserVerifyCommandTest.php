@@ -9,11 +9,9 @@ use App\Models\Member;
 use App\Models\Organization;
 use App\Models\User;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\UsesClass;
 use Tests\TestCaseWithDatabase;
 
 #[CoversClass(UserVerifyCommand::class)]
-#[UsesClass(UserVerifyCommand::class)]
 class UserVerifyCommandTest extends TestCaseWithDatabase
 {
     public function test_it_verifies_user_email(): void

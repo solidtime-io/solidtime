@@ -7,11 +7,9 @@ namespace Tests\Unit\Rules;
 use App\Rules\CurrencyRule;
 use Illuminate\Support\Facades\Validator;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\UsesClass;
 use Tests\TestCase;
 
 #[CoversClass(CurrencyRule::class)]
-#[UsesClass(CurrencyRule::class)]
 class CurrencyRuleTest extends TestCase
 {
     public function test_validation_passes_if_value_is_valid_currency_code(): void

@@ -50,7 +50,7 @@ class HandleInertiaRequests extends Middleware
         return array_merge(parent::share($request), [
             'has_billing_extension' => $hasBilling,
             'has_invoicing_extension' => $hasInvoicing,
-            'billing' => $billing !== null && $currentOrganization !== null ? [
+            'billing' => $currentOrganization !== null ? [
                 'has_subscription' => $billing->hasSubscription($currentOrganization),
                 'has_trial' => $billing->hasTrial($currentOrganization),
                 'trial_until' => $billing->getTrialUntil($currentOrganization)?->toIso8601ZuluString(),

@@ -15,12 +15,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\UsesClass;
 
 #[CoversClass(TogglTimeEntriesImporter::class)]
 #[CoversClass(ImportException::class)]
 #[CoversClass(DefaultImporter::class)]
-#[UsesClass(TogglTimeEntriesImporter::class)]
 class TogglTimeEntriesImporterTest extends ImporterTestAbstract
 {
     public function test_import_of_test_file_succeeds(): void

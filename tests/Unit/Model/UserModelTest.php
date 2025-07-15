@@ -7,20 +7,18 @@ namespace Tests\Unit\Model;
 use App\Enums\Role;
 use App\Models\Member;
 use App\Models\Organization;
+use App\Models\Passport\AuthCode;
+use App\Models\Passport\Client;
+use App\Models\Passport\Token;
 use App\Models\ProjectMember;
 use App\Models\TimeEntry;
 use App\Models\User;
 use App\Providers\Filament\AdminPanelProvider;
 use Filament\Panel;
 use Illuminate\Support\Facades\Config;
-use Laravel\Passport\AuthCode;
-use Laravel\Passport\Client;
-use Laravel\Passport\Token;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\UsesClass;
 
 #[CoversClass(User::class)]
-#[UsesClass(User::class)]
 class UserModelTest extends ModelTestAbstract
 {
     public function test_normal_user_can_not_access_admin_panel(): void
@@ -148,9 +146,8 @@ class UserModelTest extends ModelTestAbstract
         $user = User::factory()->create();
         $client = new Client;
         $client->name = 'desktop';
-        $client->redirect = 'solidtime://oauth/callback';
-        $client->personal_access_client = false;
-        $client->password_client = false;
+        $client->redirect_uris = ['solidtime://oauth/callback'];
+        $client->grant_types = [];
         $client->revoked = false;
         $client->save();
         $token = new Token;
@@ -179,9 +176,8 @@ class UserModelTest extends ModelTestAbstract
         $user = User::factory()->create();
         $client = new Client;
         $client->name = 'desktop';
-        $client->redirect = 'solidtime://oauth/callback';
-        $client->personal_access_client = false;
-        $client->password_client = false;
+        $client->redirect_uris = 'solidtime://oauth/callback';
+        $client->grant_types = [];
         $client->revoked = false;
         $client->save();
         $authCode = new AuthCode;

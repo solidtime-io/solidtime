@@ -12,12 +12,10 @@ use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Http;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\UsesClass;
 use Tests\TestCase;
 
 #[CoversClass(SelfHostCheckForUpdateCommand::class)]
 #[CoversClass(ApiService::class)]
-#[UsesClass(SelfHostCheckForUpdateCommand::class)]
 class SelfHostCheckForUpdateCommandTest extends TestCase
 {
     public function test_checks_for_update_and_saves_version_in_cache(): void

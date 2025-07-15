@@ -7,11 +7,12 @@ namespace Database\Factories\Passport;
 use App\Models\Passport\Client;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Laravel\Passport\Database\Factories\ClientFactory as BaseClientFactory;
 
 /**
  * @extends Factory<Client>
  */
-class ClientFactory extends Factory
+class ClientFactory extends BaseClientFactory
 {
     /**
      * Define the model's default state.
@@ -22,13 +23,13 @@ class ClientFactory extends Factory
     {
         return [
             'id' => $this->faker->uuid,
-            'user_id' => null,
+            'owner_id' => null,
+            'owner_type' => null,
             'name' => $this->faker->company(),
             'secret' => $this->faker->regexify('[A-Za-z]{40}'),
             'provider' => 'users',
-            'redirect' => $this->faker->url(),
-            'personal_access_client' => false,
-            'password_client' => false,
+            'redirect_uris' => [$this->faker->url()],
+            'grant_types' => [],
             'revoked' => false,
             'created_at' => $this->faker->dateTime(),
             'updated_at' => $this->faker->dateTime(),
@@ -39,7 +40,7 @@ class ClientFactory extends Factory
     {
         return $this->state(function (array $attributes) {
             return [
-                'personal_access_client' => true,
+                'grant_types' => ['personal_access'],
             ];
         });
     }
@@ -48,7 +49,8 @@ class ClientFactory extends Factory
     {
         return $this->state(function (array $attributes) use ($user): array {
             return [
-                'user_id' => $user->getKey(),
+                'owner_id' => $user->getKey(),
+                'owner_type' => (new User)->getMorphClass(),
             ];
         });
     }

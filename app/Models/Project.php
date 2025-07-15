@@ -137,7 +137,7 @@ class Project extends Model implements AuditableContract
     }
 
     /**
-     * @return BelongsTo<Organization, Project>
+     * @return BelongsTo<Organization, $this>
      */
     public function organization(): BelongsTo
     {
@@ -145,7 +145,7 @@ class Project extends Model implements AuditableContract
     }
 
     /**
-     * @return BelongsTo<Client, Project>
+     * @return BelongsTo<Client, $this>
      */
     public function client(): BelongsTo
     {
@@ -153,7 +153,7 @@ class Project extends Model implements AuditableContract
     }
 
     /**
-     * @return HasMany<ProjectMember>
+     * @return HasMany<ProjectMember, $this>
      */
     public function members(): HasMany
     {
@@ -161,7 +161,7 @@ class Project extends Model implements AuditableContract
     }
 
     /**
-     * @return HasMany<Task>
+     * @return HasMany<Task, $this>
      */
     public function tasks(): HasMany
     {
@@ -169,7 +169,7 @@ class Project extends Model implements AuditableContract
     }
 
     /**
-     * @return HasMany<TimeEntry>
+     * @return HasMany<TimeEntry, $this>
      */
     public function timeEntries(): HasMany
     {

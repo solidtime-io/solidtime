@@ -18,12 +18,10 @@ use App\Service\Import\Importers\HarvestTimeEntriesImporter;
 use App\Service\Import\Importers\ImportException;
 use Illuminate\Support\Facades\Storage;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\UsesClass;
 
 #[CoversClass(HarvestTimeEntriesImporter::class)]
 #[CoversClass(ImportException::class)]
 #[CoversClass(DefaultImporter::class)]
-#[UsesClass(HarvestTimeEntriesImporter::class)]
 class HarvestTimeEntriesImporterTest extends ImporterTestAbstract
 {
     public function test_import_of_test_file_succeeds(): void

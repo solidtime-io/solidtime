@@ -7,11 +7,9 @@ namespace Tests\Unit\Service\Import\Importers;
 use App\Service\Import\Importers\ClockifyProjectsImporter;
 use App\Service\Import\Importers\ImporterProvider;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\UsesClass;
 use Tests\TestCase;
 
 #[CoversClass(ImporterProvider::class)]
-#[UsesClass(ImporterProvider::class)]
 class ImporterProviderTest extends TestCase
 {
     public function test_register_importer_can_register_a_new_importer_for_example_in_an_extension(): void

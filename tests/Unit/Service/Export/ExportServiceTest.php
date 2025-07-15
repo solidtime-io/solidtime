@@ -17,11 +17,9 @@ use App\Models\User;
 use App\Service\Export\ExportService;
 use Illuminate\Support\Facades\Storage;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\UsesClass;
 use Tests\TestCaseWithDatabase;
 
 #[CoversClass(ExportService::class)]
-#[UsesClass(ExportService::class)]
 class ExportServiceTest extends TestCaseWithDatabase
 {
     private function getFullOrganization(): Organization

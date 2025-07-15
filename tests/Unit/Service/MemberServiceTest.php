@@ -15,12 +15,10 @@ use App\Service\MemberService;
 use App\Service\UserService;
 use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\UsesClass;
 use Tests\TestCaseWithDatabase;
 
 #[CoversClass(MemberService::class)]
 #[CoversClass(UserService::class)]
-#[UsesClass(MemberService::class)]
 class MemberServiceTest extends TestCaseWithDatabase
 {
     private MemberService $memberService;
