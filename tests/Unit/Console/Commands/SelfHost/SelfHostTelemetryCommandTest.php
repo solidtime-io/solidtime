@@ -11,12 +11,10 @@ use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Http;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\UsesClass;
 use Tests\TestCase;
 
 #[CoversClass(SelfHostTelemetryCommand::class)]
 #[CoversClass(ApiService::class)]
-#[UsesClass(SelfHostTelemetryCommand::class)]
 class SelfHostTelemetryCommandTest extends TestCase
 {
     public function test_telemetry_sends_data_to_telemetry_endpoint_of_solidtime_cloud(): void

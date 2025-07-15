@@ -120,7 +120,7 @@ class Task extends Model implements AuditableContract
     }
 
     /**
-     * @return BelongsTo<Project, Task>
+     * @return BelongsTo<Project, $this>
      */
     public function project(): BelongsTo
     {
@@ -128,7 +128,7 @@ class Task extends Model implements AuditableContract
     }
 
     /**
-     * @return BelongsTo<Organization, Task>
+     * @return BelongsTo<Organization, $this>
      */
     public function organization(): BelongsTo
     {
@@ -136,7 +136,7 @@ class Task extends Model implements AuditableContract
     }
 
     /**
-     * @return HasMany<TimeEntry>
+     * @return HasMany<TimeEntry, $this>
      */
     public function timeEntries(): HasMany
     {

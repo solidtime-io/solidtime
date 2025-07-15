@@ -14,11 +14,9 @@ use App\Models\User;
 use App\Service\UserService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\UsesClass;
 use Tests\TestCase;
 
 #[CoversClass(UserService::class)]
-#[UsesClass(UserService::class)]
 class UserServiceTest extends TestCase
 {
     use RefreshDatabase;

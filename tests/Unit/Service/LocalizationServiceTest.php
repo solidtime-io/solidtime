@@ -15,11 +15,9 @@ use Brick\Money\Money;
 use Carbon\CarbonInterval;
 use Illuminate\Support\Carbon;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\UsesClass;
 use Tests\TestCaseWithDatabase;
 
 #[CoversClass(LocalizationService::class)]
-#[UsesClass(LocalizationService::class)]
 class LocalizationServiceTest extends TestCaseWithDatabase
 {
     private LocalizationService $localizationService;

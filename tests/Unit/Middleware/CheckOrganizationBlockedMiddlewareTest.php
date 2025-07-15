@@ -14,10 +14,8 @@ use Illuminate\Support\Str;
 use Laravel\Passport\Passport;
 use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\UsesClass;
 
 #[CoversClass(CheckOrganizationBlocked::class)]
-#[UsesClass(CheckOrganizationBlocked::class)]
 class CheckOrganizationBlockedMiddlewareTest extends MiddlewareTestAbstract
 {
     private function createTestRoute(): void

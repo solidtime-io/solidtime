@@ -9,10 +9,8 @@ use App\Models\Organization;
 use App\Models\Project;
 use App\Models\ProjectMember;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\UsesClass;
 
 #[CoversClass(ProjectMember::class)]
-#[UsesClass(ProjectMember::class)]
 class ProjectMemberModelTest extends ModelTestAbstract
 {
     public function test_it_belongs_to_a_project(): void

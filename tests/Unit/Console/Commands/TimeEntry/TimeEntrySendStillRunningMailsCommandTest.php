@@ -12,11 +12,9 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Mail;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\UsesClass;
 use Tests\TestCaseWithDatabase;
 
 #[CoversClass(TimeEntrySendStillRunningMailsCommand::class)]
-#[UsesClass(TimeEntrySendStillRunningMailsCommand::class)]
 class TimeEntrySendStillRunningMailsCommandTest extends TestCaseWithDatabase
 {
     public function test_sends_mails_for_still_running_time_entries(): void

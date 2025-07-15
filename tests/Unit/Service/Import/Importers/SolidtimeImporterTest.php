@@ -14,12 +14,10 @@ use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\UsesClass;
 
 #[CoversClass(SolidtimeImporter::class)]
 #[CoversClass(ImportException::class)]
 #[CoversClass(DefaultImporter::class)]
-#[UsesClass(SolidtimeImporter::class)]
 class SolidtimeImporterTest extends ImporterTestAbstract
 {
     public function test_import_throws_exception_if_data_is_not_zip(): void

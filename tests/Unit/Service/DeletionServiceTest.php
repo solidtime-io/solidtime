@@ -24,12 +24,10 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\UsesClass;
 use Tests\TestCaseWithDatabase;
 use TiMacDonald\Log\LogEntry;
 
 #[CoversClass(DeletionService::class)]
-#[UsesClass(DeletionService::class)]
 class DeletionServiceTest extends TestCaseWithDatabase
 {
     private DeletionService $deletionService;

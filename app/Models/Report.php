@@ -55,7 +55,7 @@ class Report extends Model
     }
 
     /**
-     * @return BelongsTo<Organization, Report>
+     * @return BelongsTo<Organization, $this>
      */
     public function organization(): BelongsTo
     {

@@ -71,7 +71,7 @@ class PermissionStore
         /** @var Role|null $roleObj */
         $roleObj = Jetstream::findRole($role);
 
-        return $roleObj?->permissions ?? [];
+        return $roleObj->permissions ?? [];
     }
 
     /**

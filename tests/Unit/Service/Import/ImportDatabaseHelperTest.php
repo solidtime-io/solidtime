@@ -11,11 +11,9 @@ use App\Service\Import\ImportDatabaseHelper;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\UsesClass;
 use Tests\TestCase;
 
 #[CoversClass(ImportDatabaseHelper::class)]
-#[UsesClass(ImportDatabaseHelper::class)]
 class ImportDatabaseHelperTest extends TestCase
 {
     use RefreshDatabase;

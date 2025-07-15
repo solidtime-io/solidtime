@@ -13,10 +13,8 @@ use App\Models\Task;
 use App\Models\TimeEntry;
 use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\UsesClass;
 
 #[CoversClass(Project::class)]
-#[UsesClass(Project::class)]
 class ProjectModelTest extends ModelTestAbstract
 {
     public function test_it_belongs_to_a_organization(): void

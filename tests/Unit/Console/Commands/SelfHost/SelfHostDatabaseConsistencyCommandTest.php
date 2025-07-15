@@ -15,11 +15,9 @@ use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\UsesClass;
 use Tests\TestCaseWithDatabase;
 
 #[CoversClass(SelfHostDatabaseConsistency::class)]
-#[UsesClass(SelfHostDatabaseConsistency::class)]
 class SelfHostDatabaseConsistencyCommandTest extends TestCaseWithDatabase
 {
     public function test_checks_that_task_need_to_be_part_of_project_in_time_entries(): void
