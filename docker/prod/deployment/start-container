@@ -4,41 +4,49 @@ set -e
 container_mode=${CONTAINER_MODE:-"http"}
 octane_server=${OCTANE_SERVER}
 auto_db_migrate=${AUTO_DB_MIGRATE:-false}
-echo "Container mode: $container_mode"
 
 initialStuff() {
+    echo "Container mode: $container_mode"
+
     if [ ${auto_db_migrate} = "true" ]; then
         echo "Auto database migration enabled."
         php artisan migrate --isolated --force
     fi
+
+    php artisan storage:link; \
     php artisan optimize:clear; \
-    php artisan event:cache; \
-    php artisan config:cache; \
-    php artisan route:cache;
+    php artisan optimize;
 }
 
 if [ "$1" != "" ]; then
     exec "$@"
-elif [ ${container_mode} = "http" ]; then
-    echo "Octane Server: $octane_server"
+elif [ "${container_mode}" = "http" ]; then
     initialStuff
-    if [ ${octane_server}  = "frankenphp" ]; then
+    echo "Octane Server: $octane_server"
+    if [ "${octane_server}"  = "frankenphp" ]; then
         exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.frankenphp.conf
-    elif [ ${octane_server}  = "swoole" ]; then
+    elif [ "${octane_server}"  = "swoole" ]; then
         exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.swoole.conf
-    elif [ ${octane_server}  = "roadrunner" ]; then
+    elif [ "${octane_server}"  = "roadrunner" ]; then
         exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.roadrunner.conf
     else
         echo "Invalid Octane server supplied."
         exit 1
     fi
-elif [ ${container_mode} = "horizon" ]; then
+elif [ "${container_mode}" = "horizon" ]; then
     initialStuff
     exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.horizon.conf
-elif [ ${container_mode} = "scheduler" ]; then
+elif [ "${container_mode}" = "reverb" ]; then
+    initialStuff
+    exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.reverb.conf
+elif [ "${container_mode}" = "scheduler" ]; then
     initialStuff
     exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.scheduler.conf
-elif [ ${container_mode} = "worker" ]; then
+elif [ "${container_mode}" = "worker" ]; then
+    if [ -z "${WORKER_COMMAND}" ]; then
+        echo "WORKER_COMMAND is undefined."
+        exit 1
+    fi
     initialStuff
     exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.worker.conf
 else
