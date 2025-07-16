@@ -21,27 +21,45 @@ return new class extends Migration
             $table->renameColumn('user_id', 'owner_id');
             $table->string('owner_type')->after('owner_id')->nullable();
         });
+
         DB::table('oauth_clients')
-            ->where('personal_access_client', 1)
-            ->update(['grant_types' => ['personal_access']]);
-        DB::table('oauth_clients')
-            ->where('password_client', 1)
-            ->update(['grant_types' => ['password', 'refresh_token']]);
-        DB::table('oauth_clients')
-            ->where('password_client', 0)
-            ->where('personal_access_client', 0)
-            ->update(['grant_types' => ['client_credentials']]);
+            ->where('redirect', '=', 'http://localhost')
+            ->where('personal_access_client', '=', true)
+            ->update(['redirect' => '']);
 
         DB::table('oauth_clients')
             ->whereNotNull('owner_id')
             ->update(['owner_type' => 'user']); // Value might be class name of the owner model, depends on if you use "enforceMorphMap"
 
         DB::table('oauth_clients')->eachById(function ($client): void {
-            $redirectUris = [$client->redirect];
+            $grantTypes = ['urn:ietf:params:oauth:grant-type:device_code', 'refresh_token'];
+            $confidential = ! empty($client->secret);
+            $noRedirect = empty($client->redirect);
+            $redirectUris = $noRedirect ? [] : [$client->redirect];
+            $firstParty = empty($client->owner_id);
+
+            if (! $noRedirect) {
+                $grantTypes[] = 'authorization_code';
+                $grantTypes[] = 'implicit';
+            }
+
+            if ($confidential && $firstParty) {
+                $grantTypes[] = 'client_credentials';
+            }
+
+            if ($client->personal_access_client && $confidential) {
+                $grantTypes[] = 'personal_access';
+            }
+
+            if ($client->password_client) {
+                $grantTypes[] = 'password';
+            }
+
             DB::table('oauth_clients')
                 ->where('id', $client->id)
                 ->update([
                     'redirect_uris' => $redirectUris,
+                    'grant_types' => $grantTypes,
                 ]);
         });
 

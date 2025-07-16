@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         // This could be optimized to run all the updates in the eachById
-        DB::table('oauth_clients')->eachById(function ($client): void {
+        DB::table('oauth_clients')->whereNotNull('secret')->eachById(function ($client): void {
             $secret = $client->secret;
             if (Hash::isHashed($secret) && ! Hash::needsRehash($secret)) {
                 return; // Already hashed and not needing rehash
