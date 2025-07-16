@@ -5,6 +5,7 @@ import { twMerge } from 'tailwind-merge';
 const props = defineProps<{
     name?: string;
     class?: string;
+    id?: string;
 }>();
 
 const input = ref<HTMLInputElement | null>(null);
@@ -21,6 +22,7 @@ const model = defineModel();
 
 <template>
     <input
+        :id="id"
         ref="input"
         v-model="model"
         :class="
