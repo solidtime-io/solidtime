@@ -21,7 +21,7 @@
         "@vitejs/plugin-vue": "^5.2.1",
         "@vue/tsconfig": "^0.5.1",
         "autoprefixer": "^10.4.20",
-        "axios": "^1.6.4",
+        "axios": "^1.10.0",
         "eslint-plugin-unused-imports": "^4.1.4",
         "laravel-vite-plugin": "^1.0.0",
         "openapi-zod-client": "^1.16.2",
@@ -29,7 +29,7 @@
         "postcss-nesting": "^12.1.5",
         "tailwindcss": "^3.4.13",
         "typescript": "^5.7.3",
-        "vite": "^6.0.11",
+        "vite": "^6.2.7",
         "vite-plugin-checker": "^0.8.0",
         "vue": "^3.5.0",
         "vue-tsc": "^2.2.0"

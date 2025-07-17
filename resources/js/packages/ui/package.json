@@ -51,7 +51,7 @@
         "postcss-import": "^15.1.0",
         "postcss-nesting": "^12.1.0",
         "typescript": "^5.5.4",
-        "vite": "^5.4.1",
+        "vite": "^7.0.5",
         "vite-plugin-dts": "^4.0.3"
     },
     "peerDependencies": {
