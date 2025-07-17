@@ -114,8 +114,8 @@ test('test that project filtering works in reporting', async ({ page }) => {
     await page.waitForLoadState('networkidle');
 
     // Verify only project1 time entries are shown
-    await expect(page.getByText(project1)).toBeVisible();
-    await expect(page.getByText(project2)).not.toBeVisible();
+    await expect(page.getByTestId('reporting_view').getByText(project1)).toBeVisible();
+    await expect(page.getByTestId('reporting_view').getByText(project2)).not.toBeVisible();
 });
 
 test('test that tag filtering works in reporting', async ({ page }) => {
@@ -142,7 +142,7 @@ test('test that tag filtering works in reporting', async ({ page }) => {
     ]);
 
     // Verify only time entries with tag1 are shown
-    await expect(page.getByText('1h 00min').first()).toBeVisible();
+    await expect(page.getByTestId('reporting_view').getByText('1h 00min').first()).toBeVisible();
 });
 
 test('test that billable status filtering works in reporting', async ({ page }) => {
@@ -164,7 +164,7 @@ test('test that billable status filtering works in reporting', async ({ page }) 
     ]);
     await page.waitForLoadState('networkidle');
 
-    await expect(page.getByText('1h 00min').first()).toBeVisible();
+    await expect(page.getByTestId('reporting_view').getByText('1h 00min').first()).toBeVisible();
 });
 
 
