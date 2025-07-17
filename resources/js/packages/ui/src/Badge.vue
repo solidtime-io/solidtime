@@ -47,7 +47,7 @@ const tagClasses = computed(() => {
                 tagClasses,
                 badgeClasses[size],
                 borderClasses,
-                'rounded transition inline-flex items-center font-semibold text-text-primary disabled:text-text-quaternary outline-0  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                'rounded transition inline-flex items-center font-medium text-text-primary disabled:text-text-quaternary outline-0  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                 props.class
             )
         ">

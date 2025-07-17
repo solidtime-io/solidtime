@@ -4,6 +4,7 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from '@/Components/ui/popover';
+import { Button } from '@/Components/ui/button';
 import { RangeCalendar } from '@/Components/ui/range-calendar';
 import { CalendarDate } from '@internationalized/date';
 import { CalendarIcon } from 'lucide-vue-next';
@@ -208,14 +209,15 @@ watch(open, (value) => {
 <template>
     <Popover v-model:open="open">
         <PopoverTrigger as-child>
-            <button
+            <Button
+                variant="outline"
                 :class="
                     twMerge(
-                        'flex w-full items-center justify-between whitespace-nowrap rounded-md border border-input-border bg-input-background px-3 h-[34px] shadow-sm data-[placeholder]:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:truncate text-start',
+                        'flex w-full items-center justify-between whitespace-nowrap h-[34px] text-start',
                         !modelValue && 'text-muted-foreground'
                     )
                 ">
-                <CalendarIcon class="mr-2 h-4 w-4" />
+                <CalendarIcon class="-ml-0.5 text-text-quaternary h-4 w-4" />
                 <template v-if="modelValue.start">
                     <template v-if="modelValue.end">
                         {{
@@ -242,23 +244,23 @@ watch(open, (value) => {
                     </template>
                 </template>
                 <template v-else> Pick a date </template>
-            </button>
+            </Button>
         </PopoverTrigger>
         <PopoverContent class="w-auto p-0">
             <div class="flex divide-x divide-border-secondary">
                 <div
-                    class="text-text-primary text-sm flex flex-col space-y-0.5 items-start py-2 px-2 [&_button:hover]:bg-tertiary [&_button]:rounded [&_button]:px-2 [&_button]:py-1">
-                    <button @click="setToday">Today</button>
-                    <button @click="setThisWeek">This Week</button>
-                    <button @click="setLastWeek">Last Week</button>
-                    <button @click="setLast14Days">Last 14 days</button>
-                    <button @click="setThisMonth">This Month</button>
-                    <button @click="setLastMonth">Last Month</button>
-                    <button @click="setLast30Days">Last 30 days</button>
-                    <button @click="setLast90Days">Last 90 days</button>
-                    <button @click="setLast12Months">Last 12 months</button>
-                    <button @click="setThisYear">This year</button>
-                    <button @click="setLastYear">Last year</button>
+                    class="text-text-primary text-sm flex flex-col space-y-0.5 items-start py-2 px-2">
+                    <Button variant="ghost" size="sm" class="justify-start" @click="setToday">Today</Button>
+                    <Button variant="ghost" size="sm" class="justify-start" @click="setThisWeek">This Week</Button>
+                    <Button variant="ghost" size="sm" class="justify-start" @click="setLastWeek">Last Week</Button>
+                    <Button variant="ghost" size="sm" class="justify-start" @click="setLast14Days">Last 14 days</Button>
+                    <Button variant="ghost" size="sm" class="justify-start" @click="setThisMonth">This Month</Button>
+                    <Button variant="ghost" size="sm" class="justify-start" @click="setLastMonth">Last Month</Button>
+                    <Button variant="ghost" size="sm" class="justify-start" @click="setLast30Days">Last 30 days</Button>
+                    <Button variant="ghost" size="sm" class="justify-start" @click="setLast90Days">Last 90 days</Button>
+                    <Button variant="ghost" size="sm" class="justify-start" @click="setLast12Months">Last 12 months</Button>
+                    <Button variant="ghost" size="sm" class="justify-start" @click="setThisYear">This year</Button>
+                    <Button variant="ghost" size="sm" class="justify-start" @click="setLastYear">Last year</Button>
                 </div>
                 <div class="pl-2">
                     <RangeCalendar

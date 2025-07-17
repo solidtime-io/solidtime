@@ -202,7 +202,7 @@ const option = computed(() => {
                 fontSize: 16,
                 fontWeight: 600,
                 margin: 24,
-                fontFamily: 'Outfit, sans-serif',
+                fontFamily: 'Inter, sans-serif',
                 color: labelColor.value,
             },
             axisTick: {
@@ -215,7 +215,7 @@ const option = computed(() => {
             type: 'value',
             axisLabel: {
                 color: labelColor.value,
-                fontFamily: 'Outfit, sans-serif',
+                fontFamily: 'Inter, sans-serif',
             },
             splitLine: {
                 lineStyle: {

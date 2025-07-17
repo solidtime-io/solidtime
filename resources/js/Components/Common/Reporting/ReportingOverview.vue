@@ -319,7 +319,7 @@ const tableData = computed(() => {
     <div class="py-2.5 w-full border-b border-default-background-separator">
         <MainContainer class="sm:flex space-y-4 sm:space-y-0 justify-between">
             <div
-                class="flex flex-wrap items-center space-y-2 sm:space-y-0 space-x-4">
+                class="flex flex-wrap items-center space-y-2 sm:space-y-0 space-x-3">
                 <div class="text-sm font-medium">Filters</div>
                 <MemberMultiselectDropdown
                     v-model="selectedMembers"

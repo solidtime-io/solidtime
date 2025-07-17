@@ -15,7 +15,6 @@ use App\Models\Task;
 use Illuminate\Contracts\Validation\Rule as RuleContract;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Korridor\LaravelModelValidationRules\Rules\ExistsEloquent;
 

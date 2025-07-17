@@ -282,7 +282,7 @@ async function downloadExport(format: ExportFormat) {
             <MainContainer
                 class="sm:flex space-y-4 sm:space-y-0 justify-between">
                 <div
-                    class="flex flex-wrap items-center space-y-2 sm:space-y-0 space-x-4">
+                    class="flex flex-wrap items-center space-y-2 sm:space-y-0 space-x-3">
                     <div class="text-sm font-medium">Filters</div>
                     <MemberMultiselectDropdown
                         v-model="selectedMembers"
@@ -372,14 +372,13 @@ async function downloadExport(format: ExportFormat) {
                                 :icon="BillableIcon"></ReportingFilterBadge>
                         </template>
                     </SelectDropdown>
-                </div>
-                <div class="flex items-center space-x-3">
                     <ReportingRoundingControls
                         v-model:enabled="roundingEnabled"
                         v-model:type="roundingType"
                         v-model:minutes="roundingMinutes"
                         @change="updateFilteredTimeEntries" />
-
+                </div>
+                <div>
                     <DateRangePicker
                         v-model:start="startDate"
                         v-model:end="endDate"
