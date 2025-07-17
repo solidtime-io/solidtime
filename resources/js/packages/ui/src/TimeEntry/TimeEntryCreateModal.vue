@@ -136,6 +136,7 @@ type BillableOption = {
                         id="description"
                         ref="description"
                         v-model="timeEntry.description"
+                        aria-label="Description"
                         placeholder="What did you work on?"
                         type="text"
                         class="mt-1 block w-full"
