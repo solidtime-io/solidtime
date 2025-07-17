@@ -36,6 +36,22 @@ class ClientFactory extends BaseClientFactory
         ];
     }
 
+    public function desktopClient(): self
+    {
+        return $this->state(fn (array $attributes) => [
+            'name' => 'Desktop',
+            'grant_types' => ['urn:ietf:params:oauth:grant-type:device_code', 'refresh_token', 'authorization_code', 'implicit'],
+        ]);
+    }
+
+    public function apiClient(): self
+    {
+        return $this->state(fn (array $attributes) => [
+            'name' => 'API',
+            'grant_types' => ['urn:ietf:params:oauth:grant-type:device_code', 'refresh_token', 'client_credentials', 'personal_access'],
+        ]);
+    }
+
     public function personalAccessClient(): self
     {
         return $this->state(function (array $attributes) {

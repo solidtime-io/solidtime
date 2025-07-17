@@ -6,8 +6,8 @@ namespace App\Filament\Resources\FailedJobResource\Pages;
 
 use App\Filament\Resources\FailedJobResource;
 use App\Models\FailedJob;
+use Filament\Actions\Action;
 use Filament\Notifications\Notification;
-use Filament\Pages\Actions\Action;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Support\Facades\Artisan;
 
@@ -19,7 +19,8 @@ class ListFailedJobs extends ListRecords
     {
         return [
             Action::make('retry_all')
-                ->label('Retry all failed Jobs')
+                ->icon('heroicon-o-arrow-path')
+                ->label('Retry all')
                 ->requiresConfirmation()
                 ->action(function (): void {
                     Artisan::call('queue:retry all');
@@ -30,7 +31,8 @@ class ListFailedJobs extends ListRecords
                 }),
 
             Action::make('delete_all')
-                ->label('Delete all failed Jobs')
+                ->icon('heroicon-o-trash')
+                ->label('Delete all')
                 ->requiresConfirmation()
                 ->color('danger')
                 ->action(function (): void {
