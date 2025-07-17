@@ -92,4 +92,15 @@ class CurrencyServiceTest extends TestCaseWithDatabase
         // Assert
         $this->assertSame('XXX', $symbol);
     }
+
+    public function test_get_random_currency_code(): void
+    {
+        // Act
+        $currencyCode = $this->currencyService->getRandomCurrencyCode();
+
+        // Assert
+        $this->assertNotEmpty($currencyCode);
+        $this->assertIsString($currencyCode);
+        $this->assertNotNull(Currency::of($currencyCode));
+    }
 }

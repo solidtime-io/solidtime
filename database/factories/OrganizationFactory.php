@@ -11,6 +11,7 @@ use App\Enums\NumberFormat;
 use App\Enums\TimeFormat;
 use App\Models\Organization;
 use App\Models\User;
+use App\Service\CurrencyService;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -27,7 +28,7 @@ class OrganizationFactory extends Factory
     {
         return [
             'name' => $this->faker->unique()->company(),
-            'currency' => $this->faker->currencyCode(),
+            'currency' => app(CurrencyService::class)->getRandomCurrencyCode(),
             'billable_rate' => null,
             'user_id' => User::factory(),
             'personal_team' => true,
