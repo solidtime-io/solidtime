@@ -19,6 +19,7 @@ import {
 } from '@/Components/ui/number-field';
 import { ArrowsUpDownIcon } from '@heroicons/vue/20/solid';
 import { computed, ref, watch } from 'vue';
+import { twMerge } from 'tailwind-merge';
 // TimeEntryRoundingType definition
 const TimeEntryRoundingType = {
     Up: 'up' as const,
@@ -120,6 +121,21 @@ watch(() => props.minutes, (newMinutes) => {
 watch(currentInterval, () => {
     initializeSelectedInterval();
 });
+
+// Active styling similar to ReportingFilterBadge
+const activeClass = computed(() => {
+    if (props.enabled) {
+        return 'border-accent-300/50 bg-accent-50 hover:bg-accent-100 dark:border-accent-300/50 dark:bg-accent-300/5 dark:hover:bg-accent-300/10';
+    }
+    return '';
+});
+
+const iconClass = computed(() => {
+    return twMerge(
+        'w-4 h-4',
+        props.enabled ? 'dark:text-accent-300/80 text-accent-400/80' : 'text-muted-foreground opacity-50'
+    );
+});
 </script>
 
 <template>
@@ -128,14 +144,15 @@ watch(currentInterval, () => {
             <Button 
                 variant="outline" 
                 size="sm"
-                class="text-sm">
-                <ArrowsUpDownIcon class="w-4 h-4" :class="enabled ? 'text-primary' : 'text-muted-foreground opacity-50'" />
+                :class="twMerge(activeClass)">
+                <ArrowsUpDownIcon :class="iconClass" />
                 Rounding {{ enabled ? 'on' : 'off' }}
             </Button>
         </PopoverTrigger>
         <PopoverContent class="w-72 p-4">
             <div class="space-y-4">
-                <div class="flex items-center justify-between">
+                <div>
+                    <div class="flex items-center justify-between">
                     <InputLabel for="enable-rounding" value="Enable Rounding" />
                     <Switch 
                         id="enable-rounding"
@@ -143,7 +160,12 @@ watch(currentInterval, () => {
                         class="data-[state=checked]:bg-accent-500"
                         @update:model-value="updateEnabled" />
                 </div>
-                
+                <div class="mb-3 pb-2 pt-1 text-xs text-muted-foreground border-b border-border-secondary text-text-tertiary">
+                Rounding is applied to each individual time entry, not to the accumulated total.
+                </div>
+
+                </div>
+
                 <div>
                     <InputLabel for="rounding-type" value="Rounding Type" class="mb-2" />
                     <Select 

@@ -14,7 +14,7 @@ const delegatedProps = computed(() => {
 
 const forwardedProps = useForwardProps(delegatedProps)
 const sizeClasses = computed(() => {
-  return props.size === 'small' ? 'h-[34px]' : 'h-[42px]'
+  return props.size === 'small' ? 'h-[34px] text-sm' : 'h-[42px]'
 })
 
 </script>

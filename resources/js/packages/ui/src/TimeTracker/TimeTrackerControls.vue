@@ -211,7 +211,7 @@ useSelectEvents(filteredRecentlyTrackedTimeEntries,
                     v-model="tempDescription"
                     placeholder="What are you working on?"
                     data-testid="time_entry_description"
-                    class="w-full rounded-l-lg py-4 sm:py-2.5 px-3.5 border-b border-b-card-background-separator @2xl:px-4 text-base @4xl:text-lg text-text-primary font-medium bg-transparent border-none placeholder-muted focus:ring-0 transition"
+                    class="w-full rounded-l-lg py-4 sm:py-2.5 px-3.5 border-b border-b-card-background-separator @2xl:px-4 text-base @4xl:text-lg text-text-primary bg-transparent border-none placeholder-text-secondary font-medium    focus:ring-0 transition"
                     type="text"
                     @keydown.enter="startTimerIfNotActive"
                     @keydown.esc="showDropdown = false"
