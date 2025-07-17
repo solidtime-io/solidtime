@@ -31,6 +31,8 @@ class TokenFactory extends Factory
             'created_at' => $this->faker->dateTime,
             'updated_at' => $this->faker->dateTime,
             'expires_at' => $this->faker->dateTime,
+            'reminder_sent_at' => null,
+            'expired_info_sent_at' => null,
         ];
     }
 

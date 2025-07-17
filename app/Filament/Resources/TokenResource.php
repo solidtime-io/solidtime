@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\TokenResource\Pages;
-use App\Models\Passport\Client;
 use App\Models\Passport\Token;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -106,17 +105,11 @@ class TokenResource extends Resource
                     ->queries(
                         true: function (Builder $query) {
                             /** @var Builder<Token> $query */
-                            return $query->whereHas('client', function (Builder $query) {
-                                /** @var Builder<Client> $query */
-                                return $query->whereJsonContains('grant_types', 'personal_access');
-                            });
+                            return $query->isApiToken();
                         },
                         false: function (Builder $query) {
                             /** @var Builder<Token> $query */
-                            return $query->whereHas('client', function (Builder $query) {
-                                /** @var Builder<Client> $query */
-                                return $query->whereJsonDoesntContain('grant_types', 'personal_access');
-                            });
+                            return $query->isApiToken(false);
                         },
                         blank: function (Builder $query) {
                             /** @var Builder<Token> $query */
