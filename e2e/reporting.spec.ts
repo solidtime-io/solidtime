@@ -31,7 +31,7 @@ async function createTimeEntryWithProject(page: Page, projectName: string, durat
     await page.getByRole('button', { name: 'Manual time entry' }).click();
 
     // Fill in the time entry details
-    await page.getByTestId('time_entry_description').fill(`Time entry for ${projectName}`);
+    await page.getByRole('dialog').getByRole('textbox', { name: 'Description' }).fill(`Time entry for ${projectName}`);
 
     await page.getByRole('button', { name: 'No Project' }).click();
     await page.getByText(projectName).click();
@@ -52,7 +52,7 @@ async function createTimeEntryWithTag(page: Page, tagName: string, duration: str
     await page.getByRole('button', { name: 'Manual time entry' }).click();
 
     // Fill in the time entry details
-    await page.getByTestId('time_entry_description').fill(`Time entry with tag ${tagName}`);
+    await page.getByRole('dialog').getByRole('textbox', { name: 'Description' }).fill(`Time entry with tag ${tagName}`);
 
     // Add tag
     await page.getByRole('button', { name: 'Tags' }).click();
@@ -74,7 +74,7 @@ async function createTimeEntryWithBillableStatus(page: Page, isBillable: boolean
     await page.getByRole('button', { name: 'Manual time entry' }).click();
 
     // Fill in the time entry details
-    await page.getByTestId('time_entry_description').fill(`Time entry ${isBillable ? 'billable' : 'non-billable'}`);
+    await page.getByRole('dialog').getByRole('textbox', { name: 'Description' }).fill(`Time entry ${isBillable ? 'billable' : 'non-billable'}`);
 
     // Set billable status
     await page.getByRole('button', { name: 'Non-Billable' }).click();
@@ -103,7 +103,7 @@ test('test that project filtering works in reporting', async ({ page }) => {
     // Go to reporting and filter by project1
     await goToReporting(page);
     await page.getByRole('button', { name: 'Project' }).nth(0).click();
-    await page.getByText(project1).click();
+    await page.getByRole('dialog').getByText(project1).click();
 
     await Promise.all([
         // escape
