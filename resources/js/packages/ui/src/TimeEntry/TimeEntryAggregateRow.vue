@@ -154,7 +154,7 @@ function onSelectChange(checked: boolean) {
                         "></BillableToggleButton>
                     <div class="flex-1">
                         <button
-                            :class="twMerge('text-text-secondary w-[110px] px-1 py-1.5 bg-transparent text-center hover:bg-card-background rounded-lg border border-transparent hover:border-card-border text-sm font-medium focus-visible:outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:bg-tertiary', organization?.time_format === '12-hours' ? 'w-[160px]' : 'w-[110px]')"
+                            :class="twMerge('text-text-secondary px-1 py-1.5 bg-transparent text-center hover:bg-card-background rounded-lg border border-transparent hover:border-card-border text-sm font-medium focus-visible:outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:bg-tertiary', organization?.time_format === '12-hours' ? 'w-[170px]' : 'w-[120px]')"
                             @click="expanded = !expanded">
                             {{ formatStartEnd(timeEntry.start, timeEntry.end, organization?.time_format) }}
                         </button>
