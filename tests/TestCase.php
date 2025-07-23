@@ -21,13 +21,17 @@ abstract class TestCase extends BaseTestCase
 {
     use CreatesApplication;
 
+    protected bool $mockBillingContract = true;
+
     protected function setUp(): void
     {
         parent::setUp();
         Mail::fake();
         LogFake::bind();
         Http::preventStrayRequests();
-        $this->actAsOrganizationWithoutSubscriptionAndWithoutTrial();
+        if ($this->mockBillingContract) {
+            $this->actAsOrganizationWithoutSubscriptionAndWithoutTrial();
+        }
         // Note: The following line can be used to test timezone edge cases.
         // $this->travelTo(Carbon::now()->timezone('Europe/Vienna')->setHour(0)->setMinute(59)->setSecond(0));
     }

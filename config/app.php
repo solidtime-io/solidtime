@@ -9,6 +9,7 @@ use App\Enums\NumberFormat;
 use App\Enums\TimeFormat;
 use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\ServiceProvider;
+use Nwidart\Modules\LaravelModulesServiceProvider;
 
 return [
 
@@ -197,6 +198,7 @@ return [
         App\Providers\FortifyServiceProvider::class,
         App\Providers\JetstreamServiceProvider::class,
         // Warning: Do not add TelescopeServiceProvider here since it is already conditionally registered in AppServiceProvider
+        LaravelModulesServiceProvider::class,
     ])->toArray(),
 
     /*
