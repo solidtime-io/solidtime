@@ -409,6 +409,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
                 'start' => Carbon::createFromFormat('Y-m-d H:i:s', '2020-01-01 00:00:07'),
                 'end' => null,
             ]);
+        $this->actAsOrganizationWithSubscription();
         Passport::actingAs($data->user);
 
         // Act
@@ -435,6 +436,52 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         );
     }
 
+    public function test_index_endpoint_ignores_rounding_if_organization_has_no_premium_features(): void
+    {
+        // Arrange
+        $this->travelTo(Carbon::createFromFormat('Y-m-d H:i:s', '2020-01-01 00:15:04'));
+        $data = $this->createUserWithPermission([
+            'time-entries:view:own',
+        ]);
+        $timeEntry1 = TimeEntry::factory()->forOrganization($data->organization)
+            ->forMember($data->member)
+            ->create([
+                'start' => Carbon::createFromFormat('Y-m-d H:i:s', '2020-01-01 00:00:08'),
+                'end' => Carbon::createFromFormat('Y-m-d H:i:s', '2020-01-01 00:00:01'),
+            ]);
+        $timeEntry2 = TimeEntry::factory()->forOrganization($data->organization)
+            ->forMember($data->member)
+            ->create([
+                'start' => Carbon::createFromFormat('Y-m-d H:i:s', '2020-01-01 00:00:07'),
+                'end' => null,
+            ]);
+        $this->actAsOrganizationWithoutSubscriptionAndWithoutTrial();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.time-entries.index', [
+            $data->organization->getKey(),
+            'member_id' => $data->member->getKey(),
+            'rounding_type' => TimeEntryRoundingType::Up,
+            'rounding_minutes' => 6,
+        ]));
+
+        // Assert
+        $this->assertResponseCode($response, 200);
+        $response->assertJson(fn (AssertableJson $json) => $json
+            ->has('data')
+            ->has('meta')
+            ->where('meta.total', 2)
+            ->count('data', 2)
+            ->where('data.0.id', $timeEntry1->getKey())
+            ->where('data.0.start', '2020-01-01T00:00:08Z')
+            ->where('data.0.end', '2020-01-01T00:00:01Z')
+            ->where('data.1.id', $timeEntry2->getKey())
+            ->where('data.1.start', '2020-01-01T00:00:07Z')
+            ->where('data.1.end', null)
+        );
+    }
+
     public function test_index_endpoint_can_round_down(): void
     {
         // Arrange
@@ -454,6 +501,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
                 'start' => Carbon::createFromFormat('Y-m-d H:i:s', '2020-01-01 00:00:07'),
                 'end' => null,
             ]);
+        $this->actAsOrganizationWithSubscription();
         Passport::actingAs($data->user);
 
         // Act
@@ -499,6 +547,7 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
                 'start' => Carbon::createFromFormat('Y-m-d H:i:s', '2020-01-01 00:00:07'),
                 'end' => null,
             ]);
+        $this->actAsOrganizationWithSubscription();
         Passport::actingAs($data->user);
 
         // Act
