@@ -86,7 +86,8 @@ class TimeEntryController extends Controller
             $this->checkPermission($organization, 'time-entries:view:all');
         }
 
-        $timeEntriesQuery = $this->getTimeEntriesQuery($organization, $request, $member);
+        $canAccessPremiumFeatures = $this->canAccessPremiumFeatures($organization);
+        $timeEntriesQuery = $this->getTimeEntriesQuery($organization, $request, $member, $canAccessPremiumFeatures);
 
         $totalCount = $timeEntriesQuery->count();
 
@@ -140,13 +141,15 @@ class TimeEntryController extends Controller
     /**
      * @return Builder<TimeEntry>
      */
-    private function getTimeEntriesQuery(Organization $organization, TimeEntryIndexRequest|TimeEntryIndexExportRequest $request, ?Member $member): Builder
+    private function getTimeEntriesQuery(Organization $organization, TimeEntryIndexRequest|TimeEntryIndexExportRequest $request, ?Member $member, bool $canAccessPremiumFeatures): Builder
     {
         $select = TimeEntry::SELECT_COLUMNS;
-        if ($request->getRoundingType() !== null && $request->getRoundingMinutes() !== null) {
+        $roundingType = $canAccessPremiumFeatures ? $request->getRoundingType() : null;
+        $roundingMinutes = $canAccessPremiumFeatures ? $request->getRoundingMinutes() : null;
+        if ($roundingType !== null && $roundingMinutes !== null) {
             $select = array_diff($select, ['start', 'end']);
-            $select[] = DB::raw(app(TimeEntryService::class)->getStartSelectRawForRounding($request->getRoundingType(), $request->getRoundingMinutes()).' as start');
-            $select[] = DB::raw(app(TimeEntryService::class)->getEndSelectRawForRounding($request->getRoundingType(), $request->getRoundingMinutes()).' as end');
+            $select[] = DB::raw(app(TimeEntryService::class)->getStartSelectRawForRounding($roundingType, $roundingMinutes).' as start');
+            $select[] = DB::raw(app(TimeEntryService::class)->getEndSelectRawForRounding($roundingType, $roundingMinutes).' as end');
         }
         $timeEntriesQuery = TimeEntry::query()
             ->whereBelongsTo($organization, 'organization')
@@ -184,18 +187,19 @@ class TimeEntryController extends Controller
         } else {
             $this->checkPermission($organization, 'time-entries:view:all');
         }
+        $canAccessPremiumFeatures = $this->canAccessPremiumFeatures($organization);
         $debug = $request->getDebug();
         $format = $request->getFormatValue();
-        if ($format === ExportFormat::PDF && ! $this->canAccessPremiumFeatures($organization)) {
+        if ($format === ExportFormat::PDF && ! $canAccessPremiumFeatures) {
             throw new FeatureIsNotAvailableInFreePlanApiException;
         }
         $user = $this->user();
         $timezone = $user->timezone;
         $showBillableRate = $this->member($organization)->role !== Role::Employee->value || $organization->employees_can_see_billable_rates;
-        $roundingType = $request->getRoundingType();
-        $roundingMinutes = $request->getRoundingMinutes();
+        $roundingType = $canAccessPremiumFeatures ? $request->getRoundingType() : null;
+        $roundingMinutes = $canAccessPremiumFeatures ? $request->getRoundingMinutes() : null;
 
-        $timeEntriesQuery = $this->getTimeEntriesQuery($organization, $request, $member);
+        $timeEntriesQuery = $this->getTimeEntriesQuery($organization, $request, $member, $canAccessPremiumFeatures);
         $timeEntriesQuery->with([
             'task',
             'client',
@@ -332,14 +336,15 @@ class TimeEntryController extends Controller
         } else {
             $this->checkPermission($organization, 'time-entries:view:all');
         }
+        $canAccessPremiumFeatures = $this->canAccessPremiumFeatures($organization);
         $user = $this->user();
         $showBillableRate = $this->member($organization)->role !== Role::Employee->value || $organization->employees_can_see_billable_rates;
 
         $group1Type = $request->getGroup();
         $group2Type = $request->getSubGroup();
         $timeEntriesAggregateQuery = $this->getTimeEntriesAggregateQuery($organization, $request, $member);
-        $roundingType = $request->getRoundingType();
-        $roundingMinutes = $request->getRoundingMinutes();
+        $roundingType = $canAccessPremiumFeatures ? $request->getRoundingType() : null;
+        $roundingMinutes = $canAccessPremiumFeatures ? $request->getRoundingMinutes() : null;
 
         $aggregatedData = $timeEntryAggregationService->getAggregatedTimeEntries(
             $timeEntriesAggregateQuery,
@@ -380,6 +385,7 @@ class TimeEntryController extends Controller
         } else {
             $this->checkPermission($organization, 'time-entries:view:all');
         }
+        $canAccessPremiumFeatures = $this->canAccessPremiumFeatures($organization);
         $format = $request->getFormatValue();
         if ($format === ExportFormat::PDF && ! $this->canAccessPremiumFeatures($organization)) {
             throw new FeatureIsNotAvailableInFreePlanApiException;
@@ -391,8 +397,8 @@ class TimeEntryController extends Controller
         $group = $request->getGroup();
         $subGroup = $request->getSubGroup();
         $timeEntriesAggregateQuery = $this->getTimeEntriesAggregateQuery($organization, $request, $member);
-        $roundingType = $request->getRoundingType();
-        $roundingMinutes = $request->getRoundingMinutes();
+        $roundingType = $canAccessPremiumFeatures ? $request->getRoundingType() : null;
+        $roundingMinutes = $canAccessPremiumFeatures ? $request->getRoundingMinutes() : null;
 
         $aggregatedData = $timeEntryAggregationService->getAggregatedTimeEntriesWithDescriptions(
             $timeEntriesAggregateQuery->clone(),
