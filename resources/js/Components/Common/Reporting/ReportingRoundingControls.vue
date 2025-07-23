@@ -20,6 +20,9 @@ import {
 import { ArrowsUpDownIcon } from '@heroicons/vue/20/solid';
 import { computed, ref, watch } from 'vue';
 import { twMerge } from 'tailwind-merge';
+import { isAllowedToPerformPremiumAction } from '@/utils/billing';
+import { Link } from '@inertiajs/vue3';
+import { CreditCardIcon } from '@heroicons/vue/20/solid';
 // TimeEntryRoundingType definition
 const TimeEntryRoundingType = {
     Up: 'up' as const,
@@ -150,7 +153,17 @@ const iconClass = computed(() => {
             </Button>
         </PopoverTrigger>
         <PopoverContent class="w-72 p-4">
-            <div class="space-y-4">
+            <div v-if="!isAllowedToPerformPremiumAction()" class="flex flex-col space-y-2">
+                <span class="font-semibold text-xs">Premium</span>
+                <span class="text-xs text-text-secondary flex-1">Rounding is a premium feature. Upgrade to unlock this feature.</span>
+                <Link href="/billing">
+                    <Button size="sm" variant="input" class="items-center space-x-1">
+                        <CreditCardIcon class="w-3.5 h-3.5 text-text-tertiary mr-1" />
+                        Go to Billing
+                    </Button>
+                </Link>
+            </div>
+            <div v-else class="space-y-4">
                 <div>
                     <div class="flex items-center justify-between">
                     <InputLabel for="enable-rounding" value="Enable Rounding" />
