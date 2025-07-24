@@ -13,7 +13,6 @@ import updateLocale from 'dayjs/plugin/updateLocale';
 import { computed } from 'vue';
 import { formatNumber } from './number';
 
-
 export type DateFormat =
     | 'point-separated-d-m-yyyy'
     | 'slash-separated-mm-dd-yyyy'
@@ -28,7 +27,7 @@ const dateFormatMap: Record<DateFormat, string> = {
     'slash-separated-dd-mm-yyyy': 'DD/MM/YYYY',
     'hyphen-separated-dd-mm-yyyy': 'DD-MM-YYYY',
     'hyphen-separated-mm-dd-yyyy': 'MM-DD-YYYY',
-    'hyphen-separated-yyyy-mm-dd': 'YYYY-MM-DD'
+    'hyphen-separated-yyyy-mm-dd': 'YYYY-MM-DD',
 };
 
 export type TimeFormat = '12-hours' | '24-hours';
@@ -84,7 +83,7 @@ export function formatHumanReadableDuration(
         case 'hours-minutes':
             return `${hours}h ${minutes.toString().padStart(2, '0')}min`;
         case 'hours-minutes-colon-separated':
-            return `${hours}:${minutes.toString().padStart(2, '0')}`;
+            return `${hours}:${minutes.toString().padStart(2, '0')} h`;
         case 'hours-minutes-seconds-colon-separated':
             return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
         default:
@@ -129,7 +128,10 @@ export function getLocalizedDateFromTimestamp(timestamp: string) {
  * Returns a formatted date.
  * @param date - date in the format of 'YYYY-MM-DD'
  */
-export function formatDate(date: string, format: DateFormat = 'point-separated-d-m-yyyy'): string {
+export function formatDate(
+    date: string,
+    format: DateFormat = 'point-separated-d-m-yyyy'
+): string {
     if (date?.includes('+')) {
         console.warn(
             'Date contains timezone information, use formatDateLocalized instead'
@@ -142,11 +144,18 @@ export function formatDate(date: string, format: DateFormat = 'point-separated-d
  * Returns a formatted date.
  * @param date - date in the format of 'YYYY-MM-DD'
  */
-export function formatDateLocalized(date: string, format: DateFormat = 'point-separated-d-m-yyyy'): string {
+export function formatDateLocalized(
+    date: string,
+    format: DateFormat = 'point-separated-d-m-yyyy'
+): string {
     return getLocalizedDayJs(date).format(dateFormatMap[format]);
 }
 
-export function formatDateTimeLocalized(date: string, dateFormat?: DateFormat, timeFormat?: TimeFormat): string {
+export function formatDateTimeLocalized(
+    date: string,
+    dateFormat?: DateFormat,
+    timeFormat?: TimeFormat
+): string {
     const format = `${dateFormatMap[dateFormat ?? 'point-separated-d-m-yyyy']} ${timeFormat === '12-hours' ? 'hh:mm A' : 'HH:mm'}`;
     return getLocalizedDayJs(date).format(format);
 }
@@ -189,7 +198,11 @@ export function formatWeekday(date: string) {
     return dayjs(date).format('dddd');
 }
 
-export function formatStartEnd(start: string, end: string | null, timeFormat: TimeFormat = '24-hours') {
+export function formatStartEnd(
+    start: string,
+    end: string | null,
+    timeFormat: TimeFormat = '24-hours'
+) {
     if (end) {
         return `${formatTime(start, timeFormat)} - ${formatTime(end, timeFormat)}`;
     } else {

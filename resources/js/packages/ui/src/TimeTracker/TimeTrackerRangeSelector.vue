@@ -101,15 +101,19 @@ const startTime = computed(() => {
 const inputField = ref<HTMLInputElement | null>(null);
 
 const timeRangeSelector = ref<HTMLElement | null>(null);
+const isMouseDown = ref(false);
 
 function openModalOnTab(e: FocusEvent) {
     // check if the source is inside the dropdown
+
+    console.log(e.target);
     const source = e.relatedTarget as HTMLElement;
     if (
         source &&
         window.document.body
             .querySelector<HTMLElement>('#app')
-            ?.contains(source)
+            ?.contains(source) &&
+        !isMouseDown.value
     ) {
         open.value = true;
     }
@@ -153,6 +157,8 @@ function closeAndFocusInput() {
                     @keydown.exact.tab="focusNextElement"
                     @keydown.exact.shift.tab="open = false"
                     @blur="updateTimerAndStartLiveTimerUpdate"
+                    @mousedown="isMouseDown = true"
+                    @mouseup="isMouseDown = false"
                     @keydown.enter="onTimeEntryEnterPress" />
             </template>
             <template #content>

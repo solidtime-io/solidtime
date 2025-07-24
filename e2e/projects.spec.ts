@@ -136,6 +136,49 @@ test('test that updating billable rate works with existing time entries', async 
     ).toBeVisible();
 });
 
+test('test that creating and updating project time estimate works', async ({ page }) => {
+    const newProjectName = 'New Project ' + Math.floor(1 + Math.random() * 10000);
+    const timeEstimate = '10';
+    
+    await goToProjectsOverview(page);
+    await page.getByRole('button', { name: 'Create Project' }).click();
+    await page.getByLabel('Project Name').fill(newProjectName);
+    await page.getByLabel('Time Estimated').fill(timeEstimate);
+
+    await Promise.all([
+        page.getByRole('button', { name: 'Create Project' }).click(),
+        page.waitForResponse(
+            async (response) =>
+                response.url().includes('/projects') &&
+                response.request().method() === 'POST' &&
+                response.status() === 201 &&
+                (await response.json()).data.estimated_time === parseInt(timeEstimate) * 60 * 60
+        ),
+    ]);
+
+    // Check that time estimate is displayed in the projects table
+    await expect(page.getByTestId('project_table')).toContainText(timeEstimate + 'h');
+
+    // Edit project to remove time estimate
+    await page.getByRole('row').first().getByRole('button').click();
+    await page.getByRole('menuitem').getByText('Edit').first().click();
+    await page.getByLabel('Time Estimated').fill('');
+    
+    await Promise.all([
+        page.getByRole('button', { name: 'Update Project' }).click(),
+        page.waitForResponse(
+            async (response) =>
+                response.url().includes('/projects') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 200 &&
+                (await response.json()).data.estimated_time === null
+        ),
+    ]);
+
+    // Check that time estimate is no longer displayed
+    await expect(page.getByTestId('project_table')).not.toContainText(timeEstimate + 'h');
+});
+
 // Create new project with new Client
 
 // Create new project with existing Client

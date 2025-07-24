@@ -396,6 +396,35 @@ class ReportEndpointTest extends ApiEndpointTestAbstract
         );
     }
 
+    public function test_update_endpoint_can_update_public_until_without_changing_secret(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'reports:update',
+        ]);
+        $report = Report::factory()->public()->forOrganization($data->organization)->create();
+        $secret = $report->share_secret;
+        $newPublicUntil = Carbon::now()->addDays(30)->toIso8601ZuluString();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.reports.update', [$data->organization->getKey(), $report->getKey()]), [
+            'public_until' => $newPublicUntil,
+        ]);
+
+        // Assert
+        $report->refresh();
+        $this->assertTrue($report->is_public);
+        $this->assertSame($secret, $report->share_secret);
+        $this->assertSame($newPublicUntil, $report->public_until->toIso8601ZuluString());
+        $response->assertStatus(200);
+        $response->assertJson(fn (AssertableJson $json) => $json
+            ->has('data')
+            ->where('data.is_public', true)
+            ->where('data.shareable_link', $report->getShareableLink())
+        );
+    }
+
     public function test_update_endpoint_can_update_the_report_all_properties_set(): void
     {
         // Arrange

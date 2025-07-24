@@ -13,6 +13,7 @@ import { Checkbox } from '@/packages/ui/src';
 import DatePicker from '@/packages/ui/src/Input/DatePicker.vue';
 import { useNotificationsStore } from '@/utils/notification';
 import type { Report } from '@/packages/api/src';
+import { getLocalizedDayJs } from '@/packages/ui/src/utils/time';
 
 const show = defineModel('show', { default: false });
 const saving = ref(false);
@@ -64,8 +65,15 @@ watch(
 const { handleApiRequestNotifications } = useNotificationsStore();
 
 async function submit() {
+    const { public_until, ...reportProperties } = report.value;
     await handleApiRequestNotifications(
-        () => updateReportMutation.mutateAsync(report.value),
+        () =>
+            updateReportMutation.mutateAsync({
+                ...reportProperties,
+                public_until: public_until
+                    ? getLocalizedDayJs(public_until).utc().format()
+                    : null,
+            }),
         'Success',
         'Error',
         () => {
@@ -118,7 +126,10 @@ async function submit() {
                         v-if="report.is_public"
                         class="flex items-center space-x-4">
                         <InputLabel for="public_until" value="Expires at" />
-                        <DatePicker id="public_until"></DatePicker>
+                        <DatePicker
+                            id="public_until"
+                            v-model="report.public_until"
+                            size="input"></DatePicker>
                     </div>
                 </div>
             </div>
