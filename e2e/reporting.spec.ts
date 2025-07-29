@@ -2,8 +2,6 @@ import { expect, Page } from '@playwright/test';
 import { PLAYWRIGHT_BASE_URL } from '../playwright/config';
 import { test } from '../playwright/fixtures';
 
-
-
 async function goToTimeOverview(page: Page) {
     await page.goto(PLAYWRIGHT_BASE_URL + '/time');
 }
@@ -31,7 +29,10 @@ async function createTimeEntryWithProject(page: Page, projectName: string, durat
     await page.getByRole('button', { name: 'Manual time entry' }).click();
 
     // Fill in the time entry details
-    await page.getByRole('dialog').getByRole('textbox', { name: 'Description' }).fill(`Time entry for ${projectName}`);
+    await page
+        .getByRole('dialog')
+        .getByRole('textbox', { name: 'Description' })
+        .fill(`Time entry for ${projectName}`);
 
     await page.getByRole('button', { name: 'No Project' }).click();
     await page.getByText(projectName).click();
@@ -43,7 +44,9 @@ async function createTimeEntryWithProject(page: Page, projectName: string, durat
     // Submit the time entry
     await Promise.all([
         page.getByRole('button', { name: 'Create Time Entry' }).click(),
-        page.waitForResponse(response => response.url().includes('/time-entries') && response.status() === 201)
+        page.waitForResponse(
+            (response) => response.url().includes('/time-entries') && response.status() === 201
+        ),
     ]);
 }
 
@@ -52,7 +55,10 @@ async function createTimeEntryWithTag(page: Page, tagName: string, duration: str
     await page.getByRole('button', { name: 'Manual time entry' }).click();
 
     // Fill in the time entry details
-    await page.getByRole('dialog').getByRole('textbox', { name: 'Description' }).fill(`Time entry with tag ${tagName}`);
+    await page
+        .getByRole('dialog')
+        .getByRole('textbox', { name: 'Description' })
+        .fill(`Time entry with tag ${tagName}`);
 
     // Add tag
     await page.getByRole('button', { name: 'Tags' }).click();
@@ -69,12 +75,19 @@ async function createTimeEntryWithTag(page: Page, tagName: string, duration: str
     await page.getByRole('button', { name: 'Create Time Entry' }).click();
 }
 
-async function createTimeEntryWithBillableStatus(page: Page, isBillable: boolean, duration: string) {
+async function createTimeEntryWithBillableStatus(
+    page: Page,
+    isBillable: boolean,
+    duration: string
+) {
     await goToTimeOverview(page);
     await page.getByRole('button', { name: 'Manual time entry' }).click();
 
     // Fill in the time entry details
-    await page.getByRole('dialog').getByRole('textbox', { name: 'Description' }).fill(`Time entry ${isBillable ? 'billable' : 'non-billable'}`);
+    await page
+        .getByRole('dialog')
+        .getByRole('textbox', { name: 'Description' })
+        .fill(`Time entry ${isBillable ? 'billable' : 'non-billable'}`);
 
     // Set billable status
     await page.getByRole('button', { name: 'Non-Billable' }).click();
@@ -109,7 +122,10 @@ test('test that project filtering works in reporting', async ({ page }) => {
         // escape
         page.keyboard.press('Escape'),
         // wait for API request to finish
-        page.waitForResponse(response => response.url().includes('/time-entries/aggregate') && response.status() === 200)
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/time-entries/aggregate') && response.status() === 200
+        ),
     ]);
     await page.waitForLoadState('networkidle');
 
@@ -138,7 +154,10 @@ test('test that tag filtering works in reporting', async ({ page }) => {
         // escape
         page.keyboard.press('Escape'),
         // wait for API request to finish
-        page.waitForResponse(response => response.url().includes('/time-entries/aggregate') && response.status() === 200)
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/time-entries/aggregate') && response.status() === 200
+        ),
     ]);
 
     // Verify only time entries with tag1 are shown
@@ -160,13 +179,15 @@ test('test that billable status filtering works in reporting', async ({ page }) 
         // escape
         page.keyboard.press('Escape'),
         // wait for API request to finish
-        page.waitForResponse(response => response.url().includes('/time-entries/aggregate') && response.status() === 200)
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/time-entries/aggregate') && response.status() === 200
+        ),
     ]);
     await page.waitForLoadState('networkidle');
 
     await expect(page.getByTestId('reporting_view').getByText('1h 00min').first()).toBeVisible();
 });
-
 
 test('test that detailed view shows time entries correctly', async ({ page }) => {
     const projectName = 'Detailed View Project ' + Math.floor(Math.random() * 10000);

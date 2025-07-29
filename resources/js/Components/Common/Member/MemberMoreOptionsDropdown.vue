@@ -1,7 +1,17 @@
 <script setup lang="ts">
-import { TrashIcon, UserCircleIcon, PencilSquareIcon, ArrowDownOnSquareStackIcon } from '@heroicons/vue/20/solid';
+import {
+    TrashIcon,
+    UserCircleIcon,
+    PencilSquareIcon,
+    ArrowDownOnSquareStackIcon,
+} from '@heroicons/vue/20/solid';
 import type { Member } from '@/packages/api/src';
-import {canDeleteMembers, canMakeMembersPlaceholders, canMergeMembers, canUpdateMembers} from '@/utils/permissions';
+import {
+    canDeleteMembers,
+    canMakeMembersPlaceholders,
+    canMergeMembers,
+    canUpdateMembers,
+} from '@/utils/permissions';
 import {
     DropdownMenu,
     DropdownMenuContent,

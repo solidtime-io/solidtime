@@ -101,9 +101,7 @@ const page = usePage<{
             </div>
 
             <div class="mt-4">
-                <InputLabel
-                    for="password_confirmation"
-                    value="Confirm Password" />
+                <InputLabel for="password_confirmation" value="Confirm Password" />
                 <TextInput
                     id="password_confirmation"
                     v-model="form.password_confirmation"
@@ -111,9 +109,7 @@ const page = usePage<{
                     class="mt-1 block w-full"
                     required
                     autocomplete="new-password" />
-                <InputError
-                    class="mt-2"
-                    :message="form.errors.password_confirmation" />
+                <InputError class="mt-2" :message="form.errors.password_confirmation" />
             </div>
 
             <div
@@ -125,10 +121,7 @@ const page = usePage<{
                 class="mt-4">
                 <InputLabel for="terms">
                     <div class="flex items-center">
-                        <Checkbox
-                            id="terms"
-                            v-model:checked="form.terms"
-                            name="terms" />
+                        <Checkbox id="terms" v-model:checked="form.terms" name="terms" />
 
                         <div class="ms-2">
                             I agree to the
@@ -160,13 +153,10 @@ const page = usePage<{
                             name="newsletter_consent" />
 
                         <div class="ms-2">
-                            I agree to receive emails about product related
-                            updates
+                            I agree to receive emails about product related updates
                         </div>
                     </div>
-                    <InputError
-                        class="mt-2"
-                        :message="form.errors.newsletter_consent" />
+                    <InputError class="mt-2" :message="form.errors.newsletter_consent" />
                 </InputLabel>
             </div>
 

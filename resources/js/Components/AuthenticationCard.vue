@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { onMounted } from "vue";
-import { useTheme } from "@/utils/theme.js";
+import { onMounted } from 'vue';
+import { useTheme } from '@/utils/theme.js';
 
 onMounted(async () => {
-    useTheme()
+    useTheme();
 });
 </script>
 

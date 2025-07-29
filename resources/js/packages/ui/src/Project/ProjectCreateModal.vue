@@ -3,11 +3,7 @@ import TextInput from '@/packages/ui/src/Input/TextInput.vue';
 import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
 import DialogModal from '@/packages/ui/src/DialogModal.vue';
 import { computed, ref } from 'vue';
-import type {
-    CreateClientBody,
-    CreateProjectBody,
-    Project,
-} from '@/packages/api/src';
+import type { CreateClientBody, CreateProjectBody, Project } from '@/packages/api/src';
 import { getRandomColor } from '@/packages/ui/src/utils/color';
 import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import { useFocus } from '@vueuse/core';
@@ -63,9 +59,7 @@ useFocus(projectNameInput, { initialValue: true });
 
 const currentClientName = computed(() => {
     if (project.value.client_id) {
-        return props.clients.find(
-            (client) => client.id === project.value.client_id
-        )?.name;
+        return props.clients.find((client) => client.id === project.value.client_id)?.name;
     }
     return 'No Client';
 });
@@ -80,8 +74,7 @@ const currentClientName = computed(() => {
         </template>
 
         <template #content>
-            <div
-                class="sm:flex items-center space-y-2 sm:space-y-0 sm:space-x-4">
+            <div class="sm:flex items-center space-y-2 sm:space-y-0 sm:space-x-4">
                 <div class="flex-1 flex items-center">
                     <div class="text-center pr-5">
                         <InputLabel for="color" value="Color" />
@@ -117,8 +110,7 @@ const currentClientName = computed(() => {
                                 class="bg-input-background cursor-pointer hover:bg-tertiary"
                                 size="xlarge">
                                 <div class="flex items-center space-x-2">
-                                    <UserCircleIcon
-                                        class="w-5 text-icon-default"></UserCircleIcon>
+                                    <UserCircleIcon class="w-5 text-icon-default"></UserCircleIcon>
                                     <span>
                                         {{ currentClientName }}
                                     </span>
@@ -132,9 +124,7 @@ const currentClientName = computed(() => {
                 <div>
                     <ProjectEditBillableSection
                         v-model:is-billable="project.is_billable"
-                        v-model:billable-rate="
-                            project.billable_rate
-                        "
+                        v-model:billable-rate="project.billable_rate"
                         :currency="currency"></ProjectEditBillableSection>
                 </div>
                 <div>

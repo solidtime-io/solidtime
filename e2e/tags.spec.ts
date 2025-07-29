@@ -7,9 +7,7 @@ async function goToTagsOverview(page: Page) {
 }
 
 // Create new project via modal
-test('test that creating and deleting a new client via the modal works', async ({
-    page,
-}) => {
+test('test that creating and deleting a new client via the modal works', async ({ page }) => {
     const newTagName = 'New Tag ' + Math.floor(1 + Math.random() * 10000);
     await goToTagsOverview(page);
     await page.getByRole('button', { name: 'Create Tag' }).click();
@@ -27,13 +25,9 @@ test('test that creating and deleting a new client via the modal works', async (
     ]);
 
     await expect(page.getByTestId('tag_table')).toContainText(newTagName);
-    const moreButton = page.locator(
-        "[aria-label='Actions for Tag " + newTagName + "']"
-    );
+    const moreButton = page.locator("[aria-label='Actions for Tag " + newTagName + "']");
     moreButton.click();
-    const deleteButton = page.locator(
-        "[aria-label='Delete Tag " + newTagName + "']"
-    );
+    const deleteButton = page.locator("[aria-label='Delete Tag " + newTagName + "']");
 
     await Promise.all([
         deleteButton.click(),

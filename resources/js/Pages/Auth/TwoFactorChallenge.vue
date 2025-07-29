@@ -47,13 +47,13 @@ const submit = () => {
 
         <div class="mb-4 text-sm text-text-secondary">
             <template v-if="!recovery">
-                Please confirm access to your account by entering the
-                authentication code provided by your authenticator application.
+                Please confirm access to your account by entering the authentication code provided
+                by your authenticator application.
             </template>
 
             <template v-else>
-                Please confirm access to your account by entering one of your
-                emergency recovery codes.
+                Please confirm access to your account by entering one of your emergency recovery
+                codes.
             </template>
         </div>
 

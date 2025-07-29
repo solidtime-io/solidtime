@@ -25,9 +25,7 @@ export const useTagsStore = defineStore('tags', () => {
                 tags.value = response.data;
             }
         } else {
-            throw new Error(
-                'Failed to fetch current tags because organization ID is missing.'
-            );
+            throw new Error('Failed to fetch current tags because organization ID is missing.');
         }
     }
 
@@ -72,9 +70,7 @@ export const useTagsStore = defineStore('tags', () => {
                 return response.data;
             }
         } else {
-            throw new Error(
-                'Failed to create tag because organization ID is missing.'
-            );
+            throw new Error('Failed to create tag because organization ID is missing.');
         }
     }
 

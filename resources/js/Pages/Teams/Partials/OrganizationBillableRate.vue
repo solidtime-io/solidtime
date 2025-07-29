@@ -40,10 +40,7 @@ async function submit() {
 }
 
 function checkForConfirmationModal() {
-    if (
-        organizationBody.value.billable_rate ===
-        organization.value?.billable_rate
-    ) {
+    if (organizationBody.value.billable_rate === organization.value?.billable_rate) {
         submit();
     } else {
         showConfirmationModal.value = true;
@@ -62,9 +59,7 @@ function checkForConfirmationModal() {
         <template #form>
             <OrganizationBillableRateModal
                 v-model:show="showConfirmationModal"
-                :new-billable-rate="
-                    organizationBody.billable_rate
-                "
+                :new-billable-rate="organizationBody.billable_rate"
                 @submit="submit"></OrganizationBillableRateModal>
             <!-- Organization Owner Information -->
             <div class="col-span-6">
@@ -98,9 +93,7 @@ function checkForConfirmationModal() {
             </div>
         </template>
         <template #actions>
-            <PrimaryButton @click="checkForConfirmationModal"
-                >Save</PrimaryButton
-            >
+            <PrimaryButton @click="checkForConfirmationModal">Save</PrimaryButton>
         </template>
     </FormSection>
 </template>

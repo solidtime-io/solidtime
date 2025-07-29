@@ -1,10 +1,6 @@
 <script setup lang="ts">
 import MainContainer from '@/packages/ui/src/MainContainer.vue';
-import {
-    CheckBadgeIcon,
-    XMarkIcon,
-    XCircleIcon,
-} from '@heroicons/vue/16/solid';
+import { CheckBadgeIcon, XMarkIcon, XCircleIcon } from '@heroicons/vue/16/solid';
 import { Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import {
@@ -18,28 +14,20 @@ import { useSessionStorage } from '@vueuse/core';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import { canManageBilling } from '@/utils/permissions';
 
-const hideTrialBanner = useSessionStorage(
-    'showTrialBanner-' + getCurrentOrganizationId(),
-    false
-);
+const hideTrialBanner = useSessionStorage('showTrialBanner-' + getCurrentOrganizationId(), false);
 const showTrialBanner = computed(() => isInTrial() && !hideTrialBanner.value);
 const hideBlockedBanner = useSessionStorage(
     'showBlockedBanner-' + getCurrentOrganizationId(),
     false
 );
-const showBlockedBanner = computed(
-    () => isBlocked() && !hideBlockedBanner.value
-);
+const showBlockedBanner = computed(() => isBlocked() && !hideBlockedBanner.value);
 const hideFreeUpgradeBanner = useSessionStorage(
     'showFreeUpgradeBanner-' + getCurrentOrganizationId(),
     false
 );
 const showFreeUpgradeBanner = computed(
     () =>
-        isFreePlan() &&
-        !isBlocked() &&
-        !hideFreeUpgradeBanner.value &&
-        !showBlackFridayBanner.value
+        isFreePlan() && !isBlocked() && !hideFreeUpgradeBanner.value && !showBlackFridayBanner.value
 );
 const hideBlackFridayBanner = useSessionStorage(
     'hideBlackFridayBanner-' + getCurrentOrganizationId(),
@@ -62,10 +50,7 @@ const showBlackFridayBanner = computed(() => {
         class="bg-tertiary text-xs lg:text-sm pb-1 pt-2 border-b border-border-secondary">
         <MainContainer class="flex items-center justify-between">
             <div class="flex items-center space-x-1.5">
-                <svg
-                    class="w-4 mr-1"
-                    viewBox="0 0 256 256"
-                    xmlns="http://www.w3.org/2000/svg">
+                <svg class="w-4 mr-1" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
                     <path
                         fill="#FF37AD"
                         d="M22.498 68.97a11.845 11.845 0 1 0 0-23.687c-6.471.098-11.666 5.372-11.666 11.844s5.195 11.746 11.666 11.844m181.393-10.04a11.845 11.845 0 1 0-.003-23.688c-6.471.098-11.665 5.373-11.665 11.845c.001 6.472 5.197 11.745 11.668 11.842" />
@@ -113,8 +98,7 @@ const showBlackFridayBanner = computed(() => {
                     </div>
                 </Link>
                 <button class="p-1" @click="hideBlackFridayBanner = true">
-                    <XMarkIcon
-                        class="w-4 opacity-50 hover:opacity-100"></XMarkIcon>
+                    <XMarkIcon class="w-4 opacity-50 hover:opacity-100"></XMarkIcon>
                 </button>
             </div>
         </MainContainer>
@@ -130,8 +114,8 @@ const showBlackFridayBanner = computed(() => {
                         Your trial expires in {{ daysLeftInTrial() }} days.
                     </span>
                     <span class="hidden md:inline">
-                        To continue using all features & support the development
-                        of solidtime, please upgrade your plan.
+                        To continue using all features & support the development of solidtime,
+                        please upgrade your plan.
                     </span>
                 </div>
             </div>
@@ -143,8 +127,7 @@ const showBlackFridayBanner = computed(() => {
                     </div>
                 </Link>
                 <button class="p-1" @click="hideTrialBanner = true">
-                    <XMarkIcon
-                        class="w-4 opacity-50 hover:opacity-100"></XMarkIcon>
+                    <XMarkIcon class="w-4 opacity-50 hover:opacity-100"></XMarkIcon>
                 </button>
             </div>
         </MainContainer>
@@ -156,27 +139,22 @@ const showBlackFridayBanner = computed(() => {
             <div class="flex items-center space-x-1.5">
                 <XCircleIcon class="w-4 text-text-primary/50"></XCircleIcon>
                 <div class="flex-1 space-x-1">
-                    <span class="font-medium">
-                        Your organization is currently blocked.
-                    </span>
+                    <span class="font-medium"> Your organization is currently blocked. </span>
                     <span class="hidden md:inline">
-                        Please upgrade to a premium plan or remove all users
-                        except the owner to unblock your organization.
+                        Please upgrade to a premium plan or remove all users except the owner to
+                        unblock your organization.
                     </span>
                 </div>
             </div>
             <div class="flex items-center space-x-2">
-                <Link
-                    v-if="isBillingActivated() && canManageBilling()"
-                    href="/billing">
+                <Link v-if="isBillingActivated() && canManageBilling()" href="/billing">
                     <div
                         class="text-text-primary font-semibold uppercase text-xs flex space-x-1 items-center hover:bg-white/10 rounded-lg px-2 py-1.5">
                         <span>Upgrade now</span>
                     </div>
                 </Link>
                 <button class="p-1" @click="hideBlockedBanner = true">
-                    <XMarkIcon
-                        class="w-4 opacity-50 hover:opacity-100"></XMarkIcon>
+                    <XMarkIcon class="w-4 opacity-50 hover:opacity-100"></XMarkIcon>
                 </button>
             </div>
         </MainContainer>
@@ -188,27 +166,22 @@ const showBlackFridayBanner = computed(() => {
             <div class="flex items-center space-x-1.5">
                 <XCircleIcon class="w-4 text-text-primary/50"></XCircleIcon>
                 <div class="flex-1 space-x-1">
-                    <span class="font-medium">
-                        You are currently using the Free Plan.
-                    </span>
+                    <span class="font-medium"> You are currently using the Free Plan. </span>
                     <span class="hidden md:inline">
-                        To unlock all premium features & support the development
-                        of solidtime, please upgrade your plan.</span
+                        To unlock all premium features & support the development of solidtime,
+                        please upgrade your plan.</span
                     >
                 </div>
             </div>
             <div class="flex items-center space-x-2">
-                <Link
-                    v-if="isBillingActivated() && canManageBilling()"
-                    href="/billing">
+                <Link v-if="isBillingActivated() && canManageBilling()" href="/billing">
                     <div
                         class="text-text-primary font-semibold uppercase text-xs flex space-x-1 items-center hover:bg-white/10 rounded-lg px-2 py-1.5">
                         <span>Upgrade now</span>
                     </div>
                 </Link>
                 <button class="p-1" @click="hideFreeUpgradeBanner = true">
-                    <XMarkIcon
-                        class="w-4 opacity-50 hover:opacity-100"></XMarkIcon>
+                    <XMarkIcon class="w-4 opacity-50 hover:opacity-100"></XMarkIcon>
                 </button>
             </div>
         </MainContainer>

@@ -2,7 +2,7 @@
 import TextInput from '@/packages/ui/src/Input/TextInput.vue';
 import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
 import DialogModal from '@/packages/ui/src/DialogModal.vue';
-import { ref, watch } from "vue";
+import { ref, watch } from 'vue';
 import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import { useFocus } from '@vueuse/core';
 import { useTasksStore } from '@/utils/useTasks';
@@ -23,9 +23,12 @@ const props = defineProps<{
 
 const taskProjectId = ref<string>(props.projectId);
 
-watch(() => props.projectId, (value) => {
-    taskProjectId.value = value;
-});
+watch(
+    () => props.projectId,
+    (value) => {
+        taskProjectId.value = value;
+    }
+);
 
 async function submit() {
     await createTask({

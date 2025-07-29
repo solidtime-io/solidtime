@@ -12,9 +12,7 @@ const ApiTokenResource = z
     })
     .passthrough();
 const ApiTokenCollection = z.array(ApiTokenResource);
-const ApiTokenStoreRequest = z
-    .object({ name: z.string().min(1).max(255) })
-    .passthrough();
+const ApiTokenStoreRequest = z.object({ name: z.string().min(1).max(255) }).passthrough();
 const ApiTokenWithAccessTokenResource = z
     .object({
         id: z.string(),
@@ -36,18 +34,14 @@ const ClientResource = z
     })
     .passthrough();
 const ClientCollection = z.array(ClientResource);
-const ClientStoreRequest = z
-    .object({ name: z.string().min(1).max(255) })
-    .passthrough();
+const ClientStoreRequest = z.object({ name: z.string().min(1).max(255) }).passthrough();
 const ClientUpdateRequest = z
     .object({
         name: z.string().min(1).max(255),
         is_archived: z.boolean().optional(),
     })
     .passthrough();
-const ImportRequest = z
-    .object({ type: z.string(), data: z.string() })
-    .passthrough();
+const ImportRequest = z.object({ type: z.string(), data: z.string() }).passthrough();
 const InvitationResource = z
     .object({ id: z.string(), email: z.string(), role: z.string() })
     .passthrough();
@@ -104,12 +98,7 @@ const InvoiceStoreRequest = z
         reference: z.string(),
         currency: z.string(),
         tax_rate: z.number().int().gte(0).lte(2147483647).optional(),
-        discount_amount: z
-            .number()
-            .int()
-            .gte(0)
-            .lte(9223372036854776000)
-            .optional(),
+        discount_amount: z.number().int().gte(0).lte(9223372036854776000).optional(),
         discount_type: InvoiceDiscountType.optional(),
         footer: z.union([z.string(), z.null()]).optional(),
         notes: z.union([z.string(), z.null()]).optional(),
@@ -121,11 +110,7 @@ const InvoiceStoreRequest = z
                     .object({
                         name: z.string(),
                         description: z.union([z.string(), z.null()]).optional(),
-                        unit_price: z
-                            .number()
-                            .int()
-                            .gte(0)
-                            .lte(9223372036854776000),
+                        unit_price: z.number().int().gte(0).lte(9223372036854776000),
                         quantity: z.number().gte(0).lte(99999999),
                     })
                     .passthrough()
@@ -234,11 +219,7 @@ const InvoiceUpdateRequest = z
                     id: z.union([z.string(), z.null()]).optional(),
                     name: z.string(),
                     description: z.union([z.string(), z.null()]).optional(),
-                    unit_price: z
-                        .number()
-                        .int()
-                        .gte(0)
-                        .lte(9223372036854776000),
+                    unit_price: z.number().int().gte(0).lte(9223372036854776000),
                     quantity: z.number().gte(0).lte(99999999),
                 })
                 .passthrough()
@@ -246,9 +227,7 @@ const InvoiceUpdateRequest = z
     })
     .partial()
     .passthrough();
-const InvoiceDownloadRequest = z
-    .object({ with_e_invoice: z.boolean() })
-    .passthrough();
+const InvoiceDownloadRequest = z.object({ with_e_invoice: z.boolean() }).passthrough();
 const InvoiceSettingResource = z
     .object({
         seller_name: z.union([z.string(), z.null()]),
@@ -303,10 +282,7 @@ const MemberUpdateRequest = z
     .object({ role: Role, billable_rate: z.union([z.number(), z.null()]) })
     .partial()
     .passthrough();
-const MemberMergeIntoRequest = z
-    .object({ member_id: z.string() })
-    .partial()
-    .passthrough();
+const MemberMergeIntoRequest = z.object({ member_id: z.string() }).partial().passthrough();
 const NumberFormat = z.enum([
     'point-comma',
     'comma-point',
@@ -445,12 +421,7 @@ const TimeEntryAggregationType = z.enum([
     'billable',
     'description',
 ]);
-const TimeEntryAggregationTypeInterval = z.enum([
-    'day',
-    'week',
-    'month',
-    'year',
-]);
+const TimeEntryAggregationTypeInterval = z.enum(['day', 'week', 'month', 'year']);
 const Weekday = z.enum([
     'monday',
     'tuesday',
@@ -471,22 +442,12 @@ const ReportStoreRequest = z
                 start: z.string(),
                 end: z.string(),
                 active: z.union([z.boolean(), z.null()]).optional(),
-                member_ids: z
-                    .union([z.array(z.string().uuid()), z.null()])
-                    .optional(),
+                member_ids: z.union([z.array(z.string().uuid()), z.null()]).optional(),
                 billable: z.union([z.boolean(), z.null()]).optional(),
-                client_ids: z
-                    .union([z.array(z.string().uuid()), z.null()])
-                    .optional(),
-                project_ids: z
-                    .union([z.array(z.string().uuid()), z.null()])
-                    .optional(),
-                tag_ids: z
-                    .union([z.array(z.string().uuid()), z.null()])
-                    .optional(),
-                task_ids: z
-                    .union([z.array(z.string().uuid()), z.null()])
-                    .optional(),
+                client_ids: z.union([z.array(z.string().uuid()), z.null()]).optional(),
+                project_ids: z.union([z.array(z.string().uuid()), z.null()]).optional(),
+                tag_ids: z.union([z.array(z.string().uuid()), z.null()]).optional(),
+                task_ids: z.union([z.array(z.string().uuid()), z.null()]).optional(),
                 group: TimeEntryAggregationType,
                 sub_group: TimeEntryAggregationType,
                 history_group: TimeEntryAggregationTypeInterval,
@@ -571,18 +532,9 @@ const DetailedWithDataReportResource = z
                                     z.array(
                                         z
                                             .object({
-                                                key: z.union([
-                                                    z.string(),
-                                                    z.null(),
-                                                ]),
-                                                description: z.union([
-                                                    z.string(),
-                                                    z.null(),
-                                                ]),
-                                                color: z.union([
-                                                    z.string(),
-                                                    z.null(),
-                                                ]),
+                                                key: z.union([z.string(), z.null()]),
+                                                description: z.union([z.string(), z.null()]),
+                                                color: z.union([z.string(), z.null()]),
                                                 seconds: z.number().int(),
                                                 cost: z.number().int(),
                                                 grouped_type: z.null(),
@@ -617,14 +569,8 @@ const DetailedWithDataReportResource = z
                                     z.array(
                                         z
                                             .object({
-                                                key: z.union([
-                                                    z.string(),
-                                                    z.null(),
-                                                ]),
-                                                description: z.union([
-                                                    z.string(),
-                                                    z.null(),
-                                                ]),
+                                                key: z.union([z.string(), z.null()]),
+                                                description: z.union([z.string(), z.null()]),
                                                 seconds: z.number().int(),
                                                 cost: z.number().int(),
                                                 grouped_type: z.null(),
@@ -654,12 +600,8 @@ const TagResource = z
     })
     .passthrough();
 const TagCollection = z.array(TagResource);
-const TagStoreRequest = z
-    .object({ name: z.string().min(1).max(255) })
-    .passthrough();
-const TagUpdateRequest = z
-    .object({ name: z.string().min(1).max(255) })
-    .passthrough();
+const TagStoreRequest = z.object({ name: z.string().min(1).max(255) }).passthrough();
+const TagUpdateRequest = z.object({ name: z.string().min(1).max(255) }).passthrough();
 const TaskResource = z
     .object({
         id: z.string(),
@@ -833,9 +775,7 @@ const endpoints = makeApi([
         path: '/v1/countries',
         alias: 'getCountries',
         requestFormat: 'json',
-        response: z.array(
-            z.object({ code: z.string(), name: z.string() }).passthrough()
-        ),
+        response: z.array(z.object({ code: z.string(), name: z.string() }).passthrough()),
         errors: [
             {
                 status: 401,
@@ -948,11 +888,7 @@ const endpoints = makeApi([
                 schema: z.string(),
             },
         ],
-        response: z.array(
-            z
-                .object({ date: z.string(), duration: z.number().int() })
-                .passthrough()
-        ),
+        response: z.array(z.object({ date: z.string(), duration: z.number().int() }).passthrough()),
         errors: [
             {
                 status: 401,
@@ -1105,9 +1041,7 @@ const endpoints = makeApi([
                 schema: z.string(),
             },
         ],
-        response: z
-            .object({ value: z.number().int(), currency: z.string() })
-            .passthrough(),
+        response: z.object({ value: z.number().int(), currency: z.string() }).passthrough(),
         errors: [
             {
                 status: 401,
@@ -1200,11 +1134,7 @@ const endpoints = makeApi([
                 schema: z.string(),
             },
         ],
-        response: z.array(
-            z
-                .object({ date: z.string(), duration: z.number().int() })
-                .passthrough()
-        ),
+        response: z.array(z.object({ date: z.string(), duration: z.number().int() }).passthrough()),
         errors: [
             {
                 status: 401,
@@ -1322,9 +1252,7 @@ const endpoints = makeApi([
             {
                 name: 'body',
                 type: 'Body',
-                schema: z
-                    .object({ name: z.string().min(1).max(255) })
-                    .passthrough(),
+                schema: z.object({ name: z.string().min(1).max(255) }).passthrough(),
             },
             {
                 name: 'organization',
@@ -1471,9 +1399,7 @@ const endpoints = makeApi([
                 schema: z.string(),
             },
         ],
-        response: z
-            .object({ success: z.boolean(), download_url: z.string() })
-            .passthrough(),
+        response: z.object({ success: z.boolean(), download_url: z.string() }).passthrough(),
         errors: [
             {
                 status: 400,
@@ -1524,24 +1450,12 @@ const endpoints = makeApi([
             .object({
                 report: z
                     .object({
-                        clients: z
-                            .object({ created: z.number().int() })
-                            .passthrough(),
-                        projects: z
-                            .object({ created: z.number().int() })
-                            .passthrough(),
-                        tasks: z
-                            .object({ created: z.number().int() })
-                            .passthrough(),
-                        time_entries: z
-                            .object({ created: z.number().int() })
-                            .passthrough(),
-                        tags: z
-                            .object({ created: z.number().int() })
-                            .passthrough(),
-                        users: z
-                            .object({ created: z.number().int() })
-                            .passthrough(),
+                        clients: z.object({ created: z.number().int() }).passthrough(),
+                        projects: z.object({ created: z.number().int() }).passthrough(),
+                        tasks: z.object({ created: z.number().int() }).passthrough(),
+                        time_entries: z.object({ created: z.number().int() }).passthrough(),
+                        tags: z.object({ created: z.number().int() }).passthrough(),
+                        users: z.object({ created: z.number().int() }).passthrough(),
                     })
                     .passthrough(),
             })
@@ -2214,10 +2128,7 @@ const endpoints = makeApi([
             {
                 name: 'body',
                 type: 'Body',
-                schema: z
-                    .object({ member_id: z.string() })
-                    .partial()
-                    .passthrough(),
+                schema: z.object({ member_id: z.string() }).partial().passthrough(),
             },
             {
                 name: 'organization',
@@ -3313,9 +3224,7 @@ const endpoints = makeApi([
             {
                 name: 'body',
                 type: 'Body',
-                schema: z
-                    .object({ name: z.string().min(1).max(255) })
-                    .passthrough(),
+                schema: z.object({ name: z.string().min(1).max(255) }).passthrough(),
             },
             {
                 name: 'organization',
@@ -3361,9 +3270,7 @@ const endpoints = makeApi([
             {
                 name: 'body',
                 type: 'Body',
-                schema: z
-                    .object({ name: z.string().min(1).max(255) })
-                    .passthrough(),
+                schema: z.object({ name: z.string().min(1).max(255) }).passthrough(),
             },
             {
                 name: 'organization',
@@ -3871,9 +3778,7 @@ Users with the permission &#x60;time-entries:view:own&#x60; can only use this en
                 schema: z.string(),
             },
         ],
-        response: z
-            .object({ success: z.string(), error: z.string() })
-            .passthrough(),
+        response: z.object({ success: z.string(), error: z.string() }).passthrough(),
         errors: [
             {
                 status: 401,
@@ -3919,9 +3824,7 @@ Users with the permission &#x60;time-entries:view:own&#x60; can only use this en
                 schema: z.array(z.string().uuid()),
             },
         ],
-        response: z
-            .object({ success: z.string(), error: z.string() })
-            .passthrough(),
+        response: z.object({ success: z.string(), error: z.string() }).passthrough(),
         errors: [
             {
                 status: 401,
@@ -4171,25 +4074,14 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
                                         key: z.union([z.string(), z.null()]),
                                         seconds: z.number().int(),
                                         cost: z.union([z.number(), z.null()]),
-                                        grouped_type: z.union([
-                                            z.string(),
-                                            z.null(),
-                                        ]),
+                                        grouped_type: z.union([z.string(), z.null()]),
                                         grouped_data: z.union([
                                             z.array(
                                                 z
                                                     .object({
-                                                        key: z.union([
-                                                            z.string(),
-                                                            z.null(),
-                                                        ]),
-                                                        seconds: z
-                                                            .number()
-                                                            .int(),
-                                                        cost: z.union([
-                                                            z.number(),
-                                                            z.null(),
-                                                        ]),
+                                                        key: z.union([z.string(), z.null()]),
+                                                        seconds: z.number().int(),
+                                                        cost: z.union([z.number(), z.null()]),
                                                         grouped_type: z.null(),
                                                         grouped_data: z.null(),
                                                     })
@@ -4357,9 +4249,7 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
         ],
         response: z.union([
             z.object({ download_url: z.string() }).passthrough(),
-            z
-                .object({ html: z.string(), footer_html: z.string() })
-                .passthrough(),
+            z.object({ html: z.string(), footer_html: z.string() }).passthrough(),
         ]),
         errors: [
             {
@@ -4479,9 +4369,7 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
         ],
         response: z.union([
             z.object({ download_url: z.string() }).passthrough(),
-            z
-                .object({ html: z.string(), footer_html: z.string() })
-                .passthrough(),
+            z.object({ html: z.string(), footer_html: z.string() }).passthrough(),
         ]),
         errors: [
             {
@@ -4590,14 +4478,10 @@ Please note that the access token is only shown in this response and cannot be r
             {
                 name: 'body',
                 type: 'Body',
-                schema: z
-                    .object({ name: z.string().min(1).max(255) })
-                    .passthrough(),
+                schema: z.object({ name: z.string().min(1).max(255) }).passthrough(),
             },
         ],
-        response: z
-            .object({ data: ApiTokenWithAccessTokenResource })
-            .passthrough(),
+        response: z.object({ data: ApiTokenWithAccessTokenResource }).passthrough(),
         errors: [
             {
                 status: 400,
@@ -4722,9 +4606,7 @@ Please note that the access token is only shown in this response and cannot be r
         alias: 'getMyMemberships',
         description: `This endpoint is independent of organization.`,
         requestFormat: 'json',
-        response: z
-            .object({ data: z.array(PersonalMembershipResource) })
-            .passthrough(),
+        response: z.object({ data: z.array(PersonalMembershipResource) }).passthrough(),
         errors: [
             {
                 status: 401,

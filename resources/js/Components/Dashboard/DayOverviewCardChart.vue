@@ -10,19 +10,21 @@ const props = defineProps<{
 const accentColor = useCssVariable('--theme-color-chart');
 const markLineColor = useCssVariable('--color-border-secondary');
 
-const seriesData = computed(() => props.history.map((el) => {
-    return {
-        value: el,
-        ...{
-            itemStyle: {
-                borderWidth: 1,
-                borderColor: 'rgba(' + accentColor.value + ',0.8)',
-                borderRadius: [2, 2, 0, 0],
-                color: 'rgba(' + accentColor.value + ',0.8)',
+const seriesData = computed(() =>
+    props.history.map((el) => {
+        return {
+            value: el,
+            ...{
+                itemStyle: {
+                    borderWidth: 1,
+                    borderColor: 'rgba(' + accentColor.value + ',0.8)',
+                    borderRadius: [2, 2, 0, 0],
+                    color: 'rgba(' + accentColor.value + ',0.8)',
+                },
             },
-        },
-    };
-}));
+        };
+    })
+);
 const option = computed(() => ({
     grid: {
         top: 0,

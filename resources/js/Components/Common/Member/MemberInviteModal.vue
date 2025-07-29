@@ -11,10 +11,7 @@ import type { Role } from '@/types/jetstream';
 import { Link, useForm } from '@inertiajs/vue3';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import { filterRoles } from '@/utils/roles';
-import {
-    isAllowedToPerformPremiumAction,
-    isBillingActivated,
-} from '@/utils/billing';
+import { isAllowedToPerformPremiumAction, isBillingActivated } from '@/utils/billing';
 import { CreditCardIcon, UserGroupIcon } from '@heroicons/vue/20/solid';
 import { canManageBilling, canUpdateOrganization } from '@/utils/permissions';
 import { api } from '@/packages/api/src';
@@ -44,14 +41,10 @@ const { handleApiRequestNotifications } = useNotificationsStore();
 
 async function submit() {
     if (addTeamMemberForm.role === null || addTeamMemberForm.email === '') {
-        errors.value.email = z
-            .string()
-            .email()
-            .safeParse(addTeamMemberForm.email).success
+        errors.value.email = z.string().email().safeParse(addTeamMemberForm.email).success
             ? ''
             : 'Please enter a valid email address';
-        errors.value.role =
-            addTeamMemberForm.role === null ? 'Please select a role' : '';
+        errors.value.role = addTeamMemberForm.role === null ? 'Please select a role' : '';
         return;
     }
 
@@ -100,21 +93,15 @@ useFocus(clientNameInput, { initialValue: true });
                     <UserGroupIcon class="w-12"></UserGroupIcon>
                 </div>
                 <div class="max-w-sm text-center mx-auto py-4 text-base">
-                    <p class="py-1">
-                        The Free plan is <strong>limited to one member</strong>
-                    </p>
+                    <p class="py-1">The Free plan is <strong>limited to one member</strong></p>
                     <p class="py-1">
                         To add new team members to your organization you,
                         <strong>please upgrade to a paid plan</strong>.
                     </p>
 
-                    <Link
-                        v-if="isBillingActivated() && canManageBilling()"
-                        href="/billing">
+                    <Link v-if="isBillingActivated() && canManageBilling()" href="/billing">
                         <PrimaryButton
-                            v-if="
-                                isBillingActivated() && canUpdateOrganization()
-                            "
+                            v-if="isBillingActivated() && canUpdateOrganization()"
                             type="button"
                             class="mt-6">
                             <CreditCardIcon class="w-5 h-5 me-2" />
@@ -154,8 +141,7 @@ useFocus(clientNameInput, { initialValue: true });
                             :class="{
                                 'border-t border-card-border focus:border-none rounded-t-none':
                                     i > 0,
-                                'rounded-b-none':
-                                    i != Object.keys(availableRoles).length - 1,
+                                'rounded-b-none': i != Object.keys(availableRoles).length - 1,
                             }"
                             @click="addTeamMemberForm.role = role.key">
                             <div
@@ -169,17 +155,13 @@ useFocus(clientNameInput, { initialValue: true });
                                     <div
                                         class="text-sm text-text-primary"
                                         :class="{
-                                            'font-semibold':
-                                                addTeamMemberForm.role ==
-                                                role.key,
+                                            'font-semibold': addTeamMemberForm.role == role.key,
                                         }">
                                         {{ role.name }}
                                     </div>
 
                                     <svg
-                                        v-if="
-                                            addTeamMemberForm.role == role.key
-                                        "
+                                        v-if="addTeamMemberForm.role == role.key"
                                         class="ms-2 h-5 w-5 text-green-400"
                                         xmlns="http://www.w3.org/2000/svg"
                                         fill="none"

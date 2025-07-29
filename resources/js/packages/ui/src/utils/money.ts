@@ -40,13 +40,7 @@ export function formatCents(
     currencySymbol?: string,
     numberFormat?: NumberFormat
 ) {
-    return formatMoney(
-        amount / 100,
-        currency,
-        format,
-        currencySymbol,
-        numberFormat
-    );
+    return formatMoney(amount / 100, currency, format, currencySymbol, numberFormat);
 }
 
 export function getOrganizationCurrencySymbol(currency: string) {

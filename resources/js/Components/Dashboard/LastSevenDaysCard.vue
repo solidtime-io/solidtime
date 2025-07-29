@@ -1,35 +1,33 @@
 <script setup lang="ts">
-import { useQuery } from "@tanstack/vue-query";
-import { computed } from "vue";
-import DashboardCard from "@/Components/Dashboard/DashboardCard.vue";
-import DayOverviewCardEntry from "@/Components/Dashboard/DayOverviewCardEntry.vue";
-import { CalendarIcon } from "@heroicons/vue/20/solid";
-import { getCurrentOrganizationId } from "@/utils/useUser";
-import { api } from "@/packages/api/src";
-import { LoadingSpinner } from "@/packages/ui/src";
+import { useQuery } from '@tanstack/vue-query';
+import { computed } from 'vue';
+import DashboardCard from '@/Components/Dashboard/DashboardCard.vue';
+import DayOverviewCardEntry from '@/Components/Dashboard/DayOverviewCardEntry.vue';
+import { CalendarIcon } from '@heroicons/vue/20/solid';
+import { getCurrentOrganizationId } from '@/utils/useUser';
+import { api } from '@/packages/api/src';
+import { LoadingSpinner } from '@/packages/ui/src';
 
 // Get the organization ID using the utility function
 const organizationId = computed(() => getCurrentOrganizationId());
 
-
 // Set up the query
 const { data: last7Days, isLoading } = useQuery({
-    queryKey: ["lastSevenDays", organizationId],
+    queryKey: ['lastSevenDays', organizationId],
     queryFn: () => {
         return api.lastSevenDays({
             params: {
-                organization: organizationId.value!
-            }
+                organization: organizationId.value!,
+            },
         });
     },
     enabled: computed(() => !!organizationId.value),
     placeholderData: Array.from({ length: 7 }, (_, i) => ({
-        date: new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+        date: new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
         duration: 0,
-        history: Array(8).fill(0)
-    }))
+        history: Array(8).fill(0),
+    })),
 });
-
 </script>
 
 <template>
@@ -46,8 +44,6 @@ const { data: last7Days, isLoading } = useQuery({
                 :history="day.history"
                 :duration="day.duration"></DayOverviewCardEntry>
         </div>
-        <div v-else class="text-center text-gray-500 py-8">
-            No data available
-        </div>
+        <div v-else class="text-center text-gray-500 py-8">No data available</div>
     </DashboardCard>
 </template>

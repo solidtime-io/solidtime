@@ -2,10 +2,7 @@ import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
 import vue from '@vitejs/plugin-vue';
 import checker from 'vite-plugin-checker';
-import {
-    collectModuleAssetsPaths,
-    collectModulePlugins,
-} from './vite-module-loader.js';
+import { collectModuleAssetsPaths, collectModulePlugins } from './vite-module-loader.js';
 
 async function getConfig() {
     const paths = [

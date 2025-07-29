@@ -20,9 +20,7 @@ function deleteClient() {
 }
 
 const projectCount = computed(() => {
-    return projects.value.filter(
-        (projects) => projects.client_id === props.client.id
-    ).length;
+    return projects.value.filter((projects) => projects.client_id === props.client.id).length;
 });
 
 function archiveClient() {
@@ -37,9 +35,7 @@ const showEditModal = ref(false);
 
 <template>
     <TableRow>
-        <ClientEditModal
-            v-model:show="showEditModal"
-            :client="client"></ClientEditModal>
+        <ClientEditModal v-model:show="showEditModal" :client="client"></ClientEditModal>
         <div
             class="whitespace-nowrap flex items-center space-x-5 3xl:pl-12 py-4 pr-3 text-sm font-medium text-text-primary pl-4 sm:pl-6 lg:pl-8 3xl:pl-12">
             <span>

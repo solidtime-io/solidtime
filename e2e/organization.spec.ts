@@ -35,9 +35,9 @@ test('test that organization name can be updated', async ({ page }) => {
     await page.getByLabel('Organization Name').fill('NEW ORG NAME');
     await page.getByLabel('Organization Name').press('Enter');
     await page.getByLabel('Organization Name').press('Meta+r');
-    await expect(
-        page.locator('[data-testid="organization_switcher"]:visible')
-    ).toContainText('NEW ORG NAME');
+    await expect(page.locator('[data-testid="organization_switcher"]:visible')).toContainText(
+        'NEW ORG NAME'
+    );
 });
 
 test('test that organization billable rate can be updated with all existing time entries', async ({
@@ -46,9 +46,7 @@ test('test that organization billable rate can be updated with all existing time
     await goToOrganizationSettings(page);
     const newBillableRate = Math.round(Math.random() * 10000);
     await page.getByLabel('Organization Billable Rate').click();
-    await page
-        .getByLabel('Organization Billable Rate')
-        .fill(newBillableRate.toString());
+    await page.getByLabel('Organization Billable Rate').fill(newBillableRate.toString());
     await page
         .locator('form')
         .filter({ hasText: 'Organization Billable' })
@@ -56,9 +54,7 @@ test('test that organization billable rate can be updated with all existing time
         .click();
 
     await Promise.all([
-        page
-            .getByRole('button', { name: 'Yes, update existing time entries' })
-            .click(),
+        page.getByRole('button', { name: 'Yes, update existing time entries' }).click(),
         page.waitForRequest(
             async (request) =>
                 request.url().includes('/organizations/') &&
@@ -70,15 +66,12 @@ test('test that organization billable rate can be updated with all existing time
                 response.url().includes('/organizations/') &&
                 response.request().method() === 'PUT' &&
                 response.status() === 200 &&
-                (await response.json()).data.billable_rate ===
-                    newBillableRate * 100
+                (await response.json()).data.billable_rate === newBillableRate * 100
         ),
     ]);
 });
 
-test('test that organization format settings can be updated', async ({
-    page,
-}) => {
+test('test that organization format settings can be updated', async ({ page }) => {
     await goToOrganizationSettings(page);
 
     // Test number format
@@ -113,8 +106,7 @@ test('test that organization format settings can be updated', async ({
                 response.url().includes('/organizations/') &&
                 response.request().method() === 'PUT' &&
                 response.status() === 200 &&
-                (await response.json()).data.currency_format ===
-                    'iso-code-after-with-space'
+                (await response.json()).data.currency_format === 'iso-code-after-with-space'
         ),
     ]);
 
@@ -132,8 +124,7 @@ test('test that organization format settings can be updated', async ({
                 response.url().includes('/organizations/') &&
                 response.request().method() === 'PUT' &&
                 response.status() === 200 &&
-                (await response.json()).data.date_format ===
-                    'slash-separated-dd-mm-yyyy'
+                (await response.json()).data.date_format === 'slash-separated-dd-mm-yyyy'
         ),
     ]);
 
@@ -169,19 +160,14 @@ test('test that organization format settings can be updated', async ({
                 response.url().includes('/organizations/') &&
                 response.request().method() === 'PUT' &&
                 response.status() === 200 &&
-                (await response.json()).data.interval_format ===
-                    'hours-minutes-colon-separated'
+                (await response.json()).data.interval_format === 'hours-minutes-colon-separated'
         ),
     ]);
 });
 
-test('test that format settings are reflected in the dashboard', async ({
-    page,
-}) => {
+test('test that format settings are reflected in the dashboard', async ({ page }) => {
     // check that 0h 00min is displayed
-    await expect(
-        page.getByText('0h 00min', { exact: true }).nth(0)
-    ).toBeVisible();
+    await expect(page.getByText('0h 00min', { exact: true }).nth(0)).toBeVisible();
 
     // First set the format settings
     await goToOrganizationSettings(page);
@@ -213,10 +199,8 @@ test('test that format settings are reflected in the dashboard', async ({
                 response.url().includes('/organizations/') &&
                 response.request().method() === 'PUT' &&
                 response.status() === 200 &&
-                (await response.json()).data.interval_format ===
-                    'hours-minutes-colon-separated' &&
-                (await response.json()).data.currency_format ===
-                    'symbol-after' &&
+                (await response.json()).data.interval_format === 'hours-minutes-colon-separated' &&
+                (await response.json()).data.currency_format === 'symbol-after' &&
                 (await response.json()).data.number_format === 'comma-point'
         ),
     ]);
@@ -232,16 +216,12 @@ test('test that format settings are reflected in the dashboard', async ({
     // check that 00:00 is displayed
     await expect(page.getByText('0:00', { exact: true }).nth(0)).toBeVisible();
     // check that 0h 00min is not displayed
-    await expect(
-        page.getByText('0h 00min', { exact: true }).nth(0)
-    ).not.toBeVisible();
+    await expect(page.getByText('0h 00min', { exact: true }).nth(0)).not.toBeVisible();
 
     // check that the current date is displayed in the dd/mm/yyyy format on the time page
     await page.goto(PLAYWRIGHT_BASE_URL + '/time');
     await expect(
-        page
-            .getByText(new Date().toLocaleDateString('en-GB'), { exact: true })
-            .nth(0)
+        page.getByText(new Date().toLocaleDateString('en-GB'), { exact: true }).nth(0)
     ).toBeVisible();
 });
 

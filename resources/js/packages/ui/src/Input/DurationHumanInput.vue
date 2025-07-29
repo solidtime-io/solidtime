@@ -1,10 +1,7 @@
 <script setup lang="ts">
 import parse from 'parse-duration';
 import { onMounted, ref, watch, inject } from 'vue';
-import {
-    formatHumanReadableDuration,
-    getDayJsInstance,
-} from '@/packages/ui/src/utils/time';
+import { formatHumanReadableDuration, getDayJsInstance } from '@/packages/ui/src/utils/time';
 import dayjs from 'dayjs';
 import { twMerge } from 'tailwind-merge';
 import { TextInput } from '@/packages/ui/src';

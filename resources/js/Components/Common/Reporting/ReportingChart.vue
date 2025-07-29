@@ -2,11 +2,7 @@
 import VChart, { THEME_KEY } from 'vue-echarts';
 import { computed, provide, inject, shallowRef, type ComputedRef } from 'vue';
 import LinearGradient from 'zrender/lib/graphic/LinearGradient';
-import {
-    formatDate,
-    formatHumanReadableDuration,
-    formatWeek,
-} from '@/packages/ui/src/utils/time';
+import { formatDate, formatHumanReadableDuration, formatWeek } from '@/packages/ui/src/utils/time';
 import { use } from 'echarts/core';
 import { CanvasRenderer } from 'echarts/renderers';
 import { BarChart } from 'echarts/charts';
@@ -19,14 +15,7 @@ import {
 import type { AggregatedTimeEntries, Organization } from '@/packages/api/src';
 import { useCssVariable } from '@/utils/useCssVariable';
 
-use([
-    CanvasRenderer,
-    BarChart,
-    TitleComponent,
-    GridComponent,
-    TooltipComponent,
-    LegendComponent,
-]);
+use([CanvasRenderer, BarChart, TitleComponent, GridComponent, TooltipComponent, LegendComponent]);
 
 provide(THEME_KEY, 'dark');
 
@@ -174,9 +163,7 @@ const option = computed(() => ({
             class="chart"
             :option="option" />
         <div v-else class="chart flex flex-col items-center justify-center">
-            <p class="text-lg text-text-primary font-semibold">
-                No time entries found
-            </p>
+            <p class="text-lg text-text-primary font-semibold">No time entries found</p>
             <p>Try to change the filters and time range</p>
         </div>
     </div>

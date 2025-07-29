@@ -86,13 +86,9 @@ const userHasValidMailAddress = computed(() => {
         </div>
         <div
             class="whitespace-nowrap px-3 py-4 text-sm text-text-secondary flex space-x-1 items-center font-medium">
-            <CheckCircleIcon
-                v-if="member.is_placeholder === false"
-                class="w-5"></CheckCircleIcon>
+            <CheckCircleIcon v-if="member.is_placeholder === false" class="w-5"></CheckCircleIcon>
             <span v-if="member.is_placeholder === false">Active</span>
-            <UserCircleIcon
-                v-if="member.is_placeholder === true"
-                class="w-5"></UserCircleIcon>
+            <UserCircleIcon v-if="member.is_placeholder === true" class="w-5"></UserCircleIcon>
             <span v-if="member.is_placeholder === true">Inactive</span>
         </div>
         <div
@@ -116,12 +112,8 @@ const userHasValidMailAddress = computed(() => {
                     showMakeMemberPlaceholderModal = true
                 "></MemberMoreOptionsDropdown>
         </div>
-        <MemberEditModal
-            v-model:show="showEditMemberModal"
-            :member="member"></MemberEditModal>
-        <MemberMergeModal
-            v-model:show="showMergeMemberModal"
-            :member="member"></MemberMergeModal>
+        <MemberEditModal v-model:show="showEditMemberModal" :member="member"></MemberEditModal>
+        <MemberMergeModal v-model:show="showMergeMemberModal" :member="member"></MemberMergeModal>
         <MemberMakePlaceholderModal
             v-model:show="showMakeMemberPlaceholderModal"
             :member="member"></MemberMakePlaceholderModal>

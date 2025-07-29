@@ -31,12 +31,7 @@ const indicatorClasses = {
     <Badge :name :size :tag :class="props.class" :color :border>
         <div
             :style="{ backgroundColor: props.color }"
-            :class="
-                twMerge(
-                    indicatorClasses[size],
-                    'inline-block rounded-full shrink-0'
-                )
-            "></div>
+            :class="twMerge(indicatorClasses[size], 'inline-block rounded-full shrink-0')"></div>
         <div class="min-w-0">
             <slot>
                 {{ name }}

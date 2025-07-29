@@ -14,14 +14,7 @@ import { formatHumanReadableDuration } from '@/packages/ui/src/utils/time';
 import { useCssVariable } from '@/utils/useCssVariable';
 import type { Organization } from '@/packages/api/src';
 
-use([
-    CanvasRenderer,
-    PieChart,
-    TitleComponent,
-    GridComponent,
-    TooltipComponent,
-    LegendComponent,
-]);
+use([CanvasRenderer, PieChart, TitleComponent, GridComponent, TooltipComponent, LegendComponent]);
 
 provide(THEME_KEY, 'dark');
 

@@ -33,9 +33,7 @@ export const useClientsStore = defineStore('clients', () => {
         }
     }
 
-    async function createClient(
-        clientBody: CreateClientBody
-    ): Promise<Client | undefined> {
+    async function createClient(clientBody: CreateClientBody): Promise<Client | undefined> {
         const organization = getCurrentOrganizationId();
         if (organization) {
             const response = await handleApiRequestNotifications(
@@ -53,10 +51,7 @@ export const useClientsStore = defineStore('clients', () => {
         }
     }
 
-    async function updateClient(
-        clientId: string,
-        clientBody: UpdateClientBody
-    ) {
+    async function updateClient(clientId: string, clientBody: UpdateClientBody) {
         const organization = getCurrentOrganizationId();
         if (organization) {
             await handleApiRequestNotifications(

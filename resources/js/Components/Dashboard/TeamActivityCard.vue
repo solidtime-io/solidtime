@@ -7,7 +7,7 @@ import { UserGroupIcon } from '@heroicons/vue/20/solid';
 import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import { api } from '@/packages/api/src';
-import { LoadingSpinner } from "@/packages/ui/src";
+import { LoadingSpinner } from '@/packages/ui/src';
 import { router } from '@inertiajs/vue3';
 
 // Get the organization ID using the utility function
@@ -15,17 +15,16 @@ const organizationId = computed(() => getCurrentOrganizationId());
 
 // Set up the query
 const { data: latestTeamActivity, isLoading } = useQuery({
-  queryKey: ['latestTeamActivity', organizationId],
-  queryFn: () => {
-      return api.latestTeamActivity({
-          params: {
-              organization: organizationId.value!
-          }
-      })
-  },
-  enabled: computed(() => !!organizationId.value),
+    queryKey: ['latestTeamActivity', organizationId],
+    queryFn: () => {
+        return api.latestTeamActivity({
+            params: {
+                organization: organizationId.value!,
+            },
+        });
+    },
+    enabled: computed(() => !!organizationId.value),
 });
-
 </script>
 
 <template>
@@ -42,18 +41,13 @@ const { data: latestTeamActivity, isLoading } = useQuery({
                 :description="activity.description"
                 :working="activity.status"></TeamActivityCardEntry>
         </div>
-        <div v-else class="text-center text-gray-500 py-8">
-            No team activity found
-        </div>
+        <div v-else class="text-center text-gray-500 py-8">No team activity found</div>
         <div
             v-if="latestTeamActivity && latestTeamActivity.length <= 1"
             class="text-center flex flex-1 justify-center items-center">
             <div>
-                <UserGroupIcon
-                    class="w-8 text-icon-default inline pb-2"></UserGroupIcon>
-                <h3 class="text-text-primary font-semibold text-sm">
-                    Invite your co-workers
-                </h3>
+                <UserGroupIcon class="w-8 text-icon-default inline pb-2"></UserGroupIcon>
+                <h3 class="text-text-primary font-semibold text-sm">Invite your co-workers</h3>
                 <p class="pb-5 text-sm">You can invite your entire team.</p>
                 <SecondaryButton @click="router.visit(route('members'))"
                     >Go to Members

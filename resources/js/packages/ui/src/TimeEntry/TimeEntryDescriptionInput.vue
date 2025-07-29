@@ -31,8 +31,7 @@ const displaysPlaceholder = computed(() => {
 </script>
 
 <template>
-    <div
-        class="relative min-w-0 flex-1 text-ellipsis whitespace-nowrap overflow-hidden">
+    <div class="relative min-w-0 flex-1 text-ellipsis whitespace-nowrap overflow-hidden">
         <div class="relative text-sm font-medium min-w-0">
             <div
                 :class="[

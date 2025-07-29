@@ -7,11 +7,8 @@ async function goToProjectsOverview(page: Page) {
 }
 
 // Create new project via modal
-test('test that creating and deleting a new client via the modal works', async ({
-    page,
-}) => {
-    const newClientName =
-        'New Project ' + Math.floor(1 + Math.random() * 10000);
+test('test that creating and deleting a new client via the modal works', async ({ page }) => {
+    const newClientName = 'New Project ' + Math.floor(1 + Math.random() * 10000);
     await goToProjectsOverview(page);
     await page.getByRole('button', { name: 'Create Client' }).click();
     await page.getByPlaceholder('Client Name').fill(newClientName);
@@ -28,13 +25,9 @@ test('test that creating and deleting a new client via the modal works', async (
     ]);
 
     await expect(page.getByTestId('client_table')).toContainText(newClientName);
-    const moreButton = page.locator(
-        "[aria-label='Actions for Client " + newClientName + "']"
-    );
+    const moreButton = page.locator("[aria-label='Actions for Client " + newClientName + "']");
     moreButton.click();
-    const deleteButton = page.locator(
-        "[aria-label='Delete Client " + newClientName + "']"
-    );
+    const deleteButton = page.locator("[aria-label='Delete Client " + newClientName + "']");
 
     await Promise.all([
         deleteButton.click(),
@@ -45,9 +38,7 @@ test('test that creating and deleting a new client via the modal works', async (
                 response.status() === 204
         ),
     ]);
-    await expect(page.getByTestId('client_table')).not.toContainText(
-        newClientName
-    );
+    await expect(page.getByTestId('client_table')).not.toContainText(newClientName);
 });
 
 test('test that archiving and unarchiving clients works', async ({ page }) => {

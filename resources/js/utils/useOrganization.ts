@@ -46,9 +46,7 @@ export const useOrganizationStore = defineStore('organization', () => {
         }
     }
 
-    async function updateOrganization(
-        organizationBody: UpdateOrganizationBody
-    ) {
+    async function updateOrganization(organizationBody: UpdateOrganizationBody) {
         const organization = getCurrentOrganizationId();
         if (organization) {
             await handleApiRequestNotifications(

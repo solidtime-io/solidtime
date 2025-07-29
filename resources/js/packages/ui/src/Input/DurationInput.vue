@@ -61,8 +61,7 @@ function updateAndSubmit() {
             @blur="updateDuration"
             @keydown.enter="updateAndSubmit">
         </TextInput>
-        <div
-            class="absolute top-0 right-0 h-full flex items-center px-4 font-medium">
+        <div class="absolute top-0 right-0 h-full flex items-center px-4 font-medium">
             <span> hours </span>
         </div>
     </div>

@@ -1,19 +1,12 @@
 <script setup lang="ts">
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from '@/Components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 import { Button } from '@/Components/ui/button';
 import { RangeCalendar } from '@/Components/ui/range-calendar';
 import { CalendarDate } from '@internationalized/date';
 import { CalendarIcon } from 'lucide-vue-next';
 import { computed, ref, inject, type ComputedRef, watch } from 'vue';
 import { twMerge } from 'tailwind-merge';
-import {
-    getDayJsInstance,
-    getLocalizedDayJs,
-} from '@/packages/ui/src/utils/time';
+import { getDayJsInstance, getLocalizedDayJs } from '@/packages/ui/src/utils/time';
 import { type Organization } from '@/packages/api/src';
 import { getUserTimezone } from '@/packages/ui/src/utils/settings';
 import { formatDate } from '@/packages/ui/src/utils/time';
@@ -72,128 +65,68 @@ const modelValue = computed<CalendarDateRange>({
 const open = ref(false);
 
 function setToday() {
-    emit(
-        'update:start',
-        getLocalizedDayJs().startOf('day').format()
-    );
+    emit('update:start', getLocalizedDayJs().startOf('day').format());
     emit('update:end', getLocalizedDayJs().endOf('day').format());
     open.value = false;
 }
 
 function setThisWeek() {
-    emit(
-        'update:start',
-        getLocalizedDayJs().startOf('week').format()
-    );
+    emit('update:start', getLocalizedDayJs().startOf('week').format());
     emit('update:end', getLocalizedDayJs().endOf('week').format());
     open.value = false;
 }
 
 function setLastWeek() {
-    emit(
-        'update:start',
-        getLocalizedDayJs()
-            .subtract(1, 'week')
-            .startOf('week')
-            .format()
-    );
-    emit(
-        'update:end',
-        getLocalizedDayJs()
-            .subtract(1, 'week')
-            .endOf('week')
-            .format()
-    );
+    emit('update:start', getLocalizedDayJs().subtract(1, 'week').startOf('week').format());
+    emit('update:end', getLocalizedDayJs().subtract(1, 'week').endOf('week').format());
     open.value = false;
 }
 
 function setLast14Days() {
-    emit(
-        'update:start',
-        getLocalizedDayJs().subtract(14, 'days').format()
-    );
+    emit('update:start', getLocalizedDayJs().subtract(14, 'days').format());
     emit('update:end', getLocalizedDayJs().format());
     open.value = false;
 }
 
 function setThisMonth() {
-    emit(
-        'update:start',
-        getLocalizedDayJs().startOf('month').format()
-    );
+    emit('update:start', getLocalizedDayJs().startOf('month').format());
     emit('update:end', getLocalizedDayJs().endOf('month').format());
     open.value = false;
 }
 
 function setLastMonth() {
-    emit(
-        'update:start',
-        getLocalizedDayJs()
-            .subtract(1, 'month')
-            .startOf('month')
-            .format()
-    );
-    emit(
-        'update:end',
-        getLocalizedDayJs()
-            .subtract(1, 'month')
-            .endOf('month')
-            .format()
-    );
+    emit('update:start', getLocalizedDayJs().subtract(1, 'month').startOf('month').format());
+    emit('update:end', getLocalizedDayJs().subtract(1, 'month').endOf('month').format());
     open.value = false;
 }
 
 function setLast30Days() {
-    emit(
-        'update:start',
-        getLocalizedDayJs().subtract(30, 'days').format()
-    );
+    emit('update:start', getLocalizedDayJs().subtract(30, 'days').format());
     emit('update:end', getLocalizedDayJs().format());
     open.value = false;
 }
 
 function setLast90Days() {
-    emit(
-        'update:start',
-        getDayJsInstance()().subtract(90, 'days').format()
-    );
+    emit('update:start', getDayJsInstance()().subtract(90, 'days').format());
     emit('update:end', getDayJsInstance()().format());
     open.value = false;
 }
 
 function setLast12Months() {
-    emit(
-        'update:start',
-        getLocalizedDayJs().subtract(12, 'months').format()
-    );
+    emit('update:start', getLocalizedDayJs().subtract(12, 'months').format());
     emit('update:end', getLocalizedDayJs().format());
     open.value = false;
 }
 
 function setThisYear() {
-    emit(
-        'update:start',
-        getLocalizedDayJs().startOf('year').format()
-    );
+    emit('update:start', getLocalizedDayJs().startOf('year').format());
     emit('update:end', getLocalizedDayJs().endOf('year').format());
     open.value = false;
 }
 
 function setLastYear() {
-    emit(
-        'update:start',
-        getLocalizedDayJs()
-            .subtract(1, 'year')
-            .startOf('year')
-            .format()
-    );
-    emit(
-        'update:end',
-        getLocalizedDayJs()
-            .subtract(1, 'year')
-            .endOf('year')
-            .format()
-    );
+    emit('update:start', getLocalizedDayJs().subtract(1, 'year').startOf('year').format());
+    emit('update:end', getLocalizedDayJs().subtract(1, 'year').endOf('year').format());
     open.value = false;
 }
 
@@ -220,27 +153,12 @@ watch(open, (value) => {
                 <CalendarIcon class="-ml-0.5 text-text-quaternary h-4 w-4" />
                 <template v-if="modelValue.start">
                     <template v-if="modelValue.end">
-                        {{
-                            formatDate(
-                                modelValue.start.toString(),
-                                organization?.date_format
-                            )
-                        }}
+                        {{ formatDate(modelValue.start.toString(), organization?.date_format) }}
                         -
-                        {{
-                            formatDate(
-                                modelValue.end.toString(),
-                                organization?.date_format
-                            )
-                        }}
+                        {{ formatDate(modelValue.end.toString(), organization?.date_format) }}
                     </template>
                     <template v-else>
-                        {{
-                            formatDate(
-                                modelValue.start.toString(),
-                                organization?.date_format
-                            )
-                        }}
+                        {{ formatDate(modelValue.start.toString(), organization?.date_format) }}
                     </template>
                 </template>
                 <template v-else> Pick a date </template>
@@ -250,17 +168,39 @@ watch(open, (value) => {
             <div class="flex divide-x divide-border-secondary">
                 <div
                     class="text-text-primary text-sm flex flex-col space-y-0.5 items-start py-2 px-2">
-                    <Button variant="ghost" size="sm" class="justify-start" @click="setToday">Today</Button>
-                    <Button variant="ghost" size="sm" class="justify-start" @click="setThisWeek">This Week</Button>
-                    <Button variant="ghost" size="sm" class="justify-start" @click="setLastWeek">Last Week</Button>
-                    <Button variant="ghost" size="sm" class="justify-start" @click="setLast14Days">Last 14 days</Button>
-                    <Button variant="ghost" size="sm" class="justify-start" @click="setThisMonth">This Month</Button>
-                    <Button variant="ghost" size="sm" class="justify-start" @click="setLastMonth">Last Month</Button>
-                    <Button variant="ghost" size="sm" class="justify-start" @click="setLast30Days">Last 30 days</Button>
-                    <Button variant="ghost" size="sm" class="justify-start" @click="setLast90Days">Last 90 days</Button>
-                    <Button variant="ghost" size="sm" class="justify-start" @click="setLast12Months">Last 12 months</Button>
-                    <Button variant="ghost" size="sm" class="justify-start" @click="setThisYear">This year</Button>
-                    <Button variant="ghost" size="sm" class="justify-start" @click="setLastYear">Last year</Button>
+                    <Button variant="ghost" size="sm" class="justify-start" @click="setToday"
+                        >Today</Button
+                    >
+                    <Button variant="ghost" size="sm" class="justify-start" @click="setThisWeek"
+                        >This Week</Button
+                    >
+                    <Button variant="ghost" size="sm" class="justify-start" @click="setLastWeek"
+                        >Last Week</Button
+                    >
+                    <Button variant="ghost" size="sm" class="justify-start" @click="setLast14Days"
+                        >Last 14 days</Button
+                    >
+                    <Button variant="ghost" size="sm" class="justify-start" @click="setThisMonth"
+                        >This Month</Button
+                    >
+                    <Button variant="ghost" size="sm" class="justify-start" @click="setLastMonth"
+                        >Last Month</Button
+                    >
+                    <Button variant="ghost" size="sm" class="justify-start" @click="setLast30Days"
+                        >Last 30 days</Button
+                    >
+                    <Button variant="ghost" size="sm" class="justify-start" @click="setLast90Days"
+                        >Last 90 days</Button
+                    >
+                    <Button variant="ghost" size="sm" class="justify-start" @click="setLast12Months"
+                        >Last 12 months</Button
+                    >
+                    <Button variant="ghost" size="sm" class="justify-start" @click="setThisYear"
+                        >This year</Button
+                    >
+                    <Button variant="ghost" size="sm" class="justify-start" @click="setLastYear"
+                        >Last year</Button
+                    >
                 </div>
                 <div class="pl-2">
                     <RangeCalendar

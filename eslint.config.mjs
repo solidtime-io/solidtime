@@ -3,7 +3,7 @@ import eslintConfigPrettier from 'eslint-config-prettier';
 import eslintPluginVue from 'eslint-plugin-vue';
 import globals from 'globals';
 import typescriptEslint from 'typescript-eslint';
-import unusedImports from "eslint-plugin-unused-imports";
+import unusedImports from 'eslint-plugin-unused-imports';
 
 export default typescriptEslint.config(
     { ignores: ['*.d.ts', '**/coverage', '**/dist'] },
@@ -23,18 +23,21 @@ export default typescriptEslint.config(
             },
         },
         plugins: {
-            "unused-imports": unusedImports,
+            'unused-imports': unusedImports,
         },
         rules: {
-            "vue/multi-word-component-names": "off",
-            "@typescript-eslint/no-unused-vars": "off",
-            "unused-imports/no-unused-imports": "error",
-            "unused-imports/no-unused-vars": ["error", {
-                "vars": "all",
-                "varsIgnorePattern": "^_",
-                "args": "after-used",
-                "argsIgnorePattern": "^_",
-            }],
+            'vue/multi-word-component-names': 'off',
+            '@typescript-eslint/no-unused-vars': 'off',
+            'unused-imports/no-unused-imports': 'error',
+            'unused-imports/no-unused-vars': [
+                'error',
+                {
+                    'vars': 'all',
+                    'varsIgnorePattern': '^_',
+                    'args': 'after-used',
+                    'argsIgnorePattern': '^_',
+                },
+            ],
         },
     },
     eslintConfigPrettier

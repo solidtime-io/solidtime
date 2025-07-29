@@ -5,16 +5,13 @@ import { useStorage } from '@vueuse/core';
 const showReleaseInfo = useStorage('showReleaseInfo-desktop', true);
 
 function openDesktopGithubRepo() {
-    window
-        .open('https://github.com/solidtime-io/solidtime-desktop', '_blank')
-        ?.focus();
+    window.open('https://github.com/solidtime-io/solidtime-desktop', '_blank')?.focus();
 }
 </script>
 
 <template>
     <div v-if="showReleaseInfo" class="py-4 hidden lg:block">
-        <div
-            class="rounded-lg px-2.5 py-2 bg-card-background border border-border-secondary">
+        <div class="rounded-lg px-2.5 py-2 bg-card-background border border-border-secondary">
             <div class="flex items-start justify-between">
                 <div
                     class="text-xs pb-1.5 font-semibold text-text-tertiary flex items-center space-x-1">
@@ -29,9 +26,8 @@ function openDesktopGithubRepo() {
             </div>
 
             <p class="text-xs">
-                <span class="font-semibold">Solidtime Desktop Beta</span> is
-                here! Test our brand new clients for Windows, macOS and Linux
-                now.
+                <span class="font-semibold">Solidtime Desktop Beta</span> is here! Test our brand
+                new clients for Windows, macOS and Linux now.
             </p>
             <SecondaryButton
                 size="small"
