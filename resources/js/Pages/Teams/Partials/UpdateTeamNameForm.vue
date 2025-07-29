@@ -34,9 +34,7 @@ const updateTeamName = () => {
     <FormSection @submitted="updateTeamName">
         <template #title> Organization Name</template>
 
-        <template #description>
-            The organization's name and owner information.
-        </template>
+        <template #description> The organization's name and owner information. </template>
 
         <template #form>
             <!-- Organization Owner Information -->
@@ -61,9 +59,7 @@ const updateTeamName = () => {
                     </div>
                 </div>
                 <div>
-                    <Link
-                        v-if="isBillingActivated() && canManageBilling()"
-                        href="/billing">
+                    <Link v-if="isBillingActivated() && canManageBilling()" href="/billing">
                         <PrimaryButton :icon="CreditCardIcon" type="button">
                             Go to Billing
                         </PrimaryButton>
@@ -96,8 +92,7 @@ const updateTeamName = () => {
                     class="mt-1 block w-full border-input-border bg-input-background text-text-primary focus:border-input-border-active rounded-md shadow-sm">
                     <option value="" disabled>Select a currency</option>
                     <option
-                        v-for="(currencyTranslated, currencyKey) in $page.props
-                            .currencies"
+                        v-for="(currencyTranslated, currencyKey) in $page.props.currencies"
                         :key="currencyKey"
                         :value="currencyKey">
                         {{ currencyKey }} - {{ currencyTranslated }}
@@ -108,13 +103,9 @@ const updateTeamName = () => {
         </template>
 
         <template v-if="permissions.canUpdateTeam" #actions>
-            <ActionMessage :on="form.recentlySuccessful" class="me-3">
-                Saved.
-            </ActionMessage>
+            <ActionMessage :on="form.recentlySuccessful" class="me-3"> Saved. </ActionMessage>
 
-            <PrimaryButton
-                :class="{ 'opacity-25': form.processing }"
-                :disabled="form.processing">
+            <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
                 Save
             </PrimaryButton>
         </template>

@@ -42,9 +42,7 @@ watch(open, (isOpen) => {
 
 const filteredClients = computed(() => {
     return props.clients.filter((client) => {
-        return client.name
-            .toLowerCase()
-            .includes(searchValue.value?.toLowerCase()?.trim() || '');
+        return client.name.toLowerCase().includes(searchValue.value?.toLowerCase()?.trim() || '');
     });
 });
 
@@ -84,9 +82,7 @@ function updateValue(client: { id: string | null; name: string }) {
             <slot name="trigger"></slot>
         </template>
         <template #content>
-            <UseFocusTrap
-                v-if="open"
-                :options="{ immediate: true, allowOutsideClick: true }">
+            <UseFocusTrap v-if="open" :options="{ immediate: true, allowOutsideClick: true }">
                 <ComboboxRoot
                     v-model:search-term="searchValue"
                     :open="open"
@@ -100,14 +96,11 @@ function updateValue(client: { id: string | null; name: string }) {
                             placeholder="Search for a client..." />
                     </ComboboxAnchor>
                     <ComboboxContent>
-                        <ComboboxViewport
-                            class="w-60 max-h-60 overflow-y-scroll">
+                        <ComboboxViewport class="w-60 max-h-60 overflow-y-scroll">
                             <ComboboxItem
                                 :value="{ id: null, name: 'No Client' }"
                                 class="data-[highlighted]:bg-card-background-active">
-                                <ClientDropdownItem
-                                    :selected="model === null"
-                                    name="No Client" />
+                                <ClientDropdownItem :selected="model === null" name="No Client" />
                             </ComboboxItem>
                             <ComboboxItem
                                 v-for="client in filteredClients"
@@ -120,19 +113,13 @@ function updateValue(client: { id: string | null; name: string }) {
                                     :name="client.name" />
                             </ComboboxItem>
                             <div
-                                v-if="
-                                    searchValue.length > 0 &&
-                                    filteredClients.length === 0
-                                "
+                                v-if="searchValue.length > 0 && filteredClients.length === 0"
                                 class="bg-card-background-active">
                                 <div
                                     class="flex space-x-3 items-center px-4 py-3 text-xs text-text-primary font-medium border-t rounded-b-lg border-card-background-separator"
                                     @click="addClientIfNoneExists">
                                     <PlusCircleIcon class="w-5 flex-shrink-0" />
-                                    <span
-                                        >Add "{{ searchValue }}" as a new
-                                        Client</span
-                                    >
+                                    <span>Add "{{ searchValue }}" as a new Client</span>
                                 </div>
                             </div>
                         </ComboboxViewport>

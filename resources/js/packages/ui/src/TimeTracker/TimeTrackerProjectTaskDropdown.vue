@@ -12,12 +12,7 @@ import type {
 } from '@/packages/api/src';
 import ProjectBadge from '@/packages/ui/src/Project/ProjectBadge.vue';
 import Badge from '@/packages/ui/src/Badge.vue';
-import {
-    PlusIcon,
-    PlusCircleIcon,
-    MinusIcon,
-    XMarkIcon,
-} from '@heroicons/vue/16/solid';
+import { PlusIcon, PlusCircleIcon, MinusIcon, XMarkIcon } from '@heroicons/vue/16/solid';
 import ProjectCreateModal from '@/packages/ui/src/Project/ProjectCreateModal.vue';
 import { twMerge } from 'tailwind-merge';
 
@@ -58,9 +53,7 @@ const props = withDefaults(
         projects: Project[];
         tasks: Task[];
         clients: Client[];
-        createProject: (
-            project: CreateProjectBody
-        ) => Promise<Project | undefined>;
+        createProject: (project: CreateProjectBody) => Promise<Project | undefined>;
         createClient: (client: CreateClientBody) => Promise<Client | undefined>;
         currency: string;
         emptyPlaceholder?: string;
@@ -95,9 +88,7 @@ function addProjectToFilterObject(
         (client) => client.id === project.client_id
     );
 
-    const client = props.clients.find(
-        (client) => client.id === project.client_id
-    );
+    const client = props.clients.find((client) => client.id === project.client_id);
 
     if (projectClientIndex !== -1) {
         // client already exists in filter array
@@ -216,20 +207,10 @@ watchEffect(() => {
             (!filterProject.is_archived || project.value === filterProject.id)
         ) {
             // search term matches project name
-            addProjectToFilterObject(
-                tempFilteredClients,
-                filterProject,
-                filteredTasks,
-                false
-            );
+            addProjectToFilterObject(tempFilteredClients, filterProject, filteredTasks, false);
         } else if (filteredTasks.length > 0 && !filterProject.is_archived) {
             // search term matches task name
-            addProjectToFilterObject(
-                tempFilteredClients,
-                filterProject,
-                filteredTasks,
-                true
-            );
+            addProjectToFilterObject(tempFilteredClients, filterProject, filteredTasks, true);
         }
     }
 
@@ -316,11 +297,8 @@ function moveHighlightUp() {
     // check if it is a project id
     if (currentHighlightedIndex === -1) {
         // the ID is a task ID
-        const currentProjectWithTasks = filteredProjects.value.find(
-            (projectWithTasks) =>
-                projectWithTasks.tasks.some(
-                    (task) => task.id === highlightedItemId.value
-                )
+        const currentProjectWithTasks = filteredProjects.value.find((projectWithTasks) =>
+            projectWithTasks.tasks.some((task) => task.id === highlightedItemId.value)
         );
         if (currentProjectWithTasks) {
             const taskIndex = currentProjectWithTasks.tasks.findIndex(
@@ -334,34 +312,27 @@ function moveHighlightUp() {
                 highlightedItemId.value = currentProjectWithTasks.id;
                 return;
             }
-            highlightedItemId.value =
-                currentProjectWithTasks.tasks[taskIndex - 1].id;
+            highlightedItemId.value = currentProjectWithTasks.tasks[taskIndex - 1].id;
         }
     }
     if (currentHighlightedIndex === 0) {
         // selected project is the first project in the list
         // highlight the last project or the last task of the last project
-        const lastProject =
-            filteredProjects.value[filteredProjects.value.length - 1];
+        const lastProject = filteredProjects.value[filteredProjects.value.length - 1];
         if (lastProject.tasks.length > 0 && lastProject.expanded) {
             // highlight last task of last project
-            highlightedItemId.value =
-                lastProject.tasks[lastProject.tasks.length - 1].id;
+            highlightedItemId.value = lastProject.tasks[lastProject.tasks.length - 1].id;
         } else {
-            highlightedItemId.value =
-                filteredProjects.value[filteredProjects.value.length - 1].id;
+            highlightedItemId.value = filteredProjects.value[filteredProjects.value.length - 1].id;
         }
     } else {
         // selected item is a project that is not the first project in the list
-        const previousProject =
-            filteredProjects.value[currentHighlightedIndex - 1];
+        const previousProject = filteredProjects.value[currentHighlightedIndex - 1];
         if (previousProject.tasks.length > 0 && previousProject.expanded) {
             // highlight last task of previous project
-            highlightedItemId.value =
-                previousProject.tasks[previousProject.tasks.length - 1].id;
+            highlightedItemId.value = previousProject.tasks[previousProject.tasks.length - 1].id;
         } else {
-            highlightedItemId.value =
-                filteredProjects.value[currentHighlightedIndex - 1].id;
+            highlightedItemId.value = filteredProjects.value[currentHighlightedIndex - 1].id;
         }
     }
 }
@@ -375,11 +346,8 @@ function moveHighlightDown() {
     // check if it is a project id
     if (currentHighlightedIndex === -1) {
         // the ID is a task ID
-        const currentProjectWithTasks = filteredProjects.value.find(
-            (projectWithTasks) =>
-                projectWithTasks.tasks.some(
-                    (task) => task.id === highlightedItemId.value
-                )
+        const currentProjectWithTasks = filteredProjects.value.find((projectWithTasks) =>
+            projectWithTasks.tasks.some((task) => task.id === highlightedItemId.value)
         );
         if (currentProjectWithTasks) {
             const taskIndex = currentProjectWithTasks.tasks.findIndex(
@@ -390,27 +358,22 @@ function moveHighlightDown() {
             }
             if (taskIndex === currentProjectWithTasks.tasks.length - 1) {
                 // highlight the next project if it was the last task in current project
-                const projectIndex = filteredProjects.value.indexOf(
-                    currentProjectWithTasks
-                );
+                const projectIndex = filteredProjects.value.indexOf(currentProjectWithTasks);
                 if (projectIndex === filteredProjects.value.length - 1) {
                     // highlight the first project if it was the last project
                     highlightedItemId.value = filteredProjects.value[0].id;
                 } else {
-                    highlightedItemId.value =
-                        filteredProjects.value[projectIndex + 1].id;
+                    highlightedItemId.value = filteredProjects.value[projectIndex + 1].id;
                 }
                 return;
             }
-            highlightedItemId.value =
-                currentProjectWithTasks.tasks[taskIndex + 1].id;
+            highlightedItemId.value = currentProjectWithTasks.tasks[taskIndex + 1].id;
         }
     }
     if (currentHighlightedIndex === filteredProjects.value.length - 1) {
         // selected project is the last project in the list
         // highlight the first project or the last project of the last project
-        const lastProject =
-            filteredProjects.value[filteredProjects.value.length - 1];
+        const lastProject = filteredProjects.value[filteredProjects.value.length - 1];
         if (lastProject.tasks.length > 0 && lastProject.expanded) {
             // highlight last task of last project
             highlightedItemId.value = lastProject.tasks[0].id;
@@ -419,17 +382,12 @@ function moveHighlightDown() {
         }
     } else {
         // selected item is a project that is not the last project in the list
-        const currentProjectWithTasks =
-            filteredProjects.value[currentHighlightedIndex];
-        if (
-            currentProjectWithTasks.tasks.length > 0 &&
-            currentProjectWithTasks.expanded
-        ) {
+        const currentProjectWithTasks = filteredProjects.value[currentHighlightedIndex];
+        if (currentProjectWithTasks.tasks.length > 0 && currentProjectWithTasks.expanded) {
             // highlight last task of previous project
             highlightedItemId.value = currentProjectWithTasks.tasks[0].id;
         } else {
-            highlightedItemId.value =
-                filteredProjects.value[currentHighlightedIndex + 1].id;
+            highlightedItemId.value = filteredProjects.value[currentHighlightedIndex + 1].id;
         }
     }
 }
@@ -481,15 +439,11 @@ function collapseProject() {
 }
 
 const currentProject = computed(() => {
-    return props.projects.find(
-        (iteratingProject) => iteratingProject.id === project.value
-    );
+    return props.projects.find((iteratingProject) => iteratingProject.id === project.value);
 });
 
 const currentTask = computed(() => {
-    return props.tasks.find(
-        (iteratingTasks) => iteratingTasks.id === task.value
-    );
+    return props.tasks.find((iteratingTasks) => iteratingTasks.id === task.value);
 });
 
 const selectedProjectName = computed(() => {
@@ -518,8 +472,7 @@ function setHighlightItemId(newId: string) {
 
 function selectTask(taskId: string) {
     task.value = taskId;
-    project.value =
-        props.tasks.find((task) => task.id === taskId)?.project_id || null;
+    project.value = props.tasks.find((task) => task.id === taskId)?.project_id || null;
     open.value = false;
     searchValue.value = '';
     emit('changed', project.value, task.value);
@@ -569,9 +522,7 @@ const showCreateProject = ref(false);
                     <ChevronRightIcon
                         v-if="currentTask"
                         class="w-4 lg:w-5 text-text-secondary shrink-0"></ChevronRightIcon>
-                    <div
-                        v-if="currentTask"
-                        class="min-w-0 shrink text-xs lg:text-sm truncate">
+                    <div v-if="currentTask" class="min-w-0 shrink text-xs lg:text-sm truncate">
                         {{ currentTask.name }}
                     </div>
                 </div>
@@ -587,9 +538,7 @@ const showCreateProject = ref(false);
             </ProjectBadge>
         </template>
         <template #content>
-            <UseFocusTrap
-                v-if="open"
-                :options="{ immediate: true, allowOutsideClick: true }">
+            <UseFocusTrap v-if="open" :options="{ immediate: true, allowOutsideClick: true }">
                 <input
                     ref="searchInput"
                     :value="searchValue"
@@ -607,9 +556,7 @@ const showCreateProject = ref(false);
                     ref="dropdownViewport"
                     class="min-w-[350px] max-h-[350px] overflow-y-scroll relative"
                     @mousemove="mouseEnterHighlightActivated = true">
-                    <template
-                        v-for="client in filteredResults"
-                        :key="client.id">
+                    <template v-for="client in filteredResults" :key="client.id">
                         <div
                             v-if="client.id !== 'no_project_no_client'"
                             class="w-full pb-1 pt-2 px-2 text-text-tertiary text-xs font-semibold flex space-x-1 items-center">
@@ -630,27 +577,17 @@ const showCreateProject = ref(false);
                                     class="rounded-lg"
                                     :class="{
                                         'bg-card-background-active':
-                                            projectWithTasks.id ===
-                                            highlightedItemId,
+                                            projectWithTasks.id === highlightedItemId,
                                     }">
                                     <ProjectDropdownItem
                                         class="hover:!bg-transparent"
-                                        :selected="
-                                            isProjectSelected(projectWithTasks)
-                                        "
+                                        :selected="isProjectSelected(projectWithTasks)"
                                         :name="projectWithTasks.name"
                                         :color="projectWithTasks.color"
-                                        @mouseenter="
-                                            setHighlightItemId(
-                                                projectWithTasks.id
-                                            )
-                                        ">
+                                        @mouseenter="setHighlightItemId(projectWithTasks.id)">
                                         <template #actions>
                                             <button
-                                                v-if="
-                                                    projectWithTasks.tasks
-                                                        .length > 0
-                                                "
+                                                v-if="projectWithTasks.tasks.length > 0"
                                                 tabindex="-1"
                                                 class="px-2 py-0.5 mr-2 relative transition items-center rounded flex space-x-0.5 text-xs"
                                                 :class="{
@@ -667,11 +604,7 @@ const showCreateProject = ref(false);
                                                     }
                                                 ">
                                                 <span
-                                                    >{{
-                                                        projectWithTasks.tasks
-                                                            .length
-                                                    }}
-                                                    Tasks</span
+                                                    >{{ projectWithTasks.tasks.length }} Tasks</span
                                                 >
                                                 <ChevronDownIcon
                                                     :class="{
@@ -684,31 +617,25 @@ const showCreateProject = ref(false);
                                     </ProjectDropdownItem>
                                 </div>
                             </div>
-                            <div
-                                v-if="projectWithTasks.expanded"
-                                class="bg-quaternary">
+                            <div v-if="projectWithTasks.expanded" class="bg-quaternary">
                                 <div
                                     v-for="task in projectWithTasks.tasks"
                                     :key="task.id"
                                     :data-task-id="task.id"
                                     :class="{
-                                        'bg-card-background-active':
-                                            task.id === highlightedItemId,
+                                        'bg-card-background-active': task.id === highlightedItemId,
                                     }"
                                     class="flex items-center space-x-2 w-full px-5 py-1.5 text-start text-xs font-semibold leading-5 text-text-primary focus:outline-none focus:bg-card-background-active transition duration-150 ease-in-out"
                                     @click="selectTask(task.id)"
                                     @mouseenter="setHighlightItemId(task.id)">
-                                    <MinusIcon
-                                        class="w-3 h-3 text-text-quaternary"></MinusIcon>
+                                    <MinusIcon class="w-3 h-3 text-text-quaternary"></MinusIcon>
                                     <span>{{ task.name }}</span>
                                 </div>
                             </div>
                         </template>
                     </template>
                 </div>
-                <div
-                    v-if="canCreateProject"
-                    class="hover:bg-card-background-active rounded-b-lg">
+                <div v-if="canCreateProject" class="hover:bg-card-background-active rounded-b-lg">
                     <button
                         class="text-text-primary flex space-x-3 items-center px-4 py-3 text-xs font-semibold border-t border-card-background-separator"
                         @click="

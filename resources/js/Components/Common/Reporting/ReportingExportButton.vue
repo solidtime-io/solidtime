@@ -27,15 +27,11 @@ function triggerDownload(format: ExportFormat) {
 <template>
     <Dropdown align="end">
         <template #trigger>
-            <SecondaryButton :icon="ArrowDownTrayIcon" :loading>
-                Export
-            </SecondaryButton>
+            <SecondaryButton :icon="ArrowDownTrayIcon" :loading> Export </SecondaryButton>
         </template>
         <template #content>
             <div class="flex flex-col space-y-1 p-1.5">
-                <SecondaryButton
-                    class="border-0 px-2"
-                    @click="triggerDownload('pdf')">
+                <SecondaryButton class="border-0 px-2" @click="triggerDownload('pdf')">
                     <div class="flex items-center space-x-2">
                         <span> Export as PDF </span>
                         <LockClosedIcon
@@ -43,27 +39,20 @@ function triggerDownload(format: ExportFormat) {
                             class="w-3.5 text-text-tertiary"></LockClosedIcon>
                     </div>
                 </SecondaryButton>
-                <SecondaryButton
-                    class="border-0 px-2"
-                    @click="triggerDownload('xlsx')"
+                <SecondaryButton class="border-0 px-2" @click="triggerDownload('xlsx')"
                     >Export as Excel</SecondaryButton
                 >
-                <SecondaryButton
-                    class="border-0 px-2"
-                    @click="triggerDownload('csv')"
+                <SecondaryButton class="border-0 px-2" @click="triggerDownload('csv')"
                     >Export as CSV</SecondaryButton
                 >
-                <SecondaryButton
-                    class="border-0 px-2"
-                    @click="triggerDownload('ods')"
+                <SecondaryButton class="border-0 px-2" @click="triggerDownload('ods')"
                     >Export as ODS
                 </SecondaryButton>
             </div>
         </template>
     </Dropdown>
     <UpgradeModal v-model:show="showPremiumModal">
-        <strong>PDF Reports</strong> are only available in solidtime
-        Professional.
+        <strong>PDF Reports</strong> are only available in solidtime Professional.
     </UpgradeModal>
 </template>
 

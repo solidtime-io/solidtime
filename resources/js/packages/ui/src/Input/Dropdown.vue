@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
-import { watch } from "vue";
+import { watch } from 'vue';
 
 const props = withDefaults(
     defineProps<{
@@ -42,7 +42,6 @@ watch(open, (value) => {
         emit('submit');
     }
 });
-
 </script>
 
 <template>

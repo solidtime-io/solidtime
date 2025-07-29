@@ -26,18 +26,8 @@ const iconClass = computed(() => {
 </script>
 
 <template>
-    <Button
-        variant="outline"
-        size="sm"
-        :class="
-            twMerge(
-                activeClass
-            )
-        ">
-        <component
-            :is="icon"
-            :class="iconClass"
-        ></component>
+    <Button variant="outline" size="sm" :class="twMerge(activeClass)">
+        <component :is="icon" :class="iconClass"></component>
         <span class="text-nowrap"> {{ title }} </span>
         <div
             v-if="count"

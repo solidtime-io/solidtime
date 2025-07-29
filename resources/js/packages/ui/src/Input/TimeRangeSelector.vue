@@ -2,10 +2,7 @@
 import { defineProps, nextTick, ref, watch } from 'vue';
 import { useFocusWithin } from '@vueuse/core';
 import DatePicker from '@/packages/ui/src/Input/DatePicker.vue';
-import {
-    getDayJsInstance,
-    getLocalizedDayJs,
-} from '@/packages/ui/src/utils/time';
+import { getDayJsInstance, getLocalizedDayJs } from '@/packages/ui/src/utils/time';
 import dayjs from 'dayjs';
 import TimePickerSimple from '@/packages/ui/src/Input/TimePickerSimple.vue';
 
@@ -18,9 +15,7 @@ const props = defineProps<{
 // The timestamps for the changed event are UTC
 const emit = defineEmits(['changed', 'close']);
 
-const tempStart = ref(
-    props.start ? getLocalizedDayJs(props.start).format() : dayjs().format()
-);
+const tempStart = ref(props.start ? getLocalizedDayJs(props.start).format() : dayjs().format());
 const tempEnd = ref(props.end ? getLocalizedDayJs(props.end).format() : null);
 
 watch(props, () => {
@@ -29,9 +24,7 @@ watch(props, () => {
 });
 function updateTimeEntry() {
     const tempStartUtc = getDayJsInstance()(tempStart.value).utc().format();
-    const tempEndUtc = tempEnd.value
-        ? getDayJsInstance()(tempEnd.value).utc().format()
-        : null;
+    const tempEndUtc = tempEnd.value ? getDayJsInstance()(tempEnd.value).utc().format() : null;
     if (tempStartUtc !== props.start || tempEndUtc !== props.end) {
         emit(
             'changed',
@@ -55,9 +48,7 @@ watch(focused, (newValue, oldValue) => {
     <div
         ref="dropdownContent"
         class="grid grid-cols-2 divide-x divide-card-background-separator text-center py-2">
-        <div
-            class="px-2"
-            @keydown.enter.prevent="nextTick(() => emit('close'))">
+        <div class="px-2" @keydown.enter.prevent="nextTick(() => emit('close'))">
             <div class="font-semibold text-text-primary text-sm pb-2">Start</div>
             <div class="space-y-2">
                 <TimePickerSimple

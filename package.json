@@ -8,7 +8,9 @@
         "lint:fix": "eslint --fix resources/js",
         "type-check": "vue-tsc --noEmit",
         "test:e2e": "rm -rf test-results/.auth && npx playwright test",
-        "zod:generate": "npx openapi-zod-client http://localhost:80/docs/api.json --output resources/js/packages/api/src/openapi.json.client.ts --base-url /api"
+        "zod:generate": "npx openapi-zod-client http://localhost:80/docs/api.json --output resources/js/packages/api/src/openapi.json.client.ts --base-url /api",
+        "format": "prettier --write './**/*.{js,jsx,cjs,mjs,ts,tsx,cts,mts,vue}'",
+        "format:check": "prettier --check './**/*.{js,jsx,cjs,mjs,ts,tsx,cts,mts,vue}'"
     },
     "devDependencies": {
         "@eslint/eslintrc": "^3.2.0",

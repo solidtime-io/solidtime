@@ -18,11 +18,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
 
     const showActionBlockedModal = ref(false);
 
-    function addNotification(
-        type: NotificationType,
-        title: string,
-        message?: string
-    ) {
+    function addNotification(type: NotificationType, title: string, message?: string) {
         const uuid = Math.random().toString(36).substring(7);
         notifications.value.push({ title, message, type, uuid });
 
@@ -32,9 +28,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
     }
 
     function removeNotification(uuid: string) {
-        const index = notifications.value.findIndex(
-            (notification) => notification.uuid === uuid
-        );
+        const index = notifications.value.findIndex((notification) => notification.uuid === uuid);
         if (index !== -1) {
             notifications.value.splice(index, 1);
         }
@@ -57,10 +51,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
             return response;
         } catch (error) {
             if (axios.isAxiosError(error)) {
-                if (
-                    error?.response?.status === 403 ||
-                    error?.response?.status === 400
-                ) {
+                if (error?.response?.status === 403 || error?.response?.status === 400) {
                     if (
                         error?.response?.data?.key ===
                         'organization_has_no_subscription_but_multiple_members'
@@ -93,10 +84,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
                         router.get(route('login'));
                     }
                 } else {
-                    addNotification(
-                        'error',
-                        'The action failed. Please try again later.'
-                    );
+                    addNotification('error', 'The action failed. Please try again later.');
                 }
             }
             throw new Error('Failed to handle API request');

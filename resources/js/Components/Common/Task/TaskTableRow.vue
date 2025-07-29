@@ -54,10 +54,8 @@ const showTaskEditModal = ref(false);
             </span>
             <span v-else> -- </span>
         </div>
-        <div
-            class="whitespace-nowrap px-3 flex items-center text-sm text-text-secondary">
-            <UpgradeBadge
-                v-if="!isAllowedToPerformPremiumAction()"></UpgradeBadge>
+        <div class="whitespace-nowrap px-3 flex items-center text-sm text-text-secondary">
+            <UpgradeBadge v-if="!isAllowedToPerformPremiumAction()"></UpgradeBadge>
             <EstimatedTimeProgress
                 v-else-if="task.estimated_time"
                 :estimated="task.estimated_time"
@@ -83,9 +81,7 @@ const showTaskEditModal = ref(false);
                 @edit="showTaskEditModal = true"
                 @delete="deleteTask"></TaskMoreOptionsDropdown>
         </div>
-        <TaskEditModal
-            v-model:show="showTaskEditModal"
-            :task="task"></TaskEditModal>
+        <TaskEditModal v-model:show="showTaskEditModal" :task="task"></TaskEditModal>
     </TableRow>
 </template>
 

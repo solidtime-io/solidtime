@@ -7,10 +7,7 @@ import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import TimeTrackerProjectTaskDropdown from '@/packages/ui/src/TimeTracker/TimeTrackerProjectTaskDropdown.vue';
 import InputLabel from '@/packages/ui/src/Input/InputLabel.vue';
 import { TagIcon } from '@heroicons/vue/20/solid';
-import {
-    getDayJsInstance,
-    getLocalizedDayJs,
-} from '@/packages/ui/src/utils/time';
+import { getDayJsInstance, getLocalizedDayJs } from '@/packages/ui/src/utils/time';
 import type {
     CreateClientBody,
     CreateProjectBody,
@@ -29,16 +26,14 @@ import DurationHumanInput from '@/packages/ui/src/Input/DurationHumanInput.vue';
 
 import { InformationCircleIcon } from '@heroicons/vue/20/solid';
 import type { Tag, Task } from '@/packages/api/src';
-import TimePickerSimple from "@/packages/ui/src/Input/TimePickerSimple.vue";
+import TimePickerSimple from '@/packages/ui/src/Input/TimePickerSimple.vue';
 
 const show = defineModel('show', { default: false });
 const saving = ref(false);
 
 const props = defineProps<{
     enableEstimatedTime: boolean;
-    createTimeEntry: (
-        entry: Omit<CreateTimeEntryBody, 'member_id'>
-    ) => Promise<void>;
+    createTimeEntry: (entry: Omit<CreateTimeEntryBody, 'member_id'>) => Promise<void>;
     createClient: (client: CreateClientBody) => Promise<Client | undefined>;
     createProject: (project: CreateProjectBody) => Promise<Project | undefined>;
     createTag: (name: string) => Promise<Tag | undefined>;
@@ -83,9 +78,7 @@ watch(
     }
 );
 
-const localStart = ref(
-    getLocalizedDayJs(timeEntryDefaultValues.start).format()
-);
+const localStart = ref(getLocalizedDayJs(timeEntryDefaultValues.start).format());
 
 const localEnd = ref(getLocalizedDayJs(timeEntryDefaultValues.end).format());
 
@@ -143,15 +136,12 @@ type BillableOption = {
                         @keydown.enter="submit" />
                 </div>
             </div>
-            <div
-                class="sm:flex justify-between items-end space-y-2 sm:space-y-0 pt-4 sm:space-x-4">
+            <div class="sm:flex justify-between items-end space-y-2 sm:space-y-0 pt-4 sm:space-x-4">
                 <div class="flex w-full items-center space-x-2 justify-between">
                     <div class="flex-1 min-w-0">
                         <TimeTrackerProjectTaskDropdown
                             v-model:project="timeEntry.project_id"
-                            v-model:task="
-                                timeEntry.task_id
-                            "
+                            v-model:task="timeEntry.task_id"
                             :clients
                             :create-project
                             :create-client
@@ -161,19 +151,15 @@ type BillableOption = {
                             class="bg-input-background"
                             :projects="projects"
                             :tasks="tasks"
-                            :enable-estimated-time="enableEstimatedTime"></TimeTrackerProjectTaskDropdown>
+                            :enable-estimated-time="
+                                enableEstimatedTime
+                            "></TimeTrackerProjectTaskDropdown>
                     </div>
                     <div class="flex items-center space-x-2">
                         <div class="flex-col">
-                            <TagDropdown
-                                v-model="timeEntry.tags"
-                                :create-tag
-                                :tags="tags">
+                            <TagDropdown v-model="timeEntry.tags" :create-tag :tags="tags">
                                 <template #trigger>
-                                    <Badge
-                                        class="bg-input-background"
-                                        tag="button"
-                                        size="xlarge">
+                                    <Badge class="bg-input-background" tag="button" size="xlarge">
                                         <TagIcon
                                             v-if="timeEntry.tags.length === 0"
                                             class="w-4"></TagIcon>
@@ -190,12 +176,8 @@ type BillableOption = {
                         <div class="flex-col">
                             <SelectDropdown
                                 v-model="billableProxy"
-                                :get-key-from-item="
-                                    (item: BillableOption) => item.value
-                                "
-                                :get-name-for-item="
-                                    (item: BillableOption) => item.label
-                                "
+                                :get-key-from-item="(item: BillableOption) => item.value"
+                                :get-name-for-item="(item: BillableOption) => item.label"
                                 :items="[
                                     {
                                         label: 'Billable',
@@ -207,16 +189,10 @@ type BillableOption = {
                                     },
                                 ]">
                                 <template #trigger>
-                                    <Badge
-                                        class="bg-input-background"
-                                        tag="button"
-                                        size="xlarge">
-                                        <BillableIcon
-                                            class="h-4"></BillableIcon>
+                                    <Badge class="bg-input-background" tag="button" size="xlarge">
+                                        <BillableIcon class="h-4"></BillableIcon>
                                         <span>{{
-                                            timeEntry.billable
-                                                ? 'Billable'
-                                                : 'Non-Billable'
+                                            timeEntry.billable ? 'Billable' : 'Non-Billable'
                                         }}</span>
                                     </Badge>
                                 </template>
@@ -246,10 +222,7 @@ type BillableOption = {
                 <div class="">
                     <InputLabel>Start</InputLabel>
                     <div class="flex flex-col items-center space-y-2 mt-1">
-                        <TimePickerSimple
-
-                            v-model="localStart"
-                            size="large"></TimePickerSimple>
+                        <TimePickerSimple v-model="localStart" size="large"></TimePickerSimple>
                         <DatePicker
                             v-model="localStart"
                             tabindex="1"
@@ -259,9 +232,7 @@ type BillableOption = {
                 <div class="">
                     <InputLabel>End</InputLabel>
                     <div class="flex flex-col items-center space-y-2 mt-1">
-                        <TimePickerSimple
-                            v-model="localEnd"
-                            size="large"></TimePickerSimple>
+                        <TimePickerSimple v-model="localEnd" size="large"></TimePickerSimple>
                         <DatePicker
                             v-model="localEnd"
                             tabindex="1"

@@ -36,10 +36,7 @@ const sizeClasses = {
                 props.class
             )
         ">
-        <span
-            :class="
-                twMerge('flex items-center ', props.icon ? 'space-x-1.5' : '')
-            ">
+        <span :class="twMerge('flex items-center ', props.icon ? 'space-x-1.5' : '')">
             <LoadingSpinner v-if="loading"></LoadingSpinner>
             <component
                 :is="props.icon"

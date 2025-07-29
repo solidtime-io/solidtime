@@ -1,9 +1,5 @@
 <script setup lang="ts">
-import {
-    TrashIcon,
-    PencilSquareIcon,
-    CheckCircleIcon,
-} from '@heroicons/vue/20/solid';
+import { TrashIcon, PencilSquareIcon, CheckCircleIcon } from '@heroicons/vue/20/solid';
 import type { Task } from '@/packages/api/src';
 import { canDeleteTasks, canUpdateTasks } from '@/utils/permissions';
 import {

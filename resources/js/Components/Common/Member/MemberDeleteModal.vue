@@ -9,7 +9,7 @@ import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
 import Checkbox from '@/packages/ui/src/Input/Checkbox.vue';
 import { useNotificationsStore } from '@/utils/notification';
 import { getCurrentOrganizationId } from '@/utils/useUser';
-import InputLabel from '@/packages/ui/src/Input/InputLabel.vue';    
+import InputLabel from '@/packages/ui/src/Input/InputLabel.vue';
 import InputError from '@/packages/ui/src/Input/InputError.vue';
 import { useMembersStore } from '@/utils/useMembers';
 
@@ -30,7 +30,7 @@ const deleteMutation = useMutation({
         if (!organizationId) {
             throw new Error('No organization ID found');
         }
-        
+
         return api.removeMember(undefined, {
             params: {
                 member: props.member.id,
@@ -44,7 +44,7 @@ const deleteMutation = useMutation({
     onSuccess: () => {
         close();
         useMembersStore().fetchMembers();
-    }
+    },
 });
 
 const form = useForm({
@@ -70,77 +70,77 @@ const close = () => {
 <template>
     <Modal :show="show" max-width="md" @close="close">
         <div class="p-6">
-            <h2 class="text-lg font-medium text-text-primary">
-                Delete Member
-            </h2>
+            <h2 class="text-lg font-medium text-text-primary">Delete Member</h2>
 
             <div class="mt-4 text-sm text-text-secondary">
                 <p class="mb-4">
                     Are you sure you want to delete {{ member.name }}? This action cannot be undone.
                 </p>
-                <p class="mb-4">
-                    This will permanently delete:
-                </p>
+                <p class="mb-4">This will permanently delete:</p>
 
-                    <ul class="list-disc ml-6 mt-2">
-                        <li>All time entries created by this member</li>
-                        <li>Their project assignments</li>
-                        <li>Their organization membership</li>
-                    </ul>
+                <ul class="list-disc ml-6 mt-2">
+                    <li>All time entries created by this member</li>
+                    <li>Their project assignments</li>
+                    <li>Their organization membership</li>
+                </ul>
                 <p class="pt-4">
-                    <strong>Note:</strong> Deleting time entries will affect all reports and statistics.
-                    If you want to keep the time entries but remove the member from your organization, you can convert them to a placeholder user instead. Placeholder users are not charged and their time entries remain intact for reporting purposes.
+                    <strong>Note:</strong> Deleting time entries will affect all reports and
+                    statistics. If you want to keep the time entries but remove the member from your
+                    organization, you can convert them to a placeholder user instead. Placeholder
+                    users are not charged and their time entries remain intact for reporting
+                    purposes.
                 </p>
             </div>
 
             <form
-class="mt-6" @submit="
-      (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        form.handleSubmit();
-      }
-    ">
+                class="mt-6"
+                @submit="
+                    (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        form.handleSubmit();
+                    }
+                ">
                 <div class="flex items-start">
-                        <form.Field
-                            name="confirmDelete"
-                            :validators="{
-                                onSubmit: ({value}) => {
-                                    if (!value) {
-                                        return 'You must confirm that you understand the consequences of this action';
-                                    }
-                                    return '';
+                    <form.Field
+                        name="confirmDelete"
+                        :validators="{
+                            onSubmit: ({ value }) => {
+                                if (!value) {
+                                    return 'You must confirm that you understand the consequences of this action';
                                 }
-                            }"
-                        >
+                                return '';
+                            },
+                        }">
                         <template #default="{ field }">
                             <div class="flex flex-col">
-                            <div class="flex items-center space-x-3 text-sm">
-                                <Checkbox
-                                    :id="field.name"
-                                    :name="field.name"
-                                    :checked="field.state.value"
-                                    @update:checked="field.handleChange"
-                                    @blur="field.handleBlur"
-                                />
-                                <InputLabel :for="field.name" class="font-medium text-text-primary">
-                                I understand that this will permanently delete all data related to this member
-                                </InputLabel>
-                            </div>
-                            <InputError class="pl-7 pt-2" :message="field.state.meta.errors[0]" />
+                                <div class="flex items-center space-x-3 text-sm">
+                                    <Checkbox
+                                        :id="field.name"
+                                        :name="field.name"
+                                        :checked="field.state.value"
+                                        @update:checked="field.handleChange"
+                                        @blur="field.handleBlur" />
+                                    <InputLabel
+                                        :for="field.name"
+                                        class="font-medium text-text-primary">
+                                        I understand that this will permanently delete all data
+                                        related to this member
+                                    </InputLabel>
+                                </div>
+                                <InputError
+                                    class="pl-7 pt-2"
+                                    :message="field.state.meta.errors[0]" />
                             </div>
                         </template>
-                        </form.Field>
+                    </form.Field>
                 </div>
                 <div class="mt-6 flex justify-end space-x-3">
                     <SecondaryButton @click="close">Cancel</SecondaryButton>
                     <form.Subscribe>
                         <template #default="{ canSubmit, isSubmitting }">
-                            <DangerButton
-                                type="submit"
-                                :disabled="!canSubmit"
-                            >
-                                {{ isSubmitting  ? 'Deleting...' : 'Delete Member' }}
+                            <DangerButton type="submit" :disabled="!canSubmit">
+                                {{ isSubmitting ? 'Deleting...' : 'Delete Member' }}
                             </DangerButton>
                         </template>
                     </form.Subscribe>
@@ -148,4 +148,4 @@ class="mt-6" @submit="
             </form>
         </div>
     </Modal>
-</template> 
+</template>

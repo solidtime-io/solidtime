@@ -73,10 +73,7 @@ export const useProjectMembersStore = defineStore('project-members', () => {
         }
     }
 
-    async function deleteProjectMember(
-        projectId: string,
-        projectMemberId: string
-    ) {
+    async function deleteProjectMember(projectId: string, projectMemberId: string) {
         const organizationId = getCurrentOrganizationId();
         if (organizationId) {
             await handleApiRequestNotifications(
@@ -94,9 +91,7 @@ export const useProjectMembersStore = defineStore('project-members', () => {
         }
     }
 
-    const projectMembers = computed<ProjectMember[]>(
-        () => projectMemberResponse.value?.data || []
-    );
+    const projectMembers = computed<ProjectMember[]>(() => projectMemberResponse.value?.data || []);
 
     return {
         projectMembers,

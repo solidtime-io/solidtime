@@ -6,10 +6,7 @@ import { api, type OrganizationExportResponse } from '@/packages/api/src';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import DialogModal from '@/packages/ui/src/DialogModal.vue';
 import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
-import {
-    ArrowUpOnSquareIcon,
-    InformationCircleIcon,
-} from '@heroicons/vue/24/outline';
+import { ArrowUpOnSquareIcon, InformationCircleIcon } from '@heroicons/vue/24/outline';
 import { CardTitle } from '@/packages/ui/src';
 import Card from '@/Components/Common/Card.vue';
 import { useOrganizationStore } from '@/utils/useOrganization';
@@ -28,14 +25,11 @@ async function exportData() {
         try {
             const response = await handleApiRequestNotifications(
                 () =>
-                    api.exportOrganization(
-                        undefined,
-                        {
-                            params: {
-                                organization: organizationId,
-                            },
-                        }
-                    ),
+                    api.exportOrganization(undefined, {
+                        params: {
+                            organization: organizationId,
+                        },
+                    }),
                 'Organization data exported successfully.',
                 'Exporting organization data failed.'
             );
@@ -52,10 +46,7 @@ async function exportData() {
 </script>
 
 <template>
-    <DialogModal
-        closeable
-        :show="showResultModal"
-        @close="showResultModal = false">
+    <DialogModal closeable :show="showResultModal" @close="showResultModal = false">
         <template #title>The export was successful!</template>
         <template #content>
             <div class="pb-6">
@@ -69,32 +60,26 @@ async function exportData() {
             </div>
         </template>
         <template #footer>
-            <SecondaryButton @click="showResultModal = false">
-                Close
-            </SecondaryButton>
+            <SecondaryButton @click="showResultModal = false"> Close </SecondaryButton>
         </template>
     </DialogModal>
     <div>
         <CardTitle title="Export Data" :icon="ArrowUpOnSquareIcon"></CardTitle>
         <Card class="mb-3">
             <div class="py-2 px-3 sm:px-4 text-sm flex items-center space-x-3">
-                <InformationCircleIcon
-                    class="h-5 min-w-0 w-5 text-bg-tertiary" />
+                <InformationCircleIcon class="h-5 min-w-0 w-5 text-bg-tertiary" />
                 <p class="flex-1">
-                    Export your solidtime organization data. This will include
-                    all clients, projects, tasks, and time entries. You will
-                    receive a zip file with json files for each entity.
+                    Export your solidtime organization data. This will include all clients,
+                    projects, tasks, and time entries. You will receive a zip file with json files
+                    for each entity.
                 </p>
             </div>
         </Card>
         <Card>
-            <div
-                class="py-6 flex-col items-center flex space-y-5 text-center text-sm">
+            <div class="py-6 flex-col items-center flex space-y-5 text-center text-sm">
                 <div>
                     The following organization will be exported: <br />
-                    <strong class="font-semibold">{{
-                        organization?.name
-                    }}</strong>
+                    <strong class="font-semibold">{{ organization?.name }}</strong>
                 </div>
                 <PrimaryButton :loading @click="exportData"
                     >Export Organization Data

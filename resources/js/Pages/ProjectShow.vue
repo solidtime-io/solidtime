@@ -21,11 +21,7 @@ import Card from '@/Components/Common/Card.vue';
 import ProjectMemberTable from '@/Components/Common/ProjectMember/ProjectMemberTable.vue';
 import ProjectMemberCreateModal from '@/Components/Common/ProjectMember/ProjectMemberCreateModal.vue';
 import { useProjectMembersStore } from '@/utils/useProjectMembers';
-import {
-    canCreateProjects,
-    canCreateTasks,
-    canViewProjectMembers,
-} from '@/utils/permissions';
+import { canCreateProjects, canCreateTasks, canViewProjectMembers } from '@/utils/permissions';
 import TabBarItem from '@/Components/Common/TabBar/TabBarItem.vue';
 import TabBar from '@/Components/Common/TabBar/TabBar.vue';
 import { useTasksStore } from '@/utils/useTasks';
@@ -40,11 +36,7 @@ const { projects } = storeToRefs(useProjectsStore());
 const organization = inject<ComputedRef<Organization>>('organization');
 
 const project = computed(() => {
-    return (
-        projects.value.find(
-            (project) => project.id === route().params.project
-        ) ?? null
-    );
+    return projects.value.find((project) => project.id === route().params.project) ?? null;
 });
 const createTask = ref(false);
 const createProjectMember = ref(false);
@@ -83,11 +75,8 @@ const shownTasks = computed(() => {
                 <ol role="list" class="flex items-center space-x-2">
                     <li>
                         <div class="flex items-center space-x-6">
-                            <Link
-                                :href="route('projects')"
-                                class="flex items-center space-x-2.5">
-                                <FolderIcon
-                                    class="w-6 text-icon-default"></FolderIcon>
+                            <Link :href="route('projects')" class="flex items-center space-x-2.5">
+                                <FolderIcon class="w-6 text-icon-default"></FolderIcon>
                                 <span class="font-medium">Projects</span>
                             </Link>
                         </div>
@@ -123,8 +112,7 @@ const shownTasks = computed(() => {
                         }}
                         / h
                     </Badge>
-                    <Badge
-                        v-if="project?.is_billable && !project?.billable_rate">
+                    <Badge v-if="project?.is_billable && !project?.billable_rate">
                         Default Rate
                     </Badge>
                     <Badge v-if="!project?.is_billable"> Non-Billable </Badge>
@@ -148,16 +136,11 @@ const shownTasks = computed(() => {
                 <div>
                     <CardTitle title="Tasks" :icon="CheckCircleIcon">
                         <template #actions>
-                            <div
-                                class="w-full items-center flex justify-between">
+                            <div class="w-full items-center flex justify-between">
                                 <div class="pl-6">
                                     <TabBar v-model="activeTab">
-                                        <TabBarItem value="active"
-                                            >Active
-                                        </TabBarItem>
-                                        <TabBarItem value="done"
-                                            >Done
-                                        </TabBarItem>
+                                        <TabBarItem value="active">Active </TabBarItem>
+                                        <TabBarItem value="done">Done </TabBarItem>
                                     </TabBar>
                                 </div>
                                 <SecondaryButton
@@ -173,25 +156,19 @@ const shownTasks = computed(() => {
                         </template>
                     </CardTitle>
                     <Card>
-                        <TaskTable
-                            :tasks="shownTasks"
-                            :project-id="projectId"></TaskTable>
+                        <TaskTable :tasks="shownTasks" :project-id="projectId"></TaskTable>
                     </Card>
                 </div>
                 <div v-if="canViewProjectMembers()">
                     <CardTitle title="Project Members" :icon="UserGroupIcon">
                         <template #actions>
-                            <SecondaryButton
-                                :icon="PlusIcon"
-                                @click="createProjectMember = true">
+                            <SecondaryButton :icon="PlusIcon" @click="createProjectMember = true">
                                 Add Member
                             </SecondaryButton>
                             <ProjectMemberCreateModal
                                 v-model:show="createProjectMember"
                                 :project-id="projectId"
-                                :existing-members="
-                                    projectMembers
-                                "></ProjectMemberCreateModal>
+                                :existing-members="projectMembers"></ProjectMemberCreateModal>
                         </template>
                     </CardTitle>
                     <Card>

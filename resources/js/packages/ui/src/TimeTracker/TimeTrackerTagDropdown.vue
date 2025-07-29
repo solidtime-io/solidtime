@@ -26,11 +26,7 @@ defineProps<{
 </script>
 
 <template>
-    <TagDropdown
-        v-model="model"
-        :create-tag
-        :tags="tags"
-        @changed="emit('changed')">
+    <TagDropdown v-model="model" :create-tag :tags="tags" @changed="emit('changed')">
         <template #trigger>
             <button
                 data-testid="tag_dropdown"

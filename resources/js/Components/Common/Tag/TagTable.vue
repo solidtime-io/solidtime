@@ -18,9 +18,7 @@ const showCreateTagModal = ref(false);
 </script>
 
 <template>
-    <TagCreateModal
-        v-model:show="showCreateTagModal"
-        :create-tag></TagCreateModal>
+    <TagCreateModal v-model:show="showCreateTagModal" :create-tag></TagCreateModal>
     <div class="flow-root">
         <div class="inline-block min-w-full align-middle">
             <div
@@ -28,15 +26,10 @@ const showCreateTagModal = ref(false);
                 class="grid min-w-full"
                 style="grid-template-columns: 1fr 80px">
                 <TagTableHeading></TagTableHeading>
-                <div
-                    v-if="tags.length === 0"
-                    class="col-span-5 py-24 text-center">
-                    <FolderPlusIcon
-                        class="w-8 text-icon-default inline pb-2"></FolderPlusIcon>
+                <div v-if="tags.length === 0" class="col-span-5 py-24 text-center">
+                    <FolderPlusIcon class="w-8 text-icon-default inline pb-2"></FolderPlusIcon>
                     <h3 class="text-text-primary font-semibold">No tags found</h3>
-                    <p v-if="canCreateTags()" class="pb-5">
-                        Create your first tag now!
-                    </p>
+                    <p v-if="canCreateTags()" class="pb-5">Create your first tag now!</p>
                     <SecondaryButton
                         v-if="canCreateTags()"
                         :icon="PlusIcon"

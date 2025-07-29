@@ -36,9 +36,7 @@ const timeEntryTags = computed<Tag[]>(() => {
                     :border="false"
                     size="large"
                     class="border-0 sm:px-1.5 text-icon-default group-focus-within/dropdown:text-text-primary"
-                    :name="
-                        timeEntryTags.map((tag: Tag) => tag.name).join(', ')
-                    "></TagBadge>
+                    :name="timeEntryTags.map((tag: Tag) => tag.name).join(', ')"></TagBadge>
             </button>
         </template>
     </TagDropdown>

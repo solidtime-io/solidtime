@@ -5,7 +5,7 @@ import { type Component, computed, nextTick, ref, watch } from 'vue';
 import TagCreateModal from '@/packages/ui/src/Tag/TagCreateModal.vue';
 import MultiselectDropdownItem from '@/packages/ui/src/Input/MultiselectDropdownItem.vue';
 import type { Tag } from '@/packages/api/src';
-import {UseFocusTrap} from "@vueuse/integrations/useFocusTrap/component";
+import { UseFocusTrap } from '@vueuse/integrations/useFocusTrap/component';
 
 const props = withDefaults(
     defineProps<{
@@ -68,9 +68,7 @@ watch(open, (isOpen) => {
 
 const filteredTags = computed(() => {
     return sortedTags.value.filter((tag: Tag) => {
-        return tag.name
-            .toLowerCase()
-            .includes(searchValue.value?.toLowerCase()?.trim() || '');
+        return tag.name.toLowerCase().includes(searchValue.value?.toLowerCase()?.trim() || '');
     });
 });
 
@@ -101,9 +99,7 @@ function updateSearchValue(event: Event) {
         searchValue.value = '';
         const highlightedTagId = highlightedItemId.value;
         if (highlightedTagId) {
-            const highlightedTag = props.tags.find(
-                (tag) => tag.id === highlightedTagId
-            );
+            const highlightedTag = props.tags.find((tag) => tag.id === highlightedTagId);
             if (highlightedTag) {
                 addOrRemoveTagFromSelection(highlightedTag.id);
             }
@@ -129,29 +125,22 @@ function toggleTag(newValue: string) {
 
 function moveHighlightUp() {
     if (highlightedItem.value) {
-        const currentHightlightedIndex = filteredTags.value.indexOf(
-            highlightedItem.value
-        );
+        const currentHightlightedIndex = filteredTags.value.indexOf(highlightedItem.value);
         if (currentHightlightedIndex === 0) {
-            highlightedItemId.value =
-                filteredTags.value[filteredTags.value.length - 1].id;
+            highlightedItemId.value = filteredTags.value[filteredTags.value.length - 1].id;
         } else {
-            highlightedItemId.value =
-                filteredTags.value[currentHightlightedIndex - 1].id;
+            highlightedItemId.value = filteredTags.value[currentHightlightedIndex - 1].id;
         }
     }
 }
 
 function moveHighlightDown() {
     if (highlightedItem.value) {
-        const currentHightlightedIndex = filteredTags.value.indexOf(
-            highlightedItem.value
-        );
+        const currentHightlightedIndex = filteredTags.value.indexOf(highlightedItem.value);
         if (currentHightlightedIndex === filteredTags.value.length - 1) {
             highlightedItemId.value = filteredTags.value[0].id;
         } else {
-            highlightedItemId.value =
-                filteredTags.value[currentHightlightedIndex + 1].id;
+            highlightedItemId.value = filteredTags.value[currentHightlightedIndex + 1].id;
         }
     }
 }
@@ -177,9 +166,7 @@ const showCreateTagModal = ref(false);
             <slot name="trigger"></slot>
         </template>
         <template #content>
-            <UseFocusTrap
-                v-if="open"
-                :options="{ immediate: true, allowOutsideClick: true }">
+            <UseFocusTrap v-if="open" :options="{ immediate: true, allowOutsideClick: true }">
                 <input
                     ref="searchInput"
                     :value="searchValue"
@@ -198,9 +185,8 @@ const showCreateTagModal = ref(false);
                         role="option"
                         :value="tag.id"
                         :class="{
-                        'bg-card-background-active':
-                            tag.id === highlightedItemId,
-                    }"
+                            'bg-card-background-active': tag.id === highlightedItemId,
+                        }"
                         data-testid="tag_dropdown_entries"
                         :data-tag-id="tag.id">
                         <MultiselectDropdownItem
@@ -213,9 +199,9 @@ const showCreateTagModal = ref(false);
                     <button
                         class="text-text-primary w-full flex space-x-3 items-center px-4 py-3 text-xs font-semibold border-t border-card-background-separator"
                         @click="
-                        open = false;
-                        showCreateTagModal = true;
-                    ">
+                            open = false;
+                            showCreateTagModal = true;
+                        ">
                         <PlusCircleIcon
                             class="w-5 flex-shrink-0 text-icon-default"></PlusCircleIcon>
                         <span>Create new Tag</span>

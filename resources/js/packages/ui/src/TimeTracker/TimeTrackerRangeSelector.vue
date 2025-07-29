@@ -3,11 +3,7 @@ import Dropdown from '@/packages/ui/src/Input/Dropdown.vue';
 import { computed, ref } from 'vue';
 import TimeRangeSelector from '@/packages/ui/src/Input/TimeRangeSelector.vue';
 import dayjs, { Dayjs } from 'dayjs';
-import {
-    formatDuration,
-    getDayJsInstance,
-    parseTimeInput,
-} from '@/packages/ui/src/utils/time';
+import { formatDuration, getDayJsInstance, parseTimeInput } from '@/packages/ui/src/utils/time';
 import type { TimeEntry } from '@/packages/api/src';
 
 const currentTimeEntry = defineModel<TimeEntry>('currentTimeEntry', {
@@ -59,10 +55,7 @@ const currentTime = computed({
 });
 
 function updateTimerAndStartLiveTimerUpdate() {
-    const { seconds } = parseTimeInput(
-        temporaryCustomTimerEntry.value,
-        'minutes'
-    );
+    const { seconds } = parseTimeInput(temporaryCustomTimerEntry.value, 'minutes');
 
     if (seconds && seconds > 0) {
         const newStartDate = dayjs().subtract(seconds, 's');
@@ -105,12 +98,7 @@ const timeRangeSelector = ref<HTMLElement | null>(null);
 function openModalOnTab(e: FocusEvent) {
     // check if the source is inside the dropdown
     const source = e.relatedTarget as HTMLElement;
-    if (
-        source &&
-        window.document.body
-            .querySelector<HTMLElement>('#app')
-            ?.contains(source)
-    ) {
+    if (source && window.document.body.querySelector<HTMLElement>('#app')?.contains(source)) {
         open.value = true;
     }
 }
@@ -118,10 +106,9 @@ function openModalOnTab(e: FocusEvent) {
 function focusNextElement(e: KeyboardEvent) {
     if (open.value) {
         e.preventDefault();
-        const focusableElement =
-            timeRangeSelector.value?.querySelector<HTMLElement>(
-                'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-            );
+        const focusableElement = timeRangeSelector.value?.querySelector<HTMLElement>(
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
         focusableElement?.focus();
     }
 }

@@ -7,12 +7,7 @@ import ProjectCreateModal from '@/packages/ui/src/Project/ProjectCreateModal.vue
 import ProjectTableHeading from '@/Components/Common/Project/ProjectTableHeading.vue';
 import ProjectTableRow from '@/Components/Common/Project/ProjectTableRow.vue';
 import { canCreateProjects } from '@/utils/permissions';
-import type {
-    CreateProjectBody,
-    Project,
-    Client,
-    CreateClientBody,
-} from '@/packages/api/src';
+import type { CreateProjectBody, Project, Client, CreateClientBody } from '@/packages/api/src';
 import { useProjectsStore } from '@/utils/useProjects';
 import { useClientsStore } from '@/utils/useClients';
 import { storeToRefs } from 'pinia';
@@ -24,15 +19,11 @@ const props = defineProps<{
 }>();
 
 const showCreateProjectModal = ref(false);
-async function createProject(
-    project: CreateProjectBody
-): Promise<Project | undefined> {
+async function createProject(project: CreateProjectBody): Promise<Project | undefined> {
     return await useProjectsStore().createProject(project);
 }
 
-async function createClient(
-    client: CreateClientBody
-): Promise<Client | undefined> {
+async function createClient(client: CreateClientBody): Promise<Client | undefined> {
     return await useClientsStore().createClient(client);
 }
 const { clients } = storeToRefs(useClientsStore());
@@ -52,19 +43,11 @@ import { isAllowedToPerformPremiumAction } from '@/utils/billing';
         :enable-estimated-time="isAllowedToPerformPremiumAction"></ProjectCreateModal>
     <div class="flow-root max-w-[100vw] overflow-x-auto">
         <div class="inline-block min-w-full align-middle">
-            <div
-                data-testid="project_table"
-                class="grid min-w-full"
-                :style="gridTemplate">
+            <div data-testid="project_table" class="grid min-w-full" :style="gridTemplate">
                 <ProjectTableHeading
-                    :show-billable-rate="
-                        props.showBillableRate
-                    "></ProjectTableHeading>
-                <div
-                    v-if="projects.length === 0"
-                    class="col-span-5 py-24 text-center">
-                    <FolderPlusIcon
-                        class="w-8 text-icon-default inline pb-2"></FolderPlusIcon>
+                    :show-billable-rate="props.showBillableRate"></ProjectTableHeading>
+                <div v-if="projects.length === 0" class="col-span-5 py-24 text-center">
+                    <FolderPlusIcon class="w-8 text-icon-default inline pb-2"></FolderPlusIcon>
                     <h3 class="text-text-primary font-semibold">
                         {{
                             canCreateProjects()

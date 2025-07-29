@@ -1,9 +1,5 @@
 <script setup lang="ts">
-import {
-    ArchiveBoxIcon,
-    PencilSquareIcon,
-    TrashIcon,
-} from '@heroicons/vue/20/solid';
+import { ArchiveBoxIcon, PencilSquareIcon, TrashIcon } from '@heroicons/vue/20/solid';
 import type { Client } from '@/packages/api/src';
 import { canDeleteClients, canUpdateClients } from '@/utils/permissions';
 import {

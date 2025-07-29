@@ -55,10 +55,7 @@ provide(THEME_KEY, 'dark');
 
 const max = computed(() => {
     if (!isLoading.value && dailyHoursTracked.value) {
-        return Math.max(
-            Math.max(...dailyHoursTracked.value.map((el) => el.duration)),
-            1
-        );
+        return Math.max(Math.max(...dailyHoursTracked.value.map((el) => el.duration)), 1);
     } else {
         return 1;
     }
@@ -97,10 +94,7 @@ const option = computed(() => {
             },
             range: [
                 dayjs().format('YYYY-MM-DD'),
-                getDayJsInstance()()
-                    .subtract(50, 'day')
-                    .startOf('week')
-                    .format('YYYY-MM-DD'),
+                getDayJsInstance()().subtract(50, 'day').startOf('week').format('YYYY-MM-DD'),
             ],
             itemStyle: {
                 color: 'transparent',
@@ -112,9 +106,7 @@ const option = computed(() => {
         series: {
             type: 'heatmap',
             coordinateSystem: 'calendar',
-            data:
-                dailyHoursTracked?.value?.map((el) => [el.date, el.duration]) ??
-                [],
+            data: dailyHoursTracked?.value?.map((el) => [el.date, el.duration]) ?? [],
             itemStyle: {
                 borderRadius: 5,
                 borderColor: borderColor.value,
@@ -159,9 +151,7 @@ const option = computed(() => {
                     :option="option"
                     style="height: 260px; background-color: transparent" />
             </div>
-            <div v-else class="text-center text-gray-500 py-8">
-                No activity data available
-            </div>
+            <div v-else class="text-center text-gray-500 py-8">No activity data available</div>
         </div>
     </DashboardCard>
 </template>

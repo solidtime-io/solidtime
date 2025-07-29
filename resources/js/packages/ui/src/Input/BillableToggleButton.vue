@@ -34,8 +34,7 @@ const iconSizeClasses = computed(() => {
     }
 });
 
-const iconSizeWrapperClasses =
-    props.size === 'small' ? 'w-6 sm:w-8 h-6 sm:h-8' : 'w-10 h-10';
+const iconSizeWrapperClasses = props.size === 'small' ? 'w-6 sm:w-8 h-6 sm:h-8' : 'w-10 h-10';
 </script>
 
 <template>

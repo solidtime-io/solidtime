@@ -46,13 +46,9 @@ const show = defineModel('show', { default: false });
                         to try out this feature.
                     </p>
 
-                    <Link
-                        v-if="isBillingActivated() && canManageBilling()"
-                        href="/billing">
+                    <Link v-if="isBillingActivated() && canManageBilling()" href="/billing">
                         <PrimaryButton
-                            v-if="
-                                isBillingActivated() && canUpdateOrganization()
-                            "
+                            v-if="isBillingActivated() && canUpdateOrganization()"
                             type="button"
                             class="mt-6"
                             :icon="CreditCardIcon">

@@ -31,9 +31,7 @@ function editProjectMember() {
 
 const { members } = storeToRefs(useMembersStore());
 const member = computed(() => {
-    return members.value.find(
-        (member) => member.id === props.projectMember.member_id
-    );
+    return members.value.find((member) => member.id === props.projectMember.member_id);
 });
 const showEditModal = ref(false);
 </script>

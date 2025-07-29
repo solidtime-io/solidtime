@@ -26,14 +26,11 @@ const props = defineProps<{
 }>();
 
 const client = computed(() => {
-    return clients.value.find(
-        (client) => client.id === props.project.client_id
-    );
+    return clients.value.find((client) => client.id === props.project.client_id);
 });
 
 const projectTasksCount = computed(() => {
-    return tasks.value.filter((task) => task.project_id === props.project.id)
-        .length;
+    return tasks.value.filter((task) => task.project_id === props.project.id).length;
 });
 
 function deleteProject() {
@@ -67,7 +64,6 @@ const billableRateInfo = computed(() => {
 });
 
 const showEditProjectModal = ref(false);
-
 </script>
 
 <template>
@@ -86,15 +82,10 @@ const showEditProjectModal = ref(false);
             <span class="overflow-ellipsis overflow-hidden">
                 {{ project.name }}
             </span>
-            <span class="text-text-secondary">
-                {{ projectTasksCount }} Tasks
-            </span>
+            <span class="text-text-secondary"> {{ projectTasksCount }} Tasks </span>
         </div>
-        <div
-            class="whitespace-nowrap min-w-0 px-3 py-4 text-sm text-text-secondary">
-            <div
-                v-if="project.client_id"
-                class="overflow-ellipsis overflow-hidden">
+        <div class="whitespace-nowrap min-w-0 px-3 py-4 text-sm text-text-secondary">
+            <div v-if="project.client_id" class="overflow-ellipsis overflow-hidden">
                 {{ client?.name }}
             </div>
             <div v-else>No client</div>
@@ -111,10 +102,8 @@ const showEditProjectModal = ref(false);
             </div>
             <div v-else>--</div>
         </div>
-        <div
-            class="whitespace-nowrap px-3 flex items-center text-sm text-text-secondary">
-            <UpgradeBadge
-                v-if="!isAllowedToPerformPremiumAction()"></UpgradeBadge>
+        <div class="whitespace-nowrap px-3 flex items-center text-sm text-text-secondary">
+            <UpgradeBadge v-if="!isAllowedToPerformPremiumAction()"></UpgradeBadge>
             <EstimatedTimeProgress
                 v-else-if="project.estimated_time"
                 :estimated="project.estimated_time"

@@ -70,9 +70,7 @@ const page = usePage<{
         </template>
 
         <template #actions>
-            <PrimaryButton
-                :class="{ 'opacity-25': form.processing }"
-                :disabled="form.processing">
+            <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
                 Create
             </PrimaryButton>
         </template>

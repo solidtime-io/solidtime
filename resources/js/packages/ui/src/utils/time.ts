@@ -13,7 +13,6 @@ import updateLocale from 'dayjs/plugin/updateLocale';
 import { computed } from 'vue';
 import { formatNumber } from './number';
 
-
 export type DateFormat =
     | 'point-separated-d-m-yyyy'
     | 'slash-separated-mm-dd-yyyy'
@@ -28,7 +27,7 @@ const dateFormatMap: Record<DateFormat, string> = {
     'slash-separated-dd-mm-yyyy': 'DD/MM/YYYY',
     'hyphen-separated-dd-mm-yyyy': 'DD-MM-YYYY',
     'hyphen-separated-mm-dd-yyyy': 'MM-DD-YYYY',
-    'hyphen-separated-yyyy-mm-dd': 'YYYY-MM-DD'
+    'hyphen-separated-yyyy-mm-dd': 'YYYY-MM-DD',
 };
 
 export type TimeFormat = '12-hours' | '24-hours';
@@ -131,9 +130,7 @@ export function getLocalizedDateFromTimestamp(timestamp: string) {
  */
 export function formatDate(date: string, format: DateFormat = 'point-separated-d-m-yyyy'): string {
     if (date?.includes('+')) {
-        console.warn(
-            'Date contains timezone information, use formatDateLocalized instead'
-        );
+        console.warn('Date contains timezone information, use formatDateLocalized instead');
     }
     return getDayJsInstance()(date).format(dateFormatMap[format]);
 }
@@ -142,11 +139,18 @@ export function formatDate(date: string, format: DateFormat = 'point-separated-d
  * Returns a formatted date.
  * @param date - date in the format of 'YYYY-MM-DD'
  */
-export function formatDateLocalized(date: string, format: DateFormat = 'point-separated-d-m-yyyy'): string {
+export function formatDateLocalized(
+    date: string,
+    format: DateFormat = 'point-separated-d-m-yyyy'
+): string {
     return getLocalizedDayJs(date).format(dateFormatMap[format]);
 }
 
-export function formatDateTimeLocalized(date: string, dateFormat?: DateFormat, timeFormat?: TimeFormat): string {
+export function formatDateTimeLocalized(
+    date: string,
+    dateFormat?: DateFormat,
+    timeFormat?: TimeFormat
+): string {
     const format = `${dateFormatMap[dateFormat ?? 'point-separated-d-m-yyyy']} ${timeFormat === '12-hours' ? 'hh:mm A' : 'HH:mm'}`;
     return getLocalizedDayJs(date).format(format);
 }
@@ -162,16 +166,16 @@ export function formatWeek(date: string | null): string {
 export function formatHumanReadableDate(date: string) {
     const dateObj = dayjs(date);
     const today = dayjs();
-    
+
     if (dateObj.isToday()) {
         return 'Today';
     } else if (dateObj.isYesterday()) {
         return 'Yesterday';
     }
-    
+
     // Calculate difference in days
     const diffInDays = today.diff(dateObj, 'day');
-    
+
     if (diffInDays > 0 && diffInDays <= 30) {
         // For dates in the past (2-30 days ago)
         return `${diffInDays} ${diffInDays === 1 ? 'day' : 'days'} ago`;
@@ -180,7 +184,7 @@ export function formatHumanReadableDate(date: string) {
         const futureDays = Math.abs(diffInDays);
         return `In ${futureDays} ${futureDays === 1 ? 'day' : 'days'}`;
     }
-    
+
     // For dates older than 30 days, show the actual date
     return dateObj.format('MMM D, YYYY');
 }
@@ -189,7 +193,11 @@ export function formatWeekday(date: string) {
     return dayjs(date).format('dddd');
 }
 
-export function formatStartEnd(start: string, end: string | null, timeFormat: TimeFormat = '24-hours') {
+export function formatStartEnd(
+    start: string,
+    end: string | null,
+    timeFormat: TimeFormat = '24-hours'
+) {
     if (end) {
         return `${formatTime(start, timeFormat)} - ${formatTime(end, timeFormat)}`;
     } else {

@@ -3,5 +3,6 @@
     "tabWidth": 4,
     "singleQuote": true,
     "bracketSameLine": true,
-    "quoteProps": "preserve"
+    "quoteProps": "preserve",
+    "printWidth": 100
 }

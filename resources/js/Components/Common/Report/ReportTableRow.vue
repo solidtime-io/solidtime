@@ -57,9 +57,7 @@ async function deleteReport() {
 </script>
 
 <template>
-    <ReportEditModal
-        v-model:show="showEditReportModal"
-        :original-report="report"></ReportEditModal>
+    <ReportEditModal v-model:show="showEditReportModal" :original-report="report"></ReportEditModal>
     <TableRow>
         <div
             class="whitespace-nowrap min-w-0 flex items-center space-x-5 3xl:pl-12 py-4 pr-3 text-sm font-medium text-text-primary pl-4 sm:pl-6 lg:pl-8 3xl:pl-12">
@@ -75,14 +73,9 @@ async function deleteReport() {
         <div class="whitespace-nowrap px-3 py-4 text-sm text-text-secondary">
             {{ report.is_public ? 'Public' : 'Private' }}
         </div>
-        <div
-            class="whitespace-nowrap px-3 flex items-center text-sm text-text-secondary">
-            <div
-                v-if="report.shareable_link"
-                class="space-x-2 flex items-center">
-                <SecondaryButton
-                    v-if="isSupported"
-                    @click="copy(report.shareable_link)">
+        <div class="whitespace-nowrap px-3 flex items-center text-sm text-text-secondary">
+            <div v-if="report.shareable_link" class="space-x-2 flex items-center">
+                <SecondaryButton v-if="isSupported" @click="copy(report.shareable_link)">
                     <span v-if="!copied">Copy URL</span>
                     <span v-else>Copied!</span>
                 </SecondaryButton>

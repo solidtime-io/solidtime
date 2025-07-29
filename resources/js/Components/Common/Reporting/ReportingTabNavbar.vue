@@ -2,8 +2,8 @@
 import { router } from '@inertiajs/vue3';
 import TabBar from '@/Components/Common/TabBar/TabBar.vue';
 import TabBarItem from '@/Components/Common/TabBar/TabBarItem.vue';
-import {canViewReport} from "@/utils/permissions";
-import {computed} from "vue";
+import { canViewReport } from '@/utils/permissions';
+import { computed } from 'vue';
 defineProps<{
     active: 'reporting' | 'detailed' | 'shared';
 }>();
@@ -12,17 +12,11 @@ const showSharedReports = computed(() => canViewReport());
 </script>
 
 <template>
-    <TabBar
-    :model-value="active"
-    >
-        <TabBarItem
-            value="reporting"
-            @click="router.visit(route('reporting'))"
+    <TabBar :model-value="active">
+        <TabBarItem value="reporting" @click="router.visit(route('reporting'))"
             >Overview</TabBarItem
         >
-        <TabBarItem
-            value="detailed"
-            @click="router.visit(route('reporting.detailed'))"
+        <TabBarItem value="detailed" @click="router.visit(route('reporting.detailed'))"
             >Detailed</TabBarItem
         >
         <TabBarItem

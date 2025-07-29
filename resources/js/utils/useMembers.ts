@@ -1,11 +1,7 @@
 import { defineStore } from 'pinia';
 import { api } from '@/packages/api/src';
 import { computed, ref } from 'vue';
-import type {
-    Member,
-    MemberIndexResponse,
-    UpdateMemberBody,
-} from '@/packages/api/src';
+import type { Member, MemberIndexResponse, UpdateMemberBody } from '@/packages/api/src';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import { useNotificationsStore } from '@/utils/notification';
 
@@ -49,10 +45,7 @@ export const useMembersStore = defineStore('members', () => {
         }
     }
 
-    async function updateMember(
-        memberId: string,
-        memberBody: UpdateMemberBody
-    ) {
+    async function updateMember(memberId: string, memberBody: UpdateMemberBody) {
         const organization = getCurrentOrganizationId();
         if (organization) {
             await handleApiRequestNotifications(

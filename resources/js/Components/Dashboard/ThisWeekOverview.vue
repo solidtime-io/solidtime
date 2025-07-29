@@ -24,14 +24,7 @@ import { useQuery } from '@tanstack/vue-query';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import { api, type Organization } from '@/packages/api/src';
 
-use([
-    CanvasRenderer,
-    BarChart,
-    TitleComponent,
-    GridComponent,
-    TooltipComponent,
-    LegendComponent,
-]);
+use([CanvasRenderer, BarChart, TitleComponent, GridComponent, TooltipComponent, LegendComponent]);
 
 provide(THEME_KEY, 'dark');
 
@@ -246,15 +239,8 @@ const option = computed(() => {
     <div
         class="grid space-y-5 sm:space-y-0 sm:gap-x-6 xl:gap-x-6 grid-cols-1 lg:grid-cols-3 xl:grid-cols-4">
         <div class="col-span-2 xl:col-span-3">
-            <CardTitle
-                title="This Week"
-                class="pb-8"
-                :icon="ClockIcon"></CardTitle>
-            <v-chart
-                v-if="weeklyHistory"
-                :autoresize="true"
-                class="chart"
-                :option="option" />
+            <CardTitle title="This Week" class="pb-8" :icon="ClockIcon"></CardTitle>
+            <v-chart v-if="weeklyHistory" :autoresize="true" class="chart" :option="option" />
         </div>
         <div class="space-y-6">
             <StatCard
@@ -294,9 +280,7 @@ const option = computed(() => {
                 " />
             <ProjectsChartCard
                 v-if="weeklyProjectOverview"
-                :weekly-project-overview="
-                    weeklyProjectOverview
-                "></ProjectsChartCard>
+                :weekly-project-overview="weeklyProjectOverview"></ProjectsChartCard>
         </div>
     </div>
 </template>

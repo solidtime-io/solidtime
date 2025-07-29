@@ -49,10 +49,7 @@ function getNameForKey(key: BillableKey | undefined) {
         :get-name-for-item="getNameFromItem"
         :items="options">
         <template #trigger>
-            <Badge
-                tag="button"
-                size="xlarge"
-                class="bg-input-background cursor-pointer">
+            <Badge tag="button" size="xlarge" class="bg-input-background cursor-pointer">
                 <span>
                     {{ getNameForKey(model) }}
                 </span>

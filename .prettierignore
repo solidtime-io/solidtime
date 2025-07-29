@@ -1,0 +1,27 @@
+# Ignore build outputs
+node_modules/
+vendor/
+storage/
+bootstrap/cache/
+public/build/
+public/hot/
+
+# Ignore lock files
+package-lock.json
+composer.lock
+
+# Ignore generated files
+*.min.js
+*.min.css
+
+# Ignore test results
+test-results/
+playwright-report/
+
+# Ignore IDE files
+.idea/
+.vscode/
+
+# Ignore OS files
+.DS_Store
+Thumbs.db 

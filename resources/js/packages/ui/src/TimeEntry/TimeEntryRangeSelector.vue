@@ -1,10 +1,7 @@
 <script setup lang="ts">
 import Dropdown from '@/packages/ui/src/Input/Dropdown.vue';
 import { defineProps, ref, inject, type ComputedRef } from 'vue';
-import {
-    formatDateLocalized,
-    formatStartEnd,
-} from '@/packages/ui/src/utils/time';
+import { formatDateLocalized, formatStartEnd } from '@/packages/ui/src/utils/time';
 import TimeRangeSelector from '@/packages/ui/src/Input/TimeRangeSelector.vue';
 import { twMerge } from 'tailwind-merge';
 import type { Organization } from '@/packages/api/src';
@@ -23,7 +20,6 @@ const open = ref(false);
 const triggerElement = ref<HTMLButtonElement | null>(null);
 
 const organization = inject<ComputedRef<Organization>>('organization');
-
 </script>
 
 <template>
@@ -59,8 +55,7 @@ const organization = inject<ComputedRef<Organization>>('organization');
                     :start="start"
                     :end="end"
                     @changed="
-                        (newStart: string, newEnd: string) =>
-                            emit('changed', newStart, newEnd)
+                        (newStart: string, newEnd: string) => emit('changed', newStart, newEnd)
                     "
                     @close="open = false">
                 </TimeRangeSelector>

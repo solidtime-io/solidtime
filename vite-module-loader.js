@@ -17,10 +17,7 @@ async function getExportedModulesArrayAttributes(modulesPath, attribute) {
 
     try {
         // Read module_statuses.json
-        const moduleStatusesContent = await fs.readFile(
-            moduleStatusesPath,
-            'utf-8'
-        );
+        const moduleStatusesContent = await fs.readFile(moduleStatusesPath, 'utf-8');
         const moduleStatuses = JSON.parse(moduleStatusesContent);
 
         // Read module directories
@@ -34,30 +31,21 @@ async function getExportedModulesArrayAttributes(modulesPath, attribute) {
 
             // Check if the module is enabled (status is true)
             if (moduleStatuses[moduleDir] === true) {
-                const viteConfigPath = path.join(
-                    modulesPath,
-                    moduleDir,
-                    'vite.config.js'
-                );
+                const viteConfigPath = path.join(modulesPath, moduleDir, 'vite.config.js');
                 const stat = await fs.stat(viteConfigPath);
 
                 if (stat.isFile()) {
                     // Import the module-specific Vite configuration
                     const moduleConfig = await import(viteConfigPath);
 
-                    if (
-                        moduleConfig[attribute] &&
-                        Array.isArray(moduleConfig[attribute])
-                    ) {
+                    if (moduleConfig[attribute] && Array.isArray(moduleConfig[attribute])) {
                         result.push(...moduleConfig[attribute]);
                     }
                 }
             }
         }
     } catch (error) {
-        console.error(
-            `Error reading module statuses or module configurations: ${error}`
-        );
+        console.error(`Error reading module statuses or module configurations: ${error}`);
     }
 
     return result;

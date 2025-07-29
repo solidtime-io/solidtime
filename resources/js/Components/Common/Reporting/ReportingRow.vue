@@ -32,10 +32,7 @@ const organization = inject<ComputedRef<Organization>>('organization');
         class="contents text-text-primary [&>*]:transition [&>*]:border-card-background-separator [&>*]:border-b [&>*]:h-[50px]">
         <div
             :class="
-                twMerge(
-                    'pl-6 font-medium flex items-center space-x-3',
-                    props.indent ? 'pl-16' : ''
-                )
+                twMerge('pl-6 font-medium flex items-center space-x-3', props.indent ? 'pl-16' : '')
             ">
             <GroupedItemsCountButton
                 v-if="entry.grouped_data && entry.grouped_data?.length > 0"
@@ -57,13 +54,17 @@ const organization = inject<ComputedRef<Organization>>('organization');
             }}
         </div>
         <div class="justify-end pr-6 flex items-center">
-            {{ entry.cost ? formatCents(
-                entry.cost,
-                props.currency,
-                organization?.currency_format,
-                organization?.currency_symbol,
-                organization?.number_format
-            ) : '--' }}
+            {{
+                entry.cost
+                    ? formatCents(
+                          entry.cost,
+                          props.currency,
+                          organization?.currency_format,
+                          organization?.currency_symbol,
+                          organization?.number_format
+                      )
+                    : '--'
+            }}
         </div>
     </div>
     <div

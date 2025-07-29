@@ -28,8 +28,7 @@ export default class Prando {
         } else {
             // Pseudo-random seed
             this._seed = this.getSafeSeed(
-                Prando.MIN +
-                    Math.floor((Prando.MAX - Prando.MIN) * Math.random())
+                Prando.MIN + Math.floor((Prando.MAX - Prando.MIN) * Math.random())
             );
         }
         this.reset();
@@ -59,9 +58,7 @@ export default class Prando {
      */
     public nextInt(min = 10, max = 100): number {
         this.recalculate();
-        return Math.floor(
-            this.map(this._value, Prando.MIN, Prando.MAX, min, max + 1)
-        );
+        return Math.floor(this.map(this._value, Prando.MIN, Prando.MAX, min, max + 1));
     }
 
     /**
@@ -176,9 +173,7 @@ export default class Prando {
         minTo: number,
         maxTo: number
     ): number {
-        return (
-            ((val - minFrom) / (maxFrom - minFrom)) * (maxTo - minTo) + minTo
-        );
+        return ((val - minFrom) / (maxFrom - minFrom)) * (maxTo - minTo) + minTo;
     }
 
     private hashCode(str: string): number {

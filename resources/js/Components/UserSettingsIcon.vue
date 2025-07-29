@@ -60,13 +60,9 @@ const logout = () => {
 
             <template #content>
                 <!-- Account Management -->
-                <div class="block px-4 py-2 text-xs text-gray-400">
-                    Manage Account
-                </div>
+                <div class="block px-4 py-2 text-xs text-gray-400">Manage Account</div>
 
-                <DropdownLink :href="route('profile.show')">
-                    Profile
-                </DropdownLink>
+                <DropdownLink :href="route('profile.show')"> Profile </DropdownLink>
 
                 <DropdownLink
                     v-if="page.props.jetstream.hasApiFeatures"
@@ -78,9 +74,7 @@ const logout = () => {
 
                 <!-- Authentication -->
                 <form @submit.prevent="logout">
-                    <DropdownLink as="button" data-testid="logout_button">
-                        Log Out
-                    </DropdownLink>
+                    <DropdownLink as="button" data-testid="logout_button"> Log Out </DropdownLink>
                 </form>
             </template>
         </Dropdown>

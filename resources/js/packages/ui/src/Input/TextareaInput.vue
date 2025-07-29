@@ -6,21 +6,24 @@ const model = defineModel<string | number>({
     default: '',
 });
 
-const props = withDefaults(defineProps<{
-    id?: string;
-    type?: string;
-    class?: string;
-    rows?: number;
-    placeholder?: string;
-    disabled?: boolean;
-    required?: boolean;
-}>(), {
-    type: 'text',
-    class: '',
-    rows: 3,
-    disabled: false,
-    required: false,
-});
+const props = withDefaults(
+    defineProps<{
+        id?: string;
+        type?: string;
+        class?: string;
+        rows?: number;
+        placeholder?: string;
+        disabled?: boolean;
+        required?: boolean;
+    }>(),
+    {
+        type: 'text',
+        class: '',
+        rows: 3,
+        disabled: false,
+        required: false,
+    }
+);
 
 const classes = computed(() => {
     return twMerge(
@@ -39,6 +42,5 @@ const classes = computed(() => {
         :rows="rows"
         :placeholder="placeholder"
         :disabled="disabled"
-        :required="required"
-    />
+        :required="required" />
 </template>

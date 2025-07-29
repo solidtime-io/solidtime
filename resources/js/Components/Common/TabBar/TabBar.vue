@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { Tabs, TabsList } from '@/Components/ui/tabs'
+import { Tabs, TabsList } from '@/Components/ui/tabs';
 
 defineProps<{
-    defaultValue?: string
-}>()
+    defaultValue?: string;
+}>();
 </script>
 
 <template>

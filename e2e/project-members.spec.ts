@@ -12,8 +12,7 @@ async function goToProjectsOverview(page: Page) {
 test('test that updating project member billable rate works for existing time entries', async ({
     page,
 }) => {
-    const newProjectName =
-        'New Project ' + Math.floor(1 + Math.random() * 10000);
+    const newProjectName = 'New Project ' + Math.floor(1 + Math.random() * 10000);
     const newBillableRate = Math.round(Math.random() * 10000);
     await goToProjectsOverview(page);
     await page.getByRole('button', { name: 'Create Project' }).click();
@@ -36,9 +35,7 @@ test('test that updating project member billable rate works for existing time en
         .first()
         .getByRole('button')
         .click();
-    await page
-        .getByRole('menuitem', { name: 'Edit Project Member' })
-        .click();
+    await page.getByRole('menuitem', { name: 'Edit Project Member' }).click();
     await page.getByLabel('Billable Rate').fill(newBillableRate.toString());
     await page.getByRole('button', { name: 'Update Project Member' }).click();
 
@@ -55,8 +52,7 @@ test('test that updating project member billable rate works for existing time en
                 response.url().includes('/project-members/') &&
                 response.request().method() === 'PUT' &&
                 response.status() === 200 &&
-                (await response.json()).data.billable_rate ===
-                    newBillableRate * 100
+                (await response.json()).data.billable_rate === newBillableRate * 100
         ),
     ]);
     await expect(

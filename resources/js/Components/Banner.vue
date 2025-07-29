@@ -24,9 +24,7 @@ watchEffect(async () => {
 
 <template>
     <div>
-        <div
-            v-if="show && message"
-            class="bg-secondary border-b border-border-secondary">
+        <div v-if="show && message" class="bg-secondary border-b border-border-secondary">
             <div class="mx-auto py-1 px-3 sm:px-6 lg:px-8">
                 <div class="flex items-center justify-between flex-wrap">
                     <div class="w-0 flex-1 flex items-center min-w-0">

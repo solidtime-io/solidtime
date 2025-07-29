@@ -2,10 +2,7 @@
 import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
 import DialogModal from '@/packages/ui/src/DialogModal.vue';
 import { ref } from 'vue';
-import type {
-    CreateProjectMemberBody,
-    ProjectMember,
-} from '@/packages/api/src';
+import type { CreateProjectMemberBody, ProjectMember } from '@/packages/api/src';
 import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import { useFocus } from '@vueuse/core';
 import { useProjectMembersStore } from '@/utils/useProjectMembers';
@@ -57,9 +54,7 @@ useFocus(projectNameInput, { initialValue: true });
                 </div>
                 <div class="col-span-3 sm:col-span-1 flex-1">
                     <BillableRateInput
-                        v-model="
-                            projectMember.billable_rate
-                        "
+                        v-model="projectMember.billable_rate"
                         name="billable_rate"
                         :currency="getOrganizationCurrencyString()"></BillableRateInput>
                 </div>

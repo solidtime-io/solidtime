@@ -1,9 +1,7 @@
 import { expect, Page } from '@playwright/test';
 
 export async function startOrStopTimerWithButton(page: Page) {
-    await page
-        .locator('[data-testid="dashboard_timer"] [data-testid="timer_button"]')
-        .click();
+    await page.locator('[data-testid="dashboard_timer"] [data-testid="timer_button"]').click();
 }
 
 export async function assertThatTimerHasStarted(page: Page) {
@@ -20,8 +18,7 @@ export function newTimeEntryResponse(
         return (
             response.url().includes('/time-entries') &&
             response.status() === status &&
-            (await response.headerValue('Content-Type')) ===
-                'application/json' &&
+            (await response.headerValue('Content-Type')) === 'application/json' &&
             (await response.json()).data.id !== null &&
             (await response.json()).data.start !== null &&
             (await response.json()).data.end === null &&
@@ -29,30 +26,23 @@ export function newTimeEntryResponse(
             (await response.json()).data.description === description &&
             (await response.json()).data.task_id === null &&
             (await response.json()).data.user_id !== null &&
-            JSON.stringify((await response.json()).data.tags) ===
-                JSON.stringify(tags)
+            JSON.stringify((await response.json()).data.tags) === JSON.stringify(tags)
         );
     });
 }
 
 export async function assertThatTimerIsStopped(page: Page) {
     await expect(
-        page.locator(
-            '[data-testid="dashboard_timer"] [data-testid="timer_button"]'
-        )
+        page.locator('[data-testid="dashboard_timer"] [data-testid="timer_button"]')
     ).toHaveClass(/bg-accent-300\/70/);
 }
 
-export async function stoppedTimeEntryResponse(
-    page: Page,
-    { description = '', tags = [] } = {}
-) {
+export async function stoppedTimeEntryResponse(page: Page, { description = '', tags = [] } = {}) {
     return page.waitForResponse(async (response) => {
         return (
             response.status() === 200 &&
             response.url().includes('/time-entries/') &&
-            (await response.headerValue('Content-Type')) ===
-                'application/json' &&
+            (await response.headerValue('Content-Type')) === 'application/json' &&
             (await response.json()).data.id !== null &&
             (await response.json()).data.start !== null &&
             (await response.json()).data.end !== null &&
@@ -61,8 +51,7 @@ export async function stoppedTimeEntryResponse(
             (await response.json()).data.task_id === null &&
             (await response.json()).data.duration !== null &&
             (await response.json()).data.user_id !== null &&
-            JSON.stringify((await response.json()).data.tags) ===
-                JSON.stringify(tags)
+            JSON.stringify((await response.json()).data.tags) === JSON.stringify(tags)
         );
     });
 }

@@ -20,11 +20,8 @@ onMounted(async () => {
                 class="grid min-w-full"
                 style="grid-template-columns: 1fr 1fr 80px">
                 <InvitationTableHeading></InvitationTableHeading>
-                <template
-                    v-for="invitation in invitations"
-                    :key="invitation.id">
-                    <InvitationTableRow
-                        :invitation="invitation"></InvitationTableRow>
+                <template v-for="invitation in invitations" :key="invitation.id">
+                    <InvitationTableRow :invitation="invitation"></InvitationTableRow>
                 </template>
             </div>
         </div>
