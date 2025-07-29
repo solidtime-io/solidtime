@@ -35,10 +35,9 @@ If you have a **feature request**, please [**create a discussion**](https://gith
 
 ## Contributing
 
-This project is in a very early stage. The structure and APIs are still subject to change and not stable. 
-Therefore, we do not currently accept any contributions, unless you are a member of the team.
+Please open an issue or start a discussion and wait for approval before submitting a pull request. This does not apply to tiny fixes or changes however, please keep in mind that we might not merge PRs for various reasons. 
 
-As soon as we feel comfortable enough that the application structure is stable enough, we will open up the project for contributions.
+Please read the [CONTRIBUTING.md](./CONTRIBUTING.md) before sumbitting a Pull Request.
 
 We do accept contributions in the [documentation repository](https://github.com/solidtime-io/docs) f.e. to add new self-hosting guides.
 
