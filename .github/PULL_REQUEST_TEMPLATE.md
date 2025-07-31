@@ -1,8 +1,11 @@
-<!--
-This project is early stage. The structure and APIs are still subject to change and not stable.
-Therefore, we do not currently accept any contributions, unless you are a member of the team.
+## What does this PR do?
 
-As soon as we feel comfortable enough that the application structure is stable enough, we will open up the project for contributions.
+<!-- Please include a summary of the change and which issue is fixed. Please also include relevant motivation and context. List any dependencies that are required for this change. -->
 
-We do accept contributions in the [documentation repository](https://github.com/solidtime-io/docs) f.e. to add new self-hosting guides.
--->
+- Fixes #XXXX (GitHub issue number)
+
+## Checklist (DO NOT REMOVE)
+
+- [ ] I read the [contributing guide](https://github.com/solidtime-io/solidtime/blob/main/CONTRIBUTING.md)
+- [ ] I signed the [Contributor License Agreement](https://cla-assistant.io/solidtime-io/solidtime).
+- [ ] I commented my code, particularly in hard-to-understand areas
