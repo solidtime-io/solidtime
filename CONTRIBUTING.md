@@ -61,6 +61,7 @@ For frontend changes:
 
 ```
 npm run lint:fix
+npm run format
 ```
 
 ## Vision
