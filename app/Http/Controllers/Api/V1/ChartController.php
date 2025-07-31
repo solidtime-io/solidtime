@@ -14,6 +14,8 @@ use Illuminate\Http\JsonResponse;
 class ChartController extends Controller
 {
     /**
+     * Get chart data for the weekly project overview.
+     *
      * @throws AuthorizationException
      *
      * @operationId weeklyProjectOverview
@@ -31,6 +33,8 @@ class ChartController extends Controller
     }
 
     /**
+     * Get chart data for the latest tasks.
+     *
      * @throws AuthorizationException
      *
      * @operationId latestTasks
@@ -48,6 +52,8 @@ class ChartController extends Controller
     }
 
     /**
+     * Get chart data for the last seven days.
+     *
      * @throws AuthorizationException
      *
      * @operationId lastSevenDays
@@ -65,6 +71,8 @@ class ChartController extends Controller
     }
 
     /**
+     * Get chart data for the latest team activity.
+     *
      * @throws AuthorizationException
      *
      * @operationId latestTeamActivity
@@ -81,6 +89,8 @@ class ChartController extends Controller
     }
 
     /**
+     * Get chart data for daily tracked hours.
+     *
      * @throws AuthorizationException
      *
      * @operationId dailyTrackedHours
@@ -98,6 +108,8 @@ class ChartController extends Controller
     }
 
     /**
+     * Get chart data for total weekly time.
+     *
      * @throws AuthorizationException
      *
      * @operationId totalWeeklyTime
@@ -115,6 +127,8 @@ class ChartController extends Controller
     }
 
     /**
+     * Get chart data for total weekly billable time.
+     *
      * @throws AuthorizationException
      *
      * @operationId totalWeeklyBillableTime
@@ -132,6 +146,8 @@ class ChartController extends Controller
     }
 
     /**
+     * Get chart data for total weekly billable amount.
+     *
      * @throws AuthorizationException
      *
      * @operationId totalWeeklyBillableAmount
@@ -154,6 +170,8 @@ class ChartController extends Controller
     }
 
     /**
+     * Get chart data for weekly history.
+     *
      * @throws AuthorizationException
      *
      * @operationId weeklyHistory
