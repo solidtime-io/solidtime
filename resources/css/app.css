@@ -163,8 +163,8 @@ body {
 /* Inter Variable Font with browser compatibility considerations */
 @font-face {
     font-family: 'Inter';
-    src: url('/fonts/Inter-Variable.woff2') format('woff2'),
-         url('/fonts/Inter-Variable.ttf') format('truetype');
+    src: url('/fonts/InterVariable.woff2') format('woff2'),
+         url('/fonts/InterVariable.ttf') format('truetype');
     font-weight: 100 900;
     font-style: normal;
     font-display: swap;
