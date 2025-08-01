@@ -38,15 +38,12 @@ async function resendInvitation() {
     if (organizationId) {
         await handleApiRequestNotifications(
             () =>
-                api.resendInvitationEmail(
-                    undefined,
-                    {
-                        params: {
-                            invitation: props.invitation.id,
-                            organization: organizationId,
-                        },
-                    }
-                ),
+                api.resendInvitationEmail(undefined, {
+                    params: {
+                        invitation: props.invitation.id,
+                        organization: organizationId,
+                    },
+                }),
             'Invitation mail sent successfully',
             'Error sending invitation mail'
         );
@@ -65,9 +62,7 @@ async function resendInvitation() {
         </div>
         <div
             class="relative whitespace-nowrap flex items-center pl-3 text-right text-sm font-medium pr-4 sm:pr-6 lg:pr-8 3xl:pr-12">
-            <InvitationMoreOptionsDropdown
-                @delete="deleteInvitation"
-                @resend="resendInvitation" />
+            <InvitationMoreOptionsDropdown @delete="deleteInvitation" @resend="resendInvitation" />
         </div>
     </TableRow>
 </template>

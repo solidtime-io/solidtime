@@ -28,7 +28,7 @@ use Staudenmeir\EloquentJsonRelations\Relations\BelongsToJson;
  * @property Carbon|null $end
  * @property int|null $billable_rate Billable rate per hour in cents
  * @property bool $billable
- * @property array $tags
+ * @property array<string> $tags
  * @property string $user_id
  * @property string $member_id
  * @property bool $is_imported
@@ -45,7 +45,7 @@ use Staudenmeir\EloquentJsonRelations\Relations\BelongsToJson;
  * @property-read Client|null $client
  * @property string|null $task_id
  * @property-read Task|null $task
- * @property-read Collection<Tag> $tagsRelation
+ * @property-read Collection<int, Tag> $tagsRelation
  *
  * @method Builder<TimeEntry> hasTag(Tag $tag)
  * @method static TimeEntryFactory factory()
@@ -75,6 +75,26 @@ class TimeEntry extends Model implements AuditableContract
         'billable_rate' => 'int',
         'is_imported' => 'bool',
         'still_active_email_sent_at' => 'datetime',
+    ];
+
+    public const array SELECT_COLUMNS = [
+        'id',
+        'description',
+        'start',
+        'end',
+        'billable_rate',
+        'billable',
+        'user_id',
+        'organization_id',
+        'project_id',
+        'task_id',
+        'tags',
+        'created_at',
+        'updated_at',
+        'member_id',
+        'client_id',
+        'is_imported',
+        'still_active_email_sent_at',
     ];
 
     /**
@@ -154,7 +174,7 @@ class TimeEntry extends Model implements AuditableContract
     }
 
     /**
-     * @return BelongsTo<User, TimeEntry>
+     * @return BelongsTo<User, $this>
      */
     public function user(): BelongsTo
     {
@@ -162,7 +182,7 @@ class TimeEntry extends Model implements AuditableContract
     }
 
     /**
-     * @return BelongsTo<Member, TimeEntry>
+     * @return BelongsTo<Member, $this>
      */
     public function member(): BelongsTo
     {
@@ -170,7 +190,7 @@ class TimeEntry extends Model implements AuditableContract
     }
 
     /**
-     * @return BelongsTo<Organization, TimeEntry>
+     * @return BelongsTo<Organization, $this>
      */
     public function organization(): BelongsTo
     {
@@ -178,7 +198,7 @@ class TimeEntry extends Model implements AuditableContract
     }
 
     /**
-     * @return BelongsTo<Project, TimeEntry>
+     * @return BelongsTo<Project, $this>
      */
     public function project(): BelongsTo
     {
@@ -186,7 +206,7 @@ class TimeEntry extends Model implements AuditableContract
     }
 
     /**
-     * @return BelongsTo<Task, TimeEntry>
+     * @return BelongsTo<Task, $this>
      */
     public function task(): BelongsTo
     {
@@ -196,7 +216,7 @@ class TimeEntry extends Model implements AuditableContract
     /**
      * This relation can be reconstructed via the task relation. It is only here for performance reasons.
      *
-     * @return BelongsTo<Client, TimeEntry>
+     * @return BelongsTo<Client, $this>
      */
     public function client(): BelongsTo
     {

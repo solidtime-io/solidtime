@@ -1,7 +1,17 @@
 <script setup lang="ts">
-import { TrashIcon, UserCircleIcon, PencilSquareIcon, ArrowDownOnSquareStackIcon } from '@heroicons/vue/20/solid';
+import {
+    TrashIcon,
+    UserCircleIcon,
+    PencilSquareIcon,
+    ArrowDownOnSquareStackIcon,
+} from '@heroicons/vue/20/solid';
 import type { Member } from '@/packages/api/src';
-import {canDeleteMembers, canMakeMembersPlaceholders, canMergeMembers, canUpdateMembers} from '@/utils/permissions';
+import {
+    canDeleteMembers,
+    canMakeMembersPlaceholders,
+    canMergeMembers,
+    canUpdateMembers,
+} from '@/utils/permissions';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -50,15 +60,6 @@ const props = defineProps<{
                 <span>Edit</span>
             </DropdownMenuItem>
             <DropdownMenuItem
-                v-if="canDeleteMembers()"
-                :aria-label="'Delete Member ' + props.member.name"
-                data-testid="member_delete"
-                class="flex items-center space-x-3 cursor-pointer text-destructive focus:text-destructive"
-                @click="emit('delete')">
-                <TrashIcon class="w-5" />
-                <span>Delete</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem
                 v-if="props.member.role === 'placeholder' && canMergeMembers()"
                 :aria-label="'Merge Member ' + props.member.name"
                 data-testid="member_merge"
@@ -74,6 +75,15 @@ const props = defineProps<{
                 @click="emit('makePlaceholder')">
                 <UserCircleIcon class="w-5 text-icon-active" />
                 <span>Deactivate</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+                v-if="canDeleteMembers()"
+                :aria-label="'Delete Member ' + props.member.name"
+                data-testid="member_delete"
+                class="flex items-center space-x-3 cursor-pointer text-destructive focus:text-destructive"
+                @click="emit('delete')">
+                <TrashIcon class="w-5" />
+                <span>Delete</span>
             </DropdownMenuItem>
         </DropdownMenuContent>
     </DropdownMenu>

@@ -14,12 +14,10 @@ use App\Service\Import\Importers\GenericProjectsImporter;
 use App\Service\Import\Importers\ImportException;
 use Illuminate\Support\Facades\Storage;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\UsesClass;
 
 #[CoversClass(GenericProjectsImporter::class)]
 #[CoversClass(ImportException::class)]
 #[CoversClass(DefaultImporter::class)]
-#[UsesClass(GenericProjectsImporter::class)]
 class GenericProjectsImporterTest extends ImporterTestAbstract
 {
     public function test_import_of_test_file_succeeds(): void

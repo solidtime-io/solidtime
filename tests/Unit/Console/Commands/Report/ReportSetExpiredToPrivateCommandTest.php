@@ -9,11 +9,9 @@ use App\Models\Report;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\UsesClass;
 use Tests\TestCaseWithDatabase;
 
 #[CoversClass(ReportSetExpiredToPrivateCommand::class)]
-#[UsesClass(ReportSetExpiredToPrivateCommand::class)]
 class ReportSetExpiredToPrivateCommandTest extends TestCaseWithDatabase
 {
     public function test_command_sets_expired_reports_to_private(): void

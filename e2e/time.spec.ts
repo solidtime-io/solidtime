@@ -25,9 +25,7 @@ async function createEmptyTimeEntry(page: Page) {
         startOrStopTimerWithButton(page),
         assertThatTimerIsStopped(page),
         page.waitForResponse(
-            (response) =>
-                response.url().includes('/time-entries') &&
-                response.status() === 200
+            (response) => response.url().includes('/time-entries') && response.status() === 200
         ),
     ]);
 }
@@ -38,9 +36,7 @@ test('test that starting and stopping an empty time entry shows a new time entry
     await Promise.all([
         goToTimeOverview(page),
         page.waitForResponse(
-            (response) =>
-                response.url().includes('/time-entries') &&
-                response.status() === 200
+            (response) => response.url().includes('/time-entries') && response.status() === 200
         ),
     ]);
     await page.waitForTimeout(100);
@@ -56,9 +52,7 @@ test('test that starting and stopping an empty time entry shows a new time entry
 // Test that description update works
 
 async function assertThatTimeEntryRowIsStopped(newTimeEntry: Locator) {
-    await expect(newTimeEntry.getByTestId('timer_button')).toHaveClass(
-        /bg-accent-300\/70/
-    );
+    await expect(newTimeEntry.getByTestId('timer_button')).toHaveClass(/bg-accent-300\/70/);
 }
 
 test('test that updating a description of a time entry in the overview works on blur', async ({
@@ -71,17 +65,14 @@ test('test that updating a description of a time entry in the overview works on 
     await assertThatTimeEntryRowIsStopped(newTimeEntry);
 
     const newDescription = Math.floor(Math.random() * 1000000).toString();
-    const descriptionElement = newTimeEntry.getByTestId(
-        'time_entry_description'
-    );
+    const descriptionElement = newTimeEntry.getByTestId('time_entry_description');
     await descriptionElement.fill(newDescription);
     await Promise.all([
         descriptionElement.press('Tab'),
         page.waitForResponse(async (response) => {
             return (
                 response.status() === 200 &&
-                (await response.headerValue('Content-Type')) ===
-                    'application/json' &&
+                (await response.headerValue('Content-Type')) === 'application/json' &&
                 (await response.json()).data.id !== null &&
                 (await response.json()).data.start !== null &&
                 (await response.json()).data.end !== null &&
@@ -90,8 +81,7 @@ test('test that updating a description of a time entry in the overview works on 
                 (await response.json()).data.task_id === null &&
                 (await response.json()).data.duration !== null &&
                 (await response.json()).data.user_id !== null &&
-                JSON.stringify((await response.json()).data.tags) ===
-                    JSON.stringify([])
+                JSON.stringify((await response.json()).data.tags) === JSON.stringify([])
             );
         }),
     ]);
@@ -107,17 +97,14 @@ test('test that updating a description of a time entry in the overview works on 
     const newTimeEntry = timeEntryRows.first();
     await assertThatTimeEntryRowIsStopped(newTimeEntry);
     const newDescription = Math.floor(Math.random() * 1000000).toString();
-    const descriptionElement = newTimeEntry.getByTestId(
-        'time_entry_description'
-    );
+    const descriptionElement = newTimeEntry.getByTestId('time_entry_description');
     await descriptionElement.fill(newDescription);
     await Promise.all([
         descriptionElement.press('Enter'),
         page.waitForResponse(async (response) => {
             return (
                 response.status() === 200 &&
-                (await response.headerValue('Content-Type')) ===
-                    'application/json' &&
+                (await response.headerValue('Content-Type')) === 'application/json' &&
                 (await response.json()).data.id !== null &&
                 (await response.json()).data.start !== null &&
                 (await response.json()).data.end !== null &&
@@ -126,16 +113,13 @@ test('test that updating a description of a time entry in the overview works on 
                 (await response.json()).data.task_id === null &&
                 (await response.json()).data.duration !== null &&
                 (await response.json()).data.user_id !== null &&
-                JSON.stringify((await response.json()).data.tags) ===
-                    JSON.stringify([])
+                JSON.stringify((await response.json()).data.tags) === JSON.stringify([])
             );
         }),
     ]);
 });
 
-test('test that adding a new tag to an existing time entry works', async ({
-    page,
-}) => {
+test('test that adding a new tag to an existing time entry works', async ({ page }) => {
     await goToTimeOverview(page);
     const timeEntryRows = page.locator('[data-testid="time_entry_row"]');
     await createEmptyTimeEntry(page);
@@ -152,8 +136,7 @@ test('test that adding a new tag to an existing time entry works', async ({
         page.waitForResponse(async (response) => {
             return (
                 response.status() === 201 &&
-                (await response.headerValue('Content-Type')) ===
-                    'application/json' &&
+                (await response.headerValue('Content-Type')) === 'application/json' &&
                 (await response.json()).data.name === newTagName
             );
         }),
@@ -163,8 +146,7 @@ test('test that adding a new tag to an existing time entry works', async ({
     await page.waitForResponse(async (response) => {
         return (
             response.status() === 200 &&
-            (await response.headerValue('Content-Type')) ===
-                'application/json' &&
+            (await response.headerValue('Content-Type')) === 'application/json' &&
             (await response.json()).data.id !== null &&
             (await response.json()).data.start !== null &&
             (await response.json()).data.end !== null &&
@@ -187,17 +169,14 @@ test('test that updating a the start of an existing time entry in the overview w
     const newTimeEntry = timeEntryRows.first();
     await assertThatTimeEntryRowIsStopped(newTimeEntry);
     await page.waitForTimeout(1500);
-    const timeEntryRangeElement = newTimeEntry.getByTestId(
-        'time_entry_range_selector'
-    );
+    const timeEntryRangeElement = newTimeEntry.getByTestId('time_entry_range_selector');
     await timeEntryRangeElement.click();
     await page.getByTestId('time_entry_range_start').first().fill('1');
     await Promise.all([
         page.waitForResponse(async (response) => {
             return (
                 response.status() === 200 &&
-                (await response.headerValue('Content-Type')) ===
-                    'application/json' &&
+                (await response.headerValue('Content-Type')) === 'application/json' &&
                 (await response.json()).data.id !== null &&
                 // TODO! Actually check the value
                 (await response.json()).data.start !== null &&
@@ -208,9 +187,7 @@ test('test that updating a the start of an existing time entry in the overview w
     ]);
 });
 
-test('test that updating a the duration in the overview works on blur', async ({
-    page,
-}) => {
+test('test that updating a the duration in the overview works on blur', async ({ page }) => {
     await goToTimeOverview(page);
     const timeEntryRows = page.locator('[data-testid="time_entry_row"]');
     await createEmptyTimeEntry(page);
@@ -225,8 +202,7 @@ test('test that updating a the duration in the overview works on blur', async ({
         page.waitForResponse(async (response) => {
             return (
                 response.status() === 200 &&
-                (await response.headerValue('Content-Type')) ===
-                    'application/json' &&
+                (await response.headerValue('Content-Type')) === 'application/json' &&
                 (await response.json()).data.id !== null &&
                 // TODO! Actually check the value
                 (await response.json()).data.start !== null &&
@@ -240,9 +216,7 @@ test('test that updating a the duration in the overview works on blur', async ({
 });
 
 // Test that start stop button stops running timer
-test('test that starting a time entry from the overview works', async ({
-    page,
-}) => {
+test('test that starting a time entry from the overview works', async ({ page }) => {
     await goToTimeOverview(page);
     const timeEntryRows = page.locator('[data-testid="time_entry_row"]');
     await createEmptyTimeEntry(page);
@@ -255,8 +229,7 @@ test('test that starting a time entry from the overview works', async ({
         page.waitForResponse(async (response) => {
             return (
                 response.status() === 200 &&
-                (await response.headerValue('Content-Type')) ===
-                    'application/json' &&
+                (await response.headerValue('Content-Type')) === 'application/json' &&
                 (await response.json()).data.id !== null &&
                 (await response.json()).data.start !== null &&
                 (await response.json()).data.end !== null
@@ -272,8 +245,7 @@ test('test that starting a time entry from the overview works', async ({
         page.waitForResponse(async (response) => {
             return (
                 response.status() === 200 &&
-                (await response.headerValue('Content-Type')) ===
-                    'application/json' &&
+                (await response.headerValue('Content-Type')) === 'application/json' &&
                 (await response.json()).data.id !== null &&
                 (await response.json()).data.start !== null &&
                 (await response.json()).data.end !== null
@@ -284,9 +256,7 @@ test('test that starting a time entry from the overview works', async ({
     ]);
 });
 
-test('test that deleting a time entry from the overview works', async ({
-    page,
-}) => {
+test('test that deleting a time entry from the overview works', async ({ page }) => {
     await goToTimeOverview(page);
     const timeEntryRows = page.locator('[data-testid="time_entry_row"]');
     await createEmptyTimeEntry(page);
@@ -302,16 +272,12 @@ test('test that deleting a time entry from the overview works', async ({
     await expect(timeEntryRows).toHaveCount(0);
 });
 
-test.skip('test that load more works when the end of page is reached', async ({
-    page,
-}) => {
+test.skip('test that load more works when the end of page is reached', async ({ page }) => {
     // this test is flaky when you do not need to scroll
     await Promise.all([
         goToTimeOverview(page),
         page.waitForResponse(
-            (response) =>
-                response.url().includes('/time-entries') &&
-                response.status() === 200
+            (response) => response.url().includes('/time-entries') && response.status() === 200
         ),
     ]);
 
@@ -322,18 +288,14 @@ test.skip('test that load more works when the end of page is reached', async ({
             return (
                 response.status() === 200 &&
                 response.url().includes('before') &&
-                (await response.headerValue('Content-Type')) ===
-                    'application/json' &&
-                JSON.stringify((await response.json()).data) ===
-                    JSON.stringify([])
+                (await response.headerValue('Content-Type')) === 'application/json' &&
+                JSON.stringify((await response.json()).data) === JSON.stringify([])
             );
         }),
     ]);
 
     // assert that "All time entries are loaded!" is visible on page
-    await expect(page.locator('body')).toHaveText(
-        /All time entries are loaded!/
-    );
+    await expect(page.locator('body')).toHaveText(/All time entries are loaded!/);
 });
 
 // TODO: Test that updating the time entry start / end times works while it is running

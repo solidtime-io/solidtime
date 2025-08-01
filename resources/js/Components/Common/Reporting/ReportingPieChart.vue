@@ -11,17 +11,10 @@ import {
     TooltipComponent,
 } from 'echarts/components';
 import { formatHumanReadableDuration } from '@/packages/ui/src/utils/time';
-import { useCssVar } from '@vueuse/core';
+import { useCssVariable } from '@/utils/useCssVariable';
 import type { Organization } from '@/packages/api/src';
 
-use([
-    CanvasRenderer,
-    PieChart,
-    TitleComponent,
-    GridComponent,
-    TooltipComponent,
-    LegendComponent,
-]);
+use([CanvasRenderer, PieChart, TitleComponent, GridComponent, TooltipComponent, LegendComponent]);
 
 provide(THEME_KEY, 'dark');
 
@@ -36,7 +29,7 @@ type ReportingChartDataEntry = {
 const props = defineProps<{
     data: ReportingChartDataEntry | null;
 }>();
-const labelColor = useCssVar('--color-text-secondary', null, { observe: true });
+const labelColor = useCssVariable('--color-text-secondary');
 
 const seriesData = computed(() => {
     return props.data?.map((el) => {

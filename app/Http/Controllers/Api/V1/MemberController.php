@@ -10,12 +10,14 @@ use App\Exceptions\Api\CanNotRemoveOwnerFromOrganization;
 use App\Exceptions\Api\ChangingRoleOfPlaceholderIsNotAllowed;
 use App\Exceptions\Api\ChangingRoleToPlaceholderIsNotAllowed;
 use App\Exceptions\Api\EntityStillInUseApiException;
+use App\Exceptions\Api\InvitationForTheEmailAlreadyExistsApiException;
 use App\Exceptions\Api\OnlyOwnerCanChangeOwnership;
 use App\Exceptions\Api\OnlyPlaceholdersCanBeMergedIntoAnotherMember;
 use App\Exceptions\Api\OrganizationNeedsAtLeastOneOwner;
 use App\Exceptions\Api\ThisPlaceholderCanNotBeInvitedUseTheMergeToolInsteadException;
 use App\Exceptions\Api\UserIsAlreadyMemberOfOrganizationApiException;
 use App\Exceptions\Api\UserNotPlaceholderApiException;
+use App\Http\Requests\V1\Member\MemberDestroyRequest;
 use App\Http\Requests\V1\Member\MemberIndexRequest;
 use App\Http\Requests\V1\Member\MemberMergeIntoRequest;
 use App\Http\Requests\V1\Member\MemberUpdateRequest;
@@ -100,11 +102,13 @@ class MemberController extends Controller
      *
      * @operationId removeMember
      */
-    public function destroy(Organization $organization, Member $member, MemberService $memberService): JsonResponse
+    public function destroy(MemberDestroyRequest $request, Organization $organization, Member $member, MemberService $memberService): JsonResponse
     {
         $this->checkPermission($organization, 'members:delete', $member);
 
-        $memberService->removeMember($member, $organization);
+        $deleteRelated = $request->getDeleteRelated();
+
+        $memberService->removeMember($member, $organization, $deleteRelated);
 
         return response()
             ->json(null, 204);
@@ -170,6 +174,7 @@ class MemberController extends Controller
      * @throws UserNotPlaceholderApiException
      * @throws UserIsAlreadyMemberOfOrganizationApiException
      * @throws ThisPlaceholderCanNotBeInvitedUseTheMergeToolInsteadException
+     * @throws InvitationForTheEmailAlreadyExistsApiException
      *
      * @operationId invitePlaceholder
      */

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\TokenResource\Pages;
-use App\Models\Passport\Client;
 use App\Models\Passport\Token;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -40,7 +39,7 @@ class TokenResource extends Resource
                     ->label('Name')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\Select::make('user_id')
+                Forms\Components\Select::make('owner_id')
                     ->label('User')
                     ->relationship(name: 'user', titleAttribute: 'name')
                     ->searchable(['name'])
@@ -79,10 +78,12 @@ class TokenResource extends Resource
                 Tables\Columns\TextColumn::make('client.name')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\IconColumn::make('client.personal_access_client')
+                Tables\Columns\IconColumn::make('personal_access_client')
+                    ->state(function (Token $token): bool {
+                        return in_array('personal_access', $token->client->grant_types ?? [], true);
+                    })
                     ->boolean()
-                    ->label('API token?')
-                    ->sortable(),
+                    ->label('API token?'),
                 Tables\Columns\IconColumn::make('revoked')
                     ->boolean()
                     ->label('Revoked?')
@@ -104,17 +105,11 @@ class TokenResource extends Resource
                     ->queries(
                         true: function (Builder $query) {
                             /** @var Builder<Token> $query */
-                            return $query->whereHas('client', function (Builder $query) {
-                                /** @var Builder<Client> $query */
-                                return $query->where('personal_access_client', true);
-                            });
+                            return $query->isApiToken();
                         },
                         false: function (Builder $query) {
                             /** @var Builder<Token> $query */
-                            return $query->whereHas('client', function (Builder $query) {
-                                /** @var Builder<Client> $query */
-                                return $query->where('personal_access_client', false);
-                            });
+                            return $query->isApiToken(false);
                         },
                         blank: function (Builder $query) {
                             /** @var Builder<Token> $query */

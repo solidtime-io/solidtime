@@ -8,11 +8,9 @@ use App\Service\CurrencyService;
 use Brick\Money\Currency;
 use Brick\Money\Money;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\UsesClass;
 use Tests\TestCaseWithDatabase;
 
 #[CoversClass(CurrencyService::class)]
-#[UsesClass(CurrencyService::class)]
 class CurrencyServiceTest extends TestCaseWithDatabase
 {
     private CurrencyService $currencyService;
@@ -93,5 +91,16 @@ class CurrencyServiceTest extends TestCaseWithDatabase
 
         // Assert
         $this->assertSame('XXX', $symbol);
+    }
+
+    public function test_get_random_currency_code(): void
+    {
+        // Act
+        $currencyCode = $this->currencyService->getRandomCurrencyCode();
+
+        // Assert
+        $this->assertNotEmpty($currencyCode);
+        $this->assertIsString($currencyCode);
+        $this->assertNotNull(Currency::of($currencyCode));
     }
 }

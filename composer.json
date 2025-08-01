@@ -11,33 +11,33 @@
         "datomatic/laravel-enum-helper": "^2.0.0",
         "dedoc/scramble": "^0.12.2",
         "filament/filament": "^3.2",
-        "flowframe/laravel-trend": "^0.3.0",
+        "flowframe/laravel-trend": "^0.4.0",
         "gotenberg/gotenberg-php": "^2.8",
         "guzzlehttp/guzzle": "^7.2",
-        "inertiajs/inertia-laravel": "^1.0",
+        "inertiajs/inertia-laravel": "^2.0.3",
         "korridor/laravel-computed-attributes": "^3.1",
         "korridor/laravel-has-many-sync": "^3.1",
         "korridor/laravel-model-validation-rules": "^3.0",
-        "laravel/framework": "^11.16.0",
+        "laravel/framework": "^12.19.3",
         "laravel/jetstream": "^5.0",
         "laravel/octane": "^2.3",
-        "laravel/passport": "^12.0",
+        "laravel/passport": "^13.0.5",
         "laravel/tinker": "^2.8",
         "league/csv": "^9.16.0",
         "league/flysystem-aws-s3-v3": "^3.0",
         "league/iso3166": "^4.3",
         "maatwebsite/excel": "^3.1",
         "novadaemon/filament-pretty-json": "^2.2",
-        "nwidart/laravel-modules": "^11.0.11",
-        "owen-it/laravel-auditing": "^13.6",
-        "pxlrbt/filament-environment-indicator": "^2.0",
+        "nwidart/laravel-modules": "^12.0.4",
+        "owen-it/laravel-auditing": "^14.0.0",
+        "pxlrbt/filament-environment-indicator": "^2.1.0",
         "spatie/temporary-directory": "^2.2",
         "staudenmeir/eloquent-json-relations": "^1.1",
         "stechstudio/filament-impersonate": "^3.8",
         "symfony/http-client": "^7.2",
         "symfony/postmark-mailer": "^7.1",
         "tightenco/ziggy": "^2.1.0",
-        "tpetry/laravel-postgresql-enhanced": "^2.0.0",
+        "tpetry/laravel-postgresql-enhanced": "^3.0.0",
         "wikimedia/composer-merge-plugin": "^2.1.0"
     },
     "require-dev": {
@@ -45,14 +45,13 @@
         "brianium/paratest": "^7.3",
         "fakerphp/faker": "^1.9.1",
         "fumeapp/modeltyper": "^3.0",
-        "phpstan/phpstan": "1.12.0",
-        "larastan/larastan": "^2.0",
+        "larastan/larastan": "^3.5.0",
         "laravel/pint": "^1.0",
         "laravel/sail": "^1.18",
         "laravel/telescope": "^5.0",
         "mockery/mockery": "^1.4.4",
         "nunomaduro/collision": "^8.1",
-        "phpunit/phpunit": "^11",
+        "phpunit/phpunit": "^12",
         "spatie/laravel-ignition": "^2.0",
         "timacdonald/log-fake": "^2.1"
     },
@@ -121,7 +120,8 @@
     "extra": {
         "laravel": {
             "dont-discover": [
-                "laravel/telescope"
+                "laravel/telescope",
+                "nwidart/laravel-modules"
             ]
         }
     },

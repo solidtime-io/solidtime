@@ -12,12 +12,10 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\UsesClass;
 use Tests\TestCase;
 
 #[CoversClass(ImportService::class)]
 #[CoversClass(ImporterProvider::class)]
-#[UsesClass(ImportService::class)]
 class ImportServiceTest extends TestCase
 {
     use RefreshDatabase;

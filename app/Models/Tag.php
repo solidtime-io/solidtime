@@ -22,7 +22,7 @@ use Staudenmeir\EloquentJsonRelations\Relations\HasManyJson;
  * @property string $organization_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * @property-read Collection<TimeEntry> $timeEntries
+ * @property-read Collection<int, TimeEntry> $timeEntries
  * @property-read Organization $organization
  *
  * @method static TagFactory factory()
@@ -47,7 +47,7 @@ class Tag extends Model implements AuditableContract
     ];
 
     /**
-     * @return BelongsTo<Organization, Tag>
+     * @return BelongsTo<Organization, $this>
      */
     public function organization(): BelongsTo
     {

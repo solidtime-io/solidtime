@@ -33,13 +33,9 @@ import { canCreateProjects } from '@/utils/permissions';
 
 const timeEntriesStore = useTimeEntriesStore();
 const { timeEntries, allTimeEntriesLoaded } = storeToRefs(timeEntriesStore);
-const { updateTimeEntry, fetchTimeEntries, createTimeEntry } =
-    useTimeEntriesStore();
+const { updateTimeEntry, fetchTimeEntries, createTimeEntry } = useTimeEntriesStore();
 
-async function updateTimeEntries(
-    ids: string[],
-    changes: UpdateMultipleTimeEntriesChangeset
-) {
+async function updateTimeEntries(ids: string[], changes: UpdateMultipleTimeEntriesChangeset) {
     await useTimeEntriesStore().updateTimeEntries(ids, changes);
     fetchTimeEntries();
 }
@@ -52,9 +48,7 @@ const { currentTimeEntry } = storeToRefs(currentTimeEntryStore);
 const { setActiveState } = currentTimeEntryStore;
 const { tags } = storeToRefs(useTagsStore());
 
-async function startTimeEntry(
-    timeEntry: Omit<CreateTimeEntryBody, 'member_id'>
-) {
+async function startTimeEntry(timeEntry: Omit<CreateTimeEntryBody, 'member_id'>) {
     if (currentTimeEntry.value.id) {
         await setActiveState(false);
     }
@@ -69,11 +63,7 @@ function deleteTimeEntries(timeEntries: TimeEntry[]) {
 }
 
 watch(isLoadMoreVisible, async (isVisible) => {
-    if (
-        isVisible &&
-        timeEntries.value.length > 0 &&
-        !allTimeEntriesLoaded.value
-    ) {
+    if (isVisible && timeEntries.value.length > 0 && !allTimeEntriesLoaded.value) {
         loading.value = true;
         await timeEntriesStore.fetchMoreTimeEntries();
     }
@@ -94,14 +84,10 @@ const { clients } = storeToRefs(clientStore);
 async function createTag(name: string) {
     return await useTagsStore().createTag(name);
 }
-async function createProject(
-    project: CreateProjectBody
-): Promise<Project | undefined> {
+async function createProject(project: CreateProjectBody): Promise<Project | undefined> {
     return await useProjectsStore().createProject(project);
 }
-async function createClient(
-    body: CreateClientBody
-): Promise<Client | undefined> {
+async function createClient(body: CreateClientBody): Promise<Client | undefined> {
     return await useClientsStore().createClient(body);
 }
 
@@ -131,8 +117,7 @@ function deleteSelected() {
         :tags
         :clients></TimeEntryCreateModal>
     <AppLayout title="Dashboard" data-testid="time_view">
-        <MainContainer
-            class="pt-5 lg:pt-8 pb-4 lg:pb-6">
+        <MainContainer class="pt-5 lg:pt-8 pb-4 lg:pb-6">
             <div
                 class="lg:flex items-end lg:divide-x divide-default-background-separator divide-y lg:divide-y-0 space-y-2 lg:space-y-0 lg:space-x-2">
                 <div class="flex-1">

@@ -10,11 +10,9 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Hash;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\UsesClass;
 use Tests\TestCaseWithDatabase;
 
 #[CoversClass(UserCreateCommand::class)]
-#[UsesClass(UserCreateCommand::class)]
 class UserCreateCommandCommandTest extends TestCaseWithDatabase
 {
     public function test_it_creates_user(): void

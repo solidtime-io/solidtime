@@ -57,7 +57,7 @@ class AddOrganizationMember implements AddsTeamMembers
      */
     protected function rules(): array
     {
-        return array_filter([
+        return [
             'email' => [
                 'required',
                 'email',
@@ -75,7 +75,7 @@ class AddOrganizationMember implements AddsTeamMembers
                     Role::Employee->value,
                 ]),
             ],
-        ]);
+        ];
     }
 
     /**

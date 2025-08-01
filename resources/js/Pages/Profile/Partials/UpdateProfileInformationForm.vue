@@ -28,11 +28,7 @@ const photoPreview = ref<ArrayBuffer | undefined | string | null>(null);
 const photoInput = ref<HTMLInputElement | null>(null);
 
 const updateProfileInformation = () => {
-    if (
-        photoInput.value &&
-        photoInput.value.files &&
-        photoInput.value.files?.length > 0
-    ) {
+    if (photoInput.value && photoInput.value.files && photoInput.value.files?.length > 0) {
         form.photo = photoInput.value?.files[0];
     }
 
@@ -100,9 +96,7 @@ const page = usePage<{
 
         <template #form>
             <!-- Profile Photo -->
-            <div
-                v-if="page.props.jetstream.managesProfilePhotos"
-                class="col-span-6 sm:col-span-4">
+            <div v-if="page.props.jetstream.managesProfilePhotos" class="col-span-6 sm:col-span-4">
                 <!-- Profile Photo File Input -->
                 <input
                     id="photo"
@@ -125,15 +119,10 @@ const page = usePage<{
                 <div v-show="photoPreview" class="mt-2">
                     <span
                         class="block rounded-full w-20 h-20 bg-cover bg-no-repeat bg-center"
-                        :style="
-                            'background-image: url(\'' + photoPreview + '\');'
-                        " />
+                        :style="'background-image: url(\'' + photoPreview + '\');'" />
                 </div>
 
-                <SecondaryButton
-                    class="mt-2 me-2"
-                    type="button"
-                    @click.prevent="selectNewPhoto">
+                <SecondaryButton class="mt-2 me-2" type="button" @click.prevent="selectNewPhoto">
                     Select A New Photo
                 </SecondaryButton>
 
@@ -175,8 +164,7 @@ const page = usePage<{
 
                 <div
                     v-if="
-                        page.props.jetstream.hasEmailVerification &&
-                        user.email_verified_at === null
+                        page.props.jetstream.hasEmailVerification && user.email_verified_at === null
                     ">
                     <p class="text-sm mt-2 text-text-primary">
                         Your email address is unverified.
@@ -194,8 +182,7 @@ const page = usePage<{
                     <div
                         v-show="verificationLinkSent"
                         class="mt-2 font-medium text-sm text-green-400">
-                        A new verification link has been sent to your email
-                        address.
+                        A new verification link has been sent to your email address.
                     </div>
                 </div>
             </div>
@@ -211,8 +198,7 @@ const page = usePage<{
                     class="mt-1 block w-full border-input-border bg-input-background text-text-primary focus:border-input-border-active rounded-md shadow-sm">
                     <option value="" disabled>Select a Timezone</option>
                     <option
-                        v-for="(timezoneTranslated, timezoneKey) in $page.props
-                            .timezones"
+                        v-for="(timezoneTranslated, timezoneKey) in $page.props.timezones"
                         :key="timezoneKey"
                         :value="timezoneKey">
                         {{ timezoneTranslated }}
@@ -232,8 +218,7 @@ const page = usePage<{
                     class="mt-1 block w-full border-input-border bg-input-background text-text-primary focus:border-input-border-active rounded-md shadow-sm">
                     <option value="" disabled>Select a week day</option>
                     <option
-                        v-for="(weekdayTranslated, weekdayKey) in $page.props
-                            .weekdays"
+                        v-for="(weekdayTranslated, weekdayKey) in $page.props.weekdays"
                         :key="weekdayKey"
                         :value="weekdayKey">
                         {{ weekdayTranslated }}
@@ -244,13 +229,9 @@ const page = usePage<{
         </template>
 
         <template #actions>
-            <ActionMessage :on="form.recentlySuccessful" class="me-3">
-                Saved.
-            </ActionMessage>
+            <ActionMessage :on="form.recentlySuccessful" class="me-3"> Saved. </ActionMessage>
 
-            <PrimaryButton
-                :class="{ 'opacity-25': form.processing }"
-                :disabled="form.processing">
+            <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
                 Save
             </PrimaryButton>
         </template>

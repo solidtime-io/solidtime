@@ -8,9 +8,12 @@ use App\Exceptions\Api\PersonalAccessClientIsNotConfiguredException;
 use App\Http\Requests\V1\ApiToken\ApiTokenStoreRequest;
 use App\Http\Resources\V1\ApiToken\ApiTokenCollection;
 use App\Http\Resources\V1\ApiToken\ApiTokenWithAccessTokenResource;
+use App\Models\Passport\Client;
 use App\Models\Passport\Token;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Str;
 
 class ApiTokenController extends Controller
 {
@@ -28,7 +31,10 @@ class ApiTokenController extends Controller
         $user = $this->user();
 
         $tokens = $user->tokens()
-            ->where('client_id', '=', config('passport.personal_access_client.id'))
+            ->whereHas('client', function (Builder $query): void {
+                /** @var Builder<Client> $query */
+                $query->whereJsonContains('grant_types', 'personal_access');
+            })
             ->get();
 
         return new ApiTokenCollection($tokens);
@@ -48,15 +54,21 @@ class ApiTokenController extends Controller
     {
         $user = $this->user();
 
-        if (config('passport.personal_access_client.id') === null || config('passport.personal_access_client.secret') === null) {
-            throw new PersonalAccessClientIsNotConfiguredException;
+        try {
+            $token = $user->createToken($request->getName(), ['*']);
+
+            /** @var Token $tokenModel */
+            $tokenModel = $token->getToken();
+
+            return new ApiTokenWithAccessTokenResource($tokenModel, $token->accessToken);
+        } catch (\RuntimeException $exception) {
+            report($exception);
+            if (Str::contains($exception->getMessage(), ['Personal access client not found'])) {
+                throw new PersonalAccessClientIsNotConfiguredException;
+            }
+
+            throw $exception;
         }
-
-        $token = $user->createToken($request->getName(), ['*']);
-        /** @var Token $tokenModel */
-        $tokenModel = $token->token;
-
-        return new ApiTokenWithAccessTokenResource($tokenModel, $token->accessToken);
     }
 
     /**
@@ -71,13 +83,10 @@ class ApiTokenController extends Controller
     {
         $user = $this->user();
 
-        if (config('passport.personal_access_client.id') === null || config('passport.personal_access_client.secret') === null) {
-            throw new PersonalAccessClientIsNotConfiguredException;
-        }
         if ($apiToken->user_id !== $user->getKey()) {
             throw new AuthorizationException('API token does not belong to user');
         }
-        if ($apiToken->client_id !== config('passport.personal_access_client.id')) {
+        if (! ($apiToken->client?->hasGrantType('personal_access') ?? false)) {
             throw new AuthorizationException('API token is not a personal access token');
         }
 
@@ -97,13 +106,10 @@ class ApiTokenController extends Controller
     {
         $user = $this->user();
 
-        if (config('passport.personal_access_client.id') === null || config('passport.personal_access_client.secret') === null) {
-            throw new PersonalAccessClientIsNotConfiguredException;
-        }
         if ($apiToken->user_id !== $user->getKey()) {
             throw new AuthorizationException('API token does not belong to user');
         }
-        if ($apiToken->client_id !== config('passport.personal_access_client.id')) {
+        if (! ($apiToken->client?->hasGrantType('personal_access') ?? false)) {
             throw new AuthorizationException('API token is not a personal access token');
         }
 

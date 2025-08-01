@@ -16,11 +16,9 @@ import {
 } from '@heroicons/vue/20/solid';
 import DateRangePicker from '@/packages/ui/src/Input/DateRangePicker.vue';
 import BillableIcon from '@/packages/ui/src/Icons/BillableIcon.vue';
+import ReportingRoundingControls from '@/Components/Common/Reporting/ReportingRoundingControls.vue';
 import { computed, onMounted, ref, watch } from 'vue';
-import {
-    getDayJsInstance,
-    getLocalizedDayJs,
-} from '@/packages/ui/src/utils/time';
+import { getDayJsInstance, getLocalizedDayJs } from '@/packages/ui/src/utils/time';
 import { storeToRefs } from 'pinia';
 import TagDropdown from '@/packages/ui/src/Tag/TagDropdown.vue';
 import {
@@ -66,8 +64,11 @@ import type { ExportFormat } from '@/types/reporting';
 import { useNotificationsStore } from '@/utils/notification';
 import TimeEntryMassActionRow from '@/packages/ui/src/TimeEntry/TimeEntryMassActionRow.vue';
 import { isAllowedToPerformPremiumAction } from '@/utils/billing';
-import {canCreateProjects, canViewAllTimeEntries} from '@/utils/permissions';
+import { canCreateProjects, canViewAllTimeEntries } from '@/utils/permissions';
 import ReportingExportModal from '@/Components/Common/Reporting/ReportingExportModal.vue';
+
+// TimeEntryRoundingType is now defined in ReportingRoundingControls component
+type TimeEntryRoundingType = 'up' | 'down' | 'nearest';
 
 const startDate = useSessionStorage<string>(
     'reporting-start-date',
@@ -83,9 +84,17 @@ const selectedMembers = ref<string[]>([]);
 const selectedTasks = ref<string[]>([]);
 const selectedClients = ref<string[]>([]);
 const billable = ref<'true' | 'false' | null>(null);
+const roundingEnabled = ref<boolean>(false);
+const roundingType = ref<TimeEntryRoundingType>('nearest');
+const roundingMinutes = ref<number>(15);
 
 const { members } = storeToRefs(useMembersStore());
 const pageLimit = 15;
+
+// Watch rounding enabled state to trigger updates
+watch(roundingEnabled, () => {
+    updateFilteredTimeEntries();
+});
 const currentPage = ref(1);
 
 function getFilterAttributes() {
@@ -99,22 +108,14 @@ function getFilterAttributes() {
     const params = {
         ...defaultParams,
         member_id: !canViewAllTimeEntries() ? getCurrentMembershipId() : undefined,
-        member_ids:
-            selectedMembers.value.length > 0
-                ? selectedMembers.value
-                : undefined,
-        project_ids:
-            selectedProjects.value.length > 0
-                ? selectedProjects.value
-                : undefined,
-        task_ids:
-            selectedTasks.value.length > 0 ? selectedTasks.value : undefined,
-        client_ids:
-            selectedClients.value.length > 0
-                ? selectedClients.value
-                : undefined,
+        member_ids: selectedMembers.value.length > 0 ? selectedMembers.value : undefined,
+        project_ids: selectedProjects.value.length > 0 ? selectedProjects.value : undefined,
+        task_ids: selectedTasks.value.length > 0 ? selectedTasks.value : undefined,
+        client_ids: selectedClients.value.length > 0 ? selectedClients.value : undefined,
         tag_ids: selectedTags.value.length > 0 ? selectedTags.value : undefined,
         billable: billable.value !== null ? billable.value : undefined,
+        rounding_type: roundingEnabled.value ? roundingType.value : undefined,
+        rounding_minutes: roundingEnabled.value ? roundingMinutes.value : undefined,
     };
     return params;
 }
@@ -123,8 +124,7 @@ const currentTimeEntryStore = useCurrentTimeEntryStore();
 const { currentTimeEntry } = storeToRefs(currentTimeEntryStore);
 const { setActiveState, startLiveTimer } = currentTimeEntryStore;
 const { handleApiRequestNotifications } = useNotificationsStore();
-const { createTimeEntry, updateTimeEntry, updateTimeEntries } =
-    useTimeEntriesStore();
+const { createTimeEntry, updateTimeEntry, updateTimeEntries } = useTimeEntriesStore();
 
 const { tags } = storeToRefs(useTagsStore());
 
@@ -176,15 +176,11 @@ async function createTag(name: string) {
     return await useTagsStore().createTag(name);
 }
 
-async function createProject(
-    project: CreateProjectBody
-): Promise<Project | undefined> {
+async function createProject(project: CreateProjectBody): Promise<Project | undefined> {
     return await useProjectsStore().createProject(project);
 }
 
-async function createClient(
-    body: CreateClientBody
-): Promise<Client | undefined> {
+async function createClient(body: CreateClientBody): Promise<Client | undefined> {
     return await useClientsStore().createClient(body);
 }
 
@@ -247,10 +243,7 @@ async function downloadExport(format: ExportFormat) {
 </script>
 
 <template>
-    <AppLayout
-        title="Reporting"
-        data-testid="reporting_view"
-        class="overflow-hidden">
+    <AppLayout title="Reporting" data-testid="reporting_view" class="overflow-hidden">
         <ReportingExportModal
             v-model:show="showExportModal"
             :export-url="exportUrl"></ReportingExportModal>
@@ -260,15 +253,12 @@ async function downloadExport(format: ExportFormat) {
                 <PageTitle :icon="ChartBarIcon" title="Reporting"></PageTitle>
                 <ReportingTabNavbar active="detailed"></ReportingTabNavbar>
             </div>
-            <ReportingExportButton
-                :download="downloadExport"></ReportingExportButton>
+            <ReportingExportButton :download="downloadExport"></ReportingExportButton>
         </MainContainer>
 
         <div class="py-2.5 w-full border-b border-default-background-separator">
-            <MainContainer
-                class="sm:flex space-y-4 sm:space-y-0 justify-between">
-                <div
-                    class="flex flex-wrap items-center space-y-2 sm:space-y-0 space-x-4">
+            <MainContainer class="sm:flex space-y-4 sm:space-y-0 justify-between">
+                <div class="flex flex-wrap items-center space-y-2 sm:space-y-0 space-x-3">
                     <div class="text-sm font-medium">Filters</div>
                     <MemberMultiselectDropdown
                         v-model="selectedMembers"
@@ -350,14 +340,15 @@ async function downloadExport(format: ExportFormat) {
                         <template #trigger>
                             <ReportingFilterBadge
                                 :active="billable !== null"
-                                :title="
-                                    billable === 'false'
-                                        ? 'Non Billable'
-                                        : 'Billable'
-                                "
+                                :title="billable === 'false' ? 'Non Billable' : 'Billable'"
                                 :icon="BillableIcon"></ReportingFilterBadge>
                         </template>
                     </SelectDropdown>
+                    <ReportingRoundingControls
+                        v-model:enabled="roundingEnabled"
+                        v-model:type="roundingType"
+                        v-model:minutes="roundingMinutes"
+                        @change="updateFilteredTimeEntries" />
                 </div>
                 <div>
                     <DateRangePicker
@@ -421,14 +412,9 @@ async function downloadExport(format: ExportFormat) {
             </div>
             <div v-if="timeEntries.length === 0">
                 <div class="text-center pt-12">
-                    <ClockIcon
-                        class="w-8 text-icon-default inline pb-2"></ClockIcon>
-                    <h3 class="text-text-primary font-semibold">
-                        No time entries found
-                    </h3>
-                    <p class="pb-5">
-                        Adjust the filters to see more time entries!
-                    </p>
+                    <ClockIcon class="w-8 text-icon-default inline pb-2"></ClockIcon>
+                    <h3 class="text-text-primary font-semibold">No time entries found</h3>
+                    <p class="pb-5">Adjust the filters to see more time entries!</p>
                 </div>
             </div>
         </div>
@@ -440,18 +426,13 @@ async function downloadExport(format: ExportFormat) {
             class="flex justify-center items-center py-8"
             :sibling-count="1"
             show-edges>
-            <PaginationList
-                v-slot="{ items }"
-                class="flex items-center space-x-1 relative">
-                <div
-                    class="pr-2 flex items-center space-x-1 border-r border-border-primary mr-1">
+            <PaginationList v-slot="{ items }" class="flex items-center space-x-1 relative">
+                <div class="pr-2 flex items-center space-x-1 border-r border-border-primary mr-1">
                     <PaginationFirst class="navigation-item">
-                        <ChevronDoubleLeftIcon class="w-4">
-                        </ChevronDoubleLeftIcon>
+                        <ChevronDoubleLeftIcon class="w-4"> </ChevronDoubleLeftIcon>
                     </PaginationFirst>
                     <PaginationPrev class="mr-4 navigation-item">
-                        <ChevronLeftIcon
-                            class="w-4 text-text-tertiary hover:text-text-primary">
+                        <ChevronLeftIcon class="w-4 text-text-tertiary hover:text-text-primary">
                         </ChevronLeftIcon>
                     </PaginationPrev>
                 </div>
@@ -471,8 +452,7 @@ async function downloadExport(format: ExportFormat) {
                         <div class="px-2">&#8230;</div>
                     </PaginationEllipsis>
                 </template>
-                <div
-                    class="!ml-2 pl-2 flex items-center space-x-1 border-l border-border-primary">
+                <div class="!ml-2 pl-2 flex items-center space-x-1 border-l border-border-primary">
                     <PaginationNext class="navigation-item">
                         <ChevronRightIcon
                             class="w-4 text-text-tertiary hover:text-text-primary"></ChevronRightIcon>

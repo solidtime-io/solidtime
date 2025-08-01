@@ -14,9 +14,7 @@ const submit = () => {
     form.post(route('verification.send'));
 };
 
-const verificationLinkSent = computed(
-    () => props.status === 'verification-link-sent'
-);
+const verificationLinkSent = computed(() => props.status === 'verification-link-sent');
 </script>
 
 <template>
@@ -28,16 +26,13 @@ const verificationLinkSent = computed(
         </template>
 
         <div class="mb-4 text-sm text-text-secondary">
-            Before continuing, could you verify your email address by clicking
-            on the link we just emailed to you? If you didn't receive the email,
-            we will gladly send you another.
+            Before continuing, could you verify your email address by clicking on the link we just
+            emailed to you? If you didn't receive the email, we will gladly send you another.
         </div>
 
-        <div
-            v-if="verificationLinkSent"
-            class="mb-4 font-medium text-sm text-green-400">
-            A new verification link has been sent to the email address you
-            provided in your profile settings.
+        <div v-if="verificationLinkSent" class="mb-4 font-medium text-sm text-green-400">
+            A new verification link has been sent to the email address you provided in your profile
+            settings.
         </div>
 
         <form @submit.prevent="submit">

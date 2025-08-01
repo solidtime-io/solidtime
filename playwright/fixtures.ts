@@ -8,12 +8,8 @@ export const test = baseTest.extend<object, { workerStorageState: string }>({
         // Perform authentication steps. Replace these actions with your own.
         await page.goto(PLAYWRIGHT_BASE_URL + '/register');
         await page.getByLabel('Name').fill('John Doe');
-        await page
-            .getByLabel('Email')
-            .fill(`john+${Math.round(Math.random() * 1000000)}@doe.com`);
-        await page
-            .getByLabel('Password', { exact: true })
-            .fill('amazingpassword123');
+        await page.getByLabel('Email').fill(`john+${Math.round(Math.random() * 1000000)}@doe.com`);
+        await page.getByLabel('Password', { exact: true }).fill('amazingpassword123');
         await page.getByLabel('Confirm Password').fill('amazingpassword123');
         await page.getByLabel('I agree to the Terms of').click();
         await page.getByRole('button', { name: 'Register' }).click();

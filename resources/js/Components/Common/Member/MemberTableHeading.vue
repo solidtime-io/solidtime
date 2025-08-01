@@ -10,12 +10,9 @@ import TableHeading from '@/Components/Common/TableHeading.vue';
         </div>
         <div class="px-3 py-1.5 text-left font-semibold text-text-primary">Email</div>
         <div class="px-3 py-1.5 text-left font-semibold text-text-primary">Role</div>
-        <div class="px-3 py-1.5 text-left font-semibold text-text-primary">
-            Billable Rate
-        </div>
+        <div class="px-3 py-1.5 text-left font-semibold text-text-primary">Billable Rate</div>
         <div class="px-3 py-1.5 text-left font-semibold text-text-primary">Status</div>
-        <div
-            class="relative py-1.5 pl-3 pr-4 sm:pr-6 lg:pr-8 3xl:pr-12 bg-row-heading-background">
+        <div class="relative py-1.5 pl-3 pr-4 sm:pr-6 lg:pr-8 3xl:pr-12 bg-row-heading-background">
             <span class="sr-only">Edit</span>
         </div>
     </TableHeading>

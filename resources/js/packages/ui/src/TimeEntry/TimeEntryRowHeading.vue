@@ -38,7 +38,7 @@ function selectUnselectAll(value: boolean) {
                 <div class="flex items-center space-x-2">
                     <div class="w-5">
                         <svg
-                            class="w-4 sm:w-5 text-icon-default group-hover:hidden block"
+                            class="w-3 sm:w-4 text-icon-default group-hover:hidden block"
                             viewBox="0 0 24 24"
                             xmlns="http://www.w3.org/2000/svg">
                             <g fill="none">
@@ -54,15 +54,15 @@ function selectUnselectAll(value: boolean) {
                             class="group-hover:block hidden"
                             @update:checked="selectUnselectAll"></Checkbox>
                     </div>
-                    <span class="font-semibold text-text-primary">
+                    <span class="font-medium text-text-primary">
                         {{ formatWeekday(date) }}
                     </span>
-                    <span class="font-semibold text-text-secondary">
+                    <span class="font-medium text-text-secondary">
                         {{ formatDate(date, organization?.date_format) }}
                     </span>
                 </div>
                 <div class="text-text-secondary pr-[90px] lg:pr-[92px]">
-                    <span class="font-semibold">
+                    <span class="font-medium">
                         {{
                             formatHumanReadableDuration(
                                 duration,

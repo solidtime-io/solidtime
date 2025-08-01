@@ -22,9 +22,7 @@ const props = defineProps<{
 const { members } = storeToRefs(useMembersStore());
 
 const currentMember = computed(() => {
-    return members.value.find(
-        (member) => member.id === props.projectMember.user_id
-    );
+    return members.value.find((member) => member.id === props.projectMember.user_id);
 });
 </script>
 

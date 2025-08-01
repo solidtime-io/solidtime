@@ -19,7 +19,7 @@ import {
     formatHumanReadableDuration,
     getDayJsInstance,
 } from '@/packages/ui/src/utils/time';
-import { useCssVar } from '@vueuse/core';
+import { useCssVariable } from '@/utils/useCssVariable';
 import { useQuery } from '@tanstack/vue-query';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import { api, type Organization } from '@/packages/api/src';
@@ -55,21 +55,15 @@ provide(THEME_KEY, 'dark');
 
 const max = computed(() => {
     if (!isLoading.value && dailyHoursTracked.value) {
-        return Math.max(
-            Math.max(...dailyHoursTracked.value.map((el) => el.duration)),
-            1
-        );
+        return Math.max(Math.max(...dailyHoursTracked.value.map((el) => el.duration)), 1);
     } else {
         return 1;
     }
 });
 
-const backgroundColor = useCssVar('--color-card-background', null, {
-    observe: true,
-});
-const itemBackgroundColor = useCssVar('--color-bg-tertiary', null, {
-    observe: true,
-});
+const backgroundColor = useCssVariable('--theme-color-card-background');
+const itemBackgroundColor = useCssVariable('--color-bg-tertiary');
+const borderColor = useCssVariable('--color-border');
 
 const option = computed(() => {
     return {
@@ -100,10 +94,7 @@ const option = computed(() => {
             },
             range: [
                 dayjs().format('YYYY-MM-DD'),
-                getDayJsInstance()()
-                    .subtract(50, 'day')
-                    .startOf('week')
-                    .format('YYYY-MM-DD'),
+                getDayJsInstance()().subtract(50, 'day').startOf('week').format('YYYY-MM-DD'),
             ],
             itemStyle: {
                 color: 'transparent',
@@ -115,12 +106,10 @@ const option = computed(() => {
         series: {
             type: 'heatmap',
             coordinateSystem: 'calendar',
-            data:
-                dailyHoursTracked?.value?.map((el) => [el.date, el.duration]) ??
-                [],
+            data: dailyHoursTracked?.value?.map((el) => [el.date, el.duration]) ?? [],
             itemStyle: {
                 borderRadius: 5,
-                borderColor: 'rgba(255,255,255,0.05)',
+                borderColor: borderColor.value,
                 borderWidth: 1,
             },
             tooltip: {
@@ -162,9 +151,7 @@ const option = computed(() => {
                     :option="option"
                     style="height: 260px; background-color: transparent" />
             </div>
-            <div v-else class="text-center text-gray-500 py-8">
-                No activity data available
-            </div>
+            <div v-else class="text-center text-gray-500 py-8">No activity data available</div>
         </div>
     </DashboardCard>
 </template>

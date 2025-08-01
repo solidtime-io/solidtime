@@ -99,22 +99,16 @@ const page = usePage<{
 </script>
 
 <template>
-    <div
-        v-bind="$attrs"
-        class="flex flex-wrap bg-background text-text-secondary">
+    <div v-bind="$attrs" class="flex flex-wrap bg-background text-text-secondary">
         <div
             :class="{
-                '!flex bg-default-background w-full z-[9999999999]':
-                    showSidebarMenu,
+                '!flex bg-default-background w-full z-[9999999999]': showSidebarMenu,
             }"
             class="flex-shrink-0 h-screen hidden fixed w-[230px] 2xl:w-[250px] px-2.5 2xl:px-3 py-4 lg:flex flex-col justify-between">
             <div class="flex flex-col h-full">
-                <div
-                    class="border-b border-default-background-separator pb-2 flex justify-between">
+                <div class="border-b border-default-background-separator pb-2 flex justify-between">
                     <OrganizationSwitcher class="w-full"></OrganizationSwitcher>
-                    <XMarkIcon
-                        class="w-8 lg:hidden"
-                        @click="showSidebarMenu = false"></XMarkIcon>
+                    <XMarkIcon class="w-8 lg:hidden" @click="showSidebarMenu = false"></XMarkIcon>
                 </div>
                 <div class="border-b border-default-background-separator">
                     <CurrentSidebarTimer></CurrentSidebarTimer>
@@ -131,9 +125,7 @@ const page = usePage<{
                                 title="Dashboard"
                                 :icon="HomeIcon"
                                 :href="route('dashboard')"
-                                :current="
-                                    route().current('dashboard')
-                                "></NavigationSidebarItem>
+                                :current="route().current('dashboard')"></NavigationSidebarItem>
                             <NavigationSidebarItem
                                 title="Time"
                                 :icon="ClockIcon"
@@ -169,10 +161,7 @@ const page = usePage<{
                         </ul>
                     </nav>
 
-                    <div
-                        class="text-text-tertiary text-sm font-semibold pt-5 pb-1.5">
-                        Manage
-                    </div>
+                    <div class="text-text-tertiary text-xs font-semibold pt-5 pb-1.5">Manage</div>
 
                     <nav>
                         <ul>
@@ -181,25 +170,19 @@ const page = usePage<{
                                 title="Projects"
                                 :icon="FolderIcon"
                                 :href="route('projects')"
-                                :current="
-                                    route().current('projects')
-                                "></NavigationSidebarItem>
+                                :current="route().current('projects')"></NavigationSidebarItem>
                             <NavigationSidebarItem
                                 v-if="canViewClients()"
                                 title="Clients"
                                 :icon="UserCircleIcon"
                                 :current="route().current('clients')"
-                                :href="
-                                    route('clients')
-                                "></NavigationSidebarItem>
+                                :href="route('clients')"></NavigationSidebarItem>
                             <NavigationSidebarItem
                                 v-if="canViewMembers()"
                                 title="Members"
                                 :icon="UserGroupIcon"
                                 :current="route().current('members')"
-                                :href="
-                                    route('members')
-                                "></NavigationSidebarItem>
+                                :href="route('members')"></NavigationSidebarItem>
                             <NavigationSidebarItem
                                 v-if="canViewTags()"
                                 title="Tags"
@@ -207,9 +190,7 @@ const page = usePage<{
                                 :current="route().current('tags')"
                                 :href="route('tags')"></NavigationSidebarItem>
                             <NavigationSidebarItem
-                                v-if="
-                                    isInvoicingActivated() && canViewInvoices()
-                                "
+                                v-if="isInvoicingActivated() && canViewInvoices()"
                                 title="Invoices"
                                 :icon="DocumentTextIcon"
                                 :current="route().current('invoices')"
@@ -218,16 +199,14 @@ const page = usePage<{
                     </nav>
                     <div
                         v-if="canUpdateOrganization()"
-                        class="text-text-tertiary text-sm font-semibold pt-5 pb-1.5">
+                        class="text-text-tertiary text-xs font-semibold pt-5 pb-1.5">
                         Admin
                     </div>
 
                     <nav>
                         <ul>
                             <NavigationSidebarItem
-                                v-if="
-                                    canManageBilling() && isBillingActivated()
-                                "
+                                v-if="canManageBilling() && isBillingActivated()"
                                 title="Billing"
                                 :icon="CreditCardIcon"
                                 href="/billing"></NavigationSidebarItem>
@@ -241,12 +220,7 @@ const page = usePage<{
                                 v-if="canUpdateOrganization()"
                                 title="Settings"
                                 :icon="Cog6ToothIcon"
-                                :href="
-                                    route(
-                                        'teams.show',
-                                        page.props.auth.user.current_team.id
-                                    )
-                                "
+                                :href="route('teams.show', page.props.auth.user.current_team.id)"
                                 :current="
                                     route().current(
                                         'teams.show',
@@ -264,9 +238,7 @@ const page = usePage<{
                             class="flex-1"
                             title="Profile Settings"
                             :icon="Cog6ToothIcon"
-                            :href="
-                                route('profile.show')
-                            "></NavigationSidebarItem>
+                            :href="route('profile.show')"></NavigationSidebarItem>
 
                         <UserSettingsIcon></UserSettingsIcon>
                     </ul>

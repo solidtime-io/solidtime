@@ -8,26 +8,30 @@ import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import { useNotificationsStore } from '@/utils/notification';
 import { canInvitePlaceholderMembers } from '@/utils/permissions';
-import { useMembersStore } from '@/utils/useMembers';
 import { computed, type ComputedRef, inject, ref } from 'vue';
 import MemberEditModal from '@/Components/Common/Member/MemberEditModal.vue';
 import MemberMergeModal from '@/Components/Common/Member/MemberMergeModal.vue';
 import MemberMakePlaceholderModal from '@/Components/Common/Member/MemberMakePlaceholderModal.vue';
+import MemberDeleteModal from '@/Components/Common/Member/MemberDeleteModal.vue';
 import { capitalizeFirstLetter } from '../../../utils/format';
 import { formatCents } from '../../../packages/ui/src/utils/money';
+import { useMembersStore } from '@/utils/useMembers';
 
 const props = defineProps<{
     member: Member;
 }>();
 
 const organization = inject<ComputedRef<Organization>>('organization');
+const memberStore = useMembersStore();
 
 const showEditMemberModal = ref(false);
 const showMergeMemberModal = ref(false);
 const showMakeMemberPlaceholderModal = ref(false);
+const showDeleteMemberModal = ref(false);
 
 function removeMember() {
-    useMembersStore().removeMember(props.member.id);
+    showDeleteMemberModal.value = true;
+    memberStore.fetchMembers();
 }
 
 async function invitePlaceholder(id: string) {
@@ -82,13 +86,9 @@ const userHasValidMailAddress = computed(() => {
         </div>
         <div
             class="whitespace-nowrap px-3 py-4 text-sm text-text-secondary flex space-x-1 items-center font-medium">
-            <CheckCircleIcon
-                v-if="member.is_placeholder === false"
-                class="w-5"></CheckCircleIcon>
+            <CheckCircleIcon v-if="member.is_placeholder === false" class="w-5"></CheckCircleIcon>
             <span v-if="member.is_placeholder === false">Active</span>
-            <UserCircleIcon
-                v-if="member.is_placeholder === true"
-                class="w-5"></UserCircleIcon>
+            <UserCircleIcon v-if="member.is_placeholder === true" class="w-5"></UserCircleIcon>
             <span v-if="member.is_placeholder === true">Inactive</span>
         </div>
         <div
@@ -112,15 +112,14 @@ const userHasValidMailAddress = computed(() => {
                     showMakeMemberPlaceholderModal = true
                 "></MemberMoreOptionsDropdown>
         </div>
-        <MemberEditModal
-            v-model:show="showEditMemberModal"
-            :member="member"></MemberEditModal>
-        <MemberMergeModal
-            v-model:show="showMergeMemberModal"
-            :member="member"></MemberMergeModal>
+        <MemberEditModal v-model:show="showEditMemberModal" :member="member"></MemberEditModal>
+        <MemberMergeModal v-model:show="showMergeMemberModal" :member="member"></MemberMergeModal>
         <MemberMakePlaceholderModal
             v-model:show="showMakeMemberPlaceholderModal"
             :member="member"></MemberMakePlaceholderModal>
+        <MemberDeleteModal
+            v-model:show="showDeleteMemberModal"
+            :member="member"></MemberDeleteModal>
     </TableRow>
 </template>
 

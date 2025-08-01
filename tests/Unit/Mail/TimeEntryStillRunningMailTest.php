@@ -7,11 +7,9 @@ namespace Tests\Unit\Mail;
 use App\Mail\TimeEntryStillRunningMail;
 use App\Models\TimeEntry;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\UsesClass;
 use Tests\TestCaseWithDatabase;
 
 #[CoversClass(TimeEntryStillRunningMail::class)]
-#[UsesClass(TimeEntryStillRunningMail::class)]
 class TimeEntryStillRunningMailTest extends TestCaseWithDatabase
 {
     public function test_mail_renders_content_correctly(): void

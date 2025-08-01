@@ -28,13 +28,8 @@ const open = ref(false);
 
 function updateTimerAndStartLiveTimerUpdate() {
     const defaultUnit =
-        organizationSettings?.value?.intervalFormat === 'decimal'
-            ? 'hours'
-            : 'minutes';
-    const { seconds } = parseTimeInput(
-        temporaryCustomTimerEntry.value,
-        defaultUnit
-    );
+        organizationSettings?.value?.intervalFormat === 'decimal' ? 'hours' : 'minutes';
+    const { seconds } = parseTimeInput(temporaryCustomTimerEntry.value, defaultUnit);
     if (seconds && seconds > 0) {
         let newEndDate = props.end;
         let newStartDate = props.start;
@@ -82,7 +77,7 @@ function selectInput(event: Event) {
         v-model="currentTime"
         data-testid="time_entry_duration_input"
         name="Duration"
-        class="text-text-primary w-[90px] px-2.5 py-1.5 bg-transparent text-right hover:bg-card-background rounded-lg border border-transparent hover:border-card-border text-sm font-semibold focus-visible:bg-tertiary focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-ring"
+        class="text-text-primary w-[90px] px-2.5 py-1.5 bg-transparent text-right hover:bg-card-background rounded-lg border border-transparent hover:border-card-border text-sm font-medium focus-visible:bg-tertiary focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-ring"
         @focus="selectInput"
         @keydown.tab="open = false"
         @blur="updateTimerAndStartLiveTimerUpdate"

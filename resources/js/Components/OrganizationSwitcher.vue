@@ -28,23 +28,15 @@ const switchToTeam = (organization: Organization) => {
 </script>
 
 <template>
-    <Dropdown
-        v-if="page.props.jetstream.hasTeamFeatures"
-        align="center"
-        width="60">
+    <Dropdown v-if="page.props.jetstream.hasTeamFeatures" align="center" width="60">
         <template #trigger>
             <div
                 data-testid="organization_switcher"
                 class="flex hover:bg-white/10 cursor-pointer transition px-2 py-1 rounded-lg w-full items-center justify-between font-medium">
-                <div
-                    class="flex flex-1 space-x-2 items-center w-[calc(100%-30px)]">
+                <div class="flex flex-1 space-x-2 items-center w-[calc(100%-30px)]">
                     <div
                         class="rounded sm:rounded-lg bg-blue-900 font-semibold text-xs sm:text-sm flex-shrink-0 text-white w-5 sm:w-6 h-5 sm:h-6 flex items-center justify-center">
-                        {{
-                            page.props.auth.user.current_team.name
-                                .slice(0, 1)
-                                .toUpperCase()
-                        }}
+                        {{ page.props.auth.user.current_team.name.slice(0, 1).toUpperCase() }}
                     </div>
                     <span class="text-sm flex-1 truncate font-semibold">
                         {{ page.props.auth.user.current_team.name }}
@@ -53,8 +45,7 @@ const switchToTeam = (organization: Organization) => {
                 <div class="w-[30px]">
                     <button
                         class="p-1 transition hover:bg-white/10 rounded-full flex items-center w-8 h-8">
-                        <ChevronDownIcon
-                            class="w-5 sm:w-full mt-[1px]"></ChevronDownIcon>
+                        <ChevronDownIcon class="w-5 sm:w-full mt-[1px]"></ChevronDownIcon>
                     </button>
                 </div>
             </div>
@@ -63,24 +54,14 @@ const switchToTeam = (organization: Organization) => {
         <template #content>
             <div class="w-60">
                 <!-- Organization Management -->
-                <div class="block px-4 py-2 text-xs text-text-secondary">
-                    Manage Organization
-                </div>
+                <div class="block px-4 py-2 text-xs text-text-secondary">Manage Organization</div>
 
                 <!-- Organization Settings -->
-                <DropdownLink
-                    :href="
-                        route(
-                            'teams.show',
-                            page.props.auth.user.current_team.id
-                        )
-                    ">
+                <DropdownLink :href="route('teams.show', page.props.auth.user.current_team.id)">
                     Organization Settings
                 </DropdownLink>
 
-                <DropdownLink
-                    v-if="canManageBilling() && isBillingActivated()"
-                    href="/billing">
+                <DropdownLink v-if="canManageBilling() && isBillingActivated()" href="/billing">
                     Billing
                 </DropdownLink>
 
@@ -98,17 +79,12 @@ const switchToTeam = (organization: Organization) => {
                         Switch Organizations
                     </div>
 
-                    <template
-                        v-for="team in page.props.auth.user.all_teams"
-                        :key="team.id">
+                    <template v-for="team in page.props.auth.user.all_teams" :key="team.id">
                         <form @submit.prevent="switchToTeam(team)">
                             <DropdownLink as="button">
                                 <div class="flex items-center">
                                     <svg
-                                        v-if="
-                                            team.id ==
-                                            page.props.auth.user.current_team_id
-                                        "
+                                        v-if="team.id == page.props.auth.user.current_team_id"
                                         class="me-2 h-5 w-5 text-green-400"
                                         xmlns="http://www.w3.org/2000/svg"
                                         fill="none"

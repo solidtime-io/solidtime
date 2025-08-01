@@ -35,12 +35,8 @@ useFocus(searchInput, { initialValue: true });
 const filteredMembers = computed<Member[]>(() => {
     return members.value.filter((member) => {
         return (
-            member.name
-                .toLowerCase()
-                .includes(searchValue.value?.toLowerCase()?.trim() || '') &&
-            !props.hiddenMembers.some(
-                (hiddenMember) => hiddenMember.member_id === member.id
-            ) &&
+            member.name.toLowerCase().includes(searchValue.value?.toLowerCase()?.trim() || '') &&
+            !props.hiddenMembers.some((hiddenMember) => hiddenMember.member_id === member.id) &&
             member.is_placeholder === false
         );
     });

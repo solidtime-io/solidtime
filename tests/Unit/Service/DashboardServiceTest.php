@@ -16,11 +16,9 @@ use App\Service\DashboardService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\UsesClass;
 use Tests\TestCase;
 
 #[CoversClass(DashboardService::class)]
-#[UsesClass(DashboardService::class)]
 class DashboardServiceTest extends TestCase
 {
     use RefreshDatabase;

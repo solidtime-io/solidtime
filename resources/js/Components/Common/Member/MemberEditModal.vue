@@ -54,10 +54,7 @@ function saveWithChecks() {
             showBillableRateModal.value = true;
         }, 0);
         show.value = false;
-    } else if (
-        memberBody.value.role === 'owner' &&
-        props.member.role !== 'owner'
-    ) {
+    } else if (memberBody.value.role === 'owner' && props.member.role !== 'owner') {
         show.value = false;
         showOwnershipTransferConfirmModal.value = true;
     } else {
@@ -96,10 +93,7 @@ const roleDescriptionTexts = {
 };
 
 const roleDescription = computed(() => {
-    if (
-        memberBody.value.role &&
-        memberBody.value.role in roleDescriptionTexts
-    ) {
+    if (memberBody.value.role && memberBody.value.role in roleDescriptionTexts) {
         return roleDescriptionTexts[memberBody.value.role];
     }
     return '';
@@ -143,22 +137,14 @@ const roleDescription = computed(() => {
                         <div>
                             <InputLabel for="billableType" value="Billable" />
                             <MemberBillableSelect
-                                v-model="
-                                    billableRateSelect
-                                "
+                                v-model="billableRateSelect"
                                 class="mt-2"
                                 name="billableType"></MemberBillableSelect>
                         </div>
-                        <div
-                            v-if="billableRateSelect === 'custom-rate'"
-                            class="flex-1">
-                            <InputLabel
-                                for="memberBillableRate"
-                                value="Billable Rate" />
+                        <div v-if="billableRateSelect === 'custom-rate'" class="flex-1">
+                            <InputLabel for="memberBillableRate" value="Billable Rate" />
                             <BillableRateInput
-                                v-model="
-                                    memberBody.billable_rate
-                                "
+                                v-model="memberBody.billable_rate"
                                 focus
                                 class="w-full"
                                 :currency="getOrganizationCurrencyString()"

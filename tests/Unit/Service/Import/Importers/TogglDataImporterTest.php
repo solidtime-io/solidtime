@@ -11,12 +11,10 @@ use App\Service\Import\Importers\ImportException;
 use App\Service\Import\Importers\TogglDataImporter;
 use Exception;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\UsesClass;
 
 #[CoversClass(TogglDataImporter::class)]
 #[CoversClass(ImportException::class)]
 #[CoversClass(DefaultImporter::class)]
-#[UsesClass(TogglDataImporter::class)]
 class TogglDataImporterTest extends ImporterTestAbstract
 {
     public function test_import_throws_exception_if_data_is_not_zip(): void

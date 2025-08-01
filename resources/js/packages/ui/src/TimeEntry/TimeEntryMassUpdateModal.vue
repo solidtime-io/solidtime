@@ -31,9 +31,7 @@ const props = defineProps<{
     createProject: (project: CreateProjectBody) => Promise<Project | undefined>;
     createClient: (client: CreateClientBody) => Promise<Client | undefined>;
     createTag: (name: string) => Promise<Tag | undefined>;
-    updateTimeEntries: (
-        changeset: UpdateMultipleTimeEntriesChangeset
-    ) => Promise<void>;
+    updateTimeEntries: (changeset: UpdateMultipleTimeEntriesChangeset) => Promise<void>;
     currency: string;
     enableEstimatedTime: boolean;
     canCreateProject: boolean;
@@ -172,15 +170,9 @@ type SelectOption = { label: string; value: string };
                 <div class="space-y-2">
                     <InputLabel for="project" value="Tag" />
                     <div class="flex space-x-5">
-                        <TagDropdown
-                            v-model="selectedTags"
-                            :create-tag
-                            :tags="tags">
+                        <TagDropdown v-model="selectedTags" :create-tag :tags="tags">
                             <template #trigger>
-                                <Badge
-                                    :disabled="removeAllTags"
-                                    tag="button"
-                                    size="xlarge">
+                                <Badge :disabled="removeAllTags" tag="button" size="xlarge">
                                     <span v-if="selectedTags.length > 0">
                                         Set {{ selectedTags.length }} tags
                                     </span>
@@ -189,9 +181,7 @@ type SelectOption = { label: string; value: string };
                             </template>
                         </TagDropdown>
                         <div class="flex items-center space-x-2">
-                            <Checkbox
-                                id="no_tags"
-                                v-model:checked="removeAllTags"></Checkbox>
+                            <Checkbox id="no_tags" v-model:checked="removeAllTags"></Checkbox>
                             <InputLabel for="no_tags" value="Remove all tags" />
                         </div>
                     </div>
@@ -201,12 +191,8 @@ type SelectOption = { label: string; value: string };
                     <div class="flex">
                         <SelectDropdown
                             v-model="timeEntryBillable"
-                            :get-key-from-item="
-                                (item: SelectOption) => item.value
-                            "
-                            :get-name-for-item="
-                                (item: SelectOption) => item.label
-                            "
+                            :get-key-from-item="(item: SelectOption) => item.value"
+                            :get-name-for-item="(item: SelectOption) => item.label"
                             :items="[
                                 {
                                     label: 'Keep current billable status',
@@ -223,12 +209,8 @@ type SelectOption = { label: string; value: string };
                             ]">
                             <template #trigger>
                                 <Badge tag="button" size="xlarge">
-                                    <span v-if="billable === undefined">
-                                        Set billable status
-                                    </span>
-                                    <span v-else-if="billable === true">
-                                        Billable
-                                    </span>
+                                    <span v-if="billable === undefined"> Set billable status </span>
+                                    <span v-else-if="billable === true"> Billable </span>
                                     <span v-else> Non Billable </span></Badge
                                 >
                             </template>

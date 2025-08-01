@@ -14,10 +14,8 @@ use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Passport\Passport;
 use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\UsesClass;
 
 #[CoversClass(HandleInertiaRequests::class)]
-#[UsesClass(HandleInertiaRequests::class)]
 class HandleInertiaRequestsMiddlewareTest extends MiddlewareTestAbstract
 {
     private function createTestRoute(): string

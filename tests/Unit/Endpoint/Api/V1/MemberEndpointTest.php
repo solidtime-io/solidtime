@@ -10,6 +10,7 @@ use App\Events\MemberRemoved;
 use App\Http\Controllers\Api\V1\MemberController;
 use App\Models\Member;
 use App\Models\Organization;
+use App\Models\OrganizationInvitation;
 use App\Models\Project;
 use App\Models\ProjectMember;
 use App\Models\TimeEntry;
@@ -653,6 +654,182 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
         Event::assertNotDispatched(MemberRemoved::class);
     }
 
+    public function test_destroy_endpoint_also_deletes_user_if_member_is_placeholder(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'members:delete',
+        ]);
+        $user = User::factory()->placeholder()->create();
+        $member = Member::factory()->forUser($user)->forOrganization($data->organization)->role(Role::Placeholder)->create();
+        Passport::actingAs($data->user);
+        Event::fake([
+            MemberRemoved::class,
+        ]);
+
+        // Act
+        $response = $this->deleteJson(route('api.v1.members.destroy', [$data->organization->getKey(), $member->getKey()]));
+
+        // Assert
+        $response->assertStatus(204);
+        $this->assertDatabaseMissing(Member::class, [
+            'id' => $member->getKey(),
+        ]);
+        $this->assertDatabaseMissing(User::class, [
+            'id' => $user->getKey(),
+        ]);
+        Event::assertDispatched(function (MemberRemoved $event) use ($data, $member): bool {
+            return $event->organization->is($data->organization) &&
+                $event->member->is($member);
+        }, 1);
+    }
+
+    public function test_destroy_endpoint_sets_current_organization_to_organization_the_user_is_still_member_of(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'members:delete',
+        ]);
+        $user = $data->user;
+        $otherOrganization = Organization::factory()->create();
+        $otherMember = Member::factory()->forOrganization($otherOrganization)->forUser($user)->role(Role::Employee)->create();
+        Passport::actingAs($user);
+        Event::fake([
+            MemberRemoved::class,
+        ]);
+
+        // Act
+        $response = $this->deleteJson(route('api.v1.members.destroy', [$data->organization->getKey(), $data->member->getKey()]));
+
+        // Assert
+        $response->assertStatus(204);
+        $this->assertDatabaseMissing(Member::class, [
+            'id' => $data->member->getKey(),
+        ]);
+        $user->refresh();
+        $this->assertSame($otherOrganization->getKey(), $user->currentOrganization->getKey());
+        Event::assertDispatched(function (MemberRemoved $event) use ($data): bool {
+            return $event->organization->is($data->organization) &&
+                $event->member->is($data->member);
+        }, 1);
+    }
+
+    public function test_destroy_endpoint_creates_new_organization_and_sets_the_current_organization_to_it_if_user_is_not_member_of_any_other_organization(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'members:delete',
+        ]);
+        $organization = $data->organization;
+        $user = $data->user;
+        Passport::actingAs($user);
+        Event::fake([
+            MemberRemoved::class,
+        ]);
+        $this->assertDatabaseCount(Organization::class, 1);
+
+        // Act
+        $response = $this->deleteJson(route('api.v1.members.destroy', [$data->organization->getKey(), $data->member->getKey()]));
+
+        // Assert
+        $response->assertStatus(204);
+        $this->assertDatabaseCount(Organization::class, 2);
+        $newOrganization = Organization::where('id', '!=', $organization->getKey())->first();
+        $this->assertNotNull($newOrganization);
+        $this->assertDatabaseMissing(Member::class, [
+            'id' => $data->member->getKey(),
+        ]);
+        $this->assertDatabaseHas(Member::class, [
+            'organization_id' => $newOrganization->getKey(),
+            'user_id' => $user->getKey(),
+        ]);
+        $user->refresh();
+        $this->assertNotNull($user->currentOrganization);
+        Event::assertDispatched(function (MemberRemoved $event) use ($data): bool {
+            return $event->organization->is($data->organization) &&
+                $event->member->is($data->member);
+        }, 1);
+    }
+
+    public function test_destroy_endpoint_succeeds_if_member_is_still_in_use_by_a_project_member_and_delete_related_is_active(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'members:delete',
+        ]);
+        $otherMember = Member::factory()->forOrganization($data->organization)->role(Role::Employee)->create();
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        $projectMember = ProjectMember::factory()->forProject($project)->forMember($data->member)->create();
+        $otherProjectMember = ProjectMember::factory()->forProject($project)->forMember($otherMember)->create();
+        Passport::actingAs($data->user);
+        Event::fake([
+            MemberRemoved::class,
+        ]);
+
+        // Act
+        $response = $this->deleteJson(route('api.v1.members.destroy', [
+            'organization' => $data->organization->getKey(),
+            'member' => $data->member->getKey(),
+            'delete_related' => 'true',
+        ]));
+
+        // Assert
+        $response->assertStatus(204);
+        $this->assertDatabaseMissing(Member::class, [
+            'id' => $data->member->getKey(),
+        ]);
+        $this->assertDatabaseHas(ProjectMember::class, [
+            'id' => $otherProjectMember->getKey(),
+            'member_id' => $otherMember->getKey(),
+            'user_id' => $otherMember->user_id,
+        ]);
+        $this->assertDatabaseMissing(ProjectMember::class, [
+            'id' => $projectMember->getKey(),
+        ]);
+        Event::assertDispatched(function (MemberRemoved $event) use ($data): bool {
+            return $event->organization->is($data->organization) &&
+                $event->member->is($data->member);
+        }, 1);
+    }
+
+    public function test_destroy_endpoint_succeeds_if_member_is_still_in_use_by_a_time_entry_and_delete_related_is_active(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'members:delete',
+        ]);
+        $otherMember = Member::factory()->forOrganization($data->organization)->role(Role::Employee)->create();
+        $timeEntry = TimeEntry::factory()->forMember($data->member)->forOrganization($data->organization)->create();
+        $otherTimeEntry = TimeEntry::factory()->forMember($otherMember)->forOrganization($data->organization)->create();
+        Passport::actingAs($data->user);
+        Event::fake([
+            MemberRemoved::class,
+        ]);
+
+        // Act
+        $response = $this->deleteJson(route('api.v1.members.destroy', [
+            'organization' => $data->organization->getKey(),
+            'member' => $data->member->getKey(),
+            'delete_related' => 'true',
+        ]));
+
+        // Assert
+        $response->assertStatus(204);
+        $this->assertDatabaseMissing(Member::class, [
+            'id' => $data->member->getKey(),
+        ]);
+        $this->assertDatabaseHas(TimeEntry::class, [
+            'id' => $otherTimeEntry->getKey(),
+        ]);
+        $this->assertDatabaseMissing(TimeEntry::class, [
+            'id' => $timeEntry->getKey(),
+        ]);
+        Event::assertDispatched(function (MemberRemoved $event) use ($data): bool {
+            return $event->organization->is($data->organization) &&
+                $event->member->is($data->member);
+        }, 1);
+    }
+
     public function test_destroy_member_succeeds_if_data_is_valid(): void
     {
         // Arrange
@@ -856,6 +1033,37 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
 
         // Assert
         $response->assertForbidden();
+    }
+
+    public function test_invite_placeholder_fails_if_there_is_already_an_invitation_with_the_same_email(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'members:invite-placeholder',
+            'invitations:create',
+        ]);
+        $placeholder = User::factory()->placeholder()->create([
+            'email' => 'user@mail.test',
+        ]);
+        $placeholderMember = Member::factory()->forUser($placeholder)->forOrganization($data->organization)->role(Role::Placeholder)->create();
+        OrganizationInvitation::factory()->forOrganization($data->organization)->create([
+            'email' => $placeholder->email,
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.members.invite-placeholder', [
+            'organization' => $data->organization->id,
+            'member' => $placeholderMember->id,
+        ]));
+
+        // Assert
+        $response->assertStatus(400);
+        $response->assertExactJson([
+            'error' => true,
+            'key' => 'invitation_for_the_email_already_exists',
+            'message' => 'The email has already been invited to the organization. Please wait for the user to accept the invitation or resend the invitation email.',
+        ]);
     }
 
     public function test_invite_placeholder_returns_400_if_user_is_not_placeholder(): void

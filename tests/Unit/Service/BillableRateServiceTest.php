@@ -14,11 +14,9 @@ use App\Service\BillableRateService;
 use DB;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\UsesClass;
 use Tests\TestCaseWithDatabase;
 
 #[CoversClass(BillableRateService::class)]
-#[UsesClass(BillableRateService::class)]
 class BillableRateServiceTest extends TestCaseWithDatabase
 {
     use RefreshDatabase;

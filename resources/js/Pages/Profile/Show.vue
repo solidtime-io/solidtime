@@ -9,8 +9,8 @@ import UpdateProfileInformationForm from '@/Pages/Profile/Partials/UpdateProfile
 import { usePage } from '@inertiajs/vue3';
 import type { User } from '@/types/models';
 import type { Session } from '@/types/jetstream';
-import ApiTokensForm from "@/Pages/Profile/Partials/ApiTokensForm.vue";
-import ThemeForm from "@/Pages/Profile/Partials/ThemeForm.vue";
+import ApiTokensForm from '@/Pages/Profile/Partials/ApiTokensForm.vue';
+import ThemeForm from '@/Pages/Profile/Partials/ThemeForm.vue';
 
 defineProps<{
     confirmsTwoFactorAuthentication: boolean;
@@ -33,16 +33,13 @@ const page = usePage<{
 <template>
     <AppLayout title="Profile">
         <template #header>
-            <h2 class="font-semibold text-xl text-text-primary leading-tight">
-                Profile
-            </h2>
+            <h2 class="font-semibold text-xl text-text-primary leading-tight">Profile</h2>
         </template>
 
         <div>
             <div class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8">
                 <div v-if="page.props.jetstream.canUpdateProfileInformation">
-                    <UpdateProfileInformationForm
-                        :user="page.props.auth.user" />
+                    <UpdateProfileInformationForm :user="page.props.auth.user" />
 
                     <SectionBorder />
                 </div>
@@ -59,10 +56,7 @@ const page = usePage<{
                     <SectionBorder />
                 </div>
 
-                <div
-                    v-if="
-                        page.props.jetstream.canManageTwoFactorAuthentication
-                    ">
+                <div v-if="page.props.jetstream.canManageTwoFactorAuthentication">
                     <TwoFactorAuthenticationForm
                         :requires-confirmation="confirmsTwoFactorAuthentication"
                         class="mt-10 sm:mt-0" />
@@ -70,15 +64,12 @@ const page = usePage<{
                     <SectionBorder />
                 </div>
 
-                <LogoutOtherBrowserSessionsForm
-                    :sessions="sessions"
-                    class="mt-10 sm:mt-0" />
+                <LogoutOtherBrowserSessionsForm :sessions="sessions" class="mt-10 sm:mt-0" />
                 <SectionBorder />
 
                 <ApiTokensForm></ApiTokensForm>
 
-                <template
-                    v-if="page.props.jetstream.hasAccountDeletionFeatures">
+                <template v-if="page.props.jetstream.hasAccountDeletionFeatures">
                     <SectionBorder />
 
                     <DeleteUserForm class="mt-10 sm:mt-0" />

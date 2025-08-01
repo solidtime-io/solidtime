@@ -1,8 +1,5 @@
 import { defineStore } from 'pinia';
-import {
-    getCurrentMembershipId,
-    getCurrentOrganizationId,
-} from '@/utils/useUser';
+import { getCurrentMembershipId, getCurrentOrganizationId } from '@/utils/useUser';
 
 import { reactive, ref } from 'vue';
 import {
@@ -14,7 +11,7 @@ import {
 import dayjs from 'dayjs';
 import { useNotificationsStore } from '@/utils/notification';
 import type { UpdateMultipleTimeEntriesChangeset } from '@/packages/api/src';
-import { useQueryClient } from "@tanstack/vue-query";
+import { useQueryClient } from '@tanstack/vue-query';
 
 export const useTimeEntriesStore = defineStore('timeEntries', () => {
     const timeEntries = ref<TimeEntry[]>(reactive([]));
@@ -49,10 +46,7 @@ export const useTimeEntriesStore = defineStore('timeEntries', () => {
                 const missingTimeEntries = timeEntriesResponse.data.filter(
                     (entry) => !timeEntries.value.find((e) => e.id === entry.id)
                 );
-                timeEntries.value = [
-                    ...missingTimeEntries,
-                    ...timeEntries.value,
-                ];
+                timeEntries.value = [...missingTimeEntries, ...timeEntries.value];
             }
         }
     }
@@ -86,8 +80,7 @@ export const useTimeEntriesStore = defineStore('timeEntries', () => {
     async function fetchMoreTimeEntries() {
         const organizationId = getCurrentOrganizationId();
         if (organizationId) {
-            const latestTimeEntry =
-                timeEntries.value[timeEntries.value.length - 1];
+            const latestTimeEntry = timeEntries.value[timeEntries.value.length - 1];
             dayjs(latestTimeEntry.start).utc().format('YYYY-MM-DD');
 
             const timeEntriesResponse = await handleApiRequestNotifications(
@@ -105,23 +98,15 @@ export const useTimeEntriesStore = defineStore('timeEntries', () => {
                 undefined,
                 'Failed to fetch time entries'
             );
-            if (
-                timeEntriesResponse?.data &&
-                timeEntriesResponse.data.length > 0
-            ) {
-                timeEntries.value = timeEntries.value.concat(
-                    timeEntriesResponse.data
-                );
+            if (timeEntriesResponse?.data && timeEntriesResponse.data.length > 0) {
+                timeEntries.value = timeEntries.value.concat(timeEntriesResponse.data);
             } else {
                 allTimeEntriesLoaded.value = true;
             }
         }
     }
 
-    async function updateTimeEntries(
-        ids: string[],
-        changes: UpdateMultipleTimeEntriesChangeset
-    ) {
+    async function updateTimeEntries(ids: string[], changes: UpdateMultipleTimeEntriesChangeset) {
         const organizationId = getCurrentOrganizationId();
         if (organizationId) {
             await handleApiRequestNotifications(
@@ -160,13 +145,11 @@ export const useTimeEntriesStore = defineStore('timeEntries', () => {
             timeEntries.value = timeEntries.value.map((entry) =>
                 entry.id === timeEntry.id ? response.data : entry
             );
-            queryClient.invalidateQueries({queryKey: ['timeEntry']});
+            queryClient.invalidateQueries({ queryKey: ['timeEntry'] });
         }
     }
 
-    async function createTimeEntry(
-        timeEntry: Omit<CreateTimeEntryBody, 'member_id'>
-    ) {
+    async function createTimeEntry(timeEntry: Omit<CreateTimeEntryBody, 'member_id'>) {
         const organizationId = getCurrentOrganizationId();
         const memberId = getCurrentMembershipId();
         if (organizationId && memberId !== undefined) {

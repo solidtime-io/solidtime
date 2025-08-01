@@ -22,9 +22,7 @@ function getNameFromItem(item: Role) {
 }
 
 function getNameForKey(key: string | undefined) {
-    const item = page.props.availableRoles.find(
-        (item) => getKeyFromItem(item) === key
-    );
+    const item = page.props.availableRoles.find((item) => getKeyFromItem(item) === key);
     if (item) {
         return getNameFromItem(item);
     }

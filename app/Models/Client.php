@@ -47,7 +47,7 @@ class Client extends Model implements AuditableContract
     ];
 
     /**
-     * @return BelongsTo<Organization, Client>
+     * @return BelongsTo<Organization, $this>
      */
     public function organization(): BelongsTo
     {
@@ -55,7 +55,7 @@ class Client extends Model implements AuditableContract
     }
 
     /**
-     * @return HasMany<Project>
+     * @return HasMany<Project, $this>
      */
     public function projects(): HasMany
     {

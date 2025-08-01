@@ -43,9 +43,7 @@ const isRunningInDifferentOrganization = computed(() => {
             </div>
         </div>
         <div>
-            <div class="text-text-secondary font-extrabold text-xs">
-                Current Timer
-            </div>
+            <div class="text-text-secondary font-medium text-xs">Current Timer</div>
             <div class="text-text-primary font-medium text-lg">
                 {{ currentTime }}
             </div>

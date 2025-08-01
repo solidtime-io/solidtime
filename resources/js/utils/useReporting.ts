@@ -6,31 +6,17 @@ import type {
     AggregatedTimeEntriesQueryParams,
     ReportingResponse,
 } from '@/packages/api/src';
-import {
-    getCurrentOrganizationId,
-    getCurrentRole,
-    getCurrentUser,
-} from '@/utils/useUser';
+import { getCurrentOrganizationId, getCurrentRole, getCurrentUser } from '@/utils/useUser';
 import { useNotificationsStore } from '@/utils/notification';
 import { useProjectsStore } from '@/utils/useProjects';
 import { useMembersStore } from '@/utils/useMembers';
 import { useTasksStore } from '@/utils/useTasks';
 import { useClientsStore } from '@/utils/useClients';
-import {
-    CheckCircleIcon,
-    UserCircleIcon,
-    UserGroupIcon,
-} from '@heroicons/vue/20/solid';
+import { CheckCircleIcon, UserCircleIcon, UserGroupIcon } from '@heroicons/vue/20/solid';
 import { DocumentTextIcon, FolderIcon } from '@heroicons/vue/16/solid';
 import BillableIcon from '@/packages/ui/src/Icons/BillableIcon.vue';
 
-export type GroupingOption =
-    | 'project'
-    | 'task'
-    | 'user'
-    | 'billable'
-    | 'client'
-    | 'description';
+export type GroupingOption = 'project' | 'task' | 'user' | 'billable' | 'client' | 'description';
 
 export const useReportingStore = defineStore('reporting', () => {
     const reportingGraphResponse = ref<ReportingResponse | null>(null);
@@ -38,9 +24,7 @@ export const useReportingStore = defineStore('reporting', () => {
 
     const { handleApiRequestNotifications } = useNotificationsStore();
 
-    async function fetchGraphReporting(
-        params: AggregatedTimeEntriesQueryParams
-    ) {
+    async function fetchGraphReporting(params: AggregatedTimeEntriesQueryParams) {
         const organization = getCurrentOrganizationId();
         if (organization) {
             reportingGraphResponse.value = await handleApiRequestNotifications(
@@ -57,9 +41,7 @@ export const useReportingStore = defineStore('reporting', () => {
         }
     }
 
-    async function fetchTableReporting(
-        params: AggregatedTimeEntriesQueryParams
-    ) {
+    async function fetchTableReporting(params: AggregatedTimeEntriesQueryParams) {
         const organization = getCurrentOrganizationId();
         if (organization) {
             reportingTableResponse.value = await handleApiRequestNotifications(
@@ -93,10 +75,7 @@ export const useReportingStore = defineStore('reporting', () => {
         description: 'No Description',
     } as Record<string, string>;
 
-    function getNameForReportingRowEntry(
-        key: string | null,
-        type: string | null
-    ) {
+    function getNameForReportingRowEntry(key: string | null, type: string | null) {
         if (type === null) {
             return null;
         }

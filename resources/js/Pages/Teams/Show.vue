@@ -29,18 +29,13 @@ defineProps<{
                 <UpdateTeamNameForm :team="team" :permissions="permissions" />
 
                 <SectionBorder />
-                <OrganizationBillableRate
-                    v-if="canUpdateOrganization()"
-                    :team="team" />
+                <OrganizationBillableRate v-if="canUpdateOrganization()" :team="team" />
                 <SectionBorder />
 
-                <OrganizationFormatSettings
-                    v-if="canUpdateOrganization()"
-                    :team="team" />
+                <OrganizationFormatSettings v-if="canUpdateOrganization()" :team="team" />
                 <SectionBorder />
 
-                <template
-                    v-if="permissions.canDeleteTeam && !team.personal_team">
+                <template v-if="permissions.canDeleteTeam && !team.personal_team">
                     <DeleteTeamForm class="mt-10 sm:mt-0" :team="team" />
                 </template>
             </div>

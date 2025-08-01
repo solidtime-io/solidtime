@@ -76,7 +76,7 @@ export const useCurrentTimeEntryStore = defineStore('currentTimeEntry', () => {
                         currentTimeEntry.value = { ...emptyTimeEntry };
                     }
                 }
-            } catch{
+            } catch {
                 currentTimeEntry.value = { ...emptyTimeEntry };
             }
         } else {
@@ -144,9 +144,7 @@ export const useCurrentTimeEntryStore = defineStore('currentTimeEntry', () => {
             );
             $reset();
         } else {
-            throw new Error(
-                'Failed to stop current timer because organization ID is missing.'
-            );
+            throw new Error('Failed to stop current timer because organization ID is missing.');
         }
     }
 

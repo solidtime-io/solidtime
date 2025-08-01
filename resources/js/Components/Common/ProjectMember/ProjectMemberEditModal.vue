@@ -2,10 +2,7 @@
 import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
 import DialogModal from '@/packages/ui/src/DialogModal.vue';
 import { ref, watch } from 'vue';
-import type {
-    ProjectMember,
-    UpdateProjectMemberBody,
-} from '@/packages/api/src';
+import type { ProjectMember, UpdateProjectMemberBody } from '@/packages/api/src';
 import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import { useFocus } from '@vueuse/core';
 import { useProjectMembersStore } from '@/utils/useProjectMembers';
@@ -29,10 +26,7 @@ const projectMemberBody = ref<UpdateProjectMemberBody>({
 });
 const showBillableRateModal = ref(false);
 async function submit() {
-    if (
-        props.projectMember.billable_rate !==
-        projectMemberBody.value.billable_rate
-    ) {
+    if (props.projectMember.billable_rate !== projectMemberBody.value.billable_rate) {
         // make sure that the alert modal is not immediately submitted when user presses enter
         setTimeout(() => {
             showBillableRateModal.value = true;
@@ -84,20 +78,14 @@ useFocus(projectNameInput, { initialValue: true });
                 @close="showBillableRateModal = false"
                 @submit="submitBillableRate"></ProjectMemberBillableRateModal>
             <div class="grid grid-cols-3 items-center space-x-4">
-                <div
-                    class="col-span-3 sm:col-span-2 space-x-2 flex items-center">
+                <div class="col-span-3 sm:col-span-2 space-x-2 flex items-center">
                     <UserIcon class="w-4 text-text-secondary"></UserIcon>
                     <span>{{ props.name }}</span>
                 </div>
                 <div class="col-span-3 sm:col-span-1 flex-1">
-                    <InputLabel
-                        for="billable_rate"
-                        class="mb-2"
-                        value="Billable Rate"></InputLabel>
+                    <InputLabel for="billable_rate" class="mb-2" value="Billable Rate"></InputLabel>
                     <BillableRateInput
-                        v-model="
-                            projectMemberBody.billable_rate
-                        "
+                        v-model="projectMemberBody.billable_rate"
                         :currency="getOrganizationCurrencyString()"
                         name="billable_rate"
                         @keydown.enter="submit"></BillableRateInput>

@@ -8,10 +8,8 @@ use App\Http\Middleware\ForceHttps;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Route;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\UsesClass;
 
 #[CoversClass(ForceHttps::class)]
-#[UsesClass(ForceHttps::class)]
 class ForceHttpsMiddlewareTest extends MiddlewareTestAbstract
 {
     private function createTestRoute(): string

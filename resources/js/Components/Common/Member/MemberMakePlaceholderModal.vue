@@ -1,17 +1,17 @@
 <script setup lang="ts">
 import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
 import DialogModal from '@/packages/ui/src/DialogModal.vue';
-import {ref} from 'vue';
-import {api, type Member} from '@/packages/api/src';
+import { ref } from 'vue';
+import { api, type Member } from '@/packages/api/src';
 import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
-import {useMutation} from '@tanstack/vue-query';
-import {getCurrentOrganizationId} from "@/utils/useUser";
-import {useNotificationsStore} from "@/utils/notification";
-import {useMembersStore} from "@/utils/useMembers";
+import { useMutation } from '@tanstack/vue-query';
+import { getCurrentOrganizationId } from '@/utils/useUser';
+import { useNotificationsStore } from '@/utils/notification';
+import { useMembersStore } from '@/utils/useMembers';
 
-const {handleApiRequestNotifications} = useNotificationsStore();
+const { handleApiRequestNotifications } = useNotificationsStore();
 
-const show = defineModel('show', {default: false});
+const show = defineModel('show', { default: false });
 const saving = ref(false);
 
 const props = defineProps<{
@@ -27,7 +27,7 @@ const turnToPlaceholderMutation = useMutation({
         return await api.makePlaceholder(undefined, {
             params: {
                 organization: organizationId,
-                member: props.member.id
+                member: props.member.id,
             },
         });
     },
@@ -36,17 +36,15 @@ const turnToPlaceholderMutation = useMutation({
 async function submit() {
     saving.value = true;
     await handleApiRequestNotifications(
-        () =>
-            turnToPlaceholderMutation.mutateAsync(),
+        () => turnToPlaceholderMutation.mutateAsync(),
         'Deactivating the member was successful!',
         'There was an error deactivating the user.',
         () => {
             show.value = false;
-            useMembersStore().fetchMembers()
+            useMembersStore().fetchMembers();
         }
     );
 }
-
 </script>
 
 <template>
@@ -59,8 +57,9 @@ async function submit() {
 
         <template #content>
             <p>
-                Deactivating the user <strong>{{ member.name }} </strong> will remove the user's access to
-                the organization. You will not be billed for inactive users and all time entries will be preserved.
+                Deactivating the user <strong>{{ member.name }} </strong> will remove the user's
+                access to the organization. You will not be billed for inactive users and all time
+                entries will be preserved.
             </p>
         </template>
         <template #footer>

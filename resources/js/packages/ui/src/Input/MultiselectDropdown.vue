@@ -44,17 +44,13 @@ watch(open, (isOpen) => {
             const aIsSelected = model.value.includes(props.getKeyFromItem(a));
             const bIsSelected = model.value.includes(props.getKeyFromItem(b));
             if (aIsSelected === bIsSelected) {
-                return props
-                    .getNameForItem(a)
-                    .localeCompare(props.getNameForItem(b));
+                return props.getNameForItem(a).localeCompare(props.getNameForItem(b));
             }
             return model.value.includes(props.getKeyFromItem(a)) ? -1 : 1;
         });
         nextTick(() => {
             if (filteredItems.value.length > 0) {
-                highlightedItemId.value = props.getKeyFromItem(
-                    filteredItems.value[0]
-                );
+                highlightedItemId.value = props.getKeyFromItem(filteredItems.value[0]);
             }
         });
     }
@@ -85,9 +81,7 @@ function updateSearchValue(event: Event) {
                 (item) => props.getKeyFromItem(item) === highlightedTagId
             );
             if (highlightedItem) {
-                addOrRemoveItemFromSelection(
-                    props.getKeyFromItem(highlightedItem)
-                );
+                addOrRemoveItemFromSelection(props.getKeyFromItem(highlightedItem));
             }
         }
     } else {
@@ -110,9 +104,7 @@ function toggleItem(newValue: string | null) {
 
 function moveHighlightUp() {
     if (highlightedItem.value) {
-        const currentHightlightedIndex = filteredItems.value.indexOf(
-            highlightedItem.value
-        );
+        const currentHightlightedIndex = filteredItems.value.indexOf(highlightedItem.value);
         if (currentHightlightedIndex === 0) {
             highlightedItemId.value = props.getKeyFromItem(
                 filteredItems.value[filteredItems.value.length - 1]
@@ -127,13 +119,9 @@ function moveHighlightUp() {
 
 function moveHighlightDown() {
     if (highlightedItem.value) {
-        const currentHightlightedIndex = filteredItems.value.indexOf(
-            highlightedItem.value
-        );
+        const currentHightlightedIndex = filteredItems.value.indexOf(highlightedItem.value);
         if (currentHightlightedIndex === filteredItems.value.length - 1) {
-            highlightedItemId.value = props.getKeyFromItem(
-                filteredItems.value[0]
-            );
+            highlightedItemId.value = props.getKeyFromItem(filteredItems.value[0]);
         } else {
             highlightedItemId.value = props.getKeyFromItem(
                 filteredItems.value[currentHightlightedIndex + 1]
@@ -144,9 +132,7 @@ function moveHighlightDown() {
 
 const highlightedItemId = ref<string | null>(null);
 const highlightedItem = computed(() => {
-    return props.items.find(
-        (item) => props.getKeyFromItem(item) === highlightedItemId.value
-    );
+    return props.items.find((item) => props.getKeyFromItem(item) === highlightedItemId.value);
 });
 </script>
 
@@ -165,9 +151,7 @@ const highlightedItem = computed(() => {
                 @keydown.up.prevent="moveHighlightUp"
                 @keydown.down.prevent="moveHighlightDown"
                 @keydown.enter="toggleItem(highlightedItemId)" />
-            <div
-                ref="dropdownViewport"
-                class="min-w-60 max-w-80 max-h-60 overflow-y-scroll">
+            <div ref="dropdownViewport" class="min-w-60 max-w-80 max-h-60 overflow-y-scroll">
                 <div
                     v-for="item in filteredItems"
                     :key="props.getKeyFromItem(item)"
@@ -180,9 +164,7 @@ const highlightedItem = computed(() => {
                     :data-item-id="props.getKeyFromItem(item)">
                     <MultiselectDropdownItem
                         :selected="isItemSelected(props.getKeyFromItem(item))"
-                        :name="
-                            props.getNameForItem(item)
-                        "
+                        :name="props.getNameForItem(item)"
                         @click="toggleItem(props.getKeyFromItem(item))"></MultiselectDropdownItem>
                 </div>
             </div>

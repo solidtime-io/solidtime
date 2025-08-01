@@ -26,7 +26,7 @@ class ShareInertiaData
     {
         /** @var PermissionStore $permissions */
         $permissions = app(PermissionStore::class);
-        Inertia::share(array_filter([
+        Inertia::share([
             'jetstream' => function () use ($request) {
                 /** @var User|null $user */
                 $user = $request->user();
@@ -101,7 +101,7 @@ class ShareInertiaData
                     return [$key => $bag->messages()];
                 })->all();
             },
-        ]));
+        ]);
 
         return $next($request);
     }

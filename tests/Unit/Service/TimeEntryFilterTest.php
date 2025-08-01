@@ -8,11 +8,9 @@ use App\Models\Tag;
 use App\Models\TimeEntry;
 use App\Service\TimeEntryFilter;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\UsesClass;
 use Tests\TestCaseWithDatabase;
 
 #[CoversClass(TimeEntryFilter::class)]
-#[UsesClass(TimeEntryFilter::class)]
 class TimeEntryFilterTest extends TestCaseWithDatabase
 {
     public function test_add_tag_ids_filter_is_or(): void

@@ -7,7 +7,6 @@ namespace Tests\Unit\Endpoint\Api\V1;
 use App\Http\Controllers\Api\V1\ApiTokenController;
 use App\Models\Passport\Client;
 use App\Models\Passport\Token;
-use Illuminate\Support\Facades\Config;
 use Laravel\Passport\ClientRepository;
 use Laravel\Passport\Passport;
 use PHPUnit\Framework\Attributes\UsesClass;
@@ -20,8 +19,6 @@ class ApiTokenEndpointTest extends ApiEndpointTestAbstract
         // Arrange
         $data = $this->createUserWithPermission([]);
         $personalAccessClient = $this->createPersonalAccessClient();
-        Config::set('passport.personal_access_client.id', $personalAccessClient->id);
-        Config::set('passport.personal_access_client.secret', $personalAccessClient->secret);
         $client = $this->createClient();
         $token = Token::factory()->forUser($data->user)->forClient($personalAccessClient)->create();
         $otherTokenType = Token::factory()->forUser($data->user)->forClient($client)->create();
@@ -34,6 +31,7 @@ class ApiTokenEndpointTest extends ApiEndpointTestAbstract
 
         // Assert
         $this->assertResponseCode($response, 200);
+        $response->assertJsonCount(1, 'data');
         $response->assertExactJson([
             'data' => [
                 [
@@ -53,8 +51,6 @@ class ApiTokenEndpointTest extends ApiEndpointTestAbstract
         // Arrange
         $data = $this->createUserWithPermission([]);
         $personalAccessClient = $this->createPersonalAccessClient();
-        Config::set('passport.personal_access_client.id', $personalAccessClient->id);
-        Config::set('passport.personal_access_client.secret', $personalAccessClient->secret);
         Passport::actingAs($data->user);
 
         // Act
@@ -102,8 +98,6 @@ class ApiTokenEndpointTest extends ApiEndpointTestAbstract
         // Arrange
         $data = $this->createUserWithPermission([]);
         $client = $this->createPersonalAccessClient();
-        Config::set('passport.personal_access_client.id', $client->id);
-        Config::set('passport.personal_access_client.secret', $client->secret);
         $token = Token::factory()->forUser($data->user)->forClient($client)->create();
         Passport::actingAs($data->user);
 
@@ -123,8 +117,6 @@ class ApiTokenEndpointTest extends ApiEndpointTestAbstract
         // Arrange
         $data = $this->createUserWithPermission([]);
         $personalAccessClient = $this->createPersonalAccessClient();
-        Config::set('passport.personal_access_client.id', $personalAccessClient->id);
-        Config::set('passport.personal_access_client.secret', $personalAccessClient->secret);
         $client = $this->createClient();
         $token = Token::factory()->forUser($data->user)->forClient($client)->create();
         Passport::actingAs($data->user);
@@ -153,34 +145,12 @@ class ApiTokenEndpointTest extends ApiEndpointTestAbstract
         $this->assertResponseCode($response, 404);
     }
 
-    public function test_revoke_fails_if_personal_access_client_is_not_configured(): void
-    {
-        // Arrange
-        $data = $this->createUserWithPermission([]);
-        $client = $this->createPersonalAccessClient();
-        $token = Token::factory()->forUser($data->user)->forClient($client)->create();
-        Passport::actingAs($data->user);
-
-        // Act
-        $response = $this->postJson(route('api.v1.api-tokens.revoke', $token->id));
-
-        // Assert
-        $this->assertResponseCode($response, 400);
-        $response->assertExactJson([
-            'error' => true,
-            'key' => 'personal_access_client_is_not_configured',
-            'message' => 'Personal access client is not configured',
-        ]);
-    }
-
     public function test_revoke_fails_if_the_token_does_not_belong_to_the_user(): void
     {
         // Arrange
         $data = $this->createUserWithPermission([]);
         $otherData = $this->createUserWithPermission([]);
         $client = $this->createPersonalAccessClient();
-        Config::set('passport.personal_access_client.id', $client->id);
-        Config::set('passport.personal_access_client.secret', $client->secret);
         $token = Token::factory()->forUser($otherData->user)->forClient($client)->create();
         Passport::actingAs($data->user);
 
@@ -200,8 +170,6 @@ class ApiTokenEndpointTest extends ApiEndpointTestAbstract
         // Arrange
         $data = $this->createUserWithPermission([]);
         $client = $this->createPersonalAccessClient();
-        Config::set('passport.personal_access_client.id', $client->id);
-        Config::set('passport.personal_access_client.secret', $client->secret);
         $token = Token::factory()->forUser($data->user)->forClient($client)->create();
         Passport::actingAs($data->user);
 
@@ -213,33 +181,11 @@ class ApiTokenEndpointTest extends ApiEndpointTestAbstract
         $this->assertDatabaseMissing(Token::class, ['id' => $token->id]);
     }
 
-    public function test_destroy_fails_if_personal_access_client_is_not_configured(): void
-    {
-        // Arrange
-        $data = $this->createUserWithPermission([]);
-        $client = $this->createPersonalAccessClient();
-        $token = Token::factory()->forUser($data->user)->forClient($client)->create();
-        Passport::actingAs($data->user);
-
-        // Act
-        $response = $this->deleteJson(route('api.v1.api-tokens.destroy', $token->id));
-
-        // Assert
-        $this->assertResponseCode($response, 400);
-        $response->assertExactJson([
-            'error' => true,
-            'key' => 'personal_access_client_is_not_configured',
-            'message' => 'Personal access client is not configured',
-        ]);
-    }
-
     public function test_destroy_fails_if_token_is_not_personal_access_token(): void
     {
         // Arrange
         $data = $this->createUserWithPermission([]);
         $personalAccessClient = $this->createPersonalAccessClient();
-        Config::set('passport.personal_access_client.id', $personalAccessClient->id);
-        Config::set('passport.personal_access_client.secret', $personalAccessClient->secret);
         $client = $this->createClient();
         $token = Token::factory()->forUser($data->user)->forClient($client)->create();
         Passport::actingAs($data->user);
@@ -273,8 +219,6 @@ class ApiTokenEndpointTest extends ApiEndpointTestAbstract
         $data = $this->createUserWithPermission([]);
         $otherData = $this->createUserWithPermission([]);
         $client = $this->createPersonalAccessClient();
-        Config::set('passport.personal_access_client.id', $client->id);
-        Config::set('passport.personal_access_client.secret', $client->secret);
         $token = Token::factory()->forUser($otherData->user)->forClient($client)->create();
         Passport::actingAs($data->user);
 
@@ -292,9 +236,7 @@ class ApiTokenEndpointTest extends ApiEndpointTestAbstract
     {
         $clientRepository = new ClientRepository;
         /** @var Client $client */
-        $client = $clientRepository->createPersonalAccessClient(
-            null, 'Test Personal Access Client', 'http://localhost'
-        );
+        $client = $clientRepository->createPersonalAccessGrantClient('Test Personal Access Client');
 
         return $client;
     }
@@ -303,8 +245,9 @@ class ApiTokenEndpointTest extends ApiEndpointTestAbstract
     {
         $clientRepository = new ClientRepository;
         /** @var Client $client */
-        $client = $clientRepository->create(
-            null, 'Desktop App', 'http://localhost', null
+        $client = $clientRepository->createAuthorizationCodeGrantClient(
+            name: 'Desktop App',
+            redirectUris: ['http://localhost']
         );
 
         return $client;

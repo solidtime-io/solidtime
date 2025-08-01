@@ -35,10 +35,7 @@ export function daysLeftInTrial() {
     }>();
 
     return (
-        getDayJsInstance()(page.props.billing.trial_until).diff(
-            getDayJsInstance()(),
-            'days'
-        ) + 1
+        getDayJsInstance()(page.props.billing.trial_until).diff(getDayJsInstance()(), 'days') + 1
     );
 }
 

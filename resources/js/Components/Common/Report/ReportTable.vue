@@ -21,25 +21,15 @@ const gridTemplate = computed(() => {
 <template>
     <div class="flow-root max-w-[100vw] overflow-x-auto">
         <div class="inline-block min-w-full align-middle">
-            <div
-                data-testid="report_table"
-                class="grid min-w-full"
-                :style="gridTemplate">
+            <div data-testid="report_table" class="grid min-w-full" :style="gridTemplate">
                 <ReportTableHeading></ReportTableHeading>
-                <div
-                    v-if="reports.length === 0"
-                    class="col-span-5 py-24 text-center">
-                    <FolderPlusIcon
-                        class="w-8 text-icon-default inline pb-2"></FolderPlusIcon>
-                    <h3 class="text-text-primary font-semibold">
-                        No shared reports found
-                    </h3>
+                <div v-if="reports.length === 0" class="col-span-5 py-24 text-center">
+                    <FolderPlusIcon class="w-8 text-icon-default inline pb-2"></FolderPlusIcon>
+                    <h3 class="text-text-primary font-semibold">No shared reports found</h3>
                     <p v-if="canCreateProjects()" class="pb-5">
                         Go to the overview to create a report
                     </p>
-                    <SecondaryButton
-                        :icon="PlusIcon"
-                        @click="router.visit(route('reporting'))"
+                    <SecondaryButton :icon="PlusIcon" @click="router.visit(route('reporting'))"
                         >Go to overview
                     </SecondaryButton>
                 </div>

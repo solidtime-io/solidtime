@@ -29,17 +29,9 @@ const activeTab = ref<'all' | 'invitations'>('all');
             class="py-5 border-b border-default-background-separator flex justify-between items-center">
             <div class="flex items-center space-x-4 sm:space-x-6">
                 <PageTitle :icon="UserGroupIcon" title="Members"> </PageTitle>
-                <TabBar
-                v-model="activeTab"
-                >
-                    <TabBarItem
-                        value="all"
-                        >All</TabBarItem
-                    >
-                    <TabBarItem
-                        value="invitations"
-                        >Invitations</TabBarItem
-                    >
+                <TabBar v-model="activeTab">
+                    <TabBarItem value="all">All</TabBarItem>
+                    <TabBarItem value="invitations">Invitations</TabBarItem>
                 </TabBar>
             </div>
             <SecondaryButton

@@ -1,9 +1,6 @@
 <script setup lang="ts">
 import DayOverviewCardChart from '@/Components/Dashboard/DayOverviewCardChart.vue';
-import {
-    formatHumanReadableDate,
-    formatHumanReadableDuration,
-} from '@/packages/ui/src/utils/time';
+import { formatHumanReadableDate, formatHumanReadableDuration } from '@/packages/ui/src/utils/time';
 import { inject, type ComputedRef } from 'vue';
 import type { Organization } from '@/packages/api/src';
 
@@ -17,10 +14,9 @@ defineProps<{
 </script>
 
 <template>
-    <div
-        class="px-3.5 py-2 flex justify-between @container border-b border-card-background-separator">
+    <div class="px-3.5 py-2 flex justify-between @container border-b border-b-background-separator">
         <div class="flex items-center min-w-[70px]">
-            <p class="font-semibold text-sm text-text-primary">
+            <p class="font-medium text-sm text-text-primary">
                 {{ formatHumanReadableDate(date) }}
             </p>
         </div>
@@ -28,7 +24,7 @@ defineProps<{
             <DayOverviewCardChart :history="history"></DayOverviewCardChart>
         </div>
         <div
-            class="flex text-sm items-center justify-center text-text-secondary min-w-[65px] font-semibold">
+            class="flex text-sm items-center justify-center text-text-secondary min-w-[65px] font-medium">
             {{
                 formatHumanReadableDuration(
                     duration,

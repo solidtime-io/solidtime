@@ -12,3 +12,7 @@ parameters:
     checkOctaneCompatibility: true
     checkModelProperties: true
     noEnvCallsOutsideOfConfig: true
+
+    ignoreErrors:
+        - '# is not subtype of native type Illuminate\\Database\\Eloquent\\Builder#'
+        - '# is not subtype of native type Illuminate\\Database\\Eloquent\\Relations\\Relation#'

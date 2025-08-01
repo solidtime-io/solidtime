@@ -9,10 +9,13 @@ jobs:
 
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    strategy:
+      matrix:
+        postgres_version: [ 15, 16, 17 ]
 
     services:
       pgsql_test:
-        image: postgres:15
+        image: postgres:${{ matrix.postgres_version }}
         env:
           PGPASSWORD: 'root'
           POSTGRES_DB: 'laravel'

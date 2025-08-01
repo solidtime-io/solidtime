@@ -14,4 +14,4 @@ export function formatCentsWithOrganizationDefaults(
         currencySymbol,
         'point-comma' as NumberFormat
     );
-} 
+}

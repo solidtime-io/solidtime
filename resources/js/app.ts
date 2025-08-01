@@ -1,6 +1,6 @@
 import './bootstrap';
 import '../css/app.css';
-import { createApp, h } from "vue";
+import { createApp, h } from 'vue';
 import { createInertiaApp, usePage } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { ZiggyVue } from '../../vendor/tightenco/ziggy';
@@ -14,29 +14,29 @@ const pinia = createPinia();
 
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,
-    resolve: (name) =>{
-            if(name.includes('Invoicing::')){
-                const [module, page] = name.split('::');
+    resolve: (name) => {
+        if (name.includes('Invoicing::')) {
+            const [module, page] = name.split('::');
 
-                const pagePath = module
-                    ? `../../extensions/${module}/resources/js/Pages/${page}.vue`
-                    : `./Pages/${page}.vue`;
+            const pagePath = module
+                ? `../../extensions/${module}/resources/js/Pages/${page}.vue`
+                : `./Pages/${page}.vue`;
 
-                // BillingPortal is a Vue 2 Component and therefore should not be imported
-                const pages = module
-                    ? import.meta.glob<DefineComponent>(['../../extensions/**/resources/js/Pages/*.vue', '!**/BillingPortal.vue'])
-                    : import.meta.glob<DefineComponent>('./Pages/**/*.vue');
+            // BillingPortal is a Vue 2 Component and therefore should not be imported
+            const pages = module
+                ? import.meta.glob<DefineComponent>([
+                      '../../extensions/**/resources/js/Pages/*.vue',
+                      '!**/BillingPortal.vue',
+                  ])
+                : import.meta.glob<DefineComponent>('./Pages/**/*.vue');
 
-                return resolvePageComponent(
-                    pagePath,
-                    pages)
-            }
-            else {
-                return resolvePageComponent(
-                    `./Pages/${name}.vue`,
-                    import.meta.glob<DefineComponent>('./Pages/**/*.vue'));
-            }
-
+            return resolvePageComponent(pagePath, pages);
+        } else {
+            return resolvePageComponent(
+                `./Pages/${name}.vue`,
+                import.meta.glob<DefineComponent>('./Pages/**/*.vue')
+            );
+        }
     },
     setup({ el, App, props, plugin }) {
         const app = createApp({ render: () => h(App, props) });

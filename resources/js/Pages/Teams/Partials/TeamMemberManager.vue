@@ -13,11 +13,7 @@ import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
 import SectionBorder from '@/Components/SectionBorder.vue';
 import TextInput from '@/packages/ui/src/Input/TextInput.vue';
-import type {
-    Organization,
-    OrganizationInvitation,
-    User,
-} from '@/types/models';
+import type { Organization, OrganizationInvitation, User } from '@/types/models';
 import type { Membership, Permissions, Role } from '@/types/jetstream';
 import { filterRoles } from '@/utils/roles';
 
@@ -94,9 +90,7 @@ const confirmLeavingTeam = () => {
 };
 
 const leaveTeam = () => {
-    leaveTeamForm.delete(
-        route('team-members.destroy', [props.team.id, page.props.auth.user.id])
-    );
+    leaveTeamForm.delete(route('team-members.destroy', [props.team.id, page.props.auth.user.id]));
 };
 
 const confirmTeamMemberRemoval = (teamMember: User) => {
@@ -133,15 +127,14 @@ const displayableRole = (role: string) => {
                 <template #title> Add Organization Member</template>
 
                 <template #description>
-                    Add a new member to your organization, allowing them to
-                    collaborate with you.
+                    Add a new member to your organization, allowing them to collaborate with you.
                 </template>
 
                 <template #form>
                     <div class="col-span-6">
                         <div class="max-w-xl text-sm text-muted">
-                            Please provide the email address of the person you
-                            would like to add to this organization.
+                            Please provide the email address of the person you would like to add to
+                            this organization.
                         </div>
                     </div>
 
@@ -153,19 +146,13 @@ const displayableRole = (role: string) => {
                             v-model="addTeamMemberForm.email"
                             type="email"
                             class="mt-1 block w-full" />
-                        <InputError
-                            :message="addTeamMemberForm.errors.email"
-                            class="mt-2" />
+                        <InputError :message="addTeamMemberForm.errors.email" class="mt-2" />
                     </div>
 
                     <!-- Role -->
-                    <div
-                        v-if="availableRoles.length > 0"
-                        class="col-span-6 lg:col-span-4">
+                    <div v-if="availableRoles.length > 0" class="col-span-6 lg:col-span-4">
                         <InputLabel for="roles" value="Role" />
-                        <InputError
-                            :message="addTeamMemberForm.errors.role"
-                            class="mt-2" />
+                        <InputError :message="addTeamMemberForm.errors.role" class="mt-2" />
 
                         <div
                             class="relative z-0 mt-1 border border-card-border rounded-lg cursor-pointer">
@@ -177,9 +164,7 @@ const displayableRole = (role: string) => {
                                 :class="{
                                     'border-t border-card-border focus:border-none rounded-t-none':
                                         i > 0,
-                                    'rounded-b-none':
-                                        i !=
-                                        Object.keys(availableRoles).length - 1,
+                                    'rounded-b-none': i != Object.keys(availableRoles).length - 1,
                                 }"
                                 @click="addTeamMemberForm.role = role.key">
                                 <div
@@ -193,18 +178,13 @@ const displayableRole = (role: string) => {
                                         <div
                                             class="text-sm text-text-primary"
                                             :class="{
-                                                'font-semibold':
-                                                    addTeamMemberForm.role ==
-                                                    role.key,
+                                                'font-semibold': addTeamMemberForm.role == role.key,
                                             }">
                                             {{ role.name }}
                                         </div>
 
                                         <svg
-                                            v-if="
-                                                addTeamMemberForm.role ==
-                                                role.key
-                                            "
+                                            v-if="addTeamMemberForm.role == role.key"
                                             class="ms-2 h-5 w-5 text-green-400"
                                             xmlns="http://www.w3.org/2000/svg"
                                             fill="none"
@@ -219,8 +199,7 @@ const displayableRole = (role: string) => {
                                     </div>
 
                                     <!-- Role Description -->
-                                    <div
-                                        class="mt-2 text-xs text-muted text-start">
+                                    <div class="mt-2 text-xs text-muted text-start">
                                         {{ role.description }}
                                     </div>
                                 </div>
@@ -230,9 +209,7 @@ const displayableRole = (role: string) => {
                 </template>
 
                 <template #actions>
-                    <ActionMessage
-                        :on="addTeamMemberForm.recentlySuccessful"
-                        class="me-3">
+                    <ActionMessage :on="addTeamMemberForm.recentlySuccessful" class="me-3">
                         Added.
                     </ActionMessage>
 
@@ -245,11 +222,7 @@ const displayableRole = (role: string) => {
             </FormSection>
         </div>
 
-        <div
-            v-if="
-                team.team_invitations.length > 0 &&
-                userPermissions.canAddTeamMembers
-            ">
+        <div v-if="team.team_invitations.length > 0 && userPermissions.canAddTeamMembers">
             <SectionBorder />
 
             <!-- Organization Member Invitations -->
@@ -257,9 +230,9 @@ const displayableRole = (role: string) => {
                 <template #title> Pending Organization Invitations</template>
 
                 <template #description>
-                    These people have been invited to your organization and have
-                    been sent an invitation email. They may join the
-                    organization by accepting the email invitation.
+                    These people have been invited to your organization and have been sent an
+                    invitation email. They may join the organization by accepting the email
+                    invitation.
                 </template>
 
                 <!-- Pending Organization Member Invitation List -->
@@ -344,9 +317,7 @@ const displayableRole = (role: string) => {
 
                                 <!-- Remove Organization Member -->
                                 <button
-                                    v-else-if="
-                                        userPermissions.canRemoveTeamMembers
-                                    "
+                                    v-else-if="userPermissions.canRemoveTeamMembers"
                                     class="cursor-pointer ms-6 text-sm text-red-500"
                                     @click="confirmTeamMemberRemoval(user)">
                                     Remove
@@ -359,9 +330,7 @@ const displayableRole = (role: string) => {
         </div>
 
         <!-- Role Management Modal -->
-        <DialogModal
-            :show="currentlyManagingRole"
-            @close="currentlyManagingRole = false">
+        <DialogModal :show="currentlyManagingRole" @close="currentlyManagingRole = false">
             <template #title> Manage Role</template>
 
             <template #content>
@@ -376,25 +345,20 @@ const displayableRole = (role: string) => {
                             :class="{
                                 'border-t border-card-border focus:border-none rounded-t-none':
                                     i > 0,
-                                'rounded-b-none':
-                                    i !==
-                                    Object.keys(availableRoles).length - 1,
+                                'rounded-b-none': i !== Object.keys(availableRoles).length - 1,
                             }"
                             @click="updateRoleForm.role = role.key">
                             <div
                                 :class="{
                                     'opacity-50':
-                                        updateRoleForm.role &&
-                                        updateRoleForm.role !== role.key,
+                                        updateRoleForm.role && updateRoleForm.role !== role.key,
                                 }">
                                 <!-- Role Name -->
                                 <div class="flex items-center">
                                     <div
                                         class="text-sm text-muted"
                                         :class="{
-                                            'font-semibold':
-                                                updateRoleForm.role ===
-                                                role.key,
+                                            'font-semibold': updateRoleForm.role === role.key,
                                         }">
                                         {{ role.name }}
                                     </div>
@@ -425,9 +389,7 @@ const displayableRole = (role: string) => {
             </template>
 
             <template #footer>
-                <SecondaryButton @click="currentlyManagingRole = false">
-                    Cancel
-                </SecondaryButton>
+                <SecondaryButton @click="currentlyManagingRole = false"> Cancel </SecondaryButton>
 
                 <PrimaryButton
                     class="ms-3"
@@ -440,19 +402,13 @@ const displayableRole = (role: string) => {
         </DialogModal>
 
         <!-- Leave Organization Confirmation Modal -->
-        <ConfirmationModal
-            :show="confirmingLeavingTeam"
-            @close="confirmingLeavingTeam = false">
+        <ConfirmationModal :show="confirmingLeavingTeam" @close="confirmingLeavingTeam = false">
             <template #title> Leave Organization</template>
 
-            <template #content>
-                Are you sure you would like to leave this organization?
-            </template>
+            <template #content> Are you sure you would like to leave this organization? </template>
 
             <template #footer>
-                <SecondaryButton @click="confirmingLeavingTeam = false">
-                    Cancel
-                </SecondaryButton>
+                <SecondaryButton @click="confirmingLeavingTeam = false"> Cancel </SecondaryButton>
 
                 <DangerButton
                     class="ms-3"
@@ -465,20 +421,15 @@ const displayableRole = (role: string) => {
         </ConfirmationModal>
 
         <!-- Remove Organization Member Confirmation Modal -->
-        <ConfirmationModal
-            :show="!!teamMemberBeingRemoved"
-            @close="teamMemberBeingRemoved = null">
+        <ConfirmationModal :show="!!teamMemberBeingRemoved" @close="teamMemberBeingRemoved = null">
             <template #title> Remove Organization Member</template>
 
             <template #content>
-                Are you sure you would like to remove this person from the
-                organization?
+                Are you sure you would like to remove this person from the organization?
             </template>
 
             <template #footer>
-                <SecondaryButton @click="teamMemberBeingRemoved = null">
-                    Cancel
-                </SecondaryButton>
+                <SecondaryButton @click="teamMemberBeingRemoved = null"> Cancel </SecondaryButton>
 
                 <DangerButton
                     class="ms-3"

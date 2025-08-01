@@ -10,11 +10,9 @@ use App\Service\DeletionService;
 use Illuminate\Support\Str;
 use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\UsesClass;
 use Tests\TestCaseWithDatabase;
 
 #[CoversClass(OrganizationDeleteCommand::class)]
-#[UsesClass(OrganizationDeleteCommand::class)]
 class OrganizationDeleteCommandTest extends TestCaseWithDatabase
 {
     public function test_it_calls_the_deletion_service_with_the_organization(): void

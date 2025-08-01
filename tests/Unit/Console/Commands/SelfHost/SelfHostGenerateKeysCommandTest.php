@@ -8,11 +8,9 @@ use App\Console\Commands\SelfHost\SelfHostGenerateKeysCommand;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\UsesClass;
 use Tests\TestCase;
 
 #[CoversClass(SelfHostGenerateKeysCommand::class)]
-#[UsesClass(SelfHostGenerateKeysCommand::class)]
 class SelfHostGenerateKeysCommandTest extends TestCase
 {
     public function test_generates_app_key_and_passport_keys_per_default_in_env_format(): void

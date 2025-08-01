@@ -16,11 +16,7 @@ import { useProjectsStore } from '@/utils/useProjects';
 import { useTasksStore } from '@/utils/useTasks';
 import { useTagsStore } from '@/utils/useTags';
 import TimeTrackerControls from '@/packages/ui/src/TimeTracker/TimeTrackerControls.vue';
-import type {
-    CreateClientBody,
-    CreateProjectBody,
-    Project,
-} from '@/packages/api/src';
+import type { CreateClientBody, CreateProjectBody, Project } from '@/packages/api/src';
 import TimeTrackerRunningInDifferentOrganizationOverlay from '@/packages/ui/src/TimeTracker/TimeTrackerRunningInDifferentOrganizationOverlay.vue';
 import { useClientsStore } from '@/utils/useClients';
 import { getOrganizationCurrencyString } from '@/utils/money';
@@ -81,9 +77,7 @@ const isRunningInDifferentOrganization = computed(() => {
     );
 });
 
-async function createProject(
-    project: CreateProjectBody
-): Promise<Project | undefined> {
+async function createProject(project: CreateProjectBody): Promise<Project | undefined> {
     const newProject = await useProjectsStore().createProject(project);
     if (newProject) {
         currentTimeEntry.value.project_id = newProject.id;
@@ -110,10 +104,10 @@ const { tags } = storeToRefs(useTagsStore());
     <CardTitle title="Time Tracker" :icon="ClockIcon"></CardTitle>
     <div class="relative">
         <TimeTrackerRunningInDifferentOrganizationOverlay
-            v-if="
-                isRunningInDifferentOrganization
-            "
-            @switch-organization="switchToTimeEntryOrganization"></TimeTrackerRunningInDifferentOrganizationOverlay>
+            v-if="isRunningInDifferentOrganization"
+            @switch-organization="
+                switchToTimeEntryOrganization
+            "></TimeTrackerRunningInDifferentOrganizationOverlay>
 
         <TimeTrackerControls
             v-model:current-time-entry="currentTimeEntry"

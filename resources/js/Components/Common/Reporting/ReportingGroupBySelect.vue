@@ -8,12 +8,10 @@ const props = defineProps<{
     groupByOptions: { value: string; label: string; icon: Component }[];
 }>();
 const icon = computed(() => {
-    return props.groupByOptions.find((option) => option.value === model.value)
-        ?.icon;
+    return props.groupByOptions.find((option) => option.value === model.value)?.icon;
 });
 const title = computed(() => {
-    return props.groupByOptions.find((option) => option.value === model.value)
-        ?.label;
+    return props.groupByOptions.find((option) => option.value === model.value)?.label;
 });
 </script>
 

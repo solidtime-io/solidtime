@@ -42,8 +42,8 @@ defineEmits<{
             >.
         </p>
         <p class="py-1 text-center font-semibold max-w-md mx-auto">
-            Do you want to update all existing time entries, where the project
-            member billable rate applies as well?
+            Do you want to update all existing time entries, where the project member billable rate
+            applies as well?
         </p>
     </BillableRateModal>
 </template>

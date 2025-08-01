@@ -1,9 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import {
-    getDayJsInstance,
-    getLocalizedDayJs,
-} from '@/packages/ui/src/utils/time';
+import { getDayJsInstance, getLocalizedDayJs } from '@/packages/ui/src/utils/time';
 import { twMerge } from 'tailwind-merge';
 
 const props = defineProps<{

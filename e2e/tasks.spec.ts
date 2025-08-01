@@ -7,11 +7,8 @@ async function goToProjectsOverview(page: Page) {
 }
 
 // Create new project via modal
-test('test that creating and deleting a new tag in a new project works', async ({
-    page,
-}) => {
-    const newProjectName =
-        'New Project ' + Math.floor(1 + Math.random() * 10000);
+test('test that creating and deleting a new tag in a new project works', async ({ page }) => {
+    const newProjectName = 'New Project ' + Math.floor(1 + Math.random() * 10000);
     await goToProjectsOverview(page);
     await page.getByRole('button', { name: 'Create Project' }).click();
     await page.getByLabel('Project Name').fill(newProjectName);
@@ -29,9 +26,7 @@ test('test that creating and deleting a new tag in a new project works', async (
         ),
     ]);
 
-    await expect(page.getByTestId('project_table')).toContainText(
-        newProjectName
-    );
+    await expect(page.getByTestId('project_table')).toContainText(newProjectName);
 
     await page.getByText(newProjectName).click();
 
@@ -55,13 +50,9 @@ test('test that creating and deleting a new tag in a new project works', async (
 
     await expect(page.getByTestId('task_table')).toContainText(newTaskName);
 
-    const taskMoreButton = page.locator(
-        "[aria-label='Actions for Task " + newTaskName + "']"
-    );
+    const taskMoreButton = page.locator("[aria-label='Actions for Task " + newTaskName + "']");
     taskMoreButton.click();
-    const taskDeleteButton = page.locator(
-        "[aria-label='Delete Task " + newTaskName + "']"
-    );
+    const taskDeleteButton = page.locator("[aria-label='Delete Task " + newTaskName + "']");
 
     await Promise.all([
         taskDeleteButton.click(),
@@ -76,13 +67,9 @@ test('test that creating and deleting a new tag in a new project works', async (
 
     await goToProjectsOverview(page);
 
-    const moreButton = page.locator(
-        "[aria-label='Actions for Project " + newProjectName + "']"
-    );
+    const moreButton = page.locator("[aria-label='Actions for Project " + newProjectName + "']");
     moreButton.click();
-    const deleteButton = page.locator(
-        "[aria-label='Delete Project " + newProjectName + "']"
-    );
+    const deleteButton = page.locator("[aria-label='Delete Project " + newProjectName + "']");
 
     await Promise.all([
         deleteButton.click(),
@@ -93,14 +80,11 @@ test('test that creating and deleting a new tag in a new project works', async (
                 response.status() === 204
         ),
     ]);
-    await expect(page.getByTestId('project_table')).not.toContainText(
-        newProjectName
-    );
+    await expect(page.getByTestId('project_table')).not.toContainText(newProjectName);
 });
 
 test('test that archiving and unarchiving tasks works', async ({ page }) => {
-    const newProjectName =
-        'New Project ' + Math.floor(1 + Math.random() * 10000);
+    const newProjectName = 'New Project ' + Math.floor(1 + Math.random() * 10000);
     const newTaskName = 'New Project ' + Math.floor(1 + Math.random() * 10000);
 
     await goToProjectsOverview(page);

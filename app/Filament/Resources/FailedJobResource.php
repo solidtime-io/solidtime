@@ -15,6 +15,7 @@ use Filament\Resources\Resource;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -75,7 +76,8 @@ class FailedJobResource extends Resource
             ->filters([])
             ->bulkActions([
                 BulkAction::make('retry')
-                    ->label('Retry')
+                    ->icon('heroicon-o-arrow-path')
+                    ->label('Retry selected')
                     ->requiresConfirmation()
                     ->action(function (Collection $records): void {
                         /** @var FailedJob $record */
@@ -87,11 +89,13 @@ class FailedJobResource extends Resource
                             ->success()
                             ->send();
                     }),
+                DeleteBulkAction::make(),
             ])
             ->actions([
-                DeleteAction::make('Delete'),
-                ViewAction::make('View'),
+                DeleteAction::make(),
+                ViewAction::make(),
                 Action::make('retry')
+                    ->icon('heroicon-o-arrow-path')
                     ->label('Retry')
                     ->requiresConfirmation()
                     ->action(function (FailedJob $record): void {
@@ -109,7 +113,6 @@ class FailedJobResource extends Resource
         return [
             'index' => ListFailedJobs::route('/'),
             'view' => ViewFailedJobs::route('/{record}'),
-
         ];
     }
 }

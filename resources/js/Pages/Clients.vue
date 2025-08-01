@@ -40,24 +40,12 @@ const shownClients = computed(() => {
             class="py-5 border-b border-default-background-separator flex justify-between items-center">
             <div class="flex items-center space-x-3 sm:space-x-6">
                 <PageTitle :icon="UserCircleIcon" title="Clients"> </PageTitle>
-                <TabBar
-                v-model="activeTab"
-                >
-                    <TabBarItem
-                        value="active"
-                        >Active</TabBarItem
-                    >
-                    <TabBarItem
-                        value="archived"
-                        >
-                        Archived
-                    </TabBarItem>
+                <TabBar v-model="activeTab">
+                    <TabBarItem value="active">Active</TabBarItem>
+                    <TabBarItem value="archived"> Archived </TabBarItem>
                 </TabBar>
             </div>
-            <SecondaryButton
-                v-if="canCreateClients()"
-                :icon="PlusIcon"
-                @click="createClient = true"
+            <SecondaryButton v-if="canCreateClients()" :icon="PlusIcon" @click="createClient = true"
                 >Create Client</SecondaryButton
             >
             <ClientCreateModal v-model:show="createClient"></ClientCreateModal>

@@ -10,10 +10,8 @@ use App\Models\Organization;
 use App\Models\User;
 use Inertia\Testing\AssertableInertia as Assert;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\UsesClass;
 
 #[CoversClass(DashboardController::class)]
-#[UsesClass(DashboardController::class)]
 class DashboardEndpointTest extends EndpointTestAbstract
 {
     public function test_showing_dashboard_succeeds_for_empty_user(): void

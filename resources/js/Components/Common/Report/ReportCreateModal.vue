@@ -5,10 +5,7 @@ import DialogModal from '@/packages/ui/src/DialogModal.vue';
 import { ref } from 'vue';
 import PrimaryButton from '../../../packages/ui/src/Buttons/PrimaryButton.vue';
 import InputLabel from '../../../packages/ui/src/Input/InputLabel.vue';
-import type {
-    CreateReportBody,
-    CreateReportBodyProperties,
-} from '@/packages/api/src';
+import type { CreateReportBody, CreateReportBodyProperties } from '@/packages/api/src';
 import { useMutation } from '@tanstack/vue-query';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import { api } from '@/packages/api/src';
@@ -80,10 +77,7 @@ async function submit() {
             <div class="items-center space-y-4 w-full">
                 <div class="w-full">
                     <InputLabel for="name" value="Name" />
-                    <TextInput
-                        id="name"
-                        v-model="report.name"
-                        class="mt-1.5 w-full"></TextInput>
+                    <TextInput id="name" v-model="report.name" class="mt-1.5 w-full"></TextInput>
                 </div>
                 <div>
                     <InputLabel for="description" value="Description" />
@@ -95,19 +89,13 @@ async function submit() {
                 <InputLabel value="Visibility" />
                 <div class="flex items-center space-x-12">
                     <div class="flex items-center space-x-3 px-2 py-3">
-                        <Checkbox
-                            id="is_public"
-                            v-model:checked="report.is_public"></Checkbox>
+                        <Checkbox id="is_public" v-model:checked="report.is_public"></Checkbox>
                         <InputLabel for="is_public" value="Public" />
                     </div>
-                    <div
-                        v-if="report.is_public"
-                        class="flex items-center space-x-4">
+                    <div v-if="report.is_public" class="flex items-center space-x-4">
                         <div>
                             <InputLabel for="public_until" value="Expires at" />
-                            <div class="text-text-tertiary font-medium">
-                                (optional)
-                            </div>
+                            <div class="text-text-tertiary font-medium">(optional)</div>
                         </div>
                         <DatePicker id="public_until"></DatePicker>
                     </div>

@@ -1,41 +1,39 @@
 <script setup lang="ts">
-import ProjectBadge from "@/packages/ui/src/Project/ProjectBadge.vue";
-import { computed, nextTick, ref, watch } from "vue";
-import { useProjectsStore } from "@/utils/useProjects";
-import Dropdown from "@/packages/ui/src/Input/Dropdown.vue";
+import ProjectBadge from '@/packages/ui/src/Project/ProjectBadge.vue';
+import { computed, nextTick, ref, watch } from 'vue';
+import { useProjectsStore } from '@/utils/useProjects';
+import Dropdown from '@/packages/ui/src/Input/Dropdown.vue';
 import {
     ComboboxAnchor,
     ComboboxContent,
     ComboboxInput,
     ComboboxItem,
     ComboboxRoot,
-    ComboboxViewport
-} from "radix-vue";
-import { PlusCircleIcon } from "@heroicons/vue/20/solid";
-import { storeToRefs } from "pinia";
-import { api } from "@/packages/api/src";
-import { usePage } from "@inertiajs/vue3";
-import { getRandomColor } from "@/packages/ui/src/utils/color";
-import type { Project } from "@/packages/api/src";
-import ProjectDropdownItem from "@/packages/ui/src/Project/ProjectDropdownItem.vue";
-import { UseFocusTrap } from "@vueuse/integrations/useFocusTrap/component";
+    ComboboxViewport,
+} from 'radix-vue';
+import { PlusCircleIcon } from '@heroicons/vue/20/solid';
+import { storeToRefs } from 'pinia';
+import { api } from '@/packages/api/src';
+import { usePage } from '@inertiajs/vue3';
+import { getRandomColor } from '@/packages/ui/src/utils/color';
+import type { Project } from '@/packages/api/src';
+import ProjectDropdownItem from '@/packages/ui/src/Project/ProjectDropdownItem.vue';
+import { UseFocusTrap } from '@vueuse/integrations/useFocusTrap/component';
 
-const searchValue = ref("");
+const searchValue = ref('');
 const searchInput = ref<HTMLElement | null>(null);
 const model = defineModel<string | null>({
-    default: null
+    default: null,
 });
 const open = ref(false);
 const projectsStore = useProjectsStore();
-const emit = defineEmits(["update:modelValue", "changed"]);
+const emit = defineEmits(['update:modelValue', 'changed']);
 
 const { projects } = storeToRefs(projectsStore);
 const projectDropdownTrigger = ref<HTMLElement | null>(null);
 const shownProjects = computed(() => {
     return projects.value.filter((project) => {
-        return project.name
-            .toLowerCase()
-            .includes(searchValue.value?.toLowerCase()?.trim() || "");
+        return project.name.toLowerCase().includes(searchValue.value?.toLowerCase()?.trim() || '');
     });
 });
 
@@ -44,7 +42,7 @@ withDefaults(
         border?: boolean;
     }>(),
     {
-        border: true
+        border: true,
     }
 );
 
@@ -62,13 +60,13 @@ async function addProjectIfNoneExists() {
             {
                 name: searchValue.value,
                 color: getRandomColor(),
-                is_billable: false
+                is_billable: false,
             },
             { params: { organization: page.props.auth.user.current_team_id } }
         );
         projects.value.unshift(response.data);
         model.value = response.data.id;
-        searchValue.value = "";
+        searchValue.value = '';
         open.value = false;
     }
 }
@@ -95,16 +93,16 @@ function isProjectSelected(project: Project) {
 }
 
 const selectedProjectName = computed(() => {
-    return currentProject.value?.name || "No Project";
+    return currentProject.value?.name || 'No Project';
 });
 
 const selectedProjectColor = computed(() => {
-    return currentProject.value?.color || "var(--theme-color-icon-default)";
+    return currentProject.value?.color || 'var(--theme-color-icon-default)';
 });
 
 function updateValue(project: Project) {
     model.value = project.id;
-    emit("changed");
+    emit('changed');
 }
 </script>
 
@@ -122,16 +120,13 @@ function updateValue(project: Project) {
         </template>
 
         <template #content>
-            <UseFocusTrap
-                v-if="open"
-                :options="{ immediate: true, allowOutsideClick: true }">
+            <UseFocusTrap v-if="open" :options="{ immediate: true, allowOutsideClick: true }">
                 <ComboboxRoot
                     v-model:search-term="searchValue"
                     :open="open"
                     :model-value="currentProject"
                     class="relative"
-                    @update:model-value="updateValue"
-                    >
+                    @update:model-value="updateValue">
                     <ComboboxAnchor>
                         <ComboboxInput
                             ref="searchInput"
@@ -155,19 +150,12 @@ function updateValue(project: Project) {
                                     :name="project.name"></ProjectDropdownItem>
                             </ComboboxItem>
                             <div
-                                v-if="
-                                searchValue.length > 0 &&
-                                shownProjects.length === 0
-                            "
+                                v-if="searchValue.length > 0 && shownProjects.length === 0"
                                 class="bg-card-background-active">
                                 <div
                                     class="flex space-x-3 items-center px-4 py-3 text-xs font-medium border-t rounded-b-lg border-card-background-separator">
-                                    <PlusCircleIcon
-                                        class="w-5 flex-shrink-0"></PlusCircleIcon>
-                                    <span
-                                    >Add "{{ searchValue }}" as a new
-                                    Project</span
-                                    >
+                                    <PlusCircleIcon class="w-5 flex-shrink-0"></PlusCircleIcon>
+                                    <span>Add "{{ searchValue }}" as a new Project</span>
                                 </div>
                             </div>
                         </ComboboxViewport>

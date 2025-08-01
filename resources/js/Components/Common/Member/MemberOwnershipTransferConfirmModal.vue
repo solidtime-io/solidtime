@@ -26,8 +26,8 @@ const emit = defineEmits<{
             <div class="flex items-center space-x-4">
                 <div class="col-span-6 sm:col-span-4 flex-1">
                     <p class="py-1 text-center">
-                        You are about to transfer the ownership of this
-                        organization to {{ memberName }}.
+                        You are about to transfer the ownership of this organization to
+                        {{ memberName }}.
                     </p>
                 </div>
             </div>

@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
@@ -27,6 +28,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Jetstream\HasTeams;
 use Laravel\Passport\AuthCode;
+use Laravel\Passport\Contracts\OAuthenticatable;
 use Laravel\Passport\HasApiTokens;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
@@ -52,13 +54,13 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  * @property Collection<int, TimeEntry> $timeEntries
  * @property Member $membership
  *
- * @method HasMany<Organization> ownedTeams()
+ * @method HasMany<Organization, $this> ownedTeams()
  * @method static UserFactory factory()
  * @method static Builder<User> query()
  * @method Builder<User> belongsToOrganization(Organization $organization)
  * @method Builder<User> active()
  */
-class User extends Authenticatable implements AuditableContract, FilamentUser, MustVerifyEmail
+class User extends Authenticatable implements AuditableContract, FilamentUser, MustVerifyEmail, OAuthenticatable
 {
     use CustomAuditable;
     use HasApiTokens;
@@ -75,7 +77,7 @@ class User extends Authenticatable implements AuditableContract, FilamentUser, M
     /**
      * The attributes that are mass assignable.
      *
-     * @var array<int, string>
+     * @var list<string>
      */
     protected $fillable = [
         'name',
@@ -86,7 +88,7 @@ class User extends Authenticatable implements AuditableContract, FilamentUser, M
     /**
      * The attributes that should be hidden for serialization.
      *
-     * @var array<int, string>
+     * @var list<string>
      */
     protected $hidden = [
         'password',
@@ -143,7 +145,7 @@ class User extends Authenticatable implements AuditableContract, FilamentUser, M
     }
 
     /**
-     * @return BelongsToMany<Organization>
+     * @return BelongsToMany<Organization, $this, Pivot, 'membership'>
      */
     public function organizations(): BelongsToMany
     {
@@ -158,7 +160,7 @@ class User extends Authenticatable implements AuditableContract, FilamentUser, M
     }
 
     /**
-     * @return HasMany<TimeEntry>
+     * @return HasMany<TimeEntry, $this>
      */
     public function timeEntries(): HasMany
     {
@@ -166,7 +168,7 @@ class User extends Authenticatable implements AuditableContract, FilamentUser, M
     }
 
     /**
-     * @return BelongsTo<Organization, User>
+     * @return BelongsTo<Organization, $this>
      */
     public function currentOrganization(): BelongsTo
     {
@@ -174,7 +176,7 @@ class User extends Authenticatable implements AuditableContract, FilamentUser, M
     }
 
     /**
-     * @return HasMany<ProjectMember>
+     * @return HasMany<ProjectMember, $this>
      */
     public function projectMembers(): HasMany
     {
@@ -182,7 +184,7 @@ class User extends Authenticatable implements AuditableContract, FilamentUser, M
     }
 
     /**
-     * @return HasMany<Token>
+     * @return HasMany<Token, $this>
      */
     public function accessTokens(): HasMany
     {
@@ -190,22 +192,11 @@ class User extends Authenticatable implements AuditableContract, FilamentUser, M
     }
 
     /**
-     * @return HasMany<AuthCode>
+     * @return HasMany<AuthCode, $this>
      */
     public function authCodes(): HasMany
     {
         return $this->hasMany(AuthCode::class);
-    }
-
-    /**
-     * Get the access tokens for the user.
-     *
-     * @return HasMany<Token>
-     */
-    public function tokens(): HasMany
-    {
-        return $this->hasMany(Token::class, 'user_id')
-            ->orderBy('created_at', 'desc');
     }
 
     /**

@@ -28,10 +28,7 @@ import { useQuery, useQueryClient } from '@tanstack/vue-query';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import ReportingTabNavbar from '@/Components/Common/Reporting/ReportingTabNavbar.vue';
 import ReportTable from '@/Components/Common/Report/ReportTable.vue';
-import {
-    isAllowedToPerformPremiumAction,
-    isBillingActivated,
-} from '@/utils/billing';
+import { isAllowedToPerformPremiumAction, isBillingActivated } from '@/utils/billing';
 import { canManageBilling, canUpdateOrganization } from '@/utils/permissions';
 import PrimaryButton from '../packages/ui/src/Buttons/PrimaryButton.vue';
 import { Link } from '@inertiajs/vue3';
@@ -70,10 +67,7 @@ watch(currentPage, () => {
 </script>
 
 <template>
-    <AppLayout
-        title="Reporting"
-        data-testid="reporting_view"
-        class="overflow-hidden">
+    <AppLayout title="Reporting" data-testid="reporting_view" class="overflow-hidden">
         <MainContainer
             class="py-3 sm:py-5 min-h-[79px] border-b border-default-background-separator flex justify-between items-center">
             <div class="flex items-center space-x-3 sm:space-x-6">
@@ -97,13 +91,9 @@ watch(currentPage, () => {
                         <strong>please upgrade to a paid plan</strong>.
                     </p>
 
-                    <Link
-                        v-if="isBillingActivated() && canManageBilling()"
-                        href="/billing">
+                    <Link v-if="isBillingActivated() && canManageBilling()" href="/billing">
                         <PrimaryButton
-                            v-if="
-                                isBillingActivated() && canUpdateOrganization()
-                            "
+                            v-if="isBillingActivated() && canUpdateOrganization()"
                             type="button"
                             class="mt-6"
                             :icon="CreditCardIcon">
@@ -126,18 +116,13 @@ watch(currentPage, () => {
             class="flex justify-center items-center py-8"
             :sibling-count="1"
             show-edges>
-            <PaginationList
-                v-slot="{ items }"
-                class="flex items-center space-x-1 relative">
-                <div
-                    class="pr-2 flex items-center space-x-1 border-r border-border-primary mr-1">
+            <PaginationList v-slot="{ items }" class="flex items-center space-x-1 relative">
+                <div class="pr-2 flex items-center space-x-1 border-r border-border-primary mr-1">
                     <PaginationFirst class="navigation-item">
-                        <ChevronDoubleLeftIcon class="w-4">
-                        </ChevronDoubleLeftIcon>
+                        <ChevronDoubleLeftIcon class="w-4"> </ChevronDoubleLeftIcon>
                     </PaginationFirst>
                     <PaginationPrev class="mr-4 navigation-item">
-                        <ChevronLeftIcon
-                            class="w-4 text-text-tertiary hover:text-text-primary">
+                        <ChevronLeftIcon class="w-4 text-text-tertiary hover:text-text-primary">
                         </ChevronLeftIcon>
                     </PaginationPrev>
                 </div>
@@ -157,8 +142,7 @@ watch(currentPage, () => {
                         <div class="px-2">&#8230;</div>
                     </PaginationEllipsis>
                 </template>
-                <div
-                    class="!ml-2 pl-2 flex items-center space-x-1 border-l border-border-primary">
+                <div class="!ml-2 pl-2 flex items-center space-x-1 border-l border-border-primary">
                     <PaginationNext class="navigation-item">
                         <ChevronRightIcon
                             class="w-4 text-text-tertiary hover:text-text-primary"></ChevronRightIcon>

@@ -45,6 +45,9 @@ class MemberService
             $member->organization()->associate($organization);
             $member->role = $role->value;
             $member->save();
+
+            $user->currentOrganization()->associate($organization);
+            $user->save();
         });
 
         if (! $asSuperAdmin) {
@@ -58,19 +61,41 @@ class MemberService
      * @throws CanNotRemoveOwnerFromOrganization
      * @throws EntityStillInUseApiException
      */
-    public function removeMember(Member $member, Organization $organization): void
+    public function removeMember(Member $member, Organization $organization, bool $withRelations = false): void
     {
-        if (TimeEntry::query()->where('user_id', $member->user_id)->whereBelongsTo($organization, 'organization')->exists()) {
-            throw new EntityStillInUseApiException('member', 'time_entry');
-        }
-        if (ProjectMember::query()->whereBelongsToOrganization($organization)->where('user_id', $member->user_id)->exists()) {
-            throw new EntityStillInUseApiException('member', 'project_member');
-        }
         if ($member->role === Role::Owner->value) {
             throw new CanNotRemoveOwnerFromOrganization;
         }
 
+        $user = $member->user;
+        $isPlaceholder = $user->is_placeholder;
+
+        if (! $isPlaceholder && $user->current_team_id === $member->organization_id) {
+            $user->currentTeam()->disassociate();
+            $user->save();
+        }
+
+        if ($withRelations) {
+            TimeEntry::query()->where('user_id', $member->user_id)->whereBelongsTo($organization, 'organization')->delete();
+            ProjectMember::query()->whereBelongsToOrganization($organization)->where('user_id', $member->user_id)->delete();
+        } else {
+            if (TimeEntry::query()->where('user_id', $member->user_id)->whereBelongsTo($organization, 'organization')->exists()) {
+                throw new EntityStillInUseApiException('member', 'time_entry');
+            }
+            if (ProjectMember::query()->whereBelongsToOrganization($organization)->where('user_id', $member->user_id)->exists()) {
+                throw new EntityStillInUseApiException('member', 'project_member');
+            }
+        }
+
         $member->delete();
+
+        if ($isPlaceholder) {
+            $user->delete();
+        } else {
+            $this->userService->makeSureUserHasAtLeastOneOrganization($user);
+            $this->userService->makeSureUserHasCurrentOrganization($user);
+        }
+
         MemberRemoved::dispatch($member, $organization);
     }
 

@@ -2,14 +2,14 @@
 import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
 import DialogModal from '@/packages/ui/src/DialogModal.vue';
 import { ref } from 'vue';
-import {api, type Member} from '@/packages/api/src';
+import { api, type Member } from '@/packages/api/src';
 import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
-import MemberCombobox from "@/Components/Common/Member/MemberCombobox.vue";
-import {UserIcon, ArrowRightIcon} from "@heroicons/vue/24/solid";
-import {Badge} from "@/packages/ui/src";
+import MemberCombobox from '@/Components/Common/Member/MemberCombobox.vue';
+import { UserIcon, ArrowRightIcon } from '@heroicons/vue/24/solid';
+import { Badge } from '@/packages/ui/src';
 import { useMutation } from '@tanstack/vue-query';
-import {getCurrentOrganizationId} from "@/utils/useUser";
-import {useNotificationsStore} from "@/utils/notification";
+import { getCurrentOrganizationId } from '@/utils/useUser';
+import { useNotificationsStore } from '@/utils/notification';
 const { handleApiRequestNotifications, addNotification } = useNotificationsStore();
 
 const show = defineModel('show', { default: false });
@@ -27,40 +27,36 @@ const mergeMember = useMutation({
         if (organizationId === null) {
             throw new Error('No current organization id - create report');
         }
-        return await api.mergeMember({
-            member_id: newMemberId,
-        }, {
-            params: {
-                organization: organizationId,
-                member: props.member.id
+        return await api.mergeMember(
+            {
+                member_id: newMemberId,
             },
-        });
+            {
+                params: {
+                    organization: organizationId,
+                    member: props.member.id,
+                },
+            }
+        );
     },
 });
 
 async function submit() {
     const newMemberId = newMember.value;
-    if(newMemberId !== ''){
+    if (newMemberId !== '') {
         saving.value = true;
         await handleApiRequestNotifications(
-            () =>
-                mergeMember.mutateAsync(newMemberId),
+            () => mergeMember.mutateAsync(newMemberId),
             'Members successfully merged!',
             'There was an error merging the members.',
             () => {
                 show.value = false;
             }
         );
+    } else {
+        addNotification('error', 'Please select a member to merge into.');
     }
-    else{
-        addNotification(
-            'error',
-            'Please select a member to merge into.',
-        );
-    }
-
 }
-
 </script>
 
 <template>
@@ -72,10 +68,14 @@ async function submit() {
         </template>
 
         <template #content>
-            <p>Merging the user <strong>{{ member.name }} </strong> into another one will transfer all time entries to the new user. <strong>This cannot be reverted!</strong></p>
+            <p>
+                Merging the user <strong>{{ member.name }} </strong> into another one will transfer
+                all time entries to the new user. <strong>This cannot be reverted!</strong>
+            </p>
             <div class="py-5 flex flex-col md:flex-row gap-6 items-center">
                 <div class="flex-1">
-                    <Badge class="flex w-full text-base text-left space-x-3 px-3 text-text-secondary font-normal cursor py-1.5">
+                    <Badge
+                        class="flex w-full text-base text-left space-x-3 px-3 text-text-secondary font-normal cursor py-1.5">
                         <UserIcon class="relative z-10 w-4 text-text-secondary"></UserIcon>
                         <div class="flex-1 font-medium truncate">
                             {{ member.name }}
@@ -86,9 +86,7 @@ async function submit() {
                     <ArrowRightIcon class="relative z-10 w-4 text-muted"></ArrowRightIcon>
                 </div>
                 <div class="flex-1">
-                    <MemberCombobox
-                        v-model="newMember"
-                    ></MemberCombobox>
+                    <MemberCombobox v-model="newMember"></MemberCombobox>
                 </div>
             </div>
         </template>

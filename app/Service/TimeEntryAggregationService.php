@@ -6,6 +6,7 @@ namespace App\Service;
 
 use App\Enums\TimeEntryAggregationType;
 use App\Enums\TimeEntryAggregationTypeInterval;
+use App\Enums\TimeEntryRoundingType;
 use App\Enums\Weekday;
 use App\Models\Client;
 use App\Models\Project;
@@ -41,7 +42,7 @@ class TimeEntryAggregationService
      *       cost: int|null
      * }
      */
-    public function getAggregatedTimeEntries(Builder $timeEntriesQuery, ?TimeEntryAggregationType $group1Type, ?TimeEntryAggregationType $group2Type, string $timezone, Weekday $startOfWeek, bool $fillGapsInTimeGroups, ?Carbon $start, ?Carbon $end, bool $showBillableRate): array
+    public function getAggregatedTimeEntries(Builder $timeEntriesQuery, ?TimeEntryAggregationType $group1Type, ?TimeEntryAggregationType $group2Type, string $timezone, Weekday $startOfWeek, bool $fillGapsInTimeGroups, ?Carbon $start, ?Carbon $end, bool $showBillableRate, ?TimeEntryRoundingType $roundingType, ?int $roundingMinutes): array
     {
         $fillGapsInTimeGroupsIsPossible = $fillGapsInTimeGroups && $start !== null && $end !== null;
         $group1Select = null;
@@ -56,15 +57,14 @@ class TimeEntryAggregationService
             }
         }
 
+        $startRawSelect = app(TimeEntryService::class)->getStartSelectRawForRounding($roundingType, $roundingMinutes);
+        $endRawSelect = app(TimeEntryService::class)->getEndSelectRawForRounding($roundingType, $roundingMinutes);
+
         $timeEntriesQuery->selectRaw(
             ($group1Select !== null ? $group1Select.' as group_1,' : '').
             ($group2Select !== null ? $group2Select.' as group_2,' : '').
-            ' round(sum(extract(epoch from (coalesce("end", now()) - start)))) as aggregate,'.
-            ' round(
-                  sum(
-                      extract(epoch from (coalesce("end", now()) - start)) * (coalesce(billable_rate, 0)::float/60/60)
-                  )
-              ) as cost'
+            ' round(sum(extract(epoch from ('.$endRawSelect.' - '.$startRawSelect.')))) as aggregate,'.
+            ' round(sum(extract(epoch from ('.$endRawSelect.' - '.$startRawSelect.')) * (coalesce(billable_rate, 0)::float/60/60))) as cost'
         );
         if ($groupBy !== null) {
             $timeEntriesQuery->groupBy($groupBy);
@@ -164,9 +164,9 @@ class TimeEntryAggregationService
      *       cost: int|null
      * }
      */
-    public function getAggregatedTimeEntriesWithDescriptions(Builder $timeEntriesQuery, ?TimeEntryAggregationType $group1Type, ?TimeEntryAggregationType $group2Type, string $timezone, Weekday $startOfWeek, bool $fillGapsInTimeGroups, ?Carbon $start, ?Carbon $end, bool $showBillableRate): array
+    public function getAggregatedTimeEntriesWithDescriptions(Builder $timeEntriesQuery, ?TimeEntryAggregationType $group1Type, ?TimeEntryAggregationType $group2Type, string $timezone, Weekday $startOfWeek, bool $fillGapsInTimeGroups, ?Carbon $start, ?Carbon $end, bool $showBillableRate, ?TimeEntryRoundingType $roundingType, ?int $roundingMinutes): array
     {
-        $aggregatedTimeEntries = $this->getAggregatedTimeEntries($timeEntriesQuery, $group1Type, $group2Type, $timezone, $startOfWeek, $fillGapsInTimeGroups, $start, $end, $showBillableRate);
+        $aggregatedTimeEntries = $this->getAggregatedTimeEntries($timeEntriesQuery, $group1Type, $group2Type, $timezone, $startOfWeek, $fillGapsInTimeGroups, $start, $end, $showBillableRate, $roundingType, $roundingMinutes);
 
         $keysGroup1 = [];
         $keysGroup2 = [];

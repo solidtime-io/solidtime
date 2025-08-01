@@ -9,12 +9,10 @@ use App\Http\Middleware\Authenticate;
 use App\Http\Middleware\RedirectIfAuthenticated;
 use App\Models\User;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\UsesClass;
 
 #[CoversClass(HomeController::class)]
 #[CoversClass(Authenticate::class)]
 #[CoversClass(RedirectIfAuthenticated::class)]
-#[UsesClass(HomeController::class)]
 class HomeEndpointTest extends EndpointTestAbstract
 {
     public function test_index_redirects_to_dashboard_if_user_is_logged_in(): void
