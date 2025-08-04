@@ -4,6 +4,9 @@ on: [push]
 
 jobs:
   format-check:
+    # DeepVision Patch: disable private build
+    if: false
+
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -20,4 +23,4 @@ jobs:
         run: npm ci
 
       - name: "Check code formatting"
-        run: npm run format:check 
+        run: npm run format:check
