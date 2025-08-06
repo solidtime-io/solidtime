@@ -8,7 +8,7 @@ const props = defineProps<{
 
 <template>
     <svg
-        :class="twMerge('animate-spin -ml-1 mr-3 h-5 w-5 text-text-primary', props.class)"
+        :class="twMerge('animate-spin -ml-1 mr-3 h-4 w-4 text-text-primary', props.class)"
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
         viewBox="0 0 24 24">
