@@ -369,6 +369,7 @@ async function downloadExport(format: ExportFormat) {
             :tags="tags"
             :currency="getOrganizationCurrencyString()"
             :clients="clients"
+            class="border-b border-default-background-separator"
             :update-time-entries="
                 (args) =>
                     updateTimeEntries(
