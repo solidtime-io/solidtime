@@ -1,0 +1,216 @@
+on:
+  push:
+    branches:
+      - main
+      - develop
+    tags:
+      - '*'
+  pull_request:
+    paths:
+      - '.github/workflows/build-onpremise.yml'
+      - 'docker/prod/**'
+  workflow_dispatch:
+
+permissions:
+  packages: write
+  contents: read
+  attestations: write
+  id-token: write
+
+env:
+  DOCKER_REPO: registry.on-premise.solidtime.io/solidtime/solidtime
+
+name: Build - On Premise
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - runs-on: "ubuntu-24.04-arm"
+            platform: "linux/arm64"
+          - runs-on: "ubuntu-24.04"
+            platform: "linux/amd64"
+    runs-on: ${{ matrix.runs-on }}
+    timeout-minutes: 90
+
+    steps:
+      - name: "Check out code"
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Required for WyriHaximus/github-action-get-previous-tag
+
+      - name: "Get build"
+        id: release-build
+        run: echo "build=$(git rev-parse --short=8 HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: "Get Previous tag (normal push)"
+        id: previoustag
+        if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
+        uses: "WyriHaximus/github-action-get-previous-tag@v1"
+        with:
+          prefix: "v"
+
+      - name: "Get version"
+        id: release-version
+        run: |
+          if ${{ !startsWith(github.ref, 'refs/tags/v') }}; then
+            if ${{ startsWith(steps.previoustag.outputs.tag, 'v') }}; then
+              version=$(echo "${{ steps.previoustag.outputs.tag }}" | cut -c 2-)
+              echo "app_version=${version}" >> "$GITHUB_OUTPUT"
+            else
+              echo "ERROR: No previous tag found";
+              exit 1;
+            fi
+          else
+            version=$(echo "${{ github.ref }}" | cut -c 12-)
+            echo "app_version=${version}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: "Copy .env template for production"
+        run: |
+          cp .env.production .env
+          rm .env.production .env.ci .env.example
+
+      - name: "Add version to .env"
+        run: sed -i 's/APP_VERSION=0.0.0/APP_VERSION=${{ steps.release-version.outputs.app_version }}/g' .env
+
+      - name: "Add build to .env"
+        run: sed -i 's/APP_BUILD=0/APP_BUILD=${{ steps.release-build.outputs.build }}/g' .env
+
+      - name: "Output .env"
+        run: cat .env
+
+      - name: "Setup PHP with PECL extension"
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, dom, fileinfo, pgsql
+
+      - name: "Install dependencies"
+        run: composer install --no-dev --no-ansi --no-interaction --prefer-dist --ignore-platform-reqs --classmap-authoritative
+        if: steps.cache-vendor.outputs.cache-hit != 'true' # Skip if cache hit
+
+      - name: "Use Node.js"
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: "Checkout invoicing extension"
+        uses: actions/checkout@v4
+        with:
+          repository: solidtime-io/extension-invoicing
+          path: extensions/Invoicing
+          ssh-key: ${{ secrets.SSH_PRIVATE_KEY_INVOICING_EXTENSION }}
+
+      - name: "Install composer dependencies in invoicing extension"
+        run: cd extensions/Invoicing && composer install --no-dev --no-ansi --no-interaction --prefer-dist --ignore-platform-reqs --classmap-authoritative
+
+      - name: "Install npm dependencies in invoicing extension"
+        run: cd extensions/Invoicing && npm ci
+
+      - name: "Activate invoicing extension"
+        run: php artisan module:enable Invoicing
+
+      - name: "Install npm dependencies"
+        run: npm ci
+
+      - name: "Build"
+        run: npm run build
+
+      - name: "Prepare"
+        run: |
+          platform=${{ matrix.platform }}
+          echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
+
+      - name: "Docker meta"
+        id: "meta"
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ env.DOCKER_REPO }}
+
+      - name: "Login to solidtime OnPremise Registry"
+        uses: docker/login-action@v3
+        with:
+          registry: registry.on-premise.solidtime.io
+          username: ${{ secrets.ONPREMISE_USERNAME }}
+          password: ${{ secrets.ONPREMISE_TOKEN }}
+
+      - name: "Set up QEMU"
+        uses: docker/setup-qemu-action@v3
+
+      - name: "Set up Docker Buildx"
+        uses: docker/setup-buildx-action@v3
+
+      - name: "Build and push by digest"
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/prod/Dockerfile
+          build-args: |
+            DOCKER_FILES_BASE_PATH=docker/prod/
+          platforms: ${{ matrix.platform }}
+          labels: ${{ steps.meta.outputs.labels }}
+          outputs: type=image,"name=${{ env.DOCKER_REPO }}",push-by-digest=true,name-canonical=true,push=true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: "Export digest"
+        run: |
+          mkdir -p ${{ runner.temp }}/digests
+          digest="${{ steps.build.outputs.digest }}"
+          touch "${{ runner.temp }}/digests/${digest#sha256:}"
+
+      - name: "Upload digest"
+        uses: actions/upload-artifact@v4
+        with:
+          name: digests-${{ env.PLATFORM_PAIR }}
+          path: ${{ runner.temp }}/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  merge:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    needs:
+      - build
+    steps:
+      - name: "Download digests"
+        uses: actions/download-artifact@v4
+        with:
+          path: ${{ runner.temp }}/digests
+          pattern: digests-*
+          merge-multiple: true
+
+      - name: "Login to solidtime OnPremise Registry"
+        uses: docker/login-action@v3
+        with:
+          registry: registry.on-premise.solidtime.io
+          username: ${{ secrets.ONPREMISE_USERNAME }}
+          password: ${{ secrets.ONPREMISE_TOKEN }}
+
+      - name: "Set up Docker Buildx"
+        uses: docker/setup-buildx-action@v3
+
+      - name: "Docker meta"
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ env.DOCKER_REPO }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+
+      - name: "Create manifest list and push"
+        working-directory: ${{ runner.temp }}/digests
+        run: |
+          docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
+            $(printf '${{ env.DOCKER_REPO }}@sha256:%s ' *)
+
+      - name: "Inspect image"
+        run: |
+          docker buildx imagetools inspect ${{ env.DOCKER_REPO }}:${{ steps.meta.outputs.version }}
