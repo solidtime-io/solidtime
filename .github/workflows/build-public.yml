@@ -36,7 +36,7 @@ jobs:
 
     steps:
       - name: "Check out code"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0 # Required for WyriHaximus/github-action-get-previous-tag
 
