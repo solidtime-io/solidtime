@@ -33,7 +33,7 @@
         "zod": "^3.23.8"
     },
     "devDependencies": {
-        "vite": "^5.4.2",
+        "vite": "^7.0.5",
         "vite-plugin-dts": "^4.0.3"
     }
 }
