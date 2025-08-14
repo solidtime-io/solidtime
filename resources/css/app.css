@@ -46,14 +46,16 @@
 
     --color-accent-default: rgba(var(--color-accent-300), 0.2);
     --color-accent-foreground: rgb(var(--color-accent-100));
+    --theme-color-default-background: var(--color-bg-primary);
+
 }
 
 :root.light {
-    --color-bg-primary: #F5F5F5;
+    --color-bg-primary: #FFFFFF;
     --color-bg-secondary: #f7f7f8;
     --color-bg-tertiary: #e1e1e3;
     --color-bg-quaternary: #ffffff;
-    --color-bg-background: #ffffff;
+    --color-bg-background: #F5F5F5;
     --color-text-primary: #18181b;
     --color-text-secondary: #3f3f46;
     --color-text-tertiary: #57575C;
@@ -70,7 +72,7 @@
 
     --theme-color-chart: var(--color-accent-400);
 
-    --theme-shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --theme-shadow-card: lch(0 0 0 / 0.022) 0px 3px 6px -2px, lch(0 0 0 / 0.044) 0px 1px 1px;
     --theme-shadow-dropdown: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
 
     --theme-color-row-background: var(--theme-color-card-background);
@@ -92,10 +94,11 @@
 
     --color-accent-default: rgb(var(--color-accent-100));
     --color-accent-foreground: rgb(var(--color-accent-800));
+    --theme-color-default-background: #FCFCFC;
+
 }
 
 :root {
-    --theme-color-default-background: var(--color-bg-primary);
     --theme-color-icon-active: rgb(var(--color-text-tertiary));
     --theme-color-card-background-separator: var(--color-border-tertiary);
     --theme-color-card-border: var(--color-border-secondary);

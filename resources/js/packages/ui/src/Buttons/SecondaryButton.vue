@@ -10,7 +10,8 @@ const props = withDefaults(
         icon?: Component;
         size?: 'small' | 'base';
         loading?: boolean;
-        class?: string;
+        // Accept any valid Vue class binding shape (string | object | array)
+        class?: Parameters<typeof twMerge>[0];
     }>(),
     {
         type: 'button',

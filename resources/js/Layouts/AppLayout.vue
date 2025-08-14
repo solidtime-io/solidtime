@@ -5,6 +5,7 @@ import OrganizationSwitcher from '@/Components/OrganizationSwitcher.vue';
 import CurrentSidebarTimer from '@/Components/CurrentSidebarTimer.vue';
 import {
     Bars3Icon,
+    CalendarIcon,
     ChartBarIcon,
     ClockIcon,
     Cog6ToothIcon,
@@ -39,15 +40,17 @@ import { ArrowsRightLeftIcon } from '@heroicons/vue/16/solid';
 import { fetchToken, isTokenValid } from '@/utils/session';
 import UpdateSidebarNotification from '@/Components/UpdateSidebarNotification.vue';
 import BillingBanner from '@/Components/Billing/BillingBanner.vue';
-import UserTimezoneMismatchModal from "@/Components/Common/User/UserTimezoneMismatchModal.vue";
+import UserTimezoneMismatchModal from '@/Components/Common/User/UserTimezoneMismatchModal.vue';
 import { useTheme } from '@/utils/theme';
 import { useQuery } from '@tanstack/vue-query';
 import { api } from '@/packages/api/src';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import LoadingSpinner from '@/packages/ui/src/LoadingSpinner.vue';
+import { twMerge } from 'tailwind-merge';
 
 defineProps({
     title: String,
+    mainClass: String,
 });
 
 const showSidebarMenu = ref(false);
@@ -132,6 +135,11 @@ const page = usePage<{
                                 :icon="ClockIcon"
                                 :current="route().current('time')"
                                 :href="route('time')"></NavigationSidebarItem>
+                            <NavigationSidebarItem
+                                title="Calendar"
+                                :icon="CalendarIcon"
+                                :current="route().current('calendar')"
+                                :href="route('calendar')"></NavigationSidebarItem>
                             <NavigationSidebarItem
                                 title="Reporting"
                                 :icon="ChartBarIcon"
@@ -274,7 +282,7 @@ const page = usePage<{
                 </header>
 
                 <!-- Page Content -->
-                <main class="pb-28 flex-1">
+                <main :class="twMerge('pb-28 flex-1', mainClass)">
                     <div
                         v-if="isOrganizationLoading"
                         class="flex items-center justify-center h-screen">
