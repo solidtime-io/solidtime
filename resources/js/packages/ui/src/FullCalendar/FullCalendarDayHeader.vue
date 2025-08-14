@@ -19,6 +19,9 @@ const dateFormat = computed(() => organization?.value?.date_format);
 
 <template>
     <div class="fc-day-header-custom">
+        <div class="text-xs text-muted-foreground font-medium">
+            {{ date.toLocaleDateString('en-US', { weekday: 'short' }) }}
+        </div>
         <span>{{ formatDate(date.toISOString(), dateFormat) }}</span>
         <span class="block text-xs text-muted-foreground font-medium mt-1">
             {{ formatHumanReadableDuration(totalSeconds, intervalFormat, numberFormat) }}

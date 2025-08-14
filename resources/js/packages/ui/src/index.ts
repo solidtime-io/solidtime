@@ -29,9 +29,9 @@ import TimeEntryMassActionRow from './TimeEntry/TimeEntryMassActionRow.vue';
 import TimeEntryCreateModal from './TimeEntry/TimeEntryCreateModal.vue';
 import TimeEntryEditModal from './TimeEntry/TimeEntryEditModal.vue';
 import MoreOptionsDropdown from './MoreOptionsDropdown.vue';
-import CalendarEventContent from './Calendar/CalendarEventContent.vue';
-import CalendarDayHeader from './Calendar/CalendarDayHeader.vue';
-import TimeEntryCalendar from './Calendar/TimeEntryCalendar.vue';
+import FullCalendarEventContent from './FullCalendar/FullCalendarEventContent.vue';
+import FullCalendarDayHeader from './FullCalendar/FullCalendarDayHeader.vue';
+import TimeEntryCalendar from './FullCalendar/TimeEntryCalendar.vue';
 
 export {
     money,
@@ -57,7 +57,7 @@ export {
     MoreOptionsDropdown,
     TimeEntryCreateModal,
     TimeEntryEditModal,
-    CalendarEventContent,
-    CalendarDayHeader,
+    FullCalendarEventContent,
+    FullCalendarDayHeader,
     TimeEntryCalendar,
 };
