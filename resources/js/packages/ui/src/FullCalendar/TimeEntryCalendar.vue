@@ -4,12 +4,12 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import type { DatesSetArg, EventClickArg, EventDropArg, EventChangeArg } from '@fullcalendar/core';
-import { computed, ref, watch } from 'vue';
+import { computed, ref, watch, inject, type ComputedRef } from 'vue';
 import { getDayJsInstance, getLocalizedDayJs } from '../utils/time';
-import { getUserTimezone } from '../utils/settings';
+import { getUserTimezone, getWeekStart } from '../utils/settings';
 import { LoadingSpinner, TimeEntryCreateModal, TimeEntryEditModal } from '..';
-import CalendarEventContent from './CalendarEventContent.vue';
-import CalendarDayHeader from './CalendarDayHeader.vue';
+import FullCalendarEventContent from './FullCalendarEventContent.vue';
+import FullCalendarDayHeader from './FullCalendarDayHeader.vue';
 import type {
     TimeEntry,
     Project,
@@ -18,6 +18,7 @@ import type {
     CreateProjectBody,
     CreateClientBody,
     Tag,
+    Organization,
 } from '@/packages/api/src';
 import type { Dayjs } from 'dayjs';
 
@@ -57,6 +58,41 @@ const showEditTimeEntryModal = ref<boolean>(false);
 const selectedTimeEntry = ref<TimeEntry | null>(null);
 
 const calendarRef = ref<InstanceType<typeof FullCalendar> | null>(null);
+
+// Inject organization data for settings
+const organization = inject<ComputedRef<Organization>>('organization');
+
+// Helper function to convert week start to FullCalendar firstDay value
+const getFirstDay = () => {
+    const weekStart = getWeekStart();
+    const weekStartMap: Record<string, number> = {
+        'sunday': 0,
+        'monday': 1,
+        'tuesday': 2,
+        'wednesday': 3,
+        'thursday': 4,
+        'friday': 5,
+        'saturday': 6,
+    };
+    return weekStartMap[weekStart] ?? 1; // Default to Monday if not found
+};
+
+// Helper function to get time format for slot labels
+const getSlotLabelFormat = () => {
+    const timeFormat = organization?.value?.time_format || '24-hours';
+    if (timeFormat === '12-hours') {
+        return {
+            hour: 'numeric' as const,
+            hour12: true,
+        };
+    } else {
+        return {
+            hour: '2-digit' as const,
+            minute: '2-digit' as const,
+            hour12: false,
+        };
+    }
+};
 
 // Map API entries to FullCalendar events
 const events = computed(() => {
@@ -188,7 +224,9 @@ const calendarOptions = computed(() => ({
     slotMaxTime: '24:00:00',
     slotDuration: '00:15:00',
     slotLabelInterval: '01:00:00',
+    slotLabelFormat: getSlotLabelFormat(),
     snapDuration: '00:15:00',
+    firstDay: getFirstDay(),
     allDaySlot: false,
     nowIndicator: true,
     selectable: true,
@@ -261,7 +299,7 @@ watch(showEditTimeEntryModal, (value) => {
             :clients="clients" />
         <FullCalendar ref="calendarRef" class="fullcalendar" :options="calendarOptions">
             <template #eventContent="arg">
-                <CalendarEventContent
+                <FullCalendarEventContent
                     :title="arg.event.title"
                     :project-name="(arg.event.extendedProps as any).project?.name"
                     :task-name="(arg.event.extendedProps as any).task?.name"
@@ -275,7 +313,7 @@ watch(showEditTimeEntryModal, (value) => {
                     :end="arg.event.end as any" />
             </template>
             <template #dayHeaderContent="arg">
-                <CalendarDayHeader
+                <FullCalendarDayHeader
                     :date="arg.date"
                     :total-minutes="
                         dailyTotals[getDayJsInstance()(arg.date).format('YYYY-MM-DD')] || 0
