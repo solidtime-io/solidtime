@@ -39,6 +39,11 @@
     "dependencies": {
         "@floating-ui/core": "^1.6.0",
         "@floating-ui/vue": "^1.0.6",
+        "@fullcalendar/core": "^6.1.18",
+        "@fullcalendar/daygrid": "^6.1.18",
+        "@fullcalendar/interaction": "^6.1.18",
+        "@fullcalendar/timegrid": "^6.1.18",
+        "@fullcalendar/vue3": "^6.1.18",
         "@heroicons/vue": "^2.1.1",
         "@rushstack/eslint-patch": "^1.10.5",
         "@tailwindcss/container-queries": "^0.1.1",

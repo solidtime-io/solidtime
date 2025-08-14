@@ -27,7 +27,11 @@ import Checkbox from './Input/Checkbox.vue';
 import TimeEntryGroupedTable from './TimeEntry/TimeEntryGroupedTable.vue';
 import TimeEntryMassActionRow from './TimeEntry/TimeEntryMassActionRow.vue';
 import TimeEntryCreateModal from './TimeEntry/TimeEntryCreateModal.vue';
+import TimeEntryEditModal from './TimeEntry/TimeEntryEditModal.vue';
 import MoreOptionsDropdown from './MoreOptionsDropdown.vue';
+import CalendarEventContent from './Calendar/CalendarEventContent.vue';
+import CalendarDayHeader from './Calendar/CalendarDayHeader.vue';
+import TimeEntryCalendar from './Calendar/TimeEntryCalendar.vue';
 
 export {
     money,
@@ -52,4 +56,8 @@ export {
     TimeEntryMassActionRow,
     MoreOptionsDropdown,
     TimeEntryCreateModal,
+    TimeEntryEditModal,
+    CalendarEventContent,
+    CalendarDayHeader,
+    TimeEntryCalendar,
 };
