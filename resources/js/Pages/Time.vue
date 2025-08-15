@@ -144,6 +144,7 @@ function deleteSelected() {
             :tags="tags"
             :currency="getOrganizationCurrencyString()"
             :clients="clients"
+            class="border-t border-default-background-separator"
             :update-time-entries="
                 (args) =>
                     updateTimeEntries(
