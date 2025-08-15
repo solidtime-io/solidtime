@@ -53,8 +53,8 @@
 :root.light {
     --color-bg-primary: #FFFFFF;
     --color-bg-secondary: #f7f7f8;
-    --color-bg-tertiary: #e1e1e3;
-    --color-bg-quaternary: #ffffff;
+    --color-bg-tertiary: #eeeeef;
+    --color-bg-quaternary: #e1e1e3;
     --color-bg-background: #F5F5F5;
     --color-text-primary: #18181b;
     --color-text-secondary: #3f3f46;
@@ -65,10 +65,10 @@
     --color-border-tertiary: #dfdfdf;
     --color-border-quaternary: #d1d1d1;
     --color-input-border-active: rgba(0,0,0,0.3);
-    --theme-color-menu-active: var(--color-bg-tertiary);
+    --theme-color-menu-active: var(--color-bg-quaternary);
 
-    --theme-color-card-background: var(--color-bg-quaternary);
-    --theme-color-card-background-active: var(--color-bg-primary);
+    --theme-color-card-background: var(--color-bg-primary);
+    --theme-color-card-background-active: var(--color-bg-tertiary);
 
     --theme-color-chart: var(--color-accent-400);
 
@@ -87,7 +87,7 @@
     --theme-color-button-primary-border: rgba(var(--color-accent-600), 1);
     --theme-color-button-primary-text: #FFFFFF;
 
-    --theme-color-input-background: var(--color-bg-quaternary);
+    --theme-color-input-background: var(--color-bg-primary);
 
     --theme-color-input-select-active: rgb(var(--color-accent-400));
     --theme-color-input-select-active-hover: rgb(var(--color-accent-500));
