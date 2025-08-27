@@ -5,6 +5,8 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import type { DatesSetArg, EventClickArg, EventDropArg, EventChangeArg } from '@fullcalendar/core';
 import { computed, ref, watch, inject, type ComputedRef } from 'vue';
+import chroma from 'chroma-js';
+import { useCssVariable } from '@/utils/useCssVariable';
 import { getDayJsInstance, getLocalizedDayJs } from '../utils/time';
 import { getUserTimezone, getWeekStart } from '../utils/settings';
 import { LoadingSpinner, TimeEntryCreateModal, TimeEntryEditModal } from '..';
@@ -94,8 +96,12 @@ const getSlotLabelFormat = () => {
     }
 };
 
-// Map API entries to FullCalendar events
+const cssBackground = useCssVariable('--color-bg-background');
+
 const events = computed(() => {
+    const themeBackground = (() => {
+        return cssBackground.value?.trim();
+    })();
     return props.timeEntries
         ?.filter((timeEntry) => timeEntry.end !== null)
         ?.map((timeEntry) => {
@@ -109,14 +115,18 @@ const events = computed(() => {
 
             const title = timeEntry.description || 'No description';
 
+            const baseColor = project?.color || '#6B7280';
+            const backgroundColor = chroma.mix(baseColor, themeBackground, 0.65, 'lab').hex();
+            const borderColor = chroma.mix(baseColor, themeBackground, 0.5, 'lab').hex();
+
             return {
                 id: timeEntry.id,
                 start: getLocalizedDayJs(timeEntry.start).format(),
                 end: getLocalizedDayJs(timeEntry.end!).format(),
                 title,
-                backgroundColor: project?.color || '#6B7280',
-                borderColor: project?.color || '#6B7280',
-                textColor: '#FFFFFF',
+                backgroundColor,
+                borderColor,
+                textColor: 'var(--foreground)',
                 extendedProps: {
                     timeEntry,
                     project,
@@ -249,6 +259,8 @@ watch(showCreateTimeEntryModal, (value) => {
     if (!value) {
         newEventStart.value = null;
         newEventEnd.value = null;
+        // Ensure FullCalendar clears the selection mirror when modal closes
+        calendarRef.value?.getApi().unselect();
         emit('refresh');
     }
 });
@@ -427,7 +439,6 @@ watch(showEditTimeEntryModal, (value) => {
 }
 
 .fullcalendar :deep(.fc-event) {
-    border: 1px solid !important;
     border-radius: var(--radius);
     padding: 0.45rem 0.25rem;
     font-size: 0.75rem;
