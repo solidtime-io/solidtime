@@ -92,7 +92,7 @@ function onSelectChange(checked: boolean) {
         class="border-b border-default-background-separator bg-row-background min-w-0 transition"
         data-testid="time_entry_row">
         <MainContainer class="min-w-0">
-            <div class="sm:flex py-1.5 items-center min-w-0 justify-between group">
+            <div class="sm:flex py-2 items-center min-w-0 justify-between group">
                 <div class="flex space-x-3 items-center min-w-0">
                     <Checkbox
                         :checked="
@@ -172,6 +172,7 @@ function onSelectChange(checked: boolean) {
                         class="opacity-20 flex group-hover:opacity-100 focus-visible:opacity-100"
                         @changed="onStartStopClick(timeEntry)"></TimeTrackerStartStop>
                     <TimeEntryMoreOptionsDropdown
+                        :show-edit="false"
                         @delete="
                             deleteTimeEntries(timeEntry?.timeEntries ?? [])
                         "></TimeEntryMoreOptionsDropdown>
