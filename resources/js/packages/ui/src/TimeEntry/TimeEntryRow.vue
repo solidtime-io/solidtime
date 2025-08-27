@@ -16,8 +16,9 @@ import TimeEntryDescriptionInput from '@/packages/ui/src/TimeEntry/TimeEntryDesc
 import TimeEntryRowTagDropdown from '@/packages/ui/src/TimeEntry/TimeEntryRowTagDropdown.vue';
 import TimeEntryRowDurationInput from '@/packages/ui/src/TimeEntry/TimeEntryRowDurationInput.vue';
 import TimeEntryMoreOptionsDropdown from '@/packages/ui/src/TimeEntry/TimeEntryMoreOptionsDropdown.vue';
+import { TimeEntryEditModal } from '@/packages/ui/src';
 import BillableToggleButton from '@/packages/ui/src/Input/BillableToggleButton.vue';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import TimeTrackerProjectTaskDropdown from '@/packages/ui/src/TimeTracker/TimeTrackerProjectTaskDropdown.vue';
 import { Checkbox } from '@/packages/ui/src';
 import { twMerge } from 'tailwind-merge';
@@ -45,6 +46,8 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{ selected: []; unselected: [] }>();
+
+const showEditModal = ref(false);
 
 function updateTimeEntryDescription(description: string) {
     props.updateTimeEntry({ ...props.timeEntry, description });
@@ -86,6 +89,20 @@ function onSelectChange(checked: boolean) {
     } else {
         emit('unselected');
     }
+}
+
+function handleEdit() {
+    showEditModal.value = true;
+}
+
+async function handleUpdateTimeEntry(updatedEntry: TimeEntry) {
+    props.updateTimeEntry(updatedEntry);
+    showEditModal.value = false;
+}
+
+async function handleDeleteTimeEntry() {
+    props.deleteTimeEntry();
+    showEditModal.value = false;
 }
 </script>
 
@@ -148,11 +165,26 @@ function onSelectChange(checked: boolean) {
                         class="opacity-20 flex focus-visible:opacity-100 group-hover:opacity-100"
                         @changed="onStartStopClick"></TimeTrackerStartStop>
                     <TimeEntryMoreOptionsDropdown
+                        @edit="handleEdit"
                         @delete="deleteTimeEntry"></TimeEntryMoreOptionsDropdown>
                 </div>
             </div>
         </MainContainer>
     </div>
+
+    <TimeEntryEditModal
+        v-model:show="showEditModal"
+        :time-entry="timeEntry"
+        :enable-estimated-time="enableEstimatedTime"
+        :update-time-entry="handleUpdateTimeEntry"
+        :delete-time-entry="handleDeleteTimeEntry"
+        :create-client="createClient"
+        :create-project="createProject"
+        :create-tag="createTag"
+        :tags="tags"
+        :projects="projects"
+        :tasks="tasks"
+        :clients="clients" />
 </template>
 
 <style scoped></style>

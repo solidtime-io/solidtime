@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { TrashIcon } from '@heroicons/vue/20/solid';
+import { TrashIcon, PencilIcon } from '@heroicons/vue/20/solid';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -7,7 +7,17 @@ import {
     DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
 
+const props = withDefaults(
+    defineProps<{
+        showEdit?: boolean;
+    }>(),
+    {
+        showEdit: true,
+    }
+);
+
 const emit = defineEmits<{
+    edit: [];
     delete: [];
 }>();
 </script>
@@ -33,6 +43,14 @@ const emit = defineEmits<{
             </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent class="min-w-[150px]" align="end">
+            <DropdownMenuItem
+                v-if="props.showEdit"
+                data-testid="time_entry_edit"
+                class="flex items-center space-x-3 cursor-pointer"
+                @click="emit('edit')">
+                <PencilIcon class="w-5" />
+                <span>Edit</span>
+            </DropdownMenuItem>
             <DropdownMenuItem
                 data-testid="time_entry_delete"
                 class="flex items-center space-x-3 cursor-pointer text-destructive focus:text-destructive"
