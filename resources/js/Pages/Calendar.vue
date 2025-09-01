@@ -29,16 +29,28 @@ const enableCalendarQuery = computed(() => {
     return !!getCurrentOrganizationId() && !!calendarStart.value && !!calendarEnd.value;
 });
 
-const formattedStartDate = computed(() => {
-    return calendarStart.value
-        ? getDayJsInstance()(calendarStart.value).utc().tz(getUserTimezone(), true).utc().format()
-        : null;
-});
+// Calculate expanded date range to include previous and next periods with timezone transformations
+const expandedDateRange = computed(() => {
+    if (!calendarStart.value || !calendarEnd.value) {
+        return { start: null, end: null };
+    }
 
-const formattedEndDate = computed(() => {
-    return calendarEnd.value
-        ? getDayJsInstance()(calendarEnd.value).utc().tz(getUserTimezone(), true).utc().format()
-        : null;
+    const dayjs = getDayJsInstance();
+    const duration = dayjs(calendarEnd.value).diff(dayjs(calendarStart.value), 'milliseconds');
+
+    // Calculate previous period
+    const previousStart = dayjs(calendarStart.value).subtract(duration, 'milliseconds');
+    // Calculate next period
+    const nextEnd = dayjs(calendarEnd.value).add(duration, 'milliseconds');
+
+    // Apply timezone transformations
+    const formattedStart = previousStart.utc().tz(getUserTimezone(), true).utc().format();
+    const formattedEnd = nextEnd.utc().tz(getUserTimezone(), true).utc().format();
+
+    return {
+        start: formattedStart,
+        end: formattedEnd,
+    };
 });
 
 const { data: timeEntryResponse, isLoading: timeEntriesLoading } = useQuery<TimeEntryResponse>({
@@ -46,20 +58,21 @@ const { data: timeEntryResponse, isLoading: timeEntriesLoading } = useQuery<Time
         'timeEntry',
         'calendar',
         {
-            start: formattedStartDate.value,
-            end: formattedEndDate.value,
+            start: expandedDateRange.value.start,
+            end: expandedDateRange.value.end,
             organization: getCurrentOrganizationId(),
         },
     ]),
     enabled: enableCalendarQuery,
+    placeholderData: (previousData) => previousData,
     queryFn: () =>
         api.getTimeEntries({
             params: {
                 organization: getCurrentOrganizationId() || '',
             },
             queries: {
-                start: formattedStartDate.value!,
-                end: formattedEndDate.value!,
+                start: expandedDateRange.value.start!,
+                end: expandedDateRange.value.end!,
             },
         }),
 });
@@ -93,74 +106,9 @@ const { tags } = storeToRefs(tagsStore);
 
 const queryClient = useQueryClient();
 
-// Helper functions to calculate adjacent date ranges for prefetching
-function calculatePreviousRange(start: Date, end: Date): { start: Date; end: Date } {
-    const dayjs = getDayJsInstance();
-    const duration = dayjs(end).diff(dayjs(start), 'milliseconds');
-    const previousEnd = dayjs(start);
-    const previousStart = previousEnd.subtract(duration, 'milliseconds');
-    return {
-        start: previousStart.toDate(),
-        end: previousEnd.toDate(),
-    };
-}
-
-function calculateNextRange(start: Date, end: Date): { start: Date; end: Date } {
-    const dayjs = getDayJsInstance();
-    const duration = dayjs(end).diff(dayjs(start), 'milliseconds');
-    const nextStart = dayjs(end);
-    const nextEnd = nextStart.add(duration, 'milliseconds');
-    return {
-        start: nextStart.toDate(),
-        end: nextEnd.toDate(),
-    };
-}
-
-// Prefetch function for time entries
-async function prefetchTimeEntries(start: Date, end: Date) {
-    if (!getCurrentOrganizationId()) return;
-
-    const startFormatted = getDayJsInstance()(start)
-        .utc()
-        .tz(getUserTimezone(), true)
-        .utc()
-        .format();
-    const endFormatted = getDayJsInstance()(end).utc().tz(getUserTimezone(), true).utc().format();
-
-    await queryClient.prefetchQuery({
-        queryKey: [
-            'timeEntry',
-            'calendar',
-            {
-                start: startFormatted,
-                end: endFormatted,
-                organization: getCurrentOrganizationId(),
-            },
-        ],
-        queryFn: () =>
-            api.getTimeEntries({
-                params: {
-                    organization: getCurrentOrganizationId() || '',
-                },
-                queries: {
-                    start: startFormatted,
-                    end: endFormatted,
-                },
-            }),
-    });
-}
-
 function onDatesChange({ start, end }: { start: Date; end: Date }) {
     calendarStart.value = start;
     calendarEnd.value = end;
-
-    // Prefetch adjacent time ranges for better UX
-    const previousRange = calculatePreviousRange(start, end);
-    const nextRange = calculateNextRange(start, end);
-
-    // Prefetch previous and next ranges
-    prefetchTimeEntries(previousRange.start, previousRange.end);
-    prefetchTimeEntries(nextRange.start, nextRange.end);
 }
 
 function onRefresh() {
