@@ -20,6 +20,7 @@ import { useProjectsStore } from '@/utils/useProjects';
 import { useClientsStore } from '@/utils/useClients';
 import { storeToRefs } from 'pinia';
 import { useTasksStore } from '@/utils/useTasks';
+import { getUserTimezone } from '@/packages/ui/src/utils/settings';
 
 const calendarStart = ref<Date | undefined>(undefined);
 const calendarEnd = ref<Date | undefined>(undefined);
@@ -28,15 +29,25 @@ const enableCalendarQuery = computed(() => {
     return !!getCurrentOrganizationId() && !!calendarStart.value && !!calendarEnd.value;
 });
 
+const formattedStartDate = computed(() => {
+    return calendarStart.value
+        ? getDayJsInstance()(calendarStart.value).utc().tz(getUserTimezone(), true).utc().format()
+        : null;
+});
+
+const formattedEndDate = computed(() => {
+    return calendarEnd.value
+        ? getDayJsInstance()(calendarEnd.value).utc().tz(getUserTimezone(), true).utc().format()
+        : null;
+});
+
 const { data: timeEntryResponse, isLoading: timeEntriesLoading } = useQuery<TimeEntryResponse>({
     queryKey: computed(() => [
         'timeEntry',
         'calendar',
         {
-            start: calendarStart.value
-                ? getDayJsInstance()(calendarStart.value).utc().format()
-                : null,
-            end: calendarEnd.value ? getDayJsInstance()(calendarEnd.value).utc().format() : null,
+            start: formattedStartDate.value,
+            end: formattedEndDate.value,
             organization: getCurrentOrganizationId(),
         },
     ]),
@@ -47,8 +58,8 @@ const { data: timeEntryResponse, isLoading: timeEntriesLoading } = useQuery<Time
                 organization: getCurrentOrganizationId() || '',
             },
             queries: {
-                start: getDayJsInstance()(calendarStart.value).utc().format(),
-                end: getDayJsInstance()(calendarEnd.value).utc().format(),
+                start: formattedStartDate.value!,
+                end: formattedEndDate.value!,
             },
         }),
 });
@@ -109,8 +120,12 @@ function calculateNextRange(start: Date, end: Date): { start: Date; end: Date } 
 async function prefetchTimeEntries(start: Date, end: Date) {
     if (!getCurrentOrganizationId()) return;
 
-    const startFormatted = getDayJsInstance()(start).utc().format();
-    const endFormatted = getDayJsInstance()(end).utc().format();
+    const startFormatted = getDayJsInstance()(start)
+        .utc()
+        .tz(getUserTimezone(), true)
+        .utc()
+        .format();
+    const endFormatted = getDayJsInstance()(end).utc().tz(getUserTimezone(), true).utc().format();
 
     await queryClient.prefetchQuery({
         queryKey: [
