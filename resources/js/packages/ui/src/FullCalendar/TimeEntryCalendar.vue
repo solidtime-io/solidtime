@@ -229,7 +229,7 @@ const calendarOptions = computed(() => ({
         center: 'title',
         right: 'timeGridWeek,timeGridDay',
     },
-    height: '100vh',
+    height: 'parent',
     slotMinTime: '00:00:00',
     slotMaxTime: '24:00:00',
     slotDuration: '00:15:00',
@@ -274,7 +274,7 @@ watch(showEditTimeEntryModal, (value) => {
 </script>
 
 <template>
-    <div class="h-screen w-full relative">
+    <div class="w-full relative h-full flex-1">
         <div v-if="loading" class="flex items-center justify-center h-full">
             <div class="flex flex-col items-center space-y-4">
                 <LoadingSpinner class="h-8 w-8" />
