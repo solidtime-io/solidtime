@@ -170,11 +170,10 @@ function handleDateSelect(arg: { start: Date; end: Date }) {
         .utc()
         .tz(getUserTimezone(), true)
         .utc();
-    let endTime = getDayJsInstance()(arg.end.toISOString()).utc().tz(getUserTimezone(), true).utc();
-    const timeDiff = endTime.diff(startTime, 'minutes');
-    if (timeDiff <= 15) {
-        endTime = startTime.clone().add(1, 'hour');
-    }
+    const endTime = getDayJsInstance()(arg.end.toISOString())
+        .utc()
+        .tz(getUserTimezone(), true)
+        .utc();
     newEventStart.value = startTime;
     newEventEnd.value = endTime;
     showCreateTimeEntryModal.value = true;
