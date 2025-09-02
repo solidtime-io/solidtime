@@ -256,21 +256,21 @@ const page = usePage<{
         </div>
         <div class="flex-1 lg:ml-[230px] 2xl:ml-[250px] min-w-0">
             <div
-                class="lg:hidden w-full px-3 py-1 border-b border-b-default-background-separator text-text-secondary flex justify-between items-center">
-                <Bars3Icon
-                    class="w-7 text-text-secondary"
-                    @click="showSidebarMenu = !showSidebarMenu"></Bars3Icon>
-                <OrganizationSwitcher></OrganizationSwitcher>
-            </div>
+                class="h-screen overflow-y-auto flex flex-col bg-default-background border-l border-default-background-separator">
+                <div
+                    class="lg:hidden w-full px-3 py-1 border-b border-b-default-background-separator text-text-secondary flex justify-between items-center">
+                    <Bars3Icon
+                        class="w-7 text-text-secondary"
+                        @click="showSidebarMenu = !showSidebarMenu"></Bars3Icon>
+                    <OrganizationSwitcher></OrganizationSwitcher>
+                </div>
 
-            <Head :title="title" />
+                <Head :title="title" />
 
-            <Banner />
-            <BillingBanner v-if="isBillingActivated()" />
-
-            <div
-                class="min-h-screen flex flex-col bg-default-background border-l border-default-background-separator">
                 <!-- Page Heading -->
+                <Banner />
+                <BillingBanner v-if="isBillingActivated()" />
+
                 <header
                     v-if="$slots.header"
                     class="bg-default-background border-b border-default-background-separator shadow">
@@ -282,7 +282,7 @@ const page = usePage<{
                 </header>
 
                 <!-- Page Content -->
-                <main :class="twMerge('pb-28 flex-1', mainClass)">
+                <main :class="twMerge('pb-28 relative flex-1', mainClass)">
                     <div
                         v-if="isOrganizationLoading"
                         class="flex items-center justify-center h-screen">
