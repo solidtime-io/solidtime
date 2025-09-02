@@ -119,10 +119,17 @@ const events = computed(() => {
             const backgroundColor = chroma.mix(baseColor, themeBackground, 0.65, 'lab').hex();
             const borderColor = chroma.mix(baseColor, themeBackground, 0.5, 'lab').hex();
 
+            // For 0-duration events, display them with minimum visual duration but preserve actual duration
+            const startTime = getLocalizedDayJs(timeEntry.start);
+            const endTime =
+                duration === 0
+                    ? startTime.add(1, 'second') // Show as 1 second for minimal visibility
+                    : getLocalizedDayJs(timeEntry.end!);
+
             return {
                 id: timeEntry.id,
-                start: getLocalizedDayJs(timeEntry.start).format(),
-                end: getLocalizedDayJs(timeEntry.end!).format(),
+                start: startTime.format(),
+                end: endTime.format(),
                 title,
                 backgroundColor,
                 borderColor,
