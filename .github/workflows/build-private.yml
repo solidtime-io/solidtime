@@ -22,7 +22,7 @@ jobs:
 
     steps:
       - name: "Check out code"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0 # Required for WyriHaximus/github-action-get-previous-tag
 
@@ -73,7 +73,7 @@ jobs:
           node-version: '20.x'
 
       - name: "Checkout billing extension"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: solidtime-io/extension-billing
           path: extensions/Billing
@@ -93,7 +93,7 @@ jobs:
         run: cd extensions/Billing && npm ci
 
       - name: "Checkout services extension"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: solidtime-io/extension-services
           path: extensions/Services
@@ -111,7 +111,7 @@ jobs:
         run: cd extensions/Services && npm ci
 
       - name: "Checkout invoicing extension"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: solidtime-io/extension-invoicing
           path: extensions/Invoicing
