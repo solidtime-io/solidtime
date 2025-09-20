@@ -36,6 +36,7 @@ const props = defineProps<{
     createClient: (client: CreateClientBody) => Promise<Client | undefined>;
     onStartStopClick: () => void;
     deleteTimeEntry: () => void;
+    duplicateTimeEntry?: () => void;
     updateTimeEntry: (timeEntry: TimeEntry) => void;
     currency: string;
     showMember?: boolean;
@@ -166,6 +167,7 @@ async function handleDeleteTimeEntry() {
                         @changed="onStartStopClick"></TimeTrackerStartStop>
                     <TimeEntryMoreOptionsDropdown
                         @edit="handleEdit"
+                        @duplicate="duplicateTimeEntry"
                         @delete="deleteTimeEntry"></TimeEntryMoreOptionsDropdown>
                 </div>
             </div>

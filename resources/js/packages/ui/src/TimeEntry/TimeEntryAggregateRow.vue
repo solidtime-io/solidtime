@@ -33,6 +33,7 @@ const props = defineProps<{
     createProject: (project: CreateProjectBody) => Promise<Project | undefined>;
     createClient: (client: CreateClientBody) => Promise<Client | undefined>;
     onStartStopClick: (timeEntry: TimeEntry) => void;
+    duplicateTimeEntry: (timeEntry: TimeEntry) => void;
     updateTimeEntries: (ids: string[], changes: Partial<TimeEntry>) => void;
     updateTimeEntry: (timeEntry: TimeEntry) => void;
     deleteTimeEntries: (timeEntries: TimeEntry[]) => void;
@@ -173,6 +174,7 @@ function onSelectChange(checked: boolean) {
                         @changed="onStartStopClick(timeEntry)"></TimeTrackerStartStop>
                     <TimeEntryMoreOptionsDropdown
                         :show-edit="false"
+                        :show-duplicate="false"
                         @delete="
                             deleteTimeEntries(timeEntry?.timeEntries ?? [])
                         "></TimeEntryMoreOptionsDropdown>
@@ -202,6 +204,7 @@ function onSelectChange(checked: boolean) {
                 :update-time-entry="(timeEntry: TimeEntry) => updateTimeEntry(timeEntry)"
                 :on-start-stop-click="() => onStartStopClick(subEntry)"
                 :delete-time-entry="() => deleteTimeEntries([subEntry])"
+                :duplicate-time-entry="() => duplicateTimeEntry(subEntry)"
                 :currency="currency"
                 :create-tag
                 :time-entry="subEntry"
