@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { TrashIcon, PencilIcon } from '@heroicons/vue/20/solid';
+import { TrashIcon, PencilIcon, DocumentDuplicateIcon } from '@heroicons/vue/20/solid';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -10,8 +10,10 @@ import {
 const props = withDefaults(
     defineProps<{
         showEdit?: boolean;
+        showDuplicate?: boolean;
     }>(),
     {
+        showDuplicate: true,
         showEdit: true,
     }
 );
@@ -19,6 +21,7 @@ const props = withDefaults(
 const emit = defineEmits<{
     edit: [];
     delete: [];
+    duplicate: [];
 }>();
 </script>
 
@@ -50,6 +53,14 @@ const emit = defineEmits<{
                 @click="emit('edit')">
                 <PencilIcon class="w-5" />
                 <span>Edit</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+                v-if="props.showDuplicate"
+                data-testid="time_entry_duplicate"
+                class="flex items-center space-x-3 cursor-pointer"
+                @click="emit('duplicate')">
+                <DocumentDuplicateIcon class="w-5" />
+                <span>Duplicate</span>
             </DropdownMenuItem>
             <DropdownMenuItem
                 data-testid="time_entry_delete"
