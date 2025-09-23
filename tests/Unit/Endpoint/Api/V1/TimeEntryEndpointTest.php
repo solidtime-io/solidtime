@@ -1872,6 +1872,147 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         );
     }
 
+    public function test_aggregate_endpoint_groups_by_tag(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:view:all',
+        ]);
+        $tag1 = Tag::factory()->forOrganization($data->organization)->create();
+        $tag2 = Tag::factory()->forOrganization($data->organization)->create();
+        $start = Carbon::now()->timezone($data->user->timezone);
+        // Entry with two tags => contributes to both tag groups
+        TimeEntry::factory()
+            ->forOrganization($data->organization)
+            ->forMember($data->member)
+            ->startWithDuration($start, 100)
+            ->create([
+                'tags' => [$tag1->getKey(), $tag2->getKey()],
+            ]);
+        // Entry with one tag
+        TimeEntry::factory()
+            ->forOrganization($data->organization)
+            ->forMember($data->member)
+            ->startWithDuration($start, 50)
+            ->create([
+                'tags' => [$tag1->getKey()],
+            ]);
+        // Entry with no tags should not appear in tag grouping
+        TimeEntry::factory()
+            ->forOrganization($data->organization)
+            ->forMember($data->member)
+            ->startWithDuration($start, 25)
+            ->create([
+                'tags' => [],
+            ]);
+
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.time-entries.aggregate', [
+            $data->organization->getKey(),
+            'group' => 'tag',
+        ]));
+
+        // Assert
+        $response->assertSuccessful();
+        $response->assertExactJson([
+            'data' => [
+                'seconds' => 250, // total seconds across all groups
+                'cost' => 0,
+                'grouped_type' => 'tag',
+                'grouped_data' => [
+                    [
+                        'key' => $tag1->getKey(),
+                        'seconds' => 150, // 100 + 50
+                        'cost' => 0,
+                        'grouped_type' => null,
+                        'grouped_data' => null,
+                    ],
+                    [
+                        'key' => $tag2->getKey(),
+                        'seconds' => 100, // 100 from first entry
+                        'cost' => 0,
+                        'grouped_type' => null,
+                        'grouped_data' => null,
+                    ],
+                ],
+            ],
+        ]);
+    }
+
+    public function test_aggregate_endpoint_groups_by_project_and_sub_group_tag(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:view:all',
+        ]);
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        $tag1 = Tag::factory()->forOrganization($data->organization)->create();
+        $tag2 = Tag::factory()->forOrganization($data->organization)->create();
+        $start = Carbon::now()->timezone($data->user->timezone);
+
+        TimeEntry::factory()
+            ->forOrganization($data->organization)
+            ->forMember($data->member)
+            ->forProject($project)
+            ->startWithDuration($start, 120)
+            ->create([
+                'tags' => [$tag1->getKey()],
+            ]);
+        TimeEntry::factory()
+            ->forOrganization($data->organization)
+            ->forMember($data->member)
+            ->forProject($project)
+            ->startWithDuration($start, 60)
+            ->create([
+                'tags' => [$tag2->getKey()],
+            ]);
+
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.time-entries.aggregate', [
+            $data->organization->getKey(),
+            'group' => 'project',
+            'sub_group' => 'tag',
+        ]));
+
+        // Assert
+        $response->assertSuccessful();
+        $response->assertExactJson([
+            'data' => [
+                'seconds' => 180,
+                'cost' => 0,
+                'grouped_type' => 'project',
+                'grouped_data' => [
+                    [
+                        'key' => $project->getKey(),
+                        'seconds' => 180,
+                        'cost' => 0,
+                        'grouped_type' => 'tag',
+                        'grouped_data' => [
+                            [
+                                'key' => $tag1->getKey(),
+                                'seconds' => 120,
+                                'cost' => 0,
+                                'grouped_type' => null,
+                                'grouped_data' => null,
+                            ],
+                            [
+                                'key' => $tag2->getKey(),
+                                'seconds' => 60,
+                                'cost' => 0,
+                                'grouped_type' => null,
+                                'grouped_data' => null,
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+    }
+
     public function test_aggregate_endpoint_with_no_group(): void
     {
         // Arrange

@@ -36,20 +36,14 @@ const ClientResource = z
 const ClientCollection = z.array(ClientResource);
 const ClientStoreRequest = z.object({ name: z.string().min(1).max(255) }).passthrough();
 const ClientUpdateRequest = z
-    .object({
-        name: z.string().min(1).max(255),
-        is_archived: z.boolean().optional(),
-    })
+    .object({ name: z.string().min(1).max(255), is_archived: z.boolean().optional() })
     .passthrough();
 const ImportRequest = z.object({ type: z.string(), data: z.string() }).passthrough();
 const InvitationResource = z
     .object({ id: z.string(), email: z.string(), role: z.string() })
     .passthrough();
 const InvitationStoreRequest = z
-    .object({
-        email: z.string().email(),
-        role: z.enum(['admin', 'manager', 'employee']),
-    })
+    .object({ email: z.string().email(), role: z.enum(['admin', 'manager', 'employee']) })
     .passthrough();
 const InvoiceResource = z
     .object({
@@ -97,6 +91,7 @@ const InvoiceStoreRequest = z
         billing_period_end: z.union([z.string(), z.null()]).optional(),
         reference: z.string(),
         currency: z.string(),
+        payment_iban: z.union([z.string(), z.null()]).optional(),
         tax_rate: z.number().int().gte(0).lte(2147483647).optional(),
         discount_amount: z.number().int().gte(0).lte(9223372036854776000).optional(),
         discount_type: InvoiceDiscountType.optional(),
@@ -123,10 +118,10 @@ const InvoiceEntryResource = z
         id: z.string(),
         invoice_id: z.string(),
         name: z.string(),
-        description: z.union([z.string(), z.null()]),
-        unit_price: z.number().int(),
+        description: z.string(),
+        unit_price: z.string(),
         quantity: z.number(),
-        order_index: z.number().int(),
+        order_index: z.string(),
         created_at: z.union([z.string(), z.null()]),
         updated_at: z.union([z.string(), z.null()]),
     })
@@ -161,6 +156,7 @@ const DetailedInvoiceResource = z
         discount_type: z.string(),
         discount_amount: z.number().int(),
         tax_rate: z.number().int(),
+        payment_iban: z.string(),
         status: z.string(),
         currency: z.string(),
         date: z.string(),
@@ -206,6 +202,7 @@ const InvoiceUpdateRequest = z
         billing_period_end: z.union([z.string(), z.null()]),
         reference: z.string(),
         currency: z.string(),
+        payment_iban: z.union([z.string(), z.null()]),
         tax_rate: z.number().int().gte(0).lte(2147483647),
         discount_amount: z.number().int().gte(0).lte(9223372036854776000),
         discount_type: InvoiceDiscountType,
@@ -230,20 +227,20 @@ const InvoiceUpdateRequest = z
 const InvoiceDownloadRequest = z.object({ with_e_invoice: z.boolean() }).passthrough();
 const InvoiceSettingResource = z
     .object({
-        seller_name: z.union([z.string(), z.null()]),
-        seller_vatin: z.union([z.string(), z.null()]),
-        seller_address_line_1: z.union([z.string(), z.null()]),
-        seller_address_line_2: z.union([z.string(), z.null()]),
-        seller_address_line_3: z.union([z.string(), z.null()]),
-        seller_address_post_code: z.union([z.string(), z.null()]),
-        seller_address_city: z.union([z.string(), z.null()]),
-        seller_address_country: z.union([z.string(), z.null()]),
-        seller_phone: z.union([z.string(), z.null()]),
-        seller_email: z.union([z.string(), z.null()]),
-        footer_default: z.union([z.string(), z.null()]),
-        notes_default: z.union([z.string(), z.null()]),
-        tax_rate_default: z.union([z.number(), z.null()]),
-        e_invoicing_enabled: z.boolean(),
+        seller_name: z.string(),
+        seller_vatin: z.string(),
+        seller_address_line_1: z.string(),
+        seller_address_line_2: z.string(),
+        seller_address_line_3: z.string(),
+        seller_address_post_code: z.string(),
+        seller_address_city: z.string(),
+        seller_address_country: z.string(),
+        seller_phone: z.string(),
+        seller_email: z.string(),
+        footer_default: z.string(),
+        notes_default: z.string(),
+        tax_rate_default: z.string(),
+        e_invoicing_enabled: z.string(),
         organization_id: z.string(),
     })
     .passthrough();
@@ -388,10 +385,7 @@ const ProjectMemberResource = z
     })
     .passthrough();
 const ProjectMemberStoreRequest = z
-    .object({
-        member_id: z.string(),
-        billable_rate: z.union([z.number(), z.null()]).optional(),
-    })
+    .object({ member_id: z.string(), billable_rate: z.union([z.number(), z.null()]).optional() })
     .passthrough();
 const ProjectMemberUpdateRequest = z
     .object({ billable_rate: z.union([z.number(), z.null()]) })
@@ -420,6 +414,7 @@ const TimeEntryAggregationType = z.enum([
     'client',
     'billable',
     'description',
+    'tag',
 ]);
 const TimeEntryAggregationTypeInterval = z.enum(['day', 'week', 'month', 'year']);
 const Weekday = z.enum([
@@ -431,6 +426,7 @@ const Weekday = z.enum([
     'saturday',
     'sunday',
 ]);
+const TimeEntryRoundingType = z.enum(['up', 'down', 'nearest']);
 const ReportStoreRequest = z
     .object({
         name: z.string().max(255),
@@ -453,6 +449,8 @@ const ReportStoreRequest = z
                 history_group: TimeEntryAggregationTypeInterval,
                 week_start: Weekday.optional(),
                 timezone: z.union([z.string(), z.null()]).optional(),
+                rounding_type: TimeEntryRoundingType.optional(),
+                rounding_minutes: z.union([z.number(), z.null()]).optional(),
             })
             .passthrough(),
     })
@@ -479,6 +477,8 @@ const DetailedReportResource = z
                 project_ids: z.union([z.array(z.string()), z.null()]),
                 tag_ids: z.union([z.array(z.string()), z.null()]),
                 task_ids: z.union([z.array(z.string()), z.null()]),
+                rounding_type: z.union([z.string(), z.null()]),
+                rounding_minutes: z.union([z.number(), z.null()]),
             })
             .passthrough(),
         created_at: z.string(),
@@ -592,12 +592,7 @@ const DetailedWithDataReportResource = z
     })
     .passthrough();
 const TagResource = z
-    .object({
-        id: z.string(),
-        name: z.string(),
-        created_at: z.string(),
-        updated_at: z.string(),
-    })
+    .object({ id: z.string(), name: z.string(), created_at: z.string(), updated_at: z.string() })
     .passthrough();
 const TagCollection = z.array(TagResource);
 const TagStoreRequest = z.object({ name: z.string().min(1).max(255) }).passthrough();
@@ -629,6 +624,7 @@ const TaskUpdateRequest = z
     })
     .passthrough();
 const start = z.union([z.string(), z.null()]).optional();
+const rounding_minutes = z.union([z.number(), z.null()]).optional();
 const TimeEntryResource = z
     .object({
         id: z.string(),
@@ -749,6 +745,7 @@ export const schemas = {
     TimeEntryAggregationType,
     TimeEntryAggregationTypeInterval,
     Weekday,
+    TimeEntryRoundingType,
     ReportStoreRequest,
     DetailedReportResource,
     ReportUpdateRequest,
@@ -761,6 +758,7 @@ export const schemas = {
     TaskStoreRequest,
     TaskUpdateRequest,
     start,
+    rounding_minutes,
     TimeEntryResource,
     TimeEntryStoreRequest,
     TimeEntryUpdateMultipleRequest,
@@ -790,13 +788,7 @@ const endpoints = makeApi([
         alias: 'getCurrencies',
         requestFormat: 'json',
         response: z.array(
-            z
-                .object({
-                    code: z.string(),
-                    name: z.string(),
-                    symbol: z.string(),
-                })
-                .passthrough()
+            z.object({ code: z.string(), name: z.string(), symbol: z.string() }).passthrough()
         ),
     },
     {
@@ -868,10 +860,7 @@ const endpoints = makeApi([
                 status: 422,
                 description: `Validation error`,
                 schema: z
-                    .object({
-                        message: z.string(),
-                        errors: z.record(z.array(z.string())),
-                    })
+                    .object({ message: z.string(), errors: z.record(z.array(z.string())) })
                     .passthrough(),
             },
         ],
@@ -1166,13 +1155,7 @@ const endpoints = makeApi([
             },
         ],
         response: z.array(
-            z
-                .object({
-                    value: z.number().int(),
-                    name: z.string(),
-                    color: z.string(),
-                })
-                .passthrough()
+            z.object({ value: z.number().int(), name: z.string(), color: z.string() }).passthrough()
         ),
         errors: [
             {
@@ -1235,10 +1218,7 @@ const endpoints = makeApi([
                 status: 422,
                 description: `Validation error`,
                 schema: z
-                    .object({
-                        message: z.string(),
-                        errors: z.record(z.array(z.string())),
-                    })
+                    .object({ message: z.string(), errors: z.record(z.array(z.string())) })
                     .passthrough(),
             },
         ],
@@ -1281,10 +1261,7 @@ const endpoints = makeApi([
                 status: 422,
                 description: `Validation error`,
                 schema: z
-                    .object({
-                        message: z.string(),
-                        errors: z.record(z.array(z.string())),
-                    })
+                    .object({ message: z.string(), errors: z.record(z.array(z.string())) })
                     .passthrough(),
             },
         ],
@@ -1332,10 +1309,7 @@ const endpoints = makeApi([
                 status: 422,
                 description: `Validation error`,
                 schema: z
-                    .object({
-                        message: z.string(),
-                        errors: z.record(z.array(z.string())),
-                    })
+                    .object({ message: z.string(), errors: z.record(z.array(z.string())) })
                     .passthrough(),
             },
         ],
@@ -1363,11 +1337,7 @@ const endpoints = makeApi([
                 status: 400,
                 description: `API exception`,
                 schema: z
-                    .object({
-                        error: z.boolean(),
-                        key: z.string(),
-                        message: z.string(),
-                    })
+                    .object({ error: z.boolean(), key: z.string(), message: z.string() })
                     .passthrough(),
             },
             {
@@ -1405,11 +1375,7 @@ const endpoints = makeApi([
                 status: 400,
                 description: `API exception`,
                 schema: z
-                    .object({
-                        error: z.boolean(),
-                        key: z.string(),
-                        message: z.string(),
-                    })
+                    .object({ error: z.boolean(), key: z.string(), message: z.string() })
                     .passthrough(),
             },
             {
@@ -1465,7 +1431,7 @@ const endpoints = makeApi([
                 status: 400,
                 schema: z.union([
                     z.object({ message: z.string() }).passthrough(),
-                    z.object({ message: z.string() }).passthrough(),
+                    z.object({ message: z.literal('Invalid base64 encoded data') }).passthrough(),
                 ]),
             },
             {
@@ -1487,10 +1453,7 @@ const endpoints = makeApi([
                 status: 422,
                 description: `Validation error`,
                 schema: z
-                    .object({
-                        message: z.string(),
-                        errors: z.record(z.array(z.string())),
-                    })
+                    .object({ message: z.string(), errors: z.record(z.array(z.string())) })
                     .passthrough(),
             },
         ],
@@ -1511,11 +1474,7 @@ const endpoints = makeApi([
             .object({
                 data: z.array(
                     z
-                        .object({
-                            key: z.string(),
-                            name: z.string(),
-                            description: z.string(),
-                        })
+                        .object({ key: z.string(), name: z.string(), description: z.string() })
                         .passthrough()
                 ),
             })
@@ -1603,10 +1562,7 @@ const endpoints = makeApi([
                 status: 422,
                 description: `Validation error`,
                 schema: z
-                    .object({
-                        message: z.string(),
-                        errors: z.record(z.array(z.string())),
-                    })
+                    .object({ message: z.string(), errors: z.record(z.array(z.string())) })
                     .passthrough(),
             },
         ],
@@ -1634,11 +1590,7 @@ const endpoints = makeApi([
                 status: 400,
                 description: `API exception`,
                 schema: z
-                    .object({
-                        error: z.boolean(),
-                        key: z.string(),
-                        message: z.string(),
-                    })
+                    .object({ error: z.boolean(), key: z.string(), message: z.string() })
                     .passthrough(),
             },
             {
@@ -1660,10 +1612,7 @@ const endpoints = makeApi([
                 status: 422,
                 description: `Validation error`,
                 schema: z
-                    .object({
-                        message: z.string(),
-                        errors: z.record(z.array(z.string())),
-                    })
+                    .object({ message: z.string(), errors: z.record(z.array(z.string())) })
                     .passthrough(),
             },
         ],
@@ -1809,10 +1758,7 @@ const endpoints = makeApi([
                 status: 422,
                 description: `Validation error`,
                 schema: z
-                    .object({
-                        message: z.string(),
-                        errors: z.record(z.array(z.string())),
-                    })
+                    .object({ message: z.string(), errors: z.record(z.array(z.string())) })
                     .passthrough(),
             },
         ],
@@ -1855,10 +1801,7 @@ const endpoints = makeApi([
                 status: 422,
                 description: `Validation error`,
                 schema: z
-                    .object({
-                        message: z.string(),
-                        errors: z.record(z.array(z.string())),
-                    })
+                    .object({ message: z.string(), errors: z.record(z.array(z.string())) })
                     .passthrough(),
             },
         ],
@@ -1901,10 +1844,7 @@ const endpoints = makeApi([
                 status: 422,
                 description: `Validation error`,
                 schema: z
-                    .object({
-                        message: z.string(),
-                        errors: z.record(z.array(z.string())),
-                    })
+                    .object({ message: z.string(), errors: z.record(z.array(z.string())) })
                     .passthrough(),
             },
         ],
@@ -1923,7 +1863,7 @@ const endpoints = makeApi([
             {
                 name: 'invoice',
                 type: 'Path',
-                schema: z.string(),
+                schema: z.number().int(),
             },
         ],
         response: z.object({ data: DetailedInvoiceResource }).passthrough(),
@@ -1964,7 +1904,7 @@ const endpoints = makeApi([
             {
                 name: 'invoice',
                 type: 'Path',
-                schema: z.string(),
+                schema: z.number().int(),
             },
         ],
         response: z.object({ data: DetailedInvoiceResource }).passthrough(),
@@ -1988,10 +1928,7 @@ const endpoints = makeApi([
                 status: 422,
                 description: `Validation error`,
                 schema: z
-                    .object({
-                        message: z.string(),
-                        errors: z.record(z.array(z.string())),
-                    })
+                    .object({ message: z.string(), errors: z.record(z.array(z.string())) })
                     .passthrough(),
             },
         ],
@@ -2010,7 +1947,7 @@ const endpoints = makeApi([
             {
                 name: 'invoice',
                 type: 'Path',
-                schema: z.string(),
+                schema: z.number().int(),
             },
         ],
         response: z.void(),
@@ -2051,11 +1988,18 @@ const endpoints = makeApi([
             {
                 name: 'invoice',
                 type: 'Path',
-                schema: z.string(),
+                schema: z.number().int(),
             },
         ],
         response: z.object({ download_link: z.string() }).passthrough(),
         errors: [
+            {
+                status: 400,
+                description: `API exception`,
+                schema: z
+                    .object({ error: z.boolean(), key: z.string(), message: z.string() })
+                    .passthrough(),
+            },
             {
                 status: 401,
                 description: `Unauthenticated`,
@@ -2075,10 +2019,7 @@ const endpoints = makeApi([
                 status: 422,
                 description: `Validation error`,
                 schema: z
-                    .object({
-                        message: z.string(),
-                        errors: z.record(z.array(z.string())),
-                    })
+                    .object({ message: z.string(), errors: z.record(z.array(z.string())) })
                     .passthrough(),
             },
         ],
@@ -2097,11 +2038,18 @@ const endpoints = makeApi([
             {
                 name: 'invoice',
                 type: 'Path',
-                schema: z.string(),
+                schema: z.number().int(),
             },
         ],
         response: z.object({ download_link: z.string() }).passthrough(),
         errors: [
+            {
+                status: 400,
+                description: `API exception`,
+                schema: z
+                    .object({ error: z.boolean(), key: z.string(), message: z.string() })
+                    .passthrough(),
+            },
             {
                 status: 401,
                 description: `Unauthenticated`,
@@ -2147,11 +2095,7 @@ const endpoints = makeApi([
                 status: 400,
                 description: `API exception`,
                 schema: z
-                    .object({
-                        error: z.boolean(),
-                        key: z.string(),
-                        message: z.string(),
-                    })
+                    .object({ error: z.boolean(), key: z.string(), message: z.string() })
                     .passthrough(),
             },
             {
@@ -2173,10 +2117,7 @@ const endpoints = makeApi([
                 status: 422,
                 description: `Validation error`,
                 schema: z
-                    .object({
-                        message: z.string(),
-                        errors: z.record(z.array(z.string())),
-                    })
+                    .object({ message: z.string(), errors: z.record(z.array(z.string())) })
                     .passthrough(),
             },
         ],
@@ -2246,10 +2187,7 @@ const endpoints = makeApi([
                 status: 422,
                 description: `Validation error`,
                 schema: z
-                    .object({
-                        message: z.string(),
-                        errors: z.record(z.array(z.string())),
-                    })
+                    .object({ message: z.string(), errors: z.record(z.array(z.string())) })
                     .passthrough(),
             },
         ],
@@ -2282,11 +2220,7 @@ const endpoints = makeApi([
                 status: 400,
                 description: `API exception`,
                 schema: z
-                    .object({
-                        error: z.boolean(),
-                        key: z.string(),
-                        message: z.string(),
-                    })
+                    .object({ error: z.boolean(), key: z.string(), message: z.string() })
                     .passthrough(),
             },
             {
@@ -2308,10 +2242,7 @@ const endpoints = makeApi([
                 status: 422,
                 description: `Validation error`,
                 schema: z
-                    .object({
-                        message: z.string(),
-                        errors: z.record(z.array(z.string())),
-                    })
+                    .object({ message: z.string(), errors: z.record(z.array(z.string())) })
                     .passthrough(),
             },
         ],
@@ -2344,11 +2275,7 @@ const endpoints = makeApi([
                 status: 400,
                 description: `API exception`,
                 schema: z
-                    .object({
-                        error: z.boolean(),
-                        key: z.string(),
-                        message: z.string(),
-                    })
+                    .object({ error: z.boolean(), key: z.string(), message: z.string() })
                     .passthrough(),
             },
             {
@@ -2370,10 +2297,7 @@ const endpoints = makeApi([
                 status: 422,
                 description: `Validation error`,
                 schema: z
-                    .object({
-                        message: z.string(),
-                        errors: z.record(z.array(z.string())),
-                    })
+                    .object({ message: z.string(), errors: z.record(z.array(z.string())) })
                     .passthrough(),
             },
         ],
@@ -2401,11 +2325,7 @@ const endpoints = makeApi([
                 status: 400,
                 description: `API exception`,
                 schema: z
-                    .object({
-                        error: z.boolean(),
-                        key: z.string(),
-                        message: z.string(),
-                    })
+                    .object({ error: z.boolean(), key: z.string(), message: z.string() })
                     .passthrough(),
             },
             {
@@ -2448,11 +2368,7 @@ const endpoints = makeApi([
                 status: 400,
                 description: `API exception`,
                 schema: z
-                    .object({
-                        error: z.boolean(),
-                        key: z.string(),
-                        message: z.string(),
-                    })
+                    .object({ error: z.boolean(), key: z.string(), message: z.string() })
                     .passthrough(),
             },
             {
@@ -2515,10 +2431,7 @@ const endpoints = makeApi([
                 status: 422,
                 description: `Validation error`,
                 schema: z
-                    .object({
-                        message: z.string(),
-                        errors: z.record(z.array(z.string())),
-                    })
+                    .object({ message: z.string(), errors: z.record(z.array(z.string())) })
                     .passthrough(),
             },
         ],
@@ -2634,10 +2547,7 @@ const endpoints = makeApi([
                 status: 422,
                 description: `Validation error`,
                 schema: z
-                    .object({
-                        message: z.string(),
-                        errors: z.record(z.array(z.string())),
-                    })
+                    .object({ message: z.string(), errors: z.record(z.array(z.string())) })
                     .passthrough(),
             },
         ],
@@ -2680,10 +2590,7 @@ const endpoints = makeApi([
                 status: 422,
                 description: `Validation error`,
                 schema: z
-                    .object({
-                        message: z.string(),
-                        errors: z.record(z.array(z.string())),
-                    })
+                    .object({ message: z.string(), errors: z.record(z.array(z.string())) })
                     .passthrough(),
             },
         ],
@@ -2767,10 +2674,7 @@ const endpoints = makeApi([
                 status: 422,
                 description: `Validation error`,
                 schema: z
-                    .object({
-                        message: z.string(),
-                        errors: z.record(z.array(z.string())),
-                    })
+                    .object({ message: z.string(), errors: z.record(z.array(z.string())) })
                     .passthrough(),
             },
         ],
@@ -2798,11 +2702,7 @@ const endpoints = makeApi([
                 status: 400,
                 description: `API exception`,
                 schema: z
-                    .object({
-                        error: z.boolean(),
-                        key: z.string(),
-                        message: z.string(),
-                    })
+                    .object({ error: z.boolean(), key: z.string(), message: z.string() })
                     .passthrough(),
             },
             {
@@ -2918,11 +2818,7 @@ const endpoints = makeApi([
                 status: 400,
                 description: `API exception`,
                 schema: z
-                    .object({
-                        error: z.boolean(),
-                        key: z.string(),
-                        message: z.string(),
-                    })
+                    .object({ error: z.boolean(), key: z.string(), message: z.string() })
                     .passthrough(),
             },
             {
@@ -2944,10 +2840,7 @@ const endpoints = makeApi([
                 status: 422,
                 description: `Validation error`,
                 schema: z
-                    .object({
-                        message: z.string(),
-                        errors: z.record(z.array(z.string())),
-                    })
+                    .object({ message: z.string(), errors: z.record(z.array(z.string())) })
                     .passthrough(),
             },
         ],
@@ -3053,10 +2946,7 @@ const endpoints = makeApi([
                 status: 422,
                 description: `Validation error`,
                 schema: z
-                    .object({
-                        message: z.string(),
-                        errors: z.record(z.array(z.string())),
-                    })
+                    .object({ message: z.string(), errors: z.record(z.array(z.string())) })
                     .passthrough(),
             },
         ],
@@ -3140,10 +3030,7 @@ const endpoints = makeApi([
                 status: 422,
                 description: `Validation error`,
                 schema: z
-                    .object({
-                        message: z.string(),
-                        errors: z.record(z.array(z.string())),
-                    })
+                    .object({ message: z.string(), errors: z.record(z.array(z.string())) })
                     .passthrough(),
             },
         ],
@@ -3253,10 +3140,7 @@ const endpoints = makeApi([
                 status: 422,
                 description: `Validation error`,
                 schema: z
-                    .object({
-                        message: z.string(),
-                        errors: z.record(z.array(z.string())),
-                    })
+                    .object({ message: z.string(), errors: z.record(z.array(z.string())) })
                     .passthrough(),
             },
         ],
@@ -3304,10 +3188,7 @@ const endpoints = makeApi([
                 status: 422,
                 description: `Validation error`,
                 schema: z
-                    .object({
-                        message: z.string(),
-                        errors: z.record(z.array(z.string())),
-                    })
+                    .object({ message: z.string(), errors: z.record(z.array(z.string())) })
                     .passthrough(),
             },
         ],
@@ -3335,11 +3216,7 @@ const endpoints = makeApi([
                 status: 400,
                 description: `API exception`,
                 schema: z
-                    .object({
-                        error: z.boolean(),
-                        key: z.string(),
-                        message: z.string(),
-                    })
+                    .object({ error: z.boolean(), key: z.string(), message: z.string() })
                     .passthrough(),
             },
             {
@@ -3434,10 +3311,7 @@ const endpoints = makeApi([
                 status: 422,
                 description: `Validation error`,
                 schema: z
-                    .object({
-                        message: z.string(),
-                        errors: z.record(z.array(z.string())),
-                    })
+                    .object({ message: z.string(), errors: z.record(z.array(z.string())) })
                     .passthrough(),
             },
         ],
@@ -3480,10 +3354,7 @@ const endpoints = makeApi([
                 status: 422,
                 description: `Validation error`,
                 schema: z
-                    .object({
-                        message: z.string(),
-                        errors: z.record(z.array(z.string())),
-                    })
+                    .object({ message: z.string(), errors: z.record(z.array(z.string())) })
                     .passthrough(),
             },
         ],
@@ -3531,10 +3402,7 @@ const endpoints = makeApi([
                 status: 422,
                 description: `Validation error`,
                 schema: z
-                    .object({
-                        message: z.string(),
-                        errors: z.record(z.array(z.string())),
-                    })
+                    .object({ message: z.string(), errors: z.record(z.array(z.string())) })
                     .passthrough(),
             },
         ],
@@ -3562,11 +3430,7 @@ const endpoints = makeApi([
                 status: 400,
                 description: `API exception`,
                 schema: z
-                    .object({
-                        error: z.boolean(),
-                        key: z.string(),
-                        message: z.string(),
-                    })
+                    .object({ error: z.boolean(), key: z.string(), message: z.string() })
                     .passthrough(),
             },
             {
@@ -3640,6 +3504,16 @@ Users with the permission &#x60;time-entries:view:own&#x60; can only use this en
                 schema: z.enum(['true', 'false']).optional(),
             },
             {
+                name: 'rounding_type',
+                type: 'Query',
+                schema: z.enum(['up', 'down', 'nearest']).optional(),
+            },
+            {
+                name: 'rounding_minutes',
+                type: 'Query',
+                schema: rounding_minutes,
+            },
+            {
                 name: 'user_id',
                 type: 'Query',
                 schema: z.string().optional(),
@@ -3696,10 +3570,7 @@ Users with the permission &#x60;time-entries:view:own&#x60; can only use this en
                 status: 422,
                 description: `Validation error`,
                 schema: z
-                    .object({
-                        message: z.string(),
-                        errors: z.record(z.array(z.string())),
-                    })
+                    .object({ message: z.string(), errors: z.record(z.array(z.string())) })
                     .passthrough(),
             },
         ],
@@ -3727,11 +3598,7 @@ Users with the permission &#x60;time-entries:view:own&#x60; can only use this en
                 status: 400,
                 description: `API exception`,
                 schema: z
-                    .object({
-                        error: z.boolean(),
-                        key: z.string(),
-                        message: z.string(),
-                    })
+                    .object({ error: z.boolean(), key: z.string(), message: z.string() })
                     .passthrough(),
             },
             {
@@ -3753,10 +3620,7 @@ Users with the permission &#x60;time-entries:view:own&#x60; can only use this en
                 status: 422,
                 description: `Validation error`,
                 schema: z
-                    .object({
-                        message: z.string(),
-                        errors: z.record(z.array(z.string())),
-                    })
+                    .object({ message: z.string(), errors: z.record(z.array(z.string())) })
                     .passthrough(),
             },
         ],
@@ -3799,10 +3663,7 @@ Users with the permission &#x60;time-entries:view:own&#x60; can only use this en
                 status: 422,
                 description: `Validation error`,
                 schema: z
-                    .object({
-                        message: z.string(),
-                        errors: z.record(z.array(z.string())),
-                    })
+                    .object({ message: z.string(), errors: z.record(z.array(z.string())) })
                     .passthrough(),
             },
         ],
@@ -3845,10 +3706,7 @@ Users with the permission &#x60;time-entries:view:own&#x60; can only use this en
                 status: 422,
                 description: `Validation error`,
                 schema: z
-                    .object({
-                        message: z.string(),
-                        errors: z.record(z.array(z.string())),
-                    })
+                    .object({ message: z.string(), errors: z.record(z.array(z.string())) })
                     .passthrough(),
             },
         ],
@@ -3881,11 +3739,7 @@ Users with the permission &#x60;time-entries:view:own&#x60; can only use this en
                 status: 400,
                 description: `API exception`,
                 schema: z
-                    .object({
-                        error: z.boolean(),
-                        key: z.string(),
-                        message: z.string(),
-                    })
+                    .object({ error: z.boolean(), key: z.string(), message: z.string() })
                     .passthrough(),
             },
             {
@@ -3907,10 +3761,7 @@ Users with the permission &#x60;time-entries:view:own&#x60; can only use this en
                 status: 422,
                 description: `Validation error`,
                 schema: z
-                    .object({
-                        message: z.string(),
-                        errors: z.record(z.array(z.string())),
-                    })
+                    .object({ message: z.string(), errors: z.record(z.array(z.string())) })
                     .passthrough(),
             },
         ],
@@ -3980,6 +3831,7 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
                         'client',
                         'billable',
                         'description',
+                        'tag',
                     ])
                     .optional(),
             },
@@ -3998,6 +3850,7 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
                         'client',
                         'billable',
                         'description',
+                        'tag',
                     ])
                     .optional(),
             },
@@ -4035,6 +3888,16 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
                 name: 'fill_gaps_in_time_groups',
                 type: 'Query',
                 schema: z.enum(['true', 'false']).optional(),
+            },
+            {
+                name: 'rounding_type',
+                type: 'Query',
+                schema: z.enum(['up', 'down', 'nearest']).optional(),
+            },
+            {
+                name: 'rounding_minutes',
+                type: 'Query',
+                schema: rounding_minutes,
             },
             {
                 name: 'member_ids',
@@ -4120,10 +3983,7 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
                 status: 422,
                 description: `Validation error`,
                 schema: z
-                    .object({
-                        message: z.string(),
-                        errors: z.record(z.array(z.string())),
-                    })
+                    .object({ message: z.string(), errors: z.record(z.array(z.string())) })
                     .passthrough(),
             },
         ],
@@ -4158,6 +4018,7 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
                     'client',
                     'billable',
                     'description',
+                    'tag',
                 ]),
             },
             {
@@ -4174,6 +4035,7 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
                     'client',
                     'billable',
                     'description',
+                    'tag',
                 ]),
             },
             {
@@ -4222,6 +4084,16 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
                 schema: z.enum(['true', 'false']).optional(),
             },
             {
+                name: 'rounding_type',
+                type: 'Query',
+                schema: z.enum(['up', 'down', 'nearest']).optional(),
+            },
+            {
+                name: 'rounding_minutes',
+                type: 'Query',
+                schema: rounding_minutes,
+            },
+            {
                 name: 'member_ids',
                 type: 'Query',
                 schema: z.array(z.string()).min(1).optional(),
@@ -4256,11 +4128,7 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
                 status: 400,
                 description: `API exception`,
                 schema: z
-                    .object({
-                        error: z.boolean(),
-                        key: z.string(),
-                        message: z.string(),
-                    })
+                    .object({ error: z.boolean(), key: z.string(), message: z.string() })
                     .passthrough(),
             },
             {
@@ -4282,10 +4150,7 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
                 status: 422,
                 description: `Validation error`,
                 schema: z
-                    .object({
-                        message: z.string(),
-                        errors: z.record(z.array(z.string())),
-                    })
+                    .object({ message: z.string(), errors: z.record(z.array(z.string())) })
                     .passthrough(),
             },
         ],
@@ -4347,6 +4212,16 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
                 schema: z.enum(['true', 'false']).optional(),
             },
             {
+                name: 'rounding_type',
+                type: 'Query',
+                schema: z.enum(['up', 'down', 'nearest']).optional(),
+            },
+            {
+                name: 'rounding_minutes',
+                type: 'Query',
+                schema: rounding_minutes,
+            },
+            {
                 name: 'member_ids',
                 type: 'Query',
                 schema: z.array(z.string().uuid()).min(1).optional(),
@@ -4376,11 +4251,7 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
                 status: 400,
                 description: `API exception`,
                 schema: z
-                    .object({
-                        error: z.boolean(),
-                        key: z.string(),
-                        message: z.string(),
-                    })
+                    .object({ error: z.boolean(), key: z.string(), message: z.string() })
                     .passthrough(),
             },
             {
@@ -4402,10 +4273,7 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
                 status: 422,
                 description: `Validation error`,
                 schema: z
-                    .object({
-                        message: z.string(),
-                        errors: z.record(z.array(z.string())),
-                    })
+                    .object({ message: z.string(), errors: z.record(z.array(z.string())) })
                     .passthrough(),
             },
         ],
@@ -4487,11 +4355,7 @@ Please note that the access token is only shown in this response and cannot be r
                 status: 400,
                 description: `API exception`,
                 schema: z
-                    .object({
-                        error: z.boolean(),
-                        key: z.string(),
-                        message: z.string(),
-                    })
+                    .object({ error: z.boolean(), key: z.string(), message: z.string() })
                     .passthrough(),
             },
             {
@@ -4508,10 +4372,7 @@ Please note that the access token is only shown in this response and cannot be r
                 status: 422,
                 description: `Validation error`,
                 schema: z
-                    .object({
-                        message: z.string(),
-                        errors: z.record(z.array(z.string())),
-                    })
+                    .object({ message: z.string(), errors: z.record(z.array(z.string())) })
                     .passthrough(),
             },
         ],
@@ -4534,11 +4395,7 @@ Please note that the access token is only shown in this response and cannot be r
                 status: 400,
                 description: `API exception`,
                 schema: z
-                    .object({
-                        error: z.boolean(),
-                        key: z.string(),
-                        message: z.string(),
-                    })
+                    .object({ error: z.boolean(), key: z.string(), message: z.string() })
                     .passthrough(),
             },
             {
@@ -4576,11 +4433,7 @@ Please note that the access token is only shown in this response and cannot be r
                 status: 400,
                 description: `API exception`,
                 schema: z
-                    .object({
-                        error: z.boolean(),
-                        key: z.string(),
-                        message: z.string(),
-                    })
+                    .object({ error: z.boolean(), key: z.string(), message: z.string() })
                     .passthrough(),
             },
             {

@@ -10,6 +10,7 @@ use App\Enums\TimeEntryRoundingType;
 use App\Enums\Weekday;
 use App\Models\Client;
 use App\Models\Project;
+use App\Models\Tag;
 use App\Models\Task;
 use App\Models\TimeEntry;
 use App\Models\User;
@@ -17,6 +18,7 @@ use Carbon\CarbonTimeZone;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class TimeEntryAggregationService
@@ -48,6 +50,10 @@ class TimeEntryAggregationService
         $group1Select = null;
         $group2Select = null;
         $groupBy = null;
+        // If any grouping is by tag, expand rows per tag via CROSS JOIN LATERAL on the JSONB array
+        if (($group1Type === TimeEntryAggregationType::Tag) || ($group2Type === TimeEntryAggregationType::Tag)) {
+            $timeEntriesQuery->crossJoin(DB::raw("LATERAL jsonb_array_elements_text(coalesce(tags, '[]'::jsonb)) as tag(tag)"));
+        }
         if ($group1Type !== null) {
             $group1Select = $this->getGroupByQuery($group1Type, $timezone, $startOfWeek);
             $groupBy = ['group_1'];
@@ -294,6 +300,17 @@ class TimeEntryAggregationService
                     'color' => null,
                 ];
             }
+        } elseif ($type === TimeEntryAggregationType::Tag) {
+            $tags = Tag::query()
+                ->whereIn('id', $keys)
+                ->select('id', 'name')
+                ->get();
+            foreach ($tags as $tag) {
+                $descriptorMap[$tag->id] = [
+                    'description' => $tag->name,
+                    'color' => null,
+                ];
+            }
         }
 
         return $descriptorMap;
@@ -436,6 +453,8 @@ class TimeEntryAggregationService
             return 'billable';
         } elseif ($group === TimeEntryAggregationType::Description) {
             return 'description';
+        } elseif ($group === TimeEntryAggregationType::Tag) {
+            return 'tag';
         }
     }
 
