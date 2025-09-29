@@ -451,6 +451,7 @@ watch(showEditTimeEntryModal, (value) => {
     cursor: pointer;
     box-shadow: var(--theme-shadow-card);
     opacity: 0.9;
+    overflow: hidden;
 }
 
 .fullcalendar :deep(.fc-v-event) {
