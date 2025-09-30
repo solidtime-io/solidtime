@@ -6,6 +6,7 @@ import {
     DropdownMenuTrigger,
     DropdownMenuContent,
     DropdownMenuItem,
+    DropdownMenuLabel,
 } from '@/Components/ui/dropdown-menu';
 import {
     UserCircleIcon,
@@ -83,13 +84,13 @@ const openFeedback = () => {
             </DropdownMenuTrigger>
 
             <DropdownMenuContent align="center" class="min-w-40">
-                <div class="block px-2 py-2 text-xs text-gray-400">Manage Account</div>
+                <DropdownMenuLabel>Manage Account</DropdownMenuLabel>
 
                 <DropdownMenuItem as-child>
                     <Link
                         :href="route('profile.show')"
                         class="inline-flex items-center gap-2.5 w-full">
-                        <UserCircleIcon class="w-5 h-5 text-text-secondary" />
+                        <UserCircleIcon class="w-5 h-5 text-icon-default" />
                         <span>Profile</span>
                     </Link>
                 </DropdownMenuItem>
@@ -98,7 +99,7 @@ const openFeedback = () => {
                     <Link
                         :href="route('api-tokens.index')"
                         class="inline-flex items-center gap-2.5 w-full">
-                        <KeyIcon class="w-5 h-5 text-text-secondary" />
+                        <KeyIcon class="w-5 h-5 text-icon-default" />
                         <span>API Tokens</span>
                     </Link>
                 </DropdownMenuItem>
@@ -108,7 +109,7 @@ const openFeedback = () => {
                         type="button"
                         class="inline-flex items-center gap-2.5 w-full"
                         @click="openFeedback">
-                        <ChatBubbleLeftRightIcon class="w-5 h-5 text-text-secondary" />
+                        <ChatBubbleLeftRightIcon class="w-5 h-5 text-icon-default" />
                         <span>Feedback</span>
                     </button>
                 </DropdownMenuItem>
@@ -116,7 +117,7 @@ const openFeedback = () => {
                 <form class="w-full" @submit.prevent="logout">
                     <DropdownMenuItem as-child class="inline-flex items-center gap-2.5 w-full">
                         <button type="submit" data-testid="logout_button">
-                            <ArrowLeftOnRectangleIcon class="w-5 h-5 text-text-secondary" />
+                            <ArrowLeftOnRectangleIcon class="w-5 h-5 text-icon-default" />
                             <span>Log Out</span>
                         </button>
                     </DropdownMenuItem>
