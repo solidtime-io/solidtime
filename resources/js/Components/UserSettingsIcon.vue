@@ -48,41 +48,16 @@ const openFeedback = () => {
 <template>
     <div class="relative">
         <DropdownMenu>
-            <DropdownMenuTrigger>
-                <template v-if="page.props.jetstream.managesProfilePhotos">
-                    <button
-                        data-testid="current_user_button"
-                        class="flex text-sm border-2 outline-none border-transparent rounded-full focus:border-gray-300 transition">
-                        <img
-                            class="h-8 w-8 rounded-full object-cover"
-                            :src="page.props.auth.user.profile_photo_url"
-                            :alt="page.props.auth.user.name" />
-                    </button>
-                </template>
-                <template v-else>
-                    <span class="inline-flex rounded-md">
-                        <button
-                            type="button"
-                            class="inline-flex outline-none items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:bg-gray-50 active:bg-gray-50 transition ease-in-out duration-150">
-                            {{ page.props.auth.user.name }}
-
-                            <svg
-                                class="ms-2 -me-0.5 h-4 w-4"
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke-width="1.5"
-                                stroke="currentColor">
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                            </svg>
-                        </button>
-                    </span>
-                </template>
+            <DropdownMenuTrigger
+                class="flex text-sm border-2 outline-none border-transparent rounded-full focus-visible:ring-2 focus-visible:ring-ring transition"
+                as-child>
+                <button data-testid="current_user_button">
+                    <img
+                        class="h-8 w-8 rounded-full object-cover"
+                        :src="page.props.auth.user.profile_photo_url"
+                        :alt="page.props.auth.user.name" />
+                </button>
             </DropdownMenuTrigger>
-
             <DropdownMenuContent align="center" class="min-w-40">
                 <DropdownMenuLabel>Manage Account</DropdownMenuLabel>
 

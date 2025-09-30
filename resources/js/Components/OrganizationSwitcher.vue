@@ -40,10 +40,10 @@ const switchToTeam = (organization: Organization) => {
 
 <template>
     <DropdownMenu v-if="page.props.jetstream.hasTeamFeatures">
-        <DropdownMenuTrigger class="w-full text-left">
-            <div
-                data-testid="organization_switcher"
-                class="flex hover:bg-white/10 cursor-pointer transition pl-2 py-1 rounded w-full items-center justify-between">
+        <DropdownMenuTrigger
+            class="flex w-full text-left hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-ring cursor-pointer transition pl-2 py-1 rounded w-full items-center justify-between"
+            as-child>
+            <button data-testid="organization_switcher">
                 <div class="flex flex-1 space-x-2 items-center w-[calc(100%-30px)]">
                     <div
                         class="rounded bg-blue-900 font-medium text-xs flex-shrink-0 text-white w-5 h-5 flex items-center justify-center">
@@ -58,7 +58,7 @@ const switchToTeam = (organization: Organization) => {
                         <ChevronDownIcon class="w-4 sm:w-full mt-[1px]"></ChevronDownIcon>
                     </div>
                 </div>
-            </div>
+            </button>
         </DropdownMenuTrigger>
 
         <DropdownMenuContent align="start">
