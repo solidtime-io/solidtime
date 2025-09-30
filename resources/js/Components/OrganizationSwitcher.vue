@@ -1,12 +1,23 @@
 <script setup lang="ts">
 import { ChevronDownIcon } from '@heroicons/vue/20/solid';
-import Dropdown from '@/packages/ui/src/Input/Dropdown.vue';
-import DropdownLink from '@/Components/DropdownLink.vue';
-import { usePage } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
+import {
+    Cog6ToothIcon,
+    PlusCircleIcon,
+    CheckCircleIcon,
+    ArrowRightIcon,
+} from '@heroicons/vue/24/solid';
 import type { Organization, User } from '@/types/models';
 import { isBillingActivated } from '@/utils/billing';
 import { canManageBilling } from '@/utils/permissions';
 import { switchOrganization } from '@/utils/useOrganization';
+import {
+    DropdownMenu,
+    DropdownMenuTrigger,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+} from '@/Components/ui/dropdown-menu';
 
 const page = usePage<{
     jetstream: {
@@ -28,84 +39,79 @@ const switchToTeam = (organization: Organization) => {
 </script>
 
 <template>
-    <Dropdown v-if="page.props.jetstream.hasTeamFeatures" align="center" width="60">
-        <template #trigger>
+    <DropdownMenu v-if="page.props.jetstream.hasTeamFeatures">
+        <DropdownMenuTrigger class="w-full text-left">
             <div
                 data-testid="organization_switcher"
-                class="flex hover:bg-white/10 cursor-pointer transition px-2 py-1 rounded-lg w-full items-center justify-between font-medium">
+                class="flex hover:bg-white/10 cursor-pointer transition pl-2 py-1 rounded w-full items-center justify-between">
                 <div class="flex flex-1 space-x-2 items-center w-[calc(100%-30px)]">
                     <div
-                        class="rounded sm:rounded-lg bg-blue-900 font-semibold text-xs sm:text-sm flex-shrink-0 text-white w-5 sm:w-6 h-5 sm:h-6 flex items-center justify-center">
+                        class="rounded bg-blue-900 font-medium text-xs flex-shrink-0 text-white w-5 h-5 flex items-center justify-center">
                         {{ page.props.auth.user.current_team.name.slice(0, 1).toUpperCase() }}
                     </div>
-                    <span class="text-sm flex-1 truncate font-semibold">
+                    <span class="text-xs flex-1 truncate font-medium">
                         {{ page.props.auth.user.current_team.name }}
                     </span>
                 </div>
                 <div class="w-[30px]">
-                    <button
-                        class="p-1 transition hover:bg-white/10 rounded-full flex items-center w-8 h-8">
-                        <ChevronDownIcon class="w-5 sm:w-full mt-[1px]"></ChevronDownIcon>
-                    </button>
+                    <div class="p-1 rounded-full flex items-center w-6 h-6">
+                        <ChevronDownIcon class="w-4 sm:w-full mt-[1px]"></ChevronDownIcon>
+                    </div>
                 </div>
             </div>
-        </template>
+        </DropdownMenuTrigger>
 
-        <template #content>
+        <DropdownMenuContent align="start">
             <div class="w-60">
-                <!-- Organization Management -->
-                <div class="block px-4 py-2 text-xs text-text-secondary">Manage Organization</div>
+                <DropdownMenuLabel>Manage Organization</DropdownMenuLabel>
 
-                <!-- Organization Settings -->
-                <DropdownLink :href="route('teams.show', page.props.auth.user.current_team.id)">
-                    Organization Settings
-                </DropdownLink>
+                <DropdownMenuItem as-child>
+                    <Link
+                        :href="route('teams.show', page.props.auth.user.current_team.id)"
+                        class="inline-flex items-center gap-2.5 w-full">
+                        <Cog6ToothIcon class="w-5 h-5 text-icon-default" />
+                        <span>Organization Settings</span>
+                    </Link>
+                </DropdownMenuItem>
 
-                <DropdownLink v-if="canManageBilling() && isBillingActivated()" href="/billing">
-                    Billing
-                </DropdownLink>
+                <DropdownMenuItem v-if="canManageBilling() && isBillingActivated()" as-child>
+                    <Link href="/billing" class="inline-flex items-center w-full"> Billing </Link>
+                </DropdownMenuItem>
 
-                <DropdownLink
-                    v-if="page.props.jetstream.canCreateTeams"
-                    :href="route('teams.create')">
-                    Create new organization
-                </DropdownLink>
+                <DropdownMenuItem v-if="page.props.jetstream.canCreateTeams" as-child>
+                    <Link
+                        :href="route('teams.create')"
+                        class="inline-flex items-center gap-2.5 w-full">
+                        <PlusCircleIcon class="w-5 h-5 text-icon-default" />
+                        <span>Create new organization</span>
+                    </Link>
+                </DropdownMenuItem>
 
-                <!-- Organization Switcher -->
                 <template v-if="page.props.auth.user.all_teams.length > 1">
                     <div class="border-t border-card-background-separator" />
 
-                    <div class="block px-4 py-2 text-xs text-text-secondary">
-                        Switch Organizations
-                    </div>
+                    <DropdownMenuLabel>Switch Organizations</DropdownMenuLabel>
 
                     <template v-for="team in page.props.auth.user.all_teams" :key="team.id">
                         <form @submit.prevent="switchToTeam(team)">
-                            <DropdownLink as="button">
-                                <div class="flex items-center">
-                                    <svg
+                            <DropdownMenuItem
+                                as-child
+                                class="inline-flex gap-2.5 items-center w-full">
+                                <button type="submit">
+                                    <CheckCircleIcon
                                         v-if="team.id == page.props.auth.user.current_team_id"
-                                        class="me-2 h-5 w-5 text-green-400"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        stroke-width="1.5"
-                                        stroke="currentColor">
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
+                                        class="h-5 w-5 text-green-400" />
+                                    <ArrowRightIcon v-else class="h-5 w-5 text-icon-default" />
 
-                                    <div>
+                                    <div class="w-full truncate text-left">
                                         {{ team.name }}
                                     </div>
-                                </div>
-                            </DropdownLink>
+                                </button>
+                            </DropdownMenuItem>
                         </form>
                     </template>
                 </template>
             </div>
-        </template>
-    </Dropdown>
+        </DropdownMenuContent>
+    </DropdownMenu>
 </template>
