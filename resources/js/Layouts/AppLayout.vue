@@ -106,7 +106,7 @@ const page = usePage<{
     <div v-bind="$attrs" class="flex flex-wrap bg-background text-text-secondary">
         <div
             :class="{
-                '!flex bg-default-background w-full z-[9999999999]': showSidebarMenu,
+                '!flex bg-default-background w-full z-30': showSidebarMenu,
             }"
             class="flex-shrink-0 h-screen hidden fixed w-[230px] 2xl:w-[250px] px-2.5 2xl:px-3 py-4 lg:flex flex-col justify-between">
             <div class="flex flex-col h-full">
