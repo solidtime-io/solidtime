@@ -14,6 +14,7 @@ import {
     ArrowLeftOnRectangleIcon,
     ChatBubbleLeftRightIcon,
 } from '@heroicons/vue/24/solid';
+import { openFeedback } from '@/utils/feedback';
 
 const page = usePage<{
     has_services_extension?: boolean;
@@ -34,16 +35,6 @@ const page = usePage<{
 const logout = () => {
     router.post(route('logout'));
 };
-
-const openFeedback = () => {
-    if (
-        typeof window !== 'undefined' &&
-        'showChatWindow' in window &&
-        typeof window.showChatWindow === 'function'
-    ) {
-        window.showChatWindow();
-    }
-};
 </script>
 <template>
     <div class="relative">
@@ -53,7 +44,7 @@ const openFeedback = () => {
                 as-child>
                 <button data-testid="current_user_button">
                     <img
-                        class="h-8 w-8 rounded-full object-cover"
+                        class="h-7 w-7 rounded-full object-cover"
                         :src="page.props.auth.user.profile_photo_url"
                         :alt="page.props.auth.user.name" />
                 </button>
