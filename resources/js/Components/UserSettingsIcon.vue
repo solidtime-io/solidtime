@@ -58,7 +58,7 @@ const openFeedback = () => {
                         :alt="page.props.auth.user.name" />
                 </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="center" class="min-w-40">
+            <DropdownMenuContent align="center" class="max-w-48">
                 <DropdownMenuLabel>Manage Account</DropdownMenuLabel>
 
                 <DropdownMenuItem as-child>
@@ -66,7 +66,7 @@ const openFeedback = () => {
                         :href="route('profile.show')"
                         class="inline-flex items-center gap-2.5 w-full">
                         <UserCircleIcon class="w-5 h-5 text-icon-default" />
-                        <span>Profile</span>
+                        <span>Profile Settings</span>
                     </Link>
                 </DropdownMenuItem>
 
