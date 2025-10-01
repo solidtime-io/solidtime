@@ -47,6 +47,8 @@ import { api } from '@/packages/api/src';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import LoadingSpinner from '@/packages/ui/src/LoadingSpinner.vue';
 import { twMerge } from 'tailwind-merge';
+import Button from '@/Components/ui/button/Button.vue';
+import { openFeedback } from '@/utils/feedback';
 
 defineProps({
     title: String,
@@ -94,8 +96,8 @@ onMounted(async () => {
         }, 100);
     };
 });
-
 const page = usePage<{
+    has_services_extension?: boolean;
     auth: {
         user: User;
     };
@@ -242,14 +244,23 @@ const page = usePage<{
                 <div class="justify-self-end">
                     <UpdateSidebarNotification></UpdateSidebarNotification>
                     <ul
-                        class="border-t border-default-background-separator pt-3 flex justify-between pr-4 items-center">
+                        class="border-t border-default-background-separator pt-3 gap-1 pr-2 flex justify-between items-center">
+                        <UserSettingsIcon></UserSettingsIcon>
+
                         <NavigationSidebarItem
                             class="flex-1"
                             title="Profile Settings"
                             :icon="Cog6ToothIcon"
                             :href="route('profile.show')"></NavigationSidebarItem>
 
-                        <UserSettingsIcon></UserSettingsIcon>
+                        <Button
+                            v-if="page.props.has_services_extension"
+                            variant="outline"
+                            size="xs"
+                            class="rounded-full ml-2 flex h-6 w-6 items-center text-xs text-icon-default justify-center"
+                            @click="openFeedback">
+                            ?
+                        </Button>
                     </ul>
                 </div>
             </div>
