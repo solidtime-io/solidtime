@@ -20,6 +20,7 @@ enum TimeEntryAggregationType: string
     case Client = 'client';
     case Billable = 'billable';
     case Description = 'description';
+    case Tag = 'tag';
 
     public static function fromInterval(TimeEntryAggregationTypeInterval $timeEntryAggregationTypeInterval): TimeEntryAggregationType
     {
