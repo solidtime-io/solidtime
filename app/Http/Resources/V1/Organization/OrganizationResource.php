@@ -53,6 +53,8 @@ class OrganizationResource extends BaseResource
             'billable_rate' => $this->showBillableRate ? $this->resource->billable_rate : null,
             /** @var bool $employees_can_see_billable_rates Can members of the organization with role "employee" see the billable rates */
             'employees_can_see_billable_rates' => $this->resource->employees_can_see_billable_rates,
+            /** @var bool $prevent_overlapping_time_entries Prevent creating overlapping time entries (only new entries) */
+            'prevent_overlapping_time_entries' => $this->resource->prevent_overlapping_time_entries,
             /** @var string $currency Currency code (ISO 4217) */
             'currency' => $this->resource->currency,
             /** @var string $currency_symbol Currency symbol */
