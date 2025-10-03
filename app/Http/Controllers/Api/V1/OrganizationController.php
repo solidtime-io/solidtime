@@ -61,6 +61,9 @@ class OrganizationController extends Controller
         if ($request->getTimeFormat() !== null) {
             $organization->time_format = $request->getTimeFormat();
         }
+        if ($request->getPreventOverlappingTimeEntries() !== null) {
+            $organization->prevent_overlapping_time_entries = $request->getPreventOverlappingTimeEntries();
+        }
         $hasBillableRate = $request->has('billable_rate');
         if ($hasBillableRate) {
             $oldBillableRate = $organization->billable_rate;

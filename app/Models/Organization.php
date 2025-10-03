@@ -70,6 +70,7 @@ class Organization extends JetstreamTeam implements AuditableContract
         'personal_team' => 'boolean',
         'currency' => 'string',
         'employees_can_see_billable_rates' => 'boolean',
+        'prevent_overlapping_time_entries' => 'boolean',
         'number_format' => NumberFormat::class,
         'currency_format' => CurrencyFormat::class,
         'date_format' => DateFormat::class,

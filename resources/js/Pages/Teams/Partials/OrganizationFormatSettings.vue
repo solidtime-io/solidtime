@@ -27,7 +27,7 @@ interface FormValues {
 }
 
 const store = useOrganizationStore();
-const { fetchOrganization, updateOrganization } = store;
+const { updateOrganization } = store;
 const { organization } = storeToRefs(store);
 const queryClient = useQueryClient();
 
@@ -47,7 +47,6 @@ const mutation = useMutation({
 });
 
 onMounted(async () => {
-    await fetchOrganization();
     if (organization.value) {
         form.value = {
             number_format: organization.value.number_format as NumberFormat,
