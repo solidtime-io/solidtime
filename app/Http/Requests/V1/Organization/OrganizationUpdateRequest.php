@@ -39,6 +39,9 @@ class OrganizationUpdateRequest extends BaseFormRequest
             'employees_can_see_billable_rates' => [
                 'boolean',
             ],
+            'prevent_overlapping_time_entries' => [
+                'boolean',
+            ],
             'number_format' => [
                 Rule::enum(NumberFormat::class),
             ],
@@ -97,5 +100,10 @@ class OrganizationUpdateRequest extends BaseFormRequest
     public function getEmployeesCanSeeBillableRates(): ?bool
     {
         return $this->has('employees_can_see_billable_rates') ? $this->boolean('employees_can_see_billable_rates') : null;
+    }
+
+    public function getPreventOverlappingTimeEntries(): ?bool
+    {
+        return $this->has('prevent_overlapping_time_entries') ? $this->boolean('prevent_overlapping_time_entries') : null;
     }
 }
