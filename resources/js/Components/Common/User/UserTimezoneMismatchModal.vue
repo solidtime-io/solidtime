@@ -27,9 +27,10 @@ onMounted(() => {
     timezone.value = Intl.DateTimeFormat().resolvedOptions().timeZone;
     userTimezone.value = getUserTimezone();
 
+    const now = getDayJsInstance()();
+
     if (
-        getDayJsInstance()().tz(timezone.value).format() !==
-            getDayJsInstance()().tz(userTimezone.value).format() &&
+        now.tz(timezone.value).format() !== now.tz(userTimezone.value).format() &&
         !hideTimezoneMismatchModal.value
     ) {
         show.value = true;
