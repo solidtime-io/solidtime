@@ -2,9 +2,10 @@
 import { computed, inject, type ComputedRef } from 'vue';
 import { formatDate, formatHumanReadableDuration } from '../utils/time';
 import type { Organization } from '@/packages/api/src';
+import type { Dayjs } from 'dayjs';
 
 const props = defineProps<{
-    date: Date;
+    date: Dayjs;
     totalMinutes?: number;
 }>();
 
@@ -20,7 +21,7 @@ const dateFormat = computed(() => organization?.value?.date_format);
 <template>
     <div class="fc-day-header-custom">
         <div class="text-xs text-muted-foreground font-medium">
-            {{ date.toLocaleDateString('en-US', { weekday: 'short' }) }}
+            {{ date.format('ddd') }}
         </div>
         <span>{{ formatDate(date.toISOString(), dateFormat) }}</span>
         <span class="block text-xs text-muted-foreground font-medium mt-1">
