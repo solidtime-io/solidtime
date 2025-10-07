@@ -118,10 +118,10 @@ const InvoiceEntryResource = z
         id: z.string(),
         invoice_id: z.string(),
         name: z.string(),
-        description: z.string(),
-        unit_price: z.string(),
+        description: z.union([z.string(), z.null()]),
+        unit_price: z.number().int(),
         quantity: z.number(),
-        order_index: z.string(),
+        order_index: z.number().int(),
         created_at: z.union([z.string(), z.null()]),
         updated_at: z.union([z.string(), z.null()]),
     })
@@ -1863,7 +1863,7 @@ const endpoints = makeApi([
             {
                 name: 'invoice',
                 type: 'Path',
-                schema: z.number().int(),
+                schema: z.string(),
             },
         ],
         response: z.object({ data: DetailedInvoiceResource }).passthrough(),
@@ -1904,7 +1904,7 @@ const endpoints = makeApi([
             {
                 name: 'invoice',
                 type: 'Path',
-                schema: z.number().int(),
+                schema: z.string(),
             },
         ],
         response: z.object({ data: DetailedInvoiceResource }).passthrough(),
@@ -1947,7 +1947,7 @@ const endpoints = makeApi([
             {
                 name: 'invoice',
                 type: 'Path',
-                schema: z.number().int(),
+                schema: z.string(),
             },
         ],
         response: z.void(),
@@ -1988,7 +1988,7 @@ const endpoints = makeApi([
             {
                 name: 'invoice',
                 type: 'Path',
-                schema: z.number().int(),
+                schema: z.string(),
             },
         ],
         response: z.object({ download_link: z.string() }).passthrough(),
@@ -2038,7 +2038,7 @@ const endpoints = makeApi([
             {
                 name: 'invoice',
                 type: 'Path',
-                schema: z.number().int(),
+                schema: z.string(),
             },
         ],
         response: z.object({ download_link: z.string() }).passthrough(),
