@@ -15,8 +15,6 @@ import type {
 } from '@/packages/api/src';
 import { useElementVisibility } from '@vueuse/core';
 import { ClockIcon } from '@heroicons/vue/20/solid';
-import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
-import { PlusIcon } from '@heroicons/vue/16/solid';
 import LoadingSpinner from '@/packages/ui/src/LoadingSpinner.vue';
 import { useCurrentTimeEntryStore } from '@/utils/useCurrentTimeEntry';
 import { useTasksStore } from '@/utils/useTasks';
@@ -24,7 +22,6 @@ import { useProjectsStore } from '@/utils/useProjects';
 import TimeEntryGroupedTable from '@/packages/ui/src/TimeEntry/TimeEntryGroupedTable.vue';
 import { useTagsStore } from '@/utils/useTags';
 import { useClientsStore } from '@/utils/useClients';
-import TimeEntryCreateModal from '@/packages/ui/src/TimeEntry/TimeEntryCreateModal.vue';
 import { getOrganizationCurrencyString } from '@/utils/money';
 import TimeEntryMassActionRow from '@/packages/ui/src/TimeEntry/TimeEntryMassActionRow.vue';
 import type { UpdateMultipleTimeEntriesChangeset } from '@/packages/api/src';
@@ -73,7 +70,6 @@ onMounted(async () => {
     await timeEntriesStore.fetchTimeEntries();
 });
 
-const showManualTimeEntryModal = ref(false);
 const projectStore = useProjectsStore();
 const { projects } = storeToRefs(projectStore);
 const taskStore = useTasksStore();
@@ -105,33 +101,9 @@ function deleteSelected() {
 </script>
 
 <template>
-    <TimeEntryCreateModal
-        v-model:show="showManualTimeEntryModal"
-        :enable-estimated-time="isAllowedToPerformPremiumAction()"
-        :create-project="createProject"
-        :create-client="createClient"
-        :create-tag="createTag"
-        :create-time-entry="createTimeEntry"
-        :projects
-        :tasks
-        :tags
-        :clients></TimeEntryCreateModal>
     <AppLayout title="Dashboard" data-testid="time_view">
         <MainContainer class="pt-5 lg:pt-8 pb-4 lg:pb-6">
-            <div
-                class="lg:flex items-end lg:divide-x divide-default-background-separator divide-y lg:divide-y-0 space-y-2 lg:space-y-0 lg:space-x-2">
-                <div class="flex-1">
-                    <TimeTracker></TimeTracker>
-                </div>
-                <div class="pb-2 pt-2 lg:pt-0 lg:pl-4 flex justify-center">
-                    <SecondaryButton
-                        class="w-full text-center flex justify-center"
-                        :icon="PlusIcon"
-                        @click="showManualTimeEntryModal = true"
-                        >Manual time entry
-                    </SecondaryButton>
-                </div>
-            </div>
+            <TimeTracker></TimeTracker>
         </MainContainer>
         <TimeEntryMassActionRow
             :selected-time-entries="selectedTimeEntries"

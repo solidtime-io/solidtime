@@ -9,7 +9,10 @@ async function goToOrganizationSettings(page) {
 
 async function createTimeEntry(page, duration: string) {
     await page.goto(PLAYWRIGHT_BASE_URL + '/time');
-    await page.getByRole('button', { name: 'Manual time entry' }).click();
+
+    // Open the dropdown menu and click "Manual time entry"
+    await page.getByRole('button', { name: 'Time entry actions' }).click();
+    await page.getByRole('menuitem', { name: 'Manual time entry' }).click();
 
     // Fill in the time entry details
     await page.getByTestId('time_entry_description').fill('Test time entry');
