@@ -107,7 +107,7 @@ class HarvestTimeEntriesImporter extends DefaultImporter
                 $timeEntry->project_id = $projectId;
                 $timeEntry->client_id = $clientId;
                 $timeEntry->organization_id = $this->organization->id;
-                if (strlen($record['Notes']) > 500) {
+                if (strlen($record['Notes']) > 5000) {
                     throw new ImportException('Time entry note is too long');
                 }
                 $timeEntry->description = $record['Notes'];
