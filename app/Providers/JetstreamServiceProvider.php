@@ -109,6 +109,7 @@ class JetstreamServiceProvider extends ServiceProvider
             'tags:update',
             'tags:delete',
             'clients:view',
+            'clients:view:all',
             'clients:create',
             'clients:update',
             'clients:delete',
@@ -172,6 +173,7 @@ class JetstreamServiceProvider extends ServiceProvider
             'tags:update',
             'tags:delete',
             'clients:view',
+            'clients:view:all',
             'clients:create',
             'clients:update',
             'clients:delete',
@@ -232,6 +234,7 @@ class JetstreamServiceProvider extends ServiceProvider
             'tags:update',
             'tags:delete',
             'clients:view',
+            'clients:view:all',
             'clients:create',
             'clients:update',
             'clients:delete',
@@ -256,12 +259,13 @@ class JetstreamServiceProvider extends ServiceProvider
             'projects:view',
             'tags:view',
             'tasks:view',
+            'clients:view',
             'time-entries:view:own',
             'time-entries:create:own',
             'time-entries:update:own',
             'time-entries:delete:own',
             'organizations:view',
-        ])->description('Employees have the ability to read, create, and update their own time entries and they can see the projects that they are members of.');
+        ])->description('Employees have the ability to read, create, and update their own time entries, they can see the projects that they are members of and the clients they are assigned to.');
 
         Jetstream::role(Role::Placeholder->value, 'Placeholder', [
         ])->description('Placeholders are used for importing data. They cannot log in and have no permissions.');
