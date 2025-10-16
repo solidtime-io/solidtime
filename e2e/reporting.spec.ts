@@ -26,7 +26,10 @@ async function createTimeEntryWithProject(page: Page, projectName: string, durat
 
     // Then create the time entry
     await goToTimeOverview(page);
-    await page.getByRole('button', { name: 'Manual time entry' }).click();
+
+    // Open the dropdown menu and click "Manual time entry"
+    await page.getByRole('button', { name: 'Time entry actions' }).click();
+    await page.getByRole('menuitem', { name: 'Manual time entry' }).click();
 
     // Fill in the time entry details
     await page
@@ -52,7 +55,10 @@ async function createTimeEntryWithProject(page: Page, projectName: string, durat
 
 async function createTimeEntryWithTag(page: Page, tagName: string, duration: string) {
     await goToTimeOverview(page);
-    await page.getByRole('button', { name: 'Manual time entry' }).click();
+
+    // Open the dropdown menu and click "Manual time entry"
+    await page.getByRole('button', { name: 'Time entry actions' }).click();
+    await page.getByRole('menuitem', { name: 'Manual time entry' }).click();
 
     // Fill in the time entry details
     await page
@@ -81,7 +87,10 @@ async function createTimeEntryWithBillableStatus(
     duration: string
 ) {
     await goToTimeOverview(page);
-    await page.getByRole('button', { name: 'Manual time entry' }).click();
+
+    // Open the dropdown menu and click "Manual time entry"
+    await page.getByRole('button', { name: 'Time entry actions' }).click();
+    await page.getByRole('menuitem', { name: 'Manual time entry' }).click();
 
     // Fill in the time entry details
     await page
