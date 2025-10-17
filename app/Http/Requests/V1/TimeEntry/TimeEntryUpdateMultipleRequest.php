@@ -79,7 +79,7 @@ class TimeEntryUpdateMultipleRequest extends BaseFormRequest
             'changes.description' => [
                 'nullable',
                 'string',
-                'max:500',
+                'max:5000',
             ],
             // List of tag IDs
             'changes.tags' => [

@@ -435,7 +435,7 @@ CREATE TABLE public.tasks (
 
 CREATE TABLE public.time_entries (
     id uuid NOT NULL,
-    description character varying(500) NOT NULL,
+    description character varying(5000) NOT NULL,
     start timestamp(0) without time zone NOT NULL,
     "end" timestamp(0) without time zone,
     billable_rate integer,

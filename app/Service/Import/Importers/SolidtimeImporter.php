@@ -247,7 +247,7 @@ class SolidtimeImporter extends DefaultImporter
                 $timeEntry->project_id = $projectId;
                 $timeEntry->client_id = $clientId;
                 $timeEntry->organization_id = $this->organization->id;
-                if (strlen($timeEntryRow['description']) > 500) {
+                if (strlen($timeEntryRow['description']) > 5000) {
                     throw new ImportException('Time entry description is too long');
                 }
                 $timeEntry->description = $timeEntryRow['description'];

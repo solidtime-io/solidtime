@@ -79,7 +79,7 @@ class TimeEntryStoreRequest extends BaseFormRequest
             'description' => [
                 'nullable',
                 'string',
-                'max:500',
+                'max:5000',
             ],
             // List of tag IDs
             'tags' => [
