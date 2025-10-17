@@ -34,6 +34,7 @@ class ClientEndpointTest extends ApiEndpointTestAbstract
         // Arrange
         $data = $this->createUserWithPermission([
             'clients:view',
+            'clients:view:all',
         ]);
         $clients = Client::factory()->forOrganization($data->organization)->randomCreatedAt()->createMany(4);
         Passport::actingAs($data->user);
@@ -57,11 +58,43 @@ class ClientEndpointTest extends ApiEndpointTestAbstract
         );
     }
 
+    public function test_index_endpoint_returns_list_of_clients_assigned_to_employee_user(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'clients:view'
+        ]);
+
+        $clients = Client::factory()->forOrganization($data->organization)->createMany(2);
+        $projectWithMembership1 = Project::factory()->forOrganization($data->organization)->forClient($clients->get(0))->addMember($data->member)->isPrivate()->create();
+        $projectWithMembership2 = Project::factory()->forOrganization($data->organization)->forClient($clients->get(1))->addMember($data->member)->isPrivate()->create();
+
+        $otherClients = Client::factory()->forOrganization($data->organization)->createMany(2);
+        $projectWithoutMembership = Project::factory()->forOrganization($data->organization)->forClient($otherClients->get(0))->isPrivate()->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.clients.index', [$data->organization->getKey()]));
+
+        // Assert
+        $response->assertStatus(200);
+        $response->assertJsonCount(2, 'data');
+        $response->assertJson(fn (AssertableJson $json) => $json
+            ->has('data')
+            ->has('links')
+            ->has('meta')
+            ->count('data', 2)
+            ->where('data.0.id', $clients->get(0)->getKey())
+            ->where('data.1.id', $clients->get(1)->getKey())
+        );
+    }
+
     public function test_index_endpoint_without_filter_archived_returns_only_non_archived_clients(): void
     {
         // Arrange
         $data = $this->createUserWithPermission([
             'clients:view',
+            'clients:view:all',
         ]);
         $archivedClients = Client::factory()->forOrganization($data->organization)->archived()->createMany(2);
         $nonArchivedClients = Client::factory()->forOrganization($data->organization)->createMany(2);
@@ -81,6 +114,7 @@ class ClientEndpointTest extends ApiEndpointTestAbstract
         // Arrange
         $data = $this->createUserWithPermission([
             'clients:view',
+            'clients:view:all',
         ]);
         $archivedClients = Client::factory()->forOrganization($data->organization)->archived()->createMany(2);
         $nonArchivedClients = Client::factory()->forOrganization($data->organization)->createMany(2);
@@ -103,6 +137,7 @@ class ClientEndpointTest extends ApiEndpointTestAbstract
         // Arrange
         $data = $this->createUserWithPermission([
             'clients:view',
+            'clients:view:all',
         ]);
         $archivedClients = Client::factory()->forOrganization($data->organization)->archived()->createMany(2);
         $nonArchivedClients = Client::factory()->forOrganization($data->organization)->createMany(2);
@@ -125,6 +160,7 @@ class ClientEndpointTest extends ApiEndpointTestAbstract
         // Arrange
         $data = $this->createUserWithPermission([
             'clients:view',
+            'clients:view:all',
         ]);
         $archivedClients = Client::factory()->forOrganization($data->organization)->archived()->createMany(2);
         $nonArchivedClients = Client::factory()->forOrganization($data->organization)->createMany(2);

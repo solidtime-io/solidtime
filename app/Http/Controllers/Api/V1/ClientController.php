@@ -12,6 +12,7 @@ use App\Http\Resources\V1\Client\ClientCollection;
 use App\Http\Resources\V1\Client\ClientResource;
 use App\Models\Client;
 use App\Models\Organization;
+use App\Models\Project;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Carbon;
@@ -38,10 +39,22 @@ class ClientController extends Controller
     public function index(Organization $organization, ClientIndexRequest $request): ClientCollection
     {
         $this->checkPermission($organization, 'clients:view');
+        $canViewAllClients = $this->hasPermission($organization, 'clients:view:all');
+        $user = $this->user();
 
         $clientsQuery = Client::query()
             ->whereBelongsTo($organization, 'organization')
             ->orderBy('created_at', 'desc');
+
+        if (! $canViewAllClients) {
+            $projectsQuery = Project::query()
+                ->whereBelongsTo($organization, 'organization')
+                ->visibleByEmployee($user)
+                ->distinct()
+                ->select('client_id');
+
+            $clientsQuery->whereIn('id', $projectsQuery);
+        }
 
         $filterArchived = $request->getFilterArchived();
         if ($filterArchived === 'true') {
