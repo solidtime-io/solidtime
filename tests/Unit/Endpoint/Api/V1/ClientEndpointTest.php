@@ -62,7 +62,7 @@ class ClientEndpointTest extends ApiEndpointTestAbstract
     {
         // Arrange
         $data = $this->createUserWithPermission([
-            'clients:view'
+            'clients:view',
         ]);
 
         $clients = Client::factory()->forOrganization($data->organization)->createMany(2);

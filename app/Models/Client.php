@@ -7,6 +7,7 @@ namespace App\Models;
 use App\Models\Concerns\CustomAuditable;
 use App\Models\Concerns\HasUuids;
 use Database\Factories\ClientFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -60,6 +61,18 @@ class Client extends Model implements AuditableContract
     public function projects(): HasMany
     {
         return $this->hasMany(Project::class, 'client_id');
+    }
+
+    /**
+     * @param  Builder<Client>  $builder
+     * @return Builder<Client>
+     */
+    public function scopeVisibleByEmployee(Builder $builder, User $user): Builder
+    {
+        return $builder->whereHas('projects', function (Builder $builder) use ($user): Builder {
+            /** @var Builder<Project> $builder */
+            return $builder->visibleByEmployee($user);
+        });
     }
 
     /**
