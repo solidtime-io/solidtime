@@ -161,8 +161,19 @@ async function createTag(tag: string) {
 }
 
 const reportProperties = computed(() => {
+    const { billable, ...rest } = getFilterAttributes();
+
+    let billableValue: boolean | null = null;
+    // if billable is null keep it if it is 'true' or 'false' convert it to boolean
+    if (billable === 'true') {
+        billableValue = true;
+    } else if (billable === 'false') {
+        billableValue = false;
+    }
+
     return {
-        ...getFilterAttributes(),
+        ...rest,
+        billable: billableValue,
         group: group.value,
         sub_group: subGroup.value,
         history_group: getOptimalGroupingOption(startDate.value, endDate.value),
