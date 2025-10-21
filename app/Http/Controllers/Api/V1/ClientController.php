@@ -12,7 +12,6 @@ use App\Http\Resources\V1\Client\ClientCollection;
 use App\Http\Resources\V1\Client\ClientResource;
 use App\Models\Client;
 use App\Models\Organization;
-use App\Models\Project;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Carbon;
@@ -47,13 +46,7 @@ class ClientController extends Controller
             ->orderBy('created_at', 'desc');
 
         if (! $canViewAllClients) {
-            $projectsQuery = Project::query()
-                ->whereBelongsTo($organization, 'organization')
-                ->visibleByEmployee($user)
-                ->distinct()
-                ->select('client_id');
-
-            $clientsQuery->whereIn('id', $projectsQuery);
+            $clientsQuery->visibleByEmployee($user);
         }
 
         $filterArchived = $request->getFilterArchived();
