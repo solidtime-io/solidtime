@@ -109,6 +109,12 @@ class ProjectController extends Controller
         $project->organization()->associate($organization);
         $project->save();
 
+        // Auto-seed canonical phases/milestones as tasks (optional)
+        if (config('pia.enabled') && config('pia.templates.auto_seed')) {
+            app(\App\Service\Planner\PlannerTemplateService::class)
+                ->materializeForProject($project, $organization);
+        }
+
         return new ProjectResource($project, true);
     }
 

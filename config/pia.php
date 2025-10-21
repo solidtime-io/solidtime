@@ -14,4 +14,29 @@ return [
         // Time of day in 24h format (HH:MM) to send alerts, server timezone
         'send_time' => env('PIA_ALERTS_SEND_TIME', '09:00'),
     ],
+    ],
+
+    'templates' => [
+        // Auto-create tasks for new projects based on templates
+        'auto_seed' => env('PIA_TEMPLATES_AUTO_SEED', true),
+        // Optional DB-backed templates; if none exist, fall back to defaults below
+        'defaults' => [
+            // Provide your canonical phases and milestones here; these are examples/placeholders.
+            // I will replace with your exact list once you confirm.
+            [
+                'name' => 'Discovery',
+                'milestones' => [
+                    ['name' => 'Kickoff', 'is_milestone' => true, 'due_offset_days' => null],
+                    ['name' => 'Requirements Gathered', 'is_milestone' => true, 'due_offset_days' => null],
+                ],
+            ],
+            [
+                'name' => 'Design',
+                'milestones' => [
+                    ['name' => 'Wireframes', 'is_milestone' => true, 'due_offset_days' => null],
+                    ['name' => 'Design Sign-off', 'is_milestone' => true, 'due_offset_days' => null],
+                ],
+            ],
+        ],
+    ],
 ];
