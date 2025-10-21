@@ -96,11 +96,19 @@ const inputField = ref<HTMLInputElement | null>(null);
 const timeRangeSelector = ref<HTMLElement | null>(null);
 
 function openModalOnTab(e: FocusEvent) {
+    pauseLiveTimerUpdate(e);
+
     // check if the source is inside the dropdown
     const source = e.relatedTarget as HTMLElement;
     if (source && window.document.body.querySelector<HTMLElement>('#app')?.contains(source)) {
         open.value = true;
     }
+}
+
+function openModalOnClick(e: MouseEvent) {
+    pauseLiveTimerUpdate(e);
+
+    open.value = true;
 }
 
 function focusNextElement(e: KeyboardEvent) {
@@ -135,8 +143,8 @@ function closeAndFocusInput() {
                     data-testid="time_entry_time"
                     class="w-[110px] lg:w-[130px] h-full text-text-primary py-2.5 rounded-lg border-border-secondary border text-center px-4 text-base lg:text-lg font-semibold bg-card-background border-none placeholder-muted focus:ring-0 transition"
                     type="text"
-                    @focus="pauseLiveTimerUpdate"
                     @focusin="openModalOnTab"
+                    @click="openModalOnClick"
                     @keydown.exact.tab="focusNextElement"
                     @keydown.exact.shift.tab="open = false"
                     @blur="updateTimerAndStartLiveTimerUpdate"
