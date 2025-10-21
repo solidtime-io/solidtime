@@ -55,6 +55,8 @@ class Task extends Model implements AuditableContract
         'name' => 'string',
         'estimated_time' => 'integer',
         'done_at' => 'datetime',
+        'due_at' => 'datetime',
+        'is_milestone' => 'boolean',
     ];
 
     /**
