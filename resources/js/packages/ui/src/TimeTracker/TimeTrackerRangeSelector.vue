@@ -16,6 +16,7 @@ const emit = defineEmits<{
     stopLiveTimer: [];
     updateTimer: [];
     startTimer: [];
+    createTimeEntry: [];
 }>();
 
 const open = ref(false);
@@ -73,12 +74,16 @@ function updateTimerAndStartLiveTimerUpdate() {
 
 const temporaryCustomTimerEntry = ref<string>('');
 
-async function updateTimeRange(newStart: string) {
+async function updateTimeRange(newStart: string, newEnd: string | null) {
     // prohibit updates in the future
     if (getDayJsInstance()(newStart).isBefore(getDayJsInstance()())) {
         currentTimeEntry.value.start = newStart;
+        currentTimeEntry.value.end = newEnd;
         if (currentTimeEntry.value.id) {
             emit('updateTimer');
+        } else if (newEnd !== null) {
+            // If there's no ID but we have both start and end, create a new time entry
+            emit('createTimeEntry');
         } else {
             emit('startTimer');
         }
@@ -91,6 +96,14 @@ const startTime = computed(() => {
     }
     return dayjs().utc().format();
 });
+
+const endTime = computed(() => {
+    if (currentTimeEntry.value.end && currentTimeEntry.value.end !== '') {
+        return currentTimeEntry.value.end;
+    }
+    return null;
+});
+
 const inputField = ref<HTMLInputElement | null>(null);
 
 const timeRangeSelector = ref<HTMLElement | null>(null);
@@ -154,7 +167,7 @@ function closeAndFocusInput() {
                 <div ref="timeRangeSelector">
                     <TimeRangeSelector
                         :start="startTime"
-                        :end="null"
+                        :end="endTime"
                         @changed="updateTimeRange"
                         @close="closeAndFocusInput">
                     </TimeRangeSelector>
