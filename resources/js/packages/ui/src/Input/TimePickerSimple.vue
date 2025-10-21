@@ -93,6 +93,7 @@ const inputValue = ref(model.value ? getLocalizedDayJs(model.value).format('HH:m
         data-testid="time_picker_input"
         type="text"
         @blur="updateTime"
+        @keydown.enter.prevent="updateTime"
         @focus="($event.target as HTMLInputElement).select()"
         @mouseup="($event.target as HTMLInputElement).select()"
         @click="($event.target as HTMLInputElement).select()"

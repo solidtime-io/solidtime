@@ -117,6 +117,12 @@ async function createTimeEntry(timeEntry: Omit<CreateTimeEntryBody, 'member_id'>
     showManualTimeEntryModal.value = false;
 }
 
+async function createTimeEntryFromCurrentEntry() {
+    const { start, end, description, project_id, task_id, billable, tags } = currentTimeEntry.value;
+    await createTimeEntry({ start, end, description, project_id, task_id, billable, tags });
+    currentTimeEntryStore.$reset();
+}
+
 const { handleApiRequestNotifications } = useNotificationsStore();
 const queryClient = useQueryClient();
 
@@ -195,7 +201,8 @@ const { tags } = storeToRefs(useTagsStore());
                         @stop-live-timer="stopLiveTimer"
                         @start-timer="setActiveState(true)"
                         @stop-timer="setActiveState(false)"
-                        @update-time-entry="updateTimeEntry"></TimeTrackerControls>
+                        @update-time-entry="updateTimeEntry"
+                        @create-time-entry="createTimeEntryFromCurrentEntry"></TimeTrackerControls>
                 </div>
                 <TimeTrackerMoreOptionsDropdown
                     :has-active-timer="isActive"

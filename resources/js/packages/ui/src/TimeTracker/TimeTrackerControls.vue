@@ -49,6 +49,7 @@ const emit = defineEmits<{
     updateTimeEntry: [];
     startLiveTimer: [];
     stopLiveTimer: [];
+    createTimeEntry: [];
 }>();
 
 function updateProject() {
@@ -280,6 +281,7 @@ useSelectEvents(
                         @stop-live-timer="emit('stopLiveTimer')"
                         @update-timer="emit('updateTimeEntry')"
                         @start-timer="emit('startTimer')"
+                        @create-time-entry="emit('createTimeEntry')"
                         @keydown.enter="startTimerIfNotActive"></TimeTrackerRangeSelector>
                 </div>
             </div>
