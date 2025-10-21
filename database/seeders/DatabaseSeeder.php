@@ -196,7 +196,13 @@ class DatabaseSeeder extends Seeder
             'email' => 'admin@example.com',
         ]);
 
-        DatabaseSeederAfterSeed::dispatch();
+        // Seed planner templates into DB (canonical) and materialize for demo projects
+if (config('pia.enabled') && config('pia.templates.auto_seed')) {
+    $this->call(PlannerTemplateSeeder::class);
+    $this->call(SeedProjectPlannerForAllProjectsSeeder::class);
+}
+
+DatabaseSeederAfterSeed::dispatch();
     }
 
     private function deleteAll(): void
