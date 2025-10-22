@@ -53,7 +53,7 @@ class TimeEntryAggregationService
         $group2Select = null;
         $groupBy = null;
         // If any grouping is by tag, expand rows per tag and ensure a NULL row for entries without tags
-        if (($group1Type === TimeEntryAggregationType::Tag) || ($group2Type === TimeEntryAggregationType::Tag)) {
+        if (($group1Type === TimeEntryAggregationType::Tag || $group1Type === TimeEntryAggregationType::Phase) || ($group2Type === TimeEntryAggregationType::Tag || $group2Type === TimeEntryAggregationType::Phase)) {
             $timeEntriesQuery->crossJoin(DB::raw(
                 "LATERAL (\n".
                 "  SELECT jsonb_array_elements_text(coalesce(tags, '[]'::jsonb)) AS tag\n".
@@ -138,7 +138,7 @@ class TimeEntryAggregationService
                         $group2ResponseCost += (int) $aggregate->get(0)->cost;
                     }
                     // Override primary group totals when Tag is subgroup to avoid double counting
-                    if ($group2Type === TimeEntryAggregationType::Tag) {
+                    if ($group2Type === TimeEntryAggregationType::Tag || $group2Type === TimeEntryAggregationType::Phase) {
                         $keyForMap = (string) $group1;
                         if (array_key_exists($keyForMap, $baseTotalsPerGroup1Map)) {
                             $group2ResponseSum = $baseTotalsPerGroup1Map[$keyForMap]['aggregate'];
@@ -164,7 +164,7 @@ class TimeEntryAggregationService
             }
 
             // If Tag is selected in any grouping, compute overall totals from base (non-tag-expanded) query to avoid double counting
-            $hasTagGrouping = ($group1Type === TimeEntryAggregationType::Tag) || ($group2Type === TimeEntryAggregationType::Tag);
+            $hasTagGrouping = ($group1Type === TimeEntryAggregationType::Tag || $group1Type === TimeEntryAggregationType::Phase) || ($group2Type === TimeEntryAggregationType::Tag || $group2Type === TimeEntryAggregationType::Phase);
             if ($hasTagGrouping) {
                 // Reset selects and ordering on the cloned base query
                 $baseTotals = $baseTotalsQuery
@@ -517,7 +517,7 @@ class TimeEntryAggregationService
             return 'billable';
         } elseif ($group === TimeEntryAggregationType::Description) {
             return 'description';
-        } elseif ($group === TimeEntryAggregationType::Tag) {
+        } elseif ($group === TimeEntryAggregationType::Tag || $group === TimeEntryAggregationType::Phase) {
             return 'tag';
         } elseif ($group === TimeEntryAggregationType::Milestone) {
             return 'milestone_id';
