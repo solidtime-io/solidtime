@@ -109,6 +109,11 @@ class ProjectController extends Controller
         $project->organization()->associate($organization);
         $project->save();
 
+       // Planner: materialize phases/milestones on project create (gated)
+       if (config('planner.enabled')) {
+           app(\App\Service\Planner\PlannerProjectService::class)->materialize($project);
+       }
+
         return new ProjectResource($project, true);
     }
 
