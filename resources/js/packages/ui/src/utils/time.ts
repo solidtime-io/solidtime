@@ -208,22 +208,30 @@ export function formatStartEnd(
 export function parseTimeInput(
     input: string,
     defaultUnit: TimeInputUnit = 'minutes'
-): {
-    seconds: number | null;
-    isHHMM: boolean;
-} {
+): number | null {
     // Check if input is a decimal number (hours)
     const decimalRegex = /^-?\d+[.,]\d+$/;
     if (decimalRegex.test(input)) {
         const hours = parseFloat(input.replace(',', '.'));
-        return { seconds: Math.round(hours * 3600), isHHMM: false };
+        return Math.round(hours * 3600);
     }
 
     // Check if input is just a number (minutes or hours based on defaultUnit)
     if (/^-?\d+$/.test(input)) {
         const value = parseInt(input);
-        const seconds = defaultUnit === 'minutes' ? value * 60 : value * 3600;
-        return { seconds, isHHMM: false };
+        return defaultUnit === 'minutes' ? value * 60 : value * 3600;
+    }
+
+    // Check if input is in HH:MM:SS format
+    const HHMMSStimeRegex = /^([0-9]{1,2}):([0-5]?[0-9]):([0-5]?[0-9])$/;
+    if (HHMMSStimeRegex.test(input)) {
+        const match = input.match(HHMMSStimeRegex);
+        if (match) {
+            const hours = parseInt(match[1]);
+            const minutes = parseInt(match[2]);
+            const seconds = parseInt(match[3]);
+            return hours * 3600 + minutes * 60 + seconds;
+        }
     }
 
     // Check if input is in HH:MM format
@@ -233,15 +241,15 @@ export function parseTimeInput(
         if (match) {
             const hours = parseInt(match[1]);
             const minutes = parseInt(match[2]);
-            return { seconds: (hours * 60 + minutes) * 60, isHHMM: true };
+            return (hours * 60 + minutes) * 60;
         }
     }
 
     // Try to parse natural language like "1h 30m"
     const parsedDuration = parse(input, 's');
     if (parsedDuration && parsedDuration > 0) {
-        return { seconds: parsedDuration, isHHMM: false };
+        return parsedDuration;
     }
 
-    return { seconds: null, isHHMM: false };
+    return null;
 }
