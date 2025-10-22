@@ -75,6 +75,7 @@ class TimeEntry extends Model implements AuditableContract
         'billable_rate' => 'int',
         'is_imported' => 'bool',
         'still_active_email_sent_at' => 'datetime',
+        'milestone_id' => 'string',
     ];
 
     public const array SELECT_COLUMNS = [
@@ -88,6 +89,7 @@ class TimeEntry extends Model implements AuditableContract
         'organization_id',
         'project_id',
         'task_id',
+        'milestone_id',
         'tags',
         'created_at',
         'updated_at',
@@ -211,6 +213,14 @@ class TimeEntry extends Model implements AuditableContract
     public function task(): BelongsTo
     {
         return $this->belongsTo(Task::class, 'task_id');
+    }
+
+    /**
+     * @return BelongsTo<Task, $this>
+     */
+    public function milestoneTask(): BelongsTo
+    {
+        return $this->belongsTo(Task::class, 'milestone_id');
     }
 
     /**

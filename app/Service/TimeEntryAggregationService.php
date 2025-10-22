@@ -364,6 +364,17 @@ class TimeEntryAggregationService
                     'color' => null,
                 ];
             }
+        } elseif ($type === TimeEntryAggregationType::Milestone) {
+            $tasks = Task::query()
+                ->whereIn('id', $keys)
+                ->select('id', 'name')
+                ->get();
+            foreach ($tasks as $task) {
+                $descriptorMap[$task->id] = [
+                    'description' => $task->name,
+                    'color' => null,
+                ];
+            }
         }
 
         return $descriptorMap;
@@ -508,6 +519,8 @@ class TimeEntryAggregationService
             return 'description';
         } elseif ($group === TimeEntryAggregationType::Tag) {
             return 'tag';
+        } elseif ($group === TimeEntryAggregationType::Milestone) {
+            return 'milestone_id';
         }
     }
 

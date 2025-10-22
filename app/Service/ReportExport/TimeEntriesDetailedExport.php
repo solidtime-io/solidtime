@@ -97,6 +97,7 @@ class TimeEntriesDetailedExport implements FromQuery, ShouldAutoSize, WithColumn
     {
         return [
             'Description',
+            'Milestone',
             'Task',
             'Project',
             'Client',
