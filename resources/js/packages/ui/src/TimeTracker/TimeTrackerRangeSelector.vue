@@ -56,7 +56,7 @@ const currentTime = computed({
 });
 
 function updateTimerAndStartLiveTimerUpdate() {
-    const { seconds } = parseTimeInput(temporaryCustomTimerEntry.value, 'minutes');
+    const seconds = parseTimeInput(temporaryCustomTimerEntry.value, 'minutes');
 
     if (seconds && seconds > 0) {
         const newStartDate = dayjs().subtract(seconds, 's');
