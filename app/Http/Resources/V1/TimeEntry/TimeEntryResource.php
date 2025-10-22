@@ -37,8 +37,8 @@ class TimeEntryResource extends BaseResource
             'description' => $this->resource->description,
             /** @var string|null $task_id ID of task */
             'task_id' => $this->resource->task_id,
-            /** @var string|null $milestone_id ID of milestone (Task) */
-            'milestone_id' => $this->resource->milestone_id,
+            // Conditionally expose milestone_id only when planner is enabled to avoid API shape changes by default
+            ...(config('planner.enabled') ? ['milestone_id' => $this->resource->milestone_id] : []),
             /** @var string|null $project_id ID of project */
             'project_id' => $this->resource->project_id,
             /** @var string $organization_id ID of organization */

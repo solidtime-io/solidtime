@@ -95,6 +95,22 @@ class TimeEntriesDetailedExport implements FromQuery, ShouldAutoSize, WithColumn
      */
     public function headings(): array
     {
+        // Preserve original column order/shape unless planner is enabled
+        if (!config('planner.enabled')) {
+            return [
+                'Description',
+                'Task',
+                'Project',
+                'Client',
+                'User',
+                'Start',
+                'End',
+                'Duration',
+                'Duration (decimal)',
+                'Billable',
+                'Tags',
+            ];
+        }
         return [
             'Description',
             'Milestone',
@@ -120,8 +136,24 @@ class TimeEntriesDetailedExport implements FromQuery, ShouldAutoSize, WithColumn
         $duration = $model->getDuration();
 
         if ($this->exportFormat === ExportFormat::XLSX) {
+            if (!config('planner.enabled')) {
+                return [
+                    $model->description,
+                    $model->task?->name,
+                    $model->project?->name,
+                    $model->client?->name,
+                    $model->user->name,
+                    Date::dateTimeToExcel($model->start->timezone($this->timezone)),
+                    $model->end !== null ? Date::dateTimeToExcel($model->end->timezone($this->timezone)) : null,
+                    $duration !== null ? $this->localizationService->formatInterval($duration) : null,
+                    $duration?->totalHours,
+                    $model->billable ? 'Yes' : 'No',
+                    $model->tagsRelation->pluck('name')->implode(', '),
+                ];
+            }
             return [
                 $model->description,
+                $model->milestoneTask?->name,
                 $model->task?->name,
                 $model->project?->name,
                 $model->client?->name,
@@ -134,8 +166,24 @@ class TimeEntriesDetailedExport implements FromQuery, ShouldAutoSize, WithColumn
                 $model->tagsRelation->pluck('name')->implode(', '),
             ];
         } elseif ($this->exportFormat === ExportFormat::ODS) {
+            if (!config('planner.enabled')) {
+                return [
+                    $model->description,
+                    $model->task?->name,
+                    $model->project?->name,
+                    $model->client?->name,
+                    $model->user->name,
+                    $model->start->timezone($this->timezone)->format('Y-m-d H:i:s'),
+                    $model->end?->timezone($this->timezone)?->format('Y-m-d H:i:s'),
+                    $duration !== null ? $this->localizationService->formatInterval($duration) : null,
+                    $duration?->totalHours,
+                    $model->billable ? 'Yes' : 'No',
+                    $model->tagsRelation->pluck('name')->implode(', '),
+                ];
+            }
             return [
                 $model->description,
+                $model->milestoneTask?->name,
                 $model->task?->name,
                 $model->project?->name,
                 $model->client?->name,
