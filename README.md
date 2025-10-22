@@ -49,7 +49,7 @@ Looking to report a vulnerability? Please refer our [SECURITY.md](./SECURITY.md)
 
 This fork adds an optional Planner layer to link time to milestones and report by Phase/Milestone with minimal diffs.
 
-- Enable: set `PIA_ENABLED=true` (planner.enabled aliases this).
+- Enable: set `PLANNER_ENABLED=true` (falls back to `PIA_ENABLED=true` if not set).
 - Data model additions:
   - Tasks: `due_at` (nullable), `is_milestone` (boolean)
   - Time entries: `milestone_id` (nullable, indexed)
