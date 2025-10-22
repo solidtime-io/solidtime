@@ -68,19 +68,6 @@ watch(
     { immediate: true }
 );
 
-watch(
-    () => editableTimeEntry.value?.project_id,
-    (value) => {
-        if (value && editableTimeEntry.value) {
-            // check if project is billable by default and set billable accordingly
-            const project = props.projects.find((p) => p.id === value);
-            if (project) {
-                editableTimeEntry.value.billable = project.is_billable;
-            }
-        }
-    }
-);
-
 const localStart = computed({
     get: () =>
         editableTimeEntry.value ? getLocalizedDayJs(editableTimeEntry.value.start).format() : '',
