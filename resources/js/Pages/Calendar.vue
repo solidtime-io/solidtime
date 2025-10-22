@@ -9,7 +9,7 @@ import {
     type Project,
     type TimeEntryResponse,
 } from '@/packages/api/src';
-import { getCurrentOrganizationId } from '@/utils/useUser';
+import { getCurrentOrganizationId, getCurrentMembershipId } from '@/utils/useUser';
 import { computed, ref } from 'vue';
 import { getDayJsInstance } from '@/packages/ui/src/utils/time';
 import { TimeEntryCalendar } from '@/packages/ui/src';
@@ -73,6 +73,7 @@ const { data: timeEntryResponse, isLoading: timeEntriesLoading } = useQuery<Time
             queries: {
                 start: expandedDateRange.value.start!,
                 end: expandedDateRange.value.end!,
+                member_id: getCurrentMembershipId(),
             },
         }),
 });
