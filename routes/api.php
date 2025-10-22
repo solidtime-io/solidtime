@@ -173,6 +173,14 @@ Route::prefix('v1')->name('v1.')->group(static function (): void {
         Route::name('export.')->prefix('/organizations/{organization}')->group(static function (): void {
             Route::post('/export', [ExportController::class, 'export'])->name('export');
         });
+
+        // Planner routes (gated)
+        if (config('planner.enabled')) {
+            Route::name('planner.')->prefix('/organizations/{organization}/planner')->group(static function (): void {
+                Route::get('/', [\App\Http\Controllers\Api\V1\PlannerController::class, 'index'])->name('index');
+                Route::put('/milestones/{milestone}', [\App\Http\Controllers\Api\V1\MilestoneController::class, 'update'])->name('milestones.update');
+            });
+        }
     });
 
     Route::get('/currencies', [CurrencyController::class, 'index'])->name('currencies.index');

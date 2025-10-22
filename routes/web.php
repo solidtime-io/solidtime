@@ -78,4 +78,15 @@ Route::middleware([
         return Inertia::render('Import');
     })->name('import');
 
+    // Planner UI routes (gated)
+    if (config('planner.enabled')) {
+        Route::get('/planner', function () {
+            return Inertia::render('PlannerMatrix');
+        })->name('planner.matrix');
+
+        Route::get('/projects/{project}/planner', function () {
+            return Inertia::render('ProjectPlanner');
+        })->name('projects.planner');
+    }
+
 });
