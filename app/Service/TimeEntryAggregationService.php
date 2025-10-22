@@ -62,6 +62,15 @@ class TimeEntryAggregationService
                 ') AS tag(tag)'
             ));
         }
+        // Gate Phase/Milestone groupings behind planner flag
+        if (!config('planner.enabled')) {
+            if ($group1Type === TimeEntryAggregationType::Phase || $group1Type === TimeEntryAggregationType::Milestone) {
+                $group1Type = null;
+            }
+            if ($group2Type === TimeEntryAggregationType::Phase || $group2Type === TimeEntryAggregationType::Milestone) {
+                $group2Type = null;
+            }
+        }
         if ($group1Type !== null) {
             $group1Select = $this->getGroupByQuery($group1Type, $timezone, $startOfWeek);
             $groupBy = ['group_1'];

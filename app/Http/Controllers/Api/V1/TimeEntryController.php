@@ -206,6 +206,12 @@ class TimeEntryController extends Controller
         $filter->addTaskIdsFilter($request->input('task_ids'));
         $filter->addClientIdsFilter($request->input('client_ids'));
         $filter->addBillableFilter($request->input('billable'));
+        // Planner-specific filters (only when enabled)
+        if (config('planner.enabled')) {
+            $filter->addMilestonesOnlyFilter($request->input('milestones_only'));
+            $filter->addPhasePrefixFilter($request->input('phase_prefix'));
+            $filter->addMilestoneIdsFilter($request->input('milestone_ids'));
+        }
 
         return $filter->get();
     }
@@ -241,6 +247,7 @@ class TimeEntryController extends Controller
         $timeEntriesQuery = $this->getTimeEntriesQuery($organization, $request, $member, $canAccessPremiumFeatures);
         $timeEntriesQuery->with([
             'task',
+            'milestoneTask',
             'client',
             'project',
             'user',
@@ -562,6 +569,12 @@ class TimeEntryController extends Controller
         $filter->addTaskIdsFilter($request->input('task_ids'));
         $filter->addClientIdsFilter($request->input('client_ids'));
         $filter->addBillableFilter($request->input('billable'));
+       // Planner-specific filters (only when enabled)
+       if (config('planner.enabled')) {
+           $filter->addMilestonesOnlyFilter($request->input('milestones_only'));
+           $filter->addPhasePrefixFilter($request->input('phase_prefix'));
+           $filter->addMilestoneIdsFilter($request->input('milestone_ids'));
+       }
 
         return $filter->get();
     }

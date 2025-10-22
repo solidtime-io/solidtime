@@ -120,6 +120,16 @@ class TimeEntryAggregateRequest extends BaseFormRequest
                     return $builder->whereBelongsTo($this->organization, 'organization');
                 })->uuid(),
             ],
+            // Filter by milestone IDs, milestone IDs are OR combined
+            'milestone_ids' => [
+                'array',
+                'min:1',
+            ],
+            'milestone_ids.*' => [
+                'string',
+                // validate shape as UUID but not enforcing relation
+                'uuid',
+            ],
             // Filter only time entries that have a start date after the given timestamp in UTC (example: 2021-01-01T00:00:00Z)
             'start' => [
                 'nullable',
@@ -158,6 +168,16 @@ class TimeEntryAggregateRequest extends BaseFormRequest
                 'nullable',
                 'numeric',
                 'integer',
+            ],
+            // Planner filters (gated in controllers)
+            'milestones_only' => [
+                'nullable',
+                'string',
+                'in:true,false',
+            ],
+            'phase_prefix' => [
+                'nullable',
+                'string',
             ],
         ];
     }

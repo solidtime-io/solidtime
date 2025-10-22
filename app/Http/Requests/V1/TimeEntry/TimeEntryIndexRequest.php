@@ -151,6 +151,25 @@ class TimeEntryIndexRequest extends BaseFormRequest
                 'numeric',
                 'integer',
             ],
+            // Planner filters (gated in controllers)
+            'milestones_only' => [
+                'nullable',
+                'string',
+                'in:true,false',
+            ],
+            'phase_prefix' => [
+                'nullable',
+                'string',
+            ],
+            'milestone_ids' => [
+                'nullable',
+                'array',
+                'min:1',
+            ],
+            'milestone_ids.*' => [
+                'string',
+                'uuid',
+            ],
         ];
     }
 
