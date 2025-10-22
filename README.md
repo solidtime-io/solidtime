@@ -45,6 +45,22 @@ We do accept contributions in the [documentation repository](https://github.com/
 
 Looking to report a vulnerability? Please refer our [SECURITY.md](./SECURITY.md) file.
 
+## Planner time linking and reporting (optional)
+
+This fork adds an optional Planner layer to link time to milestones and report by Phase/Milestone with minimal diffs.
+
+- Enable: set `PIA_ENABLED=true` (planner.enabled aliases this).
+- Data model additions:
+  - Tasks: `due_at` (nullable), `is_milestone` (boolean)
+  - Time entries: `milestone_id` (nullable, indexed)
+- Start timer from milestones (when enabled):
+  - In Planner views, a Start button on milestone rows pre-fills `project_id`, `milestone_id` (and optionally `task_id`),
+    prefixes description with `[Milestone]`, and can auto-tag a Phase.
+- Reporting (when enabled):
+  - Group by: Milestone, Phase (Phase maps to tags). Combine with Project via sub-group.
+  - Filters: Milestones-only, Milestone(s), and Phase (prefix or tags).
+- Gating: When `planner.enabled=false`, API/exports/UI behave like upstream Solidtime (no milestone_id in responses; no extra columns).
+
 ## License
 
 This project is open-source and available under the GNU Affero General Public License v3.0 (AGPL v3). Please see the [license file](LICENSE.md) for more information.

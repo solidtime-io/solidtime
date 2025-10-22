@@ -353,7 +353,7 @@ class TimeEntryAggregationService
                     'color' => null,
                 ];
             }
-        } elseif ($type === TimeEntryAggregationType::Tag) {
+        } elseif ($type === TimeEntryAggregationType::Tag || $type === TimeEntryAggregationType::Phase) {
             $tags = Tag::query()
                 ->whereIn('id', $keys)
                 ->select('id', 'name')
@@ -520,7 +520,9 @@ class TimeEntryAggregationService
         } elseif ($group === TimeEntryAggregationType::Tag || $group === TimeEntryAggregationType::Phase) {
             return 'tag';
         } elseif ($group === TimeEntryAggregationType::Milestone) {
-            return 'milestone_id';
+            // Prefer explicit milestone_id; fallback to task_id if the task is marked as a milestone
+            // This uses a correlated subquery to return task_id only when tasks.is_milestone = true
+            return "COALESCE(milestone_id, (SELECT id FROM tasks WHERE tasks.id = task_id AND is_milestone = true LIMIT 1))";
         }
     }
 

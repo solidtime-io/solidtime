@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\Models\Tag;
+
 use App\Models\Member;
 use App\Models\TimeEntry;
 use Illuminate\Database\Eloquent\Builder;
@@ -185,6 +187,42 @@ class TimeEntryFilter
     }
 
     /**
+     * When `phase_prefix` is provided, restricts to time entries that contain at least one tag
+     * whose name starts with the given prefix. Implemented via a subquery on Tag to resolve IDs.
+     */
+    public function addPhasePrefixFilter(?string $phasePrefix): self
+    {
+        if ($phasePrefix === null || $phasePrefix === '') {
+            return $this;
+        }
+        $phaseTagIds = Tag::query()
+            ->where('name', 'ILIKE', $phasePrefix.'%')
+            ->pluck('id')
+            ->all();
+        if (count($phaseTagIds) === 0) {
+            // No matching phase tags -> return no rows quickly by impossible condition
+            $this->builder->whereRaw('1 = 0');
+            return $this;
+        }
+        $this->addTagIdsFilter($phaseTagIds);
+
+        return $this;
+    }
+
+    /**
+     * milestones_only=true restricts to time entries linked to a milestone (milestone_id IS NOT NULL).
+     * Any other value is ignored.
+     */
+    public function addMilestonesOnlyFilter(?string $milestonesOnly): self
+    {
+        if ($milestonesOnly !== 'true') {
+            return $this;
+        }
+        $this->builder->whereNotNull('milestone_id');
+        return $this;
+    }
+
+    /**
      * @param  array<string>|null  $taskIds
      */
     public function addTaskIdsFilter(?array $taskIds): self
@@ -193,6 +231,19 @@ class TimeEntryFilter
             return $this;
         }
         $this->builder->whereIn('task_id', $taskIds);
+
+        return $this;
+    }
+
+    /**
+     * @param  array<string>|null  $milestoneIds
+     */
+    public function addMilestoneIdsFilter(?array $milestoneIds): self
+    {
+        if ($milestoneIds === null) {
+            return $this;
+        }
+        $this->builder->whereIn('milestone_id', $milestoneIds);
 
         return $this;
     }
