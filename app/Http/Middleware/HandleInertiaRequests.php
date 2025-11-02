@@ -42,7 +42,7 @@ class HandleInertiaRequests extends Middleware
         $hasBilling = Module::has('Billing') && Module::isEnabled('Billing');
         $hasInvoicing = Module::has('Invoicing') && Module::isEnabled('Invoicing');
         $hasServices = Module::has('Services') && Module::isEnabled('Services');
-        
+
         /** @var BillingContract $billing */
         $billing = app(BillingContract::class);
 
