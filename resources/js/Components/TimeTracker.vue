@@ -168,6 +168,8 @@ const { tags } = storeToRefs(useTagsStore());
         :create-client="createClient"
         :create-tag="createTag"
         :create-time-entry="createTimeEntry"
+        :currency="getOrganizationCurrencyString()"
+        :can-create-project="canCreateProjects()"
         :projects
         :tasks
         :tags
