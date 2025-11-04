@@ -81,7 +81,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
                         }
                         return response;
                     } catch {
-                        router.get(route('login'));
+                        router.get('/login');
                     }
                 } else {
                     addNotification('error', 'The action failed. Please try again later.');
