@@ -41,6 +41,8 @@ const props = defineProps<{
 
     // Permissions / feature flags
     enableEstimatedTime: boolean;
+    currency: string;
+    canCreateProject: boolean;
 
     createTimeEntry: (
         entry: Omit<TimeEntry, 'id' | 'organization_id' | 'user_id'>
@@ -295,6 +297,8 @@ watch(showEditTimeEntryModal, (value) => {
             :create-client="createClient"
             :create-project="createProject"
             :create-tag="createTag"
+            :currency="currency"
+            :can-create-project="canCreateProject"
             :tags="tags as any"
             :projects="projects"
             :tasks="tasks"
