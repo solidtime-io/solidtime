@@ -52,6 +52,28 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
         $response->assertStatus(200);
     }
 
+    public function test_index_returns_members_of_organization_sorted_by_name(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'members:view',
+        ]);
+        $members = Member::factory()->forOrganization($data->organization)->createMany(4);
+
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.members.index', $data->organization->getKey()));
+
+        // Assert
+        $response->assertStatus(200);
+        // 2 members in $data, 4 members in $members.
+        $response->assertJsonCount(6, 'data');
+
+        $memberNames = $members->merge([$data->member, $data->ownerMember])->pluck('user.name')->sort()->values()->all();
+        $this->assertEquals($memberNames, $response->json('data.*.name'));
+    }
+
     public function test_update_member_fails_if_user_has_no_permission_to_update_members(): void
     {
         // Arrange
