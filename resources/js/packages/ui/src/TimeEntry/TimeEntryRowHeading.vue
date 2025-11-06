@@ -61,7 +61,7 @@ function selectUnselectAll(value: boolean) {
                         {{ formatDate(date, organization?.date_format) }}
                     </span>
                 </div>
-                <div class="text-text-secondary pr-[90px] lg:pr-[92px]">
+                <div class="text-text-secondary pr-[87px] lg:pr-[92px]">
                     <span class="font-medium">
                         {{
                             formatHumanReadableDuration(

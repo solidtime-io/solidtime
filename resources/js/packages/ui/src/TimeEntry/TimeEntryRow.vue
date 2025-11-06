@@ -186,7 +186,9 @@ async function handleDeleteTimeEntry() {
         :tags="tags"
         :projects="projects"
         :tasks="tasks"
-        :clients="clients" />
+        :clients="clients"
+        :currency="currency"
+        :can-create-project="canCreateProject" />
 </template>
 
 <style scoped></style>

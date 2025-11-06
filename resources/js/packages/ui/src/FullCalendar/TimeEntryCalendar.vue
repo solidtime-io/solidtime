@@ -318,7 +318,9 @@ watch(showEditTimeEntryModal, (value) => {
             :tags="tags as any"
             :projects="projects"
             :tasks="tasks"
-            :clients="clients" />
+            :clients="clients"
+            :currency="currency"
+            :can-create-project="canCreateProject" />
         <FullCalendar ref="calendarRef" class="fullcalendar" :options="calendarOptions">
             <template #eventContent="arg">
                 <FullCalendarEventContent

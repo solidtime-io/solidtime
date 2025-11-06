@@ -158,6 +158,7 @@ async function discardCurrentTimeEntry() {
 }
 
 const { tags } = storeToRefs(useTagsStore());
+const { timeEntries } = storeToRefs(useTimeEntriesStore());
 </script>
 
 <template>
@@ -196,6 +197,7 @@ const { tags } = storeToRefs(useTagsStore());
                         :tags
                         :tasks
                         :projects
+                        :time-entries
                         :create-tag
                         :is-active
                         :currency="getOrganizationCurrencyString()"

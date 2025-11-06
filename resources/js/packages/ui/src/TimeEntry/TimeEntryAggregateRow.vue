@@ -102,7 +102,7 @@ function onSelectChange(checked: boolean) {
                             )
                         "
                         @update:checked="onSelectChange" />
-                    <div class="flex items-center min-w-0">
+                    <div class="flex items-center min-w-0 space-x-1 lg:space-x-2">
                         <GroupedItemsCountButton :expanded="expanded" @click="expanded = !expanded">
                             {{ timeEntry?.timeEntries?.length }}
                         </GroupedItemsCountButton>
@@ -125,7 +125,7 @@ function onSelectChange(checked: boolean) {
                             @changed="updateProjectAndTask"></TimeTrackerProjectTaskDropdown>
                     </div>
                 </div>
-                <div class="flex items-center font-medium lg:space-x-2">
+                <div class="flex items-center font-medium space-x-1 lg:space-x-2">
                     <TimeEntryRowTagDropdown
                         :create-tag
                         :tags="tags"
@@ -142,8 +142,8 @@ function onSelectChange(checked: boolean) {
                                 twMerge(
                                     'text-text-secondary px-1 py-1.5 bg-transparent text-center hover:bg-card-background rounded-lg border border-transparent hover:border-card-border text-sm font-medium focus-visible:outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:bg-tertiary',
                                     organization?.time_format === '12-hours'
-                                        ? 'w-[170px]'
-                                        : 'w-[120px]'
+                                        ? 'w-[150px]'
+                                        : 'w-[90px]'
                                 )
                             "
                             @click="expanded = !expanded">
@@ -157,7 +157,7 @@ function onSelectChange(checked: boolean) {
                         </button>
                     </div>
                     <button
-                        class="text-text-primary min-w-[90px] px-2.5 py-1.5 bg-transparent text-right hover:bg-card-background rounded-lg border border-transparent hover:border-card-border text-sm font-medium focus-visible:outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:bg-tertiary"
+                        class="text-text-primary !mr-2 min-w-[70px] px-1.5 py-1.5 bg-transparent text-right hover:bg-card-background rounded-lg border border-transparent hover:border-card-border text-sm font-medium focus-visible:outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:bg-tertiary"
                         @click="expanded = !expanded">
                         {{
                             formatHumanReadableDuration(

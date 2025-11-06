@@ -20,6 +20,7 @@ import TextInput from './Input/TextInput.vue';
 import InputLabel from './Input/InputLabel.vue';
 import TimeTrackerRunningInDifferentOrganizationOverlay from './TimeTracker/TimeTrackerRunningInDifferentOrganizationOverlay.vue';
 import TimeTrackerControls from './TimeTracker/TimeTrackerControls.vue';
+import TimeTrackerMoreOptionsDropdown from './TimeTracker/TimeTrackerMoreOptionsDropdown.vue';
 import CardTitle from './CardTitle.vue';
 import SelectDropdown from './Input/SelectDropdown.vue';
 import Badge from './Badge.vue';
@@ -48,6 +49,7 @@ export {
     InputLabel,
     TimeTrackerRunningInDifferentOrganizationOverlay,
     TimeTrackerControls,
+    TimeTrackerMoreOptionsDropdown,
     CardTitle,
     SelectDropdown,
     Badge,
