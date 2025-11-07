@@ -62,6 +62,7 @@ class MemberController extends Controller
             ->with(['user'])
             ->join('users', 'members.user_id', '=', 'users.id')
             ->orderBy('users.name')
+            ->select('members.*')
             ->paginate(config('app.pagination_per_page_default'));
 
         return MemberCollection::make($members);
