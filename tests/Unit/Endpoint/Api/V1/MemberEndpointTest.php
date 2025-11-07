@@ -72,6 +72,8 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
 
         $memberNames = $members->merge([$data->member, $data->ownerMember])->pluck('user.name')->sort()->values()->all();
         $this->assertEquals($memberNames, $response->json('data.*.name'));
+
+        $this->assertNotEquals($response->json('data.*.id'), $response->json('data.*.user_id'));
     }
 
     public function test_update_member_fails_if_user_has_no_permission_to_update_members(): void
