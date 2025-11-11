@@ -167,7 +167,7 @@ class ExportService
                             $client->id,
                             $client->name,
                             $client->organization_id,
-                            $client->archived_at ?? '',
+                            $client->archived_at?->toIso8601ZuluString() ?? '',
                             $client->created_at?->toIso8601ZuluString() ?? '',
                             $client->updated_at?->toIso8601ZuluString() ?? '',
                         ]);
