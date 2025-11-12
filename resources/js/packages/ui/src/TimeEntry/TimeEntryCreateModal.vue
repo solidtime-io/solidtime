@@ -61,8 +61,8 @@ const timeEntryDefaultValues = {
     task_id: null,
     tags: [],
     billable: false,
-    start: getDayJsInstance().utc().subtract(1, 'h').format(),
-    end: getDayJsInstance().utc().format(),
+    start: getDayJsInstance().utc().subtract(1, 'h').second(0).format(),
+    end: getDayJsInstance().utc().second(0).format(),
 };
 
 const timeEntry = ref({
