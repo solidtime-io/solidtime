@@ -21,7 +21,9 @@
                 "default": "./dist/solidtime-ui-lib.umd.cjs"
             }
         },
-        "./style.css": "./dist/style.css"
+        "./style.css": "./dist/style.css",
+        "./styles.css": "./styles.css",
+        "./tailwind.theme.js": "./tailwind.theme.js"
     },
     "scripts": {
         "dev": "vite",
