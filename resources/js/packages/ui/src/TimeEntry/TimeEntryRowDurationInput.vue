@@ -77,7 +77,7 @@ function selectInput(event: Event) {
         v-model="currentTime"
         data-testid="time_entry_duration_input"
         name="Duration"
-        class="text-text-primary w-[70px] !mr-2 px-1.5 py-1.5 bg-transparent text-right hover:bg-card-background rounded-lg border border-transparent hover:border-card-border text-sm font-medium focus-visible:bg-tertiary focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-ring"
+        class="text-text-primary w-[80px] !mr-2 px-1.5 py-1.5 bg-transparent text-right hover:bg-card-background rounded-lg border border-transparent hover:border-card-border text-sm font-medium focus-visible:bg-tertiary focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-ring"
         @focus="selectInput"
         @keydown.tab="open = false"
         @blur="updateTimerAndStartLiveTimerUpdate"

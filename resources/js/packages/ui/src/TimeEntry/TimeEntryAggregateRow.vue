@@ -142,8 +142,8 @@ function onSelectChange(checked: boolean) {
                                 twMerge(
                                     'text-text-secondary px-1 py-1.5 bg-transparent text-center hover:bg-card-background rounded-lg border border-transparent hover:border-card-border text-sm font-medium focus-visible:outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:bg-tertiary',
                                     organization?.time_format === '12-hours'
-                                        ? 'w-[150px]'
-                                        : 'w-[90px]'
+                                        ? 'w-[160px]'
+                                        : 'w-[100px]'
                                 )
                             "
                             @click="expanded = !expanded">
@@ -157,7 +157,7 @@ function onSelectChange(checked: boolean) {
                         </button>
                     </div>
                     <button
-                        class="text-text-primary !mr-2 min-w-[70px] px-1.5 py-1.5 bg-transparent text-right hover:bg-card-background rounded-lg border border-transparent hover:border-card-border text-sm font-medium focus-visible:outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:bg-tertiary"
+                        class="text-text-primary !mr-2 min-w-[80px] px-1.5 py-1.5 bg-transparent text-right hover:bg-card-background rounded-lg border border-transparent hover:border-card-border text-sm font-medium focus-visible:outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:bg-tertiary"
                         @click="expanded = !expanded">
                         {{
                             formatHumanReadableDuration(
