@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { cn, buttonVariants } from '@solidtime/ui';
+import { cn, buttonVariants } from '@/packages/ui/src/index';
 import { ChevronRight } from 'lucide-vue-next';
 import { CalendarNext, type CalendarNextProps, useForwardProps } from 'reka-ui';
 import { computed, type HTMLAttributes } from 'vue';
