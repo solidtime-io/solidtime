@@ -10,8 +10,12 @@ import * as color from './utils/color';
 import * as random from './utils/random';
 import * as time from './utils/time';
 
+export { cn } from './utils/cn';
+export { buttonVariants, type ButtonVariants } from './Buttons/index';
+
 import PrimaryButton from './Buttons/PrimaryButton.vue';
 import SecondaryButton from './Buttons/SecondaryButton.vue';
+import Button from './Buttons/Button.vue';
 import TimeTrackerStartStop from './TimeTrackerStartStop.vue';
 import ProjectBadge from './Project/ProjectBadge.vue';
 import LoadingSpinner from './LoadingSpinner.vue';
@@ -39,6 +43,7 @@ export {
     color,
     random,
     time,
+    Button,
     PrimaryButton,
     SecondaryButton,
     TimeTrackerStartStop,
