@@ -27,12 +27,19 @@ function updateTime(event: Event) {
     if (newValue.split(':').length === 2) {
         const [hours, minutes] = newValue.split(':');
         if (!isNaN(parseInt(hours)) && !isNaN(parseInt(minutes))) {
-            model.value = getLocalizedDayJs(model.value)
-                .set('hours', Math.min(parseInt(hours), 23))
-                .set('minutes', Math.min(parseInt(minutes), 59))
-                .set('seconds', 0)
-                .format();
-            emit('changed', model.value);
+            const currentTime = getLocalizedDayJs(model.value);
+            const newHours = Math.min(parseInt(hours), 23);
+            const newMinutes = Math.min(parseInt(minutes), 59);
+
+            // Only update if hours or minutes are different
+            if (currentTime.hour() !== newHours || currentTime.minute() !== newMinutes) {
+                model.value = currentTime
+                    .set('hours', newHours)
+                    .set('minutes', newMinutes)
+                    .set('seconds', 0)
+                    .format();
+                emit('changed', model.value);
+            }
         }
     }
     // check if input is only numbers
