@@ -39,7 +39,7 @@ const organization = inject<ComputedRef<Organization>>('organization');
                             showDate
                                 ? 'text-xs py-1.5 font-semibold'
                                 : 'text-sm py-1.5 font-medium',
-                            organization?.time_format === '12-hours' ? 'w-[150px]' : 'w-[90px]',
+                            organization?.time_format === '12-hours' ? 'w-[160px]' : 'w-[100px]',
                             open && 'border-card-border bg-card-background'
                         )
                     ">

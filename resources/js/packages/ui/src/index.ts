@@ -37,6 +37,7 @@ import MoreOptionsDropdown from './MoreOptionsDropdown.vue';
 import FullCalendarEventContent from './FullCalendar/FullCalendarEventContent.vue';
 import FullCalendarDayHeader from './FullCalendar/FullCalendarDayHeader.vue';
 import TimeEntryCalendar from './FullCalendar/TimeEntryCalendar.vue';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tooltip/index';
 
 export {
     money,
@@ -67,4 +68,8 @@ export {
     FullCalendarEventContent,
     FullCalendarDayHeader,
     TimeEntryCalendar,
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
 };

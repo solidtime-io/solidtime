@@ -182,7 +182,7 @@ body {
         --card-foreground: var(--color-text-primary);
         --popover: var(--theme-color-card-background);
         --popover-foreground: var(--color-text-primary);
-        --primary: var(--theme-color-button-primary-background);
+        --primary: var(--color-bg-primary);
         --primary-foreground: var(--theme-color-button-primary-text);
         --secondary: var(--color-bg-secondary);
         --secondary-foreground: var(--color-text-primary);
@@ -209,7 +209,7 @@ body {
         --card-foreground: var(--color-text-primary);
         --popover: var(--theme-color-card-background);
         --popover-foreground: var(--color-text-primary);
-        --primary: var(--theme-color-button-primary-background);
+        --primary: var(--color-bg-primary);
         --primary-foreground: var(--theme-color-button-primary-text);
         --secondary: var(--color-bg-secondary);
         --secondary-foreground: var(--color-text-primary);
