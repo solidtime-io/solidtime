@@ -30,6 +30,7 @@ function updateTime(event: Event) {
             model.value = getLocalizedDayJs(model.value)
                 .set('hours', Math.min(parseInt(hours), 23))
                 .set('minutes', Math.min(parseInt(minutes), 59))
+                .set('seconds', 0)
                 .format();
             emit('changed', model.value);
         }
@@ -42,6 +43,7 @@ function updateTime(event: Event) {
             model.value = getLocalizedDayJs(model.value)
                 .set('hours', Math.min(parseInt(hours), 23))
                 .set('minutes', Math.min(parseInt(minutes), 59))
+                .set('seconds', 0)
                 .format();
             emit('changed', model.value);
         } else if (newValue.length === 3) {
@@ -50,6 +52,7 @@ function updateTime(event: Event) {
             model.value = getLocalizedDayJs(model.value)
                 .set('hours', Math.min(parseInt(hours), 23))
                 .set('minutes', Math.min(parseInt(minutes), 59))
+                .set('seconds', 0)
                 .format();
             emit('changed', model.value);
         } else if (newValue.length === 2) {
@@ -57,6 +60,7 @@ function updateTime(event: Event) {
             model.value = getLocalizedDayJs(model.value)
                 .set('hours', Math.min(parseInt(newValue), 23))
                 .set('minutes', 0)
+                .set('seconds', 0)
                 .format();
             emit('changed', model.value);
         } else if (newValue.length === 1) {
@@ -64,6 +68,7 @@ function updateTime(event: Event) {
             model.value = getLocalizedDayJs(model.value)
                 .set('hours', Math.min(parseInt(newValue), 23))
                 .set('minutes', 0)
+                .set('seconds', 0)
                 .format();
             emit('changed', model.value);
         }
