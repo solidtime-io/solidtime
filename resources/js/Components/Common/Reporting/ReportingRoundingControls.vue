@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Switch } from '@/Components/ui/switch';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
-import { Button } from '@/Components/ui/button';
+import { Button } from '@/packages/ui/src';
 import {
     Select,
     SelectContent,

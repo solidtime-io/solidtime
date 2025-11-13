@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
-import { Button } from '@/Components/ui/button';
+import Button from '../Buttons/Button.vue';
 import { RangeCalendar } from '@/Components/ui/range-calendar';
 import { CalendarDate } from '@internationalized/date';
 import { CalendarIcon } from 'lucide-vue-next';

@@ -21,6 +21,8 @@ import { useClientsStore } from '@/utils/useClients';
 import { storeToRefs } from 'pinia';
 import { useTasksStore } from '@/utils/useTasks';
 import { getUserTimezone } from '@/packages/ui/src/utils/settings';
+import { getOrganizationCurrencyString } from '@/utils/money';
+import { canCreateProjects } from '@/utils/permissions';
 
 const calendarStart = ref<Date | undefined>(undefined);
 const calendarEnd = ref<Date | undefined>(undefined);
@@ -129,6 +131,8 @@ function onRefresh() {
             :tags="tags"
             :loading="timeEntriesLoading"
             :enable-estimated-time="isAllowedToPerformPremiumAction()"
+            :currency="getOrganizationCurrencyString()"
+            :can-create-project="canCreateProjects()"
             :create-time-entry="createTimeEntry"
             :update-time-entry="updateTimeEntry"
             :delete-time-entry="deleteTimeEntry"

@@ -1,6 +1,6 @@
 {
     "name": "@solidtime/ui",
-    "version": "0.0.10",
+    "version": "0.0.12",
     "description": "Package containing the solidtime ui components",
     "main": "./dist/solidtime-ui-lib.umd.cjs",
     "module": "./dist/solidtime-ui-lib.js",
@@ -21,11 +21,14 @@
                 "default": "./dist/solidtime-ui-lib.umd.cjs"
             }
         },
-        "./style.css": "./dist/style.css"
+        "./style.css": "./dist/style.css",
+        "./styles.css": "./styles.css",
+        "./tailwind.theme.js": "./tailwind.theme.js"
     },
     "scripts": {
         "dev": "vite",
         "build": "vite build && vue-tsc --emitDeclarationOnly",
+        "watch": "vite build --watch",
         "types": "vue-tsc ",
         "preview": "vite preview"
     },
@@ -59,8 +62,11 @@
         "@heroicons/vue": "^2.1.5",
         "@vueuse/core": "^12.5.0",
         "@zodios/core": "^10.9.6",
+        "class-variance-authority": "^0.7.1",
+        "clsx": "^2.1.1",
         "dayjs": "^1.11.13",
         "parse-duration": "^2.0.1",
+        "reka-ui": "^2.2.0",
         "tailwind-merge": "^2.5.2",
         "tailwindcss": "^3.1.0",
         "vue": "^3.5.0",

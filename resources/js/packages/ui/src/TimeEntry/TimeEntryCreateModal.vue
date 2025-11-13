@@ -15,8 +15,6 @@ import type {
     Client,
     CreateTimeEntryBody,
 } from '@/packages/api/src';
-import { getOrganizationCurrencyString } from '@/utils/money';
-import { canCreateProjects } from '@/utils/permissions';
 import TagDropdown from '@/packages/ui/src/Tag/TagDropdown.vue';
 import { Badge } from '@/packages/ui/src';
 import BillableIcon from '@/packages/ui/src/Icons/BillableIcon.vue';
@@ -43,6 +41,8 @@ const props = defineProps<{
     clients: Client[];
     start?: string;
     end?: string;
+    currency: string;
+    canCreateProject: boolean;
 }>();
 
 const description = ref<HTMLInputElement | null>(null);
@@ -61,8 +61,8 @@ const timeEntryDefaultValues = {
     task_id: null,
     tags: [],
     billable: false,
-    start: getDayJsInstance().utc().subtract(1, 'h').format(),
-    end: getDayJsInstance().utc().format(),
+    start: getDayJsInstance().utc().subtract(1, 'h').second(0).format(),
+    end: getDayJsInstance().utc().second(0).format(),
 };
 
 const timeEntry = ref({
@@ -167,8 +167,8 @@ type BillableOption = {
                             :clients
                             :create-project
                             :create-client
-                            :can-create-project="canCreateProjects()"
-                            :currency="getOrganizationCurrencyString()"
+                            :can-create-project
+                            :currency
                             size="xlarge"
                             class="bg-input-background"
                             :projects="projects"

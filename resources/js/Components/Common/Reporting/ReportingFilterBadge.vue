@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Button } from '@/Components/ui/button';
+import { Button } from '@/packages/ui/src';
 
 const props = defineProps<{
     icon: Component;

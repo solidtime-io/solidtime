@@ -15,8 +15,6 @@ import type {
     Client,
     TimeEntry,
 } from '@/packages/api/src';
-import { getOrganizationCurrencyString } from '@/utils/money';
-import { canCreateProjects } from '@/utils/permissions';
 import TagDropdown from '@/packages/ui/src/Tag/TagDropdown.vue';
 import { Badge } from '@/packages/ui/src';
 import BillableIcon from '@/packages/ui/src/Icons/BillableIcon.vue';
@@ -44,6 +42,8 @@ const props = defineProps<{
     projects: Project[];
     tasks: Task[];
     clients: Client[];
+    currency: string;
+    canCreateProject: boolean;
 }>();
 
 const description = ref<HTMLInputElement | null>(null);
@@ -163,8 +163,8 @@ type BillableOption = {
                                 :clients
                                 :create-project
                                 :create-client
-                                :can-create-project="canCreateProjects()"
-                                :currency="getOrganizationCurrencyString()"
+                                :can-create-project="canCreateProject"
+                                :currency="currency"
                                 size="xlarge"
                                 class="bg-input-background"
                                 :projects="projects"

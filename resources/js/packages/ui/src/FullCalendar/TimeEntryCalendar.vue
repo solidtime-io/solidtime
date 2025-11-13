@@ -41,6 +41,8 @@ const props = defineProps<{
 
     // Permissions / feature flags
     enableEstimatedTime: boolean;
+    currency: string;
+    canCreateProject: boolean;
 
     createTimeEntry: (
         entry: Omit<TimeEntry, 'id' | 'organization_id' | 'user_id'>
@@ -194,11 +196,13 @@ async function handleEventDrop(arg: EventDropArg) {
         start: getDayJsInstance()(arg.event.start.toISOString())
             .utc()
             .tz(getUserTimezone(), true)
+            .second(0)
             .utc()
             .format(),
         end: getDayJsInstance()(arg.event.end.toISOString())
             .utc()
             .tz(getUserTimezone(), true)
+            .second(0)
             .utc()
             .format(),
     } as TimeEntry;
@@ -215,11 +219,13 @@ async function handleEventResize(arg: EventChangeArg) {
         start: getDayJsInstance()(arg.event.start.toISOString())
             .utc()
             .tz(getUserTimezone(), true)
+            .second(0)
             .utc()
             .format(),
         end: getDayJsInstance()(arg.event.end.toISOString())
             .utc()
             .tz(getUserTimezone(), true)
+            .second(0)
             .utc()
             .format(),
     } as TimeEntry;
@@ -241,7 +247,7 @@ const calendarOptions = computed(() => ({
     slotDuration: '00:15:00',
     slotLabelInterval: '01:00:00',
     slotLabelFormat: getSlotLabelFormat(),
-    snapDuration: '00:15:00',
+    snapDuration: '00:01:00',
     firstDay: getFirstDay(),
     allDaySlot: false,
     nowIndicator: true,
@@ -295,6 +301,8 @@ watch(showEditTimeEntryModal, (value) => {
             :create-client="createClient"
             :create-project="createProject"
             :create-tag="createTag"
+            :currency="currency"
+            :can-create-project="canCreateProject"
             :tags="tags as any"
             :projects="projects"
             :tasks="tasks"
@@ -314,7 +322,9 @@ watch(showEditTimeEntryModal, (value) => {
             :tags="tags as any"
             :projects="projects"
             :tasks="tasks"
-            :clients="clients" />
+            :clients="clients"
+            :currency="currency"
+            :can-create-project="canCreateProject" />
         <FullCalendar ref="calendarRef" class="fullcalendar" :options="calendarOptions">
             <template #eventContent="arg">
                 <FullCalendarEventContent

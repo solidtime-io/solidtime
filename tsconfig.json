@@ -6,6 +6,7 @@
   "compilerOptions": {
     "paths": {
       "@/*": ["./resources/js/*"],
+      "@solidtime/ui": ["./resources/js/packages/ui/src/index.ts"]
     }
   },
   "skipLibCheck": true,

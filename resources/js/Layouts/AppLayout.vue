@@ -47,7 +47,7 @@ import { api } from '@/packages/api/src';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import LoadingSpinner from '@/packages/ui/src/LoadingSpinner.vue';
 import { twMerge } from 'tailwind-merge';
-import Button from '@/Components/ui/button/Button.vue';
+import { Button } from '@/packages/ui/src';
 import { openFeedback } from '@/utils/feedback';
 
 defineProps({
