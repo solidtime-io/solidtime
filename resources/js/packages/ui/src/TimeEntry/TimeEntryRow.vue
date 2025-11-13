@@ -112,7 +112,7 @@ async function handleDeleteTimeEntry() {
         class="border-b border-default-background-separator transition min-w-0 bg-row-background"
         data-testid="time_entry_row">
         <MainContainer class="min-w-0">
-            <div class="sm:flex py-2 min-w-0 items-center justify-between group">
+            <div class="@sm:flex py-2 min-w-0 items-center justify-between group">
                 <div class="flex items-center min-w-0">
                     <Checkbox :checked="selected" @update:checked="onSelectChange" />
                     <div v-if="indent === true" class="w-10 h-7"></div>
@@ -134,7 +134,7 @@ async function handleDeleteTimeEntry() {
                         :task="timeEntry.task_id"
                         @changed="updateProjectAndTask"></TimeTrackerProjectTaskDropdown>
                 </div>
-                <div class="flex items-center font-medium space-x-1 lg:space-x-2">
+                <div class="flex items-center font-medium space-x-1 @lg:space-x-2">
                     <div v-if="showMember && members" class="text-sm px-2">
                         {{ memberName }}
                     </div>
