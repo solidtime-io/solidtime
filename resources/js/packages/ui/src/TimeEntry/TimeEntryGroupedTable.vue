@@ -137,79 +137,81 @@ function unselectAllTimeEntries(value: TimeEntriesGroupedByType[]) {
 </script>
 
 <template>
-    <div v-for="(value, key) in groupedTimeEntries" :key="key">
-        <TimeEntryRowHeading
-            :date="key"
-            :duration="sumDuration(value)"
-            :checked="
-                value.every((timeEntry: TimeEntry) => selectedTimeEntries.includes(timeEntry))
-            "
-            @select-all="selectAllTimeEntries(value)"
-            @unselect-all="unselectAllTimeEntries(value)"></TimeEntryRowHeading>
-        <template v-for="entry in value" :key="entry.id">
-            <TimeEntryAggregateRow
-                v-if="'timeEntries' in entry && entry.timeEntries.length > 1"
-                :create-project
-                :can-create-project
-                :enable-estimated-time
-                :selected-time-entries="selectedTimeEntries"
-                :create-client
-                :projects="projects"
-                :tasks="tasks"
-                :tags="tags"
-                :clients
-                :on-start-stop-click="startTimeEntryFromExisting"
-                :duplicate-time-entry="createTimeEntry"
-                :update-time-entries
-                :update-time-entry
-                :delete-time-entries
-                :create-tag
-                :currency="currency"
-                :time-entry="entry"
-                @selected="
-                    (timeEntries: TimeEntry[]) => {
-                        selectedTimeEntries = [...selectedTimeEntries, ...timeEntries];
-                    }
+    <div class="@container">
+        <div v-for="(value, key) in groupedTimeEntries" :key="key">
+            <TimeEntryRowHeading
+                :date="key"
+                :duration="sumDuration(value)"
+                :checked="
+                    value.every((timeEntry: TimeEntry) => selectedTimeEntries.includes(timeEntry))
                 "
-                @unselected="
-                    (timeEntriesToUnselect: TimeEntry[]) => {
+                @select-all="selectAllTimeEntries(value)"
+                @unselect-all="unselectAllTimeEntries(value)"></TimeEntryRowHeading>
+            <template v-for="entry in value" :key="entry.id">
+                <TimeEntryAggregateRow
+                    v-if="'timeEntries' in entry && entry.timeEntries.length > 1"
+                    :create-project
+                    :can-create-project
+                    :enable-estimated-time
+                    :selected-time-entries="selectedTimeEntries"
+                    :create-client
+                    :projects="projects"
+                    :tasks="tasks"
+                    :tags="tags"
+                    :clients
+                    :on-start-stop-click="startTimeEntryFromExisting"
+                    :duplicate-time-entry="createTimeEntry"
+                    :update-time-entries
+                    :update-time-entry
+                    :delete-time-entries
+                    :create-tag
+                    :currency="currency"
+                    :time-entry="entry"
+                    @selected="
+                        (timeEntries: TimeEntry[]) => {
+                            selectedTimeEntries = [...selectedTimeEntries, ...timeEntries];
+                        }
+                    "
+                    @unselected="
+                        (timeEntriesToUnselect: TimeEntry[]) => {
+                            selectedTimeEntries = selectedTimeEntries.filter(
+                                (item: TimeEntry) =>
+                                    !timeEntriesToUnselect.find(
+                                        (filterEntry: TimeEntry) => filterEntry.id === item.id
+                                    )
+                            );
+                        }
+                    "></TimeEntryAggregateRow>
+                <TimeEntryRow
+                    v-else
+                    :create-client
+                    :enable-estimated-time
+                    :can-create-project
+                    :create-project
+                    :projects="projects"
+                    :selected="
+                        !!selectedTimeEntries.find(
+                            (filterEntry: TimeEntry) => filterEntry.id === entry.id
+                        )
+                    "
+                    :tasks="tasks"
+                    :tags="tags"
+                    :clients
+                    :create-tag
+                    :update-time-entry
+                    :on-start-stop-click="() => startTimeEntryFromExisting(entry)"
+                    :delete-time-entry="() => deleteTimeEntries([entry])"
+                    :duplicate-time-entry="() => createTimeEntry(entry)"
+                    :currency="currency"
+                    :time-entry="entry.timeEntries[0]"
+                    @selected="selectedTimeEntries.push(entry)"
+                    @unselected="
                         selectedTimeEntries = selectedTimeEntries.filter(
-                            (item: TimeEntry) =>
-                                !timeEntriesToUnselect.find(
-                                    (filterEntry: TimeEntry) => filterEntry.id === item.id
-                                )
-                        );
-                    }
-                "></TimeEntryAggregateRow>
-            <TimeEntryRow
-                v-else
-                :create-client
-                :enable-estimated-time
-                :can-create-project
-                :create-project
-                :projects="projects"
-                :selected="
-                    !!selectedTimeEntries.find(
-                        (filterEntry: TimeEntry) => filterEntry.id === entry.id
-                    )
-                "
-                :tasks="tasks"
-                :tags="tags"
-                :clients
-                :create-tag
-                :update-time-entry
-                :on-start-stop-click="() => startTimeEntryFromExisting(entry)"
-                :delete-time-entry="() => deleteTimeEntries([entry])"
-                :duplicate-time-entry="() => createTimeEntry(entry)"
-                :currency="currency"
-                :time-entry="entry.timeEntries[0]"
-                @selected="selectedTimeEntries.push(entry)"
-                @unselected="
-                    selectedTimeEntries = selectedTimeEntries.filter(
-                        (item: TimeEntry) => item.id !== entry.id
-                    )
-                "></TimeEntryRow>
-        </template>
+                            (item: TimeEntry) => item.id !== entry.id
+                        )
+                    "></TimeEntryRow>
+            </template>
+        </div>
     </div>
 </template>
 

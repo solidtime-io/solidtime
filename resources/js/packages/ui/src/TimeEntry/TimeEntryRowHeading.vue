@@ -32,13 +32,13 @@ function selectUnselectAll(value: boolean) {
 
 <template>
     <div
-        class="bg-row-heading-background border-t border-b border-row-heading-border py-1 text-xs sm:text-sm">
+        class="bg-row-heading-background border-t border-b border-row-heading-border py-1 text-xs @sm:text-sm">
         <MainContainer>
             <div class="flex group justify-between items-center">
                 <div class="flex items-center space-x-2">
                     <div class="w-5">
                         <svg
-                            class="w-3 sm:w-4 text-icon-default group-hover:hidden block"
+                            class="w-3 @sm:w-4 text-icon-default group-hover:hidden block"
                             viewBox="0 0 24 24"
                             xmlns="http://www.w3.org/2000/svg">
                             <g fill="none">
@@ -61,7 +61,7 @@ function selectUnselectAll(value: boolean) {
                         {{ formatDate(date, organization?.date_format) }}
                     </span>
                 </div>
-                <div class="text-text-secondary pr-[87px] lg:pr-[92px]">
+                <div class="text-text-secondary pr-[87px] @lg:pr-[92px]">
                     <span class="font-medium">
                         {{
                             formatHumanReadableDuration(

@@ -93,7 +93,7 @@ function onSelectChange(checked: boolean) {
         class="border-b border-default-background-separator bg-row-background min-w-0 transition"
         data-testid="time_entry_row">
         <MainContainer class="min-w-0">
-            <div class="sm:flex py-2 items-center min-w-0 justify-between group">
+            <div class="@sm:flex py-2 items-center min-w-0 justify-between group">
                 <div class="flex space-x-3 items-center min-w-0">
                     <Checkbox
                         :checked="
@@ -102,7 +102,7 @@ function onSelectChange(checked: boolean) {
                             )
                         "
                         @update:checked="onSelectChange" />
-                    <div class="flex items-center min-w-0 space-x-1 lg:space-x-2">
+                    <div class="flex items-center min-w-0 space-x-1 @lg:space-x-2">
                         <GroupedItemsCountButton :expanded="expanded" @click="expanded = !expanded">
                             {{ timeEntry?.timeEntries?.length }}
                         </GroupedItemsCountButton>
@@ -125,7 +125,7 @@ function onSelectChange(checked: boolean) {
                             @changed="updateProjectAndTask"></TimeTrackerProjectTaskDropdown>
                     </div>
                 </div>
-                <div class="flex items-center font-medium space-x-1 lg:space-x-2">
+                <div class="flex items-center font-medium space-x-1 @lg:space-x-2">
                     <TimeEntryRowTagDropdown
                         :create-tag
                         :tags="tags"
