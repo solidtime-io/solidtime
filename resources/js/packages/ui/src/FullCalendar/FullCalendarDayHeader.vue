@@ -23,7 +23,7 @@ const dateFormat = computed(() => organization?.value?.date_format);
         <div class="text-xs text-muted-foreground font-medium">
             {{ date.format('ddd') }}
         </div>
-        <span>{{ formatDate(date.toISOString(), dateFormat) }}</span>
+        <span class="text-xs">{{ formatDate(date.toISOString(), dateFormat) }}</span>
         <span class="block text-xs text-muted-foreground font-medium mt-1">
             {{ formatHumanReadableDuration(totalSeconds, intervalFormat, numberFormat) }}
         </span>

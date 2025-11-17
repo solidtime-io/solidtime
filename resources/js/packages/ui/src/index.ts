@@ -38,6 +38,7 @@ import FullCalendarEventContent from './FullCalendar/FullCalendarEventContent.vu
 import FullCalendarDayHeader from './FullCalendar/FullCalendarDayHeader.vue';
 import TimeEntryCalendar from './FullCalendar/TimeEntryCalendar.vue';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tooltip/index';
+export type { ActivityPeriod } from './FullCalendar/idleStatusPlugin';
 
 export {
     money,

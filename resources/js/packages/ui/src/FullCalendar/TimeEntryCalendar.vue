@@ -4,7 +4,16 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import type { DatesSetArg, EventClickArg, EventDropArg, EventChangeArg } from '@fullcalendar/core';
-import { computed, ref, watch, inject, type ComputedRef } from 'vue';
+import {
+    computed,
+    ref,
+    watch,
+    inject,
+    type ComputedRef,
+    nextTick,
+    onMounted,
+    onActivated,
+} from 'vue';
 import chroma from 'chroma-js';
 import { useCssVariable } from '@/utils/useCssVariable';
 import { getDayJsInstance, getLocalizedDayJs } from '../utils/time';
@@ -12,6 +21,10 @@ import { getUserTimezone, getWeekStart } from '../utils/settings';
 import { LoadingSpinner, TimeEntryCreateModal, TimeEntryEditModal } from '..';
 import FullCalendarEventContent from './FullCalendarEventContent.vue';
 import FullCalendarDayHeader from './FullCalendarDayHeader.vue';
+import activityStatusPlugin, {
+    type ActivityPeriod,
+    renderActivityStatusBoxes,
+} from './idleStatusPlugin';
 import type {
     TimeEntry,
     Project,
@@ -37,6 +50,7 @@ const props = defineProps<{
     tasks: Task[];
     clients: Client[];
     tags: Tag[];
+    activityPeriods?: ActivityPeriod[];
     loading?: boolean;
 
     // Permissions / feature flags
@@ -165,6 +179,8 @@ const dailyTotals = computed(() => {
 
 function emitDatesChange(arg: DatesSetArg) {
     emit('dates-change', { start: arg.start, end: arg.end });
+    // Render activity boxes after calendar view has been rendered
+    renderActivityBoxes();
 }
 
 function handleDateSelect(arg: { start: Date; end: Date }) {
@@ -234,7 +250,7 @@ async function handleEventResize(arg: EventChangeArg) {
 }
 
 const calendarOptions = computed(() => ({
-    plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
+    plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin, activityStatusPlugin],
     initialView: 'timeGridWeek',
     headerToolbar: {
         left: 'prev,next today',
@@ -265,6 +281,7 @@ const calendarOptions = computed(() => ({
     datesSet: emitDatesChange,
 
     events: events.value,
+    activityPeriods: props.activityPeriods || [],
 }));
 
 watch(showCreateTimeEntryModal, (value) => {
@@ -282,6 +299,48 @@ watch(showEditTimeEntryModal, (value) => {
         selectedTimeEntry.value = null;
         emit('refresh');
     }
+});
+
+// Render activity status boxes after FullCalendar has rendered
+const renderActivityBoxes = () => {
+    if (!calendarRef.value || !props.activityPeriods) return;
+
+    const calendarEl = calendarRef.value.$el as HTMLElement;
+    if (calendarEl && props.activityPeriods.length > 0) {
+        renderActivityStatusBoxes(calendarEl, props.activityPeriods);
+    }
+};
+
+// Watch for activity periods changes - re-render when data changes
+watch(
+    () => props.activityPeriods,
+    () => {
+        renderActivityBoxes();
+    }
+);
+
+const scrollToCurrentTime = () => {
+    nextTick(() => {
+        if (calendarRef.value) {
+            const now = getDayJsInstance()();
+            const oneHourBefore = now.subtract(1, 'hour');
+
+            // If subtracting 1 hour keeps us on the same day, scroll to 1 hour before
+            const scrollTime = now.isSame(oneHourBefore, 'day')
+                ? oneHourBefore.format('HH:mm:ss')
+                : now.format('HH:mm:ss');
+
+            calendarRef.value.getApi().scrollToTime(scrollTime);
+        }
+    });
+};
+
+onMounted(() => {
+    scrollToCurrentTime();
+});
+
+onActivated(() => {
+    scrollToCurrentTime();
 });
 </script>
 
@@ -377,11 +436,11 @@ watch(showEditTimeEntryModal, (value) => {
 }
 
 .fullcalendar :deep(.fc-timegrid-slot-label) {
-    background-color: var(--theme-color-default-background);
+    background-color: var(--background);
 }
 
 .fullcalendar :deep(.fc-toolbar) {
-    background-color: var(--theme-color-default-background);
+    background-color: var(--background);
     padding: 0.5rem;
     margin-bottom: 0;
 }
@@ -463,7 +522,7 @@ watch(showEditTimeEntryModal, (value) => {
 
 .fullcalendar :deep(.fc-event) {
     border-radius: var(--radius);
-    padding: 0.45rem 0.25rem;
+    padding: 0;
     font-size: 0.75rem;
     cursor: pointer;
     box-shadow: var(--theme-shadow-card);
@@ -525,7 +584,7 @@ watch(showEditTimeEntryModal, (value) => {
 }
 
 .fullcalendar :deep(.fc-highlight) {
-    background-color: var(--theme-color-default-background);
+    background-color: var(--primary);
 }
 
 .fullcalendar :deep(.fc-select-mirror) {
@@ -543,7 +602,7 @@ watch(showEditTimeEntryModal, (value) => {
 }
 
 .fullcalendar :deep(.fc-timegrid-body) {
-    background-color: var(--theme-color-default-background);
+    background-color: var(--background);
 }
 
 .fullcalendar :deep(.fc-timegrid-col) {
@@ -609,5 +668,35 @@ watch(showEditTimeEntryModal, (value) => {
 /* Simple event main styling */
 .fullcalendar :deep(.fc-event-main) {
     padding: 0.125rem 0.25rem;
+}
+
+/* Activity status plugin styles */
+.fullcalendar :deep(.activity-status-box) {
+    transition: opacity 0.2s ease;
+}
+
+.fullcalendar :deep(.activity-status-box.idle) {
+    background-color: rgba(239, 68, 68, 0.3) !important;
+}
+
+.fullcalendar :deep(.activity-status-box.idle):hover {
+    background-color: rgba(239, 68, 68, 1) !important;
+}
+
+.fullcalendar :deep(.activity-status-box.active) {
+    background-color: rgba(34, 197, 94, 0.3) !important;
+}
+
+.fullcalendar :deep(.activity-status-box.active):hover {
+    background-color: rgba(34, 197, 94, 1) !important;
+}
+
+/* Add left margin to events only on days with activity status data */
+.fullcalendar :deep(.has-activity-status .fc-timegrid-event-harness) {
+    margin-left: 15px !important;
+}
+
+.fullcalendar :deep(.fc-timegrid-event) {
+    margin-left: 0 !important;
 }
 </style>
