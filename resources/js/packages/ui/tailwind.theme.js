@@ -16,6 +16,7 @@ export const solidtimeTheme = {
         '2xs': '16rem',
     },
     fontSize: {
+        '2xs': ['0.625rem', { lineHeight: '0.75rem' }],
         xs: ['0.75rem', { lineHeight: '1rem' }],
         sm: ['0.8125rem', { lineHeight: '1.125rem' }],
         base: ['0.875rem', { lineHeight: '1.25rem' }],
