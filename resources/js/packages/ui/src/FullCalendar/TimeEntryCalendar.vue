@@ -521,7 +521,7 @@ onActivated(() => {
 }
 
 .fullcalendar :deep(.fc-event) {
-    border-radius: var(--radius);
+    border-radius: calc(var(--radius) - 4px);
     padding: 0;
     font-size: 0.75rem;
     cursor: pointer;
