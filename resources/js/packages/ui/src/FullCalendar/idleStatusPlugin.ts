@@ -1,4 +1,5 @@
 import { createPlugin, PluginDef } from '@fullcalendar/core';
+import { computePosition, flip, shift, offset } from '@floating-ui/dom';
 
 export interface ActivityPeriod {
     start: string;
@@ -18,6 +19,52 @@ declare module '@fullcalendar/core' {
 }
 
 /**
+ * Creates and manages a tooltip element for activity status boxes
+ */
+function createTooltip(): HTMLElement {
+    const tooltip = document.createElement('div');
+    tooltip.className =
+        'z-50 overflow-hidden rounded-md bg-primary px-3 py-1.5 text-xs text-primary-foreground';
+    tooltip.style.position = 'fixed';
+    tooltip.style.pointerEvents = 'none';
+    tooltip.style.opacity = '0';
+    tooltip.style.whiteSpace = 'nowrap';
+    tooltip.style.transform = 'scale(0.95)';
+    tooltip.style.transition = 'opacity 150ms, transform 150ms';
+    document.body.appendChild(tooltip);
+    return tooltip;
+}
+
+/**
+ * Shows tooltip for an activity status box
+ */
+function showTooltip(box: HTMLElement, tooltip: HTMLElement, text: string) {
+    tooltip.textContent = text;
+    tooltip.style.opacity = '1';
+    tooltip.style.transform = 'scale(1)';
+
+    const updatePosition = () => {
+        computePosition(box, tooltip, {
+            placement: 'right',
+            middleware: [offset(8), flip(), shift({ padding: 5 })],
+        }).then(({ x, y }) => {
+            tooltip.style.left = `${x}px`;
+            tooltip.style.top = `${y}px`;
+        });
+    };
+
+    updatePosition();
+}
+
+/**
+ * Hides the tooltip
+ */
+function hideTooltip(tooltip: HTMLElement) {
+    tooltip.style.opacity = '0';
+    tooltip.style.transform = 'scale(0.95)';
+}
+
+/**
  * Renders activity status boxes in the calendar time grid
  */
 export function renderActivityStatusBoxes(
@@ -29,6 +76,10 @@ export function renderActivityStatusBoxes(
     // Clean up existing activity boxes and markers first
     const existingBoxes = calendarEl.querySelectorAll('.activity-status-box');
     existingBoxes.forEach((box) => box.remove());
+
+    // Clean up existing tooltips
+    const existingTooltips = document.querySelectorAll('.activity-status-tooltip');
+    existingTooltips.forEach((tooltip) => tooltip.remove());
 
     // Remove has-activity-status class from all lanes
     const allLanes = calendarEl.querySelectorAll('.fc-timegrid-col');
@@ -52,6 +103,9 @@ export function renderActivityStatusBoxes(
         'periods:',
         activityPeriods.length
     );
+
+    // Create a single tooltip instance to be reused
+    const tooltip = createTooltip();
 
     // Get the calendar's current view to determine dates
     const dateHeaders = calendarEl.querySelectorAll('.fc-col-header-cell');
@@ -115,7 +169,31 @@ export function renderActivityStatusBoxes(
             box.style.left = '4px';
             box.style.right = '4px';
             box.style.zIndex = '10';
-            box.style.borderRadius = '4px';
+            box.style.cursor = 'default';
+
+            // Calculate duration in minutes
+            const actualStart = periodStart > laneDateStart ? periodStart : laneDateStart;
+            const actualEnd = periodEnd < laneDateEnd ? periodEnd : laneDateEnd;
+            const durationMs = actualEnd.getTime() - actualStart.getTime();
+            const durationMinutes = Math.round(durationMs / 60000);
+
+            // Format duration
+            const hours = Math.floor(durationMinutes / 60);
+            const minutes = durationMinutes % 60;
+            const durationText = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+
+            // Add tooltip text based on status
+            const status = period.isIdle ? 'Idling' : 'Active';
+            const tooltipText = `${status} (${durationText})`;
+
+            // Add hover event listeners for tooltip
+            box.addEventListener('mouseenter', () => {
+                showTooltip(box, tooltip, tooltipText);
+            });
+
+            box.addEventListener('mouseleave', () => {
+                hideTooltip(tooltip);
+            });
 
             // Position relative to the lane
             const laneFrame = lane.querySelector('.fc-timegrid-col-frame');

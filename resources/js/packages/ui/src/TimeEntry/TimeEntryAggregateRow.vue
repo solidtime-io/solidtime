@@ -102,7 +102,7 @@ function onSelectChange(checked: boolean) {
                             )
                         "
                         @update:checked="onSelectChange" />
-                    <div class="flex items-center min-w-0 space-x-1 @lg:space-x-2">
+                    <div class="flex items-center min-w-0">
                         <GroupedItemsCountButton :expanded="expanded" @click="expanded = !expanded">
                             {{ timeEntry?.timeEntries?.length }}
                         </GroupedItemsCountButton>
