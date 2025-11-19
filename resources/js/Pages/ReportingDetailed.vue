@@ -369,6 +369,7 @@ async function downloadExport(format: ExportFormat) {
             :tags="tags"
             :currency="getOrganizationCurrencyString()"
             :clients="clients"
+            class="border-b border-default-background-separator"
             :update-time-entries="
                 (args) =>
                     updateTimeEntries(
@@ -399,6 +400,7 @@ async function downloadExport(format: ExportFormat) {
                     :on-start-stop-click="() => startTimeEntryFromExisting(entry)"
                     :delete-time-entry="() => deleteTimeEntries([entry])"
                     :currency="getOrganizationCurrencyString()"
+                    :duplicate-time-entry="() => createTimeEntry(entry)"
                     :members="members"
                     show-date
                     show-member

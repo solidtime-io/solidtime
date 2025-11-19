@@ -22,13 +22,27 @@ class Kernel extends ConsoleKernel
             ->when(fn (): bool => config('scheduling.tasks.auth_send_mails_expiring_api_tokens'))
             ->everyTenMinutes();
 
-        $schedule->command('self-host:check-for-update')
-            ->when(fn (): bool => config('scheduling.tasks.self_hosting_check_for_update'))
-            ->twiceDaily();
+        if (config('app.key') && (config('scheduling.tasks.self_hosting_check_for_update') || config('scheduling.tasks.self_hosting_telemetry'))) {
+            // Convert string to a stable integer for seeding
+            /** @var int $seed Take the first 8 hex chars → 32-bit int */
+            $seed = hexdec(substr(hash('md5', config('app.key')), 0, 8));
+            $seed = abs($seed); // Ensure it's positive
+            mt_srand($seed);
+            $firstHour = mt_rand(0, 23);
+            $secondHour = ($firstHour + 12) % 24;
+            $minuteOffset = mt_rand(0, 59);
+            mt_srand(null); // Reset the random number generator
 
-        $schedule->command('self-host:telemetry')
-            ->when(fn (): bool => config('scheduling.tasks.self_hosting_telemetry'))
-            ->twiceDaily();
+            if (config('scheduling.tasks.self_hosting_check_for_update')) {
+                $schedule->command('self-host:check-for-update')
+                    ->twiceDailyAt($firstHour, $secondHour, $minuteOffset);
+            }
+
+            if (config('scheduling.tasks.self_hosting_telemetry')) {
+                $schedule->command('self-host:telemetry')
+                    ->twiceDailyAt($firstHour, $secondHour, $minuteOffset);
+            }
+        }
 
         $schedule->command('self-host:database-consistency')
             ->when(fn (): bool => config('scheduling.tasks.self_hosting_database_consistency'))

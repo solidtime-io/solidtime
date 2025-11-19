@@ -38,10 +38,16 @@ class ClientController extends Controller
     public function index(Organization $organization, ClientIndexRequest $request): ClientCollection
     {
         $this->checkPermission($organization, 'clients:view');
+        $canViewAllClients = $this->hasPermission($organization, 'clients:view:all');
+        $user = $this->user();
 
         $clientsQuery = Client::query()
             ->whereBelongsTo($organization, 'organization')
             ->orderBy('created_at', 'desc');
+
+        if (! $canViewAllClients) {
+            $clientsQuery->visibleByEmployee($user);
+        }
 
         $filterArchived = $request->getFilterArchived();
         if ($filterArchived === 'true') {

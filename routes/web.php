@@ -36,6 +36,10 @@ Route::middleware([
         return Inertia::render('Time');
     })->name('time');
 
+    Route::get('/calendar', function () {
+        return Inertia::render('Calendar');
+    })->name('calendar');
+
     Route::get('/reporting', function () {
         return Inertia::render('Reporting');
     })->name('reporting');

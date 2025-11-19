@@ -113,7 +113,7 @@ const option = computed(() => ({
         },
         axisLabel: {
             fontSize: 12,
-            fontWeight: 600,
+            fontWeight: 400,
             color: labelColor.value,
             margin: 16,
             fontFamily: 'Inter, sans-serif',

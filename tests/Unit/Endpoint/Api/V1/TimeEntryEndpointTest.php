@@ -3393,6 +3393,241 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         ]);
     }
 
+    public function test_store_endpoint_blocks_overlapping_entries_when_start_overlaps(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:create:own',
+        ]);
+        $data->organization->prevent_overlapping_time_entries = true;
+        $data->organization->save();
+        $baseStart = Carbon::create(2025, 1, 1, 12, 0, 0, 'UTC');
+        $baseEnd = Carbon::create(2025, 1, 1, 13, 0, 0, 'UTC');
+        TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)
+            ->create([
+                'start' => $baseStart,
+                'end' => $baseEnd,
+            ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.time-entries.store', [$data->organization->getKey()]), [
+            'member_id' => $data->member->getKey(),
+            'billable' => true,
+            'start' => $baseStart->copy()->addMinutes(30)->toIso8601ZuluString(),
+            'end' => $baseEnd->copy()->addMinutes(30)->toIso8601ZuluString(),
+        ]);
+
+        // Assert
+        $response->assertStatus(400);
+        $response->assertExactJson([
+            'error' => true,
+            'key' => 'overlapping_time_entry',
+            'message' => 'Overlapping time entries are not allowed.',
+        ]);
+    }
+
+    public function test_store_endpoint_blocks_overlapping_entries_when_end_overlaps(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:create:own',
+        ]);
+        $data->organization->prevent_overlapping_time_entries = true;
+        $data->organization->save();
+        $baseStart = Carbon::create(2025, 1, 1, 12, 0, 0, 'UTC');
+        $baseEnd = Carbon::create(2025, 1, 1, 13, 0, 0, 'UTC');
+        TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)
+            ->create([
+                'start' => $baseStart,
+                'end' => $baseEnd,
+            ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.time-entries.store', [$data->organization->getKey()]), [
+            'member_id' => $data->member->getKey(),
+            'billable' => true,
+            'start' => $baseStart->copy()->subMinutes(30)->toIso8601ZuluString(),
+            'end' => $baseStart->copy()->addMinutes(30)->toIso8601ZuluString(),
+        ]);
+
+        // Assert
+        $response->assertStatus(400);
+        $response->assertExactJson([
+            'error' => true,
+            'key' => 'overlapping_time_entry',
+            'message' => 'Overlapping time entries are not allowed.',
+        ]);
+    }
+
+    public function test_store_endpoint_blocks_overlapping_entries_when_new_entry_is_within_existing(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:create:own',
+        ]);
+        $data->organization->prevent_overlapping_time_entries = true;
+        $data->organization->save();
+        $baseStart = Carbon::create(2025, 1, 1, 12, 0, 0, 'UTC');
+        $baseEnd = Carbon::create(2025, 1, 1, 13, 0, 0, 'UTC');
+        TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)
+            ->create([
+                'start' => $baseStart,
+                'end' => $baseEnd,
+            ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.time-entries.store', [$data->organization->getKey()]), [
+            'member_id' => $data->member->getKey(),
+            'billable' => true,
+            'start' => $baseStart->copy()->addMinutes(15)->toIso8601ZuluString(),
+            'end' => $baseStart->copy()->addMinutes(45)->toIso8601ZuluString(),
+        ]);
+
+        // Assert
+        $response->assertStatus(400);
+        $response->assertExactJson([
+            'error' => true,
+            'key' => 'overlapping_time_entry',
+            'message' => 'Overlapping time entries are not allowed.',
+        ]);
+    }
+
+    public function test_store_endpoint_blocks_overlapping_entries_when_new_entry_surrounds_existing(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:create:own',
+        ]);
+        $data->organization->prevent_overlapping_time_entries = true;
+        $data->organization->save();
+        $baseStart = Carbon::create(2025, 1, 1, 12, 0, 0, 'UTC');
+        $baseEnd = Carbon::create(2025, 1, 1, 13, 0, 0, 'UTC');
+        TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)
+            ->create([
+                'start' => $baseStart,
+                'end' => $baseEnd,
+            ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.time-entries.store', [$data->organization->getKey()]), [
+            'member_id' => $data->member->getKey(),
+            'billable' => true,
+            'start' => $baseStart->copy()->subMinutes(30)->toIso8601ZuluString(),
+            'end' => $baseEnd->copy()->addMinutes(30)->toIso8601ZuluString(),
+        ]);
+
+        // Assert
+        $response->assertStatus(400);
+        $response->assertExactJson([
+            'error' => true,
+            'key' => 'overlapping_time_entry',
+            'message' => 'Overlapping time entries are not allowed.',
+        ]);
+    }
+
+    public function test_store_endpoint_blocks_starting_active_entry_when_it_overlaps_with_existing(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:create:own',
+        ]);
+        $data->organization->prevent_overlapping_time_entries = true;
+        $data->organization->save();
+        $baseStart = Carbon::create(2025, 1, 1, 12, 0, 0, 'UTC');
+        $baseEnd = Carbon::create(2025, 1, 1, 13, 0, 0, 'UTC');
+        TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)
+            ->create([
+                'start' => $baseStart,
+                'end' => $baseEnd,
+            ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.time-entries.store', [$data->organization->getKey()]), [
+            'member_id' => $data->member->getKey(),
+            'billable' => true,
+            'start' => $baseStart->copy()->addMinutes(30)->toIso8601ZuluString(),
+            'end' => null,
+        ]);
+
+        // Assert
+        $response->assertStatus(400);
+        $response->assertExactJson([
+            'error' => true,
+            'key' => 'overlapping_time_entry',
+            'message' => 'Overlapping time entries are not allowed.',
+        ]);
+    }
+
+    public function test_store_endpoint_allows_future_time_entries_even_with_running_now(): void
+    {
+        // Arrange
+        $now = Carbon::create(2025, 1, 1, 12, 0, 0, 'UTC');
+        $this->travelTo($now);
+        $data = $this->createUserWithPermission([
+            'time-entries:create:own',
+        ]);
+        $data->organization->prevent_overlapping_time_entries = true;
+        $data->organization->save();
+        TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)
+            ->create([
+                'start' => $now->copy()->subHour(),
+                'end' => null,
+            ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.time-entries.store', [$data->organization->getKey()]), [
+            'member_id' => $data->member->getKey(),
+            'billable' => true,
+            'start' => $now->copy()->addDay()->toIso8601ZuluString(),
+            'end' => $now->copy()->addDay()->addHour()->toIso8601ZuluString(),
+        ]);
+
+        // Assert
+        $response->assertStatus(201);
+    }
+
+    public function test_update_endpoint_blocks_overlap_and_excludes_current_entry(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:update:own',
+        ]);
+        $data->organization->prevent_overlapping_time_entries = true;
+        $data->organization->save();
+        $baseStart = Carbon::create(2025, 1, 1, 14, 0, 0, 'UTC');
+        $baseEnd = Carbon::create(2025, 1, 1, 15, 0, 0, 'UTC');
+        $base = TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)
+            ->create([
+                'start' => $baseStart,
+                'end' => $baseEnd,
+            ]);
+        $toUpdate = TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)
+            ->create([
+                'start' => $baseEnd->copy()->addMinutes(30),
+                'end' => $baseEnd->copy()->addHour(),
+            ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.time-entries.update', [$data->organization->getKey(), $toUpdate->getKey()]), [
+            'start' => $baseStart->copy()->addMinutes(30)->toIso8601ZuluString(),
+        ]);
+
+        // Assert
+        $response->assertStatus(400);
+        $response->assertExactJson([
+            'error' => true,
+            'key' => 'overlapping_time_entry',
+            'message' => 'Overlapping time entries are not allowed.',
+        ]);
+    }
+
     public function test_update_multiple_refreshes_billable_rate_on_updates_time_entries(): void
     {
         // Arrange

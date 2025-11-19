@@ -12,11 +12,19 @@ import { useProjectsStore } from '@/utils/useProjects';
 import { useMembersStore } from '@/utils/useMembers';
 import { useTasksStore } from '@/utils/useTasks';
 import { useClientsStore } from '@/utils/useClients';
+import { useTagsStore } from '@/utils/useTags';
 import { CheckCircleIcon, UserCircleIcon, UserGroupIcon } from '@heroicons/vue/20/solid';
 import { DocumentTextIcon, FolderIcon } from '@heroicons/vue/16/solid';
 import BillableIcon from '@/packages/ui/src/Icons/BillableIcon.vue';
 
-export type GroupingOption = 'project' | 'task' | 'user' | 'billable' | 'client' | 'description';
+export type GroupingOption =
+    | 'project'
+    | 'task'
+    | 'user'
+    | 'billable'
+    | 'client'
+    | 'description'
+    | 'tag';
 
 export const useReportingStore = defineStore('reporting', () => {
     const reportingGraphResponse = ref<ReportingResponse | null>(null);
@@ -73,6 +81,7 @@ export const useReportingStore = defineStore('reporting', () => {
         billable: 'Non-Billable',
         client: 'No Client',
         description: 'No Description',
+        tag: 'No Tag',
     } as Record<string, string>;
 
     function getNameForReportingRowEntry(key: string | null, type: string | null) {
@@ -105,6 +114,11 @@ export const useReportingStore = defineStore('reporting', () => {
             const clientsStore = useClientsStore();
             const { clients } = storeToRefs(clientsStore);
             return clients.value.find((client) => client.id === key)?.name;
+        }
+        if (type === 'tag') {
+            const tagsStore = useTagsStore();
+            const { tags } = storeToRefs(tagsStore);
+            return tags.value.find((tag) => tag.id === key)?.name;
         }
         if (type === 'billable') {
             if (key === '0') {
@@ -149,6 +163,11 @@ export const useReportingStore = defineStore('reporting', () => {
         {
             label: 'Description',
             value: 'description',
+            icon: DocumentTextIcon,
+        },
+        {
+            label: 'Tags',
+            value: 'tag',
             icon: DocumentTextIcon,
         },
     ];

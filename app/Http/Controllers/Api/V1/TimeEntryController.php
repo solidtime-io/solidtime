@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Enums\ExportFormat;
 use App\Enums\Role;
 use App\Exceptions\Api\FeatureIsNotAvailableInFreePlanApiException;
+use App\Exceptions\Api\OverlappingTimeEntryApiException;
 use App\Exceptions\Api\PdfRendererIsNotConfiguredException;
 use App\Exceptions\Api\TimeEntryCanNotBeRestartedApiException;
 use App\Exceptions\Api\TimeEntryStillRunningApiException;
@@ -45,6 +46,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\File;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Blade;
@@ -56,6 +58,43 @@ use Spatie\TemporaryDirectory\TemporaryDirectory;
 
 class TimeEntryController extends Controller
 {
+    private function assertNoOverlap(Organization $organization, Member $member, \Illuminate\Support\Carbon $start, ?\Illuminate\Support\Carbon $end, ?TimeEntry $exclude = null): void
+    {
+        if (! $organization->prevent_overlapping_time_entries) {
+            return;
+        }
+
+        $query = TimeEntry::query()
+            ->where('organization_id', $organization->getKey())
+            ->where('user_id', $member->user_id)
+            ->when($exclude !== null, function (Builder $q) use ($exclude): void {
+                $q->where('id', '!=', $exclude->getKey());
+            })
+            ->where(function (Builder $q) use ($start, $end): void {
+                $q->where(function (Builder $q2) use ($start): void {
+                    $q2->where('end', '>', $start)
+                        ->where('start', '<', $start);
+                });
+
+                if ($end !== null) {
+                    $q->orWhere(function (Builder $q4) use ($end): void {
+                        $q4->where('start', '<', $end)
+                            ->where('end', '>', $end);
+                    });
+                    // Check if the new entry completely surrounds an existing entry
+                    $q->orWhere(function (Builder $q6) use ($start, $end): void {
+                        $q6->where('start', '>=', $start)
+                            ->where('end', '<=', $end);
+                    });
+                }
+
+            });
+
+        if ($query->exists()) {
+            throw new OverlappingTimeEntryApiException;
+        }
+    }
+
     protected function checkPermission(Organization $organization, string $permission, ?TimeEntry $timeEntry = null): void
     {
         parent::checkPermission($organization, $permission);
@@ -549,16 +588,14 @@ class TimeEntryController extends Controller
             throw new TimeEntryStillRunningApiException;
         }
 
+        // Overlap check for create
+        $start = Carbon::parse($request->input('start'));
+        $end = $request->input('end') !== null ? Carbon::parse($request->input('end')) : null;
+        $this->assertNoOverlap($organization, $member, $start, $end);
+
         $project = $request->input('project_id') !== null ? Project::findOrFail((string) $request->input('project_id')) : null;
         $client = $project?->client;
         $task = $request->input('task_id') !== null ? $project->tasks()->findOrFail((string) $request->input('task_id')) : null;
-
-        if ($project !== null) {
-            RecalculateSpentTimeForProject::dispatch($project);
-        }
-        if ($task !== null) {
-            RecalculateSpentTimeForTask::dispatch($task);
-        }
 
         $timeEntry = new TimeEntry;
         $timeEntry->fill($request->validated());
@@ -568,6 +605,13 @@ class TimeEntryController extends Controller
         $timeEntry->organization()->associate($organization);
         $timeEntry->setComputedAttributeValue('billable_rate');
         $timeEntry->save();
+
+        if ($project !== null) {
+            RecalculateSpentTimeForProject::dispatch($project);
+        }
+        if ($task !== null) {
+            RecalculateSpentTimeForTask::dispatch($task);
+        }
 
         return new TimeEntryResource($timeEntry);
     }
@@ -592,6 +636,13 @@ class TimeEntryController extends Controller
         if ($timeEntry->end !== null && $request->has('end') && $request->input('end') === null) {
             throw new TimeEntryCanNotBeRestartedApiException;
         }
+
+        // Overlap check for update (exclude current)
+        /** @var Member $effectiveMember */
+        $effectiveMember = $request->has('member_id') ? Member::query()->findOrFail($request->input('member_id')) : $timeEntry->member;
+        $effectiveStart = $request->has('start') ? Carbon::parse($request->input('start')) : $timeEntry->start;
+        $effectiveEnd = $request->has('end') ? ($request->input('end') !== null ? Carbon::parse($request->input('end')) : null) : $timeEntry->end;
+        $this->assertNoOverlap($organization, $effectiveMember, $effectiveStart, $effectiveEnd, $timeEntry);
 
         $oldProject = $timeEntry->project;
         $oldTask = $timeEntry->task;

@@ -41,6 +41,8 @@ const props = defineProps<{
     projects: Project[];
     tasks: Task[];
     clients: Client[];
+    start?: string;
+    end?: string;
 }>();
 
 const description = ref<HTMLInputElement | null>(null);
@@ -63,7 +65,27 @@ const timeEntryDefaultValues = {
     end: getDayJsInstance().utc().format(),
 };
 
-const timeEntry = ref({ ...timeEntryDefaultValues });
+const timeEntry = ref({
+    ...timeEntryDefaultValues,
+});
+
+// update the localStart and localEnd when props.start or props.end get updates
+watch(
+    () => props.start,
+    (value) => {
+        if (value) {
+            localStart.value = getLocalizedDayJs(value).format();
+        }
+    }
+);
+watch(
+    () => props.end,
+    (value) => {
+        if (value) {
+            localEnd.value = getLocalizedDayJs(value).format();
+        }
+    }
+);
 
 watch(
     () => timeEntry.value.project_id,

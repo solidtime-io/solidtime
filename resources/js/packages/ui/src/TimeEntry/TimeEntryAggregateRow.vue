@@ -33,6 +33,7 @@ const props = defineProps<{
     createProject: (project: CreateProjectBody) => Promise<Project | undefined>;
     createClient: (client: CreateClientBody) => Promise<Client | undefined>;
     onStartStopClick: (timeEntry: TimeEntry) => void;
+    duplicateTimeEntry: (timeEntry: TimeEntry) => void;
     updateTimeEntries: (ids: string[], changes: Partial<TimeEntry>) => void;
     updateTimeEntry: (timeEntry: TimeEntry) => void;
     deleteTimeEntries: (timeEntries: TimeEntry[]) => void;
@@ -92,7 +93,7 @@ function onSelectChange(checked: boolean) {
         class="border-b border-default-background-separator bg-row-background min-w-0 transition"
         data-testid="time_entry_row">
         <MainContainer class="min-w-0">
-            <div class="sm:flex py-1.5 items-center min-w-0 justify-between group">
+            <div class="sm:flex py-2 items-center min-w-0 justify-between group">
                 <div class="flex space-x-3 items-center min-w-0">
                     <Checkbox
                         :checked="
@@ -172,6 +173,8 @@ function onSelectChange(checked: boolean) {
                         class="opacity-20 flex group-hover:opacity-100 focus-visible:opacity-100"
                         @changed="onStartStopClick(timeEntry)"></TimeTrackerStartStop>
                     <TimeEntryMoreOptionsDropdown
+                        :show-edit="false"
+                        :show-duplicate="false"
                         @delete="
                             deleteTimeEntries(timeEntry?.timeEntries ?? [])
                         "></TimeEntryMoreOptionsDropdown>
@@ -201,6 +204,7 @@ function onSelectChange(checked: boolean) {
                 :update-time-entry="(timeEntry: TimeEntry) => updateTimeEntry(timeEntry)"
                 :on-start-stop-click="() => onStartStopClick(subEntry)"
                 :delete-time-entry="() => deleteTimeEntries([subEntry])"
+                :duplicate-time-entry="() => duplicateTimeEntry(subEntry)"
                 :currency="currency"
                 :create-tag
                 :time-entry="subEntry"

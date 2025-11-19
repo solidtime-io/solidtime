@@ -30,10 +30,7 @@ const organization = inject<ComputedRef<Organization>>('organization');
 <template>
     <div
         class="contents text-text-primary [&>*]:transition [&>*]:border-card-background-separator [&>*]:border-b [&>*]:h-[50px]">
-        <div
-            :class="
-                twMerge('pl-6 font-medium flex items-center space-x-3', props.indent ? 'pl-16' : '')
-            ">
+        <div :class="twMerge('pl-6 flex items-center space-x-3', props.indent ? 'pl-16' : '')">
             <GroupedItemsCountButton
                 v-if="entry.grouped_data && entry.grouped_data?.length > 0"
                 :expanded="expanded"

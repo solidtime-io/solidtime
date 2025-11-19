@@ -29,7 +29,7 @@ const open = ref(false);
 function updateTimerAndStartLiveTimerUpdate() {
     const defaultUnit =
         organizationSettings?.value?.intervalFormat === 'decimal' ? 'hours' : 'minutes';
-    const { seconds } = parseTimeInput(temporaryCustomTimerEntry.value, defaultUnit);
+    const seconds = parseTimeInput(temporaryCustomTimerEntry.value, defaultUnit);
     if (seconds && seconds > 0) {
         let newEndDate = props.end;
         let newStartDate = props.start;
