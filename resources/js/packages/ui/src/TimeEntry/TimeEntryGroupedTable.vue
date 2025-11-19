@@ -175,7 +175,7 @@ onMounted(() => {
     <div class="@container">
         <div v-for="(value, key) in visibleGroupedEntries" :key="key">
             <TimeEntryRowHeading
-                :date="key"
+                :date="String(key)"
                 :duration="sumDuration(value)"
                 :checked="
                     value.every((timeEntry: TimeEntry) => selectedTimeEntries.includes(timeEntry))

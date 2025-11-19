@@ -676,11 +676,11 @@ onActivated(() => {
 }
 
 .fullcalendar :deep(.activity-status-box.idle) {
-    background-color: rgba(239, 68, 68, 0.3) !important;
+    background-color: rgba(156, 163, 175, 0.1) !important;
 }
 
 .fullcalendar :deep(.activity-status-box.idle):hover {
-    background-color: rgba(239, 68, 68, 1) !important;
+    background-color: rgba(156, 163, 175, 0.5) !important;
 }
 
 .fullcalendar :deep(.activity-status-box.active) {

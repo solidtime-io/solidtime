@@ -1,4 +1,4 @@
-import { createPlugin, PluginDef } from '@fullcalendar/core';
+import { createPlugin, type PluginDef } from '@fullcalendar/core';
 import { computePosition, flip, shift, offset } from '@floating-ui/dom';
 
 export interface ActivityPeriod {
@@ -9,13 +9,6 @@ export interface ActivityPeriod {
 
 export interface ActivityStatusPluginOptions {
     activityPeriods?: ActivityPeriod[];
-}
-
-// Extend FullCalendar's options interface
-declare module '@fullcalendar/core' {
-    interface CalendarOptions {
-        activityPeriods?: ActivityPeriod[];
-    }
 }
 
 /**
@@ -107,9 +100,6 @@ export function renderActivityStatusBoxes(
     // Create a single tooltip instance to be reused
     const tooltip = createTooltip();
 
-    // Get the calendar's current view to determine dates
-    const dateHeaders = calendarEl.querySelectorAll('.fc-col-header-cell');
-
     lanes.forEach((lane: Element, dayIndex: number) => {
         // Get the date for this lane from the data attribute
         const laneEl = lane as HTMLElement;
@@ -126,8 +116,6 @@ export function renderActivityStatusBoxes(
         const laneDateEnd = new Date(laneDate);
         laneDateEnd.setHours(23, 59, 59, 999);
 
-        console.log('Processing lane', dayIndex, 'date:', dateStr);
-
         let hasActivityStatusForThisDay = false;
 
         activityPeriods.forEach((period) => {
@@ -138,15 +126,6 @@ export function renderActivityStatusBoxes(
             if (periodEnd < laneDateStart || periodStart > laneDateEnd) {
                 return;
             }
-
-            console.log(
-                'Rendering period',
-                period.isIdle ? 'idle' : 'active',
-                'from',
-                periodStart,
-                'to',
-                periodEnd
-            );
 
             // Calculate the position and height of the idle box
             const { top, height } = calculateBoxPosition(
@@ -252,9 +231,9 @@ const activityStatusPlugin: PluginDef = createPlugin({
     name: '@solidtime/activity-status',
 
     optionRefiners: {
-        activityPeriods: (rawVal: any) => {
+        activityPeriods: (rawVal: unknown): ActivityPeriod[] => {
             if (!Array.isArray(rawVal)) return [];
-            return rawVal;
+            return rawVal as ActivityPeriod[];
         },
     },
 });
