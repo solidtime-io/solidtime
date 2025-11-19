@@ -10,19 +10,19 @@ on:
       - '.github/workflows/build-private.yml'
       - 'docker/prod/**'
   workflow_dispatch:
+
 permissions:
   contents: read
 
 name: Build - DeepVision Image
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
-
 
     steps:
       - name: "Check out code"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0 # Required for WyriHaximus/github-action-get-previous-tag
 

@@ -23,6 +23,9 @@ env:
 name: Build - On Premise
 jobs:
   build:
+    # DeepVision Patch: disable onpremise build
+    if: false
+
     strategy:
       matrix:
         include:
