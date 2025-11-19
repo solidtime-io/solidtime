@@ -13,6 +13,7 @@ import {
     nextTick,
     onMounted,
     onActivated,
+    onUnmounted,
 } from 'vue';
 import chroma from 'chroma-js';
 import { useCssVariable } from '@/utils/useCssVariable';
@@ -37,7 +38,10 @@ import type {
 } from '@/packages/api/src';
 import type { Dayjs } from 'dayjs';
 
-type CalendarExtendedProps = { timeEntry: TimeEntry } & Record<string, unknown>;
+type CalendarExtendedProps = { timeEntry: TimeEntry; isRunning?: boolean } & Record<
+    string,
+    unknown
+>;
 
 const emit = defineEmits<{
     (e: 'dates-change', payload: { start: Date; end: Date }): void;
@@ -76,6 +80,10 @@ const showEditTimeEntryModal = ref<boolean>(false);
 const selectedTimeEntry = ref<TimeEntry | null>(null);
 
 const calendarRef = ref<InstanceType<typeof FullCalendar> | null>(null);
+
+// Reactive "now" for running time entry - updates every minute
+const currentTime = ref(getDayJsInstance()());
+let currentTimeInterval: ReturnType<typeof setInterval> | null = null;
 
 // Inject organization data for settings
 const organization = inject<ComputedRef<Organization>>('organization');
@@ -118,47 +126,52 @@ const events = computed(() => {
     const themeBackground = (() => {
         return cssBackground.value?.trim();
     })();
-    return props.timeEntries
-        ?.filter((timeEntry) => timeEntry.end !== null)
-        ?.map((timeEntry) => {
-            const project = props.projects.find((p) => p.id === timeEntry.project_id);
-            const client = props.clients.find((c) => c.id === project?.client_id);
-            const task = props.tasks.find((t) => t.id === timeEntry.task_id);
-            const duration = getDayJsInstance()(timeEntry.end!).diff(
-                getDayJsInstance()(timeEntry.start),
-                'minutes'
-            );
+    return props.timeEntries?.map((timeEntry) => {
+        const isRunning = timeEntry.end === null;
+        const project = props.projects.find((p) => p.id === timeEntry.project_id);
+        const client = props.clients.find((c) => c.id === project?.client_id);
+        const task = props.tasks.find((t) => t.id === timeEntry.task_id);
 
-            const title = timeEntry.description || 'No description';
+        // For running entries, use current time as end
+        const effectiveEnd = isRunning ? currentTime.value : getDayJsInstance()(timeEntry.end!);
+        const duration = effectiveEnd.diff(getDayJsInstance()(timeEntry.start), 'minutes');
 
-            const baseColor = project?.color || '#6B7280';
-            const backgroundColor = chroma.mix(baseColor, themeBackground, 0.65, 'lab').hex();
-            const borderColor = chroma.mix(baseColor, themeBackground, 0.5, 'lab').hex();
+        const title = timeEntry.description || 'No description';
 
-            // For 0-duration events, display them with minimum visual duration but preserve actual duration
-            const startTime = getLocalizedDayJs(timeEntry.start);
-            const endTime =
-                duration === 0
-                    ? startTime.add(1, 'second') // Show as 1 second for minimal visibility
-                    : getLocalizedDayJs(timeEntry.end!);
+        const baseColor = project?.color || '#6B7280';
+        const backgroundColor = chroma.mix(baseColor, themeBackground, 0.65, 'lab').hex();
+        const borderColor = chroma.mix(baseColor, themeBackground, 0.5, 'lab').hex();
 
-            return {
-                id: timeEntry.id,
-                start: startTime.format(),
-                end: endTime.format(),
-                title,
-                backgroundColor,
-                borderColor,
-                textColor: 'var(--foreground)',
-                extendedProps: {
-                    timeEntry,
-                    project,
-                    client,
-                    task,
-                    duration,
-                },
-            };
-        });
+        // For 0-duration events, display them with minimum visual duration but preserve actual duration
+        const startTime = getLocalizedDayJs(timeEntry.start);
+        const endTime =
+            duration === 0
+                ? startTime.add(1, 'second') // Show as 1 second for minimal visibility
+                : isRunning
+                  ? getLocalizedDayJs(currentTime.value.toISOString())
+                  : getLocalizedDayJs(timeEntry.end!);
+
+        return {
+            id: timeEntry.id,
+            start: startTime.format(),
+            end: endTime.format(),
+            title,
+            backgroundColor,
+            borderColor,
+            textColor: 'var(--foreground)',
+            // For running entries: disable dragging and resizing
+            startEditable: !isRunning,
+            classNames: isRunning ? ['running-entry'] : [],
+            extendedProps: {
+                timeEntry,
+                project,
+                client,
+                task,
+                duration,
+                isRunning,
+            },
+        };
+    });
 });
 
 // Daily totals used in day header
@@ -199,6 +212,10 @@ function handleDateSelect(arg: { start: Date; end: Date }) {
 
 function handleEventClick(arg: EventClickArg) {
     const ext = arg.event.extendedProps as CalendarExtendedProps;
+    // Don't open edit modal for running time entries
+    if (ext.isRunning) {
+        return;
+    }
     selectedTimeEntry.value = ext.timeEntry;
     showEditTimeEntryModal.value = true;
 }
@@ -238,12 +255,15 @@ async function handleEventResize(arg: EventChangeArg) {
             .second(0)
             .utc()
             .format(),
-        end: getDayJsInstance()(arg.event.end.toISOString())
-            .utc()
-            .tz(getUserTimezone(), true)
-            .second(0)
-            .utc()
-            .format(),
+        // Preserve null end for running entries
+        end: ext.isRunning
+            ? null
+            : getDayJsInstance()(arg.event.end.toISOString())
+                  .utc()
+                  .tz(getUserTimezone(), true)
+                  .second(0)
+                  .utc()
+                  .format(),
     } as TimeEntry;
     await props.updateTimeEntry(updatedTimeEntry);
     emit('refresh');
@@ -337,10 +357,22 @@ const scrollToCurrentTime = () => {
 
 onMounted(() => {
     scrollToCurrentTime();
+    // Start interval to update running time entry
+    currentTimeInterval = setInterval(() => {
+        currentTime.value = getDayJsInstance()();
+    }, 60000); // Update every minute
 });
 
 onActivated(() => {
     scrollToCurrentTime();
+});
+
+onUnmounted(() => {
+    // Clean up interval
+    if (currentTimeInterval) {
+        clearInterval(currentTimeInterval);
+        currentTimeInterval = null;
+    }
 });
 </script>
 
@@ -698,5 +730,15 @@ onActivated(() => {
 
 .fullcalendar :deep(.fc-timegrid-event) {
     margin-left: 0 !important;
+}
+
+/* Hide end resizer for running time entries */
+.fullcalendar :deep(.running-entry .fc-event-resizer-end) {
+    display: none;
+}
+
+.fullcalendar :deep(.running-entry) {
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
 }
 </style>
