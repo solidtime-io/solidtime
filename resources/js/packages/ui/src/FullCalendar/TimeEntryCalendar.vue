@@ -287,6 +287,7 @@ const calendarOptions = computed(() => ({
     firstDay: getFirstDay(),
     allDaySlot: false,
     nowIndicator: true,
+    eventMinHeight: 1,
     selectable: true,
     selectMirror: true,
     editable: true,
