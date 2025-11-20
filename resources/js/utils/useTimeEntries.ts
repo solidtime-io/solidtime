@@ -72,7 +72,6 @@ export const useTimeEntriesStore = defineStore(
             queryParams: TimeEntriesQueryParams = {
                 only_full_dates: 'true',
                 member_id: getCurrentMembershipId(),
-                limit: 50,
             }
         ) {
             const organizationId = getCurrentOrganizationId();
