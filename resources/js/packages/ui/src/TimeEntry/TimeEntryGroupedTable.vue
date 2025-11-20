@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed } from 'vue';
 import type {
     CreateClientBody,
     CreateProjectBody,
@@ -37,8 +37,6 @@ const props = defineProps<{
     enableEstimatedTime: boolean;
     canCreateProject: boolean;
 }>();
-
-const maxVisibleGroups = ref(7); // Start with 10 day groups, then show all
 
 const groupedTimeEntries = computed(() => {
     const groupedEntriesByDay: Record<string, TimeEntry[]> = {};
@@ -137,43 +135,11 @@ function unselectAllTimeEntries(value: TimeEntriesGroupedByType[]) {
         );
     });
 }
-
-const visibleGroupedEntries = computed(() => {
-    const allGroups = Object.entries(groupedTimeEntries.value);
-    return Object.fromEntries(allGroups.slice(0, maxVisibleGroups.value));
-});
-
-const totalGroups = computed(() => Object.keys(groupedTimeEntries.value).length);
-
-function startProgressiveLoading() {
-    const loadMoreGroups = () => {
-        if (maxVisibleGroups.value < totalGroups.value) {
-            maxVisibleGroups.value = Math.min(maxVisibleGroups.value + 5, totalGroups.value);
-
-            if (maxVisibleGroups.value < totalGroups.value) {
-                requestIdleCallback(loadMoreGroups);
-            }
-        }
-    };
-
-    requestIdleCallback(loadMoreGroups);
-}
-
-// Watch for changes to totalGroups and adjust maxVisibleGroups accordingly
-watch(totalGroups, (newTotal, oldTotal) => {
-    if (newTotal !== oldTotal) {
-        maxVisibleGroups.value = newTotal;
-    }
-});
-
-onMounted(() => {
-    startProgressiveLoading();
-});
 </script>
 
 <template>
     <div class="@container">
-        <div v-for="(value, key) in visibleGroupedEntries" :key="key">
+        <div v-for="(value, key) in groupedTimeEntries" :key="key">
             <TimeEntryRowHeading
                 :date="String(key)"
                 :duration="sumDuration(value)"

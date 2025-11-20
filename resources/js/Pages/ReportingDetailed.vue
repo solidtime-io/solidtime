@@ -383,7 +383,7 @@ async function downloadExport(format: ExportFormat) {
             @submit="clearSelectionAndState"
             @select-all="selectedTimeEntries = [...timeEntries]"
             @unselect-all="selectedTimeEntries = []"></TimeEntryMassActionRow>
-        <div class="w-full relative">
+        <div class="w-full relative @container">
             <div v-for="entry in timeEntries" :key="entry.id">
                 <TimeEntryRow
                     :selected="selectedTimeEntries.includes(entry)"

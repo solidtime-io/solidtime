@@ -93,7 +93,7 @@ function onSelectChange(checked: boolean) {
         class="border-b border-default-background-separator bg-row-background min-w-0 transition"
         data-testid="time_entry_row">
         <MainContainer class="min-w-0">
-            <div class="@sm:flex py-2 items-center min-w-0 justify-between group">
+            <div class="@xl:flex py-2 items-center min-w-0 justify-between group">
                 <div class="flex space-x-3 items-center min-w-0">
                     <Checkbox
                         :checked="

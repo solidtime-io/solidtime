@@ -112,7 +112,7 @@ async function handleDeleteTimeEntry() {
         class="border-b border-default-background-separator transition min-w-0 bg-row-background"
         data-testid="time_entry_row">
         <MainContainer class="min-w-0">
-            <div class="@sm:flex py-2 min-w-0 items-center justify-between group">
+            <div class="@xl:flex py-2 min-w-0 items-center justify-between group">
                 <div class="flex items-center min-w-0">
                     <Checkbox :checked="selected" @update:checked="onSelectChange" />
                     <div v-if="indent === true" class="w-10 h-7"></div>
