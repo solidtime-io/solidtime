@@ -177,16 +177,23 @@ const events = computed(() => {
 // Daily totals used in day header
 const dailyTotals = computed(() => {
     const totals: Record<string, number> = {};
-    props.timeEntries
-        .filter((entry) => entry.end !== null)
-        .forEach((entry) => {
-            const date = getDayJsInstance()(entry.start).format('YYYY-MM-DD');
-            const duration = getDayJsInstance()(entry.end!).diff(
+    props.timeEntries.forEach((entry) => {
+        const date = getDayJsInstance()(entry.start).format('YYYY-MM-DD');
+        let duration: number;
+
+        if (entry.end !== null) {
+            // Completed entry
+            duration = getDayJsInstance()(entry.end).diff(
                 getDayJsInstance()(entry.start),
                 'minutes'
             );
-            totals[date] = (totals[date] || 0) + duration;
-        });
+        } else {
+            // Running entry - use current time
+            duration = currentTime.value.diff(getDayJsInstance()(entry.start), 'minutes');
+        }
+
+        totals[date] = (totals[date] || 0) + duration;
+    });
     return totals;
 });
 
