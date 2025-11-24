@@ -9,7 +9,7 @@
         "ext-zip": "*",
         "brick/money": "^0.10.0",
         "datomatic/laravel-enum-helper": "^2.0.0",
-        "dedoc/scramble": "^0.12.2",
+        "dedoc/scramble": "^0.13.4",
         "filament/filament": "^3.2",
         "flowframe/laravel-trend": "^0.4.0",
         "gotenberg/gotenberg-php": "^2.8",
