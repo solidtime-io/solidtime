@@ -46,6 +46,9 @@ class OrganizationController extends Controller
         if ($request->getEmployeesCanSeeBillableRates() !== null) {
             $organization->employees_can_see_billable_rates = $request->getEmployeesCanSeeBillableRates();
         }
+        if ($request->getEmployeesCanManageTasks() !== null) {
+            $organization->employees_can_manage_tasks = $request->getEmployeesCanManageTasks();
+        }
         if ($request->getNumberFormat() !== null) {
             $organization->number_format = $request->getNumberFormat();
         }

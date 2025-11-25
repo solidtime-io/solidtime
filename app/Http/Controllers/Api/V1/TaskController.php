@@ -11,6 +11,7 @@ use App\Http\Requests\V1\Task\TaskUpdateRequest;
 use App\Http\Resources\V1\Task\TaskCollection;
 use App\Http\Resources\V1\Task\TaskResource;
 use App\Models\Organization;
+use App\Models\Project;
 use App\Models\Task;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
@@ -24,6 +25,26 @@ class TaskController extends Controller
         parent::checkPermission($organization, $permission);
         if ($task !== null && $task->organization_id !== $organization->id) {
             throw new AuthorizationException('Task does not belong to organization');
+        }
+    }
+
+    /**
+     * Check scoped permission and verify user has access to the project
+     *
+     * @throws AuthorizationException
+     */
+    private function checkScopedPermissionForProject(Organization $organization, Project $project, string $permission): void
+    {
+        $this->checkPermission($organization, $permission);
+
+        $user = $this->user();
+        $hasAccess = Project::query()
+            ->where('id', $project->id)
+            ->visibleByEmployee($user)
+            ->exists();
+
+        if (! $hasAccess) {
+            throw new AuthorizationException('You do not have permission to '.$permission.' in this project.');
         }
     }
 
@@ -75,7 +96,15 @@ class TaskController extends Controller
      */
     public function store(Organization $organization, TaskStoreRequest $request): JsonResource
     {
-        $this->checkPermission($organization, 'tasks:create');
+        /** @var Project $project */
+        $project = Project::query()->findOrFail($request->input('project_id'));
+
+        if ($this->hasPermission($organization, 'tasks:create:all')) {
+            $this->checkPermission($organization, 'tasks:create:all');
+        } else {
+            $this->checkScopedPermissionForProject($organization, $project, 'tasks:create');
+        }
+
         $task = new Task;
         $task->name = $request->input('name');
         $task->project_id = $request->input('project_id');
@@ -97,7 +126,17 @@ class TaskController extends Controller
      */
     public function update(Organization $organization, Task $task, TaskUpdateRequest $request): JsonResource
     {
-        $this->checkPermission($organization, 'tasks:update', $task);
+        // Check task belongs to organization
+        if ($task->organization_id !== $organization->id) {
+            throw new AuthorizationException('Task does not belong to organization');
+        }
+
+        if ($this->hasPermission($organization, 'tasks:update:all')) {
+            $this->checkPermission($organization, 'tasks:update:all');
+        } else {
+            $this->checkScopedPermissionForProject($organization, $task->project, 'tasks:update');
+        }
+
         $task->name = $request->input('name');
         if ($this->canAccessPremiumFeatures($organization) && $request->has('estimated_time')) {
             $task->estimated_time = $request->getEstimatedTime();
@@ -119,7 +158,16 @@ class TaskController extends Controller
      */
     public function destroy(Organization $organization, Task $task): JsonResponse
     {
-        $this->checkPermission($organization, 'tasks:delete', $task);
+        // Check task belongs to organization
+        if ($task->organization_id !== $organization->id) {
+            throw new AuthorizationException('Task does not belong to organization');
+        }
+
+        if ($this->hasPermission($organization, 'tasks:delete:all')) {
+            $this->checkPermission($organization, 'tasks:delete:all');
+        } else {
+            $this->checkScopedPermissionForProject($organization, $task->project, 'tasks:delete');
+        }
 
         if ($task->timeEntries()->exists()) {
             throw new EntityStillInUseApiException('task', 'time_entry');

@@ -39,6 +39,9 @@ class OrganizationUpdateRequest extends BaseFormRequest
             'employees_can_see_billable_rates' => [
                 'boolean',
             ],
+            'employees_can_manage_tasks' => [
+                'boolean',
+            ],
             'prevent_overlapping_time_entries' => [
                 'boolean',
             ],
@@ -100,6 +103,11 @@ class OrganizationUpdateRequest extends BaseFormRequest
     public function getEmployeesCanSeeBillableRates(): ?bool
     {
         return $this->has('employees_can_see_billable_rates') ? $this->boolean('employees_can_see_billable_rates') : null;
+    }
+
+    public function getEmployeesCanManageTasks(): ?bool
+    {
+        return $this->has('employees_can_manage_tasks') ? $this->boolean('employees_can_manage_tasks') : null;
     }
 
     public function getPreventOverlappingTimeEntries(): ?bool
