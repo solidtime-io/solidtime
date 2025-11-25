@@ -71,7 +71,19 @@ class PermissionStore
         /** @var Role|null $roleObj */
         $roleObj = Jetstream::findRole($role);
 
-        return $roleObj->permissions ?? [];
+        $permissions = $roleObj->permissions ?? [];
+
+        // If the organization allows employees to manage tasks and the user is an employee,
+        // add the task management permissions for accessible projects
+        if ($role === \App\Enums\Role::Employee->value && $organization->employees_can_manage_tasks) {
+            $permissions = array_merge($permissions, [
+                'tasks:create',
+                'tasks:update',
+                'tasks:delete',
+            ]);
+        }
+
+        return $permissions;
     }
 
     /**

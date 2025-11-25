@@ -14,13 +14,18 @@ const { updateOrganization } = store;
 const { organization } = storeToRefs(store);
 const queryClient = useQueryClient();
 
-const form = ref<{ prevent_overlapping_time_entries: boolean }>({
+const form = ref<{
+    prevent_overlapping_time_entries: boolean;
+    employees_can_manage_tasks: boolean;
+}>({
     prevent_overlapping_time_entries: false,
+    employees_can_manage_tasks: false,
 });
 
 onMounted(async () => {
     form.value.prevent_overlapping_time_entries =
         organization.value?.prevent_overlapping_time_entries ?? false;
+    form.value.employees_can_manage_tasks = organization.value?.employees_can_manage_tasks ?? false;
 });
 
 const mutation = useMutation({
@@ -33,22 +38,22 @@ const mutation = useMutation({
 async function submit() {
     await mutation.mutateAsync({
         prevent_overlapping_time_entries: form.value.prevent_overlapping_time_entries,
+        employees_can_manage_tasks: form.value.employees_can_manage_tasks,
     });
 }
 </script>
 
 <template>
     <FormSection>
-        <template #title>Time Entry Settings</template>
+        <template #title>Organization Settings</template>
         <template #description>
-            Disallow overlapping time entries for members of this organization. When enabled, users
-            cannot create new time entries that overlap with their existing ones. This only affects
-            newly created entries.
+            Configure various settings for your organization, including time entry and task
+            management permissions.
         </template>
 
         <template #form>
             <div class="col-span-6">
-                <div class="col-span-6 sm:col-span-4">
+                <div class="col-span-6 sm:col-span-4 space-y-4">
                     <div class="flex items-center space-x-2">
                         <Checkbox
                             id="preventOverlappingTimeEntries"
@@ -56,6 +61,14 @@ async function submit() {
                         <InputLabel
                             for="preventOverlappingTimeEntries"
                             value="Prevent overlapping time entries (new entries only)" />
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <Checkbox
+                            id="employeesCanManageTasks"
+                            v-model:checked="form.employees_can_manage_tasks" />
+                        <InputLabel
+                            for="employeesCanManageTasks"
+                            value="Allow Employees to manage tasks" />
                     </div>
                 </div>
             </div>
