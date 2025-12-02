@@ -37,7 +37,11 @@ import MoreOptionsDropdown from './MoreOptionsDropdown.vue';
 import FullCalendarEventContent from './FullCalendar/FullCalendarEventContent.vue';
 import FullCalendarDayHeader from './FullCalendar/FullCalendarDayHeader.vue';
 import TimeEntryCalendar from './FullCalendar/TimeEntryCalendar.vue';
+import DateRangePicker from './Input/DateRangePicker.vue';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tooltip/index';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './accordion/index';
+import { Popover, PopoverContent, PopoverTrigger, PopoverAnchor } from './popover/index';
+import { RangeCalendar } from './range-calendar/index';
 export type { ActivityPeriod } from './FullCalendar/idleStatusPlugin';
 
 export {
@@ -69,8 +73,18 @@ export {
     FullCalendarEventContent,
     FullCalendarDayHeader,
     TimeEntryCalendar,
+    DateRangePicker,
     Tooltip,
     TooltipContent,
     TooltipProvider,
     TooltipTrigger,
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+    PopoverAnchor,
+    RangeCalendar,
 };

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/packages/ui/src';
 import { Button } from '@/packages/ui/src';
 import { Calendar } from '@/Components/ui/calendar';
 import { CalendarIcon, XIcon } from 'lucide-vue-next';

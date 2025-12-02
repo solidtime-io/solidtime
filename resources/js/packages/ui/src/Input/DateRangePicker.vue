@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '../popover';
 import Button from '../Buttons/Button.vue';
-import { RangeCalendar } from '@/Components/ui/range-calendar';
+import { RangeCalendar } from '../range-calendar';
 import { CalendarDate } from '@internationalized/date';
 import { CalendarIcon } from 'lucide-vue-next';
 import { computed, ref, inject, type ComputedRef, watch } from 'vue';
