@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '../popover';
 import { watch } from 'vue';
 
 const props = withDefaults(

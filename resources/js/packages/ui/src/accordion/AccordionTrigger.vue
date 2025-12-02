@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { cn } from '@/lib/utils';
+import { cn } from '../utils/cn';
 import { ChevronDown } from 'lucide-vue-next';
 import { AccordionHeader, AccordionTrigger, type AccordionTriggerProps } from 'reka-ui';
 import { computed, type HTMLAttributes } from 'vue';
