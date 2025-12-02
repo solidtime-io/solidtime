@@ -266,7 +266,8 @@ class DashboardService
                ) as aggregate'))
             ->where('billable', '=', true)
             ->whereNotNull('billable_rate')
-            ->where('user_id', '=', $user->id);
+            ->where('user_id', '=', $user->getKey())
+            ->where('organization_id', '=', $organization->getKey());
 
         $query = $this->constrainDateByPossibleDates($query, $possibleDays, $timezone);
         /** @var Collection<int, object{aggregate: int}> $resultDb */
