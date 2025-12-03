@@ -712,28 +712,41 @@ onUnmounted(() => {
 
 /* Activity status plugin styles */
 .fullcalendar :deep(.activity-status-box) {
+    position: absolute;
+    width: 10px;
+    left: 0px;
+    z-index: 10;
+    cursor: default;
+}
+
+.fullcalendar :deep(.activity-status-box::before) {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 5px;
     transition: opacity 0.2s ease;
 }
 
-.fullcalendar :deep(.activity-status-box.idle) {
-    background-color: rgba(156, 163, 175, 0.1) !important;
+.fullcalendar :deep(.activity-status-box.idle::before) {
+    background-color: rgba(156, 163, 175, 0.1);
 }
 
-.fullcalendar :deep(.activity-status-box.idle):hover {
-    background-color: rgba(156, 163, 175, 0.5) !important;
+.fullcalendar :deep(.activity-status-box.idle):hover::before {
+    background-color: rgba(156, 163, 175, 0.5);
 }
 
-.fullcalendar :deep(.activity-status-box.active) {
-    background-color: rgba(34, 197, 94, 0.3) !important;
+.fullcalendar :deep(.activity-status-box.active::before) {
+    background-color: rgba(34, 197, 94, 0.3);
 }
 
-.fullcalendar :deep(.activity-status-box.active):hover {
-    background-color: rgba(34, 197, 94, 1) !important;
+.fullcalendar :deep(.activity-status-box.active):hover::before {
+    background-color: rgba(34, 197, 94, 1);
 }
 
 /* Add left margin to events only on days with activity status data */
 .fullcalendar :deep(.has-activity-status .fc-timegrid-event-harness) {
-    margin-left: 15px !important;
+    margin-left: 8px !important;
 }
 
 .fullcalendar :deep(.fc-timegrid-event) {
