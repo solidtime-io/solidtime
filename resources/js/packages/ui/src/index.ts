@@ -38,6 +38,7 @@ import FullCalendarEventContent from './FullCalendar/FullCalendarEventContent.vu
 import FullCalendarDayHeader from './FullCalendar/FullCalendarDayHeader.vue';
 import TimeEntryCalendar from './FullCalendar/TimeEntryCalendar.vue';
 import DateRangePicker from './Input/DateRangePicker.vue';
+import TimezoneMismatchModal from './TimezoneMismatchModal.vue';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tooltip/index';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './accordion/index';
 import { Popover, PopoverContent, PopoverTrigger, PopoverAnchor } from './popover/index';
@@ -74,6 +75,7 @@ export {
     FullCalendarDayHeader,
     TimeEntryCalendar,
     DateRangePicker,
+    TimezoneMismatchModal,
     Tooltip,
     TooltipContent,
     TooltipProvider,
