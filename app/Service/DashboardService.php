@@ -339,7 +339,7 @@ class DashboardService
     /**
      * Rhe 4 most recently active members of your team with member_id, name, description of the latest time entry, time_entry_id, task_id and a boolean status if the team member is currently working
      *
-     * @return array<int, array{member_id: string, name: string, description: string|null, time_entry_id: string, task_id: string|null, task_name: string|null, status: bool }>
+     * @return array<int, array{member_id: string, name: string, description: string|null, time_entry_id: string, task_id: string|null, task_name: string|null, project_name: string|null, status: bool }>
      */
     public function latestTeamActivity(Organization $organization): array
     {
@@ -353,7 +353,9 @@ class DashboardService
                 'member' => [
                     'user',
                 ],
-                'task',
+                'task' => [
+                    'project',
+                ],
             ])
             ->get()
             ->sortByDesc('start')
@@ -369,6 +371,7 @@ class DashboardService
                 'time_entry_id' => $timeEntry->id,
                 'task_id' => $timeEntry->task_id,
                 'task_name' => $timeEntry->task ? $timeEntry->task->name : null,
+                'project_name' => ($timeEntry->task && $timeEntry->task->project) ? $timeEntry->task->project->name : null,
                 'status' => $timeEntry->end === null,
             ];
         }

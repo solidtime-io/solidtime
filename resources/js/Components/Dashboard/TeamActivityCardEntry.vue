@@ -3,6 +3,7 @@ defineProps<{
     name: string;
     description: string | null;
     taskName: string | null;
+    projectName: string | null;
     working?: boolean;
 }>();
 </script>
@@ -26,7 +27,7 @@ defineProps<{
             </div>
             <div
                 class="text-text-secondary text-sm font-medium text-ellipsis whitespace-nowrap max-w-full overflow-hidden">
-                {{ description || taskName }}
+                [{{ `${projectName} ` || '' }}]{{ description || taskName }}
             </div>
         </div>
     </div>

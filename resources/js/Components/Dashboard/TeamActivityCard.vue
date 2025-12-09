@@ -40,6 +40,7 @@ const { data: latestTeamActivity, isLoading } = useQuery({
                 :name="activity.name"
                 :description="activity.description"
                 :task-name="activity.task_name"
+                :project-name="activity.project_name"
                 :working="activity.status"></TeamActivityCardEntry>
         </div>
         <div v-else class="text-center text-gray-500 py-8">No team activity found</div>

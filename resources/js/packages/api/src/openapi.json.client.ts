@@ -999,6 +999,7 @@ const endpoints = makeApi([
                     time_entry_id: z.string(),
                     task_id: z.union([z.string(), z.null()]),
                     task_name: z.union([z.string(), z.null()]),
+                    project_name: z.union([z.string(), z.null()]),
                     status: z.boolean(),
                 })
                 .passthrough()
