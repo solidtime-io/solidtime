@@ -1,6 +1,6 @@
 {
     "name": "@solidtime/ui",
-    "version": "0.0.13",
+    "version": "0.0.14",
     "description": "Package containing the solidtime ui components",
     "main": "./dist/solidtime-ui-lib.umd.cjs",
     "module": "./dist/solidtime-ui-lib.js",
