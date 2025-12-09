@@ -1,6 +1,6 @@
 {
     "name": "@solidtime/ui",
-    "version": "0.0.14",
+    "version": "0.0.15",
     "description": "Package containing the solidtime ui components",
     "main": "./dist/solidtime-ui-lib.umd.cjs",
     "module": "./dist/solidtime-ui-lib.js",
@@ -33,7 +33,9 @@
         "preview": "vite preview"
     },
     "files": [
-        "dist"
+        "dist",
+        "styles.css",
+        "tailwind.theme.js"
     ],
     "keywords": [
         "solidtime",
