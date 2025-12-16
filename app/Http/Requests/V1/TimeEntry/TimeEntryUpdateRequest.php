@@ -10,8 +10,10 @@ use App\Models\Organization;
 use App\Models\Project;
 use App\Models\Tag;
 use App\Models\Task;
+use App\Service\PermissionStore;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 use Korridor\LaravelModelValidationRules\Rules\ExistsEloquent;
 
 /**
@@ -42,7 +44,16 @@ class TimeEntryUpdateRequest extends BaseFormRequest
                 'required_with:task_id',
                 ExistsEloquent::make(Project::class, null, function (Builder $builder): Builder {
                     /** @var Builder<Project> $builder */
-                    return $builder->whereBelongsTo($this->organization, 'organization');
+                    $builder = $builder->whereBelongsTo($this->organization, 'organization');
+
+                    // If user doesn't have 'all' permission for time entries or projects, only allow access to public projects or projects they're a member of
+                    $permissionStore = app(PermissionStore::class);
+                    if (! $permissionStore->has($this->organization, 'time-entries:update:all')
+                        && ! $permissionStore->has($this->organization, 'projects:view:all')) {
+                        $builder = $builder->visibleByEmployee(Auth::user());
+                    }
+
+                    return $builder;
                 })->uuid(),
             ],
             // ID of the task that the time entry should belong to
