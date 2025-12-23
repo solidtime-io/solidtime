@@ -141,6 +141,31 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
         $response->assertJsonCount(4, 'data');
     }
 
+    public function test_index_endpoint_sorts_projects_by_name(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'projects:view',
+            'projects:view:all',
+        ]);
+        $archivedProjects = Project::factory()->forOrganization($data->organization)->archived()->createMany(2);
+        $nonArchivedProjects = Project::factory()->forOrganization($data->organization)->createMany(2);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.projects.index', [
+            $data->organization->getKey(),
+            'archived' => 'all',
+        ]));
+
+        // Assert
+        $response->assertStatus(200);
+        $response->assertJsonCount(4, 'data');
+
+        $projectNames = $archivedProjects->merge($nonArchivedProjects)->pluck('name')->sort()->values()->all();
+        $this->assertEquals($projectNames, $response->json('data.*.name'));
+    }
+
     public function test_index_endpoint_returns_list_of_projects_of_organization_which_are_public_or_where_user_is_member_for_user_with_restricted_permission(): void
     {
         // Arrange
@@ -196,9 +221,9 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
         $organization = $data->organization;
         $organization->employees_can_see_billable_rates = true;
         $organization->save();
-        $privateProjects = Project::factory()->forOrganization($data->organization)->isPrivate()->billable(111)->createdAt(now()->subMinutes(4))->createMany(2);
-        $publicProjects = Project::factory()->forOrganization($data->organization)->isPublic()->billable(112)->createdAt(now()->subMinutes(3))->createMany(2);
-        $privateProjectsWithMembership = Project::factory()->forOrganization($data->organization)->addMember($data->member)->billable(113)->isPrivate()->createdAt(now()->subMinutes(2))->createMany(2);
+        $privateProjects = Project::factory()->forOrganization($data->organization)->isPrivate()->billable(111)->named('not returned because private')->createMany(2);
+        $publicProjects = Project::factory()->forOrganization($data->organization)->isPublic()->billable(112)->named('a - returned first')->createMany(2);
+        $privateProjectsWithMembership = Project::factory()->forOrganization($data->organization)->addMember($data->member)->billable(113)->isPrivate()->named('b - returned second')->createMany(2);
         Passport::actingAs($data->user);
 
         // Act
