@@ -92,7 +92,7 @@ function updateValue(client: { id: string | null; name: string }) {
                     <ComboboxAnchor>
                         <ComboboxInput
                             ref="searchInput"
-                            class="bg-card-background border-0 placeholder-muted text-sm text-text-primary py-2.5 focus:ring-0 border-b border-card-background-separator focus:border-card-background-separator w-full"
+                            class="bg-card-background border-0 placeholder-text-tertiary text-sm text-text-primary py-2.5 focus:ring-0 border-b border-card-background-separator focus:border-card-background-separator w-full"
                             placeholder="Search for a client..." />
                     </ComboboxAnchor>
                     <ComboboxContent>

@@ -145,7 +145,7 @@ const highlightedItem = computed(() => {
             <input
                 ref="searchInput"
                 :value="searchValue"
-                class="bg-card-background border-0 placeholder-muted text-sm text-text-primary py-2.5 focus:ring-0 border-b border-card-background-separator focus:border-card-background-separator w-full"
+                class="bg-card-background border-0 placeholder-text-tertiary text-sm text-text-primary py-2.5 focus:ring-0 border-b border-card-background-separator focus:border-card-background-separator w-full"
                 :placeholder="searchPlaceholder"
                 @input="updateSearchValue"
                 @keydown.up.prevent="moveHighlightUp"
