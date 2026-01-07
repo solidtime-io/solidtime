@@ -14,6 +14,7 @@ export default {
         './resources/views/**/*.blade.php',
         './resources/js/**/*.vue',
         './resources/js/**/*.ts',
+        '!./resources/js/**/node_modules',
     ],
     theme: {
         extend: {

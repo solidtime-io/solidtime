@@ -9,10 +9,16 @@ import type {
 } from '@/packages/api/src';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import { useNotificationsStore } from '@/utils/notification';
+import { useQueryClient } from '@tanstack/vue-query';
 
 export const useProjectsStore = defineStore('projects', () => {
     const projectResponse = ref<ProjectResponse | null>(null);
     const { handleApiRequestNotifications } = useNotificationsStore();
+    const queryClient = useQueryClient();
+
+    function invalidateProjectsQuery() {
+        queryClient.invalidateQueries({ queryKey: ['projects'] });
+    }
     async function fetchProjects() {
         const organization = getCurrentOrganizationId();
         if (organization) {
@@ -48,6 +54,7 @@ export const useProjectsStore = defineStore('projects', () => {
             );
 
             await fetchProjects();
+            invalidateProjectsQuery();
             return response['data'];
         }
     }
@@ -67,6 +74,7 @@ export const useProjectsStore = defineStore('projects', () => {
                 'Failed to delete project'
             );
             await fetchProjects();
+            invalidateProjectsQuery();
         }
     }
 
@@ -85,6 +93,7 @@ export const useProjectsStore = defineStore('projects', () => {
                 'Failed to update project'
             );
             await fetchProjects();
+            invalidateProjectsQuery();
         }
     }
 

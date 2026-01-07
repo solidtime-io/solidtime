@@ -40,7 +40,7 @@
     --theme-color-card-background-active: var(--color-bg-tertiary);
 
     --theme-color-row-background: var(--color-bg-primary);
-    --theme-color-row-heading-background: var(--theme-color-card-background);
+    --theme-color-row-heading-background: var(--color-bg-primary);
     --theme-color-row-heading-border: var(--theme-color-card-border);
     --theme-color-icon-default: var(--color-text-tertiary);
 
@@ -63,7 +63,7 @@
 
 :root.light {
     --color-bg-primary: #ffffff;
-    --color-bg-secondary: #f7f7f8;
+    --color-bg-secondary: #fcfcfc;
     --color-bg-tertiary: #eeeeef;
     --color-bg-quaternary: #e1e1e3;
     --color-bg-background: #f5f5f5;
@@ -86,8 +86,8 @@
     --theme-shadow-card: lch(0 0 0 / 0.022) 0px 3px 6px -2px, lch(0 0 0 / 0.044) 0px 1px 1px;
     --theme-shadow-dropdown: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
 
-    --theme-color-row-background: var(--theme-color-card-background);
-    --theme-color-row-heading-background: var(--color-bg-secondary);
+    --theme-color-row-background: var(--theme-color-primary);
+    --theme-color-row-heading-background: var(--theme-color-primary);
     --theme-color-row-heading-border: var(--color-border-tertiary);
     --theme-color-icon-default: var(--color-text-quaternary);
 
@@ -142,28 +142,8 @@
 * {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-}
-
-/* width */
-::-webkit-scrollbar {
-    width: 5px;
-}
-
-/* Track */
-::-webkit-scrollbar-track,
-::-webkit-scrollbar-corner {
-    background: transparent;
-}
-
-/* Handle */
-::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 2px;
-}
-
-/* Handle on hover */
-::-webkit-scrollbar-thumb:hover {
-    background: #555;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-bg-tertiary) transparent;
 }
 
 [x-cloak] {
@@ -188,8 +168,8 @@ body {
         --secondary-foreground: var(--color-text-primary);
         --muted: var(--color-bg-tertiary);
         --muted-foreground: var(--color-text-tertiary);
-        --accent: var(--theme-color-button-primary-background);
-        --accent-foreground: var(--theme-color-button-primary-text);
+        --accent: var(--color-bg-tertiary);
+        --accent-foreground: var(--color-text-primary);
         --destructive: 0 84.2% 60.2%;
         --destructive-foreground: var(--color-text-primary);
         --border: var(--color-border-primary);
@@ -215,8 +195,8 @@ body {
         --secondary-foreground: var(--color-text-primary);
         --muted: var(--color-bg-tertiary);
         --muted-foreground: var(--color-text-tertiary);
-        --accent: var(--theme-color-button-primary-background);
-        --accent-foreground: var(--theme-color-button-primary-text);
+        --accent: var(--color-bg-tertiary);
+        --accent-foreground: var(--color-text-primary);
         --destructive: 0 62.8% 30.6%;
         --destructive-foreground: var(--color-text-primary);
         --border: var(--color-border-primary);

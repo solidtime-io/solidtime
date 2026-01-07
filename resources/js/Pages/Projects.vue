@@ -4,13 +4,16 @@ import AppLayout from '@/Layouts/AppLayout.vue';
 import { FolderIcon, PlusIcon } from '@heroicons/vue/16/solid';
 import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
 import ProjectTable from '@/Components/Common/Project/ProjectTable.vue';
-import { computed, onMounted, ref } from 'vue';
+import type {
+    SortColumn,
+    SortDirection,
+} from '@/Components/Common/Project/ProjectTableHeading.vue';
+import { computed } from 'vue';
+import { useProjectsQuery } from '@/utils/useProjectsQuery';
 import { useProjectsStore } from '@/utils/useProjects';
 import ProjectCreateModal from '@/packages/ui/src/Project/ProjectCreateModal.vue';
 import PageTitle from '@/Components/Common/PageTitle.vue';
 import { canCreateProjects } from '@/utils/permissions';
-import TabBarItem from '@/Components/Common/TabBar/TabBarItem.vue';
-import TabBar from '@/Components/Common/TabBar/TabBar.vue';
 import { storeToRefs } from 'pinia';
 import { useClientsStore } from '@/utils/useClients';
 import type { CreateClientBody, Client, CreateProjectBody, Project } from '@/packages/api/src';
@@ -18,31 +21,95 @@ import { getOrganizationCurrencyString } from '@/utils/money';
 import { getCurrentRole } from '@/utils/useUser';
 import { useOrganizationStore } from '@/utils/useOrganization';
 import { isAllowedToPerformPremiumAction } from '@/utils/billing';
+import { useStorage } from '@vueuse/core';
+import ProjectsFilterDropdown from '@/Components/Common/Project/ProjectsFilterDropdown.vue';
+import ProjectStatusFilterBadge from '@/Components/Common/Project/ProjectStatusFilterBadge.vue';
+import ProjectClientFilterBadge from '@/Components/Common/Project/ProjectClientFilterBadge.vue';
+import { NO_CLIENT_ID } from '@/Components/Common/Project/constants';
 
-onMounted(() => {
-    useProjectsStore().fetchProjects();
-    useOrganizationStore().fetchOrganization();
-});
+// Fetch data using TanStack Query
+const { projects } = useProjectsQuery();
+
 const { clients } = storeToRefs(useClientsStore());
-const showCreateProjectModal = ref(false);
-
 const { organization } = storeToRefs(useOrganizationStore());
 
-const activeTab = ref<'active' | 'archived'>('active');
+// Table state persisted in localStorage
+interface ProjectTableState {
+    sortColumn: SortColumn;
+    sortDirection: SortDirection;
+    filters: {
+        clientIds: string[];
+        status: 'active' | 'archived' | 'all';
+    };
+}
 
-const { projects } = storeToRefs(useProjectsStore());
+const tableState = useStorage<ProjectTableState>(
+    'project-table-state',
+    {
+        sortColumn: 'name',
+        sortDirection: 'asc',
+        filters: {
+            clientIds: [],
+            status: 'all',
+        },
+    },
+    undefined,
+    { mergeDefaults: true }
+);
 
-const shownProjects = computed(() => {
+// Handle sorting - toggle direction if same column, otherwise set new column with asc
+function handleSort(column: SortColumn) {
+    if (tableState.value.sortColumn === column) {
+        tableState.value.sortDirection = tableState.value.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+        tableState.value.sortColumn = column;
+        tableState.value.sortDirection = 'asc';
+    }
+}
+
+// Filter projects based on current filters
+const filteredProjects = computed(() => {
     return projects.value.filter((project) => {
-        if (activeTab.value === 'active') {
-            return !project.is_archived;
+        // Status filter
+        if (tableState.value.filters.status === 'active' && project.is_archived) {
+            return false;
         }
-        return project.is_archived;
+        if (tableState.value.filters.status === 'archived' && !project.is_archived) {
+            return false;
+        }
+
+        // Client filter
+        const hasClientFilter = tableState.value.filters.clientIds.length > 0;
+        if (hasClientFilter) {
+            const matchesNoClient =
+                tableState.value.filters.clientIds.includes(NO_CLIENT_ID) && !project.client_id;
+            const matchesClientId =
+                project.client_id && tableState.value.filters.clientIds.includes(project.client_id);
+
+            if (!matchesNoClient && !matchesClientId) {
+                return false;
+            }
+        }
+
+        return true;
     });
 });
+
+// Helper functions for active filters
+function removeStatusFilter() {
+    tableState.value.filters.status = 'all';
+}
+
+function removeClientFilter() {
+    tableState.value.filters.clientIds = [];
+}
+
+const showCreateProjectModal = useStorage('project-create-modal-open', false);
+
 async function createProject(project: CreateProjectBody): Promise<Project | undefined> {
     return await useProjectsStore().createProject(project);
 }
+
 async function createClient(client: CreateClientBody): Promise<Client | undefined> {
     return await useClientsStore().createClient(client);
 }
@@ -57,13 +124,9 @@ const showBillableRate = computed(() => {
 <template>
     <AppLayout title="Projects" data-testid="projects_view">
         <MainContainer
-            class="py-3 sm:py-5 border-b border-default-background-separator flex justify-between items-center">
+            class="py-3 sm:pt-5 border-b border-default-background-separator flex justify-between items-center">
             <div class="flex items-center space-x-3 sm:space-x-6">
                 <PageTitle :icon="FolderIcon" title="Projects"></PageTitle>
-                <TabBar v-model="activeTab">
-                    <TabBarItem value="active">Active</TabBarItem>
-                    <TabBarItem value="archived">Archived</TabBarItem>
-                </TabBar>
             </div>
             <SecondaryButton
                 v-if="canCreateProjects()"
@@ -80,8 +143,38 @@ const showBillableRate = computed(() => {
                 :clients="clients"
                 @submit="createProject"></ProjectCreateModal>
         </MainContainer>
+        <MainContainer>
+            <div class="flex items-center gap-2 py-1">
+                <ProjectsFilterDropdown
+                    :filters="tableState.filters"
+                    :clients="clients"
+                    @update:filters="tableState.filters = $event" />
+
+                <!-- Active Filters -->
+                <ProjectStatusFilterBadge
+                    v-if="tableState.filters.status !== 'all'"
+                    data-testid="status-filter-badge"
+                    :value="tableState.filters.status"
+                    @remove="removeStatusFilter"
+                    @update:value="
+                        tableState.filters.status = $event as 'active' | 'archived' | 'all'
+                    " />
+
+                <ProjectClientFilterBadge
+                    v-if="tableState.filters.clientIds.length > 0"
+                    data-testid="client-filter-badge"
+                    :value="tableState.filters.clientIds"
+                    :clients="clients"
+                    @remove="removeClientFilter"
+                    @update:value="tableState.filters.clientIds = $event as string[]" />
+            </div>
+        </MainContainer>
+
         <ProjectTable
             :show-billable-rate="showBillableRate"
-            :projects="shownProjects"></ProjectTable>
+            :projects="filteredProjects"
+            :sort-column="tableState.sortColumn"
+            :sort-direction="tableState.sortDirection"
+            @sort="handleSort"></ProjectTable>
     </AppLayout>
 </template>
