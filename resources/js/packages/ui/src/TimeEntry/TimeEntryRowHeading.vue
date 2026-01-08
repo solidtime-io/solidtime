@@ -8,6 +8,7 @@ import {
 import Checkbox from '../Input/Checkbox.vue';
 import { inject, type ComputedRef } from 'vue';
 import type { Organization } from '@/packages/api/src';
+import { CalendarIcon } from '@heroicons/vue/20/solid';
 
 const organization = inject<ComputedRef<Organization>>('organization');
 
@@ -31,33 +32,24 @@ function selectUnselectAll(value: boolean) {
 </script>
 
 <template>
-    <div
-        class="bg-row-heading-background border-t border-b border-row-heading-border py-1 text-xs @sm:text-sm">
+    <div class="bg-quaternary border-b border-border-primary py-1 text-xs @sm:text-sm">
         <MainContainer>
             <div class="flex group justify-between items-center">
                 <div class="flex items-center space-x-2">
                     <div class="w-5">
-                        <svg
-                            class="w-3 @sm:w-4 text-icon-default group-hover:hidden block"
-                            viewBox="0 0 24 24"
-                            xmlns="http://www.w3.org/2000/svg">
-                            <g fill="none">
-                                <path
-                                    d="m12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035c-.01-.004-.019-.001-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427c-.002-.01-.009-.017-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093c.012.004.023 0 .029-.008l.004-.014l-.034-.614c-.003-.012-.01-.02-.02-.022m-.715.002a.023.023 0 0 0-.027.006l-.006.014l-.034.614c0 .012.007.02.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z" />
-                                <path
-                                    fill="currentColor"
-                                    d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7zm-5-9a1 1 0 0 1 1 1v1h2a2 2 0 0 1 2 2v3H3V7a2 2 0 0 1 2-2h2V4a1 1 0 0 1 2 0v1h6V4a1 1 0 0 1 1-1" />
-                            </g>
-                        </svg>
+                        <CalendarIcon
+                            class="w-3 @sm:w-4 text-icon-default group-hover:hidden block">
+                        </CalendarIcon>
+
                         <Checkbox
                             :checked="checked"
                             class="group-hover:block hidden"
                             @update:checked="selectUnselectAll"></Checkbox>
                     </div>
-                    <span class="font-medium text-text-primary">
+                    <span class="font-medium text-text-secondary">
                         {{ formatWeekday(date) }}
                     </span>
-                    <span class="font-medium text-text-secondary">
+                    <span class="text-text-tertiary">
                         {{ formatDate(date, organization?.date_format) }}
                     </span>
                 </div>
