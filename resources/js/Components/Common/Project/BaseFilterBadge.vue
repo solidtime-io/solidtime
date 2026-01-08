@@ -26,15 +26,13 @@ defineSlots<{
     <div
         class="inline-flex items-center gap-0.5 rounded-md bg-tertiary dark:bg-secondary border border-border-secondary">
         <DropdownMenu>
-            <DropdownMenuTrigger as-child>
-                <button
-                    class="inline-flex items-center gap-1.5 px-2 py-1 text-sm hover:bg-quaternary dark:hover:bg-tertiary rounded-l-md transition-colors">
-                    <component :is="icon" class="h-3.5 w-3.5 text-icon-default" />
-                    <span class="font-medium text-foreground">{{ filterName }}</span>
-                    <span class="text-muted-foreground">is</span>
-                    <span class="text-foreground">{{ label }}</span>
-                    <ChevronDownIcon class="h-3 w-3 text-muted-foreground" />
-                </button>
+            <DropdownMenuTrigger
+                class="inline-flex items-center gap-1.5 px-2 py-1 text-sm hover:bg-quaternary dark:hover:bg-tertiary rounded-l-md transition-colors whitespace-nowrap">
+                <component :is="icon" class="h-3.5 w-3.5 text-icon-default" />
+                <span class="font-medium text-foreground">{{ filterName }}</span>
+                <span class="text-muted-foreground">is</span>
+                <span class="text-foreground">{{ label }}</span>
+                <ChevronDownIcon class="h-3 w-3 text-muted-foreground" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start">
                 <slot />
