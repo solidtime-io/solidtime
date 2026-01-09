@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { TrashIcon, PencilSquareIcon } from '@heroicons/vue/20/solid';
 import type { ProjectMember } from '@/packages/api/src';
-import { useMembersStore } from '@/utils/useMembers';
-import { storeToRefs } from 'pinia';
+import { useMembersQuery } from '@/utils/useMembersQuery';
 import { computed } from 'vue';
 import {
     DropdownMenu,
@@ -19,7 +18,7 @@ const props = defineProps<{
     projectMember: ProjectMember;
 }>();
 
-const { members } = storeToRefs(useMembersStore());
+const { members } = useMembersQuery();
 
 const currentMember = computed(() => {
     return members.value.find((member) => member.id === props.projectMember.user_id);

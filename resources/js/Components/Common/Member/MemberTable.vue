@@ -1,15 +1,9 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
-import { storeToRefs } from 'pinia';
 import MemberTableHeading from '@/Components/Common/Member/MemberTableHeading.vue';
 import MemberTableRow from '@/Components/Common/Member/MemberTableRow.vue';
-import { useMembersStore } from '@/utils/useMembers';
+import { useMembersQuery } from '@/utils/useMembersQuery';
 
-const { members } = storeToRefs(useMembersStore());
-
-onMounted(async () => {
-    await useMembersStore().fetchMembers();
-});
+const { members } = useMembersQuery();
 </script>
 
 <template>

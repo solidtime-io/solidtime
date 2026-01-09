@@ -3,9 +3,8 @@ import ProjectMoreOptionsDropdown from '@/Components/Common/Project/ProjectMoreO
 import type { Project } from '@/packages/api/src';
 import { computed, ref, inject, type ComputedRef } from 'vue';
 import { CheckCircleIcon, ArchiveBoxIcon } from '@heroicons/vue/24/outline';
-import { useClientsStore } from '@/utils/useClients';
-import { storeToRefs } from 'pinia';
-import { useTasksStore } from '@/utils/useTasks';
+import { useClientsQuery } from '@/utils/useClientsQuery';
+import { useTasksQuery } from '@/utils/useTasksQuery';
 import { useProjectsStore } from '@/utils/useProjects';
 import TableRow from '@/Components/TableRow.vue';
 import ProjectEditModal from '@/Components/Common/Project/ProjectEditModal.vue';
@@ -17,8 +16,8 @@ import { formatHumanReadableDuration } from '../../../packages/ui/src/utils/time
 import { isAllowedToPerformPremiumAction } from '@/utils/billing';
 import type { Organization } from '@/packages/api/src';
 
-const { clients } = storeToRefs(useClientsStore());
-const { tasks } = storeToRefs(useTasksStore());
+const { clients } = useClientsQuery();
+const { tasks } = useTasksQuery();
 
 const props = defineProps<{
     project: Project;

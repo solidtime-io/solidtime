@@ -21,7 +21,7 @@ const classes = computed(() => {
             <slot />
         </button>
 
-        <Link v-else :href="href ?? ''" :class="classes">
+        <Link v-else :href="href ?? ''" :class="classes" prefetch>
             <slot />
         </Link>
     </div>

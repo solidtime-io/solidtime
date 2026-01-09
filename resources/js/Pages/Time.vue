@@ -17,16 +17,19 @@ import { useElementVisibility } from '@vueuse/core';
 import { ClockIcon } from '@heroicons/vue/20/solid';
 import LoadingSpinner from '@/packages/ui/src/LoadingSpinner.vue';
 import { useCurrentTimeEntryStore } from '@/utils/useCurrentTimeEntry';
-import { useTasksStore } from '@/utils/useTasks';
-import { useProjectsStore } from '@/utils/useProjects';
+import { useTasksQuery } from '@/utils/useTasksQuery';
+import { useProjectsQuery } from '@/utils/useProjectsQuery';
 import TimeEntryGroupedTable from '@/packages/ui/src/TimeEntry/TimeEntryGroupedTable.vue';
-import { useTagsStore } from '@/utils/useTags';
-import { useClientsStore } from '@/utils/useClients';
+import { useTagsQuery } from '@/utils/useTagsQuery';
+import { useClientsQuery } from '@/utils/useClientsQuery';
 import { getOrganizationCurrencyString } from '@/utils/money';
 import TimeEntryMassActionRow from '@/packages/ui/src/TimeEntry/TimeEntryMassActionRow.vue';
 import type { UpdateMultipleTimeEntriesChangeset } from '@/packages/api/src';
 import { isAllowedToPerformPremiumAction } from '@/utils/billing';
 import { canCreateProjects } from '@/utils/permissions';
+import { useTagsStore } from '@/utils/useTags';
+import { useProjectsStore } from '@/utils/useProjects';
+import { useClientsStore } from '@/utils/useClients';
 
 const timeEntriesStore = useTimeEntriesStore();
 const { timeEntries, allTimeEntriesLoaded } = storeToRefs(timeEntriesStore);
@@ -43,7 +46,6 @@ const isLoadMoreVisible = useElementVisibility(loadMoreContainer);
 const currentTimeEntryStore = useCurrentTimeEntryStore();
 const { currentTimeEntry } = storeToRefs(currentTimeEntryStore);
 const { setActiveState } = currentTimeEntryStore;
-const { tags } = storeToRefs(useTagsStore());
 
 async function startTimeEntry(timeEntry: Omit<CreateTimeEntryBody, 'member_id'>) {
     if (currentTimeEntry.value.id) {
@@ -70,12 +72,11 @@ onMounted(async () => {
     await timeEntriesStore.fetchTimeEntries();
 });
 
-const projectStore = useProjectsStore();
-const { projects } = storeToRefs(projectStore);
-const taskStore = useTasksStore();
-const { tasks } = storeToRefs(taskStore);
-const clientStore = useClientsStore();
-const { clients } = storeToRefs(clientStore);
+const { projects } = useProjectsQuery();
+const { tasks } = useTasksQuery();
+const { clients } = useClientsQuery();
+
+const { tags } = useTagsQuery();
 
 async function createTag(name: string) {
     return await useTagsStore().createTag(name);
