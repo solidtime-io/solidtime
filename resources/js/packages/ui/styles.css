@@ -33,7 +33,7 @@
     --theme-color-chart: var(--color-accent-200);
 
     --theme-color-menu-active: var(--color-bg-secondary);
-    --theme-color-card-background: var(--color-bg-secondary);
+    --theme-color-card-background: var(--color-bg-primary);
     --theme-shadow-card: 0 4px 7px 0px rgb(0 0 0 / 15%);
     --theme-shadow-dropdown: 0 4px 7px 0px rgb(0 0 0 / 40%);
 
@@ -51,7 +51,7 @@
     --theme-color-button-primary-border: rgba(var(--color-accent-300), 0.2);
     --theme-color-button-primary-text: var(--color-text-primary);
 
-    --theme-color-input-background: var(--color-bg-secondary);
+    --theme-color-input-background: transparent;
 
     --theme-color-input-select-active: rgb(var(--color-accent-300));
     --theme-color-input-select-active-hover: rgb(var(--color-accent-200));
@@ -98,7 +98,7 @@
     --theme-color-button-primary-border: rgba(var(--color-accent-600), 1);
     --theme-color-button-primary-text: #ffffff;
 
-    --theme-color-input-background: var(--color-bg-primary);
+    --theme-color-input-background: transparent;
 
     --theme-color-input-select-active: rgb(var(--color-accent-400));
     --theme-color-input-select-active-hover: rgb(var(--color-accent-500));
@@ -187,7 +187,7 @@ body {
         --foreground: var(--color-text-primary);
         --card: var(--theme-color-card-background);
         --card-foreground: var(--color-text-primary);
-        --popover: var(--theme-color-card-background);
+        --popover: var(--color-bg-tertiary);
         --popover-foreground: var(--color-text-primary);
         --primary: var(--color-bg-primary);
         --primary-foreground: var(--color-text-primary);

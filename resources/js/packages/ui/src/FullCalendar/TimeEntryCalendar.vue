@@ -548,7 +548,7 @@ onUnmounted(() => {
 }
 
 .fullcalendar :deep(.fc-day-today.fc-col-header-cell) {
-    background-color: var(--color-accent-default);
+    background-color: var(--color-bg-secondary);
 }
 
 .fullcalendar :deep(.fc-day-today) {
