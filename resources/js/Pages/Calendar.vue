@@ -16,10 +16,12 @@ import { TimeEntryCalendar } from '@/packages/ui/src';
 import { isAllowedToPerformPremiumAction } from '@/utils/billing';
 import { useTimeEntriesStore } from '@/utils/useTimeEntries';
 import { useTagsStore } from '@/utils/useTags';
+import { useProjectsQuery } from '@/utils/useProjectsQuery';
+import { useClientsQuery } from '@/utils/useClientsQuery';
+import { useTasksQuery } from '@/utils/useTasksQuery';
+import { useTagsQuery } from '@/utils/useTagsQuery';
 import { useProjectsStore } from '@/utils/useProjects';
 import { useClientsStore } from '@/utils/useClients';
-import { storeToRefs } from 'pinia';
-import { useTasksStore } from '@/utils/useTasks';
 import { getUserTimezone } from '@/packages/ui/src/utils/settings';
 import { getOrganizationCurrencyString } from '@/utils/money';
 import { canCreateProjects } from '@/utils/permissions';
@@ -98,14 +100,10 @@ async function createClient(body: CreateClientBody): Promise<Client | undefined>
     return await useClientsStore().createClient(body);
 }
 
-const projectStore = useProjectsStore();
-const { projects } = storeToRefs(projectStore);
-const taskStore = useTasksStore();
-const { tasks } = storeToRefs(taskStore);
-const clientStore = useClientsStore();
-const { clients } = storeToRefs(clientStore);
-const tagsStore = useTagsStore();
-const { tags } = storeToRefs(tagsStore);
+const { projects } = useProjectsQuery();
+const { tasks } = useTasksQuery();
+const { clients } = useClientsQuery();
+const { tags } = useTagsQuery();
 
 const queryClient = useQueryClient();
 

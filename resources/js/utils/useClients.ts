@@ -1,37 +1,13 @@
 import { defineStore } from 'pinia';
 import { api } from '@/packages/api/src';
-import { computed, ref } from 'vue';
-import type {
-    CreateClientBody,
-    ClientIndexResponse,
-    Client,
-    UpdateClientBody,
-} from '@/packages/api/src';
+import type { CreateClientBody, Client, UpdateClientBody } from '@/packages/api/src';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import { useNotificationsStore } from '@/utils/notification';
+import { useQueryClient } from '@tanstack/vue-query';
 
 export const useClientsStore = defineStore('clients', () => {
-    const clientResponse = ref<ClientIndexResponse | null>(null);
     const { handleApiRequestNotifications } = useNotificationsStore();
-
-    async function fetchClients() {
-        const organization = getCurrentOrganizationId();
-        if (organization) {
-            clientResponse.value = await handleApiRequestNotifications(
-                () =>
-                    api.getClients({
-                        queries: {
-                            archived: 'all',
-                        },
-                        params: {
-                            organization: organization,
-                        },
-                    }),
-                undefined,
-                'Failed to fetch clients'
-            );
-        }
-    }
+    const queryClient = useQueryClient();
 
     async function createClient(clientBody: CreateClientBody): Promise<Client | undefined> {
         const organization = getCurrentOrganizationId();
@@ -46,7 +22,7 @@ export const useClientsStore = defineStore('clients', () => {
                 'Client created successfully',
                 'Failed to create client'
             );
-            await fetchClients();
+            queryClient.invalidateQueries({ queryKey: ['clients'] });
             return response?.data;
         }
     }
@@ -65,7 +41,7 @@ export const useClientsStore = defineStore('clients', () => {
                 'Client updated successfully',
                 'Failed to update client'
             );
-            await fetchClients();
+            queryClient.invalidateQueries({ queryKey: ['clients'] });
         }
     }
 
@@ -83,13 +59,9 @@ export const useClientsStore = defineStore('clients', () => {
                 'Client deleted successfully',
                 'Failed to delete client'
             );
-            await fetchClients();
+            queryClient.invalidateQueries({ queryKey: ['clients'] });
         }
     }
 
-    const clients = computed<Client[]>(() => {
-        return clientResponse.value?.data || [];
-    });
-
-    return { clients, fetchClients, createClient, deleteClient, updateClient };
+    return { createClient, deleteClient, updateClient };
 });

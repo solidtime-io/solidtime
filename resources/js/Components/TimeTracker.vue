@@ -12,9 +12,12 @@ import { useCurrentTimeEntryStore } from '@/utils/useCurrentTimeEntry';
 import { storeToRefs } from 'pinia';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import { switchOrganization } from '@/utils/useOrganization';
-import { useProjectsStore } from '@/utils/useProjects';
-import { useTasksStore } from '@/utils/useTasks';
+import { useProjectsQuery } from '@/utils/useProjectsQuery';
+import { useTasksQuery } from '@/utils/useTasksQuery';
+import { useTagsQuery } from '@/utils/useTagsQuery';
+import { useClientsQuery } from '@/utils/useClientsQuery';
 import { useTagsStore } from '@/utils/useTags';
+import { useProjectsStore } from '@/utils/useProjects';
 import TimeTrackerControls from '@/packages/ui/src/TimeTracker/TimeTrackerControls.vue';
 import type {
     CreateClientBody,
@@ -49,12 +52,9 @@ const currentTimeEntryStore = useCurrentTimeEntryStore();
 const { currentTimeEntry, isActive, now } = storeToRefs(currentTimeEntryStore);
 const { startLiveTimer, stopLiveTimer, setActiveState } = currentTimeEntryStore;
 
-const projectStore = useProjectsStore();
-const { projects } = storeToRefs(projectStore);
-const taskStore = useTasksStore();
-const { tasks } = storeToRefs(taskStore);
-const clientStore = useClientsStore();
-const { clients } = storeToRefs(clientStore);
+const { projects } = useProjectsQuery();
+const { tasks } = useTasksQuery();
+const { clients } = useClientsQuery();
 
 const emit = defineEmits<{
     change: [];
@@ -157,7 +157,7 @@ async function discardCurrentTimeEntry() {
     }
 }
 
-const { tags } = storeToRefs(useTagsStore());
+const { tags } = useTagsQuery();
 const { timeEntries } = storeToRefs(useTimeEntriesStore());
 </script>
 

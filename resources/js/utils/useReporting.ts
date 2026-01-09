@@ -1,4 +1,4 @@
-import { defineStore, storeToRefs } from 'pinia';
+import { defineStore } from 'pinia';
 import { api } from '@/packages/api/src';
 import { type Component, computed, ref } from 'vue';
 import type {
@@ -8,11 +8,11 @@ import type {
 } from '@/packages/api/src';
 import { getCurrentOrganizationId, getCurrentRole, getCurrentUser } from '@/utils/useUser';
 import { useNotificationsStore } from '@/utils/notification';
-import { useProjectsStore } from '@/utils/useProjects';
-import { useMembersStore } from '@/utils/useMembers';
-import { useTasksStore } from '@/utils/useTasks';
-import { useClientsStore } from '@/utils/useClients';
-import { useTagsStore } from '@/utils/useTags';
+import { useProjectsQuery } from '@/utils/useProjectsQuery';
+import { useMembersQuery } from '@/utils/useMembersQuery';
+import { useTasksQuery } from '@/utils/useTasksQuery';
+import { useClientsQuery } from '@/utils/useClientsQuery';
+import { useTagsQuery } from '@/utils/useTagsQuery';
 import { CheckCircleIcon, UserCircleIcon, UserGroupIcon } from '@heroicons/vue/20/solid';
 import { DocumentTextIcon, FolderIcon } from '@heroicons/vue/16/solid';
 import BillableIcon from '@/packages/ui/src/Icons/BillableIcon.vue';
@@ -31,6 +31,13 @@ export const useReportingStore = defineStore('reporting', () => {
     const reportingTableResponse = ref<ReportingResponse | null>(null);
 
     const { handleApiRequestNotifications } = useNotificationsStore();
+
+    // Cache query composables to avoid creating new subscriptions on every call
+    const { projects } = useProjectsQuery();
+    const { members } = useMembersQuery();
+    const { tasks } = useTasksQuery();
+    const { clients } = useClientsQuery();
+    const { tags } = useTagsQuery();
 
     async function fetchGraphReporting(params: AggregatedTimeEntriesQueryParams) {
         const organization = getCurrentOrganizationId();
@@ -93,31 +100,21 @@ export const useReportingStore = defineStore('reporting', () => {
         }
 
         if (type === 'project') {
-            const projectsStore = useProjectsStore();
-            const { projects } = storeToRefs(projectsStore);
             return projects.value.find((project) => project.id === key)?.name;
         }
         if (type === 'user') {
             if (getCurrentRole() === 'employee') {
                 return getCurrentUser().name;
             }
-            const memberStore = useMembersStore();
-            const { members } = storeToRefs(memberStore);
             return members.value.find((member) => member.user_id === key)?.name;
         }
         if (type === 'task') {
-            const taskStore = useTasksStore();
-            const { tasks } = storeToRefs(taskStore);
             return tasks.value.find((task) => task.id === key)?.name;
         }
         if (type === 'client') {
-            const clientsStore = useClientsStore();
-            const { clients } = storeToRefs(clientsStore);
             return clients.value.find((client) => client.id === key)?.name;
         }
         if (type === 'tag') {
-            const tagsStore = useTagsStore();
-            const { tags } = storeToRefs(tagsStore);
             return tags.value.find((tag) => tag.id === key)?.name;
         }
         if (type === 'billable') {

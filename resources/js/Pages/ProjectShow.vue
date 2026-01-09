@@ -3,9 +3,8 @@ import MainContainer from '@/packages/ui/src/MainContainer.vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { FolderIcon, PlusIcon } from '@heroicons/vue/16/solid';
 import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
-import { computed, onMounted, ref, inject, type ComputedRef } from 'vue';
-import { useProjectsStore } from '@/utils/useProjects';
-import { storeToRefs } from 'pinia';
+import { computed, ref, inject, type ComputedRef } from 'vue';
+import { useProjectsQuery } from '@/utils/useProjectsQuery';
 import {
     ChevronRightIcon,
     CheckCircleIcon,
@@ -20,18 +19,18 @@ import CardTitle from '@/packages/ui/src/CardTitle.vue';
 import Card from '@/Components/Common/Card.vue';
 import ProjectMemberTable from '@/Components/Common/ProjectMember/ProjectMemberTable.vue';
 import ProjectMemberCreateModal from '@/Components/Common/ProjectMember/ProjectMemberCreateModal.vue';
-import { useProjectMembersStore } from '@/utils/useProjectMembers';
+import { useProjectMembersQuery } from '@/utils/useProjectMembersQuery';
 import { canCreateProjects, canCreateTasks, canViewProjectMembers } from '@/utils/permissions';
 import TabBarItem from '@/Components/Common/TabBar/TabBarItem.vue';
 import TabBar from '@/Components/Common/TabBar/TabBar.vue';
-import { useTasksStore } from '@/utils/useTasks';
+import { useTasksQuery } from '@/utils/useTasksQuery';
 import ProjectEditModal from '@/Components/Common/Project/ProjectEditModal.vue';
 import { Badge } from '@/packages/ui/src';
 import { formatCents } from '../packages/ui/src/utils/money';
 import { getOrganizationCurrencyString } from '../utils/money';
 import type { Organization } from '@/packages/api/src';
 
-const { projects } = storeToRefs(useProjectsStore());
+const { projects } = useProjectsQuery();
 
 const organization = inject<ComputedRef<Organization>>('organization');
 
@@ -42,20 +41,16 @@ const createTask = ref(false);
 const createProjectMember = ref(false);
 const projectId = route()?.params?.project as string;
 
-const { projectMembers } = storeToRefs(useProjectMembersStore());
-
-onMounted(() => {
-    if (canViewProjectMembers()) {
-        useProjectMembersStore().fetchProjectMembers(projectId);
-    }
-    useTasksStore().fetchTasks();
-});
+// TanStack Query automatically fetches project members when component mounts
+const { projectMembers } = canViewProjectMembers()
+    ? useProjectMembersQuery(projectId)
+    : { projectMembers: computed(() => []) };
 
 const showEditProjectModal = ref(false);
 
 const activeTab = ref<'active' | 'done'>('active');
 
-const { tasks } = storeToRefs(useTasksStore());
+const { tasks } = useTasksQuery();
 
 const shownTasks = computed(() => {
     return tasks.value.filter((task) => {

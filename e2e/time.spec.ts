@@ -1,6 +1,7 @@
 import { PLAYWRIGHT_BASE_URL } from '../playwright/config';
 import { test } from '../playwright/fixtures';
-import { expect, Locator, Page } from '@playwright/test';
+import { expect } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 import {
     assertThatTimerHasStarted,
     assertThatTimerIsStopped,

@@ -23,7 +23,9 @@ import UserSettingsIcon from '@/Components/UserSettingsIcon.vue';
 import MainContainer from '@/packages/ui/src/MainContainer.vue';
 import { computed, onMounted, provide, ref } from 'vue';
 import NotificationContainer from '@/Components/NotificationContainer.vue';
-import { initializeStores, refreshStores } from '@/utils/init';
+import { initializeStores } from '@/utils/init';
+import { useCurrentTimeEntryStore } from '@/utils/useCurrentTimeEntry';
+import { useTimeEntriesStore } from '@/utils/useTimeEntries';
 import {
     canManageBilling,
     canUpdateOrganization,
@@ -89,9 +91,11 @@ onMounted(async () => {
             await fetchToken();
         }
         setTimeout(() => {
-            // prevent store refreshing on navigation
+            // TanStack Query automatically refetches on window focus
+            // Only refresh non-migrated stores
             if (isUnloading.value === false) {
-                refreshStores();
+                useCurrentTimeEntryStore().fetchCurrentTimeEntry();
+                useTimeEntriesStore().patchTimeEntries();
             }
         }, 100);
     };

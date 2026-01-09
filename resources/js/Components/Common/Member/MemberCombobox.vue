@@ -1,15 +1,13 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { storeToRefs } from 'pinia';
-import { useMembersStore } from '@/utils/useMembers';
+import { useMembersQuery } from '@/utils/useMembersQuery';
 import { UserIcon, ChevronDownIcon } from '@heroicons/vue/24/solid';
 import { useFocus } from '@vueuse/core';
 import type { ProjectMember } from '@/packages/api/src';
 import { Badge, SelectDropdown } from '@/packages/ui/src';
 import type { Member } from '@/packages/api/src';
 
-const membersStore = useMembersStore();
-const { members } = storeToRefs(membersStore);
+const { members } = useMembersQuery();
 
 const model = defineModel<string>({
     default: '',

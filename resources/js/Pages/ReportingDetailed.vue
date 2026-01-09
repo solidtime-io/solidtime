@@ -36,15 +36,18 @@ import MemberMultiselectDropdown from '@/Components/Common/Member/MemberMultisel
 import TaskMultiselectDropdown from '@/Components/Common/Task/TaskMultiselectDropdown.vue';
 import SelectDropdown from '@/packages/ui/src/Input/SelectDropdown.vue';
 import ClientMultiselectDropdown from '@/Components/Common/Client/ClientMultiselectDropdown.vue';
+import { useTagsQuery } from '@/utils/useTagsQuery';
 import { useTagsStore } from '@/utils/useTags';
 import { useSessionStorage } from '@vueuse/core';
 import TimeEntryRow from '@/packages/ui/src/TimeEntry/TimeEntryRow.vue';
 import { useCurrentTimeEntryStore } from '@/utils/useCurrentTimeEntry';
+import { useProjectsQuery } from '@/utils/useProjectsQuery';
 import { useProjectsStore } from '@/utils/useProjects';
-import { useTasksStore } from '@/utils/useTasks';
+import { useTasksQuery } from '@/utils/useTasksQuery';
+import { useClientsQuery } from '@/utils/useClientsQuery';
 import { useClientsStore } from '@/utils/useClients';
 import { getOrganizationCurrencyString } from '@/utils/money';
-import { useMembersStore } from '@/utils/useMembers';
+import { useMembersQuery } from '@/utils/useMembersQuery';
 import {
     PaginationEllipsis,
     PaginationFirst,
@@ -88,7 +91,7 @@ const roundingEnabled = ref<boolean>(false);
 const roundingType = ref<TimeEntryRoundingType>('nearest');
 const roundingMinutes = ref<number>(15);
 
-const { members } = storeToRefs(useMembersStore());
+const { members } = useMembersQuery();
 const pageLimit = 15;
 
 // Watch rounding enabled state to trigger updates
@@ -126,7 +129,7 @@ const { setActiveState, startLiveTimer } = currentTimeEntryStore;
 const { handleApiRequestNotifications } = useNotificationsStore();
 const { createTimeEntry, updateTimeEntry, updateTimeEntries } = useTimeEntriesStore();
 
-const { tags } = storeToRefs(useTagsStore());
+const { tags } = useTagsQuery();
 
 const { data: timeEntryResponse } = useQuery<TimeEntryResponse>({
     queryKey: ['timeEntry', 'detailed-report'],
@@ -160,12 +163,9 @@ onMounted(async () => {
     await updateFilteredTimeEntries();
 });
 
-const projectStore = useProjectsStore();
-const { projects } = storeToRefs(projectStore);
-const taskStore = useTasksStore();
-const { tasks } = storeToRefs(taskStore);
-const clientStore = useClientsStore();
-const { clients } = storeToRefs(clientStore);
+const { projects } = useProjectsQuery();
+const { tasks } = useTasksQuery();
+const { clients } = useClientsQuery();
 
 const selectedTimeEntries = ref<TimeEntry[]>([]);
 

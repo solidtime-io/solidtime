@@ -1,35 +1,35 @@
 import { useQuery, useQueryClient } from '@tanstack/vue-query';
 import { api } from '@/packages/api/src';
 import { getCurrentOrganizationId } from '@/utils/useUser';
-import type { Project } from '@/packages/api/src';
+import type { Task } from '@/packages/api/src';
 import { computed } from 'vue';
 
-export function useProjectsQuery() {
+export function useTasksQuery() {
     const queryClient = useQueryClient();
 
     const query = useQuery({
-        queryKey: ['projects'],
+        queryKey: ['tasks'],
         queryFn: async () => {
             const organizationId = getCurrentOrganizationId();
             if (!organizationId) throw new Error('No organization');
-            return api.getProjects({
+            return api.getTasks({
                 params: { organization: organizationId },
-                queries: { archived: 'all' },
+                queries: { done: 'all' },
             });
         },
         enabled: () => !!getCurrentOrganizationId(),
         staleTime: 1000 * 30, // 30 seconds
     });
 
-    const projects = computed<Project[]>(() => query.data.value?.data ?? []);
+    const tasks = computed<Task[]>(() => query.data.value?.data ?? []);
 
-    const invalidateProjects = () => {
-        queryClient.invalidateQueries({ queryKey: ['projects'] });
+    const invalidateTasks = () => {
+        queryClient.invalidateQueries({ queryKey: ['tasks'] });
     };
 
     return {
         ...query,
-        projects,
-        invalidateProjects,
+        tasks,
+        invalidateTasks,
     };
 }

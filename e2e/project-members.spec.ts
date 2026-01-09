@@ -1,9 +1,8 @@
-import { expect, Page } from '@playwright/test';
+import { expect } from '@playwright/test';
+import type { Page } from '@playwright/test';
 import { PLAYWRIGHT_BASE_URL } from '../playwright/config';
 import { test } from '../playwright/fixtures';
 import { formatCentsWithOrganizationDefaults } from './utils/money';
-import type { CurrencyFormat } from '../resources/js/packages/ui/src/utils/money';
-import { NumberFormat } from '@/packages/ui/src/utils/number';
 
 async function goToProjectsOverview(page: Page) {
     await page.goto(PLAYWRIGHT_BASE_URL + '/projects');

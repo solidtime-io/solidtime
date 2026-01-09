@@ -1,26 +1,26 @@
 <script setup lang="ts">
 import ProjectBadge from '@/packages/ui/src/Project/ProjectBadge.vue';
 import TimeTrackerStartStop from '@/packages/ui/src/TimeTrackerStartStop.vue';
-import { useProjectsStore } from '@/utils/useProjects';
-import { storeToRefs } from 'pinia';
+import { useProjectsQuery } from '@/utils/useProjectsQuery';
 import { computed } from 'vue';
 import { useCurrentTimeEntryStore } from '@/utils/useCurrentTimeEntry';
+import { storeToRefs } from 'pinia';
 import { getDayJsInstance } from '@/packages/ui/src/utils/time';
 import type { TimeEntry } from '@/packages/api/src';
-import { useTasksStore } from '@/utils/useTasks';
+import { useTasksQuery } from '@/utils/useTasksQuery';
 import { ChevronRightIcon } from '@heroicons/vue/16/solid';
 
 const props = defineProps<{
     timeEntry: TimeEntry;
 }>();
 
-const { projects } = storeToRefs(useProjectsStore());
+const { projects } = useProjectsQuery();
 
 const project = computed(() => {
     return projects.value.find((project) => project.id === props.timeEntry.project_id);
 });
 
-const { tasks } = storeToRefs(useTasksStore());
+const { tasks } = useTasksQuery();
 
 const task = computed(() => {
     return tasks.value.find((task) => task.id === props.timeEntry.task_id);
