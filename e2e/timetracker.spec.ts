@@ -7,7 +7,7 @@ import {
     startOrStopTimerWithButton,
     stoppedTimeEntryResponse,
 } from './utils/currentTimeEntry';
-import { Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
 import { newTagResponse } from './utils/tags';
 
 async function goToDashboard(page: Page) {

@@ -1,33 +1,13 @@
 import { defineStore } from 'pinia';
-import { ref } from 'vue';
 import type { Tag } from '@/packages/api/src';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import { api } from '@/packages/api/src';
 import { useNotificationsStore } from '@/utils/notification';
+import { useQueryClient } from '@tanstack/vue-query';
 
 export const useTagsStore = defineStore('tags', () => {
-    const tags = ref<Tag[]>([]);
     const { handleApiRequestNotifications } = useNotificationsStore();
-    async function fetchTags() {
-        const organizationId = getCurrentOrganizationId();
-        if (organizationId) {
-            const response = await handleApiRequestNotifications(
-                () =>
-                    api.getTags({
-                        params: {
-                            organization: organizationId,
-                        },
-                    }),
-                undefined,
-                'Failed to fetch tags'
-            );
-            if (response?.data) {
-                tags.value = response.data;
-            }
-        } else {
-            throw new Error('Failed to fetch current tags because organization ID is missing.');
-        }
-    }
+    const queryClient = useQueryClient();
 
     async function deleteTag(tagId: string) {
         const organizationId = getCurrentOrganizationId();
@@ -43,11 +23,11 @@ export const useTagsStore = defineStore('tags', () => {
                 'Tag deleted successfully',
                 'Failed to delete tag'
             );
-            await fetchTags();
+            queryClient.invalidateQueries({ queryKey: ['tags'] });
         }
     }
 
-    async function createTag(name: string) {
+    async function createTag(name: string): Promise<Tag | undefined> {
         const organizationId = getCurrentOrganizationId();
         if (organizationId) {
             const response = await handleApiRequestNotifications(
@@ -66,7 +46,7 @@ export const useTagsStore = defineStore('tags', () => {
                 'Failed to create tag'
             );
             if (response?.data) {
-                tags.value.unshift(response.data);
+                queryClient.invalidateQueries({ queryKey: ['tags'] });
                 return response.data;
             }
         } else {
@@ -74,5 +54,5 @@ export const useTagsStore = defineStore('tags', () => {
         }
     }
 
-    return { tags, fetchTags, createTag, deleteTag };
+    return { createTag, deleteTag };
 });

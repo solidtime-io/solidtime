@@ -6,11 +6,11 @@ import { computed, ref } from 'vue';
 import type { CreateClientBody, CreateProjectBody, Project } from '@/packages/api/src';
 import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import { useProjectsStore } from '@/utils/useProjects';
+import { useClientsStore } from '@/utils/useClients';
 import { useFocus } from '@vueuse/core';
 import ClientDropdown from '@/packages/ui/src/Client/ClientDropdown.vue';
 import Badge from '@/packages/ui/src/Badge.vue';
-import { useClientsStore } from '@/utils/useClients';
-import { storeToRefs } from 'pinia';
+import { useClientsQuery } from '@/utils/useClientsQuery';
 import ProjectColorSelector from '@/packages/ui/src/Project/ProjectColorSelector.vue';
 import { UserCircleIcon } from '@heroicons/vue/20/solid';
 import EstimatedTimeSection from '@/packages/ui/src/EstimatedTimeSection.vue';
@@ -21,7 +21,7 @@ import ProjectEditBillableSection from '@/packages/ui/src/Project/ProjectEditBil
 import { isAllowedToPerformPremiumAction } from '@/utils/billing';
 
 const { updateProject } = useProjectsStore();
-const { clients } = storeToRefs(useClientsStore());
+const { clients } = useClientsQuery();
 const show = defineModel('show', { default: false });
 const saving = ref(false);
 const showBillableRateModal = ref(false);

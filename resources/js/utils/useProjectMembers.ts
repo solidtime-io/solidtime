@@ -1,35 +1,13 @@
 import { defineStore } from 'pinia';
 import { api } from '@/packages/api/src';
-import { computed, ref } from 'vue';
-import type {
-    CreateProjectMemberBody,
-    ProjectMember,
-    ProjectMemberResponse,
-    UpdateProjectMemberBody,
-} from '@/packages/api/src';
+import type { CreateProjectMemberBody, UpdateProjectMemberBody } from '@/packages/api/src';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import { useNotificationsStore } from '@/utils/notification';
+import { useQueryClient } from '@tanstack/vue-query';
 
 export const useProjectMembersStore = defineStore('project-members', () => {
-    const projectMemberResponse = ref<ProjectMemberResponse | null>(null);
     const { handleApiRequestNotifications } = useNotificationsStore();
-
-    async function fetchProjectMembers(projectId: string) {
-        const organization = getCurrentOrganizationId();
-        if (organization) {
-            projectMemberResponse.value = await handleApiRequestNotifications(
-                () =>
-                    api.getProjectMembers({
-                        params: {
-                            organization: organization,
-                            project: projectId,
-                        },
-                    }),
-                undefined,
-                'Failed to fetch project members'
-            );
-        }
-    }
+    const queryClient = useQueryClient();
 
     async function createProjectMember(
         projectId: string,
@@ -48,7 +26,7 @@ export const useProjectMembersStore = defineStore('project-members', () => {
                 'Project member added successfully',
                 'Failed to add project member'
             );
-            await fetchProjectMembers(projectId);
+            queryClient.invalidateQueries({ queryKey: ['projectMembers', projectId] });
         }
     }
 
@@ -69,7 +47,11 @@ export const useProjectMembersStore = defineStore('project-members', () => {
                 'Project member updated successfully',
                 'Failed to update project member'
             );
-            await fetchProjectMembers(response.data.project_id);
+            if (response?.data?.project_id) {
+                queryClient.invalidateQueries({
+                    queryKey: ['projectMembers', response.data.project_id],
+                });
+            }
         }
     }
 
@@ -87,15 +69,11 @@ export const useProjectMembersStore = defineStore('project-members', () => {
                 'Project member removed successfully',
                 'Failed to remove project member'
             );
-            await fetchProjectMembers(projectId);
+            queryClient.invalidateQueries({ queryKey: ['projectMembers', projectId] });
         }
     }
 
-    const projectMembers = computed<ProjectMember[]>(() => projectMemberResponse.value?.data || []);
-
     return {
-        projectMembers,
-        fetchProjectMembers,
         createProjectMember,
         deleteProjectMember,
         updateProjectMember,

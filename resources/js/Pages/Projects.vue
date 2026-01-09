@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import MainContainer from '@/packages/ui/src/MainContainer.vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
-import { FolderIcon, PlusIcon } from '@heroicons/vue/16/solid';
+import { FolderIcon, PlusIcon } from '@heroicons/vue/24/outline';
 import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
 import ProjectTable from '@/Components/Common/Project/ProjectTable.vue';
 import type {
@@ -15,6 +15,7 @@ import ProjectCreateModal from '@/packages/ui/src/Project/ProjectCreateModal.vue
 import PageTitle from '@/Components/Common/PageTitle.vue';
 import { canCreateProjects } from '@/utils/permissions';
 import { storeToRefs } from 'pinia';
+import { useClientsQuery } from '@/utils/useClientsQuery';
 import { useClientsStore } from '@/utils/useClients';
 import type { CreateClientBody, Client, CreateProjectBody, Project } from '@/packages/api/src';
 import { getOrganizationCurrencyString } from '@/utils/money';
@@ -29,8 +30,7 @@ import { NO_CLIENT_ID } from '@/Components/Common/Project/constants';
 
 // Fetch data using TanStack Query
 const { projects } = useProjectsQuery();
-
-const { clients } = storeToRefs(useClientsStore());
+const { clients } = useClientsQuery();
 const { organization } = storeToRefs(useOrganizationStore());
 
 // Table state persisted in localStorage
