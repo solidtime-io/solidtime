@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import MultiselectDropdown from '@/packages/ui/src/Input/MultiselectDropdown.vue';
-import { storeToRefs } from 'pinia';
-import { useProjectsStore } from '@/utils/useProjects';
+import { useProjectsQuery } from '@/utils/useProjectsQuery';
 import type { Project } from '@/packages/api/src';
 
-const projectsStore = useProjectsStore();
-const { projects } = storeToRefs(projectsStore);
+const { projects } = useProjectsQuery();
 
 function getKeyFromItem(item: Project) {
     return item.id;

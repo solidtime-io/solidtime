@@ -3,13 +3,12 @@ import type { Client } from '@/packages/api/src';
 import { computed, ref } from 'vue';
 import { CheckCircleIcon } from '@heroicons/vue/20/solid';
 import { useClientsStore } from '@/utils/useClients';
-import { storeToRefs } from 'pinia';
 import ClientMoreOptionsDropdown from '@/Components/Common/Client/ClientMoreOptionsDropdown.vue';
-import { useProjectsStore } from '@/utils/useProjects';
+import { useProjectsQuery } from '@/utils/useProjectsQuery';
 import TableRow from '@/Components/TableRow.vue';
 import ClientEditModal from '@/Components/Common/Client/ClientEditModal.vue';
 
-const { projects } = storeToRefs(useProjectsStore());
+const { projects } = useProjectsQuery();
 
 const props = defineProps<{
     client: Client;

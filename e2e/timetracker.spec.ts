@@ -218,6 +218,11 @@ test('test that adding a new tag works', async ({ page }) => {
         page.getByRole('button', { name: 'Create Tag' }).click(),
     ]);
 
+    // Wait for tags query refetch after invalidation
+    await page.waitForResponse(
+        (response) => response.url().includes('/tags') && response.status() === 200
+    );
+
     await page.getByTestId('tag_dropdown').click();
     await expect(page.getByRole('option', { name: newTagName })).toBeVisible();
 });
