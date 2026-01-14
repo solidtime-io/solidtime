@@ -1205,4 +1205,101 @@ class TimeEntryAggregationServiceTest extends TestCaseWithDatabase
         ];
         $this->assertEqualsCanonicalizing($expected, $result);
     }
+
+    /**
+     * Test that rounding up does NOT add extra time when the entry is already on a 15-minute boundary.
+     * f.e. 13:00 - 14:30 (90 minutes) should stay at 90 minutes when rounding up with 15-minute interval.
+     */
+    public function test_aggregate_time_round_up_does_not_add_time_when_already_on_boundary(): void
+    {
+        // Arrange
+        // Create a time entry with duration exactly on a 15-minute boundary (90 minutes = 5400 seconds)
+        // This simulates 13:00 - 14:30 (or any 90-minute entry)
+        $project = Project::factory()->create();
+        TimeEntry::factory()->startWithDuration(
+            Carbon::createFromFormat('Y-m-d H:i:s', '2020-01-01 13:00:00'),
+            5400 // 90 minutes = 1 hour 30 minutes, exactly on 15-minute boundary
+        )->forProject($project)->create();
+        $query = TimeEntry::query();
+
+        // Act
+        $result = $this->service->getAggregatedTimeEntries(
+            $query,
+            TimeEntryAggregationType::Project,
+            null,
+            'Europe/Vienna',
+            Weekday::Monday,
+            false,
+            null,
+            null,
+            true,
+            TimeEntryRoundingType::Up,
+            15
+        );
+
+        // Assert
+        // The entry is already on a 15-minute boundary (90 minutes), so it should stay at 90 minutes (5400 seconds)
+        $this->assertEqualsCanonicalizing([
+            'seconds' => 5400, // 90 minutes - should NOT be rounded to 105 minutes (6300 seconds)
+            'cost' => 0,
+            'grouped_type' => 'project',
+            'grouped_data' => [
+                [
+                    'key' => $project->getKey(),
+                    'seconds' => 5400, // 90 minutes
+                    'cost' => 0,
+                    'grouped_type' => null,
+                    'grouped_data' => null,
+                ],
+            ],
+        ], $result);
+    }
+
+    /**
+     * Test that rounding up works correctly for entries NOT on a boundary.
+     * Example: 13:00 - 13:48 (48 minutes) should round up to 13:00 - 14:00 (60 minutes).
+     */
+    public function test_aggregate_time_round_up_works_when_not_on_boundary(): void
+    {
+        // Arrange
+        // Create a time entry with duration NOT on a 15-minute boundary (48 minutes = 2880 seconds)
+        $project = Project::factory()->create();
+        TimeEntry::factory()->startWithDuration(
+            Carbon::createFromFormat('Y-m-d H:i:s', '2020-01-01 13:00:00'),
+            2880 // 48 minutes, not on 15-minute boundary
+        )->forProject($project)->create();
+        $query = TimeEntry::query();
+
+        // Act
+        $result = $this->service->getAggregatedTimeEntries(
+            $query,
+            TimeEntryAggregationType::Project,
+            null,
+            'Europe/Vienna',
+            Weekday::Monday,
+            false,
+            null,
+            null,
+            true,
+            TimeEntryRoundingType::Up,
+            15
+        );
+
+        // Assert
+        // 48 minutes rounded up to 15-minute interval = 60 minutes (3600 seconds)
+        $this->assertEqualsCanonicalizing([
+            'seconds' => 3600, // 60 minutes
+            'cost' => 0,
+            'grouped_type' => 'project',
+            'grouped_data' => [
+                [
+                    'key' => $project->getKey(),
+                    'seconds' => 3600, // 60 minutes
+                    'cost' => 0,
+                    'grouped_type' => null,
+                    'grouped_data' => null,
+                ],
+            ],
+        ], $result);
+    }
 }
