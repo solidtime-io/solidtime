@@ -34,10 +34,9 @@ import { getOrganizationCurrencyString } from '@/utils/money';
 import { isAllowedToPerformPremiumAction } from '@/utils/billing';
 import { canCreateProjects } from '@/utils/permissions';
 import { ref } from 'vue';
-import { useTimeEntriesStore } from '@/utils/useTimeEntries';
-import { useMutation, useQueryClient } from '@tanstack/vue-query';
-import { api } from '@/packages/api/src';
 import { useNotificationsStore } from '@/utils/notification';
+import { useTimeEntriesMutations } from '@/utils/useTimeEntriesMutations';
+import { useTimeEntriesInfiniteQuery } from '@/utils/useTimeEntriesInfiniteQuery';
 
 const page = usePage<{
     auth: {
@@ -61,6 +60,10 @@ const emit = defineEmits<{
 }>();
 
 const showManualTimeEntryModal = ref(false);
+
+const { createTimeEntry: createTimeEntryMutation, deleteTimeEntry } = useTimeEntriesMutations();
+const { data: timeEntriesData } = useTimeEntriesInfiniteQuery();
+const timeEntries = computed(() => timeEntriesData.value?.pages.flatMap((page) => page.data) || []);
 
 watch(isActive, () => {
     if (isActive.value) {
@@ -113,7 +116,7 @@ async function createTag(tag: string): Promise<Tag | undefined> {
 }
 
 async function createTimeEntry(timeEntry: Omit<CreateTimeEntryBody, 'member_id'>) {
-    await useTimeEntriesStore().createTimeEntry(timeEntry);
+    await createTimeEntryMutation(timeEntry);
     showManualTimeEntryModal.value = false;
 }
 
@@ -124,41 +127,19 @@ async function createTimeEntryFromCurrentEntry() {
 }
 
 const { handleApiRequestNotifications } = useNotificationsStore();
-const queryClient = useQueryClient();
-
-const deleteTimeEntryMutation = useMutation({
-    mutationFn: async (timeEntryId: string) => {
-        const organizationId = getCurrentOrganizationId();
-        if (!organizationId) {
-            throw new Error('No organization selected');
-        }
-        return await api.deleteTimeEntry(undefined, {
-            params: {
-                organization: organizationId,
-                timeEntry: timeEntryId,
-            },
-        });
-    },
-    onSuccess: async () => {
-        await currentTimeEntryStore.fetchCurrentTimeEntry();
-        await useTimeEntriesStore().fetchTimeEntries();
-        queryClient.invalidateQueries({ queryKey: ['timeEntry'] });
-        queryClient.invalidateQueries({ queryKey: ['timeEntries'] });
-    },
-});
 
 async function discardCurrentTimeEntry() {
     if (currentTimeEntry.value.id) {
         await handleApiRequestNotifications(
-            () => deleteTimeEntryMutation.mutateAsync(currentTimeEntry.value.id),
+            () => deleteTimeEntry(currentTimeEntry.value.id),
             'Time entry discarded successfully',
             'Failed to discard time entry'
         );
+        await currentTimeEntryStore.fetchCurrentTimeEntry();
     }
 }
 
 const { tags } = useTagsQuery();
-const { timeEntries } = storeToRefs(useTimeEntriesStore());
 </script>
 
 <template>
@@ -176,7 +157,7 @@ const { timeEntries } = storeToRefs(useTimeEntriesStore());
         :tags
         :clients></TimeEntryCreateModal>
     <CardTitle title="Time Tracker" :icon="ClockIcon"></CardTitle>
-    <div class="relative">
+    <div class="relative pt-1">
         <TimeTrackerRunningInDifferentOrganizationOverlay
             v-if="isRunningInDifferentOrganization"
             @switch-organization="

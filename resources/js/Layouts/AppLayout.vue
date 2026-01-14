@@ -25,7 +25,6 @@ import { computed, onMounted, provide, ref } from 'vue';
 import NotificationContainer from '@/Components/NotificationContainer.vue';
 import { initializeStores } from '@/utils/init';
 import { useCurrentTimeEntryStore } from '@/utils/useCurrentTimeEntry';
-import { useTimeEntriesStore } from '@/utils/useTimeEntries';
 import {
     canManageBilling,
     canUpdateOrganization,
@@ -95,7 +94,6 @@ onMounted(async () => {
             // Only refresh non-migrated stores
             if (isUnloading.value === false) {
                 useCurrentTimeEntryStore().fetchCurrentTimeEntry();
-                useTimeEntriesStore().patchTimeEntries();
             }
         }, 100);
     };

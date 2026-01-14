@@ -27,7 +27,7 @@ test('test that creating and deleting a new client via the modal works', async (
 
     await expect(page.getByTestId('client_table')).toContainText(newClientName);
     const moreButton = page.locator("[aria-label='Actions for Client " + newClientName + "']");
-    moreButton.click();
+    await moreButton.click();
     const deleteButton = page.locator("[aria-label='Delete Client " + newClientName + "']");
 
     await Promise.all([

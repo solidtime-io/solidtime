@@ -10,8 +10,8 @@ import {
     getCurrentUserId,
 } from '@/utils/useUser';
 import { useLocalStorage } from '@vueuse/core';
-import { useTimeEntriesStore } from '@/utils/useTimeEntries';
 import { useNotificationsStore } from '@/utils/notification';
+import { useQueryClient } from '@tanstack/vue-query';
 
 dayjs.extend(utc);
 
@@ -32,6 +32,7 @@ const emptyTimeEntry = {
 export const useCurrentTimeEntryStore = defineStore('currentTimeEntry', () => {
     const currentTimeEntry = ref<TimeEntry>(reactive(emptyTimeEntry));
     const { handleApiRequestNotifications } = useNotificationsStore();
+    const queryClient = useQueryClient();
 
     useLocalStorage('solidtime/current-time-entry', currentTimeEntry, {
         deep: true,
@@ -208,7 +209,7 @@ export const useCurrentTimeEntryStore = defineStore('currentTimeEntry', () => {
             stopLiveTimer();
             await stopTimer();
         }
-        useTimeEntriesStore().fetchTimeEntries();
+        queryClient.invalidateQueries({ queryKey: ['timeEntries'] });
     }
 
     return {

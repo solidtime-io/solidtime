@@ -207,7 +207,7 @@ useSelectEvents(
 <template>
     <div class="flex items-center relative @container" data-testid="dashboard_timer">
         <div
-            class="flex flex-col @2xl:flex-row w-full justify-between rounded-lg bg-secondary border-card-border border transition shadow-card">
+            class="flex flex-col @2xl:flex-row w-full justify-between rounded-lg bg-card-background border-card-border border transition shadow-card">
             <div class="flex flex-1 items-center pr-6 relative">
                 <input
                     ref="currentTimeEntryDescriptionInput"

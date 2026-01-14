@@ -1,20 +1,17 @@
 <script setup lang="ts">
 import AppLayout from '@/Layouts/AppLayout.vue';
-import { useQuery, useQueryClient } from '@tanstack/vue-query';
+import { useTimeEntriesCalendarQuery } from '@/utils/useTimeEntriesCalendarQuery';
+import { useTimeEntriesMutations } from '@/utils/useTimeEntriesMutations';
+import { computed, ref } from 'vue';
+import { useQueryClient } from '@tanstack/vue-query';
 import {
-    api,
     type Client,
     type CreateClientBody,
     type CreateProjectBody,
     type Project,
-    type TimeEntryResponse,
 } from '@/packages/api/src';
-import { getCurrentOrganizationId, getCurrentMembershipId } from '@/utils/useUser';
-import { computed, ref } from 'vue';
-import { getDayJsInstance } from '@/packages/ui/src/utils/time';
 import { TimeEntryCalendar } from '@/packages/ui/src';
 import { isAllowedToPerformPremiumAction } from '@/utils/billing';
-import { useTimeEntriesStore } from '@/utils/useTimeEntries';
 import { useTagsStore } from '@/utils/useTags';
 import { useProjectsQuery } from '@/utils/useProjectsQuery';
 import { useClientsQuery } from '@/utils/useClientsQuery';
@@ -22,71 +19,41 @@ import { useTasksQuery } from '@/utils/useTasksQuery';
 import { useTagsQuery } from '@/utils/useTagsQuery';
 import { useProjectsStore } from '@/utils/useProjects';
 import { useClientsStore } from '@/utils/useClients';
-import { getUserTimezone } from '@/packages/ui/src/utils/settings';
 import { getOrganizationCurrencyString } from '@/utils/money';
 import { canCreateProjects } from '@/utils/permissions';
 
 const calendarStart = ref<Date | undefined>(undefined);
 const calendarEnd = ref<Date | undefined>(undefined);
 
-const enableCalendarQuery = computed(() => {
-    return !!getCurrentOrganizationId() && !!calendarStart.value && !!calendarEnd.value;
-});
-
-// Calculate expanded date range to include previous and next periods with timezone transformations
-const expandedDateRange = computed(() => {
-    if (!calendarStart.value || !calendarEnd.value) {
-        return { start: null, end: null };
-    }
-
-    const dayjs = getDayJsInstance();
-    const duration = dayjs(calendarEnd.value).diff(dayjs(calendarStart.value), 'milliseconds');
-
-    // Calculate previous period
-    const previousStart = dayjs(calendarStart.value).subtract(duration, 'milliseconds');
-    // Calculate next period
-    const nextEnd = dayjs(calendarEnd.value).add(duration, 'milliseconds');
-
-    // Apply timezone transformations
-    const formattedStart = previousStart.utc().tz(getUserTimezone(), true).utc().format();
-    const formattedEnd = nextEnd.utc().tz(getUserTimezone(), true).utc().format();
-
-    return {
-        start: formattedStart,
-        end: formattedEnd,
-    };
-});
-
-const { data: timeEntryResponse, isLoading: timeEntriesLoading } = useQuery<TimeEntryResponse>({
-    queryKey: computed(() => [
-        'timeEntry',
-        'calendar',
-        {
-            start: expandedDateRange.value.start,
-            end: expandedDateRange.value.end,
-            organization: getCurrentOrganizationId(),
-        },
-    ]),
-    enabled: enableCalendarQuery,
-    placeholderData: (previousData) => previousData,
-    queryFn: () =>
-        api.getTimeEntries({
-            params: {
-                organization: getCurrentOrganizationId() || '',
-            },
-            queries: {
-                start: expandedDateRange.value.start!,
-                end: expandedDateRange.value.end!,
-                member_id: getCurrentMembershipId(),
-            },
-        }),
-});
+const { data: timeEntryResponse, isLoading: timeEntriesLoading } = useTimeEntriesCalendarQuery(
+    calendarStart,
+    calendarEnd
+);
 
 const currentTimeEntries = computed(() => {
     return timeEntryResponse?.value?.data || [];
 });
 
-const { createTimeEntry, updateTimeEntry, deleteTimeEntry } = useTimeEntriesStore();
+const {
+    createTimeEntry: createTimeEntryMutation,
+    updateTimeEntry: updateTimeEntryMutation,
+    deleteTimeEntry: deleteTimeEntryMutation,
+} = useTimeEntriesMutations();
+
+// Wrap mutations to match expected Promise<void> return type
+async function createTimeEntry(
+    entry: Omit<import('@/packages/api/src').TimeEntry, 'id' | 'organization_id' | 'user_id'>
+): Promise<void> {
+    await createTimeEntryMutation(entry);
+}
+
+async function updateTimeEntry(entry: import('@/packages/api/src').TimeEntry): Promise<void> {
+    await updateTimeEntryMutation(entry);
+}
+
+async function deleteTimeEntry(timeEntryId: string): Promise<void> {
+    await deleteTimeEntryMutation(timeEntryId);
+}
 
 async function createTag(name: string) {
     return await useTagsStore().createTag(name);
@@ -114,7 +81,7 @@ function onDatesChange({ start, end }: { start: Date; end: Date }) {
 
 function onRefresh() {
     queryClient.invalidateQueries({
-        queryKey: ['timeEntry', 'calendar'],
+        queryKey: ['timeEntries', 'calendar'],
     });
 }
 </script>
