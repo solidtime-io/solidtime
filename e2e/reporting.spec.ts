@@ -125,8 +125,8 @@ test('test that project filtering works in reporting', async ({ page }) => {
 
     // Go to reporting and filter by project1
     await goToReporting(page);
-    await page.getByRole('button', { name: 'Project' }).nth(0).click();
-    await page.getByRole('dialog').getByText(project1).click();
+    await page.getByRole('button', { name: 'Projects' }).click();
+    await page.getByRole('option').filter({ hasText: project1 }).click();
 
     await Promise.all([
         // escape
