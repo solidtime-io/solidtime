@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/vue-query';
-import { api, type TimeEntryResponse } from '@/packages/api/src';
+import { api, type TimeEntryResponse, type TimeEntry } from '@/packages/api/src';
 import { getCurrentMembershipId, getCurrentOrganizationId } from '@/utils/useUser';
 import { computed, type Ref } from 'vue';
 import { getDayJsInstance } from '@/packages/ui/src/utils/time';
@@ -49,17 +49,33 @@ export function useTimeEntriesCalendarQuery(
         ]),
         enabled: enableCalendarQuery,
         placeholderData: (previousData) => previousData,
-        queryFn: () =>
-            api.getTimeEntries({
-                params: {
-                    organization: getCurrentOrganizationId() || '',
-                },
-                queries: {
-                    start: expandedDateRange.value.start!,
-                    end: expandedDateRange.value.end!,
-                    member_id: getCurrentMembershipId(),
-                },
-            }),
+        queryFn: async () => {
+            const allEntries: TimeEntry[] = [];
+
+            while (true) {
+                const response = await api.getTimeEntries({
+                    params: {
+                        organization: getCurrentOrganizationId() || '',
+                    },
+                    queries: {
+                        start: expandedDateRange.value.start!,
+                        end: expandedDateRange.value.end!,
+                        member_id: getCurrentMembershipId(),
+                        offset: allEntries.length || undefined,
+                    },
+                });
+
+                if (response.data.length === 0) {
+                    return { data: allEntries, meta: response.meta };
+                }
+
+                allEntries.push(...response.data);
+
+                if (allEntries.length >= response.meta.total) {
+                    return { data: allEntries, meta: response.meta };
+                }
+            }
+        },
         staleTime: 1000 * 30, // 30 seconds
     });
 }
