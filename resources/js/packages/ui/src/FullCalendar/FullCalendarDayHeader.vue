@@ -6,10 +6,10 @@ import type { Dayjs } from 'dayjs';
 
 const props = defineProps<{
     date: Dayjs;
-    totalMinutes?: number;
+    totalSeconds?: number;
 }>();
 
-const totalSeconds = computed(() => (props.totalMinutes ?? 0) * 60);
+const totalSecondsValue = computed(() => props.totalSeconds ?? 0);
 
 // Injected organization for formatting settings
 const organization = inject('organization') as ComputedRef<Organization | undefined> | undefined;
@@ -25,7 +25,7 @@ const dateFormat = computed(() => organization?.value?.date_format);
         </div>
         <span class="text-xs">{{ formatDate(date.toISOString(), dateFormat) }}</span>
         <span class="block text-xs text-muted-foreground font-medium mt-1">
-            {{ formatHumanReadableDuration(totalSeconds, intervalFormat, numberFormat) }}
+            {{ formatHumanReadableDuration(totalSecondsValue, intervalFormat, numberFormat) }}
         </span>
     </div>
 </template>

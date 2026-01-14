@@ -179,20 +179,20 @@ const dailyTotals = computed(() => {
     const totals: Record<string, number> = {};
     props.timeEntries.forEach((entry) => {
         const date = getDayJsInstance()(entry.start).format('YYYY-MM-DD');
-        let duration: number;
+        let durationSeconds: number;
 
         if (entry.end !== null) {
             // Completed entry
-            duration = getDayJsInstance()(entry.end).diff(
+            durationSeconds = getDayJsInstance()(entry.end).diff(
                 getDayJsInstance()(entry.start),
-                'minutes'
+                'seconds'
             );
         } else {
             // Running entry - use current time
-            duration = currentTime.value.diff(getDayJsInstance()(entry.start), 'minutes');
+            durationSeconds = currentTime.value.diff(getDayJsInstance()(entry.start), 'seconds');
         }
 
-        totals[date] = (totals[date] || 0) + duration;
+        totals[date] = (totals[date] || 0) + durationSeconds;
     });
     return totals;
 });
@@ -444,7 +444,7 @@ onUnmounted(() => {
                     :date="
                         getDayJsInstance()(arg.date.toISOString()).utc().tz(getUserTimezone(), true)
                     "
-                    :total-minutes="
+                    :total-seconds="
                         dailyTotals[
                             getDayJsInstance()(arg.date)
                                 .utc()
