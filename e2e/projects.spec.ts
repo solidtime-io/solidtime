@@ -38,7 +38,7 @@ test('test that creating and deleting a new project via the modal works', async 
 
     await expect(page.getByTestId('project_table')).toContainText(newProjectName);
     const moreButton = page.locator("[aria-label='Actions for Project " + newProjectName + "']");
-    moreButton.click();
+    await moreButton.click();
     const deleteButton = page.locator("[aria-label='Delete Project " + newProjectName + "']");
 
     await Promise.all([
@@ -79,8 +79,16 @@ test('test that archiving and unarchiving projects works', async ({ page }) => {
     await page.getByRole('button', { name: 'Create Project' }).click();
     await page.getByLabel('Project Name').fill(newProjectName);
 
-    await page.getByRole('button', { name: 'Create Project' }).click();
-    await expect(page.getByText(newProjectName)).toBeVisible();
+    await Promise.all([
+        page.getByRole('button', { name: 'Create Project' }).click(),
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/projects') &&
+                response.request().method() === 'POST' &&
+                response.status() === 201
+        ),
+    ]);
+    await expect(page.getByText(newProjectName)).toBeVisible({ timeout: 10000 });
 
     // Archive the project
     await page.getByRole('row').first().getByRole('button').click();
@@ -118,8 +126,16 @@ test('test that updating billable rate works with existing time entries', async 
     await page.getByRole('button', { name: 'Create Project' }).click();
     await page.getByLabel('Project Name').fill(newProjectName);
 
-    await page.getByRole('button', { name: 'Create Project' }).click();
-    await expect(page.getByText(newProjectName)).toBeVisible();
+    await Promise.all([
+        page.getByRole('button', { name: 'Create Project' }).click(),
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/projects') &&
+                response.request().method() === 'POST' &&
+                response.status() === 201
+        ),
+    ]);
+    await expect(page.getByText(newProjectName)).toBeVisible({ timeout: 10000 });
 
     await page.getByRole('row').first().getByRole('button').click();
     await page.getByRole('menuitem').getByText('Edit').first().click();
@@ -224,8 +240,16 @@ test('test that filtering projects by status works', async ({ page }) => {
     // Create a new project
     await page.getByRole('button', { name: 'Create Project' }).click();
     await page.getByLabel('Project Name').fill(newProjectName);
-    await page.getByRole('button', { name: 'Create Project' }).click();
-    await expect(page.getByText(newProjectName)).toBeVisible();
+    await Promise.all([
+        page.getByRole('button', { name: 'Create Project' }).click(),
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/projects') &&
+                response.request().method() === 'POST' &&
+                response.status() === 201
+        ),
+    ]);
+    await expect(page.getByText(newProjectName)).toBeVisible({ timeout: 10000 });
 
     // Archive the project
     await page.getByRole('row').first().getByRole('button').click();

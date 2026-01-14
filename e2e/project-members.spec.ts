@@ -17,8 +17,16 @@ test('test that updating project member billable rate works for existing time en
     await page.getByRole('button', { name: 'Create Project' }).click();
     await page.getByLabel('Project Name').fill(newProjectName);
 
-    await page.getByRole('button', { name: 'Create Project' }).click();
-    await expect(page.getByText(newProjectName)).toBeVisible();
+    await Promise.all([
+        page.getByRole('button', { name: 'Create Project' }).click(),
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/projects') &&
+                response.request().method() === 'POST' &&
+                response.status() === 201
+        ),
+    ]);
+    await expect(page.getByText(newProjectName)).toBeVisible({ timeout: 10000 });
 
     await page.getByText(newProjectName).click();
     await page.getByRole('button', { name: 'Add Member' }).click();

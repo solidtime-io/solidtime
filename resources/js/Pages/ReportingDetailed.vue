@@ -28,7 +28,6 @@ import {
     type CreateProjectBody,
     type Project,
     type TimeEntry,
-    type TimeEntryResponse,
 } from '@/packages/api/src';
 import ReportingFilterBadge from '@/Components/Common/Reporting/ReportingFilterBadge.vue';
 import ProjectMultiselectDropdown from '@/Components/Common/Project/ProjectMultiselectDropdown.vue';
@@ -58,9 +57,8 @@ import {
     PaginationPrev,
     PaginationRoot,
 } from 'radix-vue';
-import { useQuery, useQueryClient } from '@tanstack/vue-query';
+import { useQueryClient } from '@tanstack/vue-query';
 import { getCurrentOrganizationId, getCurrentMembershipId } from '@/utils/useUser';
-import { useTimeEntriesStore } from '@/utils/useTimeEntries';
 import ReportingTabNavbar from '@/Components/Common/Reporting/ReportingTabNavbar.vue';
 import ReportingExportButton from '@/Components/Common/Reporting/ReportingExportButton.vue';
 import type { ExportFormat } from '@/types/reporting';
@@ -69,6 +67,8 @@ import TimeEntryMassActionRow from '@/packages/ui/src/TimeEntry/TimeEntryMassAct
 import { isAllowedToPerformPremiumAction } from '@/utils/billing';
 import { canCreateProjects, canViewAllTimeEntries } from '@/utils/permissions';
 import ReportingExportModal from '@/Components/Common/Reporting/ReportingExportModal.vue';
+import { useTimeEntriesReportQuery } from '@/utils/useTimeEntriesReportQuery';
+import { useTimeEntriesMutations } from '@/utils/useTimeEntriesMutations';
 
 // TimeEntryRoundingType is now defined in ReportingRoundingControls component
 type TimeEntryRoundingType = 'up' | 'down' | 'nearest';
@@ -127,30 +127,32 @@ const currentTimeEntryStore = useCurrentTimeEntryStore();
 const { currentTimeEntry } = storeToRefs(currentTimeEntryStore);
 const { setActiveState, startLiveTimer } = currentTimeEntryStore;
 const { handleApiRequestNotifications } = useNotificationsStore();
-const { createTimeEntry, updateTimeEntry, updateTimeEntries } = useTimeEntriesStore();
+
+const {
+    createTimeEntry,
+    updateTimeEntry,
+    updateTimeEntries: updateTimeEntriesMutation,
+    deleteTimeEntries: deleteTimeEntriesMutation,
+} = useTimeEntriesMutations();
+
+async function updateTimeEntries(
+    ids: string[],
+    changes: Parameters<typeof updateTimeEntriesMutation>[0]['changes']
+) {
+    await updateTimeEntriesMutation({ ids, changes });
+}
 
 const { tags } = useTagsQuery();
 
-const { data: timeEntryResponse } = useQuery<TimeEntryResponse>({
-    queryKey: ['timeEntry', 'detailed-report'],
-    enabled: !!getCurrentOrganizationId(),
-    queryFn: () =>
-        api.getTimeEntries({
-            params: {
-                organization: getCurrentOrganizationId() || '',
-            },
-            queries: { ...getFilterAttributes() },
-        }),
-});
+const filterParams = computed(() => getFilterAttributes());
+const { data: timeEntryResponse } = useTimeEntriesReportQuery(filterParams);
 
 const totalPages = computed(() => {
     return timeEntryResponse?.value?.meta?.total ?? 1;
 });
 
-const timeEntriesStore = useTimeEntriesStore();
-
 async function deleteTimeEntries(timeEntries: TimeEntry[]) {
-    await timeEntriesStore.deleteTimeEntries(timeEntries);
+    await deleteTimeEntriesMutation(timeEntries);
     selectedTimeEntries.value = [];
     await updateFilteredTimeEntries();
 }
@@ -203,7 +205,7 @@ async function startTimeEntryFromExisting(entry: TimeEntry) {
 const queryClient = useQueryClient();
 async function updateFilteredTimeEntries() {
     await queryClient.invalidateQueries({
-        queryKey: ['timeEntry', 'detailed-report'],
+        queryKey: ['timeEntries', 'detailed-report'],
     });
 }
 watch(currentPage, () => {

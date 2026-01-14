@@ -1,7 +1,9 @@
 <template>
-    <section class="flex flex-col">
+    <section class="flex overflow-hidden flex-col gap-1.5">
         <CardTitle :title="title" :icon="icon"></CardTitle>
-        <div class="rounded-lg border border-card-border flex-1 flex items-stretch">
+
+        <div
+            class="flex-1 flex items-stretch rounded-lg bg-card-background border border-card-border">
             <div class="w-full flex flex-col">
                 <slot></slot>
             </div>

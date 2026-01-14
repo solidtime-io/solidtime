@@ -1,7 +1,8 @@
 <script lang="ts" setup>
 import VChart, { THEME_KEY } from 'vue-echarts';
-import { provide, computed, inject, type ComputedRef } from 'vue';
+import { provide, computed, inject, ref, type ComputedRef } from 'vue';
 import { use } from 'echarts/core';
+import { useElementSize } from '@vueuse/core';
 import DashboardCard from '@/Components/Dashboard/DashboardCard.vue';
 import { BoltIcon } from '@heroicons/vue/20/solid';
 import { HeatmapChart } from 'echarts/charts';
@@ -12,13 +13,13 @@ import {
     VisualMapComponent,
 } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
-import dayjs from 'dayjs';
 import {
     firstDayIndex,
     formatDate,
     formatHumanReadableDuration,
     getDayJsInstance,
 } from '@/packages/ui/src/utils/time';
+import chroma from 'chroma-js';
 import { useCssVariable } from '@/utils/useCssVariable';
 import { useQuery } from '@tanstack/vue-query';
 import { getCurrentOrganizationId } from '@/utils/useUser';
@@ -62,8 +63,44 @@ const max = computed(() => {
 });
 
 const backgroundColor = useCssVariable('--theme-color-card-background');
-const itemBackgroundColor = useCssVariable('--color-bg-tertiary');
 const borderColor = useCssVariable('--color-border');
+const labelColor = useCssVariable('--color-text-secondary');
+const chartColorRaw = useCssVariable('--theme-color-chart');
+
+const chartEmptyColorRaw = useCssVariable('--color-bg-tertiary');
+const chartEmptyColor = computed(() => {
+    if (!chartEmptyColorRaw.value) return '#2a2c32';
+    return chroma(chartEmptyColorRaw.value).hex();
+});
+const chartColor = computed(() => {
+    if (!chartColorRaw.value) return '#bae6fd';
+    return `rgb(${chartColorRaw.value})`;
+});
+
+// Track chart container size
+const chartContainer = ref<HTMLElement | null>(null);
+const { width: containerWidth } = useElementSize(chartContainer);
+
+// Calculate number of weeks based on available width
+// Rough estimate: 40px per cell + 80px for labels = ~360px for 7 weeks
+const numberOfWeeks = computed(() => {
+    const availableWidth = containerWidth.value || 400;
+    const minCellSize = 25; // Minimum cell size in pixels
+    const labelSpace = 80; // Space for day labels
+    const usableWidth = availableWidth - labelSpace;
+    const maxWeeks = Math.floor(usableWidth / minCellSize);
+    // Clamp between 4 and 12 weeks for reasonable display
+    return Math.max(4, Math.min(12, maxWeeks));
+});
+
+// Calculate date range based on dynamic number of weeks
+const dateRange = computed(() => {
+    const today = getDayJsInstance()();
+    const startOfWeek = today.startOf('week');
+    // Go back (numberOfWeeks - 1) weeks from the start of current week
+    const rangeStart = startOfWeek.subtract(numberOfWeeks.value - 1, 'week');
+    return [today.format('YYYY-MM-DD'), rangeStart.format('YYYY-MM-DD')];
+});
 
 const option = computed(() => {
     return {
@@ -76,26 +113,30 @@ const option = computed(() => {
             left: 'center',
             top: 'center',
             inRange: {
-                color: [itemBackgroundColor.value, '#2DBE45'],
+                color: [chartEmptyColor.value, chartColor.value],
             },
             show: false,
         },
         calendar: {
-            top: 40,
+            top: 35,
             bottom: 20,
-            left: 40,
-            right: 10,
-            cellSize: [40, 40],
+            left: 35,
+            right: 5,
+            cellSize: 'auto',
+            orient: 'horizontal',
             dayLabel: {
                 firstDay: firstDayIndex.value,
+                color: labelColor.value,
+                fontFamily: 'Inter, sans-serif',
+            },
+            monthLabel: {
+                color: labelColor.value,
+                fontFamily: 'Inter, sans-serif',
             },
             splitLine: {
                 show: false,
             },
-            range: [
-                dayjs().format('YYYY-MM-DD'),
-                getDayJsInstance()().subtract(50, 'day').startOf('week').format('YYYY-MM-DD'),
-            ],
+            range: dateRange.value,
             itemStyle: {
                 color: 'transparent',
                 borderWidth: 8,
@@ -144,7 +185,7 @@ const option = computed(() => {
             <div v-if="isLoading" class="flex justify-center items-center h-40">
                 <LoadingSpinner />
             </div>
-            <div v-else-if="dailyHoursTracked">
+            <div v-else-if="dailyHoursTracked" ref="chartContainer">
                 <v-chart
                     class="chart"
                     :autoresize="true"

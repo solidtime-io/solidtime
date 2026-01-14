@@ -1,6 +1,6 @@
 import type { QueryClient } from '@tanstack/vue-query';
 import { api } from '@/packages/api/src';
-import { getCurrentOrganizationId } from '@/utils/useUser';
+import { getCurrentOrganizationId, getCurrentMembershipId } from '@/utils/useUser';
 import { canViewClients, canViewMembers } from '@/utils/permissions';
 
 /**
@@ -21,6 +21,7 @@ const routePrefetchers: Record<string, (queryClient: QueryClient) => void> = {
         prefetchTasks(queryClient);
         prefetchTags(queryClient);
         prefetchClients(queryClient);
+        prefetchTimeEntries(queryClient);
     },
 
     '/calendar': (queryClient) => {
@@ -217,6 +218,28 @@ function prefetchReports(queryClient: QueryClient) {
             api.getReports({
                 params: { organization: organizationId },
             }),
+        staleTime: 30000,
+    });
+}
+
+function prefetchTimeEntries(queryClient: QueryClient) {
+    const organizationId = getCurrentOrganizationId();
+    const memberId = getCurrentMembershipId();
+    if (!organizationId) return;
+
+    queryClient.prefetchInfiniteQuery({
+        queryKey: ['timeEntries', 'infinite', { organizationId, memberId }],
+        queryFn: async () => {
+            const response = await api.getTimeEntries({
+                params: { organization: organizationId },
+                queries: {
+                    only_full_dates: 'true',
+                    member_id: memberId,
+                },
+            });
+            return response;
+        },
+        initialPageParam: undefined,
         staleTime: 30000,
     });
 }
