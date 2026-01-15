@@ -66,7 +66,9 @@ async function startTaskTimer() {
             </ProjectBadge>
         </div>
         <div class="flex items-center justify-center">
-            <TimeTrackerStartStop @changed="startTaskTimer"></TimeTrackerStartStop>
+            <TimeTrackerStartStop
+                variant="outline"
+                @changed="startTaskTimer"></TimeTrackerStartStop>
         </div>
     </div>
 </template>

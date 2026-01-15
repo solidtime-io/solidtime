@@ -53,7 +53,7 @@ test('test that starting and stopping an empty time entry shows a new time entry
 // Test that description update works
 
 async function assertThatTimeEntryRowIsStopped(newTimeEntry: Locator) {
-    await expect(newTimeEntry.getByTestId('timer_button')).toHaveClass(/bg-accent-300\/70/);
+    await expect(newTimeEntry.getByTestId('timer_button')).toHaveClass(/bg-tertiary/);
 }
 
 test('test that updating a description of a time entry in the overview works on blur', async ({
@@ -224,7 +224,7 @@ test('test that starting a time entry from the overview works', async ({ page })
 
     const newTimeEntry = timeEntryRows.first();
     const startButton = newTimeEntry.getByTestId('timer_button');
-    await expect(startButton).toHaveClass(/bg-accent-300\/70/);
+    await expect(startButton).toHaveClass(/bg-tertiary/);
 
     await Promise.all([
         page.waitForResponse(async (response) => {
