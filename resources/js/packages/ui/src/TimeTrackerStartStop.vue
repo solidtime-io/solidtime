@@ -1,37 +1,71 @@
 <script setup lang="ts">
-import { twMerge } from 'tailwind-merge';
-import { computed } from 'vue';
+import { cva, type VariantProps } from 'class-variance-authority';
+import { cn } from './utils/cn';
+
+const timeTrackerVariants = cva(
+    'flex items-center justify-center transition focus:outline-0 rounded-full',
+    {
+        variants: {
+            variant: {
+                primary:
+                    'text-white ring-accent-200/10 focus-visible:ring-ring focus-visible:ring-2 ring-4 sm:ring-[6px]',
+                secondary:
+                    'bg-tertiary text-text-tertiary hover:text-text-primary focus:ring-2 focus:ring-border-tertiary',
+                outline:
+                    'border border-border-primary text-text-tertiary hover:text-text-primary hover:bg-tertiary/50',
+            },
+            size: {
+                small: 'w-6 h-6',
+                base: 'w-9 h-9 hover:scale-110',
+                large: 'w-11 h-11 hover:scale-110',
+            },
+            active: {
+                true: '',
+                false: '',
+            },
+        },
+        compoundVariants: [
+            {
+                variant: 'primary',
+                active: true,
+                class: 'bg-red-400/80 hover:bg-red-500/80 focus:bg-red-500/80',
+            },
+            {
+                variant: 'primary',
+                active: false,
+                class: 'bg-accent-300/70 hover:bg-accent-400/70 focus:bg-accent-700',
+            },
+        ],
+        defaultVariants: {
+            variant: 'primary',
+            size: 'base',
+            active: false,
+        },
+    }
+);
+
+type TimeTrackerVariants = VariantProps<typeof timeTrackerVariants>;
 
 const emit = defineEmits(['changed']);
 
 const props = withDefaults(
     defineProps<{
-        size?: 'base' | 'large' | 'small';
+        variant?: TimeTrackerVariants['variant'];
+        size?: TimeTrackerVariants['size'];
         active?: boolean;
     }>(),
     {
+        variant: 'primary',
         size: 'base',
         active: false,
     }
 );
-const buttonSizeClasses = {
-    small: 'w-6 h-6 bg-accent-200/40 hover:bg-accent-300/70',
-    base: 'w-8 h-8 bg-accent-200/40 hover:scale-110 hover:bg-accent-300/70 ring-accent-200/10 focus-visible:ring-ring ring-4 hover:ring-4',
-    large: 'w-11 h-11 ring-accent-200/10 focus-visible:ring-ring focus-visible:ring-2 ring-4 sm:ring-[6px] hover:scale-110',
-};
+
 const iconClass = {
     small: 'w-2.5 h-2.5',
-    base: 'w-3.5 h-3.5',
+    base: 'w-3 h-3',
     large: 'w-4 h-4',
 };
-
-const buttonColorClasses = computed(() => {
-    if (props.active) {
-        return 'bg-red-400/80 hover:bg-red-500/80 focus:bg-red-500/80';
-    } else {
-        return 'bg-accent-300/70 hover:bg-accent-400/70 focus:bg-accent-700';
-    }
-});
 
 function toggleState() {
     emit('changed', !props.active);
@@ -41,18 +75,12 @@ function toggleState() {
 <template>
     <button
         data-testid="timer_button"
-        :class="
-            twMerge(
-                buttonSizeClasses[size],
-                buttonColorClasses,
-                'flex items-center justify-center py-1 transition focus:outline-0 rounded-full text-white '
-            )
-        "
+        :class="cn(timeTrackerVariants({ variant, size, active }))"
         @click="toggleState">
         <Transition name="fade" mode="out-in">
             <svg
                 v-if="props.active"
-                :class="iconClass[size]"
+                :class="iconClass[size ?? 'base']"
                 viewBox="0 0 14 14"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg">
@@ -64,7 +92,7 @@ function toggleState() {
             </svg>
             <svg
                 v-else
-                :class="iconClass[size]"
+                :class="iconClass[size ?? 'base']"
                 viewBox="0 0 7 8"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg">
