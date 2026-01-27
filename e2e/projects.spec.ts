@@ -317,6 +317,55 @@ test('test that sort state persists after page reload', async ({ page }) => {
     await expect(page.getByTestId('project_table')).toBeVisible();
 });
 
+test('test that custom billable rate is displayed correctly on project detail page', async ({
+    page,
+}) => {
+    const newProjectName = 'Billable Rate Project ' + Math.floor(1 + Math.random() * 10000);
+    const newBillableRate = Math.round(10 + Math.random() * 1000);
+    await goToProjectsOverview(page);
+    await page.getByRole('button', { name: 'Create Project' }).click();
+    await page.getByLabel('Project Name').fill(newProjectName);
+
+    await Promise.all([
+        page.getByRole('button', { name: 'Create Project' }).click(),
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/projects') &&
+                response.request().method() === 'POST' &&
+                response.status() === 201
+        ),
+    ]);
+    await expect(page.getByText(newProjectName)).toBeVisible({ timeout: 10000 });
+
+    // Edit the project to set a custom billable rate
+    await page.getByRole('row').first().getByRole('button').click();
+    await page.getByRole('menuitem').getByText('Edit').first().click();
+    await page.getByText('Non-Billable').click();
+    await page.getByText('Custom Rate').click();
+    await page.getByPlaceholder('Billable Rate').fill(newBillableRate.toString());
+    await page.getByRole('button', { name: 'Update Project' }).click();
+
+    await Promise.all([
+        page.locator('button').filter({ hasText: 'Yes, update existing time' }).click(),
+        page.waitForResponse(
+            async (response) =>
+                response.url().includes('/projects/') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 200
+        ),
+    ]);
+
+    // Navigate to the project detail page by clicking the project name
+    await page.getByText(newProjectName).first().click();
+    await page.waitForURL(/\/projects\/[a-f0-9-]+/);
+
+    // Verify the badge displays the correctly formatted billable rate
+    const expectedFormattedRate = formatCentsWithOrganizationDefaults(newBillableRate * 100);
+    await expect(page.locator('nav[aria-label="Breadcrumb"]').locator('..')).toContainText(
+        expectedFormattedRate
+    );
+});
+
 // Create new project with new Client
 
 // Create new project with existing Client
