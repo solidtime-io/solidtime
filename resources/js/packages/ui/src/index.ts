@@ -43,7 +43,13 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tool
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './accordion/index';
 import { Popover, PopoverContent, PopoverTrigger, PopoverAnchor } from './popover/index';
 import { RangeCalendar } from './range-calendar/index';
+import { CommandPalette } from './CommandPalette/index';
 export type { ActivityPeriod } from './FullCalendar/idleStatusPlugin';
+export type {
+    CommandPaletteCommand,
+    CommandPaletteGroup,
+    EntitySearchResult,
+} from './CommandPalette/index';
 
 export {
     money,
@@ -89,4 +95,5 @@ export {
     PopoverTrigger,
     PopoverAnchor,
     RangeCalendar,
+    CommandPalette,
 };

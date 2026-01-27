@@ -187,7 +187,7 @@ body {
         --foreground: var(--color-text-primary);
         --card: var(--theme-color-card-background);
         --card-foreground: var(--color-text-primary);
-        --popover: var(--color-bg-tertiary);
+        --popover: var(--color-bg-secondary);
         --popover-foreground: var(--color-text-primary);
         --primary: var(--color-bg-primary);
         --primary-foreground: var(--color-text-primary);

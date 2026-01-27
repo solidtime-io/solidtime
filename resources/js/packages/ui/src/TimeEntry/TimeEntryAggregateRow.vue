@@ -170,7 +170,8 @@ function onSelectChange(checked: boolean) {
 
                     <TimeTrackerStartStop
                         :active="!!(timeEntry.start && !timeEntry.end)"
-                        class="opacity-20 flex group-hover:opacity-100 focus-visible:opacity-100"
+                        variant="secondary"
+                        class="opacity-60 flex group-hover:opacity-100 focus-visible:opacity-100"
                         @changed="onStartStopClick(timeEntry)"></TimeTrackerStartStop>
                     <TimeEntryMoreOptionsDropdown
                         :show-edit="false"
