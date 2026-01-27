@@ -44,8 +44,7 @@ import UpdateSidebarNotification from '@/Components/UpdateSidebarNotification.vu
 import BillingBanner from '@/Components/Billing/BillingBanner.vue';
 import UserTimezoneMismatchModal from '@/Components/Common/User/UserTimezoneMismatchModal.vue';
 import { useTheme } from '@/utils/theme';
-import { useQuery } from '@tanstack/vue-query';
-import { api } from '@/packages/api/src';
+import { useOrganizationQuery } from '@/utils/useOrganizationQuery';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import LoadingSpinner from '@/packages/ui/src/LoadingSpinner.vue';
 import { twMerge } from 'tailwind-merge';
@@ -65,21 +64,11 @@ defineProps({
 const showSidebarMenu = ref(false);
 const isUnloading = ref(false);
 
-const { data: organization, isLoading: isOrganizationLoading } = useQuery({
-    queryKey: ['organization', getCurrentOrganizationId()],
-    queryFn: () =>
-        api.getOrganization({
-            params: {
-                organization: getCurrentOrganizationId()!,
-            },
-        }),
-    enabled: !!getCurrentOrganizationId(),
-});
-
-provide(
-    'organization',
-    computed(() => organization.value?.data)
+const { organization, isLoading: isOrganizationLoading } = useOrganizationQuery(
+    getCurrentOrganizationId()!
 );
+
+provide('organization', organization);
 
 onMounted(async () => {
     useTheme();

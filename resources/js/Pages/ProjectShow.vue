@@ -3,7 +3,7 @@ import MainContainer from '@/packages/ui/src/MainContainer.vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { FolderIcon, PlusIcon } from '@heroicons/vue/16/solid';
 import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
-import { computed, ref, inject, type ComputedRef } from 'vue';
+import { computed, ref } from 'vue';
 import { useProjectsQuery } from '@/utils/useProjectsQuery';
 import {
     ChevronRightIcon,
@@ -28,11 +28,12 @@ import ProjectEditModal from '@/Components/Common/Project/ProjectEditModal.vue';
 import { Badge } from '@/packages/ui/src';
 import { formatCents } from '../packages/ui/src/utils/money';
 import { getOrganizationCurrencyString } from '../utils/money';
-import type { Organization } from '@/packages/api/src';
+import { useOrganizationQuery } from '@/utils/useOrganizationQuery';
+import { getCurrentOrganizationId } from '@/utils/useUser';
 
 const { projects } = useProjectsQuery();
 
-const organization = inject<ComputedRef<Organization>>('organization');
+const { organization } = useOrganizationQuery(getCurrentOrganizationId()!);
 
 const project = computed(() => {
     return projects.value.find((project) => project.id === route().params.project) ?? null;
@@ -47,6 +48,19 @@ const { projectMembers } = canViewProjectMembers()
     : { projectMembers: computed(() => []) };
 
 const showEditProjectModal = ref(false);
+
+const billableRateFormatted = computed(() => {
+    if (project.value?.billable_rate) {
+        return formatCents(
+            project.value.billable_rate,
+            getOrganizationCurrencyString(),
+            organization.value?.currency_format,
+            organization.value?.currency_symbol,
+            organization.value?.number_format
+        );
+    }
+    return null;
+});
 
 const activeTab = ref<'active' | 'done'>('active');
 
@@ -96,15 +110,7 @@ const shownTasks = computed(() => {
                 </ol>
                 <div class="px-4">
                     <Badge v-if="project?.billable_rate">
-                        {{
-                            formatCents(
-                                project?.billable_rate ?? 0,
-                                getOrganizationCurrencyString(),
-                                organization?.currency_format,
-                                organization?.currency_symbol,
-                                organization?.number_format
-                            )
-                        }}
+                        {{ billableRateFormatted }}
                         / h
                     </Badge>
                     <Badge v-if="project?.is_billable && !project?.billable_rate">
