@@ -17,7 +17,7 @@ const expandedStatusClasses = computed(() => {
     if (props.expanded) {
         return 'border-card-border border bg-quaternary text-text-primary';
     }
-    return 'border-card-border border hover:bg-tertiary hover:text-text-primary transition text-text-secondary';
+    return 'border-card-border bg-secondary border hover:bg-tertiary hover:text-text-primary transition text-text-secondary';
 });
 </script>
 

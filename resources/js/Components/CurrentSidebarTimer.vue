@@ -51,7 +51,7 @@ const isRunningInDifferentOrganization = computed(() => {
         <TimeTrackerStartStop
             :active="isActive"
             size="base"
-            variant="outline"
+            variant="secondary"
             @changed="setActiveState"></TimeTrackerStartStop>
     </div>
 </template>
