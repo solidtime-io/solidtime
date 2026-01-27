@@ -10,13 +10,11 @@ const timeTrackerVariants = cva(
                 primary:
                     'text-white ring-accent-200/10 focus-visible:ring-ring focus-visible:ring-2 ring-4 sm:ring-[6px]',
                 secondary:
-                    'bg-tertiary text-text-tertiary hover:text-text-primary focus:ring-2 focus:ring-border-tertiary',
-                outline:
-                    'border border-border-primary text-text-tertiary hover:text-text-primary hover:bg-tertiary/50',
+                    'bg-quaternary text-text-tertiary hover:text-text-primary focus:ring-2 focus:ring-border-tertiary',
             },
             size: {
                 small: 'w-6 h-6',
-                base: 'w-9 h-9 hover:scale-110',
+                base: 'w-8 h-8',
                 large: 'w-11 h-11 hover:scale-110',
             },
             active: {

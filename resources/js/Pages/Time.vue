@@ -159,7 +159,7 @@ function deleteSelected() {
             </div>
             <div
                 v-else-if="!hasNextPage"
-                class="flex justify-center items-center py-5 text-text-secondary font-medium">
+                class="flex justify-center items-center py-5 text-sm text-text-tertiary">
                 All time entries are loaded!
             </div>
         </div>
