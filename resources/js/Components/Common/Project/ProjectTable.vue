@@ -13,7 +13,7 @@ import { canCreateProjects } from '@/utils/permissions';
 import type { CreateProjectBody, Project, Client, CreateClientBody } from '@/packages/api/src';
 import { useProjectsStore } from '@/utils/useProjects';
 import { useClientsStore } from '@/utils/useClients';
-import { storeToRefs } from 'pinia';
+import { useClientsQuery } from '@/utils/useClientsQuery';
 import { getOrganizationCurrencyString } from '@/utils/money';
 import { isAllowedToPerformPremiumAction } from '@/utils/billing';
 import {
@@ -34,7 +34,7 @@ const emit = defineEmits<{
     sort: [column: SortColumn];
 }>();
 
-const { clients } = storeToRefs(useClientsStore());
+const { clients } = useClientsQuery();
 
 // Create a map of client names for sorting
 const clientNameMap = computed(() => {

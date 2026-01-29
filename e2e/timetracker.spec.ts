@@ -7,7 +7,7 @@ import {
     startOrStopTimerWithButton,
     stoppedTimeEntryResponse,
 } from './utils/currentTimeEntry';
-import { Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
 import { newTagResponse } from './utils/tags';
 
 async function goToDashboard(page: Page) {
@@ -217,6 +217,11 @@ test('test that adding a new tag works', async ({ page }) => {
         newTagResponse(page, { name: newTagName }),
         page.getByRole('button', { name: 'Create Tag' }).click(),
     ]);
+
+    // Wait for tags query refetch after invalidation
+    await page.waitForResponse(
+        (response) => response.url().includes('/tags') && response.status() === 200
+    );
 
     await page.getByTestId('tag_dropdown').click();
     await expect(page.getByRole('option', { name: newTagName })).toBeVisible();

@@ -1,4 +1,5 @@
-import { expect, Page } from '@playwright/test';
+import { expect } from '@playwright/test';
+import type { Page } from '@playwright/test';
 import { PLAYWRIGHT_BASE_URL } from '../playwright/config';
 import { test } from '../playwright/fixtures';
 
@@ -124,8 +125,8 @@ test('test that project filtering works in reporting', async ({ page }) => {
 
     // Go to reporting and filter by project1
     await goToReporting(page);
-    await page.getByRole('button', { name: 'Project' }).nth(0).click();
-    await page.getByRole('dialog').getByText(project1).click();
+    await page.getByRole('button', { name: 'Projects' }).first().click();
+    await page.getByRole('option').filter({ hasText: project1 }).click();
 
     await Promise.all([
         // escape

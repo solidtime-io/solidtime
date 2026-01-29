@@ -18,6 +18,7 @@ export function useProjectsQuery() {
             });
         },
         enabled: () => !!getCurrentOrganizationId(),
+        staleTime: 1000 * 30, // 30 seconds
     });
 
     const projects = computed<Project[]>(() => query.data.value?.data ?? []);

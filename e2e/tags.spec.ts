@@ -1,4 +1,5 @@
-import { expect, Page } from '@playwright/test';
+import { expect } from '@playwright/test';
+import type { Page } from '@playwright/test';
 import { PLAYWRIGHT_BASE_URL } from '../playwright/config';
 import { test } from '../playwright/fixtures';
 

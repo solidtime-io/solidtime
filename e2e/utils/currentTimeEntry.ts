@@ -1,4 +1,5 @@
-import { expect, Page } from '@playwright/test';
+import { expect } from '@playwright/test';
+import type { Page } from '@playwright/test';
 
 export async function startOrStopTimerWithButton(page: Page) {
     await page.locator('[data-testid="dashboard_timer"] [data-testid="timer_button"]').click();

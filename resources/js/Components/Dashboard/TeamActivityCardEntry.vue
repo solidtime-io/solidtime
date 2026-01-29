@@ -7,11 +7,11 @@ defineProps<{
 </script>
 
 <template>
-    <div class="px-4 py-2 2xl:py-3 border-b border-b-background-separator">
+    <div class="px-3.5 py-2 2xl:py-3">
         <div class="col-span-2">
             <div class="flex justify-between">
                 <p
-                    class="font-semibold text-sm min-w-0 overflow-ellipsis overflow-hidden flex-1 text-text-primary">
+                    class="text-xs min-w-0 overflow-ellipsis overflow-hidden flex-1 text-text-secondary">
                     {{ name }}
                 </p>
                 <div v-if="working" class="flex space-x-1.5 items-center justify-end">

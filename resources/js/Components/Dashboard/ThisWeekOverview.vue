@@ -15,6 +15,7 @@ import { ClockIcon } from '@heroicons/vue/20/solid';
 import CardTitle from '@/packages/ui/src/CardTitle.vue';
 import LinearGradient from 'zrender/lib/graphic/LinearGradient';
 import ProjectsChartCard from '@/Components/Dashboard/ProjectsChartCard.vue';
+import ThisWeekReportingTable from '@/Components/Dashboard/ThisWeekReportingTable.vue';
 import { formatHumanReadableDuration } from '@/packages/ui/src/utils/time';
 import { formatCents } from '@/packages/ui/src/utils/money';
 import { getWeekStart } from '@/packages/ui/src/utils/settings';
@@ -71,6 +72,7 @@ const { data: weeklyProjectOverview } = useQuery({
         });
     },
     enabled: computed(() => !!organizationId.value),
+    staleTime: 1000 * 30, // 30 seconds
 });
 
 const { data: totalWeeklyTime } = useQuery({
@@ -83,6 +85,7 @@ const { data: totalWeeklyTime } = useQuery({
         });
     },
     enabled: computed(() => !!organizationId.value),
+    staleTime: 1000 * 30, // 30 seconds
 });
 
 const { data: totalWeeklyBillableTime } = useQuery({
@@ -95,6 +98,7 @@ const { data: totalWeeklyBillableTime } = useQuery({
         });
     },
     enabled: computed(() => !!organizationId.value),
+    staleTime: 1000 * 30, // 30 seconds
 });
 
 const { data: totalWeeklyBillableAmount } = useQuery({
@@ -107,6 +111,7 @@ const { data: totalWeeklyBillableAmount } = useQuery({
         });
     },
     enabled: computed(() => !!organizationId.value),
+    staleTime: 1000 * 30, // 30 seconds
 });
 
 const { data: weeklyHistory } = useQuery({
@@ -119,6 +124,7 @@ const { data: weeklyHistory } = useQuery({
         });
     },
     enabled: computed(() => !!organizationId.value),
+    staleTime: 1000 * 30, // 30 seconds
 });
 
 const seriesData = computed(() => {
@@ -241,6 +247,10 @@ const option = computed(() => {
         <div class="col-span-2 xl:col-span-3">
             <CardTitle title="This Week" class="pb-8" :icon="ClockIcon"></CardTitle>
             <v-chart v-if="weeklyHistory" :autoresize="true" class="chart" :option="option" />
+
+            <div class="mt-6">
+                <ThisWeekReportingTable></ThisWeekReportingTable>
+            </div>
         </div>
         <div class="space-y-6">
             <StatCard

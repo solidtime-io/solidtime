@@ -39,12 +39,13 @@ import {
     type Organization,
 } from '@/packages/api/src';
 import { getCurrentMembershipId, getCurrentOrganizationId, getCurrentRole } from '@/utils/useUser';
+import { useTagsQuery } from '@/utils/useTagsQuery';
 import { useTagsStore } from '@/utils/useTags';
 import { useSessionStorage, useStorage } from '@vueuse/core';
 import { useNotificationsStore } from '@/utils/notification';
 import type { ExportFormat } from '@/types/reporting';
 import { getRandomColorWithSeed } from '@/packages/ui/src/utils/color';
-import { useProjectsStore } from '@/utils/useProjects';
+import { useProjectsQuery } from '@/utils/useProjectsQuery';
 
 // TimeEntryRoundingType is now defined in ReportingRoundingControls component
 type TimeEntryRoundingType = 'up' | 'down' | 'nearest';
@@ -154,7 +155,7 @@ onMounted(() => {
     updateTableReporting();
 });
 
-const { tags } = storeToRefs(useTagsStore());
+const { tags } = useTagsQuery();
 
 async function createTag(tag: string) {
     return await useTagsStore().createTag(tag);
@@ -199,8 +200,7 @@ async function downloadExport(format: ExportFormat) {
 
 const { getNameForReportingRowEntry, emptyPlaceholder } = useReportingStore();
 
-const projectsStore = useProjectsStore();
-const { projects } = storeToRefs(projectsStore);
+const { projects } = useProjectsQuery();
 const showExportModal = ref(false);
 const exportUrl = ref<string | null>(null);
 
@@ -375,7 +375,7 @@ const tableData = computed(() => {
     </MainContainer>
     <MainContainer>
         <div class="sm:grid grid-cols-4 pt-6 items-start">
-            <div class="col-span-3 bg-card-background rounded-lg border border-card-border pt-3">
+            <div class="col-span-3 bg-secondary rounded-lg border border-card-border pt-3">
                 <div
                     class="text-sm flex text-text-primary items-center space-x-3 font-medium px-6 border-b border-card-background-separator pb-3">
                     <span>Group by</span>
@@ -391,7 +391,7 @@ const tableData = computed(() => {
                 </div>
                 <div class="grid items-center" style="grid-template-columns: 1fr 100px 150px">
                     <div
-                        class="contents [&>*]:border-card-background-separator [&>*]:border-b [&>*]:bg-tertiary [&>*]:pb-1.5 [&>*]:pt-1 text-text-secondary text-sm">
+                        class="contents [&>*]:border-card-background-separator [&>*]:border-b [&>*]:bg-secondary [&>*]:pb-1.5 [&>*]:pt-1 text-text-tertiary text-sm">
                         <div class="pl-6">Name</div>
                         <div class="text-right">Duration</div>
                         <div class="text-right pr-6">Cost</div>

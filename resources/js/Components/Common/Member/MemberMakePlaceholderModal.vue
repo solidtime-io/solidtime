@@ -4,12 +4,12 @@ import DialogModal from '@/packages/ui/src/DialogModal.vue';
 import { ref } from 'vue';
 import { api, type Member } from '@/packages/api/src';
 import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
-import { useMutation } from '@tanstack/vue-query';
+import { useMutation, useQueryClient } from '@tanstack/vue-query';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import { useNotificationsStore } from '@/utils/notification';
-import { useMembersStore } from '@/utils/useMembers';
 
 const { handleApiRequestNotifications } = useNotificationsStore();
+const queryClient = useQueryClient();
 
 const show = defineModel('show', { default: false });
 const saving = ref(false);
@@ -41,7 +41,7 @@ async function submit() {
         'There was an error deactivating the user.',
         () => {
             show.value = false;
-            useMembersStore().fetchMembers();
+            queryClient.invalidateQueries({ queryKey: ['members'] });
         }
     );
 }

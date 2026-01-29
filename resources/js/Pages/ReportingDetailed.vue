@@ -28,7 +28,6 @@ import {
     type CreateProjectBody,
     type Project,
     type TimeEntry,
-    type TimeEntryResponse,
 } from '@/packages/api/src';
 import ReportingFilterBadge from '@/Components/Common/Reporting/ReportingFilterBadge.vue';
 import ProjectMultiselectDropdown from '@/Components/Common/Project/ProjectMultiselectDropdown.vue';
@@ -36,15 +35,18 @@ import MemberMultiselectDropdown from '@/Components/Common/Member/MemberMultisel
 import TaskMultiselectDropdown from '@/Components/Common/Task/TaskMultiselectDropdown.vue';
 import SelectDropdown from '@/packages/ui/src/Input/SelectDropdown.vue';
 import ClientMultiselectDropdown from '@/Components/Common/Client/ClientMultiselectDropdown.vue';
+import { useTagsQuery } from '@/utils/useTagsQuery';
 import { useTagsStore } from '@/utils/useTags';
 import { useSessionStorage } from '@vueuse/core';
 import TimeEntryRow from '@/packages/ui/src/TimeEntry/TimeEntryRow.vue';
 import { useCurrentTimeEntryStore } from '@/utils/useCurrentTimeEntry';
+import { useProjectsQuery } from '@/utils/useProjectsQuery';
 import { useProjectsStore } from '@/utils/useProjects';
-import { useTasksStore } from '@/utils/useTasks';
+import { useTasksQuery } from '@/utils/useTasksQuery';
+import { useClientsQuery } from '@/utils/useClientsQuery';
 import { useClientsStore } from '@/utils/useClients';
 import { getOrganizationCurrencyString } from '@/utils/money';
-import { useMembersStore } from '@/utils/useMembers';
+import { useMembersQuery } from '@/utils/useMembersQuery';
 import {
     PaginationEllipsis,
     PaginationFirst,
@@ -55,9 +57,8 @@ import {
     PaginationPrev,
     PaginationRoot,
 } from 'radix-vue';
-import { useQuery, useQueryClient } from '@tanstack/vue-query';
+import { useQueryClient } from '@tanstack/vue-query';
 import { getCurrentOrganizationId, getCurrentMembershipId } from '@/utils/useUser';
-import { useTimeEntriesStore } from '@/utils/useTimeEntries';
 import ReportingTabNavbar from '@/Components/Common/Reporting/ReportingTabNavbar.vue';
 import ReportingExportButton from '@/Components/Common/Reporting/ReportingExportButton.vue';
 import type { ExportFormat } from '@/types/reporting';
@@ -66,6 +67,8 @@ import TimeEntryMassActionRow from '@/packages/ui/src/TimeEntry/TimeEntryMassAct
 import { isAllowedToPerformPremiumAction } from '@/utils/billing';
 import { canCreateProjects, canViewAllTimeEntries } from '@/utils/permissions';
 import ReportingExportModal from '@/Components/Common/Reporting/ReportingExportModal.vue';
+import { useTimeEntriesReportQuery } from '@/utils/useTimeEntriesReportQuery';
+import { useTimeEntriesMutations } from '@/utils/useTimeEntriesMutations';
 
 // TimeEntryRoundingType is now defined in ReportingRoundingControls component
 type TimeEntryRoundingType = 'up' | 'down' | 'nearest';
@@ -88,7 +91,7 @@ const roundingEnabled = ref<boolean>(false);
 const roundingType = ref<TimeEntryRoundingType>('nearest');
 const roundingMinutes = ref<number>(15);
 
-const { members } = storeToRefs(useMembersStore());
+const { members } = useMembersQuery();
 const pageLimit = 15;
 
 // Watch rounding enabled state to trigger updates
@@ -124,30 +127,32 @@ const currentTimeEntryStore = useCurrentTimeEntryStore();
 const { currentTimeEntry } = storeToRefs(currentTimeEntryStore);
 const { setActiveState, startLiveTimer } = currentTimeEntryStore;
 const { handleApiRequestNotifications } = useNotificationsStore();
-const { createTimeEntry, updateTimeEntry, updateTimeEntries } = useTimeEntriesStore();
 
-const { tags } = storeToRefs(useTagsStore());
+const {
+    createTimeEntry,
+    updateTimeEntry,
+    updateTimeEntries: updateTimeEntriesMutation,
+    deleteTimeEntries: deleteTimeEntriesMutation,
+} = useTimeEntriesMutations();
 
-const { data: timeEntryResponse } = useQuery<TimeEntryResponse>({
-    queryKey: ['timeEntry', 'detailed-report'],
-    enabled: !!getCurrentOrganizationId(),
-    queryFn: () =>
-        api.getTimeEntries({
-            params: {
-                organization: getCurrentOrganizationId() || '',
-            },
-            queries: { ...getFilterAttributes() },
-        }),
-});
+async function updateTimeEntries(
+    ids: string[],
+    changes: Parameters<typeof updateTimeEntriesMutation>[0]['changes']
+) {
+    await updateTimeEntriesMutation({ ids, changes });
+}
+
+const { tags } = useTagsQuery();
+
+const filterParams = computed(() => getFilterAttributes());
+const { data: timeEntryResponse } = useTimeEntriesReportQuery(filterParams);
 
 const totalPages = computed(() => {
     return timeEntryResponse?.value?.meta?.total ?? 1;
 });
 
-const timeEntriesStore = useTimeEntriesStore();
-
 async function deleteTimeEntries(timeEntries: TimeEntry[]) {
-    await timeEntriesStore.deleteTimeEntries(timeEntries);
+    await deleteTimeEntriesMutation(timeEntries);
     selectedTimeEntries.value = [];
     await updateFilteredTimeEntries();
 }
@@ -160,12 +165,9 @@ onMounted(async () => {
     await updateFilteredTimeEntries();
 });
 
-const projectStore = useProjectsStore();
-const { projects } = storeToRefs(projectStore);
-const taskStore = useTasksStore();
-const { tasks } = storeToRefs(taskStore);
-const clientStore = useClientsStore();
-const { clients } = storeToRefs(clientStore);
+const { projects } = useProjectsQuery();
+const { tasks } = useTasksQuery();
+const { clients } = useClientsQuery();
 
 const selectedTimeEntries = ref<TimeEntry[]>([]);
 
@@ -203,7 +205,7 @@ async function startTimeEntryFromExisting(entry: TimeEntry) {
 const queryClient = useQueryClient();
 async function updateFilteredTimeEntries() {
     await queryClient.invalidateQueries({
-        queryKey: ['timeEntry', 'detailed-report'],
+        queryKey: ['timeEntries', 'detailed-report'],
     });
 }
 watch(currentPage, () => {

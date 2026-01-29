@@ -6,11 +6,13 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { ZiggyVue } from '../../vendor/tightenco/ziggy';
 import { createPinia } from 'pinia';
 import type { User } from '@/types/models';
-import { VueQueryPlugin } from '@tanstack/vue-query';
+import { QueryClient, VueQueryPlugin } from '@tanstack/vue-query';
 import { type DefineComponent } from 'vue';
+import { setupPrefetching } from '@/utils/prefetch';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 const pinia = createPinia();
+const queryClient = new QueryClient();
 
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,
@@ -62,7 +64,10 @@ createInertiaApp({
             return page.props.auth.user.timezone;
         };
 
-        app.use(plugin).use(pinia).use(ZiggyVue).use(VueQueryPlugin).mount(el);
+        app.use(plugin).use(pinia).use(ZiggyVue).use(VueQueryPlugin, { queryClient }).mount(el);
+
+        // Setup Inertia prefetching to warm TanStack Query cache
+        setupPrefetching(queryClient);
     },
 
     progress: {

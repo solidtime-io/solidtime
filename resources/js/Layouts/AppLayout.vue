@@ -12,6 +12,7 @@ import {
     CreditCardIcon,
     FolderIcon,
     HomeIcon,
+    MagnifyingGlassIcon,
     TagIcon,
     UserCircleIcon,
     UserGroupIcon,
@@ -23,7 +24,8 @@ import UserSettingsIcon from '@/Components/UserSettingsIcon.vue';
 import MainContainer from '@/packages/ui/src/MainContainer.vue';
 import { computed, onMounted, provide, ref } from 'vue';
 import NotificationContainer from '@/Components/NotificationContainer.vue';
-import { initializeStores, refreshStores } from '@/utils/init';
+import { initializeStores } from '@/utils/init';
+import { useCurrentTimeEntryStore } from '@/utils/useCurrentTimeEntry';
 import {
     canManageBilling,
     canUpdateOrganization,
@@ -42,13 +44,17 @@ import UpdateSidebarNotification from '@/Components/UpdateSidebarNotification.vu
 import BillingBanner from '@/Components/Billing/BillingBanner.vue';
 import UserTimezoneMismatchModal from '@/Components/Common/User/UserTimezoneMismatchModal.vue';
 import { useTheme } from '@/utils/theme';
-import { useQuery } from '@tanstack/vue-query';
-import { api } from '@/packages/api/src';
+import { useOrganizationQuery } from '@/utils/useOrganizationQuery';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import LoadingSpinner from '@/packages/ui/src/LoadingSpinner.vue';
 import { twMerge } from 'tailwind-merge';
-import { Button } from '@/packages/ui/src';
+import { Button as UiButton } from '@/packages/ui/src';
+import { Button } from '@/Components/ui/button';
 import { openFeedback } from '@/utils/feedback';
+import { CommandPaletteProvider } from '@/Components/CommandPalette';
+import { useCommandPalette } from '@/utils/useCommandPalette';
+
+const { openPalette } = useCommandPalette();
 
 defineProps({
     title: String,
@@ -58,21 +64,11 @@ defineProps({
 const showSidebarMenu = ref(false);
 const isUnloading = ref(false);
 
-const { data: organization, isLoading: isOrganizationLoading } = useQuery({
-    queryKey: ['organization', getCurrentOrganizationId()],
-    queryFn: () =>
-        api.getOrganization({
-            params: {
-                organization: getCurrentOrganizationId()!,
-            },
-        }),
-    enabled: !!getCurrentOrganizationId(),
-});
-
-provide(
-    'organization',
-    computed(() => organization.value?.data)
+const { organization, isLoading: isOrganizationLoading } = useOrganizationQuery(
+    getCurrentOrganizationId()!
 );
+
+provide('organization', organization);
 
 onMounted(async () => {
     useTheme();
@@ -89,9 +85,10 @@ onMounted(async () => {
             await fetchToken();
         }
         setTimeout(() => {
-            // prevent store refreshing on navigation
+            // TanStack Query automatically refetches on window focus
+            // Only refresh non-migrated stores
             if (isUnloading.value === false) {
-                refreshStores();
+                useCurrentTimeEntryStore().fetchCurrentTimeEntry();
             }
         }, 100);
     };
@@ -112,9 +109,22 @@ const page = usePage<{
             }"
             class="flex-shrink-0 h-screen hidden fixed w-[230px] 2xl:w-[250px] px-2.5 2xl:px-3 py-4 lg:flex flex-col justify-between">
             <div class="flex flex-col h-full">
-                <div class="border-b border-default-background-separator pb-2 flex justify-between">
-                    <OrganizationSwitcher class="w-full"></OrganizationSwitcher>
-                    <XMarkIcon class="w-8 lg:hidden" @click="showSidebarMenu = false"></XMarkIcon>
+                <div
+                    class="border-b border-default-background-separator pb-2 flex items-center gap-1">
+                    <div class="flex-1 min-w-0 overflow-hidden">
+                        <OrganizationSwitcher></OrganizationSwitcher>
+                    </div>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        class="h-7 w-7 flex-shrink-0"
+                        data-testid="command_palette_button"
+                        @click="openPalette">
+                        <MagnifyingGlassIcon class="h-4 w-4 text-icon-default" />
+                    </Button>
+                    <XMarkIcon
+                        class="w-8 lg:hidden flex-shrink-0"
+                        @click="showSidebarMenu = false"></XMarkIcon>
                 </div>
                 <div class="border-b border-default-background-separator">
                     <CurrentSidebarTimer></CurrentSidebarTimer>
@@ -253,14 +263,14 @@ const page = usePage<{
                             :icon="Cog6ToothIcon"
                             :href="route('profile.show')"></NavigationSidebarItem>
 
-                        <Button
+                        <UiButton
                             v-if="page.props.has_services_extension"
                             variant="outline"
                             size="xs"
                             class="rounded-full ml-2 flex h-6 w-6 items-center text-xs text-icon-default justify-center"
                             @click="openFeedback">
                             ?
-                        </Button>
+                        </UiButton>
                     </ul>
                 </div>
             </div>
@@ -273,7 +283,17 @@ const page = usePage<{
                     <Bars3Icon
                         class="w-7 text-text-secondary"
                         @click="showSidebarMenu = !showSidebarMenu"></Bars3Icon>
-                    <OrganizationSwitcher></OrganizationSwitcher>
+                    <div class="flex items-center gap-1">
+                        <OrganizationSwitcher></OrganizationSwitcher>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            class="h-7 w-7 shrink-0"
+                            data-testid="command_palette_button_mobile"
+                            @click="openPalette">
+                            <MagnifyingGlassIcon class="h-4 w-4 text-icon-default" />
+                        </Button>
+                    </div>
                 </div>
 
                 <Head :title="title" />
@@ -306,4 +326,5 @@ const page = usePage<{
     </div>
     <NotificationContainer></NotificationContainer>
     <UserTimezoneMismatchModal></UserTimezoneMismatchModal>
+    <CommandPaletteProvider></CommandPaletteProvider>
 </template>

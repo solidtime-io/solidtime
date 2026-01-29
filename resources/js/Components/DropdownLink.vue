@@ -26,6 +26,7 @@ defineProps<{
         <Link
             v-else
             :href="href ?? ''"
+            prefetch
             class="block px-4 py-2 text-sm leading-5 text-text-primary hover:bg-card-background-active focus:outline-none focus:bg-card-background-active transition duration-150 ease-in-out">
             <slot />
         </Link>

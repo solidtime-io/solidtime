@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import type { ProjectMember } from '@/packages/api/src';
 import { computed, ref, inject, type ComputedRef } from 'vue';
-import { storeToRefs } from 'pinia';
 import TableRow from '@/Components/TableRow.vue';
-import { useMembersStore } from '@/utils/useMembers';
+import { useMembersQuery } from '@/utils/useMembersQuery';
 import { useProjectMembersStore } from '@/utils/useProjectMembers';
 import ProjectMemberMoreOptionsDropdown from '@/Components/Common/ProjectMember/ProjectMemberMoreOptionsDropdown.vue';
 import { formatCents } from '@/packages/ui/src/utils/money';
@@ -29,7 +28,7 @@ function editProjectMember() {
     showEditModal.value = true;
 }
 
-const { members } = storeToRefs(useMembersStore());
+const { members } = useMembersQuery();
 const member = computed(() => {
     return members.value.find((member) => member.id === props.projectMember.member_id);
 });

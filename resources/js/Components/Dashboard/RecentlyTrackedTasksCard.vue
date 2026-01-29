@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/vue-query';
 import { computed } from 'vue';
 import RecentlyTrackedTasksCardEntry from '@/Components/Dashboard/RecentlyTrackedTasksCardEntry.vue';
 import DashboardCard from '@/Components/Dashboard/DashboardCard.vue';
-import { CheckCircleIcon } from '@heroicons/vue/20/solid';
+import { CheckCircleIcon } from '@heroicons/vue/24/solid';
 import { PlusCircleIcon } from '@heroicons/vue/24/solid';
 import { getCurrentMembershipId, getCurrentOrganizationId } from '@/utils/useUser';
 import { api } from '@/packages/api/src';
