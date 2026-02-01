@@ -12,6 +12,10 @@ function getKeyFromItem(item: Task) {
 function getNameForItem(item: Task) {
     return item.name;
 }
+
+const emit = defineEmits<{
+    submit: [];
+}>();
 </script>
 
 <template>
@@ -19,7 +23,9 @@ function getNameForItem(item: Task) {
         search-placeholder="Search for a Task..."
         :items="tasks"
         :get-key-from-item="getKeyFromItem"
-        :get-name-for-item="getNameForItem">
+        :get-name-for-item="getNameForItem"
+        no-item-label="No Task"
+        @submit="emit('submit')">
         <template #trigger>
             <slot name="trigger"></slot>
         </template>

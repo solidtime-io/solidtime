@@ -7,9 +7,10 @@ import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import MemberCombobox from '@/Components/Common/Member/MemberCombobox.vue';
 import { UserIcon, ArrowRightIcon } from '@heroicons/vue/24/solid';
 import { Badge } from '@/packages/ui/src';
-import { useMutation } from '@tanstack/vue-query';
+import { useMutation, useQueryClient } from '@tanstack/vue-query';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import { useNotificationsStore } from '@/utils/notification';
+const queryClient = useQueryClient();
 const { handleApiRequestNotifications, addNotification } = useNotificationsStore();
 
 const show = defineModel('show', { default: false });
@@ -50,6 +51,7 @@ async function submit() {
             'Members successfully merged!',
             'There was an error merging the members.',
             () => {
+                queryClient.invalidateQueries({ queryKey: ['members'] });
                 show.value = false;
             }
         );

@@ -12,6 +12,10 @@ function getKeyFromItem(item: Client) {
 function getNameForItem(item: Client) {
     return item.name;
 }
+
+const emit = defineEmits<{
+    submit: [];
+}>();
 </script>
 
 <template>
@@ -19,7 +23,9 @@ function getNameForItem(item: Client) {
         search-placeholder="Search for a Client..."
         :items="clients"
         :get-key-from-item="getKeyFromItem"
-        :get-name-for-item="getNameForItem">
+        :get-name-for-item="getNameForItem"
+        no-item-label="No Client"
+        @submit="emit('submit')">
         <template #trigger>
             <slot name="trigger"></slot>
         </template>

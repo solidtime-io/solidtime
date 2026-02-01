@@ -1,7 +1,17 @@
 <script setup lang="ts" generic="T">
 import Dropdown from '@/packages/ui/src/Input/Dropdown.vue';
-import { type Component, computed, nextTick, ref, watch } from 'vue';
-import MultiselectDropdownItem from '@/packages/ui/src/Input/MultiselectDropdownItem.vue';
+import { computed, ref, watch } from 'vue';
+import Checkbox from '@/packages/ui/src/Input/Checkbox.vue';
+import {
+    ComboboxAnchor,
+    ComboboxContent,
+    ComboboxInput,
+    ComboboxItem,
+    ComboboxRoot,
+    ComboboxViewport,
+} from 'radix-vue';
+
+const NONE_ID = 'none';
 
 const model = defineModel<string[]>({
     default: [],
@@ -12,164 +22,98 @@ const props = defineProps<{
     searchPlaceholder: string;
     getKeyFromItem: (item: T) => string;
     getNameForItem: (item: T) => string;
+    noItemLabel?: string;
 }>();
 
-const searchInput = ref<HTMLInputElement | null>(null);
 const open = ref(false);
-const dropdownViewport = ref<Component | null>(null);
-
 const searchValue = ref('');
+const sortedItems = ref<T[]>([]);
 
-function isItemSelected(id: string) {
-    return model.value.includes(id);
-}
+watch(open, (isOpen) => {
+    if (isOpen) {
+        searchValue.value = '';
+        sortedItems.value = [...props.items].sort((a, b) => {
+            const aSelected = model.value.includes(props.getKeyFromItem(a)) ? 0 : 1;
+            const bSelected = model.value.includes(props.getKeyFromItem(b)) ? 0 : 1;
+            return aSelected - bSelected;
+        });
+    }
+});
 
-function addOrRemoveItemFromSelection(id: string) {
+const filteredItems = computed(() => {
+    const search = searchValue.value.toLowerCase().trim();
+    if (!search) return sortedItems.value;
+    return sortedItems.value.filter((item) => props.getNameForItem(item).toLowerCase().includes(search));
+});
+
+const showNoItem = computed(() => {
+    if (!props.noItemLabel) return false;
+    const search = searchValue.value.toLowerCase().trim();
+    if (!search) return true;
+    return props.noItemLabel.toLowerCase().includes(search);
+});
+
+function toggleItem(id: string) {
     if (model.value.includes(id)) {
         model.value = model.value.filter((itemId) => itemId !== id);
     } else {
-        model.value.push(id);
+        model.value = [...model.value, id];
     }
     emit('changed');
 }
 
-watch(open, (isOpen) => {
-    if (isOpen) {
-        nextTick(() => {
-            searchInput.value?.focus();
-        });
-
-        // sort tags alphabetically
-        [...props.items].sort((a, b) => {
-            const aIsSelected = model.value.includes(props.getKeyFromItem(a));
-            const bIsSelected = model.value.includes(props.getKeyFromItem(b));
-            if (aIsSelected === bIsSelected) {
-                return props.getNameForItem(a).localeCompare(props.getNameForItem(b));
-            }
-            return model.value.includes(props.getKeyFromItem(a)) ? -1 : 1;
-        });
-        nextTick(() => {
-            if (filteredItems.value.length > 0) {
-                highlightedItemId.value = props.getKeyFromItem(filteredItems.value[0]);
-            }
-        });
-    }
-});
-
-const filteredItems = computed<T[]>(() => {
-    return props.items.filter((item: T) => {
-        return props
-            .getNameForItem(item)
-            .toLowerCase()
-            .includes(searchValue.value?.toLowerCase()?.trim() || '');
-    });
-});
-
-watch(filteredItems, () => {
-    if (filteredItems.value.length > 0) {
-        highlightedItemId.value = props.getKeyFromItem(filteredItems.value[0]);
-    }
-});
-
-function updateSearchValue(event: Event) {
-    const newInput = (event.target as HTMLInputElement).value;
-    if (newInput === ' ') {
-        searchValue.value = '';
-        const highlightedTagId = highlightedItemId.value;
-        if (highlightedTagId) {
-            const highlightedItem = props.items.find(
-                (item) => props.getKeyFromItem(item) === highlightedTagId
-            );
-            if (highlightedItem) {
-                addOrRemoveItemFromSelection(props.getKeyFromItem(highlightedItem));
-            }
-        }
-    } else {
-        searchValue.value = newInput;
-    }
-}
-
-const emit = defineEmits(['update:modelValue', 'changed']);
-
-function toggleItem(newValue: string | null) {
-    if (newValue !== null) {
-        if (model.value.includes(newValue)) {
-            model.value = [...model.value].filter((id) => id !== newValue);
-        } else {
-            model.value = [...model.value, newValue];
-        }
-        emit('changed');
-    }
-}
-
-function moveHighlightUp() {
-    if (highlightedItem.value) {
-        const currentHightlightedIndex = filteredItems.value.indexOf(highlightedItem.value);
-        if (currentHightlightedIndex === 0) {
-            highlightedItemId.value = props.getKeyFromItem(
-                filteredItems.value[filteredItems.value.length - 1]
-            );
-        } else {
-            highlightedItemId.value = props.getKeyFromItem(
-                filteredItems.value[currentHightlightedIndex - 1]
-            );
-        }
-    }
-}
-
-function moveHighlightDown() {
-    if (highlightedItem.value) {
-        const currentHightlightedIndex = filteredItems.value.indexOf(highlightedItem.value);
-        if (currentHightlightedIndex === filteredItems.value.length - 1) {
-            highlightedItemId.value = props.getKeyFromItem(filteredItems.value[0]);
-        } else {
-            highlightedItemId.value = props.getKeyFromItem(
-                filteredItems.value[currentHightlightedIndex + 1]
-            );
-        }
-    }
-}
-
-const highlightedItemId = ref<string | null>(null);
-const highlightedItem = computed(() => {
-    return props.items.find((item) => props.getKeyFromItem(item) === highlightedItemId.value);
-});
+const emit = defineEmits(['update:modelValue', 'changed', 'submit']);
 </script>
 
 <template>
-    <Dropdown v-model="open" align="start" :close-on-content-click="false">
+    <Dropdown v-model="open" align="start" :close-on-content-click="false" @submit="emit('submit')">
         <template #trigger>
             <slot name="trigger"></slot>
         </template>
         <template #content>
-            <input
-                ref="searchInput"
-                :value="searchValue"
-                class="bg-card-background border-0 placeholder-text-tertiary text-sm text-text-primary py-2.5 focus:ring-0 border-b border-card-background-separator focus:border-card-background-separator w-full"
-                :placeholder="searchPlaceholder"
-                @input="updateSearchValue"
-                @keydown.up.prevent="moveHighlightUp"
-                @keydown.down.prevent="moveHighlightDown"
-                @keydown.enter="toggleItem(highlightedItemId)" />
-            <div ref="dropdownViewport" class="min-w-60 max-w-80 max-h-60 overflow-y-scroll">
-                <div
-                    v-for="item in filteredItems"
-                    :key="props.getKeyFromItem(item)"
-                    role="option"
-                    :value="props.getKeyFromItem(item)"
-                    :class="{
-                        'bg-card-background-active':
-                            props.getKeyFromItem(item) === highlightedItemId,
-                    }"
-                    :data-item-id="props.getKeyFromItem(item)">
-                    <MultiselectDropdownItem
-                        :selected="isItemSelected(props.getKeyFromItem(item))"
-                        :name="props.getNameForItem(item)"
-                        @click="toggleItem(props.getKeyFromItem(item))"></MultiselectDropdownItem>
-                </div>
-            </div>
+            <ComboboxRoot
+                v-model:search-term="searchValue"
+                :open="open"
+                class="p-2"
+                :filter-function="(val: string[]) => val">
+                <ComboboxAnchor>
+                    <ComboboxInput
+                        class="w-full rounded-md border border-input-border bg-input-background px-3 py-1.5 text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none"
+                        :placeholder="searchPlaceholder" />
+                </ComboboxAnchor>
+                <ComboboxContent
+                    :dismiss-able="false"
+                    position="inline"
+                    class="mt-2 min-w-60 max-w-80 max-h-60 overflow-y-auto">
+                    <ComboboxViewport>
+                        <ComboboxItem
+                            v-if="showNoItem"
+                            :value="NONE_ID"
+                            class="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-text-primary data-[highlighted]:bg-card-background-active cursor-default"
+                            @select.prevent="toggleItem(NONE_ID)">
+                            <Checkbox
+                                :checked="model.includes(NONE_ID)"
+                                aria-hidden="true"
+                                :tabindex="-1"
+                                class="pointer-events-none" />
+                            <span class="truncate">{{ noItemLabel }}</span>
+                        </ComboboxItem>
+                        <ComboboxItem
+                            v-for="item in filteredItems"
+                            :key="getKeyFromItem(item)"
+                            :value="getKeyFromItem(item)"
+                            class="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-text-primary data-[highlighted]:bg-card-background-active cursor-default"
+                            @select.prevent="toggleItem(getKeyFromItem(item))">
+                            <Checkbox
+                                :checked="model.includes(getKeyFromItem(item))"
+                                aria-hidden="true"
+                                :tabindex="-1"
+                                class="pointer-events-none" />
+                            <span class="truncate">{{ getNameForItem(item) }}</span>
+                        </ComboboxItem>
+                    </ComboboxViewport>
+                </ComboboxContent>
+            </ComboboxRoot>
         </template>
     </Dropdown>
 </template>
-
-<style scoped></style>
