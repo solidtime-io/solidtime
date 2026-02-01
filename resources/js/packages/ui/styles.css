@@ -28,7 +28,7 @@
     --color-border-secondary: oklch(0.25 0.0098 268.31);
     --color-border-tertiary: #2c2e33;
     --color-border-quaternary: #393b42;
-    --color-input-border-active: rgba(255, 255, 255, 0.3);
+    --color-input-border-active: rgba(255, 255, 255, 0.15);
 
     --theme-color-chart: var(--color-accent-200);
 
@@ -51,7 +51,7 @@
     --theme-color-button-primary-border: rgba(var(--color-accent-300), 0.2);
     --theme-color-button-primary-text: var(--color-text-primary);
 
-    --theme-color-input-background: transparent;
+    --theme-color-input-background: var(--color-bg-secondary);
 
     --theme-color-input-select-active: rgb(var(--color-accent-300));
     --theme-color-input-select-active-hover: rgb(var(--color-accent-200));

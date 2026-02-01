@@ -1,11 +1,22 @@
 <script setup lang="ts">
 import { PlusCircleIcon } from '@heroicons/vue/20/solid';
 import Dropdown from '@/packages/ui/src/Input/Dropdown.vue';
-import { type Component, computed, nextTick, ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import TagCreateModal from '@/packages/ui/src/Tag/TagCreateModal.vue';
-import MultiselectDropdownItem from '@/packages/ui/src/Input/MultiselectDropdownItem.vue';
+import Checkbox from '@/packages/ui/src/Input/Checkbox.vue';
 import type { Tag } from '@/packages/api/src';
-import { UseFocusTrap } from '@vueuse/integrations/useFocusTrap/component';
+import { Button } from '@/Components/ui/button';
+import {
+    ComboboxAnchor,
+    ComboboxContent,
+    ComboboxInput,
+    ComboboxItem,
+    ComboboxRoot,
+    ComboboxViewport,
+} from 'radix-vue';
+
+const NONE_ID = 'none';
+const NO_TAG_LABEL = 'No Tag';
 
 const props = withDefaults(
     defineProps<{
@@ -22,17 +33,34 @@ const model = defineModel<string[]>({
     default: [],
 });
 
-const searchInput = ref<HTMLInputElement | null>(null);
 const open = ref(false);
-const dropdownViewport = ref<Component | null>(null);
-
 const searchValue = ref('');
+const sortedTags = ref<Tag[]>([]);
 
-function isTagSelected(id: string) {
-    return model.value.includes(id);
-}
+watch(open, (isOpen) => {
+    if (isOpen) {
+        searchValue.value = '';
+        sortedTags.value = [...props.tags].sort((a, b) => {
+            const aSelected = model.value.includes(a.id) ? 0 : 1;
+            const bSelected = model.value.includes(b.id) ? 0 : 1;
+            return aSelected - bSelected;
+        });
+    }
+});
 
-function addOrRemoveTagFromSelection(id: string) {
+const filteredTags = computed(() => {
+    const search = searchValue.value.toLowerCase().trim();
+    if (!search) return sortedTags.value;
+    return sortedTags.value.filter((tag) => tag.name.toLowerCase().includes(search));
+});
+
+const showNoTag = computed(() => {
+    const search = searchValue.value.toLowerCase().trim();
+    if (!search) return true;
+    return NO_TAG_LABEL.toLowerCase().includes(search);
+});
+
+function toggleTag(id: string) {
     if (model.value.includes(id)) {
         model.value = model.value.filter((tagId) => tagId !== id);
     } else {
@@ -41,114 +69,19 @@ function addOrRemoveTagFromSelection(id: string) {
     emit('changed');
 }
 
-const sortedTags = ref(props.tags);
-
-watch(open, (isOpen) => {
-    if (isOpen) {
-        nextTick(() => {
-            searchInput.value?.focus();
-        });
-
-        // sort tags alphabetically
-        sortedTags.value = [...props.tags].sort((a, b) => {
-            const aIsSelected = model.value.includes(a.id);
-            const bIsSelected = model.value.includes(b.id);
-            if (aIsSelected === bIsSelected) {
-                return a.name.localeCompare(b.name);
-            }
-            return model.value.includes(a.id) ? -1 : 1;
-        });
-        nextTick(() => {
-            if (filteredTags.value.length > 0) {
-                highlightedItemId.value = filteredTags.value[0].id;
-            }
-        });
-    }
-});
-
-const filteredTags = computed(() => {
-    return sortedTags.value.filter((tag: Tag) => {
-        return tag.name.toLowerCase().includes(searchValue.value?.toLowerCase()?.trim() || '');
-    });
-});
-
 async function createAndAddTag(name: string) {
     const newTag = await props.createTag(name);
     if (newTag) {
-        addOrRemoveTagFromSelection(newTag.id);
+        toggleTag(newTag.id);
     }
     searchValue.value = '';
     return newTag;
-}
-
-async function addTagIfNoneExists() {
-    if (highlightedItemId.value) {
-        addOrRemoveTagFromSelection(highlightedItemId.value);
-    }
-}
-
-watch(filteredTags, () => {
-    if (filteredTags.value.length > 0) {
-        highlightedItemId.value = filteredTags.value[0].id;
-    }
-});
-
-function updateSearchValue(event: Event) {
-    const newInput = (event.target as HTMLInputElement).value;
-    if (newInput === ' ') {
-        searchValue.value = '';
-        const highlightedTagId = highlightedItemId.value;
-        if (highlightedTagId) {
-            const highlightedTag = props.tags.find((tag) => tag.id === highlightedTagId);
-            if (highlightedTag) {
-                addOrRemoveTagFromSelection(highlightedTag.id);
-            }
-        }
-    } else {
-        searchValue.value = newInput;
-    }
 }
 
 const emit = defineEmits<{
     changed: [];
     submit: [];
 }>();
-
-function toggleTag(newValue: string) {
-    if (model.value.includes(newValue)) {
-        model.value = [...model.value].filter((id) => id !== newValue);
-    } else {
-        model.value = [...model.value, newValue];
-    }
-    emit('changed');
-}
-
-function moveHighlightUp() {
-    if (highlightedItem.value) {
-        const currentHightlightedIndex = filteredTags.value.indexOf(highlightedItem.value);
-        if (currentHightlightedIndex === 0) {
-            highlightedItemId.value = filteredTags.value[filteredTags.value.length - 1].id;
-        } else {
-            highlightedItemId.value = filteredTags.value[currentHightlightedIndex - 1].id;
-        }
-    }
-}
-
-function moveHighlightDown() {
-    if (highlightedItem.value) {
-        const currentHightlightedIndex = filteredTags.value.indexOf(highlightedItem.value);
-        if (currentHightlightedIndex === filteredTags.value.length - 1) {
-            highlightedItemId.value = filteredTags.value[0].id;
-        } else {
-            highlightedItemId.value = filteredTags.value[currentHightlightedIndex + 1].id;
-        }
-    }
-}
-
-const highlightedItemId = ref<string | null>(null);
-const highlightedItem = computed(() => {
-    return props.tags.find((tag) => tag.id === highlightedItemId.value);
-});
 
 const showCreateTagModal = ref(false);
 </script>
@@ -166,50 +99,65 @@ const showCreateTagModal = ref(false);
             <slot name="trigger"></slot>
         </template>
         <template #content>
-            <UseFocusTrap v-if="open" :options="{ immediate: true, allowOutsideClick: true }">
-                <input
-                    ref="searchInput"
-                    :value="searchValue"
-                    data-testid="tag_dropdown_search"
-                    class="bg-card-background border-0 placeholder-text-tertiary text-sm text-text-primary py-2.5 focus:ring-0 border-b border-card-background-separator focus:border-card-background-separator w-full"
-                    placeholder="Search for a Tag..."
-                    @input="updateSearchValue"
-                    @keydown.esc.prevent="open = false"
-                    @keydown.enter="addTagIfNoneExists"
-                    @keydown.up.prevent="moveHighlightUp"
-                    @keydown.down.prevent="moveHighlightDown" />
-                <div ref="dropdownViewport" class="w-60 max-h-60 overflow-y-scroll">
-                    <div
-                        v-for="tag in filteredTags"
-                        :key="tag.id"
-                        role="option"
-                        :value="tag.id"
-                        :class="{
-                            'bg-card-background-active': tag.id === highlightedItemId,
-                        }"
-                        data-testid="tag_dropdown_entries"
-                        :data-tag-id="tag.id">
-                        <MultiselectDropdownItem
-                            :selected="isTagSelected(tag.id)"
-                            :name="tag.name"
-                            @click="toggleTag(tag.id)"></MultiselectDropdownItem>
-                    </div>
-                </div>
-                <div class="hover:bg-card-background-active rounded-b-lg">
-                    <button
-                        class="text-text-primary w-full flex space-x-3 items-center px-4 py-3 text-xs font-semibold border-t border-card-background-separator"
+            <ComboboxRoot
+                v-model:search-term="searchValue"
+                :open="open"
+                class="p-2"
+                :filter-function="(val: string[]) => val">
+                <ComboboxAnchor>
+                    <ComboboxInput
+                        data-testid="tag_dropdown_search"
+                        class="w-full rounded-md border border-input-border bg-input-background px-3 py-1.5 text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none"
+                        placeholder="Search for a Tag..." />
+                </ComboboxAnchor>
+                <ComboboxContent
+                    :dismiss-able="false"
+                    position="inline"
+                    class="mt-2 w-60 max-h-60 overflow-y-auto">
+                    <ComboboxViewport>
+                        <ComboboxItem
+                            v-if="showNoTag"
+                            :value="NONE_ID"
+                            data-testid="tag_dropdown_entries"
+                            class="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-text-primary data-[highlighted]:bg-card-background-active cursor-default"
+                            @select.prevent="toggleTag(NONE_ID)">
+                            <Checkbox
+                                :checked="model.includes(NONE_ID)"
+                                aria-hidden="true"
+                                :tabindex="-1"
+                                class="pointer-events-none" />
+                            <span class="truncate">{{ NO_TAG_LABEL }}</span>
+                        </ComboboxItem>
+                        <ComboboxItem
+                            v-for="tag in filteredTags"
+                            :key="tag.id"
+                            :value="tag.id"
+                            data-testid="tag_dropdown_entries"
+                            class="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-text-primary data-[highlighted]:bg-card-background-active cursor-default"
+                            @select.prevent="toggleTag(tag.id)">
+                            <Checkbox
+                                :checked="model.includes(tag.id)"
+                                aria-hidden="true"
+                                :tabindex="-1"
+                                class="pointer-events-none" />
+                            <span class="truncate">{{ tag.name }}</span>
+                        </ComboboxItem>
+                    </ComboboxViewport>
+                </ComboboxContent>
+                <div class="mt-1 border-t border-card-background-separator pt-1">
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        class="w-full justify-start gap-2 px-2 py-1.5 text-sm text-text-primary"
                         @click="
                             open = false;
                             showCreateTagModal = true;
                         ">
-                        <PlusCircleIcon
-                            class="w-5 flex-shrink-0 text-icon-default"></PlusCircleIcon>
+                        <PlusCircleIcon class="w-4 h-4 flex-shrink-0 text-icon-default" />
                         <span>Create new Tag</span>
-                    </button>
+                    </Button>
                 </div>
-            </UseFocusTrap>
+            </ComboboxRoot>
         </template>
     </Dropdown>
 </template>
-
-<style scoped></style>

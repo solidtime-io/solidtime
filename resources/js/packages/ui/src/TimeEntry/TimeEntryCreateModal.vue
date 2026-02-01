@@ -18,7 +18,13 @@ import type {
 import TagDropdown from '@/packages/ui/src/Tag/TagDropdown.vue';
 import { Badge } from '@/packages/ui/src';
 import BillableIcon from '@/packages/ui/src/Icons/BillableIcon.vue';
-import SelectDropdown from '@/packages/ui/src/Input/SelectDropdown.vue';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/Components/ui/select';
 import DatePicker from '@/packages/ui/src/Input/DatePicker.vue';
 import DurationHumanInput from '@/packages/ui/src/Input/DurationHumanInput.vue';
 
@@ -129,11 +135,6 @@ const billableProxy = computed({
         timeEntry.value.billable = value === 'true';
     },
 });
-
-type BillableOption = {
-    label: string;
-    value: string;
-};
 </script>
 
 <template>
@@ -196,29 +197,20 @@ type BillableOption = {
                             </TagDropdown>
                         </div>
                         <div class="flex-col">
-                            <SelectDropdown
-                                v-model="billableProxy"
-                                :get-key-from-item="(item: BillableOption) => item.value"
-                                :get-name-for-item="(item: BillableOption) => item.label"
-                                :items="[
-                                    {
-                                        label: 'Billable',
-                                        value: 'true',
-                                    },
-                                    {
-                                        label: 'Non Billable',
-                                        value: 'false',
-                                    },
-                                ]">
-                                <template #trigger>
-                                    <Badge class="bg-input-background" tag="button" size="xlarge">
-                                        <BillableIcon class="h-4"></BillableIcon>
+                            <Select v-model="billableProxy">
+                                <SelectTrigger size="small" :show-chevron="false">
+                                    <SelectValue class="flex items-center gap-2">
+                                        <BillableIcon class="h-4 text-icon-default" />
                                         <span>{{
                                             timeEntry.billable ? 'Billable' : 'Non-Billable'
                                         }}</span>
-                                    </Badge>
-                                </template>
-                            </SelectDropdown>
+                                    </SelectValue>
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="true">Billable</SelectItem>
+                                    <SelectItem value="false">Non Billable</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
                     </div>
                 </div>
