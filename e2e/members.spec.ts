@@ -7,6 +7,10 @@ import type { Page } from '@playwright/test';
 import path from 'path';
 import fs from 'fs';
 import os from 'os';
+import { inviteAndAcceptMember } from './utils/members';
+
+// Tests that invite + accept members need more time
+test.describe.configure({ timeout: 60000 });
 
 async function goToMembersPage(page: Page) {
     await page.goto(PLAYWRIGHT_BASE_URL + '/members');
@@ -19,41 +23,45 @@ async function openInviteMemberModal(page: Page) {
     ]);
 }
 
-test('test that new manager can be invited', async ({ page }) => {
+test('test that new manager can be invited and accepted', async ({ page, browser }) => {
+    const memberId = Math.round(Math.random() * 100000);
+    const memberEmail = `manager+${memberId}@invite.test`;
+
+    await inviteAndAcceptMember(page, browser, 'Invited Mgr', memberEmail, 'Manager');
+
+    // Verify the member appears in the members table with the correct role
     await goToMembersPage(page);
-    await openInviteMemberModal(page);
-    const editorId = Math.round(Math.random() * 10000);
-    await page.getByLabel('Email').fill(`new+${editorId}@editor.test`);
-    await page.getByRole('button', { name: 'Manager' }).click();
-    await Promise.all([
-        page.getByRole('button', { name: 'Invite Member', exact: true }).click(),
-        expect(page.getByRole('main')).toContainText(`new+${editorId}@editor.test`),
-    ]);
+    const memberRow = page.getByRole('row').filter({ hasText: 'Invited Mgr' });
+    await expect(memberRow).toBeVisible();
+    await expect(memberRow.getByText('Manager', { exact: true })).toBeVisible();
 });
 
-test('test that new employee can be invited', async ({ page }) => {
+test('test that new employee can be invited and accepted', async ({ page, browser }) => {
+    const memberId = Math.round(Math.random() * 100000);
+    const memberEmail = `employee+${memberId}@invite.test`;
+
+    await inviteAndAcceptMember(page, browser, 'Invited Emp', memberEmail, 'Employee');
+
+    // Verify the member appears in the members table with the correct role
     await goToMembersPage(page);
-    await openInviteMemberModal(page);
-    const editorId = Math.round(Math.random() * 10000);
-    await page.getByLabel('Email').fill(`new+${editorId}@editor.test`);
-    await page.getByRole('button', { name: 'Employee' }).click();
-    await Promise.all([
-        page.getByRole('button', { name: 'Invite Member', exact: true }).click(),
-        expect(page.getByRole('main')).toContainText(`new+${editorId}@editor.test`),
-    ]);
+    const memberRow = page.getByRole('row').filter({ hasText: 'Invited Emp' });
+    await expect(memberRow).toBeVisible();
+    await expect(memberRow.getByText('Employee', { exact: true })).toBeVisible();
 });
 
-test('test that new admin can be invited', async ({ page }) => {
+test('test that new admin can be invited and accepted', async ({ page, browser }) => {
+    const memberId = Math.round(Math.random() * 100000);
+    const memberEmail = `admin+${memberId}@invite.test`;
+
+    await inviteAndAcceptMember(page, browser, 'Invited Adm', memberEmail, 'Administrator');
+
+    // Verify the member appears in the members table with the correct role
     await goToMembersPage(page);
-    await openInviteMemberModal(page);
-    const adminId = Math.round(Math.random() * 10000);
-    await page.getByLabel('Email').fill(`new+${adminId}@admin.test`);
-    await page.getByRole('button', { name: 'Administrator' }).click();
-    await Promise.all([
-        page.getByRole('button', { name: 'Invite Member', exact: true }).click(),
-        expect(page.getByRole('main')).toContainText(`new+${adminId}@admin.test`),
-    ]);
+    const memberRow = page.getByRole('row').filter({ hasText: 'Invited Adm' });
+    await expect(memberRow).toBeVisible();
+    await expect(memberRow.getByText('Admin', { exact: true })).toBeVisible();
 });
+
 test('test that error shows if no role is selected', async ({ page }) => {
     await goToMembersPage(page);
     await openInviteMemberModal(page);
@@ -131,7 +139,7 @@ async function createPlaceholderMemberViaImport(page: Page, placeholderName: str
     fs.unlinkSync(tmpFile);
 }
 
-test('test that changing member role updates the role in the member table', async ({ page }) => {
+test('test that changing role of placeholder member is rejected', async ({ page }) => {
     const placeholderName = 'RoleChange ' + Math.floor(Math.random() * 10000);
 
     // Create a placeholder member via import
@@ -141,7 +149,7 @@ test('test that changing member role updates the role in the member table', asyn
     await goToMembersPage(page);
     const memberRow = page.getByRole('row').filter({ hasText: placeholderName });
     await expect(memberRow).toBeVisible();
-    await expect(memberRow.getByText('Placeholder')).toBeVisible();
+    await expect(memberRow.getByText('Placeholder', { exact: true })).toBeVisible();
 
     // Open the edit modal for the placeholder member
     await memberRow.getByRole('button').click();
@@ -152,7 +160,53 @@ test('test that changing member role updates the role in the member table', asyn
     // Change role to Employee
     const roleSelect = page.getByRole('dialog').getByRole('combobox').first();
     await roleSelect.click();
+    await expect(page.getByRole('option', { name: 'Employee' })).toBeVisible();
     await page.getByRole('option', { name: 'Employee' }).click();
+    await expect(roleSelect).toContainText('Employee');
+
+    // Submit the change - the API should reject it with 400
+    await Promise.all([
+        page.getByRole('button', { name: 'Update Member' }).click(),
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/members/') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 400
+        ),
+    ]);
+
+    // Verify error notification is shown
+    await expect(page.getByText('Failed to update member')).toBeVisible();
+});
+
+test('test that changing member role updates the role in the member table', async ({
+    page,
+    browser,
+}) => {
+    const memberId = Math.floor(Math.random() * 100000);
+    const memberEmail = `member+${memberId}@rolechange.test`;
+
+    // Invite and accept a new Employee member
+    await inviteAndAcceptMember(page, browser, 'Jane Smith', memberEmail, 'Employee');
+
+    // Verify the new member appears with the Employee role
+    await goToMembersPage(page);
+    const memberRow = page.getByRole('row').filter({ hasText: 'Jane Smith' });
+    await expect(memberRow).toBeVisible();
+    await expect(memberRow.getByText('Employee', { exact: true })).toBeVisible();
+
+    // Open the edit modal
+    await memberRow.getByRole('button').click();
+    await page.getByRole('menuitem').getByText('Edit').click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Update Member' })).toBeVisible();
+
+    // Change role to Manager
+    const roleSelect = page.getByRole('dialog').getByRole('combobox').first();
+    await roleSelect.click();
+    await expect(page.getByRole('option', { name: 'Manager' })).toBeVisible();
+    await page.getByRole('option', { name: 'Manager' }).click();
+    await expect(roleSelect).toContainText('Manager');
 
     // Submit the change and verify the API call succeeds
     await Promise.all([
@@ -169,7 +223,7 @@ test('test that changing member role updates the role in the member table', asyn
     await expect(page.getByRole('dialog')).not.toBeVisible();
 
     // Verify the role updated in the table
-    await expect(memberRow.getByText('Employee')).toBeVisible();
+    await expect(memberRow.getByText('Manager', { exact: true })).toBeVisible();
 });
 
 test('test that merging a placeholder member works', async ({ page }) => {
@@ -192,8 +246,8 @@ test('test that merging a placeholder member works', async ({ page }) => {
     await expect(page.getByRole('heading', { name: 'Merge Member' })).toBeVisible();
 
     // Select the current user (the owner) as merge target via MemberCombobox
-    const combobox = page.getByRole('dialog').getByRole('combobox');
-    await combobox.click();
+    // The MemberCombobox renders a Button as trigger; clicking it opens the popover with the combobox input
+    await page.getByRole('dialog').getByRole('button', { name: 'Select a member...' }).click();
 
     // Wait for dropdown options to load
     const firstOption = page.getByRole('option').first();

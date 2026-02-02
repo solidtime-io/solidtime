@@ -10,6 +10,9 @@ jobs:
     services:
       mailpit:
         image: 'axllent/mailpit:latest'
+        ports:
+          - 1025:1025
+          - 8025:8025
       pgsql_test:
         image: postgres:15
         env:
@@ -67,6 +70,7 @@ jobs:
         run: npx playwright test
         env:
           PLAYWRIGHT_BASE_URL: 'http://127.0.0.1:8000'
+          MAILPIT_BASE_URL: 'http://localhost:8025'
 
       - name: "Upload test results"
         uses: actions/upload-artifact@v4
