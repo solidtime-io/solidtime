@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\TimeEntryResource\Pages;
+use App\Models\Member;
 use App\Models\TimeEntry;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
@@ -16,6 +17,7 @@ use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class TimeEntryResource extends Resource
 {
@@ -51,6 +53,20 @@ class TimeEntryResource extends Resource
                     ->rules([
                         'after_or_equal:start',
                     ]),
+                Select::make('organization_id')
+                    ->relationship(name: 'organization', titleAttribute: 'name')
+                    ->searchable(['name'])
+                    ->required(),
+                Select::make('member_id')
+                    ->relationship(
+                        name: 'member',
+                        titleAttribute: 'id',
+                        modifyQueryUsing: fn (Builder $query) => $query->with(['user', 'organization'])
+                    )
+                    ->getOptionLabelFromRecordUsing(fn (Member $record): string => $record->user->email.' ('.$record->organization->name.')')
+                    ->searchable()
+                    ->preload()
+                    ->required(),
                 Select::make('user_id')
                     ->relationship(name: 'user', titleAttribute: 'email')
                     ->searchable(['name', 'email'])
@@ -59,7 +75,10 @@ class TimeEntryResource extends Resource
                     ->relationship(name: 'project', titleAttribute: 'name')
                     ->searchable(['name'])
                     ->nullable(),
-                // TODO
+                Select::make('task_id')
+                    ->relationship(name: 'task', titleAttribute: 'name')
+                    ->searchable(['name'])
+                    ->nullable(),
             ]);
     }
 
