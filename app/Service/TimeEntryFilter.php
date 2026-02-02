@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Log;
 
 class TimeEntryFilter
 {
+    public const string NONE_VALUE = 'none';
+
     /**
      * @var Builder<TimeEntry>
      */
@@ -149,7 +151,17 @@ class TimeEntryFilter
         if ($clientIds === null) {
             return $this;
         }
-        $this->builder->whereIn('client_id', $clientIds);
+        $includeNone = in_array(self::NONE_VALUE, $clientIds, true);
+        $clientIds = array_values(array_filter($clientIds, fn (string $id): bool => $id !== self::NONE_VALUE));
+
+        $this->builder->where(function (Builder $builder) use ($clientIds, $includeNone): void {
+            if (count($clientIds) > 0) {
+                $builder->whereIn('client_id', $clientIds);
+            }
+            if ($includeNone) {
+                $builder->orWhereNull('client_id');
+            }
+        });
 
         return $this;
     }
@@ -162,7 +174,17 @@ class TimeEntryFilter
         if ($projectIds === null) {
             return $this;
         }
-        $this->builder->whereIn('project_id', $projectIds);
+        $includeNone = in_array(self::NONE_VALUE, $projectIds, true);
+        $projectIds = array_values(array_filter($projectIds, fn (string $id): bool => $id !== self::NONE_VALUE));
+
+        $this->builder->where(function (Builder $builder) use ($projectIds, $includeNone): void {
+            if (count($projectIds) > 0) {
+                $builder->whereIn('project_id', $projectIds);
+            }
+            if ($includeNone) {
+                $builder->orWhereNull('project_id');
+            }
+        });
 
         return $this;
     }
@@ -175,9 +197,17 @@ class TimeEntryFilter
         if ($tagIds === null) {
             return $this;
         }
-        $this->builder->where(function (Builder $builder) use ($tagIds): void {
+        $includeNone = in_array(self::NONE_VALUE, $tagIds, true);
+        $tagIds = array_values(array_filter($tagIds, fn (string $id): bool => $id !== self::NONE_VALUE));
+
+        $this->builder->where(function (Builder $builder) use ($tagIds, $includeNone): void {
             foreach ($tagIds as $tagId) {
                 $builder->orWhereJsonContains('tags', $tagId);
+            }
+            if ($includeNone) {
+                $builder->orWhere(function (Builder $query): void {
+                    $query->whereJsonLength('tags', 0)->orWhereNull('tags');
+                });
             }
         });
 
@@ -192,7 +222,17 @@ class TimeEntryFilter
         if ($taskIds === null) {
             return $this;
         }
-        $this->builder->whereIn('task_id', $taskIds);
+        $includeNone = in_array(self::NONE_VALUE, $taskIds, true);
+        $taskIds = array_values(array_filter($taskIds, fn (string $id): bool => $id !== self::NONE_VALUE));
+
+        $this->builder->where(function (Builder $builder) use ($taskIds, $includeNone): void {
+            if (count($taskIds) > 0) {
+                $builder->whereIn('task_id', $taskIds);
+            }
+            if ($includeNone) {
+                $builder->orWhereNull('task_id');
+            }
+        });
 
         return $this;
     }

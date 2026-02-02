@@ -11,6 +11,7 @@ use App\Models\Organization;
 use App\Models\Project;
 use App\Models\Tag;
 use App\Models\Task;
+use App\Service\TimeEntryFilter;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
@@ -25,7 +26,7 @@ class TimeEntryIndexExportRequest extends TimeEntryIndexRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, array<string|ValidationRule|\Illuminate\Contracts\Validation\Rule>>
+     * @return array<string, array<string|ValidationRule|\Illuminate\Contracts\Validation\Rule|\Closure>>
      */
     public function rules(): array
     {
@@ -64,11 +65,15 @@ class TimeEntryIndexExportRequest extends TimeEntryIndexRequest
             ],
             'project_ids.*' => [
                 'string',
-                'uuid',
-                new ExistsEloquent(Project::class, null, function (Builder $builder): Builder {
-                    /** @var Builder<Project> $builder */
-                    return $builder->whereBelongsTo($this->organization, 'organization');
-                }),
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    if ($value === TimeEntryFilter::NONE_VALUE) {
+                        return;
+                    }
+                    ExistsEloquent::make(Project::class, null, function (Builder $builder): Builder {
+                        /** @var Builder<Project> $builder */
+                        return $builder->whereBelongsTo($this->organization, 'organization');
+                    })->uuid()->validate($attribute, $value, $fail);
+                },
             ],
             // Filter by tag IDs, tag IDs are OR combined
             'tag_ids' => [
@@ -77,11 +82,15 @@ class TimeEntryIndexExportRequest extends TimeEntryIndexRequest
             ],
             'tag_ids.*' => [
                 'string',
-                'uuid',
-                new ExistsEloquent(Tag::class, null, function (Builder $builder): Builder {
-                    /** @var Builder<Tag> $builder */
-                    return $builder->whereBelongsTo($this->organization, 'organization');
-                }),
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    if ($value === TimeEntryFilter::NONE_VALUE) {
+                        return;
+                    }
+                    ExistsEloquent::make(Tag::class, null, function (Builder $builder): Builder {
+                        /** @var Builder<Tag> $builder */
+                        return $builder->whereBelongsTo($this->organization, 'organization');
+                    })->uuid()->validate($attribute, $value, $fail);
+                },
             ],
             // Filter by task IDs, task IDs are OR combined
             'task_ids' => [
@@ -90,11 +99,15 @@ class TimeEntryIndexExportRequest extends TimeEntryIndexRequest
             ],
             'task_ids.*' => [
                 'string',
-                'uuid',
-                new ExistsEloquent(Task::class, null, function (Builder $builder): Builder {
-                    /** @var Builder<Task> $builder */
-                    return $builder->whereBelongsTo($this->organization, 'organization');
-                }),
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    if ($value === TimeEntryFilter::NONE_VALUE) {
+                        return;
+                    }
+                    ExistsEloquent::make(Task::class, null, function (Builder $builder): Builder {
+                        /** @var Builder<Task> $builder */
+                        return $builder->whereBelongsTo($this->organization, 'organization');
+                    })->uuid()->validate($attribute, $value, $fail);
+                },
             ],
             // Filter only time entries that have a start date after the given timestamp in UTC (example: 2021-01-01T00:00:00Z)
             'start' => [
