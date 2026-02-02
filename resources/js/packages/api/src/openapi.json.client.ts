@@ -4233,17 +4233,17 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
             {
                 name: 'project_ids',
                 type: 'Query',
-                schema: z.array(z.string().uuid()).min(1).optional(),
+                schema: z.array(z.string()).min(1).optional(),
             },
             {
                 name: 'tag_ids',
                 type: 'Query',
-                schema: z.array(z.string().uuid()).min(1).optional(),
+                schema: z.array(z.string()).min(1).optional(),
             },
             {
                 name: 'task_ids',
                 type: 'Query',
-                schema: z.array(z.string().uuid()).min(1).optional(),
+                schema: z.array(z.string()).min(1).optional(),
             },
         ],
         response: z.union([
