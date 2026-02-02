@@ -8,7 +8,12 @@ use App\Enums\TimeEntryAggregationType;
 use App\Enums\TimeEntryRoundingType;
 use App\Enums\Weekday;
 use App\Http\Controllers\Api\V1\ReportController;
+use App\Models\Client;
+use App\Models\Project;
 use App\Models\Report;
+use App\Models\Tag;
+use App\Models\Task;
+use App\Service\TimeEntryFilter;
 use Illuminate\Support\Carbon;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Laravel\Passport\Passport;
@@ -488,6 +493,84 @@ class ReportEndpointTest extends ApiEndpointTestAbstract
             ->has('data')
             ->where('data.id', $report->getKey())
         );
+    }
+
+    public function test_store_endpoint_creates_report_with_none_filter_values(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'reports:create',
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->withoutExceptionHandling()->postJson(route('api.v1.reports.store', [$data->organization->getKey()]), [
+            'name' => 'Test Report with None Filters',
+            'is_public' => false,
+            'properties' => [
+                'start' => Carbon::now()->subDays(30)->toIso8601ZuluString(),
+                'end' => Carbon::now()->toIso8601ZuluString(),
+                'group' => TimeEntryAggregationType::Project->value,
+                'sub_group' => TimeEntryAggregationType::Task->value,
+                'history_group' => TimeEntryAggregationType::Day->value,
+                'project_ids' => [TimeEntryFilter::NONE_VALUE],
+                'client_ids' => [TimeEntryFilter::NONE_VALUE],
+                'tag_ids' => [TimeEntryFilter::NONE_VALUE],
+                'task_ids' => [TimeEntryFilter::NONE_VALUE],
+            ],
+        ]);
+
+        // Assert
+        $response->assertStatus(201);
+        /** @var Report $report */
+        $report = Report::query()->findOrFail($response->json('data.id'));
+        $this->assertTrue($report->properties->projectIds->contains(TimeEntryFilter::NONE_VALUE));
+        $this->assertTrue($report->properties->clientIds->contains(TimeEntryFilter::NONE_VALUE));
+        $this->assertTrue($report->properties->tagIds->contains(TimeEntryFilter::NONE_VALUE));
+        $this->assertTrue($report->properties->taskIds->contains(TimeEntryFilter::NONE_VALUE));
+    }
+
+    public function test_store_endpoint_creates_report_with_none_combined_with_real_ids(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'reports:create',
+        ]);
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        $client = Client::factory()->forOrganization($data->organization)->create();
+        $task = Task::factory()->forOrganization($data->organization)->forProject($project)->create();
+        $tag = Tag::factory()->forOrganization($data->organization)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->withoutExceptionHandling()->postJson(route('api.v1.reports.store', [$data->organization->getKey()]), [
+            'name' => 'Test Report with Combined Filters',
+            'is_public' => false,
+            'properties' => [
+                'start' => Carbon::now()->subDays(30)->toIso8601ZuluString(),
+                'end' => Carbon::now()->toIso8601ZuluString(),
+                'group' => TimeEntryAggregationType::Project->value,
+                'sub_group' => TimeEntryAggregationType::Task->value,
+                'history_group' => TimeEntryAggregationType::Day->value,
+                'project_ids' => [$project->getKey(), TimeEntryFilter::NONE_VALUE],
+                'client_ids' => [$client->getKey(), TimeEntryFilter::NONE_VALUE],
+                'tag_ids' => [$tag->getKey(), TimeEntryFilter::NONE_VALUE],
+                'task_ids' => [$task->getKey(), TimeEntryFilter::NONE_VALUE],
+            ],
+        ]);
+
+        // Assert
+        $response->assertStatus(201);
+        /** @var Report $report */
+        $report = Report::query()->findOrFail($response->json('data.id'));
+        $this->assertTrue($report->properties->projectIds->contains($project->getKey()));
+        $this->assertTrue($report->properties->projectIds->contains(TimeEntryFilter::NONE_VALUE));
+        $this->assertTrue($report->properties->clientIds->contains($client->getKey()));
+        $this->assertTrue($report->properties->clientIds->contains(TimeEntryFilter::NONE_VALUE));
+        $this->assertTrue($report->properties->tagIds->contains($tag->getKey()));
+        $this->assertTrue($report->properties->tagIds->contains(TimeEntryFilter::NONE_VALUE));
+        $this->assertTrue($report->properties->taskIds->contains($task->getKey()));
+        $this->assertTrue($report->properties->taskIds->contains(TimeEntryFilter::NONE_VALUE));
     }
 
     public function test_destroy_endpoint_fails_if_user_has_no_permission_to_delete_report(): void
