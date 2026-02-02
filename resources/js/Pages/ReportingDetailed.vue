@@ -1,26 +1,18 @@
 <script setup lang="ts">
 import MainContainer from '@/packages/ui/src/MainContainer.vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
-import { FolderIcon } from '@heroicons/vue/16/solid';
 import PageTitle from '@/Components/Common/PageTitle.vue';
 import {
     ChartBarIcon,
-    UserGroupIcon,
-    CheckCircleIcon,
-    TagIcon,
     ChevronLeftIcon,
     ChevronDoubleLeftIcon,
     ChevronRightIcon,
     ChevronDoubleRightIcon,
     ClockIcon,
 } from '@heroicons/vue/20/solid';
-import DateRangePicker from '@/packages/ui/src/Input/DateRangePicker.vue';
-import BillableIcon from '@/packages/ui/src/Icons/BillableIcon.vue';
-import ReportingRoundingControls from '@/Components/Common/Reporting/ReportingRoundingControls.vue';
 import { computed, onMounted, ref, watch } from 'vue';
 import { getDayJsInstance, getLocalizedDayJs } from '@/packages/ui/src/utils/time';
 import { storeToRefs } from 'pinia';
-import TagDropdown from '@/packages/ui/src/Tag/TagDropdown.vue';
 import {
     api,
     type Client,
@@ -29,12 +21,6 @@ import {
     type Project,
     type TimeEntry,
 } from '@/packages/api/src';
-import ReportingFilterBadge from '@/Components/Common/Reporting/ReportingFilterBadge.vue';
-import ProjectMultiselectDropdown from '@/Components/Common/Project/ProjectMultiselectDropdown.vue';
-import MemberMultiselectDropdown from '@/Components/Common/Member/MemberMultiselectDropdown.vue';
-import TaskMultiselectDropdown from '@/Components/Common/Task/TaskMultiselectDropdown.vue';
-import SelectDropdown from '@/packages/ui/src/Input/SelectDropdown.vue';
-import ClientMultiselectDropdown from '@/Components/Common/Client/ClientMultiselectDropdown.vue';
 import { useTagsQuery } from '@/utils/useTagsQuery';
 import { useTagsStore } from '@/utils/useTags';
 import { useSessionStorage } from '@vueuse/core';
@@ -67,6 +53,7 @@ import TimeEntryMassActionRow from '@/packages/ui/src/TimeEntry/TimeEntryMassAct
 import { isAllowedToPerformPremiumAction } from '@/utils/billing';
 import { canCreateProjects, canViewAllTimeEntries } from '@/utils/permissions';
 import ReportingExportModal from '@/Components/Common/Reporting/ReportingExportModal.vue';
+import ReportingFilterBar from '@/Components/Common/Reporting/ReportingFilterBar.vue';
 import { useTimeEntriesReportQuery } from '@/utils/useTimeEntriesReportQuery';
 import { useTimeEntriesMutations } from '@/utils/useTimeEntriesMutations';
 
@@ -258,108 +245,19 @@ async function downloadExport(format: ExportFormat) {
             <ReportingExportButton :download="downloadExport"></ReportingExportButton>
         </MainContainer>
 
-        <div class="py-2.5 w-full border-b border-default-background-separator">
-            <MainContainer class="sm:flex space-y-4 sm:space-y-0 justify-between">
-                <div class="flex flex-wrap items-center space-y-2 sm:space-y-0 space-x-3">
-                    <div class="text-sm font-medium">Filters</div>
-                    <MemberMultiselectDropdown
-                        v-model="selectedMembers"
-                        @submit="updateFilteredTimeEntries">
-                        <template #trigger>
-                            <ReportingFilterBadge
-                                :count="selectedMembers.length"
-                                :active="selectedMembers.length > 0"
-                                title="Members"
-                                :icon="UserGroupIcon"></ReportingFilterBadge>
-                        </template>
-                    </MemberMultiselectDropdown>
-                    <ProjectMultiselectDropdown
-                        v-model="selectedProjects"
-                        @submit="updateFilteredTimeEntries">
-                        <template #trigger>
-                            <ReportingFilterBadge
-                                :count="selectedProjects.length"
-                                :active="selectedProjects.length > 0"
-                                title="Projects"
-                                :icon="FolderIcon"></ReportingFilterBadge>
-                        </template>
-                    </ProjectMultiselectDropdown>
-                    <TaskMultiselectDropdown
-                        v-model="selectedTasks"
-                        @submit="updateFilteredTimeEntries">
-                        <template #trigger>
-                            <ReportingFilterBadge
-                                :count="selectedTasks.length"
-                                :active="selectedTasks.length > 0"
-                                title="Tasks"
-                                :icon="CheckCircleIcon"></ReportingFilterBadge>
-                        </template>
-                    </TaskMultiselectDropdown>
-                    <ClientMultiselectDropdown
-                        v-model="selectedClients"
-                        @submit="updateFilteredTimeEntries">
-                        <template #trigger>
-                            <ReportingFilterBadge
-                                :count="selectedClients.length"
-                                :active="selectedClients.length > 0"
-                                title="Clients"
-                                :icon="FolderIcon"></ReportingFilterBadge>
-                        </template>
-                    </ClientMultiselectDropdown>
-                    <TagDropdown
-                        v-model="selectedTags"
-                        :create-tag
-                        :tags="tags"
-                        @submit="updateFilteredTimeEntries">
-                        <template #trigger>
-                            <ReportingFilterBadge
-                                :count="selectedTags.length"
-                                :active="selectedTags.length > 0"
-                                title="Tags"
-                                :icon="TagIcon"></ReportingFilterBadge>
-                        </template>
-                    </TagDropdown>
-
-                    <SelectDropdown
-                        v-model="billable"
-                        :get-key-from-item="(item) => item.value"
-                        :get-name-for-item="(item) => item.label"
-                        :items="[
-                            {
-                                label: 'Both',
-                                value: null,
-                            },
-                            {
-                                label: 'Billable',
-                                value: 'true',
-                            },
-                            {
-                                label: 'Non Billable',
-                                value: 'false',
-                            },
-                        ]"
-                        @changed="updateFilteredTimeEntries">
-                        <template #trigger>
-                            <ReportingFilterBadge
-                                :active="billable !== null"
-                                :title="billable === 'false' ? 'Non Billable' : 'Billable'"
-                                :icon="BillableIcon"></ReportingFilterBadge>
-                        </template>
-                    </SelectDropdown>
-                    <ReportingRoundingControls
-                        v-model:enabled="roundingEnabled"
-                        v-model:type="roundingType"
-                        v-model:minutes="roundingMinutes"
-                        @change="updateFilteredTimeEntries" />
-                </div>
-                <div>
-                    <DateRangePicker
-                        v-model:start="startDate"
-                        v-model:end="endDate"
-                        @submit="updateFilteredTimeEntries"></DateRangePicker>
-                </div>
-            </MainContainer>
-        </div>
+        <ReportingFilterBar
+            v-model:selected-members="selectedMembers"
+            v-model:selected-projects="selectedProjects"
+            v-model:selected-tasks="selectedTasks"
+            v-model:selected-clients="selectedClients"
+            v-model:selected-tags="selectedTags"
+            v-model:billable="billable"
+            v-model:rounding-enabled="roundingEnabled"
+            v-model:rounding-type="roundingType"
+            v-model:rounding-minutes="roundingMinutes"
+            v-model:start-date="startDate"
+            v-model:end-date="endDate"
+            @submit="updateFilteredTimeEntries" />
         <TimeEntryMassActionRow
             :selected-time-entries="selectedTimeEntries"
             :can-create-project="canCreateProjects()"

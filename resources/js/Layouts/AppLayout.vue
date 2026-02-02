@@ -22,7 +22,7 @@ import {
 import NavigationSidebarItem from '@/Components/NavigationSidebarItem.vue';
 import UserSettingsIcon from '@/Components/UserSettingsIcon.vue';
 import MainContainer from '@/packages/ui/src/MainContainer.vue';
-import { computed, onMounted, provide, ref } from 'vue';
+import { onMounted, provide, ref } from 'vue';
 import NotificationContainer from '@/Components/NotificationContainer.vue';
 import { initializeStores } from '@/utils/init';
 import { useCurrentTimeEntryStore } from '@/utils/useCurrentTimeEntry';
