@@ -53,7 +53,7 @@ test('test that starting and stopping an empty time entry shows a new time entry
 // Test that description update works
 
 async function assertThatTimeEntryRowIsStopped(newTimeEntry: Locator) {
-    await expect(newTimeEntry.getByTestId('timer_button')).toHaveClass(/bg-tertiary/);
+    await expect(newTimeEntry.getByTestId('timer_button')).toHaveClass(/bg-quaternary/);
 }
 
 test('test that updating a description of a time entry in the overview works on blur', async ({
@@ -224,7 +224,7 @@ test('test that starting a time entry from the overview works', async ({ page })
 
     const newTimeEntry = timeEntryRows.first();
     const startButton = newTimeEntry.getByTestId('timer_button');
-    await expect(startButton).toHaveClass(/bg-tertiary/);
+    await expect(startButton).toHaveClass(/bg-quaternary/);
 
     await Promise.all([
         page.waitForResponse(async (response) => {
@@ -307,12 +307,143 @@ test.skip('test that load more works when the end of page is reached', async ({ 
 
 // TODO: Test that time entries are loaded at the end of the page
 
-// TODO: Test manual time entries
-
 // TODO: Test Grouped time entries by description/project
 
 // TODO: Add Test for Date Update
 
 // TODO: Test that project can be created in the time entry row
 
-// TODO: Add Tests for Mass Update
+test('test that editing billable status via the edit modal works', async ({ page }) => {
+    await goToTimeOverview(page);
+    await createEmptyTimeEntry(page);
+
+    const timeEntryRows = page.locator('[data-testid="time_entry_row"]');
+    const newTimeEntry = timeEntryRows.first();
+    await assertThatTimeEntryRowIsStopped(newTimeEntry);
+
+    // Open edit modal via the actions dropdown
+    const actionsDropdown = newTimeEntry
+        .getByRole('button', { name: 'Actions for the time entry' })
+        .first();
+    await actionsDropdown.click();
+    await page.getByTestId('time_entry_edit').click();
+
+    // Verify the edit dialog is visible
+    await expect(page.getByRole('dialog')).toBeVisible();
+
+    // Change billable status to Billable
+    await page
+        .getByRole('dialog')
+        .getByRole('combobox')
+        .filter({ hasText: 'Non-Billable' })
+        .click();
+    await page.getByRole('option', { name: 'Billable', exact: true }).click();
+
+    // Save the time entry and verify the response has billable=true
+    const [updateResponse] = await Promise.all([
+        page.waitForResponse(
+            (response) => response.url().includes('/time-entries') && response.status() === 200
+        ),
+        page.getByRole('button', { name: 'Update Time Entry' }).click(),
+    ]);
+    const updateBody = await updateResponse.json();
+    expect(updateBody.data.billable).toBe(true);
+
+    // Verify the dialog closed
+    await expect(page.getByRole('dialog')).not.toBeVisible();
+
+    // Re-open the edit modal and verify it now shows "Billable"
+    await actionsDropdown.click();
+    await page.getByTestId('time_entry_edit').click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await expect(
+        page.getByRole('dialog').getByRole('combobox').filter({ hasText: 'Billable' })
+    ).toBeVisible();
+});
+
+test('test that mass update billable status works', async ({ page }) => {
+    await goToTimeOverview(page);
+    await createEmptyTimeEntry(page);
+
+    const timeEntryRows = page.locator('[data-testid="time_entry_row"]');
+    await assertThatTimeEntryRowIsStopped(timeEntryRows.first());
+
+    // Select the time entry via the "Select All" checkbox
+    await page.getByLabel('Select All').click();
+    await expect(page.getByText('1 selected')).toBeVisible();
+
+    // Open mass update modal via the Edit button in the mass action row
+    await page.getByRole('button', { name: 'Edit' }).click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+
+    // Change billable status to Billable
+    await page
+        .getByRole('dialog')
+        .getByRole('combobox')
+        .filter({ hasText: 'Set billable status' })
+        .click();
+    await page.getByRole('option', { name: 'Billable', exact: true }).click();
+
+    // Submit the mass update
+    const [massUpdateResponse] = await Promise.all([
+        page.waitForResponse(
+            (response) => response.url().includes('/time-entries') && response.status() === 200
+        ),
+        page.getByRole('button', { name: 'Update Time Entries' }).click(),
+    ]);
+    const massUpdateBody = await massUpdateResponse.json();
+    expect(massUpdateBody.data.billable).toBe(true);
+
+    // Verify dialog closes
+    await expect(page.getByRole('dialog')).not.toBeVisible();
+
+    // Verify the UI reflects the billable status by re-opening the edit modal
+    const actionsDropdown = page
+        .locator('[data-testid="time_entry_row"]')
+        .first()
+        .getByRole('button', { name: 'Actions' });
+    await actionsDropdown.click();
+    await page.getByTestId('time_entry_edit').click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await expect(
+        page.getByRole('dialog').getByRole('combobox').filter({ hasText: 'Billable' })
+    ).toBeVisible();
+});
+
+test('test that setting billable status via the create modal works', async ({ page }) => {
+    await goToTimeOverview(page);
+
+    // Open the dropdown menu and click "Manual time entry"
+    await page.getByRole('button', { name: 'Time entry actions' }).click();
+    await page.getByRole('menuitem', { name: 'Manual time entry' }).click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+
+    // Set description
+    await page
+        .getByRole('dialog')
+        .getByRole('textbox', { name: 'Description' })
+        .fill('Billable create test');
+
+    // Change billable status to Billable
+    await page
+        .getByRole('dialog')
+        .getByRole('combobox')
+        .filter({ hasText: 'Non-Billable' })
+        .click();
+    await page.getByRole('option', { name: 'Billable', exact: true }).click();
+
+    // Set duration
+    await page.locator('[role="dialog"] input[name="Duration"]').fill('1h');
+    await page.locator('[role="dialog"] input[name="Duration"]').press('Tab');
+
+    // Submit and verify the time entry was created with billable=true
+    await Promise.all([
+        page.getByRole('button', { name: 'Create Time Entry' }).click(),
+        page.waitForResponse(
+            async (response) =>
+                response.url().includes('/time-entries') &&
+                response.status() === 201 &&
+                (await response.json()).data.billable === true
+        ),
+    ]);
+});
