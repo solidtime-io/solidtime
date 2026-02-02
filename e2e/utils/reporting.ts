@@ -269,3 +269,31 @@ export async function waitForDetailedReportingUpdate(page: Page) {
             response.status() === 200
     );
 }
+
+// ──────────────────────────────────────────────────
+// Shared report helpers
+// ──────────────────────────────────────────────────
+
+export async function goToReportingShared(page: Page) {
+    await page.goto(PLAYWRIGHT_BASE_URL + '/reporting/shared');
+}
+
+export async function saveAsSharedReport(
+    page: Page,
+    reportName: string
+): Promise<{ shareableLink: string }> {
+    await page.getByRole('button', { name: 'Save Report' }).click();
+    await page.getByLabel('Name').fill(reportName);
+    // "Public" checkbox is checked by default
+    const [response] = await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/reports') &&
+                response.request().method() === 'POST' &&
+                response.status() === 201
+        ),
+        page.getByRole('dialog').getByRole('button', { name: 'Create Report' }).click(),
+    ]);
+    const responseBody = await response.json();
+    return { shareableLink: responseBody.data.shareable_link };
+}

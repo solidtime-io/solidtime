@@ -10,9 +10,11 @@ use App\Enums\TimeEntryRoundingType;
 use App\Enums\Weekday;
 use App\Http\Requests\V1\BaseFormRequest;
 use App\Models\Organization;
+use App\Service\TimeEntryFilter;
 use Illuminate\Contracts\Validation\Rule as LegacyValidationRule;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 /**
@@ -23,7 +25,7 @@ class ReportStoreRequest extends BaseFormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, array<string|ValidationRule|LegacyValidationRule>>
+     * @return array<string, array<string|ValidationRule|LegacyValidationRule|\Closure>>
      */
     public function rules(): array
     {
@@ -81,7 +83,14 @@ class ReportStoreRequest extends BaseFormRequest
             ],
             'properties.client_ids.*' => [
                 'string',
-                'uuid',
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    if ($value === TimeEntryFilter::NONE_VALUE) {
+                        return;
+                    }
+                    if (! Str::isUuid($value)) {
+                        $fail('The '.$attribute.' must be a valid UUID.');
+                    }
+                },
             ],
             // Filter by project IDs, project IDs are OR combined
             'properties.project_ids' => [
@@ -90,7 +99,14 @@ class ReportStoreRequest extends BaseFormRequest
             ],
             'properties.project_ids.*' => [
                 'string',
-                'uuid',
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    if ($value === TimeEntryFilter::NONE_VALUE) {
+                        return;
+                    }
+                    if (! Str::isUuid($value)) {
+                        $fail('The '.$attribute.' must be a valid UUID.');
+                    }
+                },
             ],
             // Filter by tag IDs, tag IDs are OR combined
             'properties.tag_ids' => [
@@ -99,7 +115,14 @@ class ReportStoreRequest extends BaseFormRequest
             ],
             'properties.tag_ids.*' => [
                 'string',
-                'uuid',
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    if ($value === TimeEntryFilter::NONE_VALUE) {
+                        return;
+                    }
+                    if (! Str::isUuid($value)) {
+                        $fail('The '.$attribute.' must be a valid UUID.');
+                    }
+                },
             ],
             'properties.task_ids' => [
                 'nullable',
@@ -107,7 +130,14 @@ class ReportStoreRequest extends BaseFormRequest
             ],
             'properties.task_ids.*' => [
                 'string',
-                'uuid',
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    if ($value === TimeEntryFilter::NONE_VALUE) {
+                        return;
+                    }
+                    if (! Str::isUuid($value)) {
+                        $fail('The '.$attribute.' must be a valid UUID.');
+                    }
+                },
             ],
             'properties.group' => [
                 'required',
