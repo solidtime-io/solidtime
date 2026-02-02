@@ -1,5 +1,9 @@
 import { useQuery } from '@tanstack/vue-query';
-import { api, type AggregatedTimeEntriesQueryParams, type ReportingResponse } from '@/packages/api/src';
+import {
+    api,
+    type AggregatedTimeEntriesQueryParams,
+    type ReportingResponse,
+} from '@/packages/api/src';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import { computed, type ComputedRef, unref } from 'vue';
 

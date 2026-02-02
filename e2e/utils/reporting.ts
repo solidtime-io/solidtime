@@ -52,11 +52,7 @@ export async function createClient(page: Page, clientName: string) {
     await expect(page.getByText(clientName)).toBeVisible();
 }
 
-export async function createProjectWithClient(
-    page: Page,
-    projectName: string,
-    clientName: string
-) {
+export async function createProjectWithClient(page: Page, projectName: string, clientName: string) {
     await page.goto(PLAYWRIGHT_BASE_URL + '/projects');
     await expect(page.getByRole('button', { name: 'Create Project' })).toBeVisible();
     await page.getByRole('button', { name: 'Create Project' }).click();

@@ -205,7 +205,9 @@ test('test that merging a placeholder member works', async ({ page }) => {
         page.getByRole('button', { name: 'Merge Member' }).click(),
         page.waitForResponse(
             (response) =>
-                response.url().includes('/member/') && response.url().includes('/merge-into') && response.ok()
+                response.url().includes('/member/') &&
+                response.url().includes('/merge-into') &&
+                response.ok()
         ),
     ]);
 

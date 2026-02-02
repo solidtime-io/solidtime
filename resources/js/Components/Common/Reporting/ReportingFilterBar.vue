@@ -51,9 +51,7 @@ async function createTag(name: string) {
         <MainContainer class="sm:flex space-y-4 sm:space-y-0 justify-between">
             <div class="flex flex-wrap items-center space-y-2 sm:space-y-0 space-x-3">
                 <div class="text-sm font-medium">Filters</div>
-                <MemberMultiselectDropdown
-                    v-model="selectedMembers"
-                    @submit="emit('submit')">
+                <MemberMultiselectDropdown v-model="selectedMembers" @submit="emit('submit')">
                     <template #trigger>
                         <ReportingFilterBadge
                             :count="selectedMembers.length"
@@ -62,9 +60,7 @@ async function createTag(name: string) {
                             :icon="UserGroupIcon" />
                     </template>
                 </MemberMultiselectDropdown>
-                <ProjectMultiselectDropdown
-                    v-model="selectedProjects"
-                    @submit="emit('submit')">
+                <ProjectMultiselectDropdown v-model="selectedProjects" @submit="emit('submit')">
                     <template #trigger>
                         <ReportingFilterBadge
                             :count="selectedProjects.length"
@@ -73,9 +69,7 @@ async function createTag(name: string) {
                             :icon="FolderIcon" />
                     </template>
                 </ProjectMultiselectDropdown>
-                <TaskMultiselectDropdown
-                    v-model="selectedTasks"
-                    @submit="emit('submit')">
+                <TaskMultiselectDropdown v-model="selectedTasks" @submit="emit('submit')">
                     <template #trigger>
                         <ReportingFilterBadge
                             :count="selectedTasks.length"
@@ -84,9 +78,7 @@ async function createTag(name: string) {
                             :icon="CheckCircleIcon" />
                     </template>
                 </TaskMultiselectDropdown>
-                <ClientMultiselectDropdown
-                    v-model="selectedClients"
-                    @submit="emit('submit')">
+                <ClientMultiselectDropdown v-model="selectedClients" @submit="emit('submit')">
                     <template #trigger>
                         <ReportingFilterBadge
                             :count="selectedClients.length"
