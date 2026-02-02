@@ -6,6 +6,7 @@ namespace App\Http\Requests\V1\TimeEntry;
 
 use App\Enums\ExportFormat;
 use App\Enums\TimeEntryRoundingType;
+use App\Models\Client;
 use App\Models\Member;
 use App\Models\Organization;
 use App\Models\Project;
@@ -57,6 +58,23 @@ class TimeEntryIndexExportRequest extends TimeEntryIndexRequest
                     /** @var Builder<Member> $builder */
                     return $builder->whereBelongsTo($this->organization, 'organization');
                 }),
+            ],
+            // Filter by client IDs, client IDs are OR combined
+            'client_ids' => [
+                'array',
+                'min:1',
+            ],
+            'client_ids.*' => [
+                'string',
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    if ($value === TimeEntryFilter::NONE_VALUE) {
+                        return;
+                    }
+                    ExistsEloquent::make(Client::class, null, function (Builder $builder): Builder {
+                        /** @var Builder<Client> $builder */
+                        return $builder->whereBelongsTo($this->organization, 'organization');
+                    })->uuid()->validate($attribute, $value, $fail);
+                },
             ],
             // Filter by project IDs, project IDs are OR combined
             'project_ids' => [

@@ -1,6 +1,6 @@
 <script setup lang="ts" generic="T">
 import Dropdown from '@/packages/ui/src/Input/Dropdown.vue';
-import { computed, ref, watch } from 'vue';
+import { computed, type Ref, ref, watch } from 'vue';
 import Checkbox from '@/packages/ui/src/Input/Checkbox.vue';
 import {
     ComboboxAnchor,
@@ -27,7 +27,7 @@ const props = defineProps<{
 
 const open = ref(false);
 const searchValue = ref('');
-const sortedItems = ref<T[]>([]);
+const sortedItems = ref<T[]>([]) as Ref<T[]>;
 
 watch(open, (isOpen) => {
     if (isOpen) {
@@ -43,7 +43,9 @@ watch(open, (isOpen) => {
 const filteredItems = computed(() => {
     const search = searchValue.value.toLowerCase().trim();
     if (!search) return sortedItems.value;
-    return sortedItems.value.filter((item) => props.getNameForItem(item).toLowerCase().includes(search));
+    return sortedItems.value.filter((item) =>
+        props.getNameForItem(item).toLowerCase().includes(search)
+    );
 });
 
 const showNoItem = computed(() => {

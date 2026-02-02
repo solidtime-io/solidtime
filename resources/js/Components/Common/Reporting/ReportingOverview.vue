@@ -182,13 +182,13 @@ const groupedPieChartData = computed(() => {
         aggregatedTableTimeEntries.value?.grouped_data?.map((entry) => {
             const name = getNameForReportingRowEntry(
                 entry.key,
-                aggregatedTableTimeEntries.value?.grouped_type
+                aggregatedTableTimeEntries.value?.grouped_type ?? null
             );
             let color = getRandomColorWithSeed(entry.key ?? 'none');
             if (
                 name &&
                 aggregatedTableTimeEntries.value?.grouped_type &&
-                emptyPlaceholder[aggregatedTableTimeEntries.value?.grouped_type] === name
+                emptyPlaceholder[aggregatedTableTimeEntries.value.grouped_type] === name
             ) {
                 color = '#CCCCCC';
             } else if (aggregatedTableTimeEntries.value?.grouped_type === 'project') {
@@ -200,7 +200,7 @@ const groupedPieChartData = computed(() => {
                 name:
                     getNameForReportingRowEntry(
                         entry.key,
-                        aggregatedTableTimeEntries.value?.grouped_type
+                        aggregatedTableTimeEntries.value?.grouped_type ?? null
                     ) ?? '',
                 color: color,
             };
@@ -215,7 +215,7 @@ const tableData = computed(() => {
             cost: entry.cost,
             description: getNameForReportingRowEntry(
                 entry.key,
-                aggregatedTableTimeEntries.value?.grouped_type
+                aggregatedTableTimeEntries.value?.grouped_type ?? null
             ),
             grouped_data:
                 entry.grouped_data?.map((el) => {
@@ -256,13 +256,12 @@ const tableData = computed(() => {
         v-model:rounding-type="roundingType"
         v-model:rounding-minutes="roundingMinutes"
         v-model:start-date="startDate"
-        v-model:end-date="endDate"
-        />
+        v-model:end-date="endDate" />
     <MainContainer>
         <div class="pt-10 w-full px-3 relative">
             <ReportingChart
-                :grouped-type="aggregatedGraphTimeEntries?.grouped_type"
-                :grouped-data="aggregatedGraphTimeEntries?.grouped_data"></ReportingChart>
+                :grouped-type="aggregatedGraphTimeEntries?.grouped_type ?? null"
+                :grouped-data="aggregatedGraphTimeEntries?.grouped_data ?? null"></ReportingChart>
         </div>
     </MainContainer>
     <MainContainer>
@@ -273,13 +272,13 @@ const tableData = computed(() => {
                     <span>Group by</span>
                     <ReportingGroupBySelect
                         v-model="group"
-                        :group-by-options="groupByOptions"
-                        ></ReportingGroupBySelect>
+                        :group-by-options="groupByOptions"></ReportingGroupBySelect>
                     <span>and</span>
                     <ReportingGroupBySelect
                         v-model="subGroup"
-                        :group-by-options="groupByOptions.filter((el) => el.value !== group)"
-                        ></ReportingGroupBySelect>
+                        :group-by-options="
+                            groupByOptions.filter((el) => el.value !== group)
+                        "></ReportingGroupBySelect>
                 </div>
                 <div class="grid items-center" style="grid-template-columns: 1fr 100px 150px">
                     <div
