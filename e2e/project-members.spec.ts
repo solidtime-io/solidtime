@@ -32,7 +32,7 @@ test('test that updating project member billable rate works for existing time en
     await page.getByRole('button', { name: 'Add Member' }).click();
 
     await expect(page.getByText('Add Project Member').first()).toBeVisible();
-    await page.getByRole('combobox').filter({ hasText: 'Select a member' }).click();
+    await page.getByRole('button', { name: 'Select a member...' }).click();
     await page.getByRole('option').first().click();
     await page.getByRole('button', { name: 'Add Project Member' }).click();
 

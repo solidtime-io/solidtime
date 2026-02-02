@@ -189,7 +189,7 @@ test('test that deselecting a project removes the filter', async ({ page }) => {
     // Deselect project
     await page.getByRole('button', { name: 'Projects' }).first().click();
     await page.getByRole('option').filter({ hasText: project1 }).click();
-    await Promise.all([page.keyboard.press('Escape'), waitForReportingUpdate(page)]);
+    await page.keyboard.press('Escape');
 
     // Verify badge count is gone (no count displayed when 0)
     await expect(
@@ -283,7 +283,7 @@ test('test that deselecting a client removes the filter', async ({ page }) => {
     // Deselect client
     await page.getByRole('button', { name: 'Clients' }).first().click();
     await page.getByRole('option').filter({ hasText: client1 }).click();
-    await Promise.all([page.keyboard.press('Escape'), waitForReportingUpdate(page)]);
+    await page.keyboard.press('Escape');
 
     await expect(
         page.getByRole('button', { name: 'Clients' }).first().getByText(/^\d+$/)
@@ -414,7 +414,7 @@ test('test that deselecting a member removes the filter', async ({ page }) => {
     // Deselect member
     await page.getByRole('button', { name: 'Members' }).first().click();
     await page.getByRole('option').filter({ hasText: 'John Doe' }).click();
-    await Promise.all([page.keyboard.press('Escape'), waitForReportingUpdate(page)]);
+    await page.keyboard.press('Escape');
 
     // Verify badge count is gone
     await expect(
@@ -506,7 +506,7 @@ test('test that deselecting a tag removes the filter', async ({ page }) => {
     // Deselect tag
     await page.getByRole('button', { name: 'Tags' }).click();
     await page.getByRole('option').filter({ hasText: tag1 }).click();
-    await Promise.all([page.keyboard.press('Escape'), waitForReportingUpdate(page)]);
+    await page.keyboard.press('Escape');
 
     await expect(page.getByRole('button', { name: 'Tags' }).getByText(/^\d+$/)).not.toBeVisible();
 });

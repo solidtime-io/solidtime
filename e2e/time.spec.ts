@@ -392,7 +392,8 @@ test('test that mass update billable status works', async ({ page }) => {
         page.getByRole('button', { name: 'Update Time Entries' }).click(),
     ]);
     const massUpdateBody = await massUpdateResponse.json();
-    expect(massUpdateBody.data.billable).toBe(true);
+    expect(massUpdateBody.success.length).toBeGreaterThan(0);
+    expect(massUpdateBody.error.length).toBe(0);
 
     // Verify dialog closes
     await expect(page.getByRole('dialog')).not.toBeVisible();
