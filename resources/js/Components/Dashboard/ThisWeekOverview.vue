@@ -193,28 +193,23 @@ const option = computed(() => {
             type: 'category',
             data: weekdays.value,
             axisLine: {
-                lineStyle: {
-                    color: 'transparent', // Set desired color here
-                },
+                show: false,
             },
             axisLabel: {
-                fontSize: 16,
-                fontWeight: 600,
+                fontSize: 14,
+                fontWeight: 500,
                 margin: 24,
                 fontFamily: 'Inter, sans-serif',
                 color: labelColor.value,
             },
             axisTick: {
-                lineStyle: {
-                    color: 'transparent', // Set desired color here
-                },
+                show: false,
             },
         },
         yAxis: {
             type: 'value',
             axisLabel: {
-                color: labelColor.value,
-                fontFamily: 'Inter, sans-serif',
+                show: false,
             },
             splitLine: {
                 lineStyle: {

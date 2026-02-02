@@ -107,9 +107,7 @@ const option = computed(() => ({
             },
         },
         axisLine: {
-            lineStyle: {
-                color: 'transparent', // Set desired color here
-            },
+            show: false,
         },
         axisLabel: {
             fontSize: 12,
@@ -119,16 +117,13 @@ const option = computed(() => ({
             fontFamily: 'Inter, sans-serif',
         },
         axisTick: {
-            lineStyle: {
-                color: 'transparent', // Set desired color here
-            },
+            show: false,
         },
     },
     yAxis: {
         type: 'value',
         axisLabel: {
-            color: labelColor.value,
-            fontFamily: 'Inter, sans-serif',
+            show: false,
         },
         splitLine: {
             lineStyle: {
