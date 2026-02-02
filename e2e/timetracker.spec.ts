@@ -187,10 +187,10 @@ test('test that entering a random value in the time range does not start the tim
 }) => {
     await goToDashboard(page);
     await page.getByTestId('time_entry_time').fill('asdasdasd');
-    await page.getByTestId('time_entry_time').press('Tab'),
+    (await page.getByTestId('time_entry_time').press('Tab'),
         await page.locator(
             '[data-testid="dashboard_timer"] [data-testid="timer_button"].bg-accent-300/70'
-        );
+        ));
 });
 
 test('test that entering a time starts the timer on enter', async ({ page }) => {

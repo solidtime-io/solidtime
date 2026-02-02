@@ -53,7 +53,7 @@ const groupedTimeEntries = computed(() => {
     }
     const groupedEntriesByDayAndType: Record<string, TimeEntriesGroupedByType[]> = {};
     for (const dailyEntriesKey in groupedEntriesByDay) {
-        const dailyEntries = groupedEntriesByDay[dailyEntriesKey];
+        const dailyEntries = groupedEntriesByDay[dailyEntriesKey]!;
         const newDailyEntries: TimeEntriesGroupedByType[] = [];
 
         for (const entry of dailyEntries) {
@@ -66,26 +66,22 @@ const groupedTimeEntries = computed(() => {
                     e.description === entry.description
             );
             if (oldEntriesIndex !== -1 && newDailyEntries[oldEntriesIndex]) {
-                newDailyEntries[oldEntriesIndex].timeEntries.push(entry);
+                const existingEntry = newDailyEntries[oldEntriesIndex]!;
+                existingEntry.timeEntries.push(entry);
 
                 // Add up durations for time entries of the same type
-                newDailyEntries[oldEntriesIndex].duration =
-                    (newDailyEntries[oldEntriesIndex].duration ?? 0) + (entry?.duration ?? 0);
+                existingEntry.duration = (existingEntry.duration ?? 0) + (entry?.duration ?? 0);
 
                 // adapt start end times so they show the earliest start and latest end time
                 if (
                     getDayJsInstance()(entry.start).isBefore(
-                        getDayJsInstance()(newDailyEntries[oldEntriesIndex].start)
+                        getDayJsInstance()(existingEntry.start)
                     )
                 ) {
-                    newDailyEntries[oldEntriesIndex].start = entry.start;
+                    existingEntry.start = entry.start;
                 }
-                if (
-                    getDayJsInstance()(entry.end).isAfter(
-                        getDayJsInstance()(newDailyEntries[oldEntriesIndex].end)
-                    )
-                ) {
-                    newDailyEntries[oldEntriesIndex].end = entry.end;
+                if (getDayJsInstance()(entry.end).isAfter(getDayJsInstance()(existingEntry.end))) {
+                    existingEntry.end = entry.end;
                 }
             } else {
                 newDailyEntries.push({ ...entry, timeEntries: [entry] });
@@ -204,7 +200,7 @@ function unselectAllTimeEntries(value: TimeEntriesGroupedByType[]) {
                     :delete-time-entry="() => deleteTimeEntries([entry])"
                     :duplicate-time-entry="() => createTimeEntry(entry)"
                     :currency="currency"
-                    :time-entry="entry.timeEntries[0]"
+                    :time-entry="entry.timeEntries[0]!"
                     @selected="selectedTimeEntries.push(entry)"
                     @unselected="
                         selectedTimeEntries = selectedTimeEntries.filter(

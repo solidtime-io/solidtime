@@ -137,7 +137,7 @@ const showBillableRate = computed(() => {
             <ProjectCreateModal
                 v-model:show="showCreateProjectModal"
                 :create-project
-                :enable-estimated-time="isAllowedToPerformPremiumAction"
+                :enable-estimated-time="isAllowedToPerformPremiumAction()"
                 :create-client
                 :currency="getOrganizationCurrencyString()"
                 :clients="clients"

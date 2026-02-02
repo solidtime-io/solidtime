@@ -46,8 +46,8 @@ async function importData() {
         addNotification('error', 'Please select the CSV or ZIP file that you want to import');
         return;
     }
-    const rawBase64String = await toBase64(files.value[0]);
-    const base64String = rawBase64String.split(';')[1].replace('base64,', '') as string;
+    const rawBase64String = await toBase64(files.value[0]!);
+    const base64String = rawBase64String.split(';')[1]!.replace('base64,', '') as string;
     const organizationId = getCurrentOrganizationId();
     if (organizationId !== null) {
         const { handleApiRequestNotifications } = useNotificationsStore();

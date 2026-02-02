@@ -125,7 +125,7 @@ const gridTemplate = computed(() => {
         :create-client
         :currency="getOrganizationCurrencyString()"
         :clients="clients"
-        :enable-estimated-time="isAllowedToPerformPremiumAction"></ProjectCreateModal>
+        :enable-estimated-time="isAllowedToPerformPremiumAction()"></ProjectCreateModal>
     <div class="flow-root max-w-[100vw] overflow-x-auto">
         <div class="inline-block min-w-full align-middle">
             <div data-testid="project_table" class="grid min-w-full" :style="gridTemplate">

@@ -41,7 +41,7 @@ export function useTimeEntriesInfiniteQuery() {
             if (!lastPage?.data || lastPage.data.length === 0) {
                 return undefined;
             }
-            const latestTimeEntry = lastPage.data[lastPage.data.length - 1];
+            const latestTimeEntry = lastPage.data[lastPage.data.length - 1]!;
             return dayjs(latestTimeEntry.start).utc().format();
         },
         enabled: computed(() => !!organizationId.value),

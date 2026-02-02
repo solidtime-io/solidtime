@@ -107,7 +107,7 @@ export default class Prando {
      * @return An item from the array.
      */
     public nextArrayItem<T>(array: T[]): T {
-        return array[this.nextInt(0, array.length - 1)];
+        return array[this.nextInt(0, array.length - 1)] as T;
     }
 
     /**

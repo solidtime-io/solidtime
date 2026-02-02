@@ -92,7 +92,7 @@ function addProjectToFilterObject(
 
     if (projectClientIndex !== -1) {
         // client already exists in filter array
-        tempFilteredClients[projectClientIndex].projects.push({
+        tempFilteredClients[projectClientIndex]!.projects.push({
             ...project,
             expanded: expanded,
             tasks: filteredTasks,
@@ -119,7 +119,7 @@ function addProjectToFilterObject(
 
         if (noClientIndex !== -1) {
             // no client group already exists in filter array
-            tempFilteredClients[noClientIndex].projects.push({
+            tempFilteredClients[noClientIndex]!.projects.push({
                 ...project,
                 expanded: expanded,
                 tasks: filteredTasks,
@@ -253,7 +253,7 @@ function isProjectSelected(project: Project) {
 
 function initializeHighlightedItem() {
     if (filteredProjects.value.length > 0) {
-        highlightedItemId.value = filteredProjects.value[0].id;
+        highlightedItemId.value = filteredProjects.value[0]!.id;
     }
 }
 
@@ -312,27 +312,27 @@ function moveHighlightUp() {
                 highlightedItemId.value = currentProjectWithTasks.id;
                 return;
             }
-            highlightedItemId.value = currentProjectWithTasks.tasks[taskIndex - 1].id;
+            highlightedItemId.value = currentProjectWithTasks.tasks[taskIndex - 1]!.id;
         }
     }
     if (currentHighlightedIndex === 0) {
         // selected project is the first project in the list
         // highlight the last project or the last task of the last project
-        const lastProject = filteredProjects.value[filteredProjects.value.length - 1];
+        const lastProject = filteredProjects.value[filteredProjects.value.length - 1]!;
         if (lastProject.tasks.length > 0 && lastProject.expanded) {
             // highlight last task of last project
-            highlightedItemId.value = lastProject.tasks[lastProject.tasks.length - 1].id;
+            highlightedItemId.value = lastProject.tasks[lastProject.tasks.length - 1]!.id;
         } else {
-            highlightedItemId.value = filteredProjects.value[filteredProjects.value.length - 1].id;
+            highlightedItemId.value = filteredProjects.value[filteredProjects.value.length - 1]!.id;
         }
     } else {
         // selected item is a project that is not the first project in the list
-        const previousProject = filteredProjects.value[currentHighlightedIndex - 1];
+        const previousProject = filteredProjects.value[currentHighlightedIndex - 1]!;
         if (previousProject.tasks.length > 0 && previousProject.expanded) {
             // highlight last task of previous project
-            highlightedItemId.value = previousProject.tasks[previousProject.tasks.length - 1].id;
+            highlightedItemId.value = previousProject.tasks[previousProject.tasks.length - 1]!.id;
         } else {
-            highlightedItemId.value = filteredProjects.value[currentHighlightedIndex - 1].id;
+            highlightedItemId.value = filteredProjects.value[currentHighlightedIndex - 1]!.id;
         }
     }
 }
@@ -361,33 +361,33 @@ function moveHighlightDown() {
                 const projectIndex = filteredProjects.value.indexOf(currentProjectWithTasks);
                 if (projectIndex === filteredProjects.value.length - 1) {
                     // highlight the first project if it was the last project
-                    highlightedItemId.value = filteredProjects.value[0].id;
+                    highlightedItemId.value = filteredProjects.value[0]!.id;
                 } else {
-                    highlightedItemId.value = filteredProjects.value[projectIndex + 1].id;
+                    highlightedItemId.value = filteredProjects.value[projectIndex + 1]!.id;
                 }
                 return;
             }
-            highlightedItemId.value = currentProjectWithTasks.tasks[taskIndex + 1].id;
+            highlightedItemId.value = currentProjectWithTasks.tasks[taskIndex + 1]!.id;
         }
     }
     if (currentHighlightedIndex === filteredProjects.value.length - 1) {
         // selected project is the last project in the list
         // highlight the first project or the last project of the last project
-        const lastProject = filteredProjects.value[filteredProjects.value.length - 1];
+        const lastProject = filteredProjects.value[filteredProjects.value.length - 1]!;
         if (lastProject.tasks.length > 0 && lastProject.expanded) {
             // highlight last task of last project
-            highlightedItemId.value = lastProject.tasks[0].id;
+            highlightedItemId.value = lastProject.tasks[0]!.id;
         } else {
-            highlightedItemId.value = filteredProjects.value[0].id;
+            highlightedItemId.value = filteredProjects.value[0]!.id;
         }
     } else {
         // selected item is a project that is not the last project in the list
-        const currentProjectWithTasks = filteredProjects.value[currentHighlightedIndex];
+        const currentProjectWithTasks = filteredProjects.value[currentHighlightedIndex]!;
         if (currentProjectWithTasks.tasks.length > 0 && currentProjectWithTasks.expanded) {
             // highlight last task of previous project
-            highlightedItemId.value = currentProjectWithTasks.tasks[0].id;
+            highlightedItemId.value = currentProjectWithTasks.tasks[0]!.id;
         } else {
-            highlightedItemId.value = filteredProjects.value[currentHighlightedIndex + 1].id;
+            highlightedItemId.value = filteredProjects.value[currentHighlightedIndex + 1]!.id;
         }
     }
 }
@@ -423,7 +423,7 @@ function expandProject() {
     if (currentHighlightedIndex === -1) {
         return;
     }
-    const currentProject = filteredProjects.value[currentHighlightedIndex];
+    const currentProject = filteredProjects.value[currentHighlightedIndex]!;
     currentProject.expanded = true;
 }
 
@@ -434,7 +434,7 @@ function collapseProject() {
     if (currentHighlightedIndex === -1) {
         return;
     }
-    const currentProject = filteredProjects.value[currentHighlightedIndex];
+    const currentProject = filteredProjects.value[currentHighlightedIndex]!;
     currentProject.expanded = false;
 }
 

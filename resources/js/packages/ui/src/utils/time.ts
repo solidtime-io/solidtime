@@ -227,9 +227,9 @@ export function parseTimeInput(
     if (HHMMSStimeRegex.test(input)) {
         const match = input.match(HHMMSStimeRegex);
         if (match) {
-            const hours = parseInt(match[1]);
-            const minutes = parseInt(match[2]);
-            const seconds = parseInt(match[3]);
+            const hours = parseInt(match[1]!);
+            const minutes = parseInt(match[2]!);
+            const seconds = parseInt(match[3]!);
             return hours * 3600 + minutes * 60 + seconds;
         }
     }
@@ -239,8 +239,8 @@ export function parseTimeInput(
     if (HHMMtimeRegex.test(input)) {
         const match = input.match(HHMMtimeRegex);
         if (match) {
-            const hours = parseInt(match[1]);
-            const minutes = parseInt(match[2]);
+            const hours = parseInt(match[1]!);
+            const minutes = parseInt(match[2]!);
             return (hours * 60 + minutes) * 60;
         }
     }

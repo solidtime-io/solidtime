@@ -349,8 +349,8 @@ export function useCommandPalette() {
             if (cmd.permission && !cmd.permission()) continue;
             if (cmd.condition && !cmd.condition()) continue;
 
-            if (grouped[cmd.group]) {
-                grouped[cmd.group].push(cmd);
+            if (grouped[cmd.group] !== undefined) {
+                grouped[cmd.group]!.push(cmd);
             }
         }
 

@@ -264,17 +264,17 @@ function prefetchProjectMembers(queryClient: QueryClient, projectId: string) {
  */
 function findPrefetcher(url: string): ((queryClient: QueryClient) => void) | undefined {
     // Extract pathname from URL
-    const pathname = url.startsWith('http') ? new URL(url).pathname : url.split('?')[0];
+    const pathname = url.startsWith('http') ? new URL(url).pathname : url.split('?')[0]!;
 
     // Try exact match first
-    if (routePrefetchers[pathname]) {
+    if (pathname && routePrefetchers[pathname]) {
         return routePrefetchers[pathname];
     }
 
     // Try pattern matching for dynamic routes like /projects/{id}
-    const projectMatch = pathname.match(/^\/projects\/([^/]+)$/);
+    const projectMatch = pathname?.match(/^\/projects\/([^/]+)$/);
     if (projectMatch) {
-        const projectId = projectMatch[1];
+        const projectId = projectMatch[1]!;
         return (queryClient) => {
             prefetchProjects(queryClient);
             prefetchTasks(queryClient);
