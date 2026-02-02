@@ -20,6 +20,7 @@ use App\Models\Tag;
 use App\Models\Task;
 use App\Models\TimeEntry;
 use App\Models\User;
+use App\Service\TimeEntryFilter;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
@@ -3986,5 +3987,203 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
             'id' => $ownTimeEntry->getKey(),
             'member_id' => $ownTimeEntry->member_id,
         ]);
+    }
+
+    public function test_index_endpoint_with_none_project_filter_returns_entries_without_project(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:view:all',
+        ]);
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        $timeEntryWithProject = TimeEntry::factory()
+            ->forOrganization($data->organization)
+            ->forProject($project)
+            ->forMember($data->member)
+            ->create([
+                'start' => Carbon::now()->subHour(),
+            ]);
+        $timeEntryWithoutProject = TimeEntry::factory()
+            ->forOrganization($data->organization)
+            ->forMember($data->member)
+            ->create([
+                'project_id' => null,
+                'start' => Carbon::now()->subHour(),
+            ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.time-entries.index', [
+            $data->organization->getKey(),
+            'project_ids' => [TimeEntryFilter::NONE_VALUE],
+            'start' => Carbon::now()->subDay()->toIso8601ZuluString(),
+            'end' => Carbon::now()->addDay()->toIso8601ZuluString(),
+        ]));
+
+        // Assert
+        $this->assertResponseCode($response, 200);
+        $response->assertJsonCount(1, 'data');
+        $response->assertJsonPath('data.0.id', $timeEntryWithoutProject->getKey());
+    }
+
+    public function test_index_endpoint_with_none_and_id_project_filter_returns_both(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:view:all',
+        ]);
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        $otherProject = Project::factory()->forOrganization($data->organization)->create();
+        $timeEntryWithProject = TimeEntry::factory()
+            ->forOrganization($data->organization)
+            ->forProject($project)
+            ->forMember($data->member)
+            ->create([
+                'start' => Carbon::now()->subHour(),
+            ]);
+        $timeEntryWithoutProject = TimeEntry::factory()
+            ->forOrganization($data->organization)
+            ->forMember($data->member)
+            ->create([
+                'project_id' => null,
+                'start' => Carbon::now()->subHour(),
+            ]);
+        $timeEntryWithOtherProject = TimeEntry::factory()
+            ->forOrganization($data->organization)
+            ->forProject($otherProject)
+            ->forMember($data->member)
+            ->create([
+                'start' => Carbon::now()->subHour(),
+            ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.time-entries.index', [
+            $data->organization->getKey(),
+            'project_ids' => [TimeEntryFilter::NONE_VALUE, $project->getKey()],
+            'start' => Carbon::now()->subDay()->toIso8601ZuluString(),
+            'end' => Carbon::now()->addDay()->toIso8601ZuluString(),
+        ]));
+
+        // Assert
+        $this->assertResponseCode($response, 200);
+        $response->assertJsonCount(2, 'data');
+        $ids = collect($response->json('data'))->pluck('id')->toArray();
+        $this->assertContains($timeEntryWithProject->getKey(), $ids);
+        $this->assertContains($timeEntryWithoutProject->getKey(), $ids);
+        $this->assertNotContains($timeEntryWithOtherProject->getKey(), $ids);
+    }
+
+    public function test_index_endpoint_with_none_task_filter_returns_entries_without_task(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:view:all',
+        ]);
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        $task = Task::factory()->forOrganization($data->organization)->forProject($project)->create();
+        $timeEntryWithTask = TimeEntry::factory()
+            ->forOrganization($data->organization)
+            ->forProject($project)
+            ->forTask($task)
+            ->forMember($data->member)
+            ->create([
+                'start' => Carbon::now()->subHour(),
+            ]);
+        $timeEntryWithoutTask = TimeEntry::factory()
+            ->forOrganization($data->organization)
+            ->forMember($data->member)
+            ->create([
+                'task_id' => null,
+                'start' => Carbon::now()->subHour(),
+            ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.time-entries.index', [
+            $data->organization->getKey(),
+            'task_ids' => [TimeEntryFilter::NONE_VALUE],
+            'start' => Carbon::now()->subDay()->toIso8601ZuluString(),
+            'end' => Carbon::now()->addDay()->toIso8601ZuluString(),
+        ]));
+
+        // Assert
+        $this->assertResponseCode($response, 200);
+        $response->assertJsonCount(1, 'data');
+        $response->assertJsonPath('data.0.id', $timeEntryWithoutTask->getKey());
+    }
+
+    public function test_index_endpoint_with_none_client_filter_returns_entries_without_client(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:view:all',
+        ]);
+        $client = Client::factory()->forOrganization($data->organization)->create();
+        $timeEntryWithClient = TimeEntry::factory()
+            ->forOrganization($data->organization)
+            ->forMember($data->member)
+            ->create([
+                'client_id' => $client->getKey(),
+                'start' => Carbon::now()->subHour(),
+            ]);
+        $timeEntryWithoutClient = TimeEntry::factory()
+            ->forOrganization($data->organization)
+            ->forMember($data->member)
+            ->create([
+                'client_id' => null,
+                'start' => Carbon::now()->subHour(),
+            ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.time-entries.index', [
+            $data->organization->getKey(),
+            'client_ids' => [TimeEntryFilter::NONE_VALUE],
+            'start' => Carbon::now()->subDay()->toIso8601ZuluString(),
+            'end' => Carbon::now()->addDay()->toIso8601ZuluString(),
+        ]));
+
+        // Assert
+        $this->assertResponseCode($response, 200);
+        $response->assertJsonCount(1, 'data');
+        $response->assertJsonPath('data.0.id', $timeEntryWithoutClient->getKey());
+    }
+
+    public function test_index_endpoint_with_none_tag_filter_returns_entries_without_tags(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:view:all',
+        ]);
+        $tag = Tag::factory()->forOrganization($data->organization)->create();
+        $timeEntryWithTag = TimeEntry::factory()
+            ->forOrganization($data->organization)
+            ->forMember($data->member)
+            ->create([
+                'start' => Carbon::now()->subHour(),
+                'tags' => [$tag->getKey()],
+            ]);
+        $timeEntryWithoutTag = TimeEntry::factory()
+            ->forOrganization($data->organization)
+            ->forMember($data->member)
+            ->create([
+                'start' => Carbon::now()->subHour(),
+                'tags' => [],
+            ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.time-entries.index', [
+            $data->organization->getKey(),
+            'tag_ids' => [TimeEntryFilter::NONE_VALUE],
+            'start' => Carbon::now()->subDay()->toIso8601ZuluString(),
+            'end' => Carbon::now()->addDay()->toIso8601ZuluString(),
+        ]));
+
+        // Assert
+        $this->assertResponseCode($response, 200);
+        $response->assertJsonCount(1, 'data');
+        $response->assertJsonPath('data.0.id', $timeEntryWithoutTag->getKey());
     }
 }
