@@ -1,13 +1,6 @@
 import { defineStore } from 'pinia';
-import { api } from '@/packages/api/src';
-import { type Component, computed, ref } from 'vue';
-import type {
-    AggregatedTimeEntries,
-    AggregatedTimeEntriesQueryParams,
-    ReportingResponse,
-} from '@/packages/api/src';
-import { getCurrentOrganizationId, getCurrentRole, getCurrentUser } from '@/utils/useUser';
-import { useNotificationsStore } from '@/utils/notification';
+import { type Component } from 'vue';
+import { getCurrentRole, getCurrentUser } from '@/utils/useUser';
 import { useProjectsQuery } from '@/utils/useProjectsQuery';
 import { useMembersQuery } from '@/utils/useMembersQuery';
 import { useTasksQuery } from '@/utils/useTasksQuery';
@@ -27,59 +20,12 @@ export type GroupingOption =
     | 'tag';
 
 export const useReportingStore = defineStore('reporting', () => {
-    const reportingGraphResponse = ref<ReportingResponse | null>(null);
-    const reportingTableResponse = ref<ReportingResponse | null>(null);
-
-    const { handleApiRequestNotifications } = useNotificationsStore();
-
     // Cache query composables to avoid creating new subscriptions on every call
     const { projects } = useProjectsQuery();
     const { members } = useMembersQuery();
     const { tasks } = useTasksQuery();
     const { clients } = useClientsQuery();
     const { tags } = useTagsQuery();
-
-    async function fetchGraphReporting(params: AggregatedTimeEntriesQueryParams) {
-        const organization = getCurrentOrganizationId();
-        if (organization) {
-            reportingGraphResponse.value = await handleApiRequestNotifications(
-                () =>
-                    api.getAggregatedTimeEntries({
-                        params: {
-                            organization: organization,
-                        },
-                        queries: params,
-                    }),
-                undefined,
-                'Failed to fetch reporting data'
-            );
-        }
-    }
-
-    async function fetchTableReporting(params: AggregatedTimeEntriesQueryParams) {
-        const organization = getCurrentOrganizationId();
-        if (organization) {
-            reportingTableResponse.value = await handleApiRequestNotifications(
-                () =>
-                    api.getAggregatedTimeEntries({
-                        params: {
-                            organization: organization,
-                        },
-                        queries: params,
-                    }),
-                undefined,
-                'Failed to fetch reporting data'
-            );
-        }
-    }
-
-    const aggregatedGraphTimeEntries = computed<AggregatedTimeEntries>(() => {
-        return reportingGraphResponse.value?.data as AggregatedTimeEntries;
-    });
-
-    const aggregatedTableTimeEntries = computed<AggregatedTimeEntries>(() => {
-        return reportingTableResponse.value?.data as AggregatedTimeEntries;
-    });
 
     const emptyPlaceholder = {
         user: 'No User',
@@ -170,10 +116,6 @@ export const useReportingStore = defineStore('reporting', () => {
     ];
 
     return {
-        aggregatedGraphTimeEntries,
-        fetchGraphReporting,
-        fetchTableReporting,
-        aggregatedTableTimeEntries,
         getNameForReportingRowEntry,
         groupByOptions,
         emptyPlaceholder,
