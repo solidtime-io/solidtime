@@ -41,8 +41,8 @@ function updateDuration() {
         const results = parseHHMM(temporaryCustomTimerEntry.value);
         if (results) {
             const newStartDate = getDayJsInstance()(end.value)
-                .subtract(parseInt(results[1]), 'h')
-                .subtract(parseInt(results[2]), 'm');
+                .subtract(parseInt(results[1]!), 'h')
+                .subtract(parseInt(results[2]!), 'm');
             start.value = newStartDate.utc().format();
         }
     }

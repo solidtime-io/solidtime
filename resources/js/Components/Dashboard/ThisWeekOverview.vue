@@ -42,10 +42,10 @@ const weekdays = computed(() => {
     };
     if (dayMapping[getWeekStart()]) {
         const customOrder = [];
-        const startIndex = daysOrder.indexOf(dayMapping[getWeekStart()]);
+        const startIndex = daysOrder.indexOf(dayMapping[getWeekStart()]!);
 
         for (let i = startIndex; i < 7 + startIndex; i++) {
-            customOrder.push(daysOrder[i % daysOrder.length]);
+            customOrder.push(daysOrder[i % daysOrder.length]!);
         }
 
         return customOrder;

@@ -4,7 +4,7 @@ import {
     formatHumanReadableDuration,
     parseTimeInput,
 } from '@/packages/ui/src/utils/time';
-import { computed, defineProps, ref, inject, type ComputedRef } from 'vue';
+import { computed, ref, inject, type ComputedRef } from 'vue';
 import dayjs from 'dayjs';
 import type { Organization } from '@/packages/api/src';
 

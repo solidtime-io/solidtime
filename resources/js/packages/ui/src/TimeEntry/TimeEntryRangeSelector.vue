@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import Dropdown from '@/packages/ui/src/Input/Dropdown.vue';
-import { defineProps, ref, inject, type ComputedRef } from 'vue';
+import { ref, inject, type ComputedRef } from 'vue';
 import { formatDateLocalized, formatStartEnd } from '@/packages/ui/src/utils/time';
 import TimeRangeSelector from '@/packages/ui/src/Input/TimeRangeSelector.vue';
 import { twMerge } from 'tailwind-merge';
