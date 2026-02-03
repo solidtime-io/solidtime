@@ -11,6 +11,7 @@ export function useOrganizationQuery(organizationId: string) {
                     organization: organizationId,
                 },
             }),
+        staleTime: 1000 * 30,
     });
 
     const organization = computed(() => query.data.value?.data);
