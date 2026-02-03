@@ -2,6 +2,12 @@ import type { QueryClient } from '@tanstack/vue-query';
 import { api } from '@/packages/api/src';
 import { getCurrentOrganizationId, getCurrentMembershipId } from '@/utils/useUser';
 import { canViewClients, canViewMembers } from '@/utils/permissions';
+import {
+    getInitialWeekRange,
+    getExpandedCalendarDateRange,
+    createCalendarQueryKey,
+    fetchAllCalendarEntries,
+} from '@/utils/useTimeEntriesCalendarQuery';
 
 /**
  * Route patterns mapped to their prefetch functions.
@@ -29,6 +35,7 @@ const routePrefetchers: Record<string, (queryClient: QueryClient) => void> = {
         prefetchTasks(queryClient);
         prefetchTags(queryClient);
         prefetchClients(queryClient);
+        prefetchCalendarTimeEntries(queryClient);
     },
 
     '/projects': (queryClient) => {
@@ -240,6 +247,22 @@ function prefetchTimeEntries(queryClient: QueryClient) {
             return response;
         },
         initialPageParam: undefined,
+        staleTime: 30000,
+    });
+}
+
+function prefetchCalendarTimeEntries(queryClient: QueryClient) {
+    const organizationId = getCurrentOrganizationId();
+    const memberId = getCurrentMembershipId();
+    if (!organizationId) return;
+
+    const { start, end } = getInitialWeekRange();
+    const { start: formattedStart, end: formattedEnd } = getExpandedCalendarDateRange(start, end);
+
+    queryClient.prefetchQuery({
+        queryKey: createCalendarQueryKey(formattedStart, formattedEnd, organizationId),
+        queryFn: () =>
+            fetchAllCalendarEntries(organizationId, memberId, formattedStart, formattedEnd),
         staleTime: 30000,
     });
 }
