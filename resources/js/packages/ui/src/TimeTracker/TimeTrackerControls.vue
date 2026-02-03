@@ -222,7 +222,7 @@ useSelectEvents(
                 <div
                     v-if="showDropdown && filteredRecentlyTrackedTimeEntries.length > 0"
                     ref="floating"
-                    class="z-50 w-[min(500px,100vw-2rem)]"
+                    class="z-50 w-[min(640px,100vw-2rem)]"
                     :style="floatingStyles">
                     <div
                         class="rounded-lg w-full border border-card-border overflow-hidden shadow-dropdown bg-card-background">

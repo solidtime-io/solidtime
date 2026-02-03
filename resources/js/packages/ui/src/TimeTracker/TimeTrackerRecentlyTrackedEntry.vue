@@ -42,15 +42,15 @@ const task = computed(() => {
             ref="projectDropdownTrigger"
             :color="project?.color"
             :name="project?.name"
-            class="shrink-0">
+            class="shrink min-w-0 max-w-[50%]">
             <div v-if="project" class="flex items-center lg:space-x-1 min-w-0">
-                <span class="whitespace-nowrap text-xs">
+                <span class="text-xs whitespace-nowrap shrink-0">
                     {{ project?.name }}
                 </span>
                 <ChevronRightIcon
                     v-if="task"
                     class="w-4 lg:w-5 text-text-secondary shrink-0"></ChevronRightIcon>
-                <div v-if="task" class="min-w-0 shrink text-xs truncate">
+                <div v-if="task" class="min-w-0 text-xs truncate">
                     {{ task.name }}
                 </div>
             </div>

@@ -94,7 +94,8 @@ function onSelectChange(checked: boolean) {
         data-testid="time_entry_row">
         <MainContainer class="min-w-0">
             <div class="@xl:flex py-2 items-center min-w-0 justify-between group">
-                <div class="flex space-x-3 items-center min-w-0">
+                <!-- Desktop layout -->
+                <div class="hidden @lg:flex space-x-3 items-center min-w-0">
                     <Checkbox
                         :checked="
                             timeEntry.timeEntries.every((aggregateTimeEntry: TimeEntry) =>
@@ -107,10 +108,11 @@ function onSelectChange(checked: boolean) {
                             {{ timeEntry?.timeEntries?.length }}
                         </GroupedItemsCountButton>
                         <TimeEntryDescriptionInput
-                            class="min-w-0 mr-4"
+                            class="min-w-0 mr-4 shrink"
                             :model-value="timeEntry.description"
                             @changed="updateTimeEntryDescription"></TimeEntryDescriptionInput>
                         <TimeTrackerProjectTaskDropdown
+                            class="min-w-0 shrink"
                             :clients
                             :create-project
                             :create-client
@@ -125,7 +127,8 @@ function onSelectChange(checked: boolean) {
                             @changed="updateProjectAndTask"></TimeTrackerProjectTaskDropdown>
                     </div>
                 </div>
-                <div class="flex items-center font-medium space-x-1 @lg:space-x-2">
+                <div
+                    class="hidden @lg:flex items-center font-medium space-x-1 @lg:space-x-2 shrink-0">
                     <TimeEntryRowTagDropdown
                         :create-tag
                         :tags="tags"
@@ -179,6 +182,74 @@ function onSelectChange(checked: boolean) {
                         @delete="
                             deleteTimeEntries(timeEntry?.timeEntries ?? [])
                         "></TimeEntryMoreOptionsDropdown>
+                </div>
+                <!-- Mobile layout -->
+                <div class="@lg:hidden">
+                    <!-- First row: count + description + duration -->
+                    <div class="flex items-center justify-between min-w-0">
+                        <div class="flex items-center min-w-0 flex-1">
+                            <GroupedItemsCountButton
+                                :expanded="expanded"
+                                @click="expanded = !expanded">
+                                {{ timeEntry?.timeEntries?.length }}
+                            </GroupedItemsCountButton>
+                            <TimeEntryDescriptionInput
+                                class="min-w-0 flex-1"
+                                :model-value="timeEntry.description"
+                                @changed="updateTimeEntryDescription"></TimeEntryDescriptionInput>
+                        </div>
+                        <button
+                            class="text-text-primary min-w-[80px] px-1.5 py-1.5 bg-transparent text-right hover:bg-card-background rounded-lg border border-transparent hover:border-card-border text-sm font-medium focus-visible:outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:bg-tertiary"
+                            @click="expanded = !expanded">
+                            {{
+                                formatHumanReadableDuration(
+                                    timeEntry.duration ?? 0,
+                                    organization?.interval_format,
+                                    organization?.number_format
+                                )
+                            }}
+                        </button>
+                    </div>
+                    <!-- Second row: project/task - tags - billable - start - more -->
+                    <div class="flex items-center justify-between mt-1">
+                        <TimeTrackerProjectTaskDropdown
+                            class="min-w-0"
+                            :clients
+                            :create-project
+                            :create-client
+                            :can-create-project
+                            :projects="projects"
+                            :tasks="tasks"
+                            :show-badge-border="false"
+                            :project="timeEntry.project_id"
+                            :enable-estimated-time
+                            :currency="currency"
+                            :task="timeEntry.task_id"
+                            @changed="updateProjectAndTask"></TimeTrackerProjectTaskDropdown>
+                        <div class="flex items-center shrink-0">
+                            <TimeEntryRowTagDropdown
+                                :create-tag
+                                :tags="tags"
+                                :model-value="timeEntry.tags"
+                                compact
+                                @changed="updateTimeEntryTags"></TimeEntryRowTagDropdown>
+                            <BillableToggleButton
+                                :model-value="timeEntry.billable"
+                                size="small"
+                                @changed="updateTimeEntryBillable"></BillableToggleButton>
+                            <TimeTrackerStartStop
+                                :active="!!(timeEntry.start && !timeEntry.end)"
+                                variant="secondary"
+                                class="ml-2"
+                                @changed="onStartStopClick(timeEntry)"></TimeTrackerStartStop>
+                            <TimeEntryMoreOptionsDropdown
+                                :show-edit="false"
+                                :show-duplicate="false"
+                                @delete="
+                                    deleteTimeEntries(timeEntry?.timeEntries ?? [])
+                                "></TimeEntryMoreOptionsDropdown>
+                        </div>
+                    </div>
                 </div>
             </div>
         </MainContainer>

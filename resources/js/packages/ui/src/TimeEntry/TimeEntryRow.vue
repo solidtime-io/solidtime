@@ -113,14 +113,16 @@ async function handleDeleteTimeEntry() {
         data-testid="time_entry_row">
         <MainContainer class="min-w-0">
             <div class="@xl:flex py-2 min-w-0 items-center justify-between group">
-                <div class="flex items-center min-w-0">
+                <!-- Desktop layout -->
+                <div class="hidden @lg:flex items-center min-w-0">
                     <Checkbox :checked="selected" @update:checked="onSelectChange" />
                     <div v-if="indent === true" class="w-10 h-7"></div>
                     <TimeEntryDescriptionInput
-                        class="min-w-0 mr-4"
+                        class="min-w-0 mr-4 shrink"
                         :model-value="timeEntry.description"
                         @changed="updateTimeEntryDescription"></TimeEntryDescriptionInput>
                     <TimeTrackerProjectTaskDropdown
+                        class="min-w-0 shrink"
                         :create-project
                         :create-client
                         :can-create-project
@@ -134,7 +136,8 @@ async function handleDeleteTimeEntry() {
                         :task="timeEntry.task_id"
                         @changed="updateProjectAndTask"></TimeTrackerProjectTaskDropdown>
                 </div>
-                <div class="flex items-center font-medium space-x-1 @lg:space-x-2">
+                <div
+                    class="hidden @lg:flex items-center font-medium space-x-1 @lg:space-x-2 shrink-0">
                     <div v-if="showMember && members" class="text-sm px-2">
                         {{ memberName }}
                     </div>
@@ -170,6 +173,58 @@ async function handleDeleteTimeEntry() {
                         @edit="handleEdit"
                         @duplicate="duplicateTimeEntry"
                         @delete="deleteTimeEntry"></TimeEntryMoreOptionsDropdown>
+                </div>
+                <!-- Mobile layout -->
+                <div class="@lg:hidden">
+                    <!-- First row: description + duration -->
+                    <div class="flex items-center justify-between min-w-0">
+                        <TimeEntryDescriptionInput
+                            class="min-w-0 flex-1"
+                            :model-value="timeEntry.description"
+                            @changed="updateTimeEntryDescription"></TimeEntryDescriptionInput>
+                        <TimeEntryRowDurationInput
+                            :start="timeEntry.start"
+                            :end="timeEntry.end"
+                            @changed="updateStartEndTime"></TimeEntryRowDurationInput>
+                    </div>
+                    <!-- Second row: project/task - tags - billable - start - more -->
+                    <div class="flex items-center justify-between mt-1">
+                        <TimeTrackerProjectTaskDropdown
+                            class="min-w-0"
+                            :create-project
+                            :create-client
+                            :can-create-project
+                            :clients
+                            :projects="projects"
+                            :tasks="tasks"
+                            :show-badge-border="false"
+                            :project="timeEntry.project_id"
+                            :currency="currency"
+                            :enable-estimated-time
+                            :task="timeEntry.task_id"
+                            @changed="updateProjectAndTask"></TimeTrackerProjectTaskDropdown>
+                        <div class="flex items-center shrink-0">
+                            <TimeEntryRowTagDropdown
+                                :create-tag
+                                :tags="tags"
+                                :model-value="timeEntry.tags"
+                                compact
+                                @changed="updateTimeEntryTags"></TimeEntryRowTagDropdown>
+                            <BillableToggleButton
+                                :model-value="timeEntry.billable"
+                                size="small"
+                                @changed="updateTimeEntryBillable"></BillableToggleButton>
+                            <TimeTrackerStartStop
+                                :active="!!(timeEntry.start && !timeEntry.end)"
+                                variant="secondary"
+                                class="ml-2"
+                                @changed="onStartStopClick"></TimeTrackerStartStop>
+                            <TimeEntryMoreOptionsDropdown
+                                @edit="handleEdit"
+                                @duplicate="duplicateTimeEntry"
+                                @delete="deleteTimeEntry"></TimeEntryMoreOptionsDropdown>
+                        </div>
+                    </div>
                 </div>
             </div>
         </MainContainer>

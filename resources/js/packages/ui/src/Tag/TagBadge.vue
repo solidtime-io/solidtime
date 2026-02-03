@@ -11,12 +11,14 @@ const props = withDefaults(
         class?: string;
         color?: string;
         border?: boolean;
+        showIcon?: boolean;
     }>(),
     {
         size: 'base',
         tag: 'div',
         color: 'var(--theme-color-icon-default)',
         border: true,
+        showIcon: true,
     }
 );
 
@@ -28,7 +30,7 @@ const indicatorClasses = {
 
 <template>
     <Badge :name :size :tag :class="props.class" :color :border>
-        <TagIcon :class="twMerge(indicatorClasses[size])"></TagIcon>
+        <TagIcon v-if="showIcon" :class="twMerge(indicatorClasses[size])"></TagIcon>
         <span v-if="name">
             {{ name }}
         </span>
