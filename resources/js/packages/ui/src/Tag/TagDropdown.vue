@@ -23,9 +23,11 @@ const props = withDefaults(
         tags: Tag[];
         createTag: (name: string) => Promise<Tag | undefined>;
         align?: 'center' | 'end' | 'start';
+        showNoTagOption?: boolean;
     }>(),
     {
         align: 'start',
+        showNoTagOption: true,
     }
 );
 
@@ -55,6 +57,7 @@ const filteredTags = computed(() => {
 });
 
 const showNoTag = computed(() => {
+    if (!props.showNoTagOption) return false;
     const search = searchValue.value.toLowerCase().trim();
     if (!search) return true;
     return NO_TAG_LABEL.toLowerCase().includes(search);
@@ -101,7 +104,7 @@ const showCreateTagModal = ref(false);
         <template #content>
             <ComboboxRoot
                 v-model:search-term="searchValue"
-                :open="open"
+                :open="true"
                 class="p-2"
                 :filter-function="(val: string[]) => val">
                 <ComboboxAnchor>

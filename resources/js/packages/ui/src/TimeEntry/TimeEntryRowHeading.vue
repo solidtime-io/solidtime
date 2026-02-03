@@ -36,8 +36,8 @@ function selectUnselectAll(value: boolean) {
         class="bg-background dark:bg-secondary border-b border-border-primary py-1 text-xs @sm:text-sm">
         <MainContainer>
             <div class="flex group justify-between items-center">
-                <div class="flex items-center space-x-2">
-                    <div class="w-5">
+                <div class="flex items-center @lg:space-x-2 pl-1.5 @lg:pl-0">
+                    <div class="w-5 hidden @lg:block">
                         <CalendarIcon
                             class="w-3 @sm:w-4 text-icon-default group-hover:hidden block">
                         </CalendarIcon>
@@ -50,11 +50,11 @@ function selectUnselectAll(value: boolean) {
                     <span class="font-medium text-text-secondary">
                         {{ formatWeekday(date) }}
                     </span>
-                    <span class="text-text-tertiary">
+                    <span class="text-text-tertiary ml-2">
                         {{ formatDate(date, organization?.date_format) }}
                     </span>
                 </div>
-                <div class="text-text-secondary pr-[87px] @lg:pr-[92px]">
+                <div class="text-text-secondary pr-2 @lg:pr-[92px]">
                     <span class="font-medium">
                         {{
                             formatHumanReadableDuration(
