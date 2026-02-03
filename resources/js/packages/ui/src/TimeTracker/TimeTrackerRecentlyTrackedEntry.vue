@@ -28,19 +28,21 @@ const task = computed(() => {
         :data-select-id="timeEntry.id"
         :class="
             twMerge(
-                'px-2 py-1.5 flex justify-between items-center space-x-2 w-full rounded',
+                'px-2 py-1.5 flex items-center space-x-2 w-full rounded text-left',
                 props.highlighted && 'bg-card-background-active'
             )
         ">
-        <span v-if="timeEntry.description !== ''" class="text-sm font-medium">
+        <span
+            v-if="timeEntry.description !== ''"
+            class="text-sm font-medium truncate min-w-0 flex-1">
             {{ timeEntry.description }}
         </span>
-        <span v-else class="text-sm text-text-tertiary font-medium"> No Description </span>
+        <span v-else class="text-sm text-text-tertiary font-medium flex-1"> No Description </span>
         <ProjectBadge
             ref="projectDropdownTrigger"
             :color="project?.color"
             :name="project?.name"
-            class="">
+            class="shrink-0">
             <div v-if="project" class="flex items-center lg:space-x-1 min-w-0">
                 <span class="whitespace-nowrap text-xs">
                     {{ project?.name }}
