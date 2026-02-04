@@ -286,7 +286,7 @@ async function downloadExport(format: ExportFormat) {
         <div class="w-full relative @container">
             <div v-for="entry in timeEntries" :key="entry.id">
                 <TimeEntryRow
-                    :selected="selectedTimeEntries.includes(entry)"
+                    :selected="selectedTimeEntries.some((item) => item.id === entry.id)"
                     :can-create-project="canCreateProjects()"
                     :create-client
                     :create-project
