@@ -35,6 +35,25 @@ export async function createProject(page: Page, projectName: string) {
     await expect(page.getByText(projectName)).toBeVisible();
 }
 
+export async function createBillableProject(page: Page, projectName: string) {
+    await page.goto(PLAYWRIGHT_BASE_URL + '/projects');
+    await expect(page.getByRole('button', { name: 'Create Project' })).toBeVisible();
+    await page.getByRole('button', { name: 'Create Project' }).click();
+    await page.getByLabel('Project name').fill(projectName);
+    await page.getByText('Non-Billable').click();
+    await page.getByText('Default Rate').click();
+    await Promise.all([
+        page.getByRole('dialog').getByRole('button', { name: 'Create Project' }).click(),
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/projects') &&
+                response.request().method() === 'POST' &&
+                response.status() === 201
+        ),
+    ]);
+    await expect(page.getByText(projectName)).toBeVisible();
+}
+
 export async function createClient(page: Page, clientName: string) {
     await page.goto(PLAYWRIGHT_BASE_URL + '/clients');
     await expect(page.getByRole('button', { name: 'Create Client' })).toBeVisible();

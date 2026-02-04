@@ -9,6 +9,7 @@ import {
     startOrStopTimerWithButton,
     stoppedTimeEntryResponse,
 } from './utils/currentTimeEntry';
+import { createProject, createBillableProject, createBareTimeEntry } from './utils/reporting';
 
 async function goToTimeOverview(page: Page) {
     await page.goto(PLAYWRIGHT_BASE_URL + '/time');
@@ -447,4 +448,255 @@ test('test that setting billable status via the create modal works', async ({ pa
                 (await response.json()).data.billable === true
         ),
     ]);
+});
+
+/**
+ * The following tests verify that changing the project on a time entry
+ * updates the billable status to match the new project's is_billable setting.
+ *
+ * Issue: https://github.com/solidtime-io/solidtime/issues/981
+ */
+
+test('test that changing project on a time entry row from non-billable to billable updates billable status', async ({
+    page,
+}) => {
+    const billableProjectName = 'Billable Row Project ' + Math.floor(1 + Math.random() * 10000);
+    const nonBillableProjectName =
+        'NonBillable Row Project ' + Math.floor(1 + Math.random() * 10000);
+
+    await createProject(page, nonBillableProjectName);
+    await createBillableProject(page, billableProjectName);
+    await createBareTimeEntry(page, 'Test billable row', '1h');
+
+    await goToTimeOverview(page);
+    const timeEntryRow = page.locator('[data-testid="time_entry_row"]').first();
+
+    // Assign the non-billable project first
+    await timeEntryRow.getByRole('button', { name: 'No Project' }).click();
+    await page.getByRole('option', { name: nonBillableProjectName }).click();
+    await page.waitForResponse(
+        (response) =>
+            response.url().includes('/time-entries/') &&
+            response.request().method() === 'PUT' &&
+            response.status() === 200
+    );
+
+    // Now switch to the billable project
+    await timeEntryRow.getByRole('button', { name: nonBillableProjectName }).click();
+    await page.getByRole('option', { name: billableProjectName }).click();
+
+    const updateResponse = await page.waitForResponse(
+        (response) =>
+            response.url().includes('/time-entries/') &&
+            response.request().method() === 'PUT' &&
+            response.status() === 200
+    );
+    const responseBody = await updateResponse.json();
+    expect(responseBody.data.billable).toBe(true);
+});
+
+test('test that changing project on a time entry row from billable to non-billable updates billable status', async ({
+    page,
+}) => {
+    const billableProjectName = 'Billable Row Rev Project ' + Math.floor(1 + Math.random() * 10000);
+    const nonBillableProjectName =
+        'NonBillable Row Rev Project ' + Math.floor(1 + Math.random() * 10000);
+
+    await createBillableProject(page, billableProjectName);
+    await createProject(page, nonBillableProjectName);
+    await createBareTimeEntry(page, 'Test billable row reverse', '1h');
+
+    await goToTimeOverview(page);
+    const timeEntryRow = page.locator('[data-testid="time_entry_row"]').first();
+
+    // Assign the billable project first
+    await timeEntryRow.getByRole('button', { name: 'No Project' }).click();
+    await page.getByRole('option', { name: billableProjectName }).click();
+    const firstResponse = await page.waitForResponse(
+        (response) =>
+            response.url().includes('/time-entries/') &&
+            response.request().method() === 'PUT' &&
+            response.status() === 200
+    );
+    const firstBody = await firstResponse.json();
+    expect(firstBody.data.billable).toBe(true);
+
+    // Now switch to the non-billable project
+    await timeEntryRow.getByRole('button', { name: billableProjectName }).click();
+    await page.getByRole('option', { name: nonBillableProjectName }).click();
+
+    const updateResponse = await page.waitForResponse(
+        (response) =>
+            response.url().includes('/time-entries/') &&
+            response.request().method() === 'PUT' &&
+            response.status() === 200
+    );
+    const responseBody = await updateResponse.json();
+    expect(responseBody.data.billable).toBe(false);
+});
+
+test('test that changing project in edit modal from non-billable to billable updates billable status', async ({
+    page,
+}) => {
+    const billableProjectName = 'Billable Modal Project ' + Math.floor(1 + Math.random() * 10000);
+
+    await createBillableProject(page, billableProjectName);
+    await createBareTimeEntry(page, 'Test billable modal', '1h');
+
+    await goToTimeOverview(page);
+    const timeEntryRow = page.locator('[data-testid="time_entry_row"]').first();
+
+    // Open edit modal
+    await timeEntryRow.getByRole('button', { name: 'Actions for the time entry' }).first().click();
+    await page.getByRole('menuitem', { name: 'Edit' }).click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+
+    // Verify initially non-billable
+    await expect(
+        page.getByRole('dialog').getByRole('combobox').filter({ hasText: 'Non-Billable' })
+    ).toBeVisible();
+
+    // Select the billable project
+    await page.getByRole('dialog').getByRole('button', { name: 'No Project' }).click();
+    await page.getByRole('option', { name: billableProjectName }).click();
+
+    // Verify the billable dropdown updated to Billable
+    await expect(
+        page.getByRole('dialog').getByRole('combobox').filter({ hasText: 'Billable' })
+    ).toBeVisible();
+
+    // Save and verify
+    const [updateResponse] = await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/time-entries/') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 200
+        ),
+        page.getByRole('button', { name: 'Update Time Entry' }).click(),
+    ]);
+    const responseBody = await updateResponse.json();
+    expect(responseBody.data.billable).toBe(true);
+});
+
+test('test that opening edit modal for a time entry with manually overridden billable status preserves that status', async ({
+    page,
+}) => {
+    const billableProjectName = 'Billable Persist Project ' + Math.floor(1 + Math.random() * 10000);
+
+    await createBillableProject(page, billableProjectName);
+    await createBareTimeEntry(page, 'Test persist billable override', '1h');
+
+    await goToTimeOverview(page);
+    const timeEntryRow = page.locator('[data-testid="time_entry_row"]').first();
+
+    // Open edit modal and assign the billable project
+    await timeEntryRow.getByRole('button', { name: 'Actions for the time entry' }).first().click();
+    await page.getByRole('menuitem', { name: 'Edit' }).click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+
+    await page.getByRole('dialog').getByRole('button', { name: 'No Project' }).click();
+    await page.getByRole('option', { name: billableProjectName }).click();
+
+    // Verify it auto-set to Billable
+    await expect(
+        page.getByRole('dialog').getByRole('combobox').filter({ hasText: 'Billable' })
+    ).toBeVisible();
+
+    // Now manually override billable to Non-Billable via the dropdown
+    await page.getByRole('dialog').getByRole('combobox').filter({ hasText: 'Billable' }).click();
+    await page.getByRole('option', { name: 'Non Billable' }).click();
+
+    // Verify it shows Non-Billable now
+    await expect(
+        page.getByRole('dialog').getByRole('combobox').filter({ hasText: 'Non-Billable' })
+    ).toBeVisible();
+
+    // Save
+    const [firstSaveResponse] = await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/time-entries/') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 200
+        ),
+        page.getByRole('button', { name: 'Update Time Entry' }).click(),
+    ]);
+    const firstBody = await firstSaveResponse.json();
+    expect(firstBody.data.billable).toBe(false);
+
+    // Re-open the edit modal — the project_id watcher should NOT override billable back to true
+    await timeEntryRow.getByRole('button', { name: 'Actions for the time entry' }).first().click();
+    await page.getByRole('menuitem', { name: 'Edit' }).click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+
+    // The billable dropdown should still show Non-Billable
+    await expect(
+        page.getByRole('dialog').getByRole('combobox').filter({ hasText: 'Non-Billable' })
+    ).toBeVisible();
+
+    // Save without changes and verify the response still has billable=false
+    const [updateResponse] = await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/time-entries/') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 200
+        ),
+        page.getByRole('button', { name: 'Update Time Entry' }).click(),
+    ]);
+    const responseBody = await updateResponse.json();
+    expect(responseBody.data.billable).toBe(false);
+});
+
+test('test that changing project in edit modal from billable to non-billable updates billable status', async ({
+    page,
+}) => {
+    const billableProjectName =
+        'Billable Modal Rev Project ' + Math.floor(1 + Math.random() * 10000);
+    const nonBillableProjectName =
+        'NonBillable Modal Rev Project ' + Math.floor(1 + Math.random() * 10000);
+
+    await createBillableProject(page, billableProjectName);
+    await createProject(page, nonBillableProjectName);
+    await createBareTimeEntry(page, 'Test billable modal reverse', '1h');
+
+    await goToTimeOverview(page);
+    const timeEntryRow = page.locator('[data-testid="time_entry_row"]').first();
+
+    // Open edit modal
+    await timeEntryRow.getByRole('button', { name: 'Actions for the time entry' }).first().click();
+    await page.getByRole('menuitem', { name: 'Edit' }).click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+
+    // First assign the billable project
+    await page.getByRole('dialog').getByRole('button', { name: 'No Project' }).click();
+    await page.getByRole('option', { name: billableProjectName }).click();
+
+    // Verify billable status flipped to Billable
+    await expect(
+        page.getByRole('dialog').getByRole('combobox').filter({ hasText: 'Billable' })
+    ).toBeVisible();
+
+    // Now switch to the non-billable project
+    await page.getByRole('dialog').getByRole('button', { name: billableProjectName }).click();
+    await page.getByRole('option', { name: nonBillableProjectName }).click();
+
+    // Verify billable status reverted to Non-Billable
+    await expect(
+        page.getByRole('dialog').getByRole('combobox').filter({ hasText: 'Non-Billable' })
+    ).toBeVisible();
+
+    // Save and verify
+    const [updateResponse] = await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/time-entries/') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 200
+        ),
+        page.getByRole('button', { name: 'Update Time Entry' }).click(),
+    ]);
+    const responseBody = await updateResponse.json();
+    expect(responseBody.data.billable).toBe(false);
 });
