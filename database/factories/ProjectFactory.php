@@ -38,6 +38,15 @@ class ProjectFactory extends Factory
         ];
     }
 
+    public function named(string $name): self
+    {
+        return $this->state(function (array $attributes) use ($name): array {
+            return [
+                'name' => $name,
+            ];
+        });
+    }
+
     public function withEstimatedTime(): self
     {
         return $this->state(function (array $attributes): array {
