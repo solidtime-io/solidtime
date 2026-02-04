@@ -67,10 +67,12 @@ function updateStartEndTime(start: string, end: string | null) {
 }
 
 function updateProjectAndTask(projectId: string, taskId: string) {
+    const project = props.projects.find((p) => p.id === projectId);
     props.updateTimeEntry({
         ...props.timeEntry,
         project_id: projectId,
         task_id: taskId,
+        billable: project ? project.is_billable : props.timeEntry.billable,
     });
 }
 

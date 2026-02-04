@@ -74,6 +74,18 @@ watch(
     { immediate: true }
 );
 
+watch(
+    () => editableTimeEntry.value?.project_id,
+    (value, oldValue) => {
+        if (oldValue !== undefined && value !== oldValue && editableTimeEntry.value) {
+            const project = props.projects.find((p) => p.id === value);
+            if (project) {
+                editableTimeEntry.value.billable = project.is_billable;
+            }
+        }
+    }
+);
+
 const localStart = computed({
     get: () =>
         editableTimeEntry.value ? getLocalizedDayJs(editableTimeEntry.value.start).format() : '',
