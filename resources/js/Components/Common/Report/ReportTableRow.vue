@@ -1,15 +1,17 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { type ComputedRef, computed, inject, ref } from 'vue';
 import TableRow from '@/Components/TableRow.vue';
-import { api, type Report } from '@/packages/api/src';
+import { api, type Report, type Organization } from '@/packages/api/src';
 import ReportMoreOptionsDropdown from '@/Components/Common/Report/ReportMoreOptionsDropdown.vue';
 import ReportEditModal from '@/Components/Common/Report/ReportEditModal.vue';
 import { SecondaryButton } from '@/packages/ui/src';
 import { useClipboard } from '@vueuse/core';
 import { ArrowTopRightOnSquareIcon } from '@heroicons/vue/24/solid';
+import { GlobeAltIcon, LockClosedIcon } from '@heroicons/vue/24/outline';
 import { useMutation, useQueryClient } from '@tanstack/vue-query';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import { useNotificationsStore } from '@/utils/notification';
+import { formatDateLocalized } from '@/packages/ui/src/utils/time';
 
 const props = defineProps<{
     report: Report;
@@ -19,6 +21,8 @@ const showEditReportModal = ref(false);
 
 const { copy, copied, isSupported } = useClipboard({ legacy: true });
 const { handleApiRequestNotifications } = useNotificationsStore();
+const organization = inject<ComputedRef<Organization | undefined>>('organization');
+const dateFormat = computed(() => organization?.value?.date_format);
 
 function openSharableLink() {
     const link = props.report.shareable_link;
@@ -71,7 +75,19 @@ async function deleteReport() {
             </span>
         </div>
         <div class="whitespace-nowrap px-3 py-4 text-sm text-text-secondary">
-            {{ report.is_public ? 'Public' : 'Private' }}
+            {{ formatDateLocalized(report.created_at, dateFormat) }}
+        </div>
+        <div
+            class="whitespace-nowrap px-3 py-4 text-sm text-text-secondary flex items-center gap-1.5">
+            <GlobeAltIcon v-if="report.is_public" class="w-4 h-4 shrink-0 text-text-tertiary" />
+            <LockClosedIcon v-else class="w-4 h-4 shrink-0 text-text-tertiary" />
+            <span>{{ report.is_public ? 'Public' : 'Private' }}</span>
+        </div>
+        <div class="whitespace-nowrap px-3 py-4 text-sm text-text-secondary">
+            <span v-if="report.public_until">
+                {{ formatDateLocalized(report.public_until, dateFormat) }}
+            </span>
+            <span v-else>Never</span>
         </div>
         <div class="whitespace-nowrap px-3 flex items-center text-sm text-text-secondary">
             <div v-if="report.shareable_link" class="space-x-2 flex items-center">

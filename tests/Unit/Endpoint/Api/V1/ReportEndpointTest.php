@@ -425,9 +425,58 @@ class ReportEndpointTest extends ApiEndpointTestAbstract
             ->where('data.name', 'Updated Report')
             ->where('data.description', 'Updated description')
             ->where('data.is_public', true)
+            ->whereType('data.public_until', 'string')
             ->where('data.properties.group', TimeEntryAggregationType::Project->value)
             ->where('data.properties.sub_group', TimeEntryAggregationType::Task->value)
         );
+    }
+
+    public function test_update_endpoint_can_update_public_until_on_already_public_report(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'reports:update',
+        ]);
+        $report = Report::factory()->public()->forOrganization($data->organization)->create([
+            'public_until' => null,
+        ]);
+        Passport::actingAs($data->user);
+        $newPublicUntil = Carbon::now()->addDays(30);
+
+        // Act
+        $response = $this->putJson(route('api.v1.reports.update', [$data->organization->getKey(), $report->getKey()]), [
+            'public_until' => $newPublicUntil->toIso8601ZuluString(),
+        ]);
+
+        // Assert
+        $response->assertStatus(200);
+        $report->refresh();
+        $this->assertTrue($report->is_public);
+        $this->assertNotNull($report->public_until);
+        $this->assertTrue($newPublicUntil->isSameDay($report->public_until));
+    }
+
+    public function test_update_endpoint_can_clear_public_until_on_already_public_report(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'reports:update',
+        ]);
+        $report = Report::factory()->public()->forOrganization($data->organization)->create([
+            'public_until' => Carbon::now()->addDays(30),
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.reports.update', [$data->organization->getKey(), $report->getKey()]), [
+            'public_until' => null,
+        ]);
+
+        // Assert
+        $response->assertStatus(200);
+        $report->refresh();
+        $this->assertTrue($report->is_public);
+        $this->assertNull($report->public_until);
     }
 
     public function test_show_endpoint_fails_if_user_has_no_permission_to_view_report(): void

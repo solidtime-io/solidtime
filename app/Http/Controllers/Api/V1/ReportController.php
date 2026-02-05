@@ -150,6 +150,9 @@ class ReportController extends Controller
                 $report->share_secret = null;
                 $report->public_until = null;
             }
+        } elseif ($report->is_public && $request->has('public_until')) {
+            // Allow updating expiration date on already-public reports
+            $report->public_until = $request->getPublicUntil();
         }
         $report->save();
 
