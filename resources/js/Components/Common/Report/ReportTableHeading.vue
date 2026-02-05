@@ -8,7 +8,9 @@ import TableHeading from '@/Components/Common/TableHeading.vue';
             Name
         </div>
         <div class="px-3 py-1.5 text-left text-text-tertiary">Description</div>
+        <div class="px-3 py-1.5 text-left text-text-tertiary">Created At</div>
         <div class="px-3 py-1.5 text-left text-text-tertiary">Visibility</div>
+        <div class="px-3 py-1.5 text-left text-text-tertiary">Expires At</div>
         <div class="px-3 py-1.5 text-left text-text-tertiary">Public URL</div>
         <div class="relative py-1.5 pl-3 pr-4 sm:pr-6 lg:pr-8 3xl:pr-12">
             <span class="sr-only">Edit</span>

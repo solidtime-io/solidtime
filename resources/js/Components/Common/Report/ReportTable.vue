@@ -14,7 +14,7 @@ defineProps<{
 }>();
 
 const gridTemplate = computed(() => {
-    return `grid-template-columns: minmax(150px, auto) minmax(250px, 1fr) minmax(140px, auto) minmax(130px, auto) 80px;`;
+    return `grid-template-columns: minmax(150px, auto) minmax(200px, 1fr) minmax(100px, 120px) minmax(80px, 100px) minmax(100px, 120px) minmax(130px, auto) 80px;`;
 });
 </script>
 
@@ -23,7 +23,7 @@ const gridTemplate = computed(() => {
         <div class="inline-block min-w-full align-middle">
             <div data-testid="report_table" class="grid min-w-full" :style="gridTemplate">
                 <ReportTableHeading></ReportTableHeading>
-                <div v-if="reports.length === 0" class="col-span-5 py-24 text-center">
+                <div v-if="reports.length === 0" class="col-span-7 py-24 text-center">
                     <FolderPlusIcon class="w-8 text-icon-default inline pb-2"></FolderPlusIcon>
                     <h3 class="text-text-primary font-semibold">No shared reports found</h3>
                     <p v-if="canCreateProjects()" class="pb-5">

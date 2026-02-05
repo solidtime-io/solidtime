@@ -382,3 +382,64 @@ test('test that shared report with No Tag filter shows entries without tags', as
     await expect(page.getByText('Reporting')).toBeVisible();
     await expect(page.getByText('Total')).toBeVisible();
 });
+
+test('test that updating expiration date on already-public report works', async ({ page }) => {
+    const projectName = 'UpdateExpDateProj ' + Math.floor(Math.random() * 10000);
+    const reportName = 'UpdateExpDateReport ' + Math.floor(Math.random() * 10000);
+
+    await createProject(page, projectName);
+    await createTimeEntryWithProject(page, projectName, '1h');
+
+    await goToReporting(page);
+    await expect(page.getByTestId('reporting_view').getByText(projectName)).toBeVisible();
+
+    // Create a public report (already public by default)
+    await saveAsSharedReport(page, reportName);
+
+    // Go to shared reports and edit
+    await goToReportingShared(page);
+    await expect(page.getByText(reportName)).toBeVisible();
+
+    // Click more options and edit
+    await page
+        .getByRole('button', { name: new RegExp('Actions for Project ' + reportName) })
+        .click();
+    await page.getByRole('menuitem', { name: /^Edit Report/ }).click();
+
+    // The date picker should be visible (report is already public)
+    const datePicker = page
+        .getByRole('dialog')
+        .getByRole('button', { name: DATE_PICKER_BUTTON_PATTERN });
+    await expect(datePicker).toBeVisible();
+    await datePicker.click();
+
+    // Select the 25th of next month
+    const calendarGrid = page.getByRole('grid');
+    await expect(calendarGrid).toBeVisible({ timeout: 5000 });
+    await page.getByRole('button', { name: /Next/i }).click();
+    await page.getByRole('gridcell').filter({ hasText: /^25$/ }).first().click();
+
+    // Wait for the calendar to close
+    await expect(calendarGrid).not.toBeVisible();
+
+    // Update the report and verify it includes the correct public_until date
+    const [response] = await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/reports/') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 200
+        ),
+        page.getByRole('button', { name: 'Update Report' }).click(),
+    ]);
+    const responseBody = await response.json();
+    expect(responseBody.data.public_until).toBeTruthy();
+
+    // Verify the date is the 25th of a future month
+    const returnedDate = new Date(responseBody.data.public_until);
+    expect(returnedDate.getUTCDate()).toBe(25);
+
+    // The returned date should be in the future
+    const now = new Date();
+    expect(returnedDate.getTime()).toBeGreaterThan(now.getTime());
+});
