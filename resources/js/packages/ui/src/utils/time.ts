@@ -21,6 +21,9 @@ export type DateFormat =
     | 'hyphen-separated-mm-dd-yyyy'
     | 'hyphen-separated-yyyy-mm-dd';
 
+// Day of week index type for calendar components (0 = Sunday, 6 = Saturday)
+export type WeekStartDay = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+
 const dateFormatMap: Record<DateFormat, string> = {
     'point-separated-d-m-yyyy': 'D.M.YYYY',
     'slash-separated-mm-dd-yyyy': 'MM/DD/YYYY',
