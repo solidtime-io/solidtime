@@ -10,6 +10,9 @@ import {
 import type { Page } from '@playwright/test';
 import { newTagResponse } from './utils/tags';
 
+// Date picker button name patterns for different date formats
+const DATE_DISPLAY_PATTERN = /^\d{4}-\d{2}-\d{2}$|^\d{2}\/\d{2}\/\d{4}$|^\d{2}\.\d{2}\.\d{4}$/;
+
 async function goToDashboard(page: Page) {
     await page.goto(PLAYWRIGHT_BASE_URL + '/dashboard');
 }
@@ -252,6 +255,63 @@ test('test that adding a new tag when the timer is running', async ({ page }) =>
         startOrStopTimerWithButton(page),
     ]);
     await assertThatTimerIsStopped(page);
+});
+
+test('test that setting an end time with a different date via the timetracker range selector works', async ({
+    page,
+}) => {
+    await goToDashboard(page);
+
+    // Start a timer
+    await Promise.all([newTimeEntryResponse(page), startOrStopTimerWithButton(page)]);
+    await assertThatTimerHasStarted(page);
+
+    // Open the time range dropdown by clicking on the time display
+    await page.getByTestId('time_entry_time').click();
+    const rangeStart = page.getByTestId('time_entry_range_start');
+    await expect(rangeStart).toBeVisible();
+
+    // Click "Set End Time" button
+    await page.getByRole('button', { name: 'Set End Time' }).click();
+
+    // The end time picker should now be visible with a Confirm button
+    const rangeEnd = page.getByTestId('time_entry_range_end');
+    await expect(rangeEnd).toBeVisible();
+    const confirmButton = page.getByRole('button', { name: 'Confirm' });
+    await expect(confirmButton).toBeVisible();
+
+    // Click the end date picker to change the date
+    const endDatePickers = page.getByRole('button', { name: DATE_DISPLAY_PATTERN });
+    // The second date picker is the end date (first is the start date)
+    const endDatePicker = endDatePickers.nth(1);
+    await expect(endDatePicker).toBeVisible();
+    await endDatePicker.click();
+
+    // Calendar should appear
+    const calendarGrid = page.getByRole('grid');
+    await expect(calendarGrid).toBeVisible({ timeout: 5000 });
+
+    // Navigate to the next month and select a day to ensure end > start
+    await page.getByRole('button', { name: /Next/i }).click();
+    await page.getByRole('gridcell').filter({ hasText: /^15$/ }).first().click();
+
+    // The dropdown should still be open after selecting a date (not auto-closed)
+    await expect(rangeEnd).toBeVisible();
+    await expect(confirmButton).toBeVisible();
+
+    // Click Confirm to finalize and verify the API call
+    const [updateResponse] = await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/time-entries') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 200
+        ),
+        confirmButton.click(),
+    ]);
+    const updateBody = await updateResponse.json();
+    expect(updateBody.data.start).toBeTruthy();
+    expect(updateBody.data.end).toBeTruthy();
 });
 
 // test that search is working

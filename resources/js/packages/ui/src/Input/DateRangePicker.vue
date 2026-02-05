@@ -6,10 +6,17 @@ import { CalendarDate } from '@internationalized/date';
 import { CalendarIcon } from 'lucide-vue-next';
 import { computed, ref, inject, type ComputedRef, watch } from 'vue';
 import { twMerge } from 'tailwind-merge';
-import { getDayJsInstance, getLocalizedDayJs } from '@/packages/ui/src/utils/time';
+import {
+    getDayJsInstance,
+    getLocalizedDayJs,
+    firstDayIndex,
+    type WeekStartDay,
+} from '@/packages/ui/src/utils/time';
 import { type Organization } from '@/packages/api/src';
 import { getUserTimezone } from '@/packages/ui/src/utils/settings';
 import { formatDate } from '@/packages/ui/src/utils/time';
+
+const weekStartsOn = computed((): WeekStartDay => firstDayIndex.value as WeekStartDay);
 
 const props = defineProps<{
     start: string;
@@ -207,7 +214,8 @@ watch(open, (value) => {
                         v-model="modelValue"
                         initial-focus
                         :number-of-months="2"
-                        :max-value="today" />
+                        :max-value="today"
+                        :week-starts-on="weekStartsOn" />
                 </div>
             </div>
         </PopoverContent>

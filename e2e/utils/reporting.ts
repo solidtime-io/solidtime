@@ -314,5 +314,7 @@ export async function saveAsSharedReport(
         page.getByRole('dialog').getByRole('button', { name: 'Create Report' }).click(),
     ]);
     const responseBody = await response.json();
+    // Wait for navigation to shared reports page
+    await page.waitForURL('**/reporting/shared');
     return { shareableLink: responseBody.data.shareable_link };
 }

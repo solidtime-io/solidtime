@@ -11,8 +11,35 @@ import {
 } from './utils/currentTimeEntry';
 import { createProject, createBillableProject, createBareTimeEntry } from './utils/reporting';
 
+// Date picker button name patterns for different date formats
+// Matches: "Pick a date", "YYYY-MM-DD", "DD/MM/YYYY", "DD.MM.YYYY", "MM/DD/YYYY", "DD-MM-YYYY", "MM-DD-YYYY"
+const DATE_PICKER_BUTTON_PATTERN =
+    /^Pick a date$|^\d{4}-\d{2}-\d{2}$|^\d{2}\/\d{2}\/\d{4}$|^\d{2}\.\d{2}\.\d{4}$/;
+// Same pattern but without "Pick a date" - for when we expect an actual date to be displayed
+const DATE_DISPLAY_PATTERN = /^\d{4}-\d{2}-\d{2}$|^\d{2}\/\d{2}\/\d{4}$|^\d{2}\.\d{2}\.\d{4}$/;
+
+/**
+ * Extracts day of month from an ISO timestamp string
+ */
+function getDayFromTimestamp(timestamp: string): number {
+    return new Date(timestamp).getUTCDate();
+}
+
+/**
+ * Extracts month (1-indexed) from an ISO timestamp string
+ */
+function getMonthFromTimestamp(timestamp: string): number {
+    return new Date(timestamp).getUTCMonth() + 1;
+}
+
 async function goToTimeOverview(page: Page) {
     await page.goto(PLAYWRIGHT_BASE_URL + '/time');
+}
+
+async function goToOrganizationSettings(page: Page) {
+    await page.goto(PLAYWRIGHT_BASE_URL + '/dashboard');
+    await page.locator('[data-testid="organization_switcher"]:visible').click();
+    await page.getByText('Organization Settings').click();
 }
 
 async function createEmptyTimeEntry(page: Page) {
@@ -310,7 +337,262 @@ test.skip('test that load more works when the end of page is reached', async ({ 
 
 // TODO: Test Grouped time entries by description/project
 
-// TODO: Add Test for Date Update
+// Date Update Tests
+
+test('test that updating the start date of a time entry via the edit modal works', async ({
+    page,
+}) => {
+    await createBareTimeEntry(page, 'Date edit test', '1h');
+    await goToTimeOverview(page);
+
+    const timeEntryRows = page.locator('[data-testid="time_entry_row"]');
+    const newTimeEntry = timeEntryRows.first();
+
+    // Open edit modal via the actions dropdown
+    const actionsDropdown = newTimeEntry
+        .getByRole('button', { name: 'Actions for the time entry' })
+        .first();
+    await actionsDropdown.click();
+    await page.getByTestId('time_entry_edit').click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+
+    // Click the start date picker (first date picker button in the Start section)
+    const startDatePicker = page
+        .getByRole('dialog')
+        .getByRole('button', { name: DATE_PICKER_BUTTON_PATTERN })
+        .first();
+    await startDatePicker.click();
+
+    // Navigate to the previous month and select the 15th
+    await page.getByRole('button', { name: /Previous/i }).click();
+    await page.getByRole('gridcell').filter({ hasText: /^15$/ }).first().click();
+
+    // Get current month to calculate expected month after going to previous
+    const now = new Date();
+    const expectedMonth = now.getMonth() === 0 ? 12 : now.getMonth(); // Previous month (1-indexed)
+
+    // Submit the update and verify the response has correct date
+    const [updateResponse] = await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/time-entries') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 200
+        ),
+        page.getByRole('button', { name: 'Update Time Entry' }).click(),
+    ]);
+    const updateBody = await updateResponse.json();
+    expect(updateBody.data.start).toBeTruthy();
+    expect(updateBody.data.end).toBeTruthy();
+    // Verify the day was changed to 15th
+    expect(getDayFromTimestamp(updateBody.data.start)).toBe(15);
+    // Verify the month is the previous month
+    expect(getMonthFromTimestamp(updateBody.data.start)).toBe(expectedMonth);
+});
+
+test('test that setting a date in the create modal works', async ({ page }) => {
+    await goToTimeOverview(page);
+
+    // Get today's date to compare later
+    const today = new Date();
+
+    // Open create modal
+    await page.getByRole('button', { name: 'Time entry actions' }).click();
+    await page.getByRole('menuitem', { name: 'Manual time entry' }).click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+
+    // Set description
+    await page
+        .getByRole('dialog')
+        .getByRole('textbox', { name: 'Description' })
+        .fill('Date picker test entry');
+
+    // Set duration first (to ensure the form is valid)
+    await page.locator('[role="dialog"] input[name="Duration"]').fill('1h');
+    await page.locator('[role="dialog"] input[name="Duration"]').press('Tab');
+
+    // Click the start date picker
+    const startDatePicker = page
+        .getByRole('dialog')
+        .getByRole('button', { name: DATE_PICKER_BUTTON_PATTERN })
+        .first();
+    await startDatePicker.click();
+
+    // Wait for calendar to appear
+    const calendarGrid = page.getByRole('grid');
+    await expect(calendarGrid).toBeVisible({ timeout: 5000 });
+
+    // Navigate to previous month and select the 15th (a day that's always in the middle of the month)
+    await page.getByRole('button', { name: /Previous/i }).click();
+    await page.getByRole('gridcell', { name: '15' }).getByRole('button').click();
+
+    // Wait for calendar to close
+    await expect(calendarGrid).not.toBeVisible();
+
+    // Get current month to calculate expected month after going to previous
+    const expectedMonth = today.getMonth() === 0 ? 12 : today.getMonth(); // Previous month (1-indexed)
+
+    // Submit and verify creation succeeds with correct date
+    const [createResponse] = await Promise.all([
+        page.waitForResponse(
+            (response) => response.url().includes('/time-entries') && response.status() === 201
+        ),
+        page.getByRole('button', { name: 'Create Time Entry' }).click(),
+    ]);
+    const createBody = await createResponse.json();
+    expect(createBody.data.start).toBeTruthy();
+    // Verify the day was set to 15th
+    expect(getDayFromTimestamp(createBody.data.start)).toBe(15);
+    // Verify the month is the previous month
+    expect(getMonthFromTimestamp(createBody.data.start)).toBe(expectedMonth);
+});
+
+test('test that updating the date via the time entry row range selector works', async ({
+    page,
+}) => {
+    await createBareTimeEntry(page, 'Date range test', '1h');
+    await goToTimeOverview(page);
+
+    const timeEntryRows = page.locator('[data-testid="time_entry_row"]');
+    const newTimeEntry = timeEntryRows.first();
+    await expect(newTimeEntry).toBeVisible();
+
+    // Open the time range popover
+    const timeEntryRangeElement = newTimeEntry.getByTestId('time_entry_range_selector');
+    await timeEntryRangeElement.click();
+
+    // Verify the range selector dropdown is open
+    const rangeStart = page.getByTestId('time_entry_range_start');
+    await expect(rangeStart).toBeVisible();
+
+    // Click the start date picker button within the range selector
+    const startDatePicker = page.getByRole('button', { name: DATE_DISPLAY_PATTERN }).first();
+    await expect(startDatePicker).toBeVisible();
+    await startDatePicker.click();
+
+    // Wait for the calendar to appear and select a day
+    const calendarGrid = page.getByRole('grid');
+    await expect(calendarGrid).toBeVisible({ timeout: 5000 });
+
+    // Navigate to previous month and select the 5th
+    await page.getByRole('button', { name: /Previous/i }).click();
+    await page.getByRole('gridcell').filter({ hasText: /^5$/ }).first().click();
+
+    // Get current month to calculate expected month after going to previous
+    const now = new Date();
+    const expectedMonth = now.getMonth() === 0 ? 12 : now.getMonth(); // Previous month (1-indexed)
+
+    // Verify the time entry update API call succeeds with correct date
+    const updateResponse = await page.waitForResponse(async (response) => {
+        return (
+            response.status() === 200 &&
+            response.request().method() === 'PUT' &&
+            (await response.headerValue('Content-Type')) === 'application/json'
+        );
+    });
+    const updateBody = await updateResponse.json();
+    expect(updateBody.data.start).toBeTruthy();
+    // Verify the day was changed to 5th
+    expect(getDayFromTimestamp(updateBody.data.start)).toBe(5);
+    // Verify the month is the previous month
+    expect(getMonthFromTimestamp(updateBody.data.start)).toBe(expectedMonth);
+});
+
+test('test that updating the end date via the time entry row range selector works', async ({
+    page,
+}) => {
+    await createBareTimeEntry(page, 'End date range test', '1h');
+    await goToTimeOverview(page);
+
+    const timeEntryRows = page.locator('[data-testid="time_entry_row"]');
+    const newTimeEntry = timeEntryRows.first();
+    await expect(newTimeEntry).toBeVisible();
+
+    // Open the time range popover
+    const timeEntryRangeElement = newTimeEntry.getByTestId('time_entry_range_selector');
+    await timeEntryRangeElement.click();
+
+    // Verify the range selector dropdown is open
+    const rangeEnd = page.getByTestId('time_entry_range_end');
+    await expect(rangeEnd).toBeVisible();
+
+    // Click the end date picker button (second date picker)
+    const datePickers = page.getByRole('button', { name: DATE_DISPLAY_PATTERN });
+    const endDatePicker = datePickers.nth(1);
+    await expect(endDatePicker).toBeVisible();
+    await endDatePicker.click();
+
+    // Wait for the calendar to appear
+    const calendarGrid = page.getByRole('grid');
+    await expect(calendarGrid).toBeVisible({ timeout: 5000 });
+
+    // Navigate to next month and select the 20th (to ensure end > start)
+    await page.getByRole('button', { name: /Next/i }).click();
+    await page.getByRole('gridcell').filter({ hasText: /^20$/ }).first().click();
+
+    // Get current month to calculate expected month after going to next
+    const now = new Date();
+    const expectedMonth = now.getMonth() === 11 ? 1 : now.getMonth() + 2; // Next month (1-indexed)
+
+    // Verify the time entry update API call succeeds with correct date
+    const updateResponse = await page.waitForResponse(async (response) => {
+        return (
+            response.status() === 200 &&
+            response.request().method() === 'PUT' &&
+            (await response.headerValue('Content-Type')) === 'application/json'
+        );
+    });
+    const updateBody = await updateResponse.json();
+    expect(updateBody.data.end).toBeTruthy();
+    // Verify the day was changed to 20th
+    expect(getDayFromTimestamp(updateBody.data.end)).toBe(20);
+    // Verify the month is the next month
+    expect(getMonthFromTimestamp(updateBody.data.end)).toBe(expectedMonth);
+});
+
+test('test that date picker displays date in organization date format', async ({ page }) => {
+    // First change the organization date format to DD/MM/YYYY
+    await goToOrganizationSettings(page);
+    await page.getByLabel('Date Format').click();
+    await page.getByRole('option', { name: 'DD/MM/YYYY' }).click();
+    await Promise.all([
+        page
+            .locator('form')
+            .filter({ hasText: 'Date Format' })
+            .getByRole('button', { name: 'Save' })
+            .click(),
+        page.waitForResponse(
+            async (response) =>
+                response.url().includes('/organizations/') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 200 &&
+                (await response.json()).data.date_format === 'slash-separated-dd-mm-yyyy'
+        ),
+    ]);
+
+    // Create a time entry and open the edit modal
+    await createBareTimeEntry(page, 'Date format test', '1h');
+    await goToTimeOverview(page);
+
+    const timeEntryRows = page.locator('[data-testid="time_entry_row"]');
+    const newTimeEntry = timeEntryRows.first();
+    await expect(newTimeEntry).toBeVisible();
+
+    // Open edit modal
+    const actionsDropdown = newTimeEntry
+        .getByRole('button', { name: 'Actions for the time entry' })
+        .first();
+    await actionsDropdown.click();
+    await page.getByTestId('time_entry_edit').click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+
+    // Verify the date picker shows the date in DD/MM/YYYY format
+    const datePicker = page
+        .getByRole('dialog')
+        .getByRole('button', { name: /^\d{2}\/\d{2}\/\d{4}$/ })
+        .first();
+    await expect(datePicker).toBeVisible();
+});
 
 // TODO: Test that project can be created in the time entry row
 

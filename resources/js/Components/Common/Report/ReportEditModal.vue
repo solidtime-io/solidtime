@@ -2,7 +2,7 @@
 import TextInput from '../../../packages/ui/src/Input/TextInput.vue';
 import SecondaryButton from '../../../packages/ui/src/Buttons/SecondaryButton.vue';
 import DialogModal from '@/packages/ui/src/DialogModal.vue';
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import PrimaryButton from '../../../packages/ui/src/Buttons/PrimaryButton.vue';
 import InputLabel from '../../../packages/ui/src/Input/InputLabel.vue';
 import type { UpdateReportBody } from '@/packages/api/src';
@@ -13,6 +13,7 @@ import { Checkbox } from '@/packages/ui/src';
 import DatePicker from '@/packages/ui/src/Input/DatePicker.vue';
 import { useNotificationsStore } from '@/utils/notification';
 import type { Report } from '@/packages/api/src';
+import { getDayJsInstance, getLocalizedDayJs } from '@/packages/ui/src/utils/time';
 
 const show = defineModel('show', { default: false });
 const saving = ref(false);
@@ -61,9 +62,21 @@ watch(
     }
 );
 
+// Intermediate local variable for DatePicker (converts between UTC and localized)
+const localPublicUntil = computed({
+    get: () => {
+        if (!report.value.public_until) return null;
+        return getLocalizedDayJs(report.value.public_until).format();
+    },
+    set: (value: string | null) => {
+        report.value.public_until = value ? getDayJsInstance()(value).utc().format() : null;
+    },
+});
+
 const { handleApiRequestNotifications } = useNotificationsStore();
 
 async function submit() {
+    // public_until is already in UTC format from the computed setter
     await handleApiRequestNotifications(
         () => updateReportMutation.mutateAsync(report.value),
         'Success',
@@ -111,7 +124,7 @@ async function submit() {
                     </div>
                     <div v-if="report.is_public" class="flex items-center space-x-4">
                         <InputLabel for="public_until" value="Expires at" />
-                        <DatePicker id="public_until"></DatePicker>
+                        <DatePicker v-model="localPublicUntil"></DatePicker>
                     </div>
                 </div>
             </div>

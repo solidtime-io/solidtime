@@ -19,6 +19,10 @@ import {
 // Each test registers a new user and creates test data, which needs more time
 test.describe.configure({ timeout: 60000 });
 
+// Date picker button name patterns for different date formats
+const DATE_PICKER_BUTTON_PATTERN =
+    /^Pick a date$|^\d{4}-\d{2}-\d{2}$|^\d{2}\/\d{2}\/\d{4}$|^\d{2}\.\d{2}\.\d{4}$/;
+
 // ──────────────────────────────────────────────────
 // Shared Report Lifecycle Tests
 // ──────────────────────────────────────────────────
@@ -201,6 +205,128 @@ test('test that shared report with No Task filter shows entries without a task',
     await page.goto(shareableLink);
     await expect(page.getByText('Reporting')).toBeVisible();
     await expect(page.getByText('Total')).toBeVisible();
+});
+
+// ──────────────────────────────────────────────────
+// Report Date Picker Tests
+// ──────────────────────────────────────────────────
+
+test('test that creating a report with an expiration date works', async ({ page }) => {
+    const projectName = 'DatePickerProj ' + Math.floor(Math.random() * 10000);
+    const reportName = 'DatePickerReport ' + Math.floor(Math.random() * 10000);
+
+    await createProject(page, projectName);
+    await createTimeEntryWithProject(page, projectName, '1h');
+
+    await goToReporting(page);
+    await expect(page.getByTestId('reporting_view').getByText(projectName)).toBeVisible();
+
+    // Open the save report modal
+    await page.getByRole('button', { name: 'Save Report' }).click();
+    await page.getByLabel('Name').fill(reportName);
+
+    // The "Public" checkbox should be checked by default, showing the date picker
+    const datePicker = page
+        .getByRole('dialog')
+        .getByRole('button', { name: DATE_PICKER_BUTTON_PATTERN });
+    await expect(datePicker).toBeVisible();
+    await datePicker.click();
+
+    // Select a date in the next month
+    const calendarGrid = page.getByRole('grid');
+    await expect(calendarGrid).toBeVisible({ timeout: 5000 });
+    await page.getByRole('button', { name: /Next/i }).click();
+    await page.getByRole('gridcell').filter({ hasText: /^15$/ }).first().click();
+
+    // Wait for the calendar to close
+    await expect(calendarGrid).not.toBeVisible();
+
+    // Create the report and verify it includes the public_until date
+    const [response] = await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/reports') &&
+                response.request().method() === 'POST' &&
+                response.status() === 201
+        ),
+        page.getByRole('dialog').getByRole('button', { name: 'Create Report' }).click(),
+    ]);
+    const responseBody = await response.json();
+    expect(responseBody.data.public_until).toBeTruthy();
+});
+
+test('test that editing a report to make it public with expiration date works', async ({
+    page,
+}) => {
+    const projectName = 'EditDateProj ' + Math.floor(Math.random() * 10000);
+    const reportName = 'EditDateReport ' + Math.floor(Math.random() * 10000);
+
+    await createProject(page, projectName);
+    await createTimeEntryWithProject(page, projectName, '1h');
+
+    await goToReporting(page);
+    await expect(page.getByTestId('reporting_view').getByText(projectName)).toBeVisible();
+
+    // Open the save report modal and create a private report
+    await page.getByRole('button', { name: 'Save Report' }).click();
+    await page.getByLabel('Name').fill(reportName);
+
+    // Uncheck "Public" to create a private report
+    await page.getByLabel('Public').click();
+
+    await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/reports') &&
+                response.request().method() === 'POST' &&
+                response.status() === 201
+        ),
+        page.getByRole('dialog').getByRole('button', { name: 'Create Report' }).click(),
+    ]);
+
+    // Go to shared reports and edit
+    await goToReportingShared(page);
+    await expect(page.getByText(reportName)).toBeVisible();
+    await expect(page.getByText('Private')).toBeVisible();
+
+    // Click more options and edit
+    await page
+        .getByRole('button', { name: new RegExp('Actions for Project ' + reportName) })
+        .click();
+    await page.getByRole('menuitem', { name: /^Edit Report/ }).click();
+
+    // Check "Public" to make it public - this should show the date picker
+    await page.getByLabel('Public').click();
+
+    // The date picker should now be visible
+    const datePicker = page
+        .getByRole('dialog')
+        .getByRole('button', { name: DATE_PICKER_BUTTON_PATTERN });
+    await expect(datePicker).toBeVisible();
+    await datePicker.click();
+
+    // Select a date in the next month
+    const calendarGrid = page.getByRole('grid');
+    await expect(calendarGrid).toBeVisible({ timeout: 5000 });
+    await page.getByRole('button', { name: /Next/i }).click();
+    await page.getByRole('gridcell').filter({ hasText: /^20$/ }).first().click();
+
+    // Wait for the calendar to close
+    await expect(calendarGrid).not.toBeVisible();
+
+    // Update the report and verify it includes the public_until date
+    const [response] = await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/reports/') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 200
+        ),
+        page.getByRole('button', { name: 'Update Report' }).click(),
+    ]);
+    const responseBody = await response.json();
+    expect(responseBody.data.public_until).toBeTruthy();
+    expect(responseBody.data.is_public).toBe(true);
 });
 
 test('test that shared report with No Client filter shows entries without a client', async ({

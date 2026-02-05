@@ -1,11 +1,21 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
-import { getDayJsInstance, getLocalizedDayJs } from '@/packages/ui/src/utils/time';
-import { twMerge } from 'tailwind-merge';
+import { computed, inject, ref, type ComputedRef } from 'vue';
+import {
+    getLocalizedDayJs,
+    formatDate,
+    firstDayIndex,
+    type WeekStartDay,
+} from '@/packages/ui/src/utils/time';
+import { Popover, PopoverContent, PopoverTrigger } from '@/packages/ui/src/popover';
+import { Calendar } from '@/Components/ui/calendar';
+import { Button } from '@/Components/ui/button';
+import { CalendarIcon } from 'lucide-vue-next';
+import { parseDate, type DateValue } from '@internationalized/date';
+import type { Organization } from '@/packages/api/src';
 
 const props = defineProps<{
-    class?: string;
     tabindex?: string;
+    class?: string;
 }>();
 
 // This has to be a localized timestamp, not UTC
@@ -13,61 +23,64 @@ const model = defineModel<string | null>({
     default: null,
 });
 
-const tempDate = ref(getLocalizedDayJs(model.value).format('YYYY-MM-DD'));
+const emit = defineEmits(['changed']);
 
-watch(model, (value) => {
-    tempDate.value = getLocalizedDayJs(value).format('YYYY-MM-DD');
+const open = ref(false);
+
+const organization = inject<ComputedRef<Organization>>('organization');
+
+const weekStartsOn = computed((): WeekStartDay => firstDayIndex.value as WeekStartDay);
+
+const dateString = computed(() => {
+    if (!model.value) return null;
+    return getLocalizedDayJs(model.value).format('YYYY-MM-DD');
 });
 
-function updateDate(event: Event) {
-    const target = event.target as HTMLInputElement;
-    const newValue = target.value;
-    const newDate = getDayJsInstance()(newValue);
-    if (newDate.isValid()) {
-        model.value = getLocalizedDayJs(model.value)
-            .set('year', newDate.year())
-            .set('month', newDate.month())
-            .set('date', newDate.date())
-            .format();
-        emit('changed', model.value);
-    }
+const calendarDate = computed(() => {
+    if (!dateString.value) return undefined;
+    return parseDate(dateString.value);
+});
+
+const displayDate = computed(() => {
+    if (!dateString.value) return '';
+    return formatDate(dateString.value, organization?.value?.date_format);
+});
+
+function handleDateSelect(newDate: DateValue | undefined) {
+    if (!newDate) return;
+    // If model.value is null, start from current date/time
+    const baseDate = model.value ? getLocalizedDayJs(model.value) : getLocalizedDayJs();
+    const newValue = baseDate
+        .set('year', newDate.year)
+        .set('month', newDate.month - 1) // CalendarDate months are 1-indexed, dayjs is 0-indexed
+        .set('date', newDate.day)
+        .format();
+    model.value = newValue;
+    emit('changed', newValue);
+    open.value = false;
 }
-
-const datePicker = ref<HTMLInputElement | null>(null);
-
-function updateTempValue(event: Event) {
-    const target = event.target as HTMLInputElement;
-    tempDate.value = target.value;
-}
-
-const emit = defineEmits(['changed']);
 </script>
 
 <template>
-    <div class="flex items-center text-text-secondary">
-        <input
-            id="start"
-            ref="datePicker"
-            :tabindex="tabindex"
-            :class="
-                twMerge(
-                    'bg-input-background border text-text-primary border-input-border focus-visible:outline-0 focus-visible:border-input-border-active focus-visible:ring-0 rounded-md',
-                    props.class
-                )
-            "
-            type="date"
-            name="trip-start"
-            :value="tempDate"
-            @change="updateTempValue"
-            @blur="updateDate"
-            @keydown.enter="updateDate" />
+    <div class="w-full">
+        <Popover v-model:open="open">
+            <PopoverTrigger as-child>
+                <Button
+                    variant="input"
+                    size="sm"
+                    :tabindex="tabindex"
+                    :class="['w-full px-2 gap-1.5', props.class]">
+                    <CalendarIcon class="!size-3 text-muted-foreground" />
+                    <span>{{ displayDate || 'Pick a date' }}</span>
+                </Button>
+            </PopoverTrigger>
+            <PopoverContent class="w-auto p-0" align="center">
+                <Calendar
+                    mode="single"
+                    :model-value="calendarDate"
+                    :week-starts-on="weekStartsOn"
+                    @update:model-value="handleDateSelect" />
+            </PopoverContent>
+        </Popover>
     </div>
 </template>
-
-<style scoped>
-input::-webkit-calendar-picker-indicator {
-    filter: invert(1);
-
-    opacity: 0.2;
-}
-</style>

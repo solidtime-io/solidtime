@@ -235,22 +235,22 @@ const billableProxy = computed({
                 </div>
                 <div class="">
                     <InputLabel>Start</InputLabel>
-                    <div class="flex flex-col items-center space-y-2 mt-1">
-                        <TimePickerSimple v-model="localStart" size="large"></TimePickerSimple>
-                        <DatePicker
+                    <div class="flex flex-col items-center space-y-2 mt-1 w-28 mx-auto">
+                        <TimePickerSimple
                             v-model="localStart"
-                            tabindex="1"
-                            class="text-xs text-text-tertiary max-w-28 px-1.5 py-1.5"></DatePicker>
+                            class="w-full"
+                            size="large"></TimePickerSimple>
+                        <DatePicker v-model="localStart" class="w-full" tabindex="1"></DatePicker>
                     </div>
                 </div>
                 <div class="">
                     <InputLabel>End</InputLabel>
-                    <div class="flex flex-col items-center space-y-2 mt-1">
-                        <TimePickerSimple v-model="localEnd" size="large"></TimePickerSimple>
-                        <DatePicker
+                    <div class="flex flex-col items-center space-y-2 mt-1 w-28 mx-auto">
+                        <TimePickerSimple
                             v-model="localEnd"
-                            tabindex="1"
-                            class="text-xs text-text-tertiary max-w-28 px-1.5 py-1.5"></DatePicker>
+                            class="w-full"
+                            size="large"></TimePickerSimple>
+                        <DatePicker v-model="localEnd" class="w-full" tabindex="1"></DatePicker>
                     </div>
                 </div>
             </div>
