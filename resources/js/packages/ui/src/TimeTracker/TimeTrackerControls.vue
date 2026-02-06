@@ -251,6 +251,7 @@ useSelectEvents(
                     <TimeTrackerProjectTaskDropdown
                         v-model:project="currentTimeEntry.project_id"
                         v-model:task="currentTimeEntry.task_id"
+                        variant="outline"
                         :create-client
                         :can-create-project
                         :clients

@@ -16,7 +16,6 @@ import type {
     CreateTimeEntryBody,
 } from '@/packages/api/src';
 import TagDropdown from '@/packages/ui/src/Tag/TagDropdown.vue';
-import { Badge } from '@/packages/ui/src';
 import BillableIcon from '@/packages/ui/src/Icons/BillableIcon.vue';
 import {
     Select,
@@ -25,6 +24,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/Components/ui/select';
+import { Button } from '@/Components/ui/button';
 import DatePicker from '@/packages/ui/src/Input/DatePicker.vue';
 import DurationHumanInput from '@/packages/ui/src/Input/DurationHumanInput.vue';
 
@@ -159,63 +159,53 @@ const billableProxy = computed({
                         @keydown.enter="submit" />
                 </div>
             </div>
-            <div class="sm:flex justify-between items-end space-y-2 sm:space-y-0 pt-4 sm:space-x-4">
-                <div class="flex w-full items-center space-x-2 justify-between">
-                    <div class="flex-1 min-w-0">
-                        <TimeTrackerProjectTaskDropdown
-                            v-model:project="timeEntry.project_id"
-                            v-model:task="timeEntry.task_id"
-                            :clients
-                            :create-project
-                            :create-client
-                            :can-create-project
-                            :currency
-                            size="xlarge"
-                            class="bg-input-background"
-                            :projects="projects"
-                            :tasks="tasks"
-                            :enable-estimated-time="
-                                enableEstimatedTime
-                            "></TimeTrackerProjectTaskDropdown>
-                    </div>
-                    <div class="flex items-center space-x-2">
-                        <div class="flex-col">
-                            <TagDropdown v-model="timeEntry.tags" :create-tag :tags="tags">
-                                <template #trigger>
-                                    <Badge class="bg-input-background" tag="button" size="xlarge">
-                                        <TagIcon
-                                            v-if="timeEntry.tags.length === 0"
-                                            class="w-4"></TagIcon>
-                                        <div
-                                            v-else
-                                            class="bg-accent-300/20 w-5 h-5 font-medium rounded flex items-center transition justify-center">
-                                            {{ timeEntry.tags.length }}
-                                        </div>
-                                        <span>Tags</span>
-                                    </Badge>
-                                </template>
-                            </TagDropdown>
-                        </div>
-                        <div class="flex-col">
-                            <Select v-model="billableProxy">
-                                <SelectTrigger size="small" :show-chevron="false">
-                                    <SelectValue class="flex items-center gap-2">
-                                        <BillableIcon class="h-4 text-icon-default" />
-                                        <span>{{
-                                            timeEntry.billable ? 'Billable' : 'Non-Billable'
-                                        }}</span>
-                                    </SelectValue>
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="true">Billable</SelectItem>
-                                    <SelectItem value="false">Non Billable</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </div>
+            <div class="flex flex-col sm:flex-row sm:items-end gap-2 sm:gap-4 pt-4">
+                <div class="flex-1 min-w-0">
+                    <TimeTrackerProjectTaskDropdown
+                        v-model:project="timeEntry.project_id"
+                        v-model:task="timeEntry.task_id"
+                        variant="input"
+                        :clients
+                        :create-project
+                        :create-client
+                        :can-create-project
+                        :currency
+                        :projects="projects"
+                        :tasks="tasks"
+                        :enable-estimated-time="enableEstimatedTime" />
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                    <TagDropdown
+                        v-model="timeEntry.tags"
+                        :create-tag
+                        :tags="tags"
+                        :show-no-tag-option="false">
+                        <template #trigger>
+                            <Button variant="input" size="sm">
+                                <TagIcon class="h-4 text-icon-default" />
+                                <span>{{
+                                    timeEntry.tags.length === 0
+                                        ? 'Tags'
+                                        : `${timeEntry.tags.length} Tag${timeEntry.tags.length > 1 ? 's' : ''}`
+                                }}</span>
+                            </Button>
+                        </template>
+                    </TagDropdown>
+                    <Select v-model="billableProxy">
+                        <SelectTrigger size="small" :show-chevron="false">
+                            <SelectValue class="flex items-center gap-2">
+                                <BillableIcon class="h-4 text-icon-default" />
+                                <span>{{ timeEntry.billable ? 'Billable' : 'Non-Billable' }}</span>
+                            </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="true">Billable</SelectItem>
+                            <SelectItem value="false">Non Billable</SelectItem>
+                        </SelectContent>
+                    </Select>
                 </div>
             </div>
-            <div class="flex pt-4 space-x-4">
+            <div class="flex flex-col sm:flex-row gap-4 pt-4">
                 <div class="flex-1">
                     <InputLabel>Duration</InputLabel>
                     <div class="space-y-2 mt-1 flex flex-col">
@@ -225,32 +215,37 @@ const billableProxy = computed({
                             name="Duration"></DurationHumanInput>
                         <div class="text-sm flex space-x-1">
                             <InformationCircleIcon
-                                class="w-4 text-text-quaternary"></InformationCircleIcon>
+                                class="w-4 shrink-0 text-text-quaternary"></InformationCircleIcon>
                             <span class="text-text-secondary text-xs">
-                                You can type natural language here f.e.
+                                You can type natural language like
                                 <span class="font-semibold"> 2h 30m</span>
                             </span>
                         </div>
                     </div>
                 </div>
-                <div class="">
-                    <InputLabel>Start</InputLabel>
-                    <div class="flex flex-col items-center space-y-2 mt-1 w-28 mx-auto">
-                        <TimePickerSimple
-                            v-model="localStart"
-                            class="w-full"
-                            size="large"></TimePickerSimple>
-                        <DatePicker v-model="localStart" class="w-full" tabindex="1"></DatePicker>
+                <div class="grid grid-cols-2 sm:flex gap-4">
+                    <div>
+                        <InputLabel>Start</InputLabel>
+                        <div class="flex flex-col gap-2 mt-1 sm:w-28">
+                            <TimePickerSimple
+                                v-model="localStart"
+                                class="w-full"
+                                size="large"></TimePickerSimple>
+                            <DatePicker
+                                v-model="localStart"
+                                class="w-full"
+                                tabindex="1"></DatePicker>
+                        </div>
                     </div>
-                </div>
-                <div class="">
-                    <InputLabel>End</InputLabel>
-                    <div class="flex flex-col items-center space-y-2 mt-1 w-28 mx-auto">
-                        <TimePickerSimple
-                            v-model="localEnd"
-                            class="w-full"
-                            size="large"></TimePickerSimple>
-                        <DatePicker v-model="localEnd" class="w-full" tabindex="1"></DatePicker>
+                    <div>
+                        <InputLabel>End</InputLabel>
+                        <div class="flex flex-col gap-2 mt-1 sm:w-28">
+                            <TimePickerSimple
+                                v-model="localEnd"
+                                class="w-full"
+                                size="large"></TimePickerSimple>
+                            <DatePicker v-model="localEnd" class="w-full" tabindex="1"></DatePicker>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -21,8 +21,8 @@ const props = withDefaults(
 );
 
 const sizeClasses = {
-    small: 'text-xs px-2 sm:px-2.5 py-1 sm:py-1.5',
-    base: 'text-xs sm:text-sm px-2 sm:px-3 py-1 sm:py-2',
+    small: 'text-xs px-2.5 py-1.5',
+    base: 'text-xs sm:text-sm px-3 py-2',
 };
 </script>
 

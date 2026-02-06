@@ -14,7 +14,8 @@ import {
     type TimeEntry,
     type UpdateMultipleTimeEntriesChangeset,
 } from '@/packages/api/src';
-import { Badge, Checkbox } from '@/packages/ui/src';
+import { Checkbox } from '@/packages/ui/src';
+import { TagIcon } from '@heroicons/vue/20/solid';
 import {
     Select,
     SelectContent,
@@ -22,6 +23,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/Components/ui/select';
+import { Button } from '@/Components/ui/button';
 import TagDropdown from '@/packages/ui/src/Tag/TagDropdown.vue';
 import type { Tag, Task } from '@/packages/api/src';
 
@@ -159,6 +161,9 @@ watch(removeAllTags, () => {
                     <TimeTrackerProjectTaskDropdown
                         v-model:project="projectId"
                         v-model:task="taskId"
+                        variant="input"
+                        align="start"
+                        size="default"
                         :clients
                         :create-project
                         :create-client
@@ -167,7 +172,6 @@ watch(removeAllTags, () => {
                         class="mt-1"
                         empty-placeholder="Select project..."
                         allow-reset
-                        size="xlarge"
                         :enable-estimated-time
                         :projects="projects"
                         :tasks="tasks"></TimeTrackerProjectTaskDropdown>
@@ -175,14 +179,19 @@ watch(removeAllTags, () => {
                 <div class="space-y-2">
                     <InputLabel for="project" value="Tag" />
                     <div class="flex space-x-5">
-                        <TagDropdown v-model="selectedTags" :create-tag :tags="tags">
+                        <TagDropdown
+                            v-model="selectedTags"
+                            :create-tag
+                            :tags="tags"
+                            :show-no-tag-option="false">
                             <template #trigger>
-                                <Badge :disabled="removeAllTags" tag="button" size="xlarge">
+                                <Button variant="input" :disabled="removeAllTags">
+                                    <TagIcon class="h-4 text-icon-default" />
                                     <span v-if="selectedTags.length > 0">
                                         Set {{ selectedTags.length }} tags
                                     </span>
-                                    <span v-else> Select Tags... </span>
-                                </Badge>
+                                    <span v-else>Select Tags...</span>
+                                </Button>
                             </template>
                         </TagDropdown>
                         <div class="flex items-center space-x-2">
@@ -195,7 +204,7 @@ watch(removeAllTags, () => {
                     <InputLabel for="project" value="Billable" />
                     <div class="flex">
                         <Select v-model="timeEntryBillable">
-                            <SelectTrigger size="small" :show-chevron="false">
+                            <SelectTrigger>
                                 <SelectValue>
                                     <span v-if="billable === undefined">Set billable status</span>
                                     <span v-else-if="billable === true">Billable</span>

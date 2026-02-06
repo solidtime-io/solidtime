@@ -119,7 +119,6 @@ function onSelectChange(checked: boolean) {
                             :can-create-project
                             :projects="projects"
                             :tasks="tasks"
-                            :show-badge-border="false"
                             :project="timeEntry.project_id"
                             :enable-estimated-time
                             :currency="currency"
@@ -136,8 +135,8 @@ function onSelectChange(checked: boolean) {
                         @changed="updateTimeEntryTags"></TimeEntryRowTagDropdown>
                     <BillableToggleButton
                         :model-value="timeEntry.billable"
-                        class="opacity-50 focus-visible:opacity-100 group-hover:opacity-100"
                         size="small"
+                        class="opacity-50 focus-visible:opacity-100 group-hover:opacity-100"
                         @changed="updateTimeEntryBillable"></BillableToggleButton>
                     <div class="flex-1">
                         <button
@@ -220,7 +219,6 @@ function onSelectChange(checked: boolean) {
                             :can-create-project
                             :projects="projects"
                             :tasks="tasks"
-                            :show-badge-border="false"
                             :project="timeEntry.project_id"
                             :enable-estimated-time
                             :currency="currency"
