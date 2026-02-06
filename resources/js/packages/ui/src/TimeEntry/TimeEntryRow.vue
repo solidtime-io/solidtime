@@ -131,7 +131,6 @@ async function handleDeleteTimeEntry() {
                         :clients
                         :projects="projects"
                         :tasks="tasks"
-                        :show-badge-border="false"
                         :project="timeEntry.project_id"
                         :currency="currency"
                         :enable-estimated-time
@@ -150,10 +149,10 @@ async function handleDeleteTimeEntry() {
                         @changed="updateTimeEntryTags"></TimeEntryRowTagDropdown>
                     <BillableToggleButton
                         :model-value="timeEntry.billable"
+                        size="small"
                         :class="
                             twMerge('opacity-50 group-hover:opacity-100 focus-visible:opacity-100')
                         "
-                        size="small"
                         @changed="updateTimeEntryBillable"></BillableToggleButton>
                     <div class="flex-1">
                         <TimeEntryRangeSelector
@@ -199,7 +198,6 @@ async function handleDeleteTimeEntry() {
                             :clients
                             :projects="projects"
                             :tasks="tasks"
-                            :show-badge-border="false"
                             :project="timeEntry.project_id"
                             :currency="currency"
                             :enable-estimated-time

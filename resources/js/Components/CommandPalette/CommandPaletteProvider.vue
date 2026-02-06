@@ -201,6 +201,7 @@ const firstProjectId = computed(() => projects.value[0]?.id ?? '');
             <TimeTrackerProjectTaskDropdown
                 v-model:project="currentTimeEntry.project_id"
                 v-model:task="currentTimeEntry.task_id"
+                variant="input"
                 :projects="projects"
                 :tasks="tasks"
                 :clients="activeClients"
@@ -209,7 +210,6 @@ const firstProjectId = computed(() => projects.value[0]?.id ?? '');
                 :can-create-project="canCreateProjects()"
                 :currency="getOrganizationCurrencyString()"
                 :enable-estimated-time="isAllowedToPerformPremiumAction()"
-                size="xlarge"
                 class="w-full" />
         </template>
         <template #footer>
@@ -225,6 +225,7 @@ const firstProjectId = computed(() => projects.value[0]?.id ?? '');
             <TimeTrackerProjectTaskDropdown
                 v-model:project="currentTimeEntry.project_id"
                 v-model:task="currentTimeEntry.task_id"
+                variant="input"
                 :projects="projects"
                 :tasks="tasks"
                 :clients="activeClients"
@@ -233,7 +234,6 @@ const firstProjectId = computed(() => projects.value[0]?.id ?? '');
                 :can-create-project="canCreateProjects()"
                 :currency="getOrganizationCurrencyString()"
                 :enable-estimated-time="isAllowedToPerformPremiumAction()"
-                size="xlarge"
                 class="w-full" />
         </template>
         <template #footer>
