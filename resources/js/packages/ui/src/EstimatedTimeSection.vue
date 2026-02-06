@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import DurationInput from '@/packages/ui/src/Input/DurationInput.vue';
+import EstimatedTimeInput from '@/packages/ui/src/Input/EstimatedTimeInput.vue';
 import { ClockIcon } from '@heroicons/vue/20/solid';
 import InputLabel from '@/packages/ui/src/Input/InputLabel.vue';
 
@@ -13,10 +13,14 @@ const emit = defineEmits(['submit']);
             <ClockIcon class="text-text-quaternary w-4"></ClockIcon>
             <InputLabel for="billable" value="Time Estimated" />
         </div>
-        <DurationInput
-            v-model="model"
-            class="max-w-[150px]"
-            @submit="emit('submit')"></DurationInput>
+        <EstimatedTimeInput v-model="model" @submit="emit('submit')"></EstimatedTimeInput>
+        <div class="flex items-center text-text-secondary text-xs pt-2 pl-1">
+            <span>
+                <span class="font-semibold">Info:</span>
+                You can type natural language like
+                <span class="font-semibold">2h 30m</span>
+            </span>
+        </div>
     </div>
 </template>
 

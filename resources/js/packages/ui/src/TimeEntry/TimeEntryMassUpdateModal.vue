@@ -14,8 +14,16 @@ import {
     type TimeEntry,
     type UpdateMultipleTimeEntriesChangeset,
 } from '@/packages/api/src';
-import { Badge, Checkbox } from '@/packages/ui/src';
-import SelectDropdown from '../Input/SelectDropdown.vue';
+import { Checkbox } from '@/packages/ui/src';
+import { TagIcon } from '@heroicons/vue/20/solid';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/Components/ui/select';
+import { Button } from '@/Components/ui/button';
 import TagDropdown from '@/packages/ui/src/Tag/TagDropdown.vue';
 import type { Tag, Task } from '@/packages/api/src';
 
@@ -126,7 +134,6 @@ watch(removeAllTags, () => {
         selectedTags.value = [];
     }
 });
-type SelectOption = { label: string; value: string };
 </script>
 
 <template>
@@ -154,6 +161,9 @@ type SelectOption = { label: string; value: string };
                     <TimeTrackerProjectTaskDropdown
                         v-model:project="projectId"
                         v-model:task="taskId"
+                        variant="input"
+                        align="start"
+                        size="default"
                         :clients
                         :create-project
                         :create-client
@@ -162,7 +172,6 @@ type SelectOption = { label: string; value: string };
                         class="mt-1"
                         empty-placeholder="Select project..."
                         allow-reset
-                        size="xlarge"
                         :enable-estimated-time
                         :projects="projects"
                         :tasks="tasks"></TimeTrackerProjectTaskDropdown>
@@ -170,14 +179,19 @@ type SelectOption = { label: string; value: string };
                 <div class="space-y-2">
                     <InputLabel for="project" value="Tag" />
                     <div class="flex space-x-5">
-                        <TagDropdown v-model="selectedTags" :create-tag :tags="tags">
+                        <TagDropdown
+                            v-model="selectedTags"
+                            :create-tag
+                            :tags="tags"
+                            :show-no-tag-option="false">
                             <template #trigger>
-                                <Badge :disabled="removeAllTags" tag="button" size="xlarge">
+                                <Button variant="input" :disabled="removeAllTags">
+                                    <TagIcon class="h-4 text-icon-default" />
                                     <span v-if="selectedTags.length > 0">
                                         Set {{ selectedTags.length }} tags
                                     </span>
-                                    <span v-else> Select Tags... </span>
-                                </Badge>
+                                    <span v-else>Select Tags...</span>
+                                </Button>
                             </template>
                         </TagDropdown>
                         <div class="flex items-center space-x-2">
@@ -189,32 +203,22 @@ type SelectOption = { label: string; value: string };
                 <div class="space-y-2">
                     <InputLabel for="project" value="Billable" />
                     <div class="flex">
-                        <SelectDropdown
-                            v-model="timeEntryBillable"
-                            :get-key-from-item="(item: SelectOption) => item.value"
-                            :get-name-for-item="(item: SelectOption) => item.label"
-                            :items="[
-                                {
-                                    label: 'Keep current billable status',
-                                    value: 'do-not-update',
-                                },
-                                {
-                                    label: 'Billable',
-                                    value: 'billable',
-                                },
-                                {
-                                    label: 'Non Billable',
-                                    value: 'non-billable',
-                                },
-                            ]">
-                            <template #trigger>
-                                <Badge tag="button" size="xlarge">
-                                    <span v-if="billable === undefined"> Set billable status </span>
-                                    <span v-else-if="billable === true"> Billable </span>
-                                    <span v-else> Non Billable </span></Badge
-                                >
-                            </template>
-                        </SelectDropdown>
+                        <Select v-model="timeEntryBillable">
+                            <SelectTrigger>
+                                <SelectValue>
+                                    <span v-if="billable === undefined">Set billable status</span>
+                                    <span v-else-if="billable === true">Billable</span>
+                                    <span v-else>Non Billable</span>
+                                </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="do-not-update">
+                                    Keep current billable status
+                                </SelectItem>
+                                <SelectItem value="billable">Billable</SelectItem>
+                                <SelectItem value="non-billable">Non Billable</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
                 </div>
             </div>

@@ -154,7 +154,7 @@ function closeAndFocusInput() {
                     v-model="currentTime"
                     placeholder="00:00:00"
                     data-testid="time_entry_time"
-                    class="w-[110px] lg:w-[130px] h-full text-text-primary py-2.5 rounded-lg border-border-secondary border text-center px-4 text-base lg:text-lg font-semibold bg-secondary border-none placeholder-text-tertiary focus:ring-0 transition"
+                    class="w-[110px] lg:w-[130px] h-full text-text-primary py-2.5 rounded-lg border-border-secondary border text-center px-4 text-base lg:text-lg font-semibold bg-card-background border-none placeholder-text-tertiary focus:ring-0 transition"
                     type="text"
                     @focusin="openModalOnTab"
                     @click="openModalOnClick"

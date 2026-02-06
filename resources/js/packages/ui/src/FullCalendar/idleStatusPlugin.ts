@@ -320,8 +320,8 @@ function getSlotDuration(calendarEl: HTMLElement): number {
     const secondTime = secondSlot.getAttribute('data-time');
 
     if (firstTime && secondTime) {
-        const [h1, m1] = firstTime.split(':').map(Number);
-        const [h2, m2] = secondTime.split(':').map(Number);
+        const [h1 = 0, m1 = 0] = firstTime.split(':').map(Number);
+        const [h2 = 0, m2 = 0] = secondTime.split(':').map(Number);
         const diff = h2 * 60 + m2 - (h1 * 60 + m1);
         if (diff > 0) return diff;
     }

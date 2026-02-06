@@ -102,7 +102,7 @@ class ChartController extends Controller
         $this->checkPermission($organization, 'charts:view:own');
         $user = $this->user();
 
-        $dailyTrackedHours = $dashboardService->getDailyTrackedHours($user, $organization, 60);
+        $dailyTrackedHours = $dashboardService->getDailyTrackedHours($user, $organization, 100);
 
         return response()->json($dailyTrackedHours);
     }

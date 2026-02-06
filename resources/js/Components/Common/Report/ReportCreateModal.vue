@@ -12,6 +12,8 @@ import { api } from '@/packages/api/src';
 import { Checkbox } from '@/packages/ui/src';
 import DatePicker from '@/packages/ui/src/Input/DatePicker.vue';
 import { useNotificationsStore } from '@/utils/notification';
+import { getDayJsInstance } from '@/packages/ui/src/utils/time';
+import { router } from '@inertiajs/vue3';
 
 const show = defineModel('show', { default: false });
 const saving = ref(false);
@@ -44,10 +46,14 @@ const report = ref({
 const { handleApiRequestNotifications } = useNotificationsStore();
 
 async function submit() {
+    const publicUntil = report.value.public_until
+        ? getDayJsInstance()(report.value.public_until).utc().format()
+        : null;
     await handleApiRequestNotifications(
         () =>
             createReportMutation.mutateAsync({
                 ...report.value,
+                public_until: publicUntil,
                 properties: { ...props.properties },
             }),
         'Success',
@@ -60,6 +66,7 @@ async function submit() {
                 public_until: null,
             };
             show.value = false;
+            router.visit(route('reporting.shared'));
         }
     );
 }
@@ -97,7 +104,7 @@ async function submit() {
                             <InputLabel for="public_until" value="Expires at" />
                             <div class="text-text-tertiary font-medium">(optional)</div>
                         </div>
-                        <DatePicker id="public_until"></DatePicker>
+                        <DatePicker v-model="report.public_until"></DatePicker>
                     </div>
                 </div>
             </div>

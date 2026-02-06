@@ -23,11 +23,11 @@ export const colors = [
 ];
 
 export function getRandomColor() {
-    return colors[Math.floor(Math.random() * colors.length)];
+    return colors[Math.floor(Math.random() * colors.length)]!;
 }
 
 export function getRandomColorWithSeed(seed: string) {
     const pseudoRandom = new Prando(seed);
     const index = pseudoRandom.nextInt(0, colors.length - 1);
-    return colors[index];
+    return colors[index]!;
 }

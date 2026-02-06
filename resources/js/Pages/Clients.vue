@@ -4,25 +4,20 @@ import AppLayout from '@/Layouts/AppLayout.vue';
 import { PlusIcon } from '@heroicons/vue/16/solid';
 import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
 import { UserCircleIcon } from '@heroicons/vue/20/solid';
-import { computed, onMounted, ref } from 'vue';
-import { useClientsStore } from '@/utils/useClients';
+import { computed, ref } from 'vue';
+import { useClientsQuery } from '@/utils/useClientsQuery';
 import ClientTable from '@/Components/Common/Client/ClientTable.vue';
 import ClientCreateModal from '@/Components/Common/Client/ClientCreateModal.vue';
 import PageTitle from '@/Components/Common/PageTitle.vue';
 import { canCreateClients } from '@/utils/permissions';
 import TabBarItem from '@/Components/Common/TabBar/TabBarItem.vue';
 import TabBar from '@/Components/Common/TabBar/TabBar.vue';
-import { storeToRefs } from 'pinia';
 
-onMounted(() => {
-    useClientsStore().fetchClients();
-});
+const { clients } = useClientsQuery();
 
 const activeTab = ref<'active' | 'archived'>('active');
 
 const createClient = ref(false);
-
-const { clients } = storeToRefs(useClientsStore());
 
 const shownClients = computed(() => {
     return clients.value.filter((client) => {

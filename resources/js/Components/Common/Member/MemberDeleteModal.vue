@@ -2,7 +2,7 @@
 import type { Member } from '@/packages/api/src';
 import { api } from '@/packages/api/src';
 import { useForm } from '@tanstack/vue-form';
-import { useMutation } from '@tanstack/vue-query';
+import { useMutation, useQueryClient } from '@tanstack/vue-query';
 import Modal from '@/packages/ui/src/Modal.vue';
 import DangerButton from '@/packages/ui/src/Buttons/DangerButton.vue';
 import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
@@ -11,7 +11,6 @@ import { useNotificationsStore } from '@/utils/notification';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import InputLabel from '@/packages/ui/src/Input/InputLabel.vue';
 import InputError from '@/packages/ui/src/Input/InputError.vue';
-import { useMembersStore } from '@/utils/useMembers';
 
 const props = defineProps<{
     show: boolean;
@@ -23,6 +22,7 @@ const emit = defineEmits<{
 }>();
 
 const { handleApiRequestNotifications } = useNotificationsStore();
+const queryClient = useQueryClient();
 
 const deleteMutation = useMutation({
     mutationFn: async () => {
@@ -43,7 +43,7 @@ const deleteMutation = useMutation({
     },
     onSuccess: () => {
         close();
-        useMembersStore().fetchMembers();
+        queryClient.invalidateQueries({ queryKey: ['members'] });
     },
 });
 

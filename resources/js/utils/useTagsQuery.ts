@@ -1,0 +1,34 @@
+import { useQuery, useQueryClient } from '@tanstack/vue-query';
+import { api } from '@/packages/api/src';
+import { getCurrentOrganizationId } from '@/utils/useUser';
+import type { Tag } from '@/packages/api/src';
+import { computed } from 'vue';
+
+export function useTagsQuery() {
+    const queryClient = useQueryClient();
+
+    const query = useQuery({
+        queryKey: ['tags'],
+        queryFn: async () => {
+            const organizationId = getCurrentOrganizationId();
+            if (!organizationId) throw new Error('No organization');
+            return api.getTags({
+                params: { organization: organizationId },
+            });
+        },
+        enabled: () => !!getCurrentOrganizationId(),
+        staleTime: 1000 * 30, // 30 seconds
+    });
+
+    const tags = computed<Tag[]>(() => query.data.value?.data ?? []);
+
+    const invalidateTags = () => {
+        queryClient.invalidateQueries({ queryKey: ['tags'] });
+    };
+
+    return {
+        ...query,
+        tags,
+        invalidateTags,
+    };
+}

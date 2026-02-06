@@ -15,14 +15,12 @@ import MemberMakePlaceholderModal from '@/Components/Common/Member/MemberMakePla
 import MemberDeleteModal from '@/Components/Common/Member/MemberDeleteModal.vue';
 import { capitalizeFirstLetter } from '../../../utils/format';
 import { formatCents } from '../../../packages/ui/src/utils/money';
-import { useMembersStore } from '@/utils/useMembers';
 
 const props = defineProps<{
     member: Member;
 }>();
 
 const organization = inject<ComputedRef<Organization>>('organization');
-const memberStore = useMembersStore();
 
 const showEditMemberModal = ref(false);
 const showMergeMemberModal = ref(false);
@@ -31,7 +29,6 @@ const showDeleteMemberModal = ref(false);
 
 function removeMember() {
     showDeleteMemberModal.value = true;
-    memberStore.fetchMembers();
 }
 
 async function invitePlaceholder(id: string) {

@@ -1,7 +1,11 @@
 <script setup lang="ts">
-import SelectDropdown from '@/packages/ui/src/Input/SelectDropdown.vue';
-import Badge from '@/packages/ui/src/Badge.vue';
-import { ChevronDownIcon } from '@heroicons/vue/20/solid';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/Components/ui/select';
 import type { Role } from '@/types/jetstream';
 import { usePage } from '@inertiajs/vue3';
 
@@ -13,38 +17,26 @@ const page = usePage<{
     availableRoles: Role[];
 }>();
 
-function getKeyFromItem(item: Role) {
-    return item.key;
-}
-
-function getNameFromItem(item: Role) {
-    return item.name;
-}
-
 function getNameForKey(key: string | undefined) {
-    const item = page.props.availableRoles.find((item) => getKeyFromItem(item) === key);
+    const item = page.props.availableRoles.find((item) => item.key === key);
     if (item) {
-        return getNameFromItem(item);
+        return item.name;
     }
     return '';
 }
 </script>
 
 <template>
-    <SelectDropdown
-        v-model="model"
-        :get-key-from-item="getKeyFromItem"
-        :get-name-for-item="getNameFromItem"
-        :items="page.props.availableRoles">
-        <template #trigger>
-            <Badge size="xlarge" class="bg-input-background cursor-pointer">
-                <span>
-                    {{ getNameForKey(model) }}
-                </span>
-                <ChevronDownIcon class="text-text-secondary w-5"></ChevronDownIcon>
-            </Badge>
-        </template>
-    </SelectDropdown>
+    <Select v-model="model">
+        <SelectTrigger>
+            <SelectValue>{{ getNameForKey(model) }}</SelectValue>
+        </SelectTrigger>
+        <SelectContent>
+            <SelectItem v-for="role in page.props.availableRoles" :key="role.key" :value="role.key">
+                {{ role.name }}
+            </SelectItem>
+        </SelectContent>
+    </Select>
 </template>
 
 <style scoped></style>

@@ -1,9 +1,8 @@
-import { expect, Page } from '@playwright/test';
+import { expect } from '@playwright/test';
+import type { Page } from '@playwright/test';
 import { PLAYWRIGHT_BASE_URL } from '../playwright/config';
 import { test } from '../playwright/fixtures';
 import { formatCentsWithOrganizationDefaults } from './utils/money';
-import type { CurrencyFormat } from '../resources/js/packages/ui/src/utils/money';
-import { NumberFormat } from '@/packages/ui/src/utils/number';
 
 async function goToProjectsOverview(page: Page) {
     await page.goto(PLAYWRIGHT_BASE_URL + '/projects');
@@ -18,15 +17,23 @@ test('test that updating project member billable rate works for existing time en
     await page.getByRole('button', { name: 'Create Project' }).click();
     await page.getByLabel('Project Name').fill(newProjectName);
 
-    await page.getByRole('button', { name: 'Create Project' }).click();
-    await expect(page.getByText(newProjectName)).toBeVisible();
+    await Promise.all([
+        page.getByRole('button', { name: 'Create Project' }).click(),
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/projects') &&
+                response.request().method() === 'POST' &&
+                response.status() === 201
+        ),
+    ]);
+    await expect(page.getByText(newProjectName)).toBeVisible({ timeout: 10000 });
 
     await page.getByText(newProjectName).click();
     await page.getByRole('button', { name: 'Add Member' }).click();
 
     await expect(page.getByText('Add Project Member').first()).toBeVisible();
-    await page.getByRole('button', { name: 'Select a member' }).click();
-    await page.keyboard.press('Enter');
+    await page.getByRole('button', { name: 'Select a member...' }).click();
+    await page.getByRole('option').first().click();
     await page.getByRole('button', { name: 'Add Project Member' }).click();
 
     await page

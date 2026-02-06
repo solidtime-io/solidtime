@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import MultiselectDropdown from '@/packages/ui/src/Input/MultiselectDropdown.vue';
-import { storeToRefs } from 'pinia';
 import type { Client } from '@/packages/api/src';
-import { useClientsStore } from '@/utils/useClients';
+import { useClientsQuery } from '@/utils/useClientsQuery';
 
-const clientsStore = useClientsStore();
-const { clients } = storeToRefs(clientsStore);
+const { clients } = useClientsQuery();
 
 function getKeyFromItem(item: Client) {
     return item.id;
@@ -14,6 +12,10 @@ function getKeyFromItem(item: Client) {
 function getNameForItem(item: Client) {
     return item.name;
 }
+
+const emit = defineEmits<{
+    submit: [];
+}>();
 </script>
 
 <template>
@@ -21,7 +23,9 @@ function getNameForItem(item: Client) {
         search-placeholder="Search for a Client..."
         :items="clients"
         :get-key-from-item="getKeyFromItem"
-        :get-name-for-item="getNameForItem">
+        :get-name-for-item="getNameForItem"
+        no-item-label="No Client"
+        @submit="emit('submit')">
         <template #trigger>
             <slot name="trigger"></slot>
         </template>

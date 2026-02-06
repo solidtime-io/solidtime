@@ -207,7 +207,7 @@ useSelectEvents(
 <template>
     <div class="flex items-center relative @container" data-testid="dashboard_timer">
         <div
-            class="flex flex-col @2xl:flex-row w-full justify-between rounded-lg bg-secondary border-card-border border transition shadow-card">
+            class="flex flex-col @2xl:flex-row w-full justify-between rounded-lg bg-card-background border-card-border border transition shadow-card">
             <div class="flex flex-1 items-center pr-6 relative">
                 <input
                     ref="currentTimeEntryDescriptionInput"
@@ -222,10 +222,10 @@ useSelectEvents(
                 <div
                     v-if="showDropdown && filteredRecentlyTrackedTimeEntries.length > 0"
                     ref="floating"
-                    class="z-50 w-full max-w-2xl"
+                    class="z-50 w-[min(640px,100vw-2rem)]"
                     :style="floatingStyles">
                     <div
-                        class="rounded-lg w-full fixed min-w-xl top-0 left-0 border border-card-border overflow-none shadow-dropdown bg-card-background">
+                        class="rounded-lg w-full border border-card-border overflow-hidden shadow-dropdown bg-card-background">
                         <div
                             class="text-text-tertiary text-xs font-semibold border-b border-border-tertiary px-2 py-1.5">
                             Recently Tracked Time Entries
@@ -251,6 +251,7 @@ useSelectEvents(
                     <TimeTrackerProjectTaskDropdown
                         v-model:project="currentTimeEntry.project_id"
                         v-model:task="currentTimeEntry.task_id"
+                        variant="outline"
                         :create-client
                         :can-create-project
                         :clients

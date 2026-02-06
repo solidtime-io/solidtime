@@ -1,32 +1,13 @@
 import { defineStore } from 'pinia';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import { api } from '@/packages/api/src';
-import { reactive, ref } from 'vue';
-import type { CreateTaskBody, Task, UpdateTaskBody } from '@/packages/api/src';
+import type { CreateTaskBody, UpdateTaskBody } from '@/packages/api/src';
 import { useNotificationsStore } from '@/utils/notification';
+import { useQueryClient } from '@tanstack/vue-query';
 
 export const useTasksStore = defineStore('tasks', () => {
-    const tasks = ref<Task[]>(reactive([]));
     const { handleApiRequestNotifications } = useNotificationsStore();
-
-    async function fetchTasks() {
-        const organizationId = getCurrentOrganizationId();
-        if (organizationId) {
-            const tasksResponse = await handleApiRequestNotifications(() =>
-                api.getTasks({
-                    params: {
-                        organization: organizationId,
-                    },
-                    queries: {
-                        done: 'all',
-                    },
-                })
-            );
-            if (tasksResponse?.data) {
-                tasks.value = tasksResponse.data;
-            }
-        }
-    }
+    const queryClient = useQueryClient();
 
     async function updateTask(taskId: string, taskBody: UpdateTaskBody) {
         const organizationId = getCurrentOrganizationId();
@@ -42,7 +23,7 @@ export const useTasksStore = defineStore('tasks', () => {
                 'Task updated successfully',
                 'Failed to update task'
             );
-            await fetchTasks();
+            queryClient.invalidateQueries({ queryKey: ['tasks'] });
         }
     }
 
@@ -59,7 +40,7 @@ export const useTasksStore = defineStore('tasks', () => {
                 'Task created successfully',
                 'Failed to create task'
             );
-            await fetchTasks();
+            queryClient.invalidateQueries({ queryKey: ['tasks'] });
         }
     }
 
@@ -77,13 +58,11 @@ export const useTasksStore = defineStore('tasks', () => {
                 'Task deleted successfully',
                 'Failed to delete task'
             );
-            await fetchTasks();
+            queryClient.invalidateQueries({ queryKey: ['tasks'] });
         }
     }
 
     return {
-        tasks,
-        fetchTasks,
         updateTask,
         createTask,
         deleteTask,

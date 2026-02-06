@@ -3,8 +3,7 @@ import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
 import { FolderPlusIcon } from '@heroicons/vue/24/solid';
 import { PlusIcon } from '@heroicons/vue/16/solid';
 import { ref } from 'vue';
-import { storeToRefs } from 'pinia';
-import { useTagsStore } from '@/utils/useTags';
+import { useTagsQuery } from '@/utils/useTagsQuery';
 import TagTableRow from '@/Components/Common/Tag/TagTableRow.vue';
 import TagCreateModal from '@/packages/ui/src/Tag/TagCreateModal.vue';
 import TagTableHeading from '@/Components/Common/Tag/TagTableHeading.vue';
@@ -13,7 +12,7 @@ import type { Tag } from '@/packages/api/src';
 defineProps<{
     createTag: (name: string) => Promise<Tag | undefined>;
 }>();
-const { tags } = storeToRefs(useTagsStore());
+const { tags } = useTagsQuery();
 const showCreateTagModal = ref(false);
 </script>
 

@@ -8,7 +8,6 @@ const props = defineProps<{
 }>();
 
 const accentColor = useCssVariable('--theme-color-chart');
-const markLineColor = useCssVariable('--color-border-secondary');
 
 const seriesData = computed(() =>
     props.history.map((el) => {
@@ -36,36 +35,11 @@ const option = computed(() => ({
     xAxis: {
         type: 'category',
         data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-        markLine: {
-            lineStyle: {
-                color: markLineColor.value,
-                type: 'dashed',
-            },
-        },
-        axisLine: {
-            lineStyle: {
-                color: 'transparent', // Set desired color here
-            },
-        },
-        axisLabel: {
-            fontSize: 16,
-            fontWeight: 600,
-            margin: 24,
-            fontFamily: 'Inter, sans-serif',
-        },
-        axisTick: {
-            lineStyle: {
-                color: 'transparent', // Set desired color here
-            },
-        },
+        show: false,
     },
     yAxis: {
         type: 'value',
-        splitLine: {
-            lineStyle: {
-                color: 'transparent', // Set desired color here
-            },
-        },
+        show: false,
     },
     series: [
         {

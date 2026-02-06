@@ -63,7 +63,7 @@ const showMassUpdateModal = ref(false);
         :class="
             twMerge(
                 props.class,
-                'text-sm py-1.5 font-medium flex border-b border-border-primary items-center space-x-3'
+                'text-sm py-1.5 font-medium hidden sm:flex border-b border-border-primary items-center space-x-3'
             )
         ">
         <Checkbox

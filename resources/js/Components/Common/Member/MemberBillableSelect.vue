@@ -1,7 +1,11 @@
 <script setup lang="ts">
-import SelectDropdown from '@/packages/ui/src/Input/SelectDropdown.vue';
-import Badge from '@/packages/ui/src/Badge.vue';
-import { ChevronDownIcon } from '@heroicons/vue/20/solid';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/Components/ui/select';
 import type { BillableKey } from '@/types/projects';
 
 const model = defineModel<BillableKey>({
@@ -21,38 +25,26 @@ const options: Option[] = [
     },
 ];
 
-function getKeyFromItem(item: Option) {
-    return item.key;
-}
-
-function getNameFromItem(item: Option) {
-    return item.name;
-}
-
 function getNameForKey(key: BillableKey | undefined) {
-    const item = options.find((item) => getKeyFromItem(item) === key);
+    const item = options.find((item) => item.key === key);
     if (item) {
-        return getNameFromItem(item);
+        return item.name;
     }
     return '';
 }
 </script>
 
 <template>
-    <SelectDropdown
-        v-model="model"
-        :get-key-from-item="getKeyFromItem"
-        :get-name-for-item="getNameFromItem"
-        :items="options">
-        <template #trigger>
-            <Badge size="xlarge" class="bg-input-background cursor-pointer">
-                <span>
-                    {{ getNameForKey(model) }}
-                </span>
-                <ChevronDownIcon class="text-text-secondary w-5"></ChevronDownIcon>
-            </Badge>
-        </template>
-    </SelectDropdown>
+    <Select v-model="model">
+        <SelectTrigger>
+            <SelectValue>{{ getNameForKey(model) }}</SelectValue>
+        </SelectTrigger>
+        <SelectContent>
+            <SelectItem v-for="option in options" :key="option.key" :value="option.key">
+                {{ option.name }}
+            </SelectItem>
+        </SelectContent>
+    </Select>
 </template>
 
 <style scoped></style>

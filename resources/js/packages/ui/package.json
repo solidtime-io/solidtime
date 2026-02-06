@@ -48,22 +48,13 @@
     "author": "solidtime",
     "license": "AGPL-3.0",
     "devDependencies": {
-        "@types/node": "^22.4.1",
-        "@vitejs/plugin-vue": "^5.1.2",
-        "@vue/tsconfig": "^0.5.1",
-        "autoprefixer": "^10.4.20",
-        "postcss": "^8.4.14",
-        "postcss-import": "^15.1.0",
-        "postcss-nesting": "^12.1.0",
-        "typescript": "^5.5.4",
-        "vite": "^5.4.1",
         "vite-plugin-dts": "^4.0.3"
     },
     "peerDependencies": {
         "@floating-ui/vue": "^1.1.4",
         "@heroicons/vue": "^2.1.5",
-        "@vueuse/core": "^12.5.0",
-        "@zodios/core": "^10.9.6",
+        "@vitejs/plugin-vue": "^5.1.2 || ^6.0.0",
+        "@vueuse/core": "^12.5.0 || ^14.0.0",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
         "dayjs": "^1.11.13",
@@ -71,7 +62,9 @@
         "reka-ui": "^2.2.0",
         "tailwind-merge": "^2.5.2",
         "tailwindcss": "^3.1.0",
+        "typescript": "^5.5.4",
+        "vite": "^5.4.1 || ^6.0.0 || ^7.0.0",
         "vue": "^3.5.0",
-        "vue-tsc": "^2.2.0"
+        "vue-tsc": "^2.2.0 || ^3.0.0"
     }
 }

@@ -1,6 +1,6 @@
 import { formatCents } from '../../resources/js/packages/ui/src/utils/money';
 import type { CurrencyFormat } from '../../resources/js/packages/ui/src/utils/money';
-import { NumberFormat } from '../../resources/js/packages/ui/src/utils/number';
+import type { NumberFormat } from '../../resources/js/packages/ui/src/utils/number';
 
 export function formatCentsWithOrganizationDefaults(
     cents: number,

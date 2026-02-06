@@ -11,7 +11,7 @@
         "directory": "resources/js/packages/api"
     },
     "scripts": {
-        "build": "npx vite build",
+        "build": "vite build",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "files": [
@@ -27,14 +27,14 @@
     "type": "module",
     "author": "solidtime",
     "license": "AGPL-3.0",
-    "dependencies": {
-        "@zodios/core": "^10.9.6",
-        "axios": "^1.13.2",
-        "typescript": "^5.5.4",
-        "zod": "^3.23.8"
-    },
     "devDependencies": {
-        "vite": "^5.4.2",
         "vite-plugin-dts": "^4.0.3"
+    },
+    "peerDependencies": {
+        "@zodios/core": "^10.9.6",
+        "axios": "^1.6.4",
+        "typescript": "^5.5.4",
+        "vite": "^5.4.1 || ^6.0.0 || ^7.0.0",
+        "zod": "^3.23.8"
     }
 }

@@ -23,9 +23,9 @@ const { data: last7Days, isLoading } = useQuery({
     },
     enabled: computed(() => !!organizationId.value),
     placeholderData: Array.from({ length: 7 }, (_, i) => ({
-        date: new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        date: new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString().split('T')[0]!,
         duration: 0,
-        history: Array(8).fill(0),
+        history: Array(8).fill(0) as number[],
     })),
 });
 </script>

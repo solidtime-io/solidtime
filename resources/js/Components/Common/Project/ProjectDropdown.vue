@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import ProjectBadge from '@/packages/ui/src/Project/ProjectBadge.vue';
 import { computed, nextTick, ref, watch } from 'vue';
-import { useProjectsStore } from '@/utils/useProjects';
+import { useProjectsQuery } from '@/utils/useProjectsQuery';
 import Dropdown from '@/packages/ui/src/Input/Dropdown.vue';
 import {
     ComboboxAnchor,
@@ -12,7 +12,6 @@ import {
     ComboboxViewport,
 } from 'radix-vue';
 import { PlusCircleIcon } from '@heroicons/vue/20/solid';
-import { storeToRefs } from 'pinia';
 import { api } from '@/packages/api/src';
 import { usePage } from '@inertiajs/vue3';
 import { getRandomColor } from '@/packages/ui/src/utils/color';
@@ -26,13 +25,14 @@ const model = defineModel<string | null>({
     default: null,
 });
 const open = ref(false);
-const projectsStore = useProjectsStore();
+const { projects, invalidateProjects } = useProjectsQuery();
 const emit = defineEmits(['update:modelValue', 'changed']);
 
-const { projects } = storeToRefs(projectsStore);
 const projectDropdownTrigger = ref<HTMLElement | null>(null);
+const sortedProjects = ref<Project[]>([]);
+
 const shownProjects = computed(() => {
-    return projects.value.filter((project) => {
+    return sortedProjects.value.filter((project) => {
         return project.name.toLowerCase().includes(searchValue.value?.toLowerCase()?.trim() || '');
     });
 });
@@ -64,7 +64,7 @@ async function addProjectIfNoneExists() {
             },
             { params: { organization: page.props.auth.user.current_team_id } }
         );
-        projects.value.unshift(response.data);
+        invalidateProjects();
         model.value = response.data.id;
         searchValue.value = '';
         open.value = false;
@@ -78,7 +78,7 @@ watch(open, (isOpen) => {
             searchInput.value?.$el?.focus();
         });
 
-        projects.value.sort((iteratingProject) => {
+        sortedProjects.value = [...projects.value].sort((iteratingProject) => {
             return model.value === iteratingProject.id ? -1 : 1;
         });
     }

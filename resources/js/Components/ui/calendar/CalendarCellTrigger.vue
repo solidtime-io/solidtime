@@ -22,7 +22,7 @@ const forwardedProps = useForwardProps(delegatedProps);
                 'h-8 w-8 p-0 font-normal',
                 '[&[data-today]:not([data-selected])]:border-accent [&[data-today]:not([data-selected])]:border [&[data-today]:not([data-selected])]:text-accent-foreground',
                 // Selected
-                'data-[selected]:bg-primary data-[selected]:text-primary-foreground data-[selected]:opacity-100 data-[selected]:hover:bg-primary data-[selected]:hover:text-primary-foreground data-[selected]:focus:bg-primary data-[selected]:focus:text-primary-foreground',
+                'data-[selected]:bg-quaternary data-[selected]:text-primary-foreground data-[selected]:opacity-100 data-[selected]:hover:bg-quaternary data-[selected]:hover:text-primary-foreground data-[selected]:focus:bg-primary data-[selected]:focus:text-primary-foreground',
                 // Disabled
                 'data-[disabled]:text-muted-foreground data-[disabled]:opacity-50',
                 // Unavailable

@@ -21,6 +21,9 @@ export type DateFormat =
     | 'hyphen-separated-mm-dd-yyyy'
     | 'hyphen-separated-yyyy-mm-dd';
 
+// Day of week index type for calendar components (0 = Sunday, 6 = Saturday)
+export type WeekStartDay = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+
 const dateFormatMap: Record<DateFormat, string> = {
     'point-separated-d-m-yyyy': 'D.M.YYYY',
     'slash-separated-mm-dd-yyyy': 'MM/DD/YYYY',
@@ -227,9 +230,9 @@ export function parseTimeInput(
     if (HHMMSStimeRegex.test(input)) {
         const match = input.match(HHMMSStimeRegex);
         if (match) {
-            const hours = parseInt(match[1]);
-            const minutes = parseInt(match[2]);
-            const seconds = parseInt(match[3]);
+            const hours = parseInt(match[1]!);
+            const minutes = parseInt(match[2]!);
+            const seconds = parseInt(match[3]!);
             return hours * 3600 + minutes * 60 + seconds;
         }
     }
@@ -239,8 +242,8 @@ export function parseTimeInput(
     if (HHMMtimeRegex.test(input)) {
         const match = input.match(HHMMtimeRegex);
         if (match) {
-            const hours = parseInt(match[1]);
-            const minutes = parseInt(match[2]);
+            const hours = parseInt(match[1]!);
+            const minutes = parseInt(match[2]!);
             return (hours * 60 + minutes) * 60;
         }
     }

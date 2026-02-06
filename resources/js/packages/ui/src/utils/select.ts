@@ -12,16 +12,16 @@ export function useSelectEvents<Type>(
             const currentHightlightedIndex = filteredItems.value.indexOf(highlightedItem.value);
             if (currentHightlightedIndex === 0) {
                 highlightedItemId.value = getKeyFromItem(
-                    filteredItems.value[filteredItems.value.length - 1]
+                    filteredItems.value[filteredItems.value.length - 1]!
                 );
             } else {
                 highlightedItemId.value = getKeyFromItem(
-                    filteredItems.value[currentHightlightedIndex - 1]
+                    filteredItems.value[currentHightlightedIndex - 1]!
                 );
             }
         } else {
             highlightedItemId.value = getKeyFromItem(
-                filteredItems.value[filteredItems.value.length - 1]
+                filteredItems.value[filteredItems.value.length - 1]!
             );
         }
     }
@@ -30,14 +30,14 @@ export function useSelectEvents<Type>(
         if (highlightedItem.value) {
             const currentHightlightedIndex = filteredItems.value.indexOf(highlightedItem.value);
             if (currentHightlightedIndex === filteredItems.value.length - 1) {
-                highlightedItemId.value = getKeyFromItem(filteredItems.value[0]);
+                highlightedItemId.value = getKeyFromItem(filteredItems.value[0]!);
             } else {
                 highlightedItemId.value = getKeyFromItem(
-                    filteredItems.value[currentHightlightedIndex + 1]
+                    filteredItems.value[currentHightlightedIndex + 1]!
                 );
             }
         } else {
-            highlightedItemId.value = getKeyFromItem(filteredItems.value[0]);
+            highlightedItemId.value = getKeyFromItem(filteredItems.value[0]!);
         }
     }
 

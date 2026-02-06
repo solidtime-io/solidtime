@@ -1,11 +1,19 @@
 <script setup lang="ts">
-import SelectDropdown from '@/packages/ui/src/Input/SelectDropdown.vue';
-import Badge from '@/packages/ui/src/Badge.vue';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/Components/ui/select';
 import { type Component, computed } from 'vue';
 
 const model = defineModel<string | null>({ default: null });
 const props = defineProps<{
     groupByOptions: { value: string; label: string; icon: Component }[];
+}>();
+const emit = defineEmits<{
+    changed: [];
 }>();
 const icon = computed(() => {
     return props.groupByOptions.find((option) => option.value === model.value)?.icon;
@@ -16,21 +24,19 @@ const title = computed(() => {
 </script>
 
 <template>
-    <SelectDropdown
-        v-model="model"
-        :get-key-from-item="(item) => item.value"
-        :get-name-for-item="(item) => item.label"
-        :items="groupByOptions">
-        <template #trigger>
-            <Badge
-                size="large"
-                tag="button"
-                class="cursor-pointer hover:bg-card-background transition space-x-5 flex">
-                <component :is="icon" class="h-4 text-text-secondary"></component>
-                <span> {{ title }} </span>
-            </Badge>
-        </template>
-    </SelectDropdown>
+    <Select v-model="model" @update:model-value="emit('changed')">
+        <SelectTrigger size="small" :show-chevron="false">
+            <SelectValue class="flex items-center gap-2">
+                <component :is="icon" class="h-4 text-icon-default" />
+                <span>{{ title }}</span>
+            </SelectValue>
+        </SelectTrigger>
+        <SelectContent>
+            <SelectItem v-for="option in groupByOptions" :key="option.value" :value="option.value">
+                {{ option.label }}
+            </SelectItem>
+        </SelectContent>
+    </Select>
 </template>
 
 <style scoped></style>

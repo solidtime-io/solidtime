@@ -66,7 +66,7 @@ const organization = inject<ComputedRef<Organization>>('organization');
     </div>
     <div
         v-if="expanded && entry.grouped_data"
-        class="col-span-3 grid bg-quaternary"
+        class="col-span-3 grid bg-tertiary"
         style="grid-template-columns: 1fr 150px 150px">
         <ReportingRow
             v-for="subEntry in entry.grouped_data"

@@ -25,7 +25,7 @@ function updateTime(event: Event) {
     const target = event.target as HTMLInputElement;
     const newValue = target.value.trim();
     if (newValue.split(':').length === 2) {
-        const [hours, minutes] = newValue.split(':');
+        const [hours, minutes] = newValue.split(':') as [string, string];
         if (!isNaN(parseInt(hours)) && !isNaN(parseInt(minutes))) {
             const currentTime = getLocalizedDayJs(model.value);
             const newHours = Math.min(parseInt(hours), 23);

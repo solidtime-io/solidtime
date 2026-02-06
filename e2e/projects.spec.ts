@@ -1,4 +1,5 @@
-import { expect, Page } from '@playwright/test';
+import { expect } from '@playwright/test';
+import type { Page } from '@playwright/test';
 import { PLAYWRIGHT_BASE_URL } from '../playwright/config';
 import { test } from '../playwright/fixtures';
 import { formatCentsWithOrganizationDefaults } from './utils/money';
@@ -37,7 +38,7 @@ test('test that creating and deleting a new project via the modal works', async 
 
     await expect(page.getByTestId('project_table')).toContainText(newProjectName);
     const moreButton = page.locator("[aria-label='Actions for Project " + newProjectName + "']");
-    moreButton.click();
+    await moreButton.click();
     const deleteButton = page.locator("[aria-label='Delete Project " + newProjectName + "']");
 
     await Promise.all([
@@ -78,8 +79,16 @@ test('test that archiving and unarchiving projects works', async ({ page }) => {
     await page.getByRole('button', { name: 'Create Project' }).click();
     await page.getByLabel('Project Name').fill(newProjectName);
 
-    await page.getByRole('button', { name: 'Create Project' }).click();
-    await expect(page.getByText(newProjectName)).toBeVisible();
+    await Promise.all([
+        page.getByRole('button', { name: 'Create Project' }).click(),
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/projects') &&
+                response.request().method() === 'POST' &&
+                response.status() === 201
+        ),
+    ]);
+    await expect(page.getByText(newProjectName)).toBeVisible({ timeout: 10000 });
 
     // Archive the project
     await page.getByRole('row').first().getByRole('button').click();
@@ -117,8 +126,16 @@ test('test that updating billable rate works with existing time entries', async 
     await page.getByRole('button', { name: 'Create Project' }).click();
     await page.getByLabel('Project Name').fill(newProjectName);
 
-    await page.getByRole('button', { name: 'Create Project' }).click();
-    await expect(page.getByText(newProjectName)).toBeVisible();
+    await Promise.all([
+        page.getByRole('button', { name: 'Create Project' }).click(),
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/projects') &&
+                response.request().method() === 'POST' &&
+                response.status() === 201
+        ),
+    ]);
+    await expect(page.getByText(newProjectName)).toBeVisible({ timeout: 10000 });
 
     await page.getByRole('row').first().getByRole('button').click();
     await page.getByRole('menuitem').getByText('Edit').first().click();
@@ -223,8 +240,16 @@ test('test that filtering projects by status works', async ({ page }) => {
     // Create a new project
     await page.getByRole('button', { name: 'Create Project' }).click();
     await page.getByLabel('Project Name').fill(newProjectName);
-    await page.getByRole('button', { name: 'Create Project' }).click();
-    await expect(page.getByText(newProjectName)).toBeVisible();
+    await Promise.all([
+        page.getByRole('button', { name: 'Create Project' }).click(),
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/projects') &&
+                response.request().method() === 'POST' &&
+                response.status() === 201
+        ),
+    ]);
+    await expect(page.getByText(newProjectName)).toBeVisible({ timeout: 10000 });
 
     // Archive the project
     await page.getByRole('row').first().getByRole('button').click();
@@ -290,6 +315,198 @@ test('test that sort state persists after page reload', async ({ page }) => {
 
     // Verify descending sort indicator is visible on Name column
     await expect(page.getByTestId('project_table')).toBeVisible();
+});
+
+test('test that custom billable rate is displayed correctly on project detail page', async ({
+    page,
+}) => {
+    const newProjectName = 'Billable Rate Project ' + Math.floor(1 + Math.random() * 10000);
+    const newBillableRate = Math.round(10 + Math.random() * 1000);
+    await goToProjectsOverview(page);
+    await page.getByRole('button', { name: 'Create Project' }).click();
+    await page.getByLabel('Project Name').fill(newProjectName);
+
+    await Promise.all([
+        page.getByRole('button', { name: 'Create Project' }).click(),
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/projects') &&
+                response.request().method() === 'POST' &&
+                response.status() === 201
+        ),
+    ]);
+    await expect(page.getByText(newProjectName)).toBeVisible({ timeout: 10000 });
+
+    // Edit the project to set a custom billable rate
+    await page.getByRole('row').first().getByRole('button').click();
+    await page.getByRole('menuitem').getByText('Edit').first().click();
+    await page.getByText('Non-Billable').click();
+    await page.getByText('Custom Rate').click();
+    await page.getByPlaceholder('Billable Rate').fill(newBillableRate.toString());
+    await page.getByRole('button', { name: 'Update Project' }).click();
+
+    await Promise.all([
+        page.locator('button').filter({ hasText: 'Yes, update existing time' }).click(),
+        page.waitForResponse(
+            async (response) =>
+                response.url().includes('/projects/') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 200
+        ),
+    ]);
+
+    // Navigate to the project detail page by clicking the project name
+    await page.getByText(newProjectName).first().click();
+    await page.waitForURL(/\/projects\/[a-f0-9-]+/);
+
+    // Verify the badge displays the correctly formatted billable rate
+    const expectedFormattedRate = formatCentsWithOrganizationDefaults(newBillableRate * 100);
+    await expect(page.locator('nav[aria-label="Breadcrumb"]').locator('..')).toContainText(
+        expectedFormattedRate
+    );
+});
+
+// Tests for estimated time input (Issue #460)
+test('test that creating a project with estimated time in human-readable format works', async ({
+    page,
+}) => {
+    const newProjectName = 'Estimated Time Project ' + Math.floor(1 + Math.random() * 10000);
+    await goToProjectsOverview(page);
+    await page.getByRole('button', { name: 'Create Project' }).click();
+    await page.getByLabel('Project Name').fill(newProjectName);
+
+    // Fill in estimated time using human-readable format
+    const estimatedTimeInput = page.getByPlaceholder('e.g. 2h 30m or 1.5');
+    await estimatedTimeInput.fill('2h 30m');
+    await estimatedTimeInput.press('Tab');
+
+    await Promise.all([
+        page.getByRole('button', { name: 'Create Project' }).click(),
+        page.waitForResponse(
+            async (response) =>
+                response.url().includes('/projects') &&
+                response.request().method() === 'POST' &&
+                response.status() === 201 &&
+                // 2h 30m = 9000 seconds
+                (await response.json()).data.estimated_time === 9000
+        ),
+    ]);
+
+    await expect(page.getByTestId('project_table')).toContainText(newProjectName);
+});
+
+test('test that creating a project with estimated time using decimal notation works', async ({
+    page,
+}) => {
+    const newProjectName = 'Decimal Estimated Project ' + Math.floor(1 + Math.random() * 10000);
+    await goToProjectsOverview(page);
+    await page.getByRole('button', { name: 'Create Project' }).click();
+    await page.getByLabel('Project Name').fill(newProjectName);
+
+    // Fill in estimated time using decimal notation (1.5 hours = 1h 30m)
+    const estimatedTimeInput = page.getByPlaceholder('e.g. 2h 30m or 1.5');
+    await estimatedTimeInput.fill('1.5');
+    await estimatedTimeInput.press('Tab');
+
+    await Promise.all([
+        page.getByRole('button', { name: 'Create Project' }).click(),
+        page.waitForResponse(
+            async (response) =>
+                response.url().includes('/projects') &&
+                response.request().method() === 'POST' &&
+                response.status() === 201 &&
+                // 1.5 hours = 5400 seconds
+                (await response.json()).data.estimated_time === 5400
+        ),
+    ]);
+
+    await expect(page.getByTestId('project_table')).toContainText(newProjectName);
+});
+
+test('test that creating a project with estimated time using comma decimal notation works', async ({
+    page,
+}) => {
+    const newProjectName = 'Comma Decimal Project ' + Math.floor(1 + Math.random() * 10000);
+    await goToProjectsOverview(page);
+    await page.getByRole('button', { name: 'Create Project' }).click();
+    await page.getByLabel('Project Name').fill(newProjectName);
+
+    // Fill in estimated time using comma decimal notation (2,5 hours = 2h 30m)
+    const estimatedTimeInput = page.getByPlaceholder('e.g. 2h 30m or 1.5');
+    await estimatedTimeInput.fill('2,5');
+    await estimatedTimeInput.press('Tab');
+
+    await Promise.all([
+        page.getByRole('button', { name: 'Create Project' }).click(),
+        page.waitForResponse(
+            async (response) =>
+                response.url().includes('/projects') &&
+                response.request().method() === 'POST' &&
+                response.status() === 201 &&
+                // 2.5 hours = 9000 seconds
+                (await response.json()).data.estimated_time === 9000
+        ),
+    ]);
+
+    await expect(page.getByTestId('project_table')).toContainText(newProjectName);
+});
+
+test('test that updating estimated time on existing project works', async ({ page }) => {
+    const newProjectName = 'Update Estimated Project ' + Math.floor(1 + Math.random() * 10000);
+    await goToProjectsOverview(page);
+
+    // Create a project first
+    await page.getByRole('button', { name: 'Create Project' }).click();
+    await page.getByLabel('Project Name').fill(newProjectName);
+    await Promise.all([
+        page.getByRole('button', { name: 'Create Project' }).click(),
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/projects') &&
+                response.request().method() === 'POST' &&
+                response.status() === 201
+        ),
+    ]);
+    await expect(page.getByText(newProjectName)).toBeVisible({ timeout: 10000 });
+
+    // Edit the project to add estimated time
+    await page.getByRole('row').first().getByRole('button').click();
+    await page.getByRole('menuitem').getByText('Edit').first().click();
+
+    // Fill in estimated time
+    const estimatedTimeInput = page.getByPlaceholder('e.g. 2h 30m or 1.5');
+    await estimatedTimeInput.fill('4h 15m');
+    await estimatedTimeInput.press('Tab');
+
+    await Promise.all([
+        page.getByRole('button', { name: 'Update Project' }).click(),
+        page.waitForResponse(
+            async (response) =>
+                response.url().includes('/projects/') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 200 &&
+                // 4h 15m = 15300 seconds
+                (await response.json()).data.estimated_time === 15300
+        ),
+    ]);
+});
+
+test('test that estimated time input displays formatted value after blur', async ({ page }) => {
+    await goToProjectsOverview(page);
+    await page.getByRole('button', { name: 'Create Project' }).click();
+
+    const estimatedTimeInput = page.getByPlaceholder('e.g. 2h 30m or 1.5');
+
+    // Enter time in various formats and check the displayed value
+    await estimatedTimeInput.fill('90');
+    await estimatedTimeInput.press('Tab');
+    // 90 hours should be displayed as "90h 00min" (default format)
+    await expect(estimatedTimeInput).toHaveValue(/90h/);
+
+    await estimatedTimeInput.fill('1:30');
+    await estimatedTimeInput.press('Tab');
+    // 1:30 should be displayed as "1h 30min"
+    await expect(estimatedTimeInput).toHaveValue(/1h.*30/);
 });
 
 // Create new project with new Client
