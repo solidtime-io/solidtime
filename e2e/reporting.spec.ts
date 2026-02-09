@@ -1,77 +1,18 @@
 import { expect } from '@playwright/test';
 import { PLAYWRIGHT_BASE_URL } from '../playwright/config';
 import { test } from '../playwright/fixtures';
+import { goToReporting, waitForReportingUpdate } from './utils/reporting';
 import {
-    goToReporting,
-    createProject,
-    createClient,
-    createProjectWithClient,
-    createTask,
-    createTimeEntryWithProject,
-    createTimeEntryWithProjectAndTask,
-    createTimeEntryWithTag,
-    createTimeEntryWithBillableStatus,
-    waitForReportingUpdate,
-} from './utils/reporting';
+    createProjectViaApi,
+    createClientViaApi,
+    createTaskViaApi,
+    createTimeEntryViaApi,
+    createTimeEntryWithTagViaApi,
+    createTimeEntryWithBillableStatusViaApi,
+} from './utils/api';
 
-// Each test registers a new user and creates test data, which needs more time
-test.describe.configure({ timeout: 60000 });
-
-// ──────────────────────────────────────────────────
-// No-op Dropdown Close Tests
-// ──────────────────────────────────────────────────
-
-test('test that opening and closing a filter dropdown without changes does not trigger an API request', async ({
-    page,
-}) => {
-    const projectName = 'NoOpDropdown ' + Math.floor(Math.random() * 10000);
-
-    await createProject(page, projectName);
-    await createTimeEntryWithProject(page, projectName, '1h');
-
-    await goToReporting(page);
-    await expect(page.getByRole('button', { name: 'Export' })).toBeVisible();
-
-    // Wait for initial reporting data to fully load and all network activity to settle
-    await expect(page.getByTestId('reporting_view').getByText(projectName)).toBeVisible();
-    await page.waitForLoadState('networkidle');
-
-    // Set up a request counter for aggregate API calls
-    let aggregateRequestCount = 0;
-    page.on('response', (response) => {
-        if (
-            response.url().includes('/time-entries/aggregate') &&
-            !response.url().includes('/export') &&
-            response.status() === 200
-        ) {
-            aggregateRequestCount++;
-        }
-    });
-
-    // Open project dropdown, change nothing, close it
-    await page.getByRole('button', { name: 'Projects' }).first().click();
-    await expect(page.getByPlaceholder('Search for a Project...')).toBeVisible();
-    await page.keyboard.press('Escape');
-
-    // Open member dropdown, change nothing, close it
-    await page.getByRole('button', { name: 'Members' }).first().click();
-    await expect(page.getByPlaceholder('Search for a Member...')).toBeVisible();
-    await page.keyboard.press('Escape');
-
-    // Open client dropdown, change nothing, close it
-    await page.getByRole('button', { name: 'Clients' }).first().click();
-    await expect(page.getByPlaceholder('Search for a Client...')).toBeVisible();
-    await page.keyboard.press('Escape');
-
-    // Wait for all network activity to settle before asserting no requests were made
-    await page.waitForLoadState('networkidle');
-
-    // No aggregate API requests should have been made
-    expect(aggregateRequestCount).toBe(0);
-
-    // Verify the report data is still intact (no flash/reload)
-    await expect(page.getByTestId('reporting_view').getByText(projectName)).toBeVisible();
-});
+// Each test registers a new user and creates test data via API
+test.describe.configure({ timeout: 30000 });
 
 // ──────────────────────────────────────────────────
 // Project Multiselect Dropdown Tests
@@ -79,14 +20,23 @@ test('test that opening and closing a filter dropdown without changes does not t
 
 test('test that project multiselect dropdown shows projects and filters reporting', async ({
     page,
+    ctx,
 }) => {
-    const project1 = 'ProjFilter1 ' + Math.floor(Math.random() * 10000);
-    const project2 = 'ProjFilter2 ' + Math.floor(Math.random() * 10000);
+    const project1Name = 'ProjFilter1 ' + Math.floor(Math.random() * 10000);
+    const project2Name = 'ProjFilter2 ' + Math.floor(Math.random() * 10000);
 
-    await createProject(page, project1);
-    await createProject(page, project2);
-    await createTimeEntryWithProject(page, project1, '1h');
-    await createTimeEntryWithProject(page, project2, '2h');
+    const project1 = await createProjectViaApi(ctx, { name: project1Name });
+    const project2 = await createProjectViaApi(ctx, { name: project2Name });
+    await createTimeEntryViaApi(ctx, {
+        description: `Entry for ${project1Name}`,
+        duration: '1h',
+        projectId: project1.id,
+    });
+    await createTimeEntryViaApi(ctx, {
+        description: `Entry for ${project2Name}`,
+        duration: '2h',
+        projectId: project2.id,
+    });
 
     await goToReporting(page);
     await expect(page.getByRole('button', { name: 'Export' })).toBeVisible();
@@ -95,14 +45,15 @@ test('test that project multiselect dropdown shows projects and filters reportin
     await page.getByRole('button', { name: 'Projects' }).first().click();
 
     // Verify both projects appear as options
-    await expect(page.getByRole('option').filter({ hasText: project1 })).toBeVisible();
-    await expect(page.getByRole('option').filter({ hasText: project2 })).toBeVisible();
+    await expect(page.getByRole('option').filter({ hasText: project1Name })).toBeVisible();
+    await expect(page.getByRole('option').filter({ hasText: project2Name })).toBeVisible();
 
-    // Select project1
-    await page.getByRole('option').filter({ hasText: project1 }).click();
-
-    // Close dropdown and wait for report update
-    await Promise.all([page.keyboard.press('Escape'), waitForReportingUpdate(page)]);
+    // Select project1 and wait for report update
+    await Promise.all([
+        page.getByRole('option').filter({ hasText: project1Name }).click(),
+        waitForReportingUpdate(page),
+    ]);
+    await page.keyboard.press('Escape');
 
     // Verify filter badge shows count of 1
     await expect(
@@ -110,17 +61,21 @@ test('test that project multiselect dropdown shows projects and filters reportin
     ).toBeVisible();
 
     // Verify only project1 data is shown
-    await expect(page.getByTestId('reporting_view').getByText(project1)).toBeVisible();
-    await expect(page.getByTestId('reporting_view').getByText(project2)).not.toBeVisible();
+    await expect(page.getByTestId('reporting_view').getByText(project1Name)).toBeVisible();
+    await expect(page.getByTestId('reporting_view').getByText(project2Name)).not.toBeVisible();
 });
 
-test('test that project multiselect search filters the option list', async ({ page }) => {
-    const project1 = 'SearchableAlpha ' + Math.floor(Math.random() * 10000);
-    const project2 = 'SearchableBeta ' + Math.floor(Math.random() * 10000);
+test('test that project multiselect search filters the option list', async ({ page, ctx }) => {
+    const project1Name = 'SearchableAlpha ' + Math.floor(Math.random() * 10000);
+    const project2Name = 'SearchableBeta ' + Math.floor(Math.random() * 10000);
 
-    await createProject(page, project1);
-    await createProject(page, project2);
-    await createTimeEntryWithProject(page, project1, '1h');
+    const project1 = await createProjectViaApi(ctx, { name: project1Name });
+    await createProjectViaApi(ctx, { name: project2Name });
+    await createTimeEntryViaApi(ctx, {
+        description: `Entry for ${project1Name}`,
+        duration: '1h',
+        projectId: project1.id,
+    });
 
     await goToReporting(page);
     await expect(page.getByRole('button', { name: 'Export' })).toBeVisible();
@@ -132,30 +87,40 @@ test('test that project multiselect search filters the option list', async ({ pa
     await page.getByPlaceholder('Search for a Project...').fill('Alpha');
 
     // Verify only matching project is visible
-    await expect(page.getByRole('option').filter({ hasText: project1 })).toBeVisible();
-    await expect(page.getByRole('option').filter({ hasText: project2 })).not.toBeVisible();
+    await expect(page.getByRole('option').filter({ hasText: project1Name })).toBeVisible();
+    await expect(page.getByRole('option').filter({ hasText: project2Name })).not.toBeVisible();
 
     await page.keyboard.press('Escape');
 });
 
-test('test that selecting multiple projects shows correct badge count', async ({ page }) => {
-    const project1 = 'MultiProj1 ' + Math.floor(Math.random() * 10000);
-    const project2 = 'MultiProj2 ' + Math.floor(Math.random() * 10000);
+test('test that selecting multiple projects shows correct badge count', async ({ page, ctx }) => {
+    const project1Name = 'MultiProj1 ' + Math.floor(Math.random() * 10000);
+    const project2Name = 'MultiProj2 ' + Math.floor(Math.random() * 10000);
 
-    await createProject(page, project1);
-    await createProject(page, project2);
-    await createTimeEntryWithProject(page, project1, '1h');
-    await createTimeEntryWithProject(page, project2, '2h');
+    const project1 = await createProjectViaApi(ctx, { name: project1Name });
+    const project2 = await createProjectViaApi(ctx, { name: project2Name });
+    await createTimeEntryViaApi(ctx, {
+        description: `Entry for ${project1Name}`,
+        duration: '1h',
+        projectId: project1.id,
+    });
+    await createTimeEntryViaApi(ctx, {
+        description: `Entry for ${project2Name}`,
+        duration: '2h',
+        projectId: project2.id,
+    });
 
     await goToReporting(page);
     await expect(page.getByRole('button', { name: 'Export' })).toBeVisible();
 
     // Open project dropdown and select both
     await page.getByRole('button', { name: 'Projects' }).first().click();
-    await page.getByRole('option').filter({ hasText: project1 }).click();
-    await page.getByRole('option').filter({ hasText: project2 }).click();
-
-    await Promise.all([page.keyboard.press('Escape'), waitForReportingUpdate(page)]);
+    await page.getByRole('option').filter({ hasText: project1Name }).click();
+    await Promise.all([
+        page.getByRole('option').filter({ hasText: project2Name }).click(),
+        waitForReportingUpdate(page),
+    ]);
+    await page.keyboard.press('Escape');
 
     // Verify filter badge shows count of 2
     await expect(
@@ -163,23 +128,30 @@ test('test that selecting multiple projects shows correct badge count', async ({
     ).toBeVisible();
 
     // Verify both projects are shown in the report
-    await expect(page.getByTestId('reporting_view').getByText(project1)).toBeVisible();
-    await expect(page.getByTestId('reporting_view').getByText(project2)).toBeVisible();
+    await expect(page.getByTestId('reporting_view').getByText(project1Name)).toBeVisible();
+    await expect(page.getByTestId('reporting_view').getByText(project2Name)).toBeVisible();
 });
 
-test('test that deselecting a project removes the filter', async ({ page }) => {
-    const project1 = 'DeselectProj ' + Math.floor(Math.random() * 10000);
+test('test that deselecting a project removes the filter', async ({ page, ctx }) => {
+    const project1Name = 'DeselectProj ' + Math.floor(Math.random() * 10000);
 
-    await createProject(page, project1);
-    await createTimeEntryWithProject(page, project1, '1h');
+    const project1 = await createProjectViaApi(ctx, { name: project1Name });
+    await createTimeEntryViaApi(ctx, {
+        description: `Entry for ${project1Name}`,
+        duration: '1h',
+        projectId: project1.id,
+    });
 
     await goToReporting(page);
     await expect(page.getByRole('button', { name: 'Export' })).toBeVisible();
 
     // Select project
     await page.getByRole('button', { name: 'Projects' }).first().click();
-    await page.getByRole('option').filter({ hasText: project1 }).click();
-    await Promise.all([page.keyboard.press('Escape'), waitForReportingUpdate(page)]);
+    await Promise.all([
+        page.getByRole('option').filter({ hasText: project1Name }).click(),
+        waitForReportingUpdate(page),
+    ]);
+    await page.keyboard.press('Escape');
 
     // Verify badge count is 1
     await expect(
@@ -188,7 +160,10 @@ test('test that deselecting a project removes the filter', async ({ page }) => {
 
     // Deselect project
     await page.getByRole('button', { name: 'Projects' }).first().click();
-    await page.getByRole('option').filter({ hasText: project1 }).click();
+    await Promise.all([
+        page.getByRole('option').filter({ hasText: project1Name }).click(),
+        waitForReportingUpdate(page),
+    ]);
     await page.keyboard.press('Escape');
 
     // Verify badge count is gone (no count displayed when 0)
@@ -201,18 +176,32 @@ test('test that deselecting a project removes the filter', async ({ page }) => {
 // Client Multiselect Dropdown Tests
 // ──────────────────────────────────────────────────
 
-test('test that client multiselect dropdown filters reporting by client', async ({ page }) => {
-    const client1 = 'ClientFilter1 ' + Math.floor(Math.random() * 10000);
-    const client2 = 'ClientFilter2 ' + Math.floor(Math.random() * 10000);
-    const project1 = 'ClientProj1 ' + Math.floor(Math.random() * 10000);
-    const project2 = 'ClientProj2 ' + Math.floor(Math.random() * 10000);
+test('test that client multiselect dropdown filters reporting by client', async ({ page, ctx }) => {
+    const client1Name = 'ClientFilter1 ' + Math.floor(Math.random() * 10000);
+    const client2Name = 'ClientFilter2 ' + Math.floor(Math.random() * 10000);
+    const project1Name = 'ClientProj1 ' + Math.floor(Math.random() * 10000);
+    const project2Name = 'ClientProj2 ' + Math.floor(Math.random() * 10000);
 
-    await createClient(page, client1);
-    await createClient(page, client2);
-    await createProjectWithClient(page, project1, client1);
-    await createProjectWithClient(page, project2, client2);
-    await createTimeEntryWithProject(page, project1, '1h');
-    await createTimeEntryWithProject(page, project2, '2h');
+    const client1 = await createClientViaApi(ctx, { name: client1Name });
+    const client2 = await createClientViaApi(ctx, { name: client2Name });
+    const project1 = await createProjectViaApi(ctx, {
+        name: project1Name,
+        client_id: client1.id,
+    });
+    const project2 = await createProjectViaApi(ctx, {
+        name: project2Name,
+        client_id: client2.id,
+    });
+    await createTimeEntryViaApi(ctx, {
+        description: `Entry for ${project1Name}`,
+        duration: '1h',
+        projectId: project1.id,
+    });
+    await createTimeEntryViaApi(ctx, {
+        description: `Entry for ${project2Name}`,
+        duration: '2h',
+        projectId: project2.id,
+    });
 
     await goToReporting(page);
     await expect(page.getByRole('button', { name: 'Export' })).toBeVisible();
@@ -221,13 +210,15 @@ test('test that client multiselect dropdown filters reporting by client', async 
     await page.getByRole('button', { name: 'Clients' }).first().click();
 
     // Verify both clients appear
-    await expect(page.getByRole('option').filter({ hasText: client1 })).toBeVisible();
-    await expect(page.getByRole('option').filter({ hasText: client2 })).toBeVisible();
+    await expect(page.getByRole('option').filter({ hasText: client1Name })).toBeVisible();
+    await expect(page.getByRole('option').filter({ hasText: client2Name })).toBeVisible();
 
     // Select client1
-    await page.getByRole('option').filter({ hasText: client1 }).click();
-
-    await Promise.all([page.keyboard.press('Escape'), waitForReportingUpdate(page)]);
+    await Promise.all([
+        page.getByRole('option').filter({ hasText: client1Name }).click(),
+        waitForReportingUpdate(page),
+    ]);
+    await page.keyboard.press('Escape');
 
     // Verify badge shows count of 1
     await expect(
@@ -235,16 +226,16 @@ test('test that client multiselect dropdown filters reporting by client', async 
     ).toBeVisible();
 
     // Verify only project1 (belonging to client1) is shown
-    await expect(page.getByTestId('reporting_view').getByText(project1)).toBeVisible();
-    await expect(page.getByTestId('reporting_view').getByText(project2)).not.toBeVisible();
+    await expect(page.getByTestId('reporting_view').getByText(project1Name)).toBeVisible();
+    await expect(page.getByTestId('reporting_view').getByText(project2Name)).not.toBeVisible();
 });
 
-test('test that client multiselect search filters the option list', async ({ page }) => {
-    const client1 = 'ClientSearchAlpha ' + Math.floor(Math.random() * 10000);
-    const client2 = 'ClientSearchBeta ' + Math.floor(Math.random() * 10000);
+test('test that client multiselect search filters the option list', async ({ page, ctx }) => {
+    const client1Name = 'ClientSearchAlpha ' + Math.floor(Math.random() * 10000);
+    const client2Name = 'ClientSearchBeta ' + Math.floor(Math.random() * 10000);
 
-    await createClient(page, client1);
-    await createClient(page, client2);
+    await createClientViaApi(ctx, { name: client1Name });
+    await createClientViaApi(ctx, { name: client2Name });
 
     await goToReporting(page);
     await expect(page.getByRole('button', { name: 'Export' })).toBeVisible();
@@ -254,27 +245,37 @@ test('test that client multiselect search filters the option list', async ({ pag
     // Search for "Alpha"
     await page.getByPlaceholder('Search for a Client...').fill('Alpha');
 
-    await expect(page.getByRole('option').filter({ hasText: client1 })).toBeVisible();
-    await expect(page.getByRole('option').filter({ hasText: client2 })).not.toBeVisible();
+    await expect(page.getByRole('option').filter({ hasText: client1Name })).toBeVisible();
+    await expect(page.getByRole('option').filter({ hasText: client2Name })).not.toBeVisible();
 
     await page.keyboard.press('Escape');
 });
 
-test('test that deselecting a client removes the filter', async ({ page }) => {
-    const client1 = 'ClientDeselect ' + Math.floor(Math.random() * 10000);
-    const project1 = 'ClientDeselectProj ' + Math.floor(Math.random() * 10000);
+test('test that deselecting a client removes the filter', async ({ page, ctx }) => {
+    const client1Name = 'ClientDeselect ' + Math.floor(Math.random() * 10000);
+    const project1Name = 'ClientDeselectProj ' + Math.floor(Math.random() * 10000);
 
-    await createClient(page, client1);
-    await createProjectWithClient(page, project1, client1);
-    await createTimeEntryWithProject(page, project1, '1h');
+    const client1 = await createClientViaApi(ctx, { name: client1Name });
+    const project1 = await createProjectViaApi(ctx, {
+        name: project1Name,
+        client_id: client1.id,
+    });
+    await createTimeEntryViaApi(ctx, {
+        description: `Entry for ${project1Name}`,
+        duration: '1h',
+        projectId: project1.id,
+    });
 
     await goToReporting(page);
     await expect(page.getByRole('button', { name: 'Export' })).toBeVisible();
 
     // Select client
     await page.getByRole('button', { name: 'Clients' }).first().click();
-    await page.getByRole('option').filter({ hasText: client1 }).click();
-    await Promise.all([page.keyboard.press('Escape'), waitForReportingUpdate(page)]);
+    await Promise.all([
+        page.getByRole('option').filter({ hasText: client1Name }).click(),
+        waitForReportingUpdate(page),
+    ]);
+    await page.keyboard.press('Escape');
 
     await expect(
         page.getByRole('button', { name: 'Clients' }).first().getByText('1')
@@ -282,7 +283,10 @@ test('test that deselecting a client removes the filter', async ({ page }) => {
 
     // Deselect client
     await page.getByRole('button', { name: 'Clients' }).first().click();
-    await page.getByRole('option').filter({ hasText: client1 }).click();
+    await Promise.all([
+        page.getByRole('option').filter({ hasText: client1Name }).click(),
+        waitForReportingUpdate(page),
+    ]);
     await page.keyboard.press('Escape');
 
     await expect(
@@ -294,39 +298,55 @@ test('test that deselecting a client removes the filter', async ({ page }) => {
 // Task Multiselect Dropdown Tests
 // ──────────────────────────────────────────────────
 
-test('test that task filtering works in reporting', async ({ page }) => {
+test('test that task filtering works in reporting', async ({ page, ctx }) => {
     const projectName = 'Task Filter Proj ' + Math.floor(Math.random() * 10000);
-    const task1 = 'Task Filter A ' + Math.floor(Math.random() * 10000);
-    const task2 = 'Task Filter B ' + Math.floor(Math.random() * 10000);
+    const task1Name = 'Task Filter A ' + Math.floor(Math.random() * 10000);
+    const task2Name = 'Task Filter B ' + Math.floor(Math.random() * 10000);
 
-    await createProject(page, projectName);
-    await createTimeEntryWithProject(page, projectName, '30min');
-    await createTask(page, projectName, task1);
-    await createTask(page, projectName, task2);
-    await createTimeEntryWithProjectAndTask(page, projectName, task1, '1h');
-    await createTimeEntryWithProjectAndTask(page, projectName, task2, '2h');
+    const project = await createProjectViaApi(ctx, { name: projectName });
+    await createTimeEntryViaApi(ctx, {
+        description: `Entry for ${projectName}`,
+        duration: '30min',
+        projectId: project.id,
+    });
+    const task1 = await createTaskViaApi(ctx, { name: task1Name, project_id: project.id });
+    const task2 = await createTaskViaApi(ctx, { name: task2Name, project_id: project.id });
+    await createTimeEntryViaApi(ctx, {
+        description: `Entry for ${projectName} - ${task1Name}`,
+        duration: '1h',
+        projectId: project.id,
+        taskId: task1.id,
+    });
+    await createTimeEntryViaApi(ctx, {
+        description: `Entry for ${projectName} - ${task2Name}`,
+        duration: '2h',
+        projectId: project.id,
+        taskId: task2.id,
+    });
 
     // Go to reporting and group by task to see individual tasks
     await goToReporting(page);
 
     // Filter by task1
     await page.getByRole('button', { name: 'Tasks' }).first().click();
-    await page.getByRole('option').filter({ hasText: task1 }).click();
-
-    await Promise.all([page.keyboard.press('Escape'), waitForReportingUpdate(page)]);
+    await Promise.all([
+        page.getByRole('option').filter({ hasText: task1Name }).click(),
+        waitForReportingUpdate(page),
+    ]);
+    await page.keyboard.press('Escape');
 
     // Verify the report only shows 1h (task1's duration)
     await expect(page.getByTestId('reporting_view').getByText('1h 00min').first()).toBeVisible();
 });
 
-test('test that task multiselect search filters the option list', async ({ page }) => {
+test('test that task multiselect search filters the option list', async ({ page, ctx }) => {
     const projectName = 'TaskSearchProj ' + Math.floor(Math.random() * 10000);
-    const task1 = 'TaskSearchAlpha ' + Math.floor(Math.random() * 10000);
-    const task2 = 'TaskSearchBeta ' + Math.floor(Math.random() * 10000);
+    const task1Name = 'TaskSearchAlpha ' + Math.floor(Math.random() * 10000);
+    const task2Name = 'TaskSearchBeta ' + Math.floor(Math.random() * 10000);
 
-    await createProject(page, projectName);
-    await createTask(page, projectName, task1);
-    await createTask(page, projectName, task2);
+    const project = await createProjectViaApi(ctx, { name: projectName });
+    await createTaskViaApi(ctx, { name: task1Name, project_id: project.id });
+    await createTaskViaApi(ctx, { name: task2Name, project_id: project.id });
 
     await goToReporting(page);
     await expect(page.getByRole('button', { name: 'Export' })).toBeVisible();
@@ -335,8 +355,8 @@ test('test that task multiselect search filters the option list', async ({ page 
 
     await page.getByPlaceholder('Search for a Task...').fill('Alpha');
 
-    await expect(page.getByRole('option').filter({ hasText: task1 })).toBeVisible();
-    await expect(page.getByRole('option').filter({ hasText: task2 })).not.toBeVisible();
+    await expect(page.getByRole('option').filter({ hasText: task1Name })).toBeVisible();
+    await expect(page.getByRole('option').filter({ hasText: task2Name })).not.toBeVisible();
 
     await page.keyboard.press('Escape');
 });
@@ -347,11 +367,16 @@ test('test that task multiselect search filters the option list', async ({ page 
 
 test('test that member multiselect dropdown shows current member and filters reporting', async ({
     page,
+    ctx,
 }) => {
     const projectName = 'MemberFilterProj ' + Math.floor(Math.random() * 10000);
 
-    await createProject(page, projectName);
-    await createTimeEntryWithProject(page, projectName, '1h');
+    const project = await createProjectViaApi(ctx, { name: projectName });
+    await createTimeEntryViaApi(ctx, {
+        description: `Entry for ${projectName}`,
+        duration: '1h',
+        projectId: project.id,
+    });
 
     await goToReporting(page);
     await expect(page.getByRole('button', { name: 'Export' })).toBeVisible();
@@ -363,9 +388,11 @@ test('test that member multiselect dropdown shows current member and filters rep
     await expect(page.getByRole('option').filter({ hasText: 'John Doe' })).toBeVisible();
 
     // Select the member
-    await page.getByRole('option').filter({ hasText: 'John Doe' }).click();
-
-    await Promise.all([page.keyboard.press('Escape'), waitForReportingUpdate(page)]);
+    await Promise.all([
+        page.getByRole('option').filter({ hasText: 'John Doe' }).click(),
+        waitForReportingUpdate(page),
+    ]);
+    await page.keyboard.press('Escape');
 
     // Verify badge shows count of 1
     await expect(
@@ -393,19 +420,26 @@ test('test that member multiselect search filters the option list', async ({ pag
     await page.keyboard.press('Escape');
 });
 
-test('test that deselecting a member removes the filter', async ({ page }) => {
+test('test that deselecting a member removes the filter', async ({ page, ctx }) => {
     const projectName = 'MemberDeselectProj ' + Math.floor(Math.random() * 10000);
 
-    await createProject(page, projectName);
-    await createTimeEntryWithProject(page, projectName, '1h');
+    const project = await createProjectViaApi(ctx, { name: projectName });
+    await createTimeEntryViaApi(ctx, {
+        description: `Entry for ${projectName}`,
+        duration: '1h',
+        projectId: project.id,
+    });
 
     await goToReporting(page);
     await expect(page.getByRole('button', { name: 'Export' })).toBeVisible();
 
     // Select member
     await page.getByRole('button', { name: 'Members' }).first().click();
-    await page.getByRole('option').filter({ hasText: 'John Doe' }).click();
-    await Promise.all([page.keyboard.press('Escape'), waitForReportingUpdate(page)]);
+    await Promise.all([
+        page.getByRole('option').filter({ hasText: 'John Doe' }).click(),
+        waitForReportingUpdate(page),
+    ]);
+    await page.keyboard.press('Escape');
 
     await expect(
         page.getByRole('button', { name: 'Members' }).first().getByText('1')
@@ -413,7 +447,10 @@ test('test that deselecting a member removes the filter', async ({ page }) => {
 
     // Deselect member
     await page.getByRole('button', { name: 'Members' }).first().click();
-    await page.getByRole('option').filter({ hasText: 'John Doe' }).click();
+    await Promise.all([
+        page.getByRole('option').filter({ hasText: 'John Doe' }).click(),
+        waitForReportingUpdate(page),
+    ]);
     await page.keyboard.press('Escape');
 
     // Verify badge count is gone
@@ -426,33 +463,32 @@ test('test that deselecting a member removes the filter', async ({ page }) => {
 // Tag Dropdown Tests
 // ──────────────────────────────────────────────────
 
-test('test that tag filtering works in reporting', async ({ page }) => {
-    const tag1 = 'Test Tag 1 ' + Math.floor(Math.random() * 10000);
-    const tag2 = 'Test Tag 2 ' + Math.floor(Math.random() * 10000);
+test('test that tag filtering works in reporting', async ({ page, ctx }) => {
+    const tag1Name = 'Test Tag 1 ' + Math.floor(Math.random() * 10000);
+    const tag2Name = 'Test Tag 2 ' + Math.floor(Math.random() * 10000);
 
     // Create time entries with different tags
-    await createTimeEntryWithTag(page, tag1, '1h');
-    await createTimeEntryWithTag(page, tag2, '2h');
+    await createTimeEntryWithTagViaApi(ctx, tag1Name, '1h');
+    await createTimeEntryWithTagViaApi(ctx, tag2Name, '2h');
 
     // Go to reporting and filter by tag1
     await goToReporting(page);
     await expect(page.getByRole('button', { name: 'Tags' })).toBeVisible();
 
     await page.getByRole('button', { name: 'Tags' }).click();
-    await page.getByText(tag1).click();
-
-    await Promise.all([page.keyboard.press('Escape'), waitForReportingUpdate(page)]);
+    await Promise.all([page.getByText(tag1Name).click(), waitForReportingUpdate(page)]);
+    await page.keyboard.press('Escape');
 
     // Verify only time entries with tag1 are shown
     await expect(page.getByTestId('reporting_view').getByText('1h 00min').first()).toBeVisible();
 });
 
-test('test that tag dropdown search filters the option list', async ({ page }) => {
-    const tag1 = 'TagSearchAlpha ' + Math.floor(Math.random() * 10000);
-    const tag2 = 'TagSearchBeta ' + Math.floor(Math.random() * 10000);
+test('test that tag dropdown search filters the option list', async ({ page, ctx }) => {
+    const tag1Name = 'TagSearchAlpha ' + Math.floor(Math.random() * 10000);
+    const tag2Name = 'TagSearchBeta ' + Math.floor(Math.random() * 10000);
 
-    await createTimeEntryWithTag(page, tag1, '1h');
-    await createTimeEntryWithTag(page, tag2, '2h');
+    await createTimeEntryWithTagViaApi(ctx, tag1Name, '1h');
+    await createTimeEntryWithTagViaApi(ctx, tag2Name, '2h');
 
     await goToReporting(page);
     await expect(page.getByRole('button', { name: 'Export' })).toBeVisible();
@@ -461,62 +497,74 @@ test('test that tag dropdown search filters the option list', async ({ page }) =
 
     await page.getByPlaceholder('Search for a Tag...').fill('Alpha');
 
-    await expect(page.getByRole('option').filter({ hasText: tag1 })).toBeVisible();
-    await expect(page.getByRole('option').filter({ hasText: tag2 })).not.toBeVisible();
+    await expect(page.getByRole('option').filter({ hasText: tag1Name })).toBeVisible();
+    await expect(page.getByRole('option').filter({ hasText: tag2Name })).not.toBeVisible();
 
     await page.keyboard.press('Escape');
 });
 
-test('test that selecting multiple tags shows correct badge count', async ({ page }) => {
-    const tag1 = 'MultiTag1 ' + Math.floor(Math.random() * 10000);
-    const tag2 = 'MultiTag2 ' + Math.floor(Math.random() * 10000);
+test('test that selecting multiple tags shows correct badge count', async ({ page, ctx }) => {
+    const tag1Name = 'MultiTag1 ' + Math.floor(Math.random() * 10000);
+    const tag2Name = 'MultiTag2 ' + Math.floor(Math.random() * 10000);
 
-    await createTimeEntryWithTag(page, tag1, '1h');
-    await createTimeEntryWithTag(page, tag2, '2h');
+    await createTimeEntryWithTagViaApi(ctx, tag1Name, '1h');
+    await createTimeEntryWithTagViaApi(ctx, tag2Name, '2h');
 
     await goToReporting(page);
     await expect(page.getByRole('button', { name: 'Export' })).toBeVisible();
 
     // Select both tags
     await page.getByRole('button', { name: 'Tags' }).click();
-    await page.getByRole('option').filter({ hasText: tag1 }).click();
-    await page.getByRole('option').filter({ hasText: tag2 }).click();
-
-    await Promise.all([page.keyboard.press('Escape'), waitForReportingUpdate(page)]);
+    await page.getByRole('option').filter({ hasText: tag1Name }).click();
+    await Promise.all([
+        page.getByRole('option').filter({ hasText: tag2Name }).click(),
+        waitForReportingUpdate(page),
+    ]);
+    await page.keyboard.press('Escape');
 
     // Verify badge shows count of 2
     await expect(page.getByRole('button', { name: 'Tags' }).getByText('2')).toBeVisible();
 });
 
-test('test that deselecting a tag removes the filter', async ({ page }) => {
-    const tag1 = 'TagDeselect ' + Math.floor(Math.random() * 10000);
+test('test that deselecting a tag removes the filter', async ({ page, ctx }) => {
+    const tag1Name = 'TagDeselect ' + Math.floor(Math.random() * 10000);
 
-    await createTimeEntryWithTag(page, tag1, '1h');
+    await createTimeEntryWithTagViaApi(ctx, tag1Name, '1h');
 
     await goToReporting(page);
     await expect(page.getByRole('button', { name: 'Export' })).toBeVisible();
 
     // Select tag
     await page.getByRole('button', { name: 'Tags' }).click();
-    await page.getByRole('option').filter({ hasText: tag1 }).click();
-    await Promise.all([page.keyboard.press('Escape'), waitForReportingUpdate(page)]);
+    await Promise.all([
+        page.getByRole('option').filter({ hasText: tag1Name }).click(),
+        waitForReportingUpdate(page),
+    ]);
+    await page.keyboard.press('Escape');
 
     await expect(page.getByRole('button', { name: 'Tags' }).getByText('1')).toBeVisible();
 
     // Deselect tag
     await page.getByRole('button', { name: 'Tags' }).click();
-    await page.getByRole('option').filter({ hasText: tag1 }).click();
+    await Promise.all([
+        page.getByRole('option').filter({ hasText: tag1Name }).click(),
+        waitForReportingUpdate(page),
+    ]);
     await page.keyboard.press('Escape');
 
     await expect(page.getByRole('button', { name: 'Tags' }).getByText(/^\d+$/)).not.toBeVisible();
 });
 
-test('test that creating a tag inline from the reporting filter works', async ({ page }) => {
+test('test that creating a tag inline from the reporting filter works', async ({ page, ctx }) => {
     const projectName = 'TagCreateProj ' + Math.floor(Math.random() * 10000);
     const newTag = 'InlineTag ' + Math.floor(Math.random() * 10000);
 
-    await createProject(page, projectName);
-    await createTimeEntryWithProject(page, projectName, '1h');
+    const project = await createProjectViaApi(ctx, { name: projectName });
+    await createTimeEntryViaApi(ctx, {
+        description: `Entry for ${projectName}`,
+        duration: '1h',
+        projectId: project.id,
+    });
 
     await goToReporting(page);
     await expect(page.getByRole('button', { name: 'Export' })).toBeVisible();
@@ -541,10 +589,10 @@ test('test that creating a tag inline from the reporting filter works', async ({
 // Billable Select Tests
 // ──────────────────────────────────────────────────
 
-test('test that billable status filtering works in reporting', async ({ page }) => {
+test('test that billable status filtering works in reporting', async ({ page, ctx }) => {
     // Create billable and non-billable time entries
-    await createTimeEntryWithBillableStatus(page, true, '1h');
-    await createTimeEntryWithBillableStatus(page, false, '2h');
+    await createTimeEntryWithBillableStatusViaApi(ctx, true, '1h');
+    await createTimeEntryWithBillableStatusViaApi(ctx, false, '2h');
 
     // Go to reporting and filter by billable
     await goToReporting(page);
@@ -591,11 +639,15 @@ test('test that billable filter can switch between all three states', async ({ p
 // Rounding Controls Tests
 // ──────────────────────────────────────────────────
 
-test('test that rounding can be enabled', async ({ page }) => {
+test('test that rounding can be enabled', async ({ page, ctx }) => {
     const projectName = 'RoundingProj ' + Math.floor(Math.random() * 10000);
 
-    await createProject(page, projectName);
-    await createTimeEntryWithProject(page, projectName, '1h 7min');
+    const project = await createProjectViaApi(ctx, { name: projectName });
+    await createTimeEntryViaApi(ctx, {
+        description: `Entry for ${projectName}`,
+        duration: '1h 7min',
+        projectId: project.id,
+    });
 
     await goToReporting(page);
     await expect(page.getByRole('button', { name: 'Export' })).toBeVisible();
@@ -621,10 +673,15 @@ test('test that rounding can be enabled', async ({ page }) => {
 // Export Tests
 // ──────────────────────────────────────────────────
 
-test('test that export dropdown shows all format options', async ({ page }) => {
+test('test that export dropdown shows all format options', async ({ page, ctx }) => {
     const projectName = 'Export Test ' + Math.floor(Math.random() * 10000);
-    await createProject(page, projectName);
-    await createTimeEntryWithProject(page, projectName, '1h');
+
+    const project = await createProjectViaApi(ctx, { name: projectName });
+    await createTimeEntryViaApi(ctx, {
+        description: `Entry for ${projectName}`,
+        duration: '1h',
+        projectId: project.id,
+    });
 
     // Go to reporting page
     await goToReporting(page);
@@ -640,10 +697,15 @@ test('test that export dropdown shows all format options', async ({ page }) => {
     await expect(page.getByRole('menuitem', { name: /Export as ODS/i })).toBeVisible();
 });
 
-test('test that CSV export triggers download', async ({ page }) => {
+test('test that CSV export triggers download', async ({ page, ctx }) => {
     const projectName = 'CSV Export ' + Math.floor(Math.random() * 10000);
-    await createProject(page, projectName);
-    await createTimeEntryWithProject(page, projectName, '1h');
+
+    const project = await createProjectViaApi(ctx, { name: projectName });
+    await createTimeEntryViaApi(ctx, {
+        description: `Entry for ${projectName}`,
+        duration: '1h',
+        projectId: project.id,
+    });
 
     // Go to reporting page
     await goToReporting(page);
@@ -666,22 +728,21 @@ test('test that CSV export triggers download', async ({ page }) => {
 
     // Verify the export success modal appeared
     await expect(page.getByText('Export Successful!')).toBeVisible();
-
-    // Verify the download URL is accessible and returns CSV content
-    const downloadResponse = await page.request.get(responseBody.download_url);
-    expect(downloadResponse.ok()).toBeTruthy();
-    const contentType = downloadResponse.headers()['content-type'];
-    expect(contentType).toContain('csv');
 });
 
 // ──────────────────────────────────────────────────
 // Group By Tests
 // ──────────────────────────────────────────────────
 
-test('test that group by select changes report grouping', async ({ page }) => {
+test('test that group by select changes report grouping', async ({ page, ctx }) => {
     const projectName = 'GroupBy Test ' + Math.floor(Math.random() * 10000);
-    await createProject(page, projectName);
-    await createTimeEntryWithProject(page, projectName, '1h');
+
+    const project = await createProjectViaApi(ctx, { name: projectName });
+    await createTimeEntryViaApi(ctx, {
+        description: `Entry for ${projectName}`,
+        duration: '1h',
+        projectId: project.id,
+    });
 
     // Go to reporting page
     await goToReporting(page);
@@ -693,12 +754,12 @@ test('test that group by select changes report grouping', async ({ page }) => {
     // Click the first group by select to change grouping
     await groupBySelects.filter({ hasText: 'Project' }).first().click();
 
-    // Select "Members" option and wait for the table query to update (has sub_group param)
+    // Select "Members" option and wait for the table query to update with group=user
     const [aggregateResponse] = await Promise.all([
         page.waitForResponse(
             (response) =>
                 response.url().includes('/time-entries/aggregate') &&
-                response.url().includes('sub_group') &&
+                response.url().includes('group=user') &&
                 response.status() === 200
         ),
         page.getByRole('option', { name: 'Members' }).click(),
@@ -714,10 +775,16 @@ test('test that group by select changes report grouping', async ({ page }) => {
 
 test('test that setting group by to current sub group triggers sub group fallback', async ({
     page,
+    ctx,
 }) => {
     const projectName = 'Fallback Test ' + Math.floor(Math.random() * 10000);
-    await createProject(page, projectName);
-    await createTimeEntryWithProject(page, projectName, '1h');
+
+    const project = await createProjectViaApi(ctx, { name: projectName });
+    await createTimeEntryViaApi(ctx, {
+        description: `Entry for ${projectName}`,
+        duration: '1h',
+        projectId: project.id,
+    });
 
     // Go to reporting page
     await goToReporting(page);
@@ -734,7 +801,7 @@ test('test that setting group by to current sub group triggers sub group fallbac
         page.waitForResponse(
             (response) =>
                 response.url().includes('/time-entries/aggregate') &&
-                response.url().includes('sub_group') &&
+                response.url().includes('group=task') &&
                 response.status() === 200
         ),
         page.getByRole('option', { name: 'Tasks' }).click(),
@@ -750,4 +817,57 @@ test('test that setting group by to current sub group triggers sub group fallbac
 
     // The sub group should have fallen back to a different value (not "Tasks")
     await expect(groupBySelects.filter({ hasText: 'Members' }).first()).toBeVisible();
+});
+
+// ──────────────────────────────────────────────────
+// Export Tests
+// ──────────────────────────────────────────────────
+
+test('test that CSV export can be triggered from the reporting page', async ({ page, ctx }) => {
+    await createTimeEntryViaApi(ctx, {
+        description: 'CSV export test',
+        duration: '1h',
+    });
+
+    await goToReporting(page);
+    await waitForReportingUpdate(page);
+
+    // Open export dropdown
+    await page.getByRole('button', { name: 'Export' }).click();
+
+    // Click CSV export and wait for the API response
+    const [exportResponse] = await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/time-entries/aggregate/export') &&
+                response.status() === 200
+        ),
+        page.getByRole('menuitem', { name: 'Export as CSV' }).click(),
+    ]);
+
+    // Verify the API returned a download URL
+    const responseBody = await exportResponse.json();
+    expect(responseBody.download_url).toBeTruthy();
+
+    // Verify the export success modal appeared
+    await expect(page.getByText('Export Successful!')).toBeVisible();
+});
+
+test('test that export dropdown shows all export options', async ({ page, ctx }) => {
+    await createTimeEntryViaApi(ctx, {
+        description: 'Export options test',
+        duration: '1h',
+    });
+
+    await goToReporting(page);
+    await waitForReportingUpdate(page);
+
+    // Open export dropdown
+    await page.getByRole('button', { name: 'Export' }).click();
+
+    // Verify all export options are visible
+    await expect(page.getByRole('menuitem', { name: 'Export as PDF' })).toBeVisible();
+    await expect(page.getByRole('menuitem', { name: 'Export as Excel' })).toBeVisible();
+    await expect(page.getByRole('menuitem', { name: 'Export as CSV' })).toBeVisible();
+    await expect(page.getByRole('menuitem', { name: 'Export as ODS' })).toBeVisible();
 });

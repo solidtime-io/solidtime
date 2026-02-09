@@ -4,6 +4,7 @@ import { PLAYWRIGHT_BASE_URL } from '../playwright/config';
 import { test } from '../playwright/fixtures';
 import { formatCentsWithOrganizationDefaults } from './utils/money';
 import type { CurrencyFormat } from '../resources/js/packages/ui/src/utils/money';
+import { createProjectViaApi, createTaskViaApi } from './utils/api';
 
 async function goToProjectsOverview(page: Page) {
     await page.goto(PLAYWRIGHT_BASE_URL + '/projects');
@@ -70,24 +71,13 @@ async function removeStatusFilter(page: Page) {
     await statusBadge.locator('button').last().click();
 }
 
-test('test that archiving and unarchiving projects works', async ({ page }) => {
+test('test that archiving and unarchiving projects works', async ({ page, ctx }) => {
     const newProjectName = 'New Project ' + Math.floor(1 + Math.random() * 10000);
+    await createProjectViaApi(ctx, { name: newProjectName });
+
     await goToProjectsOverview(page);
     await clearProjectTableState(page);
     await page.reload();
-
-    await page.getByRole('button', { name: 'Create Project' }).click();
-    await page.getByLabel('Project Name').fill(newProjectName);
-
-    await Promise.all([
-        page.getByRole('button', { name: 'Create Project' }).click(),
-        page.waitForResponse(
-            (response) =>
-                response.url().includes('/projects') &&
-                response.request().method() === 'POST' &&
-                response.status() === 201
-        ),
-    ]);
     await expect(page.getByText(newProjectName)).toBeVisible({ timeout: 10000 });
 
     // Archive the project
@@ -119,22 +109,12 @@ test('test that archiving and unarchiving projects works', async ({ page }) => {
     await expect(page.getByText(newProjectName)).toBeVisible();
 });
 
-test('test that updating billable rate works with existing time entries', async ({ page }) => {
+test('test that updating billable rate works with existing time entries', async ({ page, ctx }) => {
     const newProjectName = 'New Project ' + Math.floor(1 + Math.random() * 10000);
     const newBillableRate = Math.round(Math.random() * 10000);
-    await goToProjectsOverview(page);
-    await page.getByRole('button', { name: 'Create Project' }).click();
-    await page.getByLabel('Project Name').fill(newProjectName);
+    await createProjectViaApi(ctx, { name: newProjectName });
 
-    await Promise.all([
-        page.getByRole('button', { name: 'Create Project' }).click(),
-        page.waitForResponse(
-            (response) =>
-                response.url().includes('/projects') &&
-                response.request().method() === 'POST' &&
-                response.status() === 201
-        ),
-    ]);
+    await goToProjectsOverview(page);
     await expect(page.getByText(newProjectName)).toBeVisible({ timeout: 10000 });
 
     await page.getByRole('row').first().getByRole('button').click();
@@ -200,15 +180,14 @@ test('test that sorting projects by name works', async ({ page }) => {
     const nameHeader = page.getByText('Name').first();
     await nameHeader.click();
 
-    // Wait for sort to apply
-    await page.waitForTimeout(100);
+    // Wait for sort indicator to appear
+    await expect(nameHeader.locator('svg')).toBeVisible();
 
     // Click again to sort descending
     await nameHeader.click();
-    await page.waitForTimeout(100);
 
-    // Verify the sort indicator is showing descending
-    await expect(page.locator('svg').first()).toBeVisible();
+    // Verify the sort indicator is still visible (showing descending)
+    await expect(nameHeader.locator('svg')).toBeVisible();
 });
 
 test('test that sorting projects by status works', async ({ page }) => {
@@ -223,32 +202,18 @@ test('test that sorting projects by status works', async ({ page }) => {
     const statusHeader = page.getByText('Status').first();
     await statusHeader.click();
 
-    // Wait for sort to apply
-    await page.waitForTimeout(100);
-
     // Sort indicator should be visible
     await expect(statusHeader.locator('svg')).toBeVisible();
 });
 
 // Filter tests
-test('test that filtering projects by status works', async ({ page }) => {
+test('test that filtering projects by status works', async ({ page, ctx }) => {
     const newProjectName = 'Filter Test Project ' + Math.floor(1 + Math.random() * 10000);
+    await createProjectViaApi(ctx, { name: newProjectName });
+
     await goToProjectsOverview(page);
     await clearProjectTableState(page);
     await page.reload();
-
-    // Create a new project
-    await page.getByRole('button', { name: 'Create Project' }).click();
-    await page.getByLabel('Project Name').fill(newProjectName);
-    await Promise.all([
-        page.getByRole('button', { name: 'Create Project' }).click(),
-        page.waitForResponse(
-            (response) =>
-                response.url().includes('/projects') &&
-                response.request().method() === 'POST' &&
-                response.status() === 201
-        ),
-    ]);
     await expect(page.getByText(newProjectName)).toBeVisible({ timeout: 10000 });
 
     // Archive the project
@@ -287,9 +252,6 @@ test('test that filter state persists after page reload', async ({ page }) => {
     // Verify the filter badge is visible
     await expect(page.getByTestId('status-filter-badge')).toBeVisible();
 
-    // Wait for the state to be saved
-    await page.waitForTimeout(100);
-
     // Reload the page
     await page.reload();
 
@@ -305,10 +267,8 @@ test('test that sort state persists after page reload', async ({ page }) => {
     // Click on Name header twice to sort descending
     const nameHeader = page.getByText('Name').first();
     await nameHeader.click();
+    await expect(nameHeader.locator('svg')).toBeVisible();
     await nameHeader.click();
-
-    // Wait for the state to be saved
-    await page.waitForTimeout(100);
 
     // Reload the page
     await page.reload();
@@ -319,22 +279,13 @@ test('test that sort state persists after page reload', async ({ page }) => {
 
 test('test that custom billable rate is displayed correctly on project detail page', async ({
     page,
+    ctx,
 }) => {
     const newProjectName = 'Billable Rate Project ' + Math.floor(1 + Math.random() * 10000);
     const newBillableRate = Math.round(10 + Math.random() * 1000);
-    await goToProjectsOverview(page);
-    await page.getByRole('button', { name: 'Create Project' }).click();
-    await page.getByLabel('Project Name').fill(newProjectName);
+    await createProjectViaApi(ctx, { name: newProjectName });
 
-    await Promise.all([
-        page.getByRole('button', { name: 'Create Project' }).click(),
-        page.waitForResponse(
-            (response) =>
-                response.url().includes('/projects') &&
-                response.request().method() === 'POST' &&
-                response.status() === 201
-        ),
-    ]);
+    await goToProjectsOverview(page);
     await expect(page.getByText(newProjectName)).toBeVisible({ timeout: 10000 });
 
     // Edit the project to set a custom billable rate
@@ -451,22 +402,11 @@ test('test that creating a project with estimated time using comma decimal notat
     await expect(page.getByTestId('project_table')).toContainText(newProjectName);
 });
 
-test('test that updating estimated time on existing project works', async ({ page }) => {
+test('test that updating estimated time on existing project works', async ({ page, ctx }) => {
     const newProjectName = 'Update Estimated Project ' + Math.floor(1 + Math.random() * 10000);
-    await goToProjectsOverview(page);
+    await createProjectViaApi(ctx, { name: newProjectName });
 
-    // Create a project first
-    await page.getByRole('button', { name: 'Create Project' }).click();
-    await page.getByLabel('Project Name').fill(newProjectName);
-    await Promise.all([
-        page.getByRole('button', { name: 'Create Project' }).click(),
-        page.waitForResponse(
-            (response) =>
-                response.url().includes('/projects') &&
-                response.request().method() === 'POST' &&
-                response.status() === 201
-        ),
-    ]);
+    await goToProjectsOverview(page);
     await expect(page.getByText(newProjectName)).toBeVisible({ timeout: 10000 });
 
     // Edit the project to add estimated time
@@ -525,4 +465,40 @@ test('test that estimated time input displays formatted value after blur', async
 
 // Edit Project Member Billable Rate
 
-// Edit Task Name
+test('test that editing a task name on the project detail page works', async ({ page, ctx }) => {
+    const projectName = 'Task Edit Project ' + Math.floor(1 + Math.random() * 10000);
+    const originalTaskName = 'Original Task ' + Math.floor(1 + Math.random() * 10000);
+    const updatedTaskName = 'Updated Task ' + Math.floor(1 + Math.random() * 10000);
+    const project = await createProjectViaApi(ctx, { name: projectName });
+    await createTaskViaApi(ctx, { name: originalTaskName, project_id: project.id });
+
+    // Navigate to the project detail page
+    await goToProjectsOverview(page);
+    await expect(page.getByText(projectName)).toBeVisible({ timeout: 10000 });
+    await page.getByText(projectName).first().click();
+    await page.waitForURL(/\/projects\/[a-f0-9-]+/);
+
+    // Verify task is visible
+    await expect(page.getByTestId('task_table')).toContainText(originalTaskName);
+
+    // Open edit modal via actions menu
+    const moreButton = page.locator("[aria-label='Actions for Task " + originalTaskName + "']");
+    await moreButton.click();
+    await page.getByTestId('task_edit').click();
+
+    // Update the task name
+    await page.locator('#taskName').fill(updatedTaskName);
+    await Promise.all([
+        page.getByRole('button', { name: 'Update Task' }).click(),
+        page.waitForResponse(
+            async (response) =>
+                response.url().includes('/tasks') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 200
+        ),
+    ]);
+
+    // Verify updated name is shown and old name is gone
+    await expect(page.getByTestId('task_table')).toContainText(updatedTaskName);
+    await expect(page.getByTestId('task_table')).not.toContainText(originalTaskName);
+});

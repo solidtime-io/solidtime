@@ -51,3 +51,31 @@ export async function getInvitationAcceptUrl(
 
     return acceptUrlMatch![1].replace(/&amp;/g, '&');
 }
+
+/**
+ * Find the password reset URL from a Mailpit email sent to the given address.
+ * Retries a few times to allow for email delivery delay.
+ */
+export async function getPasswordResetUrl(
+    request: APIRequestContext,
+    recipientEmail: string
+): Promise<string> {
+    let searchResult: { messages: Array<{ ID: string }> } = { messages: [] };
+
+    // Retry up to 5 times with 500ms delay to allow for email delivery
+    for (let attempt = 0; attempt < 5; attempt++) {
+        searchResult = await searchEmails(
+            request,
+            `to:${encodeURIComponent(recipientEmail)} subject:"Reset Password"`
+        );
+        if (searchResult.messages.length > 0) break;
+        await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+    expect(searchResult.messages.length).toBeGreaterThan(0);
+
+    const message = await getMessage(request, searchResult.messages[0].ID);
+    const resetUrlMatch = message.HTML.match(/href="([^"]*reset-password[^"]*)"/);
+    expect(resetUrlMatch).toBeTruthy();
+
+    return resetUrlMatch![1].replace(/&amp;/g, '&');
+}
