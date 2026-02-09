@@ -228,4 +228,139 @@ test('test that format settings are reflected in the dashboard', async ({ page }
     ).toBeVisible();
 });
 
-// TODO: Test 12-hour clock format
+test('test that organization time entry settings can be toggled', async ({ page }) => {
+    await goToOrganizationSettings(page);
+
+    const preventOverlappingCheckbox = page.getByLabel(
+        'Prevent overlapping time entries (new entries only)'
+    );
+    const manageTasksCheckbox = page.getByLabel('Allow Employees to manage tasks');
+
+    // Get current states and toggle both
+    const wasOverlappingChecked = await preventOverlappingCheckbox.isChecked();
+    const wasManageTasksChecked = await manageTasksCheckbox.isChecked();
+
+    if (wasOverlappingChecked) {
+        await preventOverlappingCheckbox.uncheck();
+    } else {
+        await preventOverlappingCheckbox.check();
+    }
+
+    if (wasManageTasksChecked) {
+        await manageTasksCheckbox.uncheck();
+    } else {
+        await manageTasksCheckbox.check();
+    }
+
+    // Save
+    const settingsForm = page.locator('form').filter({ hasText: 'Prevent overlapping' });
+    await Promise.all([
+        settingsForm.getByRole('button', { name: 'Save' }).click(),
+        page.waitForResponse(
+            async (response) =>
+                response.url().includes('/organizations/') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 200 &&
+                (await response.json()).data.prevent_overlapping_time_entries ===
+                    !wasOverlappingChecked
+        ),
+    ]);
+
+    // Reload and verify both settings persisted
+    await page.reload();
+    await expect(preventOverlappingCheckbox).toBeChecked({ checked: !wasOverlappingChecked });
+    await expect(manageTasksCheckbox).toBeChecked({ checked: !wasManageTasksChecked });
+
+    // Toggle both back to restore original state
+    if (!wasOverlappingChecked) {
+        await preventOverlappingCheckbox.uncheck();
+    } else {
+        await preventOverlappingCheckbox.check();
+    }
+
+    if (!wasManageTasksChecked) {
+        await manageTasksCheckbox.uncheck();
+    } else {
+        await manageTasksCheckbox.check();
+    }
+
+    await Promise.all([
+        settingsForm.getByRole('button', { name: 'Save' }).click(),
+        page.waitForResponse(
+            async (response) =>
+                response.url().includes('/organizations/') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 200 &&
+                (await response.json()).data.prevent_overlapping_time_entries ===
+                    wasOverlappingChecked
+        ),
+    ]);
+});
+
+test('test that 12-hour clock format can be set', async ({ page }) => {
+    await goToOrganizationSettings(page);
+
+    await page.getByLabel('Time Format').click();
+    await page.getByRole('option', { name: '12-hour clock' }).click();
+    await Promise.all([
+        page
+            .locator('form')
+            .filter({ hasText: 'Time Format' })
+            .getByRole('button', { name: 'Save' })
+            .click(),
+        page.waitForResponse(
+            async (response) =>
+                response.url().includes('/organizations/') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 200 &&
+                (await response.json()).data.time_format === '12-hours'
+        ),
+    ]);
+
+    // Reload and verify it persisted
+    await page.reload();
+    await expect(page.getByLabel('Time Format')).toContainText('12-hour clock');
+
+    // Reset back to 24-hour
+    await page.getByLabel('Time Format').click();
+    await page.getByRole('option', { name: '24-hour clock' }).click();
+    await Promise.all([
+        page
+            .locator('form')
+            .filter({ hasText: 'Time Format' })
+            .getByRole('button', { name: 'Save' })
+            .click(),
+        page.waitForResponse(
+            async (response) =>
+                response.url().includes('/organizations/') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 200 &&
+                (await response.json()).data.time_format === '24-hours'
+        ),
+    ]);
+});
+
+test('test that format settings persist after page reload', async ({ page }) => {
+    await goToOrganizationSettings(page);
+
+    // Set a specific date format
+    await page.getByLabel('Date Format').click();
+    await page.getByRole('option', { name: 'DD/MM/YYYY' }).click();
+    await Promise.all([
+        page
+            .locator('form')
+            .filter({ hasText: 'Date Format' })
+            .getByRole('button', { name: 'Save' })
+            .click(),
+        page.waitForResponse(
+            async (response) =>
+                response.url().includes('/organizations/') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 200
+        ),
+    ]);
+
+    // Reload and verify it persisted
+    await page.reload();
+    await expect(page.getByLabel('Date Format')).toContainText('DD/MM/YYYY');
+});

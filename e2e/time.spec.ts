@@ -9,7 +9,11 @@ import {
     startOrStopTimerWithButton,
     stoppedTimeEntryResponse,
 } from './utils/currentTimeEntry';
-import { createProject, createBillableProject, createBareTimeEntry } from './utils/reporting';
+import {
+    createProjectViaApi,
+    createBillableProjectViaApi,
+    createBareTimeEntryViaApi,
+} from './utils/api';
 
 // Date picker button name patterns for different date formats
 // Matches: "Pick a date", "YYYY-MM-DD", "DD/MM/YYYY", "DD.MM.YYYY", "MM/DD/YYYY", "DD-MM-YYYY", "MM-DD-YYYY"
@@ -48,7 +52,8 @@ async function createEmptyTimeEntry(page: Page) {
         startOrStopTimerWithButton(page),
         assertThatTimerHasStarted(page),
     ]);
-    await page.waitForTimeout(1500);
+    // Wait for the timer to accumulate some duration so the stopped entry has duration > 0
+    await expect(page.getByTestId('time_entry_time')).not.toHaveValue('00:00:00');
     await Promise.all([
         stoppedTimeEntryResponse(page),
         startOrStopTimerWithButton(page),
@@ -68,8 +73,6 @@ test('test that starting and stopping an empty time entry shows a new time entry
             (response) => response.url().includes('/time-entries') && response.status() === 200
         ),
     ]);
-    await page.waitForTimeout(100);
-
     // check that there are not testid time_entry_row elements on the page
     const timeEntryRows = page.locator('[data-testid="time_entry_row"]');
     const initialTimeEntryCount = await timeEntryRows.count();
@@ -81,7 +84,7 @@ test('test that starting and stopping an empty time entry shows a new time entry
 // Test that description update works
 
 async function assertThatTimeEntryRowIsStopped(newTimeEntry: Locator) {
-    await expect(newTimeEntry.getByTestId('timer_button')).toHaveClass(/bg-quaternary/);
+    await expect(newTimeEntry.getByTestId('timer_button').first()).toHaveClass(/bg-quaternary/);
 }
 
 test('test that updating a description of a time entry in the overview works on blur', async ({
@@ -94,7 +97,7 @@ test('test that updating a description of a time entry in the overview works on 
     await assertThatTimeEntryRowIsStopped(newTimeEntry);
 
     const newDescription = Math.floor(Math.random() * 1000000).toString();
-    const descriptionElement = newTimeEntry.getByTestId('time_entry_description');
+    const descriptionElement = newTimeEntry.getByTestId('time_entry_description').first();
     await descriptionElement.fill(newDescription);
     await Promise.all([
         descriptionElement.press('Tab'),
@@ -126,7 +129,7 @@ test('test that updating a description of a time entry in the overview works on 
     const newTimeEntry = timeEntryRows.first();
     await assertThatTimeEntryRowIsStopped(newTimeEntry);
     const newDescription = Math.floor(Math.random() * 1000000).toString();
-    const descriptionElement = newTimeEntry.getByTestId('time_entry_description');
+    const descriptionElement = newTimeEntry.getByTestId('time_entry_description').first();
     await descriptionElement.fill(newDescription);
     await Promise.all([
         descriptionElement.press('Enter'),
@@ -157,7 +160,7 @@ test('test that adding a new tag to an existing time entry works', async ({ page
     await assertThatTimeEntryRowIsStopped(newTimeEntry);
     const newTagName = Math.floor(Math.random() * 1000000).toString();
 
-    await newTimeEntry.getByTestId('time_entry_tag_dropdown').click();
+    await newTimeEntry.getByTestId('time_entry_tag_dropdown').first().click();
     await page.getByText('Create new tag').click();
     await page.getByPlaceholder('Tag Name').fill(newTagName);
 
@@ -184,7 +187,7 @@ test('test that adding a new tag to an existing time entry works', async ({ page
         );
     });
 
-    await expect(newTimeEntry.getByText(newTagName)).toBeVisible();
+    await expect(newTimeEntry.getByText(newTagName).first()).toBeVisible();
 });
 
 // Test that Start / End Time Update Works
@@ -197,8 +200,8 @@ test('test that updating a the start of an existing time entry in the overview w
 
     const newTimeEntry = timeEntryRows.first();
     await assertThatTimeEntryRowIsStopped(newTimeEntry);
-    await page.waitForTimeout(1500);
     const timeEntryRangeElement = newTimeEntry.getByTestId('time_entry_range_selector');
+    await expect(timeEntryRangeElement).toBeVisible();
     await timeEntryRangeElement.click();
     await page.getByTestId('time_entry_range_start').first().fill('1');
     await Promise.all([
@@ -223,8 +226,8 @@ test('test that updating a the duration in the overview works on blur', async ({
 
     const newTimeEntry = timeEntryRows.first();
     await assertThatTimeEntryRowIsStopped(newTimeEntry);
-    await page.waitForTimeout(1500);
-    const timeEntryDurationInput = newTimeEntry.locator('input[name="Duration"]');
+    const timeEntryDurationInput = newTimeEntry.locator('input[name="Duration"]').first();
+    await expect(timeEntryDurationInput).toBeEditable();
     await timeEntryDurationInput.fill('20min');
 
     await Promise.all([
@@ -251,7 +254,7 @@ test('test that starting a time entry from the overview works', async ({ page })
     await createEmptyTimeEntry(page);
 
     const newTimeEntry = timeEntryRows.first();
-    const startButton = newTimeEntry.getByTestId('timer_button');
+    const startButton = newTimeEntry.getByTestId('timer_button').first();
     await expect(startButton).toHaveClass(/bg-quaternary/);
 
     await Promise.all([
@@ -269,7 +272,8 @@ test('test that starting a time entry from the overview works', async ({ page })
 
     await assertThatTimerHasStarted(page);
 
-    await page.waitForTimeout(1500);
+    // Wait for the timer to accumulate some duration
+    await expect(page.getByTestId('time_entry_time')).not.toHaveValue('00:00:00');
     await Promise.all([
         page.waitForResponse(async (response) => {
             return (
@@ -281,8 +285,8 @@ test('test that starting a time entry from the overview works', async ({ page })
             );
         }),
         startOrStopTimerWithButton(page),
-        assertThatTimerIsStopped(page),
     ]);
+    await assertThatTimerIsStopped(page);
 });
 
 test('test that deleting a time entry from the overview works', async ({ page }) => {
@@ -310,7 +314,6 @@ test.skip('test that load more works when the end of page is reached', async ({ 
         ),
     ]);
 
-    await page.waitForTimeout(200);
     await Promise.all([
         page.evaluate(() => window.scrollTo(0, document.body.scrollHeight)),
         page.waitForResponse(async (response) => {
@@ -341,8 +344,9 @@ test.skip('test that load more works when the end of page is reached', async ({ 
 
 test('test that updating the start date of a time entry via the edit modal works', async ({
     page,
+    ctx,
 }) => {
-    await createBareTimeEntry(page, 'Date edit test', '1h');
+    await createBareTimeEntryViaApi(ctx, 'Date edit test', '1h');
     await goToTimeOverview(page);
 
     const timeEntryRows = page.locator('[data-testid="time_entry_row"]');
@@ -449,8 +453,9 @@ test('test that setting a date in the create modal works', async ({ page }) => {
 
 test('test that updating the date via the time entry row range selector works', async ({
     page,
+    ctx,
 }) => {
-    await createBareTimeEntry(page, 'Date range test', '1h');
+    await createBareTimeEntryViaApi(ctx, 'Date range test', '1h');
     await goToTimeOverview(page);
 
     const timeEntryRows = page.locator('[data-testid="time_entry_row"]');
@@ -500,8 +505,9 @@ test('test that updating the date via the time entry row range selector works', 
 
 test('test that updating the end date via the time entry row range selector works', async ({
     page,
+    ctx,
 }) => {
-    await createBareTimeEntry(page, 'End date range test', '1h');
+    await createBareTimeEntryViaApi(ctx, 'End date range test', '1h');
     await goToTimeOverview(page);
 
     const timeEntryRows = page.locator('[data-testid="time_entry_row"]');
@@ -550,7 +556,7 @@ test('test that updating the end date via the time entry row range selector work
     expect(getMonthFromTimestamp(updateBody.data.end)).toBe(expectedMonth);
 });
 
-test('test that date picker displays date in organization date format', async ({ page }) => {
+test('test that date picker displays date in organization date format', async ({ page, ctx }) => {
     // First change the organization date format to DD/MM/YYYY
     await goToOrganizationSettings(page);
     await page.getByLabel('Date Format').click();
@@ -571,7 +577,7 @@ test('test that date picker displays date in organization date format', async ({
     ]);
 
     // Create a time entry and open the edit modal
-    await createBareTimeEntry(page, 'Date format test', '1h');
+    await createBareTimeEntryViaApi(ctx, 'Date format test', '1h');
     await goToTimeOverview(page);
 
     const timeEntryRows = page.locator('[data-testid="time_entry_row"]');
@@ -696,12 +702,13 @@ test('test that mass update billable status works', async ({ page }) => {
 
 test('test that resetting project selection in mass update modal does not update project', async ({
     page,
+    ctx,
 }) => {
     const projectName = 'Mass Update Reset Project ' + Math.floor(1 + Math.random() * 10000);
-    await createProject(page, projectName);
+    await createProjectViaApi(ctx, { name: projectName });
 
     // Create a time entry with the project assigned
-    await createBareTimeEntry(page, 'Mass update reset test', '1h');
+    await createBareTimeEntryViaApi(ctx, 'Mass update reset test', '1h');
     await goToTimeOverview(page);
 
     // Assign project to the time entry
@@ -809,78 +816,84 @@ test('test that setting billable status via the create modal works', async ({ pa
 
 test('test that changing project on a time entry row from non-billable to billable updates billable status', async ({
     page,
+    ctx,
 }) => {
     const billableProjectName = 'Billable Row Project ' + Math.floor(1 + Math.random() * 10000);
     const nonBillableProjectName =
         'NonBillable Row Project ' + Math.floor(1 + Math.random() * 10000);
-
-    await createProject(page, nonBillableProjectName);
-    await createBillableProject(page, billableProjectName);
-    await createBareTimeEntry(page, 'Test billable row', '1h');
+    await createProjectViaApi(ctx, { name: nonBillableProjectName });
+    await createBillableProjectViaApi(ctx, { name: billableProjectName });
+    await createBareTimeEntryViaApi(ctx, 'Test billable row', '1h');
 
     await goToTimeOverview(page);
     const timeEntryRow = page.locator('[data-testid="time_entry_row"]').first();
 
     // Assign the non-billable project first
     await timeEntryRow.getByRole('button', { name: 'No Project' }).click();
-    await page.getByRole('option', { name: nonBillableProjectName }).click();
-    await page.waitForResponse(
-        (response) =>
-            response.url().includes('/time-entries/') &&
-            response.request().method() === 'PUT' &&
-            response.status() === 200
-    );
+    await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/time-entries/') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 200
+        ),
+        page.getByRole('option', { name: nonBillableProjectName }).click(),
+    ]);
 
     // Now switch to the billable project
     await timeEntryRow.getByRole('button', { name: nonBillableProjectName }).click();
-    await page.getByRole('option', { name: billableProjectName }).click();
-
-    const updateResponse = await page.waitForResponse(
-        (response) =>
-            response.url().includes('/time-entries/') &&
-            response.request().method() === 'PUT' &&
-            response.status() === 200
-    );
+    const [updateResponse] = await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/time-entries/') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 200
+        ),
+        page.getByRole('option', { name: billableProjectName }).click(),
+    ]);
     const responseBody = await updateResponse.json();
     expect(responseBody.data.billable).toBe(true);
 });
 
 test('test that changing project on a time entry row from billable to non-billable updates billable status', async ({
     page,
+    ctx,
 }) => {
     const billableProjectName = 'Billable Row Rev Project ' + Math.floor(1 + Math.random() * 10000);
     const nonBillableProjectName =
         'NonBillable Row Rev Project ' + Math.floor(1 + Math.random() * 10000);
-
-    await createBillableProject(page, billableProjectName);
-    await createProject(page, nonBillableProjectName);
-    await createBareTimeEntry(page, 'Test billable row reverse', '1h');
+    await createBillableProjectViaApi(ctx, { name: billableProjectName });
+    await createProjectViaApi(ctx, { name: nonBillableProjectName });
+    await createBareTimeEntryViaApi(ctx, 'Test billable row reverse', '1h');
 
     await goToTimeOverview(page);
     const timeEntryRow = page.locator('[data-testid="time_entry_row"]').first();
 
     // Assign the billable project first
     await timeEntryRow.getByRole('button', { name: 'No Project' }).click();
-    await page.getByRole('option', { name: billableProjectName }).click();
-    const firstResponse = await page.waitForResponse(
-        (response) =>
-            response.url().includes('/time-entries/') &&
-            response.request().method() === 'PUT' &&
-            response.status() === 200
-    );
+    const [firstResponse] = await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/time-entries/') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 200
+        ),
+        page.getByRole('option', { name: billableProjectName }).click(),
+    ]);
     const firstBody = await firstResponse.json();
     expect(firstBody.data.billable).toBe(true);
 
     // Now switch to the non-billable project
     await timeEntryRow.getByRole('button', { name: billableProjectName }).click();
-    await page.getByRole('option', { name: nonBillableProjectName }).click();
-
-    const updateResponse = await page.waitForResponse(
-        (response) =>
-            response.url().includes('/time-entries/') &&
-            response.request().method() === 'PUT' &&
-            response.status() === 200
-    );
+    const [updateResponse] = await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/time-entries/') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 200
+        ),
+        page.getByRole('option', { name: nonBillableProjectName }).click(),
+    ]);
     const responseBody = await updateResponse.json();
     expect(responseBody.data.billable).toBe(false);
 });
@@ -956,9 +969,9 @@ test('test that decimal duration input works in create modal', async ({ page }) 
     expect(createBody.data.duration).toBe(5400);
 });
 
-test('test that project selection works in create modal', async ({ page }) => {
+test('test that project selection works in create modal', async ({ page, ctx }) => {
     const projectName = 'Create Modal Project ' + Math.floor(1 + Math.random() * 10000);
-    await createProject(page, projectName);
+    await createProjectViaApi(ctx, { name: projectName });
 
     await goToTimeOverview(page);
 
@@ -1135,11 +1148,11 @@ test('test that end time picker works in create modal', async ({ page }) => {
 
 test('test that changing project in edit modal from non-billable to billable updates billable status', async ({
     page,
+    ctx,
 }) => {
     const billableProjectName = 'Billable Modal Project ' + Math.floor(1 + Math.random() * 10000);
-
-    await createBillableProject(page, billableProjectName);
-    await createBareTimeEntry(page, 'Test billable modal', '1h');
+    await createBillableProjectViaApi(ctx, { name: billableProjectName });
+    await createBareTimeEntryViaApi(ctx, 'Test billable modal', '1h');
 
     await goToTimeOverview(page);
     const timeEntryRow = page.locator('[data-testid="time_entry_row"]').first();
@@ -1179,11 +1192,11 @@ test('test that changing project in edit modal from non-billable to billable upd
 
 test('test that opening edit modal for a time entry with manually overridden billable status preserves that status', async ({
     page,
+    ctx,
 }) => {
     const billableProjectName = 'Billable Persist Project ' + Math.floor(1 + Math.random() * 10000);
-
-    await createBillableProject(page, billableProjectName);
-    await createBareTimeEntry(page, 'Test persist billable override', '1h');
+    await createBillableProjectViaApi(ctx, { name: billableProjectName });
+    await createBareTimeEntryViaApi(ctx, 'Test persist billable override', '1h');
 
     await goToTimeOverview(page);
     const timeEntryRow = page.locator('[data-testid="time_entry_row"]').first();
@@ -1249,15 +1262,15 @@ test('test that opening edit modal for a time entry with manually overridden bil
 
 test('test that changing project in edit modal from billable to non-billable updates billable status', async ({
     page,
+    ctx,
 }) => {
     const billableProjectName =
         'Billable Modal Rev Project ' + Math.floor(1 + Math.random() * 10000);
     const nonBillableProjectName =
         'NonBillable Modal Rev Project ' + Math.floor(1 + Math.random() * 10000);
-
-    await createBillableProject(page, billableProjectName);
-    await createProject(page, nonBillableProjectName);
-    await createBareTimeEntry(page, 'Test billable modal reverse', '1h');
+    await createBillableProjectViaApi(ctx, { name: billableProjectName });
+    await createProjectViaApi(ctx, { name: nonBillableProjectName });
+    await createBareTimeEntryViaApi(ctx, 'Test billable modal reverse', '1h');
 
     await goToTimeOverview(page);
     const timeEntryRow = page.locator('[data-testid="time_entry_row"]').first();
@@ -1297,4 +1310,92 @@ test('test that changing project in edit modal from billable to non-billable upd
     ]);
     const responseBody = await updateResponse.json();
     expect(responseBody.data.billable).toBe(false);
+});
+
+// =============================================
+// Mass Delete Tests
+// =============================================
+
+test('test that mass deleting time entries works', async ({ page, ctx }) => {
+    const description = 'Mass delete ' + Math.floor(1 + Math.random() * 10000);
+    await createBareTimeEntryViaApi(ctx, description, '30min');
+
+    await goToTimeOverview(page);
+
+    const timeEntryRows = page.locator('[data-testid="time_entry_row"]');
+    await expect(timeEntryRows.first()).toBeVisible({ timeout: 10000 });
+
+    // Select all time entries using the checkbox
+    await page.getByLabel('Select All').click();
+    await expect(page.getByText('selected')).toBeVisible();
+
+    // Verify the time entry is visible before deleting
+    const entryRow = timeEntryRows.filter({ hasText: description });
+    await expect(entryRow).toBeVisible();
+
+    // Click delete button in mass action bar (no confirmation dialog)
+    await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/time-entries') && response.request().method() === 'DELETE'
+        ),
+        page.getByRole('button', { name: 'Delete' }).click(),
+    ]);
+
+    // Verify the time entry is no longer visible
+    await expect(entryRow).not.toBeVisible();
+});
+
+// =============================================
+// Delete Single Time Entry Test
+// =============================================
+
+test('test that deleting a single time entry via actions menu works', async ({ page, ctx }) => {
+    const description = 'Delete single entry ' + Math.floor(1 + Math.random() * 10000);
+    await createBareTimeEntryViaApi(ctx, description, '1h');
+
+    await goToTimeOverview(page);
+
+    const timeEntryRow = page
+        .locator('[data-testid="time_entry_row"]')
+        .filter({ hasText: description });
+    await expect(timeEntryRow).toBeVisible({ timeout: 10000 });
+
+    // Open actions menu and click Delete
+    await timeEntryRow.getByRole('button', { name: 'Actions for the time entry' }).first().click();
+    await expect(page.getByTestId('time_entry_delete')).toBeVisible();
+    // The dropdown delete uses the bulk delete endpoint (DELETE /time-entries?ids=...)
+    // which returns 200 with a JSON body, not the single endpoint returning 204
+    await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/time-entries') &&
+                response.request().method() === 'DELETE' &&
+                response.status() === 200
+        ),
+        page.getByTestId('time_entry_delete').click(),
+    ]);
+
+    // Verify the time entry is no longer visible
+    await expect(timeEntryRow).not.toBeVisible();
+});
+
+// =============================================
+// Multiple Time Entries Test
+// =============================================
+
+test('test that time entries page loads multiple entries created via API', async ({
+    page,
+    ctx,
+}) => {
+    for (let i = 0; i < 5; i++) {
+        await createBareTimeEntryViaApi(ctx, `Batch entry ${i + 1}`, '30min');
+    }
+
+    await goToTimeOverview(page);
+
+    const timeEntryRows = page.locator('[data-testid="time_entry_row"]');
+    await expect(timeEntryRows.first()).toBeVisible();
+    const count = await timeEntryRows.count();
+    expect(count).toBeGreaterThanOrEqual(5);
 });

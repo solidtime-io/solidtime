@@ -2,22 +2,22 @@ import { expect } from '@playwright/test';
 import { PLAYWRIGHT_BASE_URL } from '../playwright/config';
 import { test } from '../playwright/fixtures';
 import {
+    createProjectViaApi,
+    createClientViaApi,
+    createTaskViaApi,
+    createTimeEntryViaApi,
+    createTimeEntryWithTagViaApi,
+    createBareTimeEntryViaApi,
+} from './utils/api';
+import {
     goToReporting,
     goToReportingShared,
-    createProject,
-    createClient,
-    createProjectWithClient,
-    createTask,
-    createTimeEntryWithProject,
-    createTimeEntryWithProjectAndTask,
-    createTimeEntryWithTag,
-    createBareTimeEntry,
     waitForReportingUpdate,
     saveAsSharedReport,
 } from './utils/reporting';
 
-// Each test registers a new user and creates test data, which needs more time
-test.describe.configure({ timeout: 60000 });
+// Each test registers a new user and creates test data via API
+test.describe.configure({ timeout: 30000 });
 
 // Date picker button name patterns for different date formats
 const DATE_PICKER_BUTTON_PATTERN =
@@ -29,12 +29,17 @@ const DATE_PICKER_BUTTON_PATTERN =
 
 test('test that saving a report creates a shared report and its shareable link shows correct data', async ({
     page,
+    ctx,
 }) => {
     const projectName = 'SharedProject ' + Math.floor(Math.random() * 10000);
     const reportName = 'SharedReport ' + Math.floor(Math.random() * 10000);
 
-    await createProject(page, projectName);
-    await createTimeEntryWithProject(page, projectName, '1h');
+    const project = await createProjectViaApi(ctx, { name: projectName });
+    await createTimeEntryViaApi(ctx, {
+        description: `Entry for ${projectName}`,
+        duration: '1h',
+        projectId: project.id,
+    });
 
     await goToReporting(page);
     await expect(page.getByTestId('reporting_view').getByText(projectName)).toBeVisible();
@@ -62,12 +67,17 @@ test('test that shared report with invalid secret shows no data', async ({ page 
 
 test('test that a shared report can be edited to toggle public/private and then deleted', async ({
     page,
+    ctx,
 }) => {
     const projectName = 'EditDelProject ' + Math.floor(Math.random() * 10000);
     const reportName = 'EditDelReport ' + Math.floor(Math.random() * 10000);
 
-    await createProject(page, projectName);
-    await createTimeEntryWithProject(page, projectName, '1h');
+    const project = await createProjectViaApi(ctx, { name: projectName });
+    await createTimeEntryViaApi(ctx, {
+        description: `Entry for ${projectName}`,
+        duration: '1h',
+        projectId: project.id,
+    });
 
     await goToReporting(page);
     await expect(page.getByTestId('reporting_view').getByText(projectName)).toBeVisible();
@@ -121,24 +131,34 @@ test('test that a shared report can be edited to toggle public/private and then 
 // Shared Report Filter Tests
 // ──────────────────────────────────────────────────
 
-test('test that shared report respects project filter', async ({ page }) => {
+test('test that shared report respects project filter', async ({ page, ctx }) => {
     const projectA = 'FilterProjA ' + Math.floor(Math.random() * 10000);
     const projectB = 'FilterProjB ' + Math.floor(Math.random() * 10000);
     const reportName = 'FilterProjReport ' + Math.floor(Math.random() * 10000);
 
-    await createProject(page, projectA);
-    await createProject(page, projectB);
-    await createTimeEntryWithProject(page, projectA, '1h');
-    await createTimeEntryWithProject(page, projectB, '2h');
+    const projA = await createProjectViaApi(ctx, { name: projectA });
+    const projB = await createProjectViaApi(ctx, { name: projectB });
+    await createTimeEntryViaApi(ctx, {
+        description: `Entry for ${projectA}`,
+        duration: '1h',
+        projectId: projA.id,
+    });
+    await createTimeEntryViaApi(ctx, {
+        description: `Entry for ${projectB}`,
+        duration: '2h',
+        projectId: projB.id,
+    });
 
     await goToReporting(page);
     await expect(page.getByTestId('reporting_view').getByText(projectA)).toBeVisible();
 
     // Filter by project A
     await page.getByRole('button', { name: 'Projects' }).first().click();
-    await page.getByRole('option').filter({ hasText: projectA }).click();
+    await Promise.all([
+        page.getByRole('option').filter({ hasText: projectA }).click(),
+        waitForReportingUpdate(page),
+    ]);
     await page.keyboard.press('Escape');
-    await waitForReportingUpdate(page);
 
     const { shareableLink } = await saveAsSharedReport(page, reportName);
 
@@ -151,22 +171,29 @@ test('test that shared report respects project filter', async ({ page }) => {
 
 test('test that shared report with No Project filter shows entries without a project', async ({
     page,
+    ctx,
 }) => {
     const projectName = 'NoProjFilter ' + Math.floor(Math.random() * 10000);
     const reportName = 'NoProjReport ' + Math.floor(Math.random() * 10000);
 
-    await createProject(page, projectName);
-    await createTimeEntryWithProject(page, projectName, '1h');
-    await createBareTimeEntry(page, 'Bare entry no project', '2h');
+    const project = await createProjectViaApi(ctx, { name: projectName });
+    await createTimeEntryViaApi(ctx, {
+        description: `Entry for ${projectName}`,
+        duration: '1h',
+        projectId: project.id,
+    });
+    await createBareTimeEntryViaApi(ctx, 'Bare entry no project', '2h');
 
     await goToReporting(page);
     await expect(page.getByTestId('reporting_view').getByText(projectName)).toBeVisible();
 
     // Filter by "No Project"
     await page.getByRole('button', { name: 'Projects' }).first().click();
-    await page.getByRole('option').filter({ hasText: 'No Project' }).click();
+    await Promise.all([
+        page.getByRole('option').filter({ hasText: 'No Project' }).click(),
+        waitForReportingUpdate(page),
+    ]);
     await page.keyboard.press('Escape');
-    await waitForReportingUpdate(page);
 
     const { shareableLink } = await saveAsSharedReport(page, reportName);
 
@@ -180,24 +207,36 @@ test('test that shared report with No Project filter shows entries without a pro
 
 test('test that shared report with No Task filter shows entries without a task', async ({
     page,
+    ctx,
 }) => {
     const projectName = 'NoTaskProj ' + Math.floor(Math.random() * 10000);
     const taskName = 'NoTaskFilter ' + Math.floor(Math.random() * 10000);
     const reportName = 'NoTaskReport ' + Math.floor(Math.random() * 10000);
 
-    await createProject(page, projectName);
-    await createTask(page, projectName, taskName);
-    await createTimeEntryWithProjectAndTask(page, projectName, taskName, '1h');
-    await createTimeEntryWithProject(page, projectName, '2h');
+    const project = await createProjectViaApi(ctx, { name: projectName });
+    const task = await createTaskViaApi(ctx, { name: taskName, project_id: project.id });
+    await createTimeEntryViaApi(ctx, {
+        description: `Entry for ${projectName} - ${taskName}`,
+        duration: '1h',
+        projectId: project.id,
+        taskId: task.id,
+    });
+    await createTimeEntryViaApi(ctx, {
+        description: `Entry for ${projectName}`,
+        duration: '2h',
+        projectId: project.id,
+    });
 
     await goToReporting(page);
     await expect(page.getByTestId('reporting_view').getByText(projectName)).toBeVisible();
 
     // Filter by "No Task"
     await page.getByRole('button', { name: 'Tasks' }).first().click();
-    await page.getByRole('option').filter({ hasText: 'No Task' }).click();
+    await Promise.all([
+        page.getByRole('option').filter({ hasText: 'No Task' }).click(),
+        waitForReportingUpdate(page),
+    ]);
     await page.keyboard.press('Escape');
-    await waitForReportingUpdate(page);
 
     const { shareableLink } = await saveAsSharedReport(page, reportName);
 
@@ -211,12 +250,16 @@ test('test that shared report with No Task filter shows entries without a task',
 // Report Date Picker Tests
 // ──────────────────────────────────────────────────
 
-test('test that creating a report with an expiration date works', async ({ page }) => {
+test('test that creating a report with an expiration date works', async ({ page, ctx }) => {
     const projectName = 'DatePickerProj ' + Math.floor(Math.random() * 10000);
     const reportName = 'DatePickerReport ' + Math.floor(Math.random() * 10000);
 
-    await createProject(page, projectName);
-    await createTimeEntryWithProject(page, projectName, '1h');
+    const project = await createProjectViaApi(ctx, { name: projectName });
+    await createTimeEntryViaApi(ctx, {
+        description: `Entry for ${projectName}`,
+        duration: '1h',
+        projectId: project.id,
+    });
 
     await goToReporting(page);
     await expect(page.getByTestId('reporting_view').getByText(projectName)).toBeVisible();
@@ -257,12 +300,17 @@ test('test that creating a report with an expiration date works', async ({ page 
 
 test('test that editing a report to make it public with expiration date works', async ({
     page,
+    ctx,
 }) => {
     const projectName = 'EditDateProj ' + Math.floor(Math.random() * 10000);
     const reportName = 'EditDateReport ' + Math.floor(Math.random() * 10000);
 
-    await createProject(page, projectName);
-    await createTimeEntryWithProject(page, projectName, '1h');
+    const project = await createProjectViaApi(ctx, { name: projectName });
+    await createTimeEntryViaApi(ctx, {
+        description: `Entry for ${projectName}`,
+        duration: '1h',
+        projectId: project.id,
+    });
 
     await goToReporting(page);
     await expect(page.getByTestId('reporting_view').getByText(projectName)).toBeVisible();
@@ -331,24 +379,31 @@ test('test that editing a report to make it public with expiration date works', 
 
 test('test that shared report with No Client filter shows entries without a client', async ({
     page,
+    ctx,
 }) => {
     const clientName = 'NoClientCli ' + Math.floor(Math.random() * 10000);
     const projectName = 'NoClientProj ' + Math.floor(Math.random() * 10000);
     const reportName = 'NoClientReport ' + Math.floor(Math.random() * 10000);
 
-    await createClient(page, clientName);
-    await createProjectWithClient(page, projectName, clientName);
-    await createTimeEntryWithProject(page, projectName, '1h');
-    await createBareTimeEntry(page, 'Entry without client', '2h');
+    const client = await createClientViaApi(ctx, { name: clientName });
+    const project = await createProjectViaApi(ctx, { name: projectName, client_id: client.id });
+    await createTimeEntryViaApi(ctx, {
+        description: `Entry for ${projectName}`,
+        duration: '1h',
+        projectId: project.id,
+    });
+    await createBareTimeEntryViaApi(ctx, 'Entry without client', '2h');
 
     await goToReporting(page);
     await expect(page.getByTestId('reporting_view').getByText(projectName)).toBeVisible();
 
     // Filter by "No Client"
     await page.getByRole('button', { name: 'Clients' }).first().click();
-    await page.getByRole('option').filter({ hasText: 'No Client' }).click();
+    await Promise.all([
+        page.getByRole('option').filter({ hasText: 'No Client' }).click(),
+        waitForReportingUpdate(page),
+    ]);
     await page.keyboard.press('Escape');
-    await waitForReportingUpdate(page);
 
     const { shareableLink } = await saveAsSharedReport(page, reportName);
 
@@ -359,21 +414,26 @@ test('test that shared report with No Client filter shows entries without a clie
     await expect(page.getByText(projectName)).not.toBeVisible();
 });
 
-test('test that shared report with No Tag filter shows entries without tags', async ({ page }) => {
+test('test that shared report with No Tag filter shows entries without tags', async ({
+    page,
+    ctx,
+}) => {
     const tagName = 'NoTagFilter ' + Math.floor(Math.random() * 10000);
     const reportName = 'NoTagReport ' + Math.floor(Math.random() * 10000);
 
-    await createTimeEntryWithTag(page, tagName, '1h');
-    await createBareTimeEntry(page, 'Entry without tags', '2h');
+    await createTimeEntryWithTagViaApi(ctx, tagName, '1h');
+    await createBareTimeEntryViaApi(ctx, 'Entry without tags', '2h');
 
     await goToReporting(page);
     await expect(page.getByText('Total')).toBeVisible();
 
     // Filter by "No Tag"
     await page.getByRole('button', { name: 'Tags' }).first().click();
-    await page.getByRole('option').filter({ hasText: 'No Tag' }).click();
+    await Promise.all([
+        page.getByRole('option').filter({ hasText: 'No Tag' }).click(),
+        waitForReportingUpdate(page),
+    ]);
     await page.keyboard.press('Escape');
-    await waitForReportingUpdate(page);
 
     const { shareableLink } = await saveAsSharedReport(page, reportName);
 
@@ -383,12 +443,86 @@ test('test that shared report with No Tag filter shows entries without tags', as
     await expect(page.getByText('Total')).toBeVisible();
 });
 
-test('test that updating expiration date on already-public report works', async ({ page }) => {
+test('test that creating a report with empty name shows validation error', async ({
+    page,
+    ctx,
+}) => {
+    const projectName = 'EmptyNameProj ' + Math.floor(Math.random() * 10000);
+
+    const project = await createProjectViaApi(ctx, { name: projectName });
+    await createTimeEntryViaApi(ctx, {
+        description: `Entry for ${projectName}`,
+        duration: '1h',
+        projectId: project.id,
+    });
+
+    await goToReporting(page);
+    await expect(page.getByTestId('reporting_view').getByText(projectName)).toBeVisible();
+
+    // Open the save report modal
+    await page.getByRole('button', { name: 'Save Report' }).click();
+
+    // Leave name empty and try to create
+    await page.getByRole('dialog').getByRole('button', { name: 'Create Report' }).click();
+
+    // Should show validation error
+    await expect(page.getByText('The name field is required')).toBeVisible();
+});
+
+test('test that updating report name works', async ({ page, ctx }) => {
+    const projectName = 'UpdateNameProj ' + Math.floor(Math.random() * 10000);
+    const reportName = 'OriginalName ' + Math.floor(Math.random() * 10000);
+    const newReportName = 'UpdatedName ' + Math.floor(Math.random() * 10000);
+
+    const project = await createProjectViaApi(ctx, { name: projectName });
+    await createTimeEntryViaApi(ctx, {
+        description: `Entry for ${projectName}`,
+        duration: '1h',
+        projectId: project.id,
+    });
+
+    await goToReporting(page);
+    await expect(page.getByTestId('reporting_view').getByText(projectName)).toBeVisible();
+
+    await saveAsSharedReport(page, reportName);
+
+    await goToReportingShared(page);
+    await expect(page.getByText(reportName)).toBeVisible();
+
+    // Click more options and edit
+    await page
+        .getByRole('button', { name: new RegExp('Actions for Project ' + reportName) })
+        .click();
+    await page.getByRole('menuitem', { name: /^Edit Report/ }).click();
+
+    // Update the name
+    await page.getByLabel('Name', { exact: true }).fill(newReportName);
+
+    await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/reports/') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 200
+        ),
+        page.getByRole('button', { name: 'Update Report' }).click(),
+    ]);
+
+    // Verify the name was updated in the table
+    await expect(page.getByText(newReportName)).toBeVisible();
+    await expect(page.getByText(reportName)).not.toBeVisible();
+});
+
+test('test that updating expiration date on already-public report works', async ({ page, ctx }) => {
     const projectName = 'UpdateExpDateProj ' + Math.floor(Math.random() * 10000);
     const reportName = 'UpdateExpDateReport ' + Math.floor(Math.random() * 10000);
 
-    await createProject(page, projectName);
-    await createTimeEntryWithProject(page, projectName, '1h');
+    const project = await createProjectViaApi(ctx, { name: projectName });
+    await createTimeEntryViaApi(ctx, {
+        description: `Entry for ${projectName}`,
+        duration: '1h',
+        projectId: project.id,
+    });
 
     await goToReporting(page);
     await expect(page.getByTestId('reporting_view').getByText(projectName)).toBeVisible();

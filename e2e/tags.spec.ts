@@ -2,13 +2,13 @@ import { expect } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import { PLAYWRIGHT_BASE_URL } from '../playwright/config';
 import { test } from '../playwright/fixtures';
+import { createTagViaApi } from './utils/api';
 
 async function goToTagsOverview(page: Page) {
     await page.goto(PLAYWRIGHT_BASE_URL + '/tags');
 }
 
-// Create new project via modal
-test('test that creating and deleting a new client via the modal works', async ({ page }) => {
+test('test that creating and deleting a new tag via the modal works', async ({ page }) => {
     const newTagName = 'New Tag ' + Math.floor(1 + Math.random() * 10000);
     await goToTagsOverview(page);
     await page.getByRole('button', { name: 'Create Tag' }).click();
@@ -40,4 +40,51 @@ test('test that creating and deleting a new client via the modal works', async (
         ),
     ]);
     await expect(page.getByTestId('tag_table')).not.toContainText(newTagName);
+});
+
+test('test that editing a tag name works', async ({ page, ctx }) => {
+    const originalTagName = 'Original Tag ' + Math.floor(1 + Math.random() * 10000);
+    const updatedTagName = 'Updated Tag ' + Math.floor(1 + Math.random() * 10000);
+
+    await createTagViaApi(ctx, { name: originalTagName });
+
+    await goToTagsOverview(page);
+    await expect(page.getByTestId('tag_table')).toContainText(originalTagName);
+
+    // Open actions menu and click Edit
+    const moreButton = page.locator("[aria-label='Actions for Tag " + originalTagName + "']");
+    await moreButton.click();
+    await page.getByRole('menuitem').getByText('Edit').click();
+
+    // Update the tag name in the edit modal
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await page.getByPlaceholder('Tag Name').fill(updatedTagName);
+    await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/tags/') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 200
+        ),
+        page.getByRole('button', { name: 'Update Tag' }).click(),
+    ]);
+
+    // Verify the table shows the updated name
+    await expect(page.getByTestId('tag_table')).toContainText(updatedTagName);
+    await expect(page.getByTestId('tag_table')).not.toContainText(originalTagName);
+});
+
+test('test that multiple tags can be created via API and displayed in the table', async ({
+    page,
+    ctx,
+}) => {
+    const tagName1 = 'TagA ' + Math.floor(1 + Math.random() * 10000);
+    const tagName2 = 'TagB ' + Math.floor(1 + Math.random() * 10000);
+
+    await createTagViaApi(ctx, { name: tagName1 });
+    await createTagViaApi(ctx, { name: tagName2 });
+
+    await goToTagsOverview(page);
+    await expect(page.getByTestId('tag_table')).toContainText(tagName1);
+    await expect(page.getByTestId('tag_table')).toContainText(tagName2);
 });

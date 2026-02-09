@@ -2,7 +2,11 @@ import { PLAYWRIGHT_BASE_URL } from '../playwright/config';
 import { test } from '../playwright/fixtures';
 import { expect } from '@playwright/test';
 import type { Page } from '@playwright/test';
-import { createProject, createBillableProject, createBareTimeEntry } from './utils/reporting';
+import {
+    createBillableProjectViaApi,
+    createProjectViaApi,
+    createBareTimeEntryViaApi,
+} from './utils/api';
 
 async function goToCalendar(page: Page) {
     await page.goto(PLAYWRIGHT_BASE_URL + '/calendar');
@@ -17,11 +21,12 @@ async function goToCalendar(page: Page) {
 
 test('test that changing project in calendar edit modal from non-billable to billable updates billable status', async ({
     page,
+    ctx,
 }) => {
     const billableProjectName = 'Billable Cal Project ' + Math.floor(1 + Math.random() * 10000);
 
-    await createBillableProject(page, billableProjectName);
-    await createBareTimeEntry(page, 'Test billable calendar', '1h');
+    await createBillableProjectViaApi(ctx, { name: billableProjectName });
+    await createBareTimeEntryViaApi(ctx, 'Test billable calendar', '1h');
 
     await goToCalendar(page);
 
@@ -59,14 +64,15 @@ test('test that changing project in calendar edit modal from non-billable to bil
 
 test('test that changing project in calendar edit modal from billable to non-billable updates billable status', async ({
     page,
+    ctx,
 }) => {
     const billableProjectName = 'Billable Cal Rev Project ' + Math.floor(1 + Math.random() * 10000);
     const nonBillableProjectName =
         'NonBillable Cal Rev Project ' + Math.floor(1 + Math.random() * 10000);
 
-    await createBillableProject(page, billableProjectName);
-    await createProject(page, nonBillableProjectName);
-    await createBareTimeEntry(page, 'Test billable cal reverse', '1h');
+    await createBillableProjectViaApi(ctx, { name: billableProjectName });
+    await createProjectViaApi(ctx, { name: nonBillableProjectName });
+    await createBareTimeEntryViaApi(ctx, 'Test billable cal reverse', '1h');
 
     await goToCalendar(page);
 
@@ -112,12 +118,13 @@ test('test that changing project in calendar edit modal from billable to non-bil
 
 test('test that opening calendar edit modal for a time entry with manually overridden billable status preserves that status', async ({
     page,
+    ctx,
 }) => {
     const billableProjectName =
         'Billable Cal Persist Project ' + Math.floor(1 + Math.random() * 10000);
 
-    await createBillableProject(page, billableProjectName);
-    await createBareTimeEntry(page, 'Test cal persist override', '1h');
+    await createBillableProjectViaApi(ctx, { name: billableProjectName });
+    await createBareTimeEntryViaApi(ctx, 'Test cal persist override', '1h');
 
     await goToCalendar(page);
 
@@ -185,4 +192,99 @@ test('test that opening calendar edit modal for a time entry with manually overr
     ]);
     const responseBody = await updateResponse.json();
     expect(responseBody.data.billable).toBe(false);
+});
+
+test('test that calendar page loads and displays time entries', async ({ page, ctx }) => {
+    await createBareTimeEntryViaApi(ctx, 'Calendar display test', '1h');
+
+    await goToCalendar(page);
+
+    // Calendar container should be visible
+    await expect(page.locator('.fc')).toBeVisible();
+
+    // The time entry should appear as a calendar event
+    await expect(
+        page.locator('.fc-event').filter({ hasText: 'Calendar display test' }).first()
+    ).toBeVisible();
+});
+
+test('test that calendar navigation buttons work', async ({ page }) => {
+    await goToCalendar(page);
+    await expect(page.locator('.fc')).toBeVisible();
+
+    // Click the "next" button to navigate forward
+    await page.locator('button.fc-next-button').click();
+    await expect(page.locator('.fc')).toBeVisible();
+
+    // Click the "prev" button to navigate back
+    await page.locator('button.fc-prev-button').click();
+    await expect(page.locator('.fc')).toBeVisible();
+
+    // Navigate forward first so "today" button becomes enabled, then click it
+    await page.locator('button.fc-next-button').click();
+    await page.locator('button.fc-today-button').click();
+    await expect(page.locator('.fc')).toBeVisible();
+});
+
+test('test that editing time entry description via calendar modal works', async ({ page, ctx }) => {
+    const originalDescription = 'Edit me in calendar ' + Math.floor(1 + Math.random() * 10000);
+    const updatedDescription = 'Updated in calendar ' + Math.floor(1 + Math.random() * 10000);
+    await createBareTimeEntryViaApi(ctx, originalDescription, '1h');
+
+    await goToCalendar(page);
+
+    // Click on the time entry event
+    await page.locator('.fc-event').filter({ hasText: originalDescription }).first().click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+
+    // Update the description (edit modal uses placeholder, not data-testid)
+    const descriptionInput = page.getByRole('dialog').getByPlaceholder('What did you work on?');
+    await descriptionInput.fill(updatedDescription);
+
+    // Save and verify
+    const [editResponse] = await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/time-entries/') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 200
+        ),
+        page.getByRole('button', { name: 'Update Time Entry' }).click(),
+    ]);
+    const editBody = await editResponse.json();
+    expect(editBody.data.description).toBe(updatedDescription);
+
+    // Verify the updated description is shown in the calendar UI
+    await expect(
+        page.locator('.fc-event').filter({ hasText: updatedDescription }).first()
+    ).toBeVisible();
+    // Verify the old description is no longer shown
+    await expect(
+        page.locator('.fc-event').filter({ hasText: originalDescription })
+    ).not.toBeVisible();
+});
+
+test('test that deleting time entry from calendar modal works', async ({ page, ctx }) => {
+    const description = 'Delete me from calendar ' + Math.floor(1 + Math.random() * 10000);
+    await createBareTimeEntryViaApi(ctx, description, '1h');
+
+    await goToCalendar(page);
+
+    // Click on the time entry event
+    await page.locator('.fc-event').filter({ hasText: description }).first().click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+
+    // Click the delete button
+    await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/time-entries/') &&
+                response.request().method() === 'DELETE' &&
+                response.status() === 204
+        ),
+        page.getByRole('dialog').getByRole('button', { name: 'Delete' }).click(),
+    ]);
+
+    // Verify the event is removed from the calendar
+    await expect(page.locator('.fc-event').filter({ hasText: description })).not.toBeVisible();
 });

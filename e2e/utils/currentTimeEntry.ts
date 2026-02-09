@@ -6,9 +6,9 @@ export async function startOrStopTimerWithButton(page: Page) {
 }
 
 export async function assertThatTimerHasStarted(page: Page) {
-    await page.locator(
-        '[data-testid="dashboard_timer"] [data-testid="timer_button"].bg-red-400/80'
-    );
+    await expect(
+        page.locator('[data-testid="dashboard_timer"] [data-testid="timer_button"]')
+    ).toHaveClass(/bg-red-400\/80/);
 }
 
 export function newTimeEntryResponse(

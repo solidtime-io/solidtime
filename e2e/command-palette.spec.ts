@@ -20,8 +20,8 @@ async function closeCommandPalette(page: Page) {
 
 async function searchInCommandPalette(page: Page, query: string) {
     await page.locator('[role="dialog"] input').fill(query);
-    // Wait for search to filter and API calls to settle
-    await page.waitForTimeout(500);
+    // Wait for search debounce to settle (command palette uses a debounced search)
+    await page.waitForTimeout(300);
 }
 
 async function selectCommand(page: Page, name: string) {
@@ -306,26 +306,23 @@ test.describe('Command Palette', () => {
             await page.goto(PLAYWRIGHT_BASE_URL + '/projects');
             await page.getByRole('button', { name: 'Create Project' }).click();
             await page.getByPlaceholder('The next big thing').fill(projectName);
+
             await page.getByRole('button', { name: 'Create Project' }).click();
             // Wait for project to be created and page to update
             await expect(page.getByText(projectName)).toBeVisible({ timeout: 10000 });
 
-            // Now go to dashboard and search for the project
-            await goToDashboard(page);
+            // Search from the projects page where the query cache now has the new project
             await openCommandPalette(page);
             await searchInCommandPalette(page, projectName);
 
-            // Wait for entity search to return results, then use keyboard to select
-            await page.waitForTimeout(1500);
+            // Wait for entity search to return results
+            const projectOption = page.getByRole('option').filter({ hasText: projectName });
+            await expect(projectOption).toBeVisible({
+                timeout: 5000,
+            });
 
-            // Use keyboard to navigate down (past any matching commands) and select
-            // The project should appear in search results
-            await page.keyboard.press('ArrowDown');
-            await page.keyboard.press('Enter');
-
-            // Should navigate somewhere (either project page or remain on dashboard)
-            // If entity search found the project, it will navigate to project page
-            await page.waitForTimeout(500);
+            // Select the project from search results
+            await projectOption.click();
         });
     });
 
