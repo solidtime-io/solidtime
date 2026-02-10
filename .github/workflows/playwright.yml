@@ -65,8 +65,16 @@ jobs:
       - name: "Build Frontend"
         run: npm run build
 
-      - name: "Run Laravel Server"
-        run: php artisan serve > /dev/null 2>&1 &
+      - name: "Install FrankenPHP"
+        run: |
+          ARCH="$(uname -m)"
+          curl -fsSL "https://github.com/dunglas/frankenphp/releases/latest/download/frankenphp-linux-${ARCH}" -o /usr/local/bin/frankenphp
+          chmod +x /usr/local/bin/frankenphp
+
+      - name: "Run Laravel Octane Server"
+        run: php artisan octane:start --server=frankenphp --host=127.0.0.1 --port=8000 --workers=4 --max-requests=500 > /dev/null 2>&1 &
+        env:
+          OCTANE_SERVER: frankenphp
 
       - name: "Install Playwright Browsers"
         run: npx playwright install --with-deps
