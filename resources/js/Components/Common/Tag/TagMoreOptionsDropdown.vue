@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { TrashIcon } from '@heroicons/vue/20/solid';
+import { TrashIcon, PencilSquareIcon } from '@heroicons/vue/20/solid';
+import { canDeleteTags, canUpdateTags } from '@/utils/permissions';
 import type { Tag } from '@/packages/api/src';
 import {
     DropdownMenu,
@@ -9,6 +10,7 @@ import {
 } from '@/Components/ui/dropdown-menu';
 
 const emit = defineEmits<{
+    edit: [];
     delete: [];
 }>();
 const props = defineProps<{
@@ -38,6 +40,16 @@ const props = defineProps<{
         </DropdownMenuTrigger>
         <DropdownMenuContent class="min-w-[150px]" align="end">
             <DropdownMenuItem
+                v-if="canUpdateTags()"
+                :aria-label="'Edit Tag ' + props.tag.name"
+                data-testid="tag_edit"
+                class="flex items-center space-x-3 cursor-pointer"
+                @click="emit('edit')">
+                <PencilSquareIcon class="w-5 text-icon-active" />
+                <span>Edit</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+                v-if="canDeleteTags()"
                 :aria-label="'Delete Tag ' + props.tag.name"
                 data-testid="tag_delete"
                 class="flex items-center space-x-3 cursor-pointer text-destructive focus:text-destructive"

@@ -101,6 +101,10 @@ export function canCreateTags() {
     return currentUserHasPermission('tags:create');
 }
 
+export function canUpdateTags() {
+    return currentUserHasPermission('tags:update');
+}
+
 export function canDeleteTags() {
     return currentUserHasPermission('tags:delete');
 }
