@@ -2,6 +2,12 @@
 import { computed } from 'vue';
 import { twMerge } from 'tailwind-merge';
 import BillableIcon from '@/packages/ui/src/Icons/BillableIcon.vue';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from '@/packages/ui/src/tooltip';
 const active = defineModel({ default: false });
 const emit = defineEmits(['changed']);
 function toggleBillable() {
@@ -12,11 +18,15 @@ function toggleBillable() {
 const props = withDefaults(
     defineProps<{
         size?: 'small' | 'base';
+        faded?: boolean;
     }>(),
     {
         size: 'base',
+        faded: false,
     }
 );
+
+const tooltipLabel = computed(() => (active.value ? 'Billable' : 'Non Billable'));
 
 const iconColorClasses = computed(() => {
     if (active.value) {
@@ -38,17 +48,28 @@ const iconSizeWrapperClasses = props.size === 'small' ? 'w-6 sm:w-8 h-6 sm:h-8' 
 </script>
 
 <template>
-    <button
-        :class="
-            twMerge(
-                iconColorClasses,
-                iconSizeWrapperClasses,
-                'flex-shrink-0 ring-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring transition focus:bg-card-background-separator hover:bg-card-background-separator rounded-full flex items-center justify-center'
-            )
-        "
-        @click="toggleBillable">
-        <BillableIcon :class="iconSizeClasses"></BillableIcon>
-    </button>
+    <TooltipProvider>
+        <Tooltip disable-closing-trigger>
+            <TooltipTrigger as-child>
+                <button
+                    :aria-label="tooltipLabel"
+                    :class="
+                        twMerge(
+                            iconColorClasses,
+                            iconSizeWrapperClasses,
+                            'flex-shrink-0 ring-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring transition focus:bg-card-background-separator hover:bg-card-background-separator rounded-full flex items-center justify-center',
+                            faded
+                                ? 'opacity-50 group-hover:opacity-100 focus-visible:opacity-100'
+                                : ''
+                        )
+                    "
+                    @click="toggleBillable">
+                    <BillableIcon :class="iconSizeClasses"></BillableIcon>
+                </button>
+            </TooltipTrigger>
+            <TooltipContent>
+                {{ tooltipLabel }}
+            </TooltipContent>
+        </Tooltip>
+    </TooltipProvider>
 </template>
-
-<style scoped></style>

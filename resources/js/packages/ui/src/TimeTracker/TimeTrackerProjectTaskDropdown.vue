@@ -14,7 +14,7 @@ import type {
 import { PlusIcon, PlusCircleIcon, MinusIcon, XMarkIcon } from '@heroicons/vue/16/solid';
 import ProjectCreateModal from '@/packages/ui/src/Project/ProjectCreateModal.vue';
 import { twMerge } from 'tailwind-merge';
-import { Button } from '@/Components/ui/button';
+import { Button } from '@/packages/ui/src/Buttons';
 
 const task = defineModel<string | null>('task', {
     default: null,
@@ -61,7 +61,7 @@ const props = withDefaults(
         class?: string;
         variant?: 'input' | 'ghost' | 'outline';
         align?: 'center' | 'end' | 'start';
-        size?: 'default' | 'xs' | 'sm' | 'lg' | 'icon' | 'input';
+        size?: 'default' | 'xs' | 'sm' | 'lg' | 'icon';
     }>(),
     {
         emptyPlaceholder: 'No Project',

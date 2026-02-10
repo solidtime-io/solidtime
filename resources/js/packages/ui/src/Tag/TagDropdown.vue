@@ -5,7 +5,7 @@ import { computed, ref, watch } from 'vue';
 import TagCreateModal from '@/packages/ui/src/Tag/TagCreateModal.vue';
 import Checkbox from '@/packages/ui/src/Input/Checkbox.vue';
 import type { Tag } from '@/packages/api/src';
-import { Button } from '@/Components/ui/button';
+import { Button } from '@/packages/ui/src/Buttons';
 import {
     ComboboxAnchor,
     ComboboxContent,

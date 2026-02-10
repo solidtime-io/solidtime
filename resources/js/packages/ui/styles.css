@@ -54,7 +54,7 @@
     --theme-color-input-background: var(--color-bg-secondary);
 
     --theme-color-input-select-active: rgb(var(--color-accent-300));
-    --theme-color-input-select-active-hover: rgb(var(--color-accent-200));
+    --theme-color-input-select-active-hover: rgb(var(--color-accent-400));
 
     --color-accent-default: rgba(var(--color-accent-300), 0.2);
     --color-accent-foreground: rgb(var(--color-accent-100));

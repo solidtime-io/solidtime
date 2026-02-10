@@ -85,7 +85,7 @@ function updateValue(client: { id: string | null; name: string }) {
             <UseFocusTrap v-if="open" :options="{ immediate: true, allowOutsideClick: true }">
                 <ComboboxRoot
                     v-model:search-term="searchValue"
-                    :open="open"
+                    v-model:open="open"
                     :model-value="currentClient"
                     class="relative"
                     @update:model-value="updateValue">

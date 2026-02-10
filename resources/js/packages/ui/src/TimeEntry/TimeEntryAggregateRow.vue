@@ -136,7 +136,7 @@ function onSelectChange(checked: boolean) {
                     <BillableToggleButton
                         :model-value="timeEntry.billable"
                         size="small"
-                        class="opacity-50 focus-visible:opacity-100 group-hover:opacity-100"
+                        faded
                         @changed="updateTimeEntryBillable"></BillableToggleButton>
                     <div class="flex-1">
                         <button

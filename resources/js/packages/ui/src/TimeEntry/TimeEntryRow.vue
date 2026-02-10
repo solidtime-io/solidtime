@@ -21,7 +21,6 @@ import BillableToggleButton from '@/packages/ui/src/Input/BillableToggleButton.v
 import { computed, ref } from 'vue';
 import TimeTrackerProjectTaskDropdown from '@/packages/ui/src/TimeTracker/TimeTrackerProjectTaskDropdown.vue';
 import { Checkbox } from '@/packages/ui/src';
-import { twMerge } from 'tailwind-merge';
 
 const props = defineProps<{
     timeEntry: TimeEntry;
@@ -150,9 +149,7 @@ async function handleDeleteTimeEntry() {
                     <BillableToggleButton
                         :model-value="timeEntry.billable"
                         size="small"
-                        :class="
-                            twMerge('opacity-50 group-hover:opacity-100 focus-visible:opacity-100')
-                        "
+                        faded
                         @changed="updateTimeEntryBillable"></BillableToggleButton>
                     <div class="flex-1">
                         <TimeEntryRangeSelector

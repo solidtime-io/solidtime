@@ -103,7 +103,7 @@ async function createTag(name: string) {
 
                 <Select v-model="billable" @update:model-value="emit('submit')">
                     <SelectTrigger
-                        size="small"
+                        size="sm"
                         variant="outline"
                         :active="billable !== null"
                         :show-chevron="false">

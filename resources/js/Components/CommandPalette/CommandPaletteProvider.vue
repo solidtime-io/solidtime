@@ -201,7 +201,7 @@ const firstProjectId = computed(() => projects.value[0]?.id ?? '');
             <TimeTrackerProjectTaskDropdown
                 v-model:project="currentTimeEntry.project_id"
                 v-model:task="currentTimeEntry.task_id"
-                variant="input"
+                variant="outline"
                 :projects="projects"
                 :tasks="tasks"
                 :clients="activeClients"
@@ -225,7 +225,7 @@ const firstProjectId = computed(() => projects.value[0]?.id ?? '');
             <TimeTrackerProjectTaskDropdown
                 v-model:project="currentTimeEntry.project_id"
                 v-model:task="currentTimeEntry.task_id"
-                variant="input"
+                variant="outline"
                 :projects="projects"
                 :tasks="tasks"
                 :clients="activeClients"

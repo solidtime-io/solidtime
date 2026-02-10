@@ -25,7 +25,7 @@ const title = computed(() => {
 
 <template>
     <Select v-model="model" @update:model-value="emit('changed')">
-        <SelectTrigger size="small" :show-chevron="false">
+        <SelectTrigger size="sm" :show-chevron="false">
             <SelectValue class="flex items-center gap-2">
                 <component :is="icon" class="h-4 text-icon-default" />
                 <span>{{ title }}</span>
