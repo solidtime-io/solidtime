@@ -20,10 +20,10 @@ import {
     SunIcon,
     MoonIcon,
     ComputerDesktopIcon,
-    CurrencyDollarIcon,
     ClipboardDocumentListIcon,
     BuildingOfficeIcon,
 } from '@heroicons/vue/20/solid';
+import BillableIcon from '@/packages/ui/src/Icons/BillableIcon.vue';
 import type { Organization } from '@/types/models';
 
 export type CommandGroup =
@@ -340,7 +340,7 @@ export function createActiveTimerCommands(
         {
             id: 'timer-toggle-billable',
             label: 'Toggle Billable',
-            icon: CurrencyDollarIcon,
+            icon: BillableIcon,
             keywords: ['billable', 'non-billable', 'money'],
             group: 'active-timer',
             action: activeTimerActions.toggleBillable,

@@ -4,7 +4,7 @@ import DatePicker from '@/packages/ui/src/Input/DatePicker.vue';
 import { getDayJsInstance, getLocalizedDayJs } from '@/packages/ui/src/utils/time';
 import dayjs from 'dayjs';
 import TimePickerSimple from '@/packages/ui/src/Input/TimePickerSimple.vue';
-import { Button } from '@/Components/ui/button';
+import { Button } from '@/packages/ui/src/Buttons';
 
 const props = defineProps<{
     start: string;

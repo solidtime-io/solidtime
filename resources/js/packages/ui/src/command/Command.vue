@@ -76,6 +76,17 @@ watch(
     }
 );
 
+// Re-run filter when items are dynamically added/removed (e.g. entity search results)
+watch(
+    allItems,
+    () => {
+        if (filterState.search) {
+            filterItems();
+        }
+    },
+    { deep: true }
+);
+
 // Sync external searchTerm prop changes to internal state
 watch(
     () => props.searchTerm,

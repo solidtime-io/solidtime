@@ -48,8 +48,7 @@ import { useOrganizationQuery } from '@/utils/useOrganizationQuery';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import LoadingSpinner from '@/packages/ui/src/LoadingSpinner.vue';
 import { twMerge } from 'tailwind-merge';
-import { Button as UiButton } from '@/packages/ui/src';
-import { Button } from '@/Components/ui/button';
+import { Button } from '@/packages/ui/src/Buttons';
 import { openFeedback } from '@/utils/feedback';
 import { CommandPaletteProvider } from '@/Components/CommandPalette';
 import { useCommandPalette } from '@/utils/useCommandPalette';
@@ -263,14 +262,14 @@ const page = usePage<{
                             :icon="Cog6ToothIcon"
                             :href="route('profile.show')"></NavigationSidebarItem>
 
-                        <UiButton
+                        <Button
                             v-if="page.props.has_services_extension"
                             variant="outline"
                             size="xs"
                             class="rounded-full ml-2 flex h-6 w-6 items-center text-xs text-icon-default justify-center"
                             @click="openFeedback">
                             ?
-                        </UiButton>
+                        </Button>
                     </ul>
                 </div>
             </div>
