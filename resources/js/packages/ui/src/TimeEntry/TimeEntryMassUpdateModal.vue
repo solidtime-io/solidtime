@@ -5,7 +5,7 @@ import DialogModal from '@/packages/ui/src/DialogModal.vue';
 import { computed, nextTick, ref, watch } from 'vue';
 import PrimaryButton from '../Buttons/PrimaryButton.vue';
 import TimeTrackerProjectTaskDropdown from '@/packages/ui/src/TimeTracker/TimeTrackerProjectTaskDropdown.vue';
-import InputLabel from '../Input/InputLabel.vue';
+import { Field, FieldLabel } from '../field';
 import {
     type CreateClientBody,
     type CreateProjectBody,
@@ -23,7 +23,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/Components/ui/select';
-import { Button } from '@/Components/ui/button';
+import { Button } from '@/packages/ui/src/Buttons';
 import TagDropdown from '@/packages/ui/src/Tag/TagDropdown.vue';
 import type { Tag, Task } from '@/packages/api/src';
 
@@ -146,18 +146,18 @@ watch(removeAllTags, () => {
 
         <template #content>
             <div class="space-y-4">
-                <div class="space-y-2">
-                    <InputLabel for="description" value="Description" />
+                <Field>
+                    <FieldLabel for="description">Description</FieldLabel>
                     <TextInput
                         id="description"
                         ref="descriptionInput"
                         v-model="description"
                         type="text"
-                        class="mt-1 block w-full"
+                        class="block w-full"
                         @keydown.enter="submit" />
-                </div>
-                <div class="space-y-2">
-                    <InputLabel for="project" value="Project" />
+                </Field>
+                <Field>
+                    <FieldLabel for="project">Project</FieldLabel>
                     <TimeTrackerProjectTaskDropdown
                         v-model:project="projectId"
                         v-model:task="taskId"
@@ -169,15 +169,14 @@ watch(removeAllTags, () => {
                         :create-client
                         :currency="currency"
                         :can-create-project
-                        class="mt-1"
                         empty-placeholder="Select project..."
                         allow-reset
                         :enable-estimated-time
                         :projects="projects"
                         :tasks="tasks"></TimeTrackerProjectTaskDropdown>
-                </div>
-                <div class="space-y-2">
-                    <InputLabel for="project" value="Tag" />
+                </Field>
+                <Field>
+                    <FieldLabel>Tag</FieldLabel>
                     <div class="flex space-x-5">
                         <TagDropdown
                             v-model="selectedTags"
@@ -194,33 +193,31 @@ watch(removeAllTags, () => {
                                 </Button>
                             </template>
                         </TagDropdown>
-                        <div class="flex items-center space-x-2">
+                        <Field orientation="horizontal">
                             <Checkbox id="no_tags" v-model:checked="removeAllTags"></Checkbox>
-                            <InputLabel for="no_tags" value="Remove all tags" />
-                        </div>
+                            <FieldLabel for="no_tags">Remove all tags</FieldLabel>
+                        </Field>
                     </div>
-                </div>
-                <div class="space-y-2">
-                    <InputLabel for="project" value="Billable" />
-                    <div class="flex">
-                        <Select v-model="timeEntryBillable">
-                            <SelectTrigger>
-                                <SelectValue>
-                                    <span v-if="billable === undefined">Set billable status</span>
-                                    <span v-else-if="billable === true">Billable</span>
-                                    <span v-else>Non Billable</span>
-                                </SelectValue>
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="do-not-update">
-                                    Keep current billable status
-                                </SelectItem>
-                                <SelectItem value="billable">Billable</SelectItem>
-                                <SelectItem value="non-billable">Non Billable</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                </div>
+                </Field>
+                <Field>
+                    <FieldLabel>Billable</FieldLabel>
+                    <Select v-model="timeEntryBillable">
+                        <SelectTrigger>
+                            <SelectValue>
+                                <span v-if="billable === undefined">Set billable status</span>
+                                <span v-else-if="billable === true">Billable</span>
+                                <span v-else>Non Billable</span>
+                            </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="do-not-update">
+                                Keep current billable status
+                            </SelectItem>
+                            <SelectItem value="billable">Billable</SelectItem>
+                            <SelectItem value="non-billable">Non Billable</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </Field>
             </div>
         </template>
         <template #footer>

@@ -7,7 +7,7 @@ import { computed, type HTMLAttributes } from 'vue';
 const props = withDefaults(
     defineProps<
         SelectTriggerProps & {
-            size?: 'small';
+            size?: 'default' | 'sm' | 'lg';
             class?: HTMLAttributes['class'];
             showChevron?: boolean;
             variant?: 'default' | 'outline';
@@ -18,11 +18,19 @@ const props = withDefaults(
         showChevron: true,
         variant: 'default',
         active: false,
+        size: 'default',
     }
 );
 
 const delegatedProps = computed(() => {
-    const { class: _, showChevron: __, variant: ___, active: ____, ...delegated } = props;
+    const {
+        class: _,
+        showChevron: __,
+        variant: ___,
+        active: ____,
+        size: _____,
+        ...delegated
+    } = props;
 
     return delegated;
 });
@@ -30,7 +38,14 @@ const delegatedProps = computed(() => {
 const forwardedProps = useForwardProps(delegatedProps);
 
 const sizeClasses = computed(() => {
-    return props.size === 'small' ? 'h-8 text-xs' : 'h-[42px] w-full text-sm';
+    switch (props.size) {
+        case 'sm':
+            return 'h-8 px-3 text-xs';
+        case 'lg':
+            return 'h-10 px-4 text-sm';
+        default:
+            return 'h-9 px-3 text-sm';
+    }
 });
 
 const variantClasses = computed(() => {
@@ -49,7 +64,7 @@ const variantClasses = computed(() => {
         v-bind="forwardedProps"
         :class="
             cn(
-                'flex items-center justify-between gap-3 whitespace-nowrap rounded-md px-3 py-2.5 data-[placeholder]:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:truncate text-start font-medium transition-colors',
+                'flex items-center justify-between gap-3 whitespace-nowrap rounded-md data-[placeholder]:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:truncate text-start font-medium transition-colors',
                 sizeClasses,
                 variantClasses,
                 props.class

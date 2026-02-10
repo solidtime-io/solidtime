@@ -2,8 +2,7 @@
 import { Link, useForm } from '@inertiajs/vue3';
 import ActionMessage from '@/Components/ActionMessage.vue';
 import FormSection from '@/Components/FormSection.vue';
-import InputError from '@/packages/ui/src/Input/InputError.vue';
-import InputLabel from '@/packages/ui/src/Input/InputLabel.vue';
+import { Field, FieldLabel, FieldError } from '@/packages/ui/src/field';
 import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import TextInput from '@/packages/ui/src/Input/TextInput.vue';
 import type { Organization } from '@/types/models';
@@ -40,7 +39,7 @@ const updateTeamName = () => {
             <!-- Organization Owner Information -->
             <div class="col-span-6 flex items-center justify-between">
                 <div class="">
-                    <InputLabel value="Organization Owner" />
+                    <FieldLabel>Organization Owner</FieldLabel>
 
                     <div class="flex items-center mt-2">
                         <img
@@ -68,28 +67,28 @@ const updateTeamName = () => {
             </div>
 
             <!-- Organization Name -->
-            <div class="col-span-6 sm:col-span-4">
-                <InputLabel for="name" value="Organization Name" />
+            <Field class="col-span-6 sm:col-span-4">
+                <FieldLabel for="name">Organization Name</FieldLabel>
 
                 <TextInput
                     id="name"
                     v-model="form.name"
                     type="text"
-                    class="mt-1 block w-full"
+                    class="block w-full"
                     :disabled="!permissions.canUpdateTeam" />
 
-                <InputError :message="form.errors.name" class="mt-2" />
-            </div>
+                <FieldError v-if="form.errors.name">{{ form.errors.name }}</FieldError>
+            </Field>
 
             <!-- Currency -->
-            <div class="col-span-6 sm:col-span-4">
-                <InputLabel for="currency" value="Currency" />
+            <Field class="col-span-6 sm:col-span-4">
+                <FieldLabel for="currency">Currency</FieldLabel>
                 <select
                     id="currency"
                     v-model="form.currency"
                     name="currency"
                     :disabled="!permissions.canUpdateTeam"
-                    class="mt-1 block w-full border-input-border bg-input-background text-text-primary focus:border-input-border-active rounded-md shadow-sm">
+                    class="block w-full border-input-border bg-input-background text-text-primary focus:border-input-border-active rounded-md shadow-sm">
                     <option value="" disabled>Select a currency</option>
                     <option
                         v-for="(currencyTranslated, currencyKey) in $page.props.currencies"
@@ -98,8 +97,8 @@ const updateTeamName = () => {
                         {{ currencyKey }} - {{ currencyTranslated }}
                     </option>
                 </select>
-                <InputError :message="form.errors.currency" class="mt-2" />
-            </div>
+                <FieldError v-if="form.errors.currency">{{ form.errors.currency }}</FieldError>
+            </Field>
         </template>
 
         <template v-if="permissions.canUpdateTeam" #actions>

@@ -2,8 +2,7 @@
 import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import AuthenticationCard from '@/Components/AuthenticationCard.vue';
 import AuthenticationCardLogo from '@/Components/AuthenticationCardLogo.vue';
-import InputError from '@/packages/ui/src/Input/InputError.vue';
-import InputLabel from '@/packages/ui/src/Input/InputLabel.vue';
+import { Field, FieldLabel, FieldError } from '@/packages/ui/src/field';
 import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import TextInput from '@/packages/ui/src/Input/TextInput.vue';
 
@@ -60,30 +59,30 @@ const page = usePage<{
         </div>
 
         <form @submit.prevent="submit">
-            <div>
-                <InputLabel for="email" value="Email" />
+            <Field>
+                <FieldLabel for="email">Email</FieldLabel>
                 <TextInput
                     id="email"
                     v-model="form.email"
                     type="email"
-                    class="mt-1 block w-full"
+                    class="block w-full"
                     required
                     autofocus
                     autocomplete="username" />
-                <InputError class="mt-2" :message="form.errors.email" />
-            </div>
+                <FieldError v-if="form.errors.email">{{ form.errors.email }}</FieldError>
+            </Field>
 
-            <div class="mt-4">
-                <InputLabel for="password" value="Password" />
+            <Field class="mt-4">
+                <FieldLabel for="password">Password</FieldLabel>
                 <TextInput
                     id="password"
                     v-model="form.password"
                     type="password"
-                    class="mt-1 block w-full"
+                    class="block w-full"
                     required
                     autocomplete="current-password" />
-                <InputError class="mt-2" :message="form.errors.password" />
-            </div>
+                <FieldError v-if="form.errors.password">{{ form.errors.password }}</FieldError>
+            </Field>
 
             <div class="flex items-center justify-end mt-4">
                 <Link

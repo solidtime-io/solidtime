@@ -8,8 +8,7 @@ import ConfirmationModal from '@/Components/ConfirmationModal.vue';
 import DangerButton from '@/packages/ui/src/Buttons/DangerButton.vue';
 import DialogModal from '@/packages/ui/src/DialogModal.vue';
 import FormSection from '@/Components/FormSection.vue';
-import InputError from '@/packages/ui/src/Input/InputError.vue';
-import InputLabel from '@/packages/ui/src/Input/InputLabel.vue';
+import { Field, FieldLabel, FieldError } from '@/packages/ui/src/field';
 import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
 import SectionBorder from '@/Components/SectionBorder.vue';
@@ -96,20 +95,22 @@ const deleteApiToken = () => {
 
             <template #form>
                 <!-- Token Name -->
-                <div class="col-span-6 sm:col-span-4">
-                    <InputLabel for="name" value="Name" />
+                <Field class="col-span-6 sm:col-span-4">
+                    <FieldLabel for="name">Name</FieldLabel>
                     <TextInput
                         id="name"
                         v-model="createApiTokenForm.name"
                         type="text"
-                        class="mt-1 block w-full"
+                        class="block w-full"
                         autofocus />
-                    <InputError :message="createApiTokenForm.errors.name" class="mt-2" />
-                </div>
+                    <FieldError v-if="createApiTokenForm.errors.name">{{
+                        createApiTokenForm.errors.name
+                    }}</FieldError>
+                </Field>
 
                 <!-- Token Permissions -->
                 <div v-if="availablePermissions.length > 0" class="col-span-6">
-                    <InputLabel for="permissions" value="Permissions" />
+                    <FieldLabel for="permissions">Permissions</FieldLabel>
 
                     <div class="mt-2 grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div v-for="permission in availablePermissions" :key="permission">

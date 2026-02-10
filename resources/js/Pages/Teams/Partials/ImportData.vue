@@ -3,7 +3,7 @@ import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import { computed, onMounted, ref } from 'vue';
 import { useNotificationsStore } from '@/utils/notification';
 import { api } from '@/packages/api/src';
-import InputLabel from '@/packages/ui/src/Input/InputLabel.vue';
+import { Field, FieldLabel } from '@/packages/ui/src/field';
 import { DocumentIcon } from '@heroicons/vue/24/solid';
 import { ArrowDownOnSquareIcon, InformationCircleIcon } from '@heroicons/vue/24/outline';
 
@@ -163,13 +163,13 @@ const showResultModal = ref(false);
 
         <Card>
             <div class="px-4 py-5 sm:px-5">
-                <div>
-                    <InputLabel for="importType" value="Import Type" />
+                <Field>
+                    <FieldLabel for="importType">Import Type</FieldLabel>
                     <select
                         id="importType"
                         v-model="importType"
                         name="importType"
-                        class="mt-1 block w-full border-input-border bg-input-background text-text-primary focus:border-input-border-active rounded-md shadow-sm">
+                        class="block w-full border-input-border bg-input-background text-text-primary focus:border-input-border-active rounded-md shadow-sm">
                         <option :value="null" selected disabled>
                             Select an import type to get instructions...
                         </option>
@@ -184,7 +184,7 @@ const showResultModal = ref(false);
                         <div class="font-semibold text-text-secondary py-1">Instructions:</div>
                         <div class="max-w-2xl" v-html="currentImporterDescription"></div>
                     </div>
-                </div>
+                </Field>
 
                 <div
                     class="mt-2 flex justify-center rounded-lg border border-dashed border-border-primary px-6 py-10">

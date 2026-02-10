@@ -2,8 +2,7 @@
 import { Head, useForm } from '@inertiajs/vue3';
 import AuthenticationCard from '@/Components/AuthenticationCard.vue';
 import AuthenticationCardLogo from '@/Components/AuthenticationCardLogo.vue';
-import InputError from '@/packages/ui/src/Input/InputError.vue';
-import InputLabel from '@/packages/ui/src/Input/InputLabel.vue';
+import { Field, FieldLabel, FieldError } from '@/packages/ui/src/field';
 import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import TextInput from '@/packages/ui/src/Input/TextInput.vue';
 
@@ -38,18 +37,18 @@ const submit = () => {
         </div>
 
         <form @submit.prevent="submit">
-            <div>
-                <InputLabel for="email" value="Email" />
+            <Field>
+                <FieldLabel for="email">Email</FieldLabel>
                 <TextInput
                     id="email"
                     v-model="form.email"
                     type="email"
-                    class="mt-1 block w-full"
+                    class="block w-full"
                     required
                     autofocus
                     autocomplete="username" />
-                <InputError class="mt-2" :message="form.errors.email" />
-            </div>
+                <FieldError v-if="form.errors.email">{{ form.errors.email }}</FieldError>
+            </Field>
 
             <div class="flex items-center justify-end mt-4">
                 <PrimaryButton

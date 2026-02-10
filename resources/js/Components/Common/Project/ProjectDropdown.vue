@@ -123,7 +123,7 @@ function updateValue(project: Project) {
             <UseFocusTrap v-if="open" :options="{ immediate: true, allowOutsideClick: true }">
                 <ComboboxRoot
                     v-model:search-term="searchValue"
-                    :open="open"
+                    v-model:open="open"
                     :model-value="currentProject"
                     class="relative"
                     @update:model-value="updateValue">

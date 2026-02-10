@@ -4,7 +4,7 @@ import { useForm } from '@inertiajs/vue3';
 import ActionMessage from '@/Components/ActionMessage.vue';
 import ActionSection from '@/Components/ActionSection.vue';
 import DialogModal from '@/packages/ui/src/DialogModal.vue';
-import InputError from '@/packages/ui/src/Input/InputError.vue';
+import { Field, FieldError } from '@/packages/ui/src/field';
 import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
 import TextInput from '@/packages/ui/src/Input/TextInput.vue';
@@ -131,18 +131,20 @@ const closeModal = () => {
                     Please enter your password to confirm you would like to log out of your other
                     browser sessions across all of your devices.
 
-                    <div class="mt-4">
+                    <Field class="mt-4">
                         <TextInput
                             ref="passwordInput"
                             v-model="form.password"
                             type="password"
-                            class="mt-1 block w-3/4"
+                            class="block w-3/4"
                             placeholder="Password"
                             autocomplete="current-password"
                             @keyup.enter="logoutOtherBrowserSessions" />
 
-                        <InputError :message="form.errors.password" class="mt-2" />
-                    </div>
+                        <FieldError v-if="form.errors.password">{{
+                            form.errors.password
+                        }}</FieldError>
+                    </Field>
                 </template>
 
                 <template #footer>

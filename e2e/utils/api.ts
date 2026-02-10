@@ -417,10 +417,9 @@ export async function updateOrganizationCurrencyViaWeb(
     currency: string,
     name: string = 'Test Organization'
 ) {
-    const response = await ctx.request.put(
-        `${PLAYWRIGHT_BASE_URL}/teams/${ctx.orgId}`,
-        { data: { name, currency } }
-    );
+    const response = await ctx.request.put(`${PLAYWRIGHT_BASE_URL}/teams/${ctx.orgId}`, {
+        data: { name, currency },
+    });
     expect(response.status()).toBe(200);
 }
 

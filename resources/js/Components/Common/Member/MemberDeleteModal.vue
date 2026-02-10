@@ -9,8 +9,7 @@ import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
 import Checkbox from '@/packages/ui/src/Input/Checkbox.vue';
 import { useNotificationsStore } from '@/utils/notification';
 import { getCurrentOrganizationId } from '@/utils/useUser';
-import InputLabel from '@/packages/ui/src/Input/InputLabel.vue';
-import InputError from '@/packages/ui/src/Input/InputError.vue';
+import { Field, FieldLabel, FieldError } from '@/packages/ui/src/field';
 
 const props = defineProps<{
     show: boolean;
@@ -113,25 +112,21 @@ const close = () => {
                             },
                         }">
                         <template #default="{ field }">
-                            <div class="flex flex-col">
-                                <div class="flex items-center space-x-3 text-sm">
-                                    <Checkbox
-                                        :id="field.name"
-                                        :name="field.name"
-                                        :checked="field.state.value"
-                                        @update:checked="field.handleChange"
-                                        @blur="field.handleBlur" />
-                                    <InputLabel
-                                        :for="field.name"
-                                        class="font-medium text-text-primary">
-                                        I understand that this will permanently delete all data
-                                        related to this member
-                                    </InputLabel>
-                                </div>
-                                <InputError
-                                    class="pl-7 pt-2"
-                                    :message="field.state.meta.errors[0]" />
-                            </div>
+                            <Field orientation="horizontal">
+                                <Checkbox
+                                    :id="field.name"
+                                    :name="field.name"
+                                    :checked="field.state.value"
+                                    @update:checked="field.handleChange"
+                                    @blur="field.handleBlur" />
+                                <FieldLabel :for="field.name" class="font-medium text-text-primary">
+                                    I understand that this will permanently delete all data related
+                                    to this member
+                                </FieldLabel>
+                                <FieldError v-if="field.state.meta.errors[0]" class="pl-7 pt-2">
+                                    {{ field.state.meta.errors[0] }}
+                                </FieldError>
+                            </Field>
                         </template>
                     </form.Field>
                 </div>

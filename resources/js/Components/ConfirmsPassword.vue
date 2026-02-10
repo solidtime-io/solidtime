@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, reactive, nextTick } from 'vue';
 import DialogModal from '@/packages/ui/src/DialogModal.vue';
-import InputError from '@/packages/ui/src/Input/InputError.vue';
+import { Field, FieldError } from '@/packages/ui/src/field';
 import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
 import TextInput from '@/packages/ui/src/Input/TextInput.vue';
@@ -87,18 +87,18 @@ const closeModal = () => {
             <template #content>
                 {{ content }}
 
-                <div class="mt-4">
+                <Field class="mt-4">
                     <TextInput
                         ref="passwordInput"
                         v-model="form.password"
                         type="password"
-                        class="mt-1 block w-3/4"
+                        class="block w-3/4"
                         placeholder="Password"
                         autocomplete="current-password"
                         @keyup.enter="confirmPassword" />
 
-                    <InputError :message="form.error" class="mt-2" />
-                </div>
+                    <FieldError v-if="form.error">{{ form.error }}</FieldError>
+                </Field>
             </template>
 
             <template #footer>

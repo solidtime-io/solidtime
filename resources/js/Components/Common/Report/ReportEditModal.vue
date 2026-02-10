@@ -4,7 +4,7 @@ import SecondaryButton from '../../../packages/ui/src/Buttons/SecondaryButton.vu
 import DialogModal from '@/packages/ui/src/DialogModal.vue';
 import { computed, ref, watch } from 'vue';
 import PrimaryButton from '../../../packages/ui/src/Buttons/PrimaryButton.vue';
-import InputLabel from '../../../packages/ui/src/Input/InputLabel.vue';
+import { Field, FieldLabel } from '@/packages/ui/src/field';
 import type { UpdateReportBody } from '@/packages/api/src';
 import { useMutation, useQueryClient } from '@tanstack/vue-query';
 import { getCurrentOrganizationId } from '@/utils/useUser';
@@ -105,28 +105,30 @@ async function submit() {
 
         <template #content>
             <div class="items-center space-y-4 w-full">
-                <div class="w-full">
-                    <InputLabel for="name" value="Name" />
-                    <TextInput id="name" v-model="report.name" class="mt-1.5 w-full"></TextInput>
-                </div>
-                <div>
-                    <InputLabel for="description" value="Description" />
+                <Field class="w-full">
+                    <FieldLabel for="name">Name</FieldLabel>
+                    <TextInput id="name" v-model="report.name" class="w-full"></TextInput>
+                </Field>
+                <Field>
+                    <FieldLabel for="description">Description</FieldLabel>
                     <TextInput
                         id="description"
                         v-model="report.description"
-                        class="mt-1.5 w-full"></TextInput>
-                </div>
-                <InputLabel value="Visibility" />
-                <div class="flex items-center space-x-12">
-                    <div class="flex items-center space-x-2 px-2 py-3">
-                        <Checkbox id="is_public" v-model:checked="report.is_public"></Checkbox>
-                        <InputLabel for="is_public" value="Public" />
+                        class="w-full"></TextInput>
+                </Field>
+                <Field>
+                    <FieldLabel>Visibility</FieldLabel>
+                    <div class="flex items-center space-x-12">
+                        <Field orientation="horizontal" class="px-2 py-3">
+                            <Checkbox id="is_public" v-model:checked="report.is_public"></Checkbox>
+                            <FieldLabel for="is_public">Public</FieldLabel>
+                        </Field>
+                        <Field v-if="report.is_public" orientation="horizontal">
+                            <FieldLabel for="public_until">Expires at</FieldLabel>
+                            <DatePicker v-model="localPublicUntil"></DatePicker>
+                        </Field>
                     </div>
-                    <div v-if="report.is_public" class="flex items-center space-x-4">
-                        <InputLabel for="public_until" value="Expires at" />
-                        <DatePicker v-model="localPublicUntil"></DatePicker>
-                    </div>
-                </div>
+                </Field>
             </div>
         </template>
         <template #footer>

@@ -44,6 +44,28 @@ test('test that user can create an API key', async ({ page }) => {
     await createNewApiToken(page);
 });
 
+test('test that creating an API key with empty name shows validation error', async ({ page }) => {
+    await page.goto(PLAYWRIGHT_BASE_URL + '/user/profile');
+
+    // Wait for the API Key Name input to be visible before interacting
+    const nameInput = page.getByLabel('API Key Name');
+    await expect(nameInput).toBeVisible();
+
+    // Ensure the API Key Name input is empty
+    await nameInput.fill('');
+
+    // Click the create button and wait for the 422 response
+    const [response] = await Promise.all([
+        page.waitForResponse('**/users/me/api-tokens'),
+        page.getByRole('button', { name: 'Create API Key' }).click(),
+    ]);
+
+    expect(response.status()).toBe(422);
+
+    // Verify that an error notification is shown with validation message about the name field
+    await expect(page.getByText('name field is required')).toBeVisible({ timeout: 5000 });
+});
+
 test('test that user can delete an API key', async ({ page }) => {
     await page.goto(PLAYWRIGHT_BASE_URL + '/user/profile');
     await createNewApiToken(page);

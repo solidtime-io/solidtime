@@ -26,6 +26,7 @@ export function useAggregatedTimeEntriesQuery(
                 queries: unref(filterParams),
             }),
         enabled: computed(() => !!getCurrentOrganizationId()),
+        placeholderData: (previousData) => previousData,
         staleTime: 1000 * 30,
     });
 

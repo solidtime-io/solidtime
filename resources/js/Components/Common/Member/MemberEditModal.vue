@@ -6,7 +6,7 @@ import type { Member, UpdateMemberBody } from '@/packages/api/src';
 import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import { type MemberBillableKey, useMembersStore } from '@/utils/useMembers';
 import BillableRateInput from '@/packages/ui/src/Input/BillableRateInput.vue';
-import InputLabel from '@/packages/ui/src/Input/InputLabel.vue';
+import { Field, FieldLabel } from '@/packages/ui/src/field';
 import MemberBillableRateModal from '@/Components/Common/Member/MemberBillableRateModal.vue';
 import MemberBillableSelect from '@/Components/Common/Member/MemberBillableSelect.vue';
 import { onMounted, watch } from 'vue';
@@ -121,28 +121,24 @@ const roleDescription = computed(() => {
         <template #content>
             <div class="pb-5 pt-2 divide-y divide-border-secondary">
                 <div class="pb-5 flex space-x-6">
-                    <div>
-                        <InputLabel for="role" value="Role" />
-                        <MemberRoleSelect
-                            v-model="memberBody.role"
-                            class="mt-2"
-                            name="role"></MemberRoleSelect>
-                    </div>
+                    <Field>
+                        <FieldLabel for="role">Role</FieldLabel>
+                        <MemberRoleSelect v-model="memberBody.role" name="role"></MemberRoleSelect>
+                    </Field>
                     <div class="flex-1 text-xs flex items-center pt-6">
                         <p>{{ roleDescription }}</p>
                     </div>
                 </div>
                 <div class="flex items-center space-x-4 pt-5">
                     <div class="col-span-6 sm:col-span-4 flex-1 flex space-x-5">
-                        <div>
-                            <InputLabel for="billableType" value="Billable" />
+                        <Field>
+                            <FieldLabel for="billableType">Billable</FieldLabel>
                             <MemberBillableSelect
                                 v-model="billableRateSelect"
-                                class="mt-2"
                                 name="billableType"></MemberBillableSelect>
-                        </div>
-                        <div v-if="billableRateSelect === 'custom-rate'" class="flex-1">
-                            <InputLabel for="memberBillableRate" value="Billable Rate" />
+                        </Field>
+                        <Field v-if="billableRateSelect === 'custom-rate'" class="flex-1">
+                            <FieldLabel for="memberBillableRate">Billable Rate</FieldLabel>
                             <BillableRateInput
                                 v-model="memberBody.billable_rate"
                                 focus
@@ -150,7 +146,7 @@ const roleDescription = computed(() => {
                                 :currency="getOrganizationCurrencyString()"
                                 name="memberBillableRate"
                                 @keydown.enter="saveWithChecks()"></BillableRateInput>
-                        </div>
+                        </Field>
                     </div>
                 </div>
             </div>

@@ -7,8 +7,8 @@ import ConfirmationModal from '@/Components/ConfirmationModal.vue';
 import DangerButton from '@/packages/ui/src/Buttons/DangerButton.vue';
 import DialogModal from '@/packages/ui/src/DialogModal.vue';
 import FormSection from '@/Components/FormSection.vue';
-import InputError from '@/packages/ui/src/Input/InputError.vue';
-import InputLabel from '@/packages/ui/src/Input/InputLabel.vue';
+import { Field, FieldLabel, FieldError } from '@/packages/ui/src/field';
+
 import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
 import SectionBorder from '@/Components/SectionBorder.vue';
@@ -139,20 +139,24 @@ const displayableRole = (role: string) => {
                     </div>
 
                     <!-- Member Email -->
-                    <div class="col-span-6 sm:col-span-4">
-                        <InputLabel for="email" value="Email" />
+                    <Field class="col-span-6 sm:col-span-4">
+                        <FieldLabel for="email">Email</FieldLabel>
                         <TextInput
                             id="email"
                             v-model="addTeamMemberForm.email"
                             type="email"
-                            class="mt-1 block w-full" />
-                        <InputError :message="addTeamMemberForm.errors.email" class="mt-2" />
-                    </div>
+                            class="block w-full" />
+                        <FieldError v-if="addTeamMemberForm.errors.email">{{
+                            addTeamMemberForm.errors.email
+                        }}</FieldError>
+                    </Field>
 
                     <!-- Role -->
                     <div v-if="availableRoles.length > 0" class="col-span-6 lg:col-span-4">
-                        <InputLabel for="roles" value="Role" />
-                        <InputError :message="addTeamMemberForm.errors.role" class="mt-2" />
+                        <FieldLabel for="roles">Role</FieldLabel>
+                        <FieldError v-if="addTeamMemberForm.errors.role">{{
+                            addTeamMemberForm.errors.role
+                        }}</FieldError>
 
                         <div
                             class="relative z-0 mt-1 border border-card-border rounded-lg cursor-pointer">

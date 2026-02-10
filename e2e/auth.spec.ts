@@ -192,9 +192,7 @@ test('shows error for invalid login credentials', async ({ page }) => {
     await page.getByLabel('Password').fill('wrongpassword123');
     await page.getByRole('button', { name: 'Log in' }).click();
 
-    await expect(
-        page.getByText('These credentials do not match our records.')
-    ).toBeVisible();
+    await expect(page.getByText('These credentials do not match our records.')).toBeVisible();
 });
 
 test('shows error when registering with existing email', async ({ page }) => {

@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { useForm, usePage } from '@inertiajs/vue3';
 import FormSection from '@/Components/FormSection.vue';
-import InputError from '@/packages/ui/src/Input/InputError.vue';
-import InputLabel from '@/packages/ui/src/Input/InputLabel.vue';
+import { Field, FieldLabel, FieldError } from '@/packages/ui/src/field';
 import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import TextInput from '@/packages/ui/src/Input/TextInput.vue';
 import type { User } from '@/types/models';
@@ -38,7 +37,7 @@ const page = usePage<{
 
         <template #form>
             <div class="col-span-6">
-                <InputLabel value="Organization Owner" />
+                <FieldLabel>Organization Owner</FieldLabel>
 
                 <div class="flex items-center mt-2">
                     <img
@@ -57,16 +56,16 @@ const page = usePage<{
                 </div>
             </div>
 
-            <div class="col-span-6 sm:col-span-4">
-                <InputLabel for="name" value="Organization Name" />
+            <Field class="col-span-6 sm:col-span-4">
+                <FieldLabel for="name">Organization Name</FieldLabel>
                 <TextInput
                     id="name"
                     v-model="form.name"
                     type="text"
-                    class="block w-full mt-1"
+                    class="block w-full"
                     autofocus />
-                <InputError :message="form.errors.name" class="mt-2" />
-            </div>
+                <FieldError v-if="form.errors.name">{{ form.errors.name }}</FieldError>
+            </Field>
         </template>
 
         <template #actions>

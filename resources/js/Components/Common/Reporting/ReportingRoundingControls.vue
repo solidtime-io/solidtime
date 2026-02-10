@@ -9,7 +9,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/Components/ui/select';
-import InputLabel from '@/packages/ui/src/Input/InputLabel.vue';
+import { Field, FieldLabel } from '@/packages/ui/src/field';
 import {
     NumberField,
     NumberFieldInput,
@@ -162,7 +162,7 @@ const iconClass = computed(() => {
                     >Rounding is a premium feature. Upgrade to unlock this feature.</span
                 >
                 <Link href="/billing">
-                    <Button size="sm" variant="input" class="items-center space-x-1">
+                    <Button size="sm" variant="outline" class="items-center space-x-1">
                         <CreditCardIcon class="w-3.5 h-3.5 text-text-tertiary mr-1" />
                         Go to Billing
                     </Button>
@@ -170,14 +170,14 @@ const iconClass = computed(() => {
             </div>
             <div v-else class="space-y-4">
                 <div>
-                    <div class="flex items-center justify-between">
-                        <InputLabel for="enable-rounding" value="Enable Rounding" />
+                    <Field orientation="horizontal" class="justify-between">
+                        <FieldLabel for="enable-rounding">Enable Rounding</FieldLabel>
                         <Switch
                             id="enable-rounding"
                             :model-value="enabled"
                             class="data-[state=checked]:bg-accent-500"
                             @update:model-value="updateEnabled" />
-                    </div>
+                    </Field>
                     <div
                         class="mb-3 pb-2 pt-1 text-xs text-muted-foreground border-b border-border-secondary text-text-tertiary">
                         Rounding is applied to each individual time entry, not to the accumulated
@@ -185,15 +185,15 @@ const iconClass = computed(() => {
                     </div>
                 </div>
 
-                <div>
-                    <InputLabel for="rounding-type" value="Rounding Type" class="mb-2" />
+                <Field>
+                    <FieldLabel for="rounding-type">Rounding Type</FieldLabel>
                     <Select
                         :model-value="type"
                         :disabled="!enabled"
                         @update:model-value="(value) => updateType(value as TimeEntryRoundingType)">
                         <SelectTrigger
                             id="rounding-type"
-                            size="small"
+                            size="sm"
                             class="w-full"
                             :disabled="!enabled">
                             <SelectValue placeholder="Select rounding type" />
@@ -204,16 +204,16 @@ const iconClass = computed(() => {
                             <SelectItem value="nearest">Round Nearest</SelectItem>
                         </SelectContent>
                     </Select>
-                </div>
-                <div>
-                    <InputLabel for="minutes-interval" value="Minutes Interval" class="mb-2" />
+                </Field>
+                <Field>
+                    <FieldLabel for="minutes-interval">Minutes Interval</FieldLabel>
                     <Select
                         :model-value="selectedInterval"
                         :disabled="!enabled"
                         @update:model-value="(value) => handleIntervalChange(value as string)">
                         <SelectTrigger
                             id="minutes-interval"
-                            size="small"
+                            size="sm"
                             class="w-full"
                             :disabled="!enabled">
                             <SelectValue placeholder="Select interval" />
@@ -232,7 +232,6 @@ const iconClass = computed(() => {
                         <NumberField
                             id="custom-minutes"
                             :model-value="customMinutes"
-                            size="small"
                             :min="1"
                             :max="1440"
                             :disabled="!enabled"
@@ -247,7 +246,7 @@ const iconClass = computed(() => {
                             </NumberFieldContent>
                         </NumberField>
                     </div>
-                </div>
+                </Field>
             </div>
         </PopoverContent>
     </Popover>

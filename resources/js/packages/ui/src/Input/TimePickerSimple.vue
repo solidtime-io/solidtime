@@ -3,7 +3,6 @@ import { ref, watch } from 'vue';
 import { getLocalizedDayJs } from '@/packages/ui/src/utils/time';
 import { useFocus } from '@vueuse/core';
 import { TextInput } from '@/packages/ui/src';
-import { twMerge } from 'tailwind-merge';
 
 // This has to be a localized timestamp, not UTC
 const model = defineModel<string | null>({
@@ -12,11 +11,9 @@ const model = defineModel<string | null>({
 
 const props = withDefaults(
     defineProps<{
-        size?: 'base' | 'large';
         focus?: boolean;
     }>(),
     {
-        size: 'base',
         focus: false,
     }
 );
@@ -101,7 +98,7 @@ const inputValue = ref(model.value ? getLocalizedDayJs(model.value).format('HH:m
         v-bind="$attrs"
         ref="timeInput"
         v-model="inputValue"
-        :class="twMerge('text-center w-24 px-3 py-2', size === 'large' && 'w-28')"
+        class="text-center w-full"
         data-testid="time_picker_input"
         type="text"
         @blur="updateTime"
