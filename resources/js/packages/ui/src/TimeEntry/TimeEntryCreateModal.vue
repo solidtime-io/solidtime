@@ -159,7 +159,7 @@ const billableProxy = computed({
                         @keydown.enter="submit" />
                 </div>
             </div>
-            <div class="flex flex-col sm:flex-row sm:items-end gap-2 sm:gap-4 pt-4">
+            <div class="flex flex-col sm:flex-row sm:items-end gap-2 pt-4">
                 <div class="flex-1 min-w-0">
                     <TimeTrackerProjectTaskDropdown
                         v-model:project="timeEntry.project_id"
@@ -206,8 +206,8 @@ const billableProxy = computed({
                     </Select>
                 </div>
             </div>
-            <div class="flex flex-col sm:flex-row gap-4 pt-4">
-                <Field class="flex-1">
+            <div class="grid grid-cols-2 sm:grid-cols-5 gap-4 pt-4">
+                <Field class="col-span-2 sm:col-span-3">
                     <FieldLabel>Duration</FieldLabel>
                     <div class="space-y-2 flex flex-col">
                         <DurationHumanInput
@@ -224,27 +224,20 @@ const billableProxy = computed({
                         </div>
                     </div>
                 </Field>
-                <div class="grid grid-cols-2 sm:flex gap-4">
-                    <Field>
-                        <FieldLabel>Start</FieldLabel>
-                        <div class="flex flex-col gap-2 sm:w-28">
-                            <TimePickerSimple
-                                v-model="localStart"
-                                class="w-full"></TimePickerSimple>
-                            <DatePicker
-                                v-model="localStart"
-                                class="w-full"
-                                tabindex="1"></DatePicker>
-                        </div>
-                    </Field>
-                    <Field>
-                        <FieldLabel>End</FieldLabel>
-                        <div class="flex flex-col gap-2 sm:w-28">
-                            <TimePickerSimple v-model="localEnd" class="w-full"></TimePickerSimple>
-                            <DatePicker v-model="localEnd" class="w-full" tabindex="1"></DatePicker>
-                        </div>
-                    </Field>
-                </div>
+                <Field>
+                    <FieldLabel>Start</FieldLabel>
+                    <div class="flex flex-col gap-2">
+                        <TimePickerSimple v-model="localStart" class="w-full"></TimePickerSimple>
+                        <DatePicker v-model="localStart" class="w-full" tabindex="1"></DatePicker>
+                    </div>
+                </Field>
+                <Field>
+                    <FieldLabel>End</FieldLabel>
+                    <div class="flex flex-col gap-2">
+                        <TimePickerSimple v-model="localEnd" class="w-full"></TimePickerSimple>
+                        <DatePicker v-model="localEnd" class="w-full" tabindex="1"></DatePicker>
+                    </div>
+                </Field>
             </div>
         </template>
         <template #footer>
