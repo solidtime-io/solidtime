@@ -928,11 +928,11 @@ test.describe('Employee Reporting Restrictions', () => {
 
         // Overview and Detailed tabs should be visible (scope to main to avoid sidebar matches)
         const mainContent = employee.page.getByRole('main');
-        await expect(mainContent.getByRole('link', { name: 'Overview' })).toBeVisible();
-        await expect(mainContent.getByRole('link', { name: 'Detailed' })).toBeVisible();
+        await expect(mainContent.getByRole('tab', { name: 'Overview' })).toBeVisible();
+        await expect(mainContent.getByRole('tab', { name: 'Detailed' })).toBeVisible();
 
         // Shared tab should NOT be visible for employees
-        await expect(mainContent.getByRole('link', { name: 'Shared' })).not.toBeVisible();
+        await expect(mainContent.getByRole('tab', { name: 'Shared' })).not.toBeVisible();
     });
 
     test('employee cannot see Cost column in reporting by default', async ({ ctx, employee }) => {
