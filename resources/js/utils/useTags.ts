@@ -1,9 +1,9 @@
 import { defineStore } from 'pinia';
-import type { Tag } from '@/packages/api/src';
+import type { Tag, UpdateTagBody } from '@/packages/api/src';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import { api } from '@/packages/api/src';
 import { useNotificationsStore } from '@/utils/notification';
-import { useQueryClient } from '@tanstack/vue-query';
+import { useMutation, useQueryClient } from '@tanstack/vue-query';
 
 export const useTagsStore = defineStore('tags', () => {
     const { handleApiRequestNotifications } = useNotificationsStore();
@@ -54,5 +54,27 @@ export const useTagsStore = defineStore('tags', () => {
         }
     }
 
-    return { createTag, deleteTag };
+    const { mutateAsync: updateTag } = useMutation({
+        mutationFn: async ({ tagId, tagBody }: { tagId: string; tagBody: UpdateTagBody }) => {
+            const organizationId = getCurrentOrganizationId();
+            if (organizationId) {
+                return await handleApiRequestNotifications(
+                    () =>
+                        api.updateTag(tagBody, {
+                            params: {
+                                organization: organizationId,
+                                tag: tagId,
+                            },
+                        }),
+                    'Tag updated successfully',
+                    'Failed to update tag'
+                );
+            }
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['tags'] });
+        },
+    });
+
+    return { createTag, updateTag, deleteTag };
 });

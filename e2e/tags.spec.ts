@@ -88,3 +88,35 @@ test('test that multiple tags can be created via API and displayed in the table'
     await expect(page.getByTestId('tag_table')).toContainText(tagName1);
     await expect(page.getByTestId('tag_table')).toContainText(tagName2);
 });
+
+// =============================================
+// Employee Permission Tests
+// =============================================
+
+test.describe('Employee Tags Restrictions', () => {
+    test('employee can view tags but cannot create', async ({ ctx, employee }) => {
+        const tagName = 'EmpViewTag ' + Math.floor(Math.random() * 10000);
+        await createTagViaApi(ctx, { name: tagName });
+
+        await employee.page.goto(PLAYWRIGHT_BASE_URL + '/tags');
+        await expect(employee.page.getByTestId('tags_view')).toBeVisible({ timeout: 10000 });
+
+        // Employee can see the tag (tags are visible to all members with tags:view)
+        await expect(employee.page.getByText(tagName)).toBeVisible({ timeout: 10000 });
+
+        // Employee cannot see Create Tag button
+        await expect(employee.page.getByRole('button', { name: 'Create Tag' })).not.toBeVisible();
+    });
+
+    test('employee cannot see edit/delete actions on tags', async ({ ctx, employee }) => {
+        const tagName = 'EmpActionsTag ' + Math.floor(Math.random() * 10000);
+        await createTagViaApi(ctx, { name: tagName });
+
+        await employee.page.goto(PLAYWRIGHT_BASE_URL + '/tags');
+        await expect(employee.page.getByText(tagName)).toBeVisible({ timeout: 10000 });
+
+        // Actions button should not be visible for employee
+        const actionsButton = employee.page.locator(`[aria-label='Actions for Tag ${tagName}']`);
+        await expect(actionsButton).not.toBeVisible();
+    });
+});

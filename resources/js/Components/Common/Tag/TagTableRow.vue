@@ -2,12 +2,16 @@
 import type { Tag } from '@/packages/api/src';
 import { useTagsStore } from '@/utils/useTags';
 import TagMoreOptionsDropdown from '@/Components/Common/Tag/TagMoreOptionsDropdown.vue';
+import TagEditModal from '@/Components/Common/Tag/TagEditModal.vue';
 import TableRow from '@/Components/TableRow.vue';
-import { canDeleteTags } from '@/utils/permissions';
+import { canDeleteTags, canUpdateTags } from '@/utils/permissions';
+import { ref } from 'vue';
 
 const props = defineProps<{
     tag: Tag;
 }>();
+
+const showTagEditModal = ref(false);
 
 function deleteTag() {
     useTagsStore().deleteTag(props.tag.id);
@@ -25,10 +29,12 @@ function deleteTag() {
         <div
             class="relative whitespace-nowrap flex items-center pl-3 text-right text-sm font-medium sm:pr-0 pr-4 sm:pr-6 lg:pr-8 3xl:pr-12">
             <TagMoreOptionsDropdown
-                v-if="canDeleteTags()"
+                v-if="canDeleteTags() || canUpdateTags()"
                 :tag="tag"
+                @edit="showTagEditModal = true"
                 @delete="deleteTag"></TagMoreOptionsDropdown>
         </div>
+        <TagEditModal v-model:show="showTagEditModal" :tag="tag"></TagEditModal>
     </TableRow>
 </template>
 
