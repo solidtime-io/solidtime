@@ -223,9 +223,13 @@ test('test that format settings are reflected in the dashboard', async ({ page }
 
     // check that the current date is displayed in the dd/mm/yyyy format on the time page
     await page.goto(PLAYWRIGHT_BASE_URL + '/time');
+    // Wait for time entries to load so organization data is available for date formatting
+    await page.waitForResponse(
+        (response) => response.url().includes('/time-entries') && response.status() === 200
+    );
     await expect(
         page.getByText(new Date().toLocaleDateString('en-GB'), { exact: true }).nth(0)
-    ).toBeVisible();
+    ).toBeVisible({ timeout: 10000 });
 });
 
 test('test that organization time entry settings can be toggled', async ({ page }) => {
