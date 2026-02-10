@@ -1,9 +1,16 @@
 import { test as baseTest } from '@playwright/test';
+import type { Page } from '@playwright/test';
 import { PLAYWRIGHT_BASE_URL, TEST_USER_PASSWORD } from './config';
 import { type TestContext, setupTestContext } from '../e2e/utils/api';
+import { setupEmployeeUser } from '../e2e/utils/members';
 
 export * from '@playwright/test';
 export type { TestContext };
+
+export interface EmployeeFixture {
+    page: Page;
+    memberId: string;
+}
 
 /**
  * API-based authentication fixture - creates a new user via HTTP requests instead of UI interactions.
@@ -11,7 +18,10 @@ export type { TestContext };
  *
  * Uses page.context().request() to ensure cookies are shared between the API request and page.
  */
-export const test = baseTest.extend<{ ctx: TestContext }, { workerStorageState: string }>({
+export const test = baseTest.extend<
+    { ctx: TestContext; employee: EmployeeFixture },
+    { workerStorageState: string }
+>({
     page: async ({ page }, use) => {
         // Generate unique email for this test
         const email = `john+${Date.now()}_${Math.floor(Math.random() * 10000)}@doe.com`;
@@ -79,5 +89,15 @@ export const test = baseTest.extend<{ ctx: TestContext }, { workerStorageState: 
     ctx: async ({ page }, use) => {
         const ctx = await setupTestContext(page);
         await use(ctx);
+    },
+
+    employee: async ({ page, ctx, browser }, use) => {
+        const { employeePage, employeeMemberId, closeEmployee } = await setupEmployeeUser(
+            page,
+            ctx,
+            browser
+        );
+        await use({ page: employeePage, memberId: employeeMemberId });
+        await closeEmployee();
     },
 });

@@ -20,6 +20,7 @@ const props = defineProps<{
     entry: AggregatedGroupedData;
     indent?: boolean;
     currency: string;
+    showCost?: boolean;
 }>();
 
 const expanded = ref(false);
@@ -50,7 +51,7 @@ const organization = inject<ComputedRef<Organization>>('organization');
                 )
             }}
         </div>
-        <div class="justify-end pr-6 flex items-center">
+        <div v-if="showCost" class="justify-end pr-6 flex items-center">
             {{
                 entry.cost
                     ? formatCents(
@@ -66,12 +67,14 @@ const organization = inject<ComputedRef<Organization>>('organization');
     </div>
     <div
         v-if="expanded && entry.grouped_data"
-        class="col-span-3 grid bg-tertiary"
-        style="grid-template-columns: 1fr 150px 150px">
+        :class="showCost ? 'col-span-3' : 'col-span-2'"
+        class="grid bg-tertiary"
+        :style="`grid-template-columns: 1fr 150px ${showCost ? '150px' : ''}`">
         <ReportingRow
             v-for="subEntry in entry.grouped_data"
             :key="subEntry.description ?? 'none'"
             :currency="props.currency"
+            :show-cost="showCost"
             indent
             :entry="subEntry"></ReportingRow>
     </div>

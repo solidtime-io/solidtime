@@ -67,6 +67,12 @@ const { groupByOptions, getNameForReportingRowEntry, emptyPlaceholder } = report
 
 const organization = inject<ComputedRef<Organization>>('organization');
 
+const showBillableRate = computed(() => {
+    return !!(
+        getCurrentRole() !== 'employee' || organization?.value?.employees_can_see_billable_rates
+    );
+});
+
 // Ensure sub-group falls back when it collides with group
 watch(
     group,
@@ -280,12 +286,14 @@ const tableData = computed(() => {
                             groupByOptions.filter((el) => el.value !== group)
                         "></ReportingGroupBySelect>
                 </div>
-                <div class="grid items-center" style="grid-template-columns: 1fr 100px 150px">
+                <div
+                    class="grid items-center"
+                    :style="`grid-template-columns: 1fr 100px ${showBillableRate ? '150px' : ''}`">
                     <div
                         class="contents [&>*]:border-card-background-separator [&>*]:border-b [&>*]:bg-secondary [&>*]:pb-1.5 [&>*]:pt-1 text-text-tertiary text-sm">
                         <div class="pl-6">Name</div>
                         <div class="text-right">Duration</div>
-                        <div class="text-right pr-6">Cost</div>
+                        <div v-if="showBillableRate" class="text-right pr-6">Cost</div>
                     </div>
                     <template
                         v-if="
@@ -297,6 +305,7 @@ const tableData = computed(() => {
                             :key="entry.description ?? 'none'"
                             :currency="getOrganizationCurrencyString()"
                             :type="aggregatedTableTimeEntries.grouped_type"
+                            :show-cost="showBillableRate"
                             :entry="entry"></ReportingRow>
                         <div class="contents [&>*]:transition text-text-tertiary [&>*]:h-[50px]">
                             <div class="flex items-center pl-6 font-medium">
@@ -311,7 +320,9 @@ const tableData = computed(() => {
                                     )
                                 }}
                             </div>
-                            <div class="justify-end pr-6 flex items-center font-medium">
+                            <div
+                                v-if="showBillableRate"
+                                class="justify-end pr-6 flex items-center font-medium">
                                 {{
                                     aggregatedTableTimeEntries.cost
                                         ? formatCents(
@@ -328,7 +339,8 @@ const tableData = computed(() => {
                     </template>
                     <div
                         v-else
-                        class="chart flex flex-col items-center justify-center py-12 col-span-3">
+                        class="chart flex flex-col items-center justify-center py-12"
+                        :class="showBillableRate ? 'col-span-3' : 'col-span-2'">
                         <p class="text-lg text-text-primary font-medium">No time entries found</p>
                         <p>Try to change the filters and time range</p>
                     </div>

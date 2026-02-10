@@ -6,6 +6,7 @@ import {
     createBillableProjectViaApi,
     createProjectViaApi,
     createBareTimeEntryViaApi,
+    createTimeEntryViaApi,
 } from './utils/api';
 
 async function goToCalendar(page: Page) {
@@ -287,4 +288,39 @@ test('test that deleting time entry from calendar modal works', async ({ page, c
 
     // Verify the event is removed from the calendar
     await expect(page.locator('.fc-event').filter({ hasText: description })).not.toBeVisible();
+});
+
+// =============================================
+// Employee Permission Tests
+// =============================================
+
+test.describe('Employee Calendar Isolation', () => {
+    test('employee can only see their own time entries on the calendar', async ({
+        ctx,
+        employee,
+    }) => {
+        // Owner creates a time entry for today
+        const ownerDescription = 'OwnerCalEntry ' + Math.floor(Math.random() * 10000);
+        await createBareTimeEntryViaApi(ctx, ownerDescription, '1h');
+
+        // Create a time entry for the employee for today
+        const employeeDescription = 'EmpCalEntry ' + Math.floor(Math.random() * 10000);
+        await createTimeEntryViaApi(
+            { ...ctx, memberId: employee.memberId },
+            { description: employeeDescription, duration: '30min' }
+        );
+
+        await employee.page.goto(PLAYWRIGHT_BASE_URL + '/calendar');
+        await expect(employee.page.locator('.fc')).toBeVisible({ timeout: 10000 });
+
+        // Employee's event IS visible
+        await expect(
+            employee.page.locator('.fc-event').filter({ hasText: employeeDescription }).first()
+        ).toBeVisible({ timeout: 10000 });
+
+        // Owner's event is NOT visible
+        await expect(
+            employee.page.locator('.fc-event').filter({ hasText: ownerDescription })
+        ).not.toBeVisible();
+    });
 });

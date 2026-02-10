@@ -9,6 +9,9 @@ import {
     createTimeEntryViaApi,
     createTimeEntryWithTagViaApi,
     createTimeEntryWithBillableStatusViaApi,
+    createBareTimeEntryViaApi,
+    createPublicProjectViaApi,
+    updateOrganizationSettingViaApi,
 } from './utils/api';
 
 // Each test registers a new user and creates test data via API
@@ -858,4 +861,130 @@ test('test that export dropdown shows all export options', async ({ page, ctx })
     await expect(page.getByRole('menuitem', { name: 'Export as Excel' })).toBeVisible();
     await expect(page.getByRole('menuitem', { name: 'Export as CSV' })).toBeVisible();
     await expect(page.getByRole('menuitem', { name: 'Export as ODS' })).toBeVisible();
+});
+
+// =============================================
+// Employee Permission Tests
+// =============================================
+
+test.describe('Employee Reporting Restrictions', () => {
+    test('employee can access overview reporting and sees own data', async ({ ctx, employee }) => {
+        // Owner creates a time entry
+        await createBareTimeEntryViaApi(ctx, 'Owner report entry', '2h');
+
+        // Create employee time entry
+        await createTimeEntryViaApi(
+            { ...ctx, memberId: employee.memberId },
+            { description: 'Emp report entry', duration: '1h' }
+        );
+
+        await employee.page.goto(PLAYWRIGHT_BASE_URL + '/reporting');
+        await expect(employee.page.getByTestId('reporting_view')).toBeVisible({
+            timeout: 10000,
+        });
+
+        // Employee's data should be visible (1h)
+        await expect(
+            employee.page.getByTestId('reporting_view').getByText('1h 00min').first()
+        ).toBeVisible();
+    });
+
+    test('employee can access detailed reporting and sees only own entries', async ({
+        ctx,
+        employee,
+    }) => {
+        // Owner creates time entries
+        const ownerDescription = 'OwnerDetailEntry ' + Math.floor(Math.random() * 10000);
+        await createBareTimeEntryViaApi(ctx, ownerDescription, '2h');
+
+        // Create employee time entry
+        const empDescription = 'EmpDetailEntry ' + Math.floor(Math.random() * 10000);
+        await createTimeEntryViaApi(
+            { ...ctx, memberId: employee.memberId },
+            { description: empDescription, duration: '1h' }
+        );
+
+        await employee.page.goto(PLAYWRIGHT_BASE_URL + '/reporting/detailed');
+        await expect(employee.page.getByTestId('reporting_view')).toBeVisible({
+            timeout: 10000,
+        });
+
+        // Employee's entry IS visible
+        await expect(
+            employee.page.getByTestId('reporting_view').locator(`text=${empDescription}`).first()
+        ).toBeAttached({ timeout: 10000 });
+
+        // Owner's entry is NOT visible
+        await expect(
+            employee.page.getByTestId('reporting_view').locator(`text=${ownerDescription}`)
+        ).not.toBeAttached();
+    });
+
+    test('employee cannot see shared reports tab in reporting', async ({ employee }) => {
+        await employee.page.goto(PLAYWRIGHT_BASE_URL + '/reporting');
+        await expect(employee.page.getByTestId('reporting_view')).toBeVisible({
+            timeout: 10000,
+        });
+
+        // Overview and Detailed tabs should be visible (scope to main to avoid sidebar matches)
+        const mainContent = employee.page.getByRole('main');
+        await expect(mainContent.getByRole('link', { name: 'Overview' })).toBeVisible();
+        await expect(mainContent.getByRole('link', { name: 'Detailed' })).toBeVisible();
+
+        // Shared tab should NOT be visible for employees
+        await expect(mainContent.getByRole('link', { name: 'Shared' })).not.toBeVisible();
+    });
+
+    test('employee cannot see Cost column in reporting by default', async ({ ctx, employee }) => {
+        const project = await createPublicProjectViaApi(ctx, {
+            name: 'EmpBillProj',
+            is_billable: true,
+            billable_rate: 10000,
+        });
+        await createTimeEntryViaApi(
+            { ...ctx, memberId: employee.memberId },
+            { description: 'Emp cost entry', duration: '1h', projectId: project.id }
+        );
+
+        await employee.page.goto(PLAYWRIGHT_BASE_URL + '/reporting');
+        await expect(employee.page.getByTestId('reporting_view')).toBeVisible({
+            timeout: 10000,
+        });
+
+        // Cost column header should NOT be visible
+        await expect(employee.page.getByText('Cost', { exact: true })).not.toBeVisible();
+    });
+
+    test('employee can see Cost column when employees_can_see_billable_rates is enabled', async ({
+        ctx,
+        employee,
+    }) => {
+        await updateOrganizationSettingViaApi(ctx, { employees_can_see_billable_rates: true });
+
+        const project = await createPublicProjectViaApi(ctx, {
+            name: 'EmpBillVisProj',
+            is_billable: true,
+            billable_rate: 10000,
+        });
+        await createTimeEntryViaApi(
+            { ...ctx, memberId: employee.memberId },
+            {
+                description: 'Emp cost visible entry',
+                duration: '1h',
+                projectId: project.id,
+                billable: true,
+            }
+        );
+
+        await employee.page.goto(PLAYWRIGHT_BASE_URL + '/reporting');
+        await expect(employee.page.getByTestId('reporting_view')).toBeVisible({
+            timeout: 10000,
+        });
+
+        // Cost column header should be visible
+        await expect(employee.page.getByText('Cost', { exact: true })).toBeVisible();
+
+        // 1h at 100.00/h billable rate = 100.00 cost (shown in row and total)
+        await expect(employee.page.getByText('100,00 EUR').first()).toBeVisible();
+    });
 });

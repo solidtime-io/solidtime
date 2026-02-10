@@ -14,13 +14,12 @@ import { useProjectsStore } from '@/utils/useProjects';
 import ProjectCreateModal from '@/packages/ui/src/Project/ProjectCreateModal.vue';
 import PageTitle from '@/Components/Common/PageTitle.vue';
 import { canCreateProjects } from '@/utils/permissions';
-import { storeToRefs } from 'pinia';
 import { useClientsQuery } from '@/utils/useClientsQuery';
 import { useClientsStore } from '@/utils/useClients';
 import type { CreateClientBody, Client, CreateProjectBody, Project } from '@/packages/api/src';
 import { getOrganizationCurrencyString } from '@/utils/money';
-import { getCurrentRole } from '@/utils/useUser';
-import { useOrganizationStore } from '@/utils/useOrganization';
+import { getCurrentOrganizationId, getCurrentRole } from '@/utils/useUser';
+import { useOrganizationQuery } from '@/utils/useOrganizationQuery';
 import { isAllowedToPerformPremiumAction } from '@/utils/billing';
 import { useStorage } from '@vueuse/core';
 import ProjectsFilterDropdown from '@/Components/Common/Project/ProjectsFilterDropdown.vue';
@@ -31,7 +30,7 @@ import { NO_CLIENT_ID } from '@/Components/Common/Project/constants';
 // Fetch data using TanStack Query
 const { projects } = useProjectsQuery();
 const { clients } = useClientsQuery();
-const { organization } = storeToRefs(useOrganizationStore());
+const { organization } = useOrganizationQuery(getCurrentOrganizationId()!);
 
 // Table state persisted in localStorage
 interface ProjectTableState {

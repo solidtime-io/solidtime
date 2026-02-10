@@ -445,6 +445,33 @@ test('test that invitation can be resent', async ({ page }) => {
     ]);
 });
 
+test('test that admin user cannot transfer ownership', async ({ page, browser }) => {
+    const memberId = Math.floor(Math.random() * 100000);
+    const memberEmail = `admin+${memberId}@perms.test`;
+
+    // Invite and accept an admin member
+    await inviteAndAcceptMember(
+        page,
+        browser,
+        'Admin User ' + memberId,
+        memberEmail,
+        'Administrator'
+    );
+
+    // Go to members page and verify the admin exists
+    await goToMembersPage(page);
+    const adminRow = page.getByRole('row').filter({ hasText: 'Admin User' });
+    await expect(adminRow).toBeVisible();
+
+    // The owner should still be the owner
+    const ownerRow = page.getByRole('row').filter({ hasText: 'Owner' });
+    await expect(ownerRow).toBeVisible();
+
+    // Open actions menu for the admin - should NOT have "Transfer Ownership" option
+    await adminRow.getByRole('button').click();
+    await expect(page.getByRole('menuitem').getByText('Edit')).toBeVisible();
+});
+
 test('test that accepted invitation disappears from invitations tab', async ({ page, browser }) => {
     const memberId = Math.round(Math.random() * 100000);
     const memberEmail = `accepted+${memberId}@invite.test`;
@@ -458,4 +485,50 @@ test('test that accepted invitation disappears from invitations tab', async ({ p
 
     // The accepted invitation should not be visible
     await expect(page.getByText(memberEmail)).not.toBeVisible();
+});
+
+// =============================================
+// Employee Permission Tests
+// =============================================
+
+test.describe('Employee Sidebar Navigation', () => {
+    test('employee sidebar shows correct navigation links', async ({ employee }) => {
+        await employee.page.goto(PLAYWRIGHT_BASE_URL + '/dashboard');
+        await expect(employee.page.getByTestId('dashboard_view')).toBeVisible({
+            timeout: 10000,
+        });
+
+        // Visible links
+        await expect(employee.page.getByRole('link', { name: 'Dashboard' })).toBeVisible();
+        await expect(employee.page.getByRole('link', { name: 'Time' })).toBeVisible();
+        await expect(employee.page.getByRole('link', { name: 'Calendar' })).toBeVisible();
+        await expect(employee.page.getByRole('link', { name: 'Projects' })).toBeVisible();
+        await expect(employee.page.getByRole('link', { name: 'Clients' })).toBeVisible();
+        await expect(employee.page.getByRole('link', { name: 'Tags' })).toBeVisible();
+
+        // Hidden links
+        await expect(employee.page.getByRole('link', { name: 'Members' })).not.toBeVisible();
+        await expect(
+            employee.page.getByRole('link', { name: 'Settings', exact: true })
+        ).not.toBeVisible();
+    });
+
+    test('employee cannot see members list or invite members', async ({ employee }) => {
+        await employee.page.goto(PLAYWRIGHT_BASE_URL + '/members');
+
+        // Page loads but the members API returns 403 (no members:view permission)
+        await expect(employee.page.getByRole('heading', { name: 'Members' })).toBeVisible({
+            timeout: 10000,
+        });
+
+        // Member table is empty — no rows rendered (only headers)
+        await expect(employee.page.getByTestId('client_table').locator('[role="row"]')).toHaveCount(
+            0
+        );
+
+        // Employee should NOT see the Invite Member button
+        await expect(
+            employee.page.getByRole('button', { name: 'Invite member' })
+        ).not.toBeVisible();
+    });
 });
