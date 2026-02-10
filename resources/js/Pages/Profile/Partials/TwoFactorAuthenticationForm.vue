@@ -4,8 +4,7 @@ import { router, useForm, usePage } from '@inertiajs/vue3';
 import ActionSection from '@/Components/ActionSection.vue';
 import ConfirmsPassword from '@/Components/ConfirmsPassword.vue';
 import DangerButton from '@/packages/ui/src/Buttons/DangerButton.vue';
-import InputError from '@/packages/ui/src/Input/InputError.vue';
-import InputLabel from '@/packages/ui/src/Input/InputLabel.vue';
+import { Field, FieldLabel, FieldError } from '@/packages/ui/src/field';
 import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
 import TextInput from '@/packages/ui/src/Input/TextInput.vue';
@@ -162,22 +161,24 @@ const disableTwoFactorAuthentication = () => {
                         <p class="font-semibold">Setup Key: <span v-html="setupKey"></span></p>
                     </div>
 
-                    <div v-if="confirming" class="mt-4">
-                        <InputLabel for="code" value="Code" />
+                    <Field v-if="confirming" class="mt-4 w-1/2">
+                        <FieldLabel for="code">Code</FieldLabel>
 
                         <TextInput
                             id="code"
                             v-model="confirmationForm.code"
                             type="text"
                             name="code"
-                            class="block mt-1 w-1/2"
+                            class="block w-full"
                             inputmode="numeric"
                             autofocus
                             autocomplete="one-time-code"
                             @keyup.enter="confirmTwoFactorAuthentication" />
 
-                        <InputError :message="confirmationForm.errors.code" class="mt-2" />
-                    </div>
+                        <FieldError v-if="confirmationForm.errors.code">{{
+                            confirmationForm.errors.code
+                        }}</FieldError>
+                    </Field>
                 </div>
 
                 <div v-if="recoveryCodes.length > 0 && !confirming">

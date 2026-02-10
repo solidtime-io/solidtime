@@ -9,7 +9,7 @@ import { useProjectMembersStore } from '@/utils/useProjectMembers';
 import BillableRateInput from '@/packages/ui/src/Input/BillableRateInput.vue';
 import { UserIcon } from '@heroicons/vue/24/solid';
 import ProjectMemberBillableRateModal from '@/Components/Common/ProjectMember/ProjectMemberBillableRateModal.vue';
-import InputLabel from '@/packages/ui/src/Input/InputLabel.vue';
+import { Field, FieldLabel } from '@/packages/ui/src/field';
 import { getOrganizationCurrencyString } from '@/utils/money';
 const { updateProjectMember } = useProjectMembersStore();
 
@@ -82,14 +82,14 @@ useFocus(projectNameInput, { initialValue: true });
                     <UserIcon class="w-4 text-text-secondary"></UserIcon>
                     <span>{{ props.name }}</span>
                 </div>
-                <div class="col-span-3 sm:col-span-1 flex-1">
-                    <InputLabel for="billable_rate" class="mb-2" value="Billable Rate"></InputLabel>
+                <Field class="col-span-3 sm:col-span-1 flex-1">
+                    <FieldLabel for="billable_rate">Billable Rate</FieldLabel>
                     <BillableRateInput
                         v-model="projectMemberBody.billable_rate"
                         :currency="getOrganizationCurrencyString()"
                         name="billable_rate"
                         @keydown.enter="submit"></BillableRateInput>
-                </div>
+                </Field>
             </div>
         </template>
         <template #footer>

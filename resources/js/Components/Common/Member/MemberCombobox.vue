@@ -14,7 +14,7 @@ import {
     ComboboxViewport,
 } from 'radix-vue';
 import Dropdown from '@/packages/ui/src/Input/Dropdown.vue';
-import { Button } from '@/Components/ui/button';
+import { Button } from '@/packages/ui/src/Buttons';
 
 const { members } = useMembersQuery();
 
@@ -77,7 +77,6 @@ function selectMember(member: Member) {
                 :disabled="disabled"
                 type="button"
                 variant="input"
-                size="input"
                 class="w-full justify-between text-start font-normal">
                 <div class="flex items-center gap-3 truncate">
                     <UserIcon class="w-4 text-text-secondary shrink-0" />
@@ -92,7 +91,7 @@ function selectMember(member: Member) {
         <template #content>
             <ComboboxRoot
                 v-model:search-term="searchValue"
-                :open="open"
+                v-model:open="open"
                 class="relative"
                 :filter-function="(val: string[]) => val">
                 <ComboboxAnchor>

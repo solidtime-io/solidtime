@@ -43,6 +43,21 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './
 import { Popover, PopoverContent, PopoverTrigger, PopoverAnchor } from './popover/index';
 import { RangeCalendar } from './range-calendar/index';
 import { CommandPalette } from './CommandPalette/index';
+import { Separator } from './separator/index';
+import {
+    Field,
+    FieldContent,
+    FieldDescription,
+    FieldError,
+    FieldGroup,
+    FieldLabel,
+    FieldLegend,
+    FieldSeparator,
+    FieldSet,
+    FieldTitle,
+    fieldVariants,
+} from './field/index';
+export type { FieldVariants } from './field/index';
 export type { ActivityPeriod } from './FullCalendar/idleStatusPlugin';
 export type {
     CommandPaletteCommand,
@@ -93,4 +108,16 @@ export {
     PopoverAnchor,
     RangeCalendar,
     CommandPalette,
+    Separator,
+    Field,
+    FieldContent,
+    FieldDescription,
+    FieldError,
+    FieldGroup,
+    FieldLabel,
+    FieldLegend,
+    FieldSeparator,
+    FieldSet,
+    FieldTitle,
+    fieldVariants,
 };

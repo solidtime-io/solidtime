@@ -2,7 +2,7 @@
 import FormSection from '@/Components/FormSection.vue';
 import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import { onMounted, ref } from 'vue';
-import InputLabel from '@/packages/ui/src/Input/InputLabel.vue';
+import { Field, FieldLabel } from '@/packages/ui/src/field';
 import type { UpdateOrganizationBody } from '@/packages/api/src';
 import BillableRateInput from '@/packages/ui/src/Input/BillableRateInput.vue';
 import { useOrganizationStore } from '@/utils/useOrganization';
@@ -61,35 +61,27 @@ function checkForConfirmationModal() {
                 v-model:show="showConfirmationModal"
                 :new-billable-rate="organizationBody.billable_rate"
                 @submit="submit"></OrganizationBillableRateModal>
-            <!-- Organization Owner Information -->
-            <div class="col-span-6">
-                <div class="col-span-6 sm:col-span-4">
-                    <InputLabel
-                        for="organizationBillableRate"
-                        class="mb-2"
-                        value="Organization Billable Rate" />
-                    <BillableRateInput
-                        v-if="organization"
-                        v-model="organizationBody.billable_rate"
-                        :currency="getOrganizationCurrencyString()"
-                        name="organizationBillableRate"></BillableRateInput>
-                </div>
-            </div>
+            <Field class="col-span-6 sm:col-span-4">
+                <FieldLabel for="organizationBillableRate">Organization Billable Rate</FieldLabel>
+                <BillableRateInput
+                    v-if="organization"
+                    v-model="organizationBody.billable_rate"
+                    :currency="getOrganizationCurrencyString()"
+                    name="organizationBillableRate"></BillableRateInput>
+            </Field>
 
-            <div class="col-span-6">
-                <div class="col-span-6 sm:col-span-4">
-                    <div class="flex items-center space-x-2">
-                        <Checkbox
-                            v-if="organization"
-                            id="organizationShowBillableRatesToEmployees"
-                            v-model:checked="
-                                organizationBody.employees_can_see_billable_rates
-                            "></Checkbox>
-                        <InputLabel
-                            for="organizationShowBillableRatesToEmployees"
-                            value="Show Billable Rates to Employees" />
-                    </div>
-                </div>
+            <div class="col-span-6 sm:col-span-4">
+                <Field orientation="horizontal">
+                    <Checkbox
+                        v-if="organization"
+                        id="organizationShowBillableRatesToEmployees"
+                        v-model:checked="
+                            organizationBody.employees_can_see_billable_rates
+                        "></Checkbox>
+                    <FieldLabel for="organizationShowBillableRatesToEmployees"
+                        >Show Billable Rates to Employees</FieldLabel
+                    >
+                </Field>
             </div>
         </template>
         <template #actions>

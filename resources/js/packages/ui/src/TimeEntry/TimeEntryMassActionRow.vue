@@ -14,7 +14,8 @@ import type {
 } from '@/packages/api/src';
 import { ref } from 'vue';
 import { twMerge } from 'tailwind-merge';
-import { Checkbox, InputLabel } from '@/packages/ui/src';
+import { Checkbox } from '@/packages/ui/src';
+import { FieldLabel } from '../field';
 
 const props = defineProps<{
     selectedTimeEntries: TimeEntry[];
@@ -71,14 +72,14 @@ const showMassUpdateModal = ref(false);
             :checked="allSelected"
             @update:checked="allSelected ? emit('unselectAll') : emit('selectAll')">
         </Checkbox>
-        <InputLabel
+        <FieldLabel
             v-if="selectedTimeEntries.length > 0"
             for="selectAll"
             class="select-none text-text-secondary">
             {{ selectedTimeEntries.length }} selected
-        </InputLabel>
-        <InputLabel v-else for="selectAll" class="text-text-secondary select-none"
-            >Select All</InputLabel
+        </FieldLabel>
+        <FieldLabel v-else for="selectAll" class="text-text-secondary select-none"
+            >Select All</FieldLabel
         >
         <button
             v-if="selectedTimeEntries.length"

@@ -158,12 +158,9 @@ test('test that deselecting a project removes the filter', async ({ page, ctx })
         page.getByRole('button', { name: 'Projects' }).first().getByText('1')
     ).toBeVisible();
 
-    // Deselect project
+    // Deselect project (no network request expected — TanStack Query serves cached unfiltered data)
     await page.getByRole('button', { name: 'Projects' }).first().click();
-    await Promise.all([
-        page.getByRole('option').filter({ hasText: project1Name }).click(),
-        waitForReportingUpdate(page),
-    ]);
+    await page.getByRole('option').filter({ hasText: project1Name }).click();
     await page.keyboard.press('Escape');
 
     // Verify badge count is gone (no count displayed when 0)
@@ -281,12 +278,9 @@ test('test that deselecting a client removes the filter', async ({ page, ctx }) 
         page.getByRole('button', { name: 'Clients' }).first().getByText('1')
     ).toBeVisible();
 
-    // Deselect client
+    // Deselect client (no network request expected — TanStack Query serves cached unfiltered data)
     await page.getByRole('button', { name: 'Clients' }).first().click();
-    await Promise.all([
-        page.getByRole('option').filter({ hasText: client1Name }).click(),
-        waitForReportingUpdate(page),
-    ]);
+    await page.getByRole('option').filter({ hasText: client1Name }).click();
     await page.keyboard.press('Escape');
 
     await expect(
@@ -445,12 +439,9 @@ test('test that deselecting a member removes the filter', async ({ page, ctx }) 
         page.getByRole('button', { name: 'Members' }).first().getByText('1')
     ).toBeVisible();
 
-    // Deselect member
+    // Deselect member (no network request expected — TanStack Query serves cached unfiltered data)
     await page.getByRole('button', { name: 'Members' }).first().click();
-    await Promise.all([
-        page.getByRole('option').filter({ hasText: 'John Doe' }).click(),
-        waitForReportingUpdate(page),
-    ]);
+    await page.getByRole('option').filter({ hasText: 'John Doe' }).click();
     await page.keyboard.press('Escape');
 
     // Verify badge count is gone
@@ -544,12 +535,9 @@ test('test that deselecting a tag removes the filter', async ({ page, ctx }) => 
 
     await expect(page.getByRole('button', { name: 'Tags' }).getByText('1')).toBeVisible();
 
-    // Deselect tag
+    // Deselect tag (no network request expected — TanStack Query serves cached unfiltered data)
     await page.getByRole('button', { name: 'Tags' }).click();
-    await Promise.all([
-        page.getByRole('option').filter({ hasText: tag1Name }).click(),
-        waitForReportingUpdate(page),
-    ]);
+    await page.getByRole('option').filter({ hasText: tag1Name }).click();
     await page.keyboard.press('Escape');
 
     await expect(page.getByRole('button', { name: 'Tags' }).getByText(/^\d+$/)).not.toBeVisible();

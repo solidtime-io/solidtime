@@ -2,14 +2,13 @@
 import FormSection from '@/Components/FormSection.vue';
 import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import { computed, ref, inject, type ComputedRef } from 'vue';
-import InputLabel from '@/packages/ui/src/Input/InputLabel.vue';
+import { Field, FieldLabel, FieldDescription, FieldError } from '@/packages/ui/src/field';
 import { api, type ApiToken, type CreateApiTokenBody } from '@/packages/api/src';
 import SectionBorder from '@/Components/SectionBorder.vue';
 import DangerButton from '@/packages/ui/src/Buttons/DangerButton.vue';
 import TextInput from '../../../packages/ui/src/Input/TextInput.vue';
 import SecondaryButton from '../../../packages/ui/src/Buttons/SecondaryButton.vue';
 import DialogModal from '@/packages/ui/src/DialogModal.vue';
-import InputError from '@/packages/ui/src/Input/InputError.vue';
 import ActionMessage from '@/Components/ActionMessage.vue';
 import ConfirmationModal from '@/Components/ConfirmationModal.vue';
 import ActionSection from '@/Components/ActionSection.vue';
@@ -147,20 +146,23 @@ const revokeApiTokenMutation = useMutation({
 
             <template #form>
                 <!-- Token Name -->
-                <div class="col-span-6 sm:col-span-4">
-                    <InputLabel for="api_key_name" value="API Key Name" />
+                <Field class="col-span-6 sm:col-span-4">
+                    <FieldLabel for="api_key_name">API Key Name</FieldLabel>
                     <TextInput
                         id="api_key_name"
                         v-model="createApiTokenForm.name"
                         type="text"
-                        class="mt-1 block w-full" />
-                    <InputError :message="createApiTokenForm.errors.name" class="mt-2" />
-                    <div
-                        class="text-text-tertiary text-sm pt-3 flex space-x-1.5 font-medium items-center">
-                        <ClockIcon class="w-4"></ClockIcon>
-                        <span> API Tokens are valid for 1 year </span>
-                    </div>
-                </div>
+                        class="block w-full" />
+                    <FieldError v-if="createApiTokenForm.errors.name">{{
+                        createApiTokenForm.errors.name
+                    }}</FieldError>
+                    <FieldDescription>
+                        <span class="flex space-x-1.5 items-center text-text-tertiary font-medium">
+                            <ClockIcon class="w-4"></ClockIcon>
+                            <span> API Tokens are valid for 1 year </span>
+                        </span>
+                    </FieldDescription>
+                </Field>
             </template>
 
             <template #actions>

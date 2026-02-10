@@ -1,6 +1,13 @@
 <script setup lang="ts">
-import InputLabel from '../../../packages/ui/src/Input/InputLabel.vue';
 import FormSection from '@/Components/FormSection.vue';
+import { Field, FieldLabel, FieldDescription } from '@/packages/ui/src/field';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/Components/ui/select';
 import { usePreferredColorScheme } from '@vueuse/core';
 import { themeSetting } from '@/utils/theme';
 
@@ -14,26 +21,22 @@ const preferredColor = usePreferredColorScheme();
         <template #description> Choose how you want solidtime to look on your device </template>
 
         <template #form>
-            <div class="col-span-6 sm:col-span-4">
-                <InputLabel for="theme" value="Theme" />
-                <select
-                    id="theme"
-                    v-model="themeSetting"
-                    name="theme"
-                    required
-                    class="mt-1 block w-full border-input-border bg-input-background text-text-primary focus:border-input-border-active rounded-md shadow-sm">
-                    <option value="system">System</option>
-                    <option value="light">Light</option>
-                    <option value="dark">Dark</option>
-                </select>
-                <p
-                    v-if="themeSetting === 'system'"
-                    class="w-full text-sm text-text-tertiary font-medium mt-2">
+            <Field class="col-span-6 sm:col-span-4">
+                <FieldLabel for="theme">Theme</FieldLabel>
+                <Select id="theme" v-model="themeSetting">
+                    <SelectTrigger>
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="system">System</SelectItem>
+                        <SelectItem value="light">Light</SelectItem>
+                        <SelectItem value="dark">Dark</SelectItem>
+                    </SelectContent>
+                </Select>
+                <FieldDescription v-if="themeSetting === 'system'">
                     System default: {{ preferredColor }}
-                </p>
-            </div>
+                </FieldDescription>
+            </Field>
         </template>
     </FormSection>
 </template>
-
-<style scoped></style>

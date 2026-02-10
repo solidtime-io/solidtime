@@ -5,7 +5,7 @@ import DialogModal from '@/packages/ui/src/DialogModal.vue';
 import { computed, nextTick, ref, watch } from 'vue';
 import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import TimeTrackerProjectTaskDropdown from '@/packages/ui/src/TimeTracker/TimeTrackerProjectTaskDropdown.vue';
-import InputLabel from '@/packages/ui/src/Input/InputLabel.vue';
+import { Field, FieldLabel } from '../field';
 import { TagIcon } from '@heroicons/vue/20/solid';
 import { getDayJsInstance, getLocalizedDayJs } from '@/packages/ui/src/utils/time';
 import type {
@@ -24,7 +24,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/Components/ui/select';
-import { Button } from '@/Components/ui/button';
+import { Button } from '@/packages/ui/src/Buttons';
 import DatePicker from '@/packages/ui/src/Input/DatePicker.vue';
 import DurationHumanInput from '@/packages/ui/src/Input/DurationHumanInput.vue';
 
@@ -165,6 +165,7 @@ const billableProxy = computed({
                         v-model:project="timeEntry.project_id"
                         v-model:task="timeEntry.task_id"
                         variant="input"
+                        size="default"
                         :clients
                         :create-project
                         :create-client
@@ -181,7 +182,7 @@ const billableProxy = computed({
                         :tags="tags"
                         :show-no-tag-option="false">
                         <template #trigger>
-                            <Button variant="input" size="sm">
+                            <Button variant="input">
                                 <TagIcon class="h-4 text-icon-default" />
                                 <span>{{
                                     timeEntry.tags.length === 0
@@ -192,7 +193,7 @@ const billableProxy = computed({
                         </template>
                     </TagDropdown>
                     <Select v-model="billableProxy">
-                        <SelectTrigger size="small" :show-chevron="false">
+                        <SelectTrigger :show-chevron="false">
                             <SelectValue class="flex items-center gap-2">
                                 <BillableIcon class="h-4 text-icon-default" />
                                 <span>{{ timeEntry.billable ? 'Billable' : 'Non-Billable' }}</span>
@@ -206,9 +207,9 @@ const billableProxy = computed({
                 </div>
             </div>
             <div class="flex flex-col sm:flex-row gap-4 pt-4">
-                <div class="flex-1">
-                    <InputLabel>Duration</InputLabel>
-                    <div class="space-y-2 mt-1 flex flex-col">
+                <Field class="flex-1">
+                    <FieldLabel>Duration</FieldLabel>
+                    <div class="space-y-2 flex flex-col">
                         <DurationHumanInput
                             v-model:start="localStart"
                             v-model:end="localEnd"
@@ -222,31 +223,27 @@ const billableProxy = computed({
                             </span>
                         </div>
                     </div>
-                </div>
+                </Field>
                 <div class="grid grid-cols-2 sm:flex gap-4">
-                    <div>
-                        <InputLabel>Start</InputLabel>
-                        <div class="flex flex-col gap-2 mt-1 sm:w-28">
+                    <Field>
+                        <FieldLabel>Start</FieldLabel>
+                        <div class="flex flex-col gap-2 sm:w-28">
                             <TimePickerSimple
                                 v-model="localStart"
-                                class="w-full"
-                                size="large"></TimePickerSimple>
+                                class="w-full"></TimePickerSimple>
                             <DatePicker
                                 v-model="localStart"
                                 class="w-full"
                                 tabindex="1"></DatePicker>
                         </div>
-                    </div>
-                    <div>
-                        <InputLabel>End</InputLabel>
-                        <div class="flex flex-col gap-2 mt-1 sm:w-28">
-                            <TimePickerSimple
-                                v-model="localEnd"
-                                class="w-full"
-                                size="large"></TimePickerSimple>
+                    </Field>
+                    <Field>
+                        <FieldLabel>End</FieldLabel>
+                        <div class="flex flex-col gap-2 sm:w-28">
+                            <TimePickerSimple v-model="localEnd" class="w-full"></TimePickerSimple>
                             <DatePicker v-model="localEnd" class="w-full" tabindex="1"></DatePicker>
                         </div>
-                    </div>
+                    </Field>
                 </div>
             </div>
         </template>

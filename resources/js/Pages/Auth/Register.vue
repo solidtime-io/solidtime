@@ -3,8 +3,7 @@ import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import AuthenticationCard from '@/Components/AuthenticationCard.vue';
 import AuthenticationCardLogo from '@/Components/AuthenticationCardLogo.vue';
 import Checkbox from '@/packages/ui/src/Input/Checkbox.vue';
-import InputError from '@/packages/ui/src/Input/InputError.vue';
-import InputLabel from '@/packages/ui/src/Input/InputLabel.vue';
+import { Field, FieldLabel, FieldError } from '@/packages/ui/src/field';
 import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import TextInput from '@/packages/ui/src/Input/TextInput.vue';
 
@@ -63,54 +62,56 @@ const page = usePage<{
         </div>
 
         <form @submit.prevent="submit">
-            <div>
-                <InputLabel for="name" value="Name" />
+            <Field>
+                <FieldLabel for="name">Name</FieldLabel>
                 <TextInput
                     id="name"
                     v-model="form.name"
                     type="text"
-                    class="mt-1 block w-full"
+                    class="block w-full"
                     required
                     autofocus
                     autocomplete="name" />
-                <InputError class="mt-2" :message="form.errors.name" />
-            </div>
+                <FieldError v-if="form.errors.name">{{ form.errors.name }}</FieldError>
+            </Field>
 
-            <div class="mt-4">
-                <InputLabel for="email" value="Email" />
+            <Field class="mt-4">
+                <FieldLabel for="email">Email</FieldLabel>
                 <TextInput
                     id="email"
                     v-model="form.email"
                     type="email"
-                    class="mt-1 block w-full"
+                    class="block w-full"
                     required
                     autocomplete="username" />
-                <InputError class="mt-2" :message="form.errors.email" />
-            </div>
+                <FieldError v-if="form.errors.email">{{ form.errors.email }}</FieldError>
+            </Field>
 
-            <div class="mt-4">
-                <InputLabel for="password" value="Password" />
+            <Field class="mt-4">
+                <FieldLabel for="password">Password</FieldLabel>
                 <TextInput
                     id="password"
                     v-model="form.password"
                     type="password"
-                    class="mt-1 block w-full"
+                    class="block w-full"
                     required
                     autocomplete="new-password" />
-                <InputError class="mt-2" :message="form.errors.password" />
-            </div>
+                <FieldError v-if="form.errors.password">{{ form.errors.password }}</FieldError>
+            </Field>
 
-            <div class="mt-4">
-                <InputLabel for="password_confirmation" value="Confirm Password" />
+            <Field class="mt-4">
+                <FieldLabel for="password_confirmation">Confirm Password</FieldLabel>
                 <TextInput
                     id="password_confirmation"
                     v-model="form.password_confirmation"
                     type="password"
-                    class="mt-1 block w-full"
+                    class="block w-full"
                     required
                     autocomplete="new-password" />
-                <InputError class="mt-2" :message="form.errors.password_confirmation" />
-            </div>
+                <FieldError v-if="form.errors.password_confirmation">{{
+                    form.errors.password_confirmation
+                }}</FieldError>
+            </Field>
 
             <div
                 v-if="
@@ -119,45 +120,41 @@ const page = usePage<{
                     page.props.privacy_policy_url !== null
                 "
                 class="mt-4">
-                <InputLabel for="terms">
-                    <div class="flex items-center">
-                        <Checkbox id="terms" v-model:checked="form.terms" name="terms" />
-
-                        <div class="ms-2">
-                            I agree to the
-                            <a
-                                target="_blank"
-                                :href="page.props.terms_url"
-                                class="underline text-sm text-text-secondary hover:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                                >Terms of Service</a
-                            >
-                            and
-                            <a
-                                target="_blank"
-                                :href="page.props.privacy_policy_url"
-                                class="underline text-sm text-text-secondary hover:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                                >Privacy Policy</a
-                            >
-                        </div>
-                    </div>
-                    <InputError class="mt-2" :message="form.errors.terms" />
-                </InputLabel>
+                <Field orientation="horizontal">
+                    <Checkbox id="terms" v-model:checked="form.terms" name="terms" />
+                    <FieldLabel for="terms">
+                        I agree to the
+                        <a
+                            target="_blank"
+                            :href="page.props.terms_url"
+                            class="underline text-sm text-text-secondary hover:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            >Terms of Service</a
+                        >
+                        and
+                        <a
+                            target="_blank"
+                            :href="page.props.privacy_policy_url"
+                            class="underline text-sm text-text-secondary hover:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            >Privacy Policy</a
+                        >
+                    </FieldLabel>
+                    <FieldError v-if="form.errors.terms">{{ form.errors.terms }}</FieldError>
+                </Field>
             </div>
 
             <div v-if="page.props.newsletter_consent" class="mt-4">
-                <InputLabel for="newsletter_consent">
-                    <div class="flex items-center">
-                        <Checkbox
-                            id="newsletter_consent"
-                            v-model:checked="form.newsletter_consent"
-                            name="newsletter_consent" />
-
-                        <div class="ms-2">
-                            I agree to receive emails about product related updates
-                        </div>
-                    </div>
-                    <InputError class="mt-2" :message="form.errors.newsletter_consent" />
-                </InputLabel>
+                <Field orientation="horizontal">
+                    <Checkbox
+                        id="newsletter_consent"
+                        v-model:checked="form.newsletter_consent"
+                        name="newsletter_consent" />
+                    <FieldLabel for="newsletter_consent">
+                        I agree to receive emails about product related updates
+                    </FieldLabel>
+                    <FieldError v-if="form.errors.newsletter_consent">{{
+                        form.errors.newsletter_consent
+                    }}</FieldError>
+                </Field>
             </div>
 
             <div class="flex items-center justify-end mt-4">

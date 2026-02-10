@@ -3,8 +3,7 @@ import { ref } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import ActionMessage from '@/Components/ActionMessage.vue';
 import FormSection from '@/Components/FormSection.vue';
-import InputError from '@/packages/ui/src/Input/InputError.vue';
-import InputLabel from '@/packages/ui/src/Input/InputLabel.vue';
+import { Field, FieldLabel, FieldError } from '@/packages/ui/src/field';
 import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import TextInput from '@/packages/ui/src/Input/TextInput.vue';
 
@@ -46,40 +45,44 @@ const updatePassword = () => {
         </template>
 
         <template #form>
-            <div class="col-span-6 sm:col-span-4">
-                <InputLabel for="current_password" value="Current Password" />
+            <Field class="col-span-6 sm:col-span-4">
+                <FieldLabel for="current_password">Current Password</FieldLabel>
                 <TextInput
                     id="current_password"
                     ref="currentPasswordInput"
                     v-model="form.current_password"
                     type="password"
-                    class="mt-1 block w-full"
+                    class="block w-full"
                     autocomplete="current-password" />
-                <InputError :message="form.errors.current_password" class="mt-2" />
-            </div>
+                <FieldError v-if="form.errors.current_password">{{
+                    form.errors.current_password
+                }}</FieldError>
+            </Field>
 
-            <div class="col-span-6 sm:col-span-4">
-                <InputLabel for="password" value="New Password" />
+            <Field class="col-span-6 sm:col-span-4">
+                <FieldLabel for="password">New Password</FieldLabel>
                 <TextInput
                     id="password"
                     ref="passwordInput"
                     v-model="form.password"
                     type="password"
-                    class="mt-1 block w-full"
+                    class="block w-full"
                     autocomplete="new-password" />
-                <InputError :message="form.errors.password" class="mt-2" />
-            </div>
+                <FieldError v-if="form.errors.password">{{ form.errors.password }}</FieldError>
+            </Field>
 
-            <div class="col-span-6 sm:col-span-4">
-                <InputLabel for="password_confirmation" value="Confirm Password" />
+            <Field class="col-span-6 sm:col-span-4">
+                <FieldLabel for="password_confirmation">Confirm Password</FieldLabel>
                 <TextInput
                     id="password_confirmation"
                     v-model="form.password_confirmation"
                     type="password"
-                    class="mt-1 block w-full"
+                    class="block w-full"
                     autocomplete="new-password" />
-                <InputError :message="form.errors.password_confirmation" class="mt-2" />
-            </div>
+                <FieldError v-if="form.errors.password_confirmation">{{
+                    form.errors.password_confirmation
+                }}</FieldError>
+            </Field>
         </template>
 
         <template #actions>

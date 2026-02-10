@@ -5,8 +5,7 @@ import DialogModal from '@/packages/ui/src/DialogModal.vue';
 import { ref } from 'vue';
 import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import { useFocus } from '@vueuse/core';
-import InputLabel from '@/packages/ui/src/Input/InputLabel.vue';
-import InputError from '@/packages/ui/src/Input/InputError.vue';
+import { Field, FieldLabel, FieldError } from '@/packages/ui/src/field';
 import type { Role } from '@/types/jetstream';
 import { Link, useForm } from '@inertiajs/vue3';
 import { getCurrentOrganizationId } from '@/utils/useUser';
@@ -111,8 +110,8 @@ useFocus(clientNameInput, { initialValue: true });
                 </div>
             </div>
             <div v-else class="space-y-4">
-                <div class="col-span-6 sm:col-span-4 flex-1">
-                    <InputLabel for="email" value="Email" />
+                <Field class="col-span-6 sm:col-span-4 flex-1">
+                    <FieldLabel for="email">Email</FieldLabel>
                     <TextInput
                         id="email"
                         ref="memberEmailInput"
@@ -120,16 +119,16 @@ useFocus(clientNameInput, { initialValue: true });
                         name="email"
                         type="text"
                         placeholder="Member Email"
-                        class="mt-1 block w-full"
+                        class="block w-full"
                         required
                         autocomplete="memberName"
                         @keydown.enter="submit" />
-                    <InputError :message="errors.email" class="mt-2" />
-                </div>
+                    <FieldError v-if="errors.email">{{ errors.email }}</FieldError>
+                </Field>
 
-                <div v-if="availableRoles.length > 0">
-                    <InputLabel for="roles" value="Role" />
-                    <InputError :message="errors.role" class="mt-2" />
+                <Field v-if="availableRoles.length > 0">
+                    <FieldLabel for="roles">Role</FieldLabel>
+                    <FieldError v-if="errors.role">{{ errors.role }}</FieldError>
 
                     <div
                         class="relative z-0 mt-1 border border-card-border rounded-lg bg-card-background cursor-pointer">
@@ -182,7 +181,7 @@ useFocus(clientNameInput, { initialValue: true });
                             </div>
                         </button>
                     </div>
-                </div>
+                </Field>
             </div>
         </template>
         <template #footer>

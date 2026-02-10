@@ -42,7 +42,6 @@ const organization = inject<ComputedRef<Organization>>('organization');
         <PopoverTrigger as-child>
             <Button
                 variant="input"
-                size="input"
                 :class="[
                     'w-full justify-start text-left font-normal',
                     !model && 'text-muted-foreground',

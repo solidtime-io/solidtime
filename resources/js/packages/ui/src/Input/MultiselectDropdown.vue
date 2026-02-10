@@ -75,12 +75,12 @@ const emit = defineEmits(['update:modelValue', 'changed', 'submit']);
         <template #content>
             <ComboboxRoot
                 v-model:search-term="searchValue"
-                :open="open"
+                v-model:open="open"
                 class="p-2"
                 :filter-function="(val: string[]) => val">
                 <ComboboxAnchor>
                     <ComboboxInput
-                        class="w-full rounded-md border border-input-border bg-input-background px-3 py-1.5 text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none"
+                        class="w-full h-8 rounded-md border border-input-border bg-input-background px-3 text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none"
                         :placeholder="searchPlaceholder" />
                 </ComboboxAnchor>
                 <ComboboxContent

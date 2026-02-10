@@ -7,7 +7,7 @@ import type { CreateClientBody } from '@/packages/api/src';
 import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import { useFocus } from '@vueuse/core';
 import { useClientsStore } from '@/utils/useClients';
-import InputLabel from '../../../packages/ui/src/Input/InputLabel.vue';
+import { Field, FieldLabel } from '@/packages/ui/src/field';
 
 const { createClient } = useClientsStore();
 const show = defineModel('show', { default: false });
@@ -37,19 +37,19 @@ useFocus(clientNameInput, { initialValue: true });
 
         <template #content>
             <div class="flex items-center space-x-4">
-                <div class="col-span-6 sm:col-span-4 flex-1">
-                    <InputLabel for="clientName" value="Client Name" />
+                <Field class="col-span-6 sm:col-span-4 flex-1">
+                    <FieldLabel for="clientName">Client Name</FieldLabel>
                     <TextInput
                         id="clientName"
                         ref="clientNameInput"
                         v-model="client.name"
                         type="text"
                         placeholder="Client Name"
-                        class="mt-1 block w-full"
+                        class="block w-full"
                         required
                         autocomplete="clientName"
                         @keydown.enter="submit" />
-                </div>
+                </Field>
             </div>
         </template>
         <template #footer>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import InputLabel from '@/packages/ui/src/Input/InputLabel.vue';
+import { Field, FieldLabel } from '../field';
 import BillableRateInput from '@/packages/ui/src/Input/BillableRateInput.vue';
 import ProjectBillableSelect from '@/packages/ui/src/Project/ProjectBillableSelect.vue';
 import { computed, onMounted, ref, watch } from 'vue';
@@ -55,23 +55,21 @@ const emit = defineEmits(['submit']);
 
 <template>
     <div class="sm:flex items-center space-y-2 sm:space-y-0 sm:space-x-4 pt-6">
-        <div>
-            <div class="flex items-center space-x-1 mb-2">
+        <Field>
+            <div class="flex items-center space-x-1">
                 <BillableIcon class="text-text-quaternary h-4 ml-1 mr-0.5"></BillableIcon>
-                <InputLabel for="billable" value="Billable Default" />
+                <FieldLabel for="billable">Billable Default</FieldLabel>
             </div>
-            <ProjectBillableSelect
-                v-model="billableRateSelect"
-                class="mt-2"></ProjectBillableSelect>
-        </div>
-        <div v-if="billableRateSelect === 'custom-rate'">
-            <InputLabel for="billableRate" value="Billable Rate" class="mb-2" />
+            <ProjectBillableSelect v-model="billableRateSelect"></ProjectBillableSelect>
+        </Field>
+        <Field v-if="billableRateSelect === 'custom-rate'">
+            <FieldLabel for="billableRate">Billable Rate</FieldLabel>
             <BillableRateInput
                 v-model="billableRate"
                 :currency="currency"
                 name="billableRate"
                 @keydown.enter="emit('submit')" />
-        </div>
+        </Field>
     </div>
     <div class="flex items-center text-text-secondary text-xs pt-2 pl-1">
         <span>

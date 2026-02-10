@@ -14,7 +14,7 @@ import { useClientsQuery } from '@/utils/useClientsQuery';
 import ProjectColorSelector from '@/packages/ui/src/Project/ProjectColorSelector.vue';
 import { UserCircleIcon } from '@heroicons/vue/20/solid';
 import EstimatedTimeSection from '@/packages/ui/src/EstimatedTimeSection.vue';
-import InputLabel from '@/packages/ui/src/Input/InputLabel.vue';
+import { Field, FieldLabel } from '@/packages/ui/src/field';
 import ProjectBillableRateModal from '@/packages/ui/src/Project/ProjectBillableRateModal.vue';
 import { getOrganizationCurrencyString } from '@/utils/money';
 import ProjectEditBillableSection from '@/packages/ui/src/Project/ProjectEditBillableSection.vue';
@@ -82,34 +82,28 @@ async function submitBillableRate() {
 
         <template #content>
             <div class="sm:flex items-center space-y-2 sm:space-y-0 sm:space-x-5">
-                <div class="flex-1 flex items-center">
+                <Field class="flex-1 flex items-center">
                     <div class="text-center">
-                        <InputLabel for="color" value="Color" />
-                        <ProjectColorSelector
-                            v-model="project.color"
-                            class="mt-1"></ProjectColorSelector>
+                        <FieldLabel for="color">Color</FieldLabel>
+                        <ProjectColorSelector v-model="project.color"></ProjectColorSelector>
                     </div>
-                </div>
-                <div class="w-full">
-                    <InputLabel for="projectName" value="Project name" />
+                </Field>
+                <Field class="w-full">
+                    <FieldLabel for="projectName">Project name</FieldLabel>
                     <TextInput
                         id="projectName"
                         ref="projectNameInput"
                         v-model="project.name"
                         type="text"
                         placeholder="Project Name"
-                        class="mt-1 block w-full"
+                        class="block w-full"
                         required
                         autocomplete="projectName"
                         @keydown.enter="submit()" />
-                </div>
-                <div class="">
-                    <InputLabel for="client" value="Client" />
-                    <ClientDropdown
-                        v-model="project.client_id"
-                        :create-client
-                        :clients="clients"
-                        class="mt-1">
+                </Field>
+                <Field>
+                    <FieldLabel for="client">Client</FieldLabel>
+                    <ClientDropdown v-model="project.client_id" :create-client :clients="clients">
                         <template #trigger>
                             <Badge
                                 class="bg-input-background cursor-pointer hover:bg-tertiary"
@@ -123,7 +117,7 @@ async function submitBillableRate() {
                             </Badge>
                         </template>
                     </ClientDropdown>
-                </div>
+                </Field>
             </div>
             <div>
                 <div>
