@@ -155,6 +155,21 @@ function randomColor(): string {
 // Entity creation
 // ──────────────────────────────────────────────────
 
+export async function createPublicProjectViaApi(
+    ctx: TestContext,
+    data: {
+        name: string;
+        is_billable?: boolean;
+        billable_rate?: number | null;
+        client_id?: string | null;
+    }
+) {
+    return createProjectViaApi(ctx, {
+        ...data,
+        is_public: true,
+    });
+}
+
 export async function createProjectViaApi(
     ctx: TestContext,
     data: {
@@ -164,6 +179,7 @@ export async function createProjectViaApi(
         billable_rate?: number | null;
         client_id?: string | null;
         estimated_time?: number | null;
+        is_public?: boolean;
     }
 ) {
     const response = await ctx.request.post(
@@ -176,6 +192,7 @@ export async function createProjectViaApi(
                 billable_rate: data.billable_rate ?? null,
                 client_id: data.client_id ?? null,
                 estimated_time: data.estimated_time ?? null,
+                is_public: data.is_public ?? false,
             },
         }
     );

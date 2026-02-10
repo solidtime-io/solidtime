@@ -2,7 +2,13 @@ import { expect } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import { PLAYWRIGHT_BASE_URL } from '../playwright/config';
 import { test } from '../playwright/fixtures';
-import { createProjectViaApi, createTaskViaApi, createClientViaApi } from './utils/api';
+import {
+    createProjectViaApi,
+    createPublicProjectViaApi,
+    createTaskViaApi,
+    createClientViaApi,
+    updateOrganizationSettingViaApi,
+} from './utils/api';
 
 async function goToProjectsOverview(page: Page) {
     await page.goto(PLAYWRIGHT_BASE_URL + '/projects');
@@ -187,4 +193,57 @@ test('test that multiple tasks are displayed on project detail page', async ({ p
     await page.goto(PLAYWRIGHT_BASE_URL + '/projects/' + project.id);
     await expect(page.getByText(taskName1)).toBeVisible();
     await expect(page.getByText(taskName2)).toBeVisible();
+});
+
+// =============================================
+// Employee Permission Tests
+// =============================================
+
+test.describe('Employee Tasks Restrictions', () => {
+    test('employee cannot see task management actions when employees_can_manage_tasks is disabled', async ({
+        ctx,
+        employee,
+    }) => {
+        // Create a public project with a task
+        const projectName = 'EmpTaskProj ' + Math.floor(Math.random() * 10000);
+        const taskName = 'EmpTask ' + Math.floor(Math.random() * 10000);
+        const project = await createPublicProjectViaApi(ctx, { name: projectName });
+        await createTaskViaApi(ctx, { name: taskName, project_id: project.id });
+
+        // Navigate to the project detail page
+        await employee.page.goto(PLAYWRIGHT_BASE_URL + '/projects');
+        await expect(employee.page.getByText(projectName)).toBeVisible({ timeout: 10000 });
+        await employee.page.getByText(projectName).first().click();
+        await employee.page.waitForURL(/\/projects\/[a-f0-9-]+/);
+
+        // Task should be visible
+        await expect(employee.page.getByText(taskName)).toBeVisible({ timeout: 10000 });
+
+        // Create Task button should not be visible
+        await expect(employee.page.getByRole('button', { name: 'Create Task' })).not.toBeVisible();
+
+        // Task actions button should not be visible
+        const actionsButton = employee.page.locator(`[aria-label='Actions for Task ${taskName}']`);
+        await expect(actionsButton).not.toBeVisible();
+    });
+
+    test('employee can manage tasks when employees_can_manage_tasks is enabled', async ({
+        ctx,
+        employee,
+    }) => {
+        // Enable the setting
+        await updateOrganizationSettingViaApi(ctx, { employees_can_manage_tasks: true });
+
+        const projectName = 'EmpTaskMgmtProj ' + Math.floor(Math.random() * 10000);
+        await createPublicProjectViaApi(ctx, { name: projectName });
+
+        // Navigate to the project detail page
+        await employee.page.goto(PLAYWRIGHT_BASE_URL + '/projects');
+        await expect(employee.page.getByText(projectName)).toBeVisible({ timeout: 10000 });
+        await employee.page.getByText(projectName).first().click();
+        await employee.page.waitForURL(/\/projects\/[a-f0-9-]+/);
+
+        // Create Task button SHOULD be visible
+        await expect(employee.page.getByRole('button', { name: 'Create Task' })).toBeVisible();
+    });
 });

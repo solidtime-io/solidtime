@@ -39,7 +39,7 @@ const maxWidthClass = computed(() => {
 <template>
     <Dialog :open="show" @update:open="close">
         <DialogContent :class="maxWidthClass">
-            <div>
+            <div class="min-w-0">
                 <slot />
             </div>
 

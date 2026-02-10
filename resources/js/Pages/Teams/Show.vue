@@ -5,7 +5,6 @@ import SectionBorder from '@/Components/SectionBorder.vue';
 import UpdateTeamNameForm from '@/Pages/Teams/Partials/UpdateTeamNameForm.vue';
 import type { Organization } from '@/types/models';
 import type { Permissions, Role } from '@/types/jetstream';
-import { canUpdateOrganization } from '@/utils/permissions';
 import OrganizationBillableRate from '@/Pages/Teams/Partials/OrganizationBillableRate.vue';
 import OrganizationFormatSettings from '@/Pages/Teams/Partials/OrganizationFormatSettings.vue';
 import OrganizationTimeEntrySettings from '@/Pages/Teams/Partials/OrganizationTimeEntrySettings.vue';
@@ -46,13 +45,13 @@ onMounted(async () => {
                     <UpdateTeamNameForm :team="team" :permissions="permissions" />
 
                     <SectionBorder />
-                    <OrganizationBillableRate v-if="canUpdateOrganization()" :team="team" />
+                    <OrganizationBillableRate v-if="permissions.canUpdateTeam" :team="team" />
                     <SectionBorder />
 
-                    <OrganizationFormatSettings v-if="canUpdateOrganization()" :team="team" />
+                    <OrganizationFormatSettings v-if="permissions.canUpdateTeam" :team="team" />
                     <SectionBorder />
 
-                    <OrganizationTimeEntrySettings v-if="canUpdateOrganization()" />
+                    <OrganizationTimeEntrySettings v-if="permissions.canUpdateTeam" />
                     <SectionBorder />
 
                     <template v-if="permissions.canDeleteTeam && !team.personal_team">

@@ -2,7 +2,12 @@ import { expect } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import { PLAYWRIGHT_BASE_URL } from '../playwright/config';
 import { test } from '../playwright/fixtures';
-import { createClientViaApi } from './utils/api';
+import {
+    createClientViaApi,
+    createProjectMemberViaApi,
+    createProjectViaApi,
+    createPublicProjectViaApi,
+} from './utils/api';
 
 async function goToClientsOverview(page: Page) {
     await page.goto(PLAYWRIGHT_BASE_URL + '/clients');
@@ -124,4 +129,87 @@ test('test that deleting a client via actions menu works', async ({ page, ctx })
     ]);
 
     await expect(page.getByTestId('client_table')).not.toContainText(clientName);
+});
+
+// =============================================
+// Employee Permission Tests
+// =============================================
+
+test.describe('Employee Clients Restrictions', () => {
+    test('employee can view clients but cannot create', async ({ ctx, employee }) => {
+        // Create a client with a public project so the employee can see the client
+        const clientName = 'EmpViewClient ' + Math.floor(Math.random() * 10000);
+        const client = await createClientViaApi(ctx, { name: clientName });
+        await createPublicProjectViaApi(ctx, { name: 'EmpClientProj', client_id: client.id });
+
+        await employee.page.goto(PLAYWRIGHT_BASE_URL + '/clients');
+        await expect(employee.page.getByTestId('clients_view')).toBeVisible({
+            timeout: 10000,
+        });
+
+        // Employee can see the client
+        await expect(employee.page.getByText(clientName)).toBeVisible({ timeout: 10000 });
+
+        // Employee cannot see Create Client button
+        await expect(
+            employee.page.getByRole('button', { name: 'Create Client' })
+        ).not.toBeVisible();
+    });
+
+    test('employee cannot see edit/delete/archive actions on clients', async ({
+        ctx,
+        employee,
+    }) => {
+        const clientName = 'EmpActionsClient ' + Math.floor(Math.random() * 10000);
+        const client = await createClientViaApi(ctx, { name: clientName });
+        await createPublicProjectViaApi(ctx, { name: 'EmpClientActProj', client_id: client.id });
+
+        await employee.page.goto(PLAYWRIGHT_BASE_URL + '/clients');
+        await expect(employee.page.getByText(clientName)).toBeVisible({ timeout: 10000 });
+
+        // Click the actions dropdown trigger to open the menu
+        const actionsButton = employee.page.locator(
+            `[aria-label='Actions for Client ${clientName}']`
+        );
+        await actionsButton.click();
+
+        // The dropdown menu items (Edit, Archive, Delete) should NOT be visible
+        await expect(
+            employee.page.locator(`[aria-label='Edit Client ${clientName}']`)
+        ).not.toBeVisible();
+        await expect(
+            employee.page.locator(`[aria-label='Archive Client ${clientName}']`)
+        ).not.toBeVisible();
+        await expect(
+            employee.page.locator(`[aria-label='Delete Client ${clientName}']`)
+        ).not.toBeVisible();
+    });
+
+    test('employee can see client when they are a member of its private project', async ({
+        ctx,
+        employee,
+    }) => {
+        const clientName = 'EmpPrivateClient ' + Math.floor(Math.random() * 10000);
+        const client = await createClientViaApi(ctx, { name: clientName });
+
+        // Create a private project under this client
+        const project = await createProjectViaApi(ctx, {
+            name: 'PrivateProj',
+            client_id: client.id,
+            is_public: false,
+        });
+
+        // Add the employee as a project member
+        await createProjectMemberViaApi(ctx, project.id, {
+            member_id: employee.memberId,
+        });
+
+        await employee.page.goto(PLAYWRIGHT_BASE_URL + '/clients');
+        await expect(employee.page.getByTestId('clients_view')).toBeVisible({
+            timeout: 10000,
+        });
+
+        // Employee can see the client because they are a member of its private project
+        await expect(employee.page.getByText(clientName)).toBeVisible({ timeout: 10000 });
+    });
 });

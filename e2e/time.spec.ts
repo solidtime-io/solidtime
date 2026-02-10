@@ -13,6 +13,8 @@ import {
     createProjectViaApi,
     createBillableProjectViaApi,
     createBareTimeEntryViaApi,
+    createTimeEntryViaApi,
+    updateOrganizationCurrencyViaWeb,
 } from './utils/api';
 
 // Date picker button name patterns for different date formats
@@ -601,6 +603,32 @@ test('test that date picker displays date in organization date format', async ({
 });
 
 // TODO: Test that project can be created in the time entry row
+
+test('test that billable icon shows dollar sign for USD currency on time entry row', async ({
+    page,
+    ctx,
+}) => {
+    await updateOrganizationCurrencyViaWeb(ctx, 'USD');
+    await goToTimeOverview(page);
+    await createEmptyTimeEntry(page);
+    const timeEntryRow = page.locator('[data-testid="time_entry_row"]').first();
+    const billableButton = timeEntryRow.getByRole('button', { name: 'Non Billable' }).first();
+    await expect(billableButton).toBeVisible();
+    await expect(billableButton.locator('svg')).toHaveAttribute('viewBox', '0 0 8 14');
+});
+
+test('test that billable icon shows euro sign for EUR currency on time entry row', async ({
+    page,
+    ctx,
+}) => {
+    await updateOrganizationCurrencyViaWeb(ctx, 'EUR');
+    await goToTimeOverview(page);
+    await createEmptyTimeEntry(page);
+    const timeEntryRow = page.locator('[data-testid="time_entry_row"]').first();
+    const billableButton = timeEntryRow.getByRole('button', { name: 'Non Billable' }).first();
+    await expect(billableButton).toBeVisible();
+    await expect(billableButton.locator('svg')).toHaveAttribute('viewBox', '0 0 12 12');
+});
 
 test('test that editing billable status via the edit modal works', async ({ page }) => {
     await goToTimeOverview(page);
@@ -1398,4 +1426,107 @@ test('test that time entries page loads multiple entries created via API', async
     await expect(timeEntryRows.first()).toBeVisible();
     const count = await timeEntryRows.count();
     expect(count).toBeGreaterThanOrEqual(5);
+});
+
+// =============================================
+// Employee Permission Tests
+// =============================================
+
+test.describe('Employee Time Entry Isolation', () => {
+    test('employee can only see their own time entries on the time page', async ({
+        ctx,
+        employee,
+    }) => {
+        // Owner creates a time entry
+        const ownerDescription = 'OwnerWork ' + Math.floor(Math.random() * 10000);
+        await createBareTimeEntryViaApi(ctx, ownerDescription, '1h');
+
+        // Create a time entry for the employee using the owner's context
+        const employeeDescription = 'EmpWork ' + Math.floor(Math.random() * 10000);
+        await createTimeEntryViaApi(
+            { ...ctx, memberId: employee.memberId },
+            { description: employeeDescription, duration: '30min' }
+        );
+
+        await employee.page.goto(PLAYWRIGHT_BASE_URL + '/time');
+        await expect(
+            employee.page.getByTestId('dashboard_timer').getByTestId('timer_button')
+        ).toBeVisible({ timeout: 10000 });
+
+        // Employee's time entry IS visible
+        const employeeRow = employee.page
+            .locator('[data-testid="time_entry_row"]')
+            .filter({ hasText: employeeDescription });
+        await expect(employeeRow).toBeVisible({ timeout: 10000 });
+
+        // Owner's time entry is NOT visible
+        const ownerRow = employee.page
+            .locator('[data-testid="time_entry_row"]')
+            .filter({ hasText: ownerDescription });
+        await expect(ownerRow).not.toBeVisible();
+    });
+
+    test('employee can edit their own time entry', async ({ ctx, employee }) => {
+        const description = 'EmpEditEntry ' + Math.floor(Math.random() * 10000);
+        await createTimeEntryViaApi(
+            { ...ctx, memberId: employee.memberId },
+            { description, duration: '1h' }
+        );
+
+        await employee.page.goto(PLAYWRIGHT_BASE_URL + '/time');
+        const timeEntryRow = employee.page
+            .locator('[data-testid="time_entry_row"]')
+            .filter({ hasText: description });
+        await expect(timeEntryRow).toBeVisible({ timeout: 10000 });
+
+        // Update description
+        const updatedDescription = 'Updated ' + description;
+        const descriptionInput = timeEntryRow.getByTestId('time_entry_description').first();
+        await descriptionInput.fill(updatedDescription);
+        await Promise.all([
+            employee.page.waitForResponse(
+                (response) =>
+                    response.url().includes('/time-entries') &&
+                    response.request().method() === 'PUT' &&
+                    response.status() === 200
+            ),
+            descriptionInput.press('Tab'),
+        ]);
+
+        // Verify updated description
+        await expect(timeEntryRow.getByTestId('time_entry_description').first()).toHaveValue(
+            updatedDescription
+        );
+    });
+
+    test('employee can delete their own time entry', async ({ ctx, employee }) => {
+        const description = 'EmpDeleteEntry ' + Math.floor(Math.random() * 10000);
+        await createTimeEntryViaApi(
+            { ...ctx, memberId: employee.memberId },
+            { description, duration: '1h' }
+        );
+
+        await employee.page.goto(PLAYWRIGHT_BASE_URL + '/time');
+        const timeEntryRow = employee.page
+            .locator('[data-testid="time_entry_row"]')
+            .filter({ hasText: description });
+        await expect(timeEntryRow).toBeVisible({ timeout: 10000 });
+
+        // Delete via actions menu
+        await timeEntryRow
+            .getByRole('button', { name: 'Actions for the time entry' })
+            .first()
+            .click();
+        await Promise.all([
+            employee.page.waitForResponse(
+                (response) =>
+                    response.url().includes('/time-entries') &&
+                    response.request().method() === 'DELETE'
+            ),
+            employee.page.getByTestId('time_entry_delete').click(),
+        ]);
+
+        // Verify entry is gone
+        await expect(timeEntryRow).not.toBeVisible();
+    });
 });

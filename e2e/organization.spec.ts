@@ -364,3 +364,32 @@ test('test that format settings persist after page reload', async ({ page }) => 
     await page.reload();
     await expect(page.getByLabel('Date Format')).toContainText('DD/MM/YYYY');
 });
+
+// =============================================
+// Employee Permission Tests
+// =============================================
+
+test.describe('Employee Organization Settings Restrictions', () => {
+    test('employee can see org name but not editable settings', async ({ ctx, employee }) => {
+        await employee.page.goto(PLAYWRIGHT_BASE_URL + '/teams/' + ctx.orgId);
+
+        // Organization Name section is visible (but inputs are disabled)
+        await expect(
+            employee.page.getByRole('heading', { name: 'Organization Name', level: 3 })
+        ).toBeVisible({ timeout: 10000 });
+
+        // Editable settings sections should NOT be visible
+        await expect(
+            employee.page.getByRole('heading', { name: 'Billable Rate', level: 3 })
+        ).not.toBeVisible();
+        await expect(
+            employee.page.getByRole('heading', { name: 'Format Settings', level: 3 })
+        ).not.toBeVisible();
+        await expect(
+            employee.page.getByRole('heading', { name: 'Organization Settings', level: 3 })
+        ).not.toBeVisible();
+
+        // Save button should not be visible (employee cannot update)
+        await expect(employee.page.getByRole('button', { name: 'Save' })).not.toBeVisible();
+    });
+});

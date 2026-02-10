@@ -9,6 +9,7 @@ import {
 } from './utils/currentTimeEntry';
 import type { Page } from '@playwright/test';
 import { newTagResponse } from './utils/tags';
+import { updateOrganizationCurrencyViaWeb } from './utils/api';
 
 // Date picker button name patterns for different date formats
 const DATE_DISPLAY_PATTERN = /^\d{4}-\d{2}-\d{2}$|^\d{2}\/\d{2}\/\d{4}$|^\d{2}\.\d{2}\.\d{4}$/;
@@ -26,6 +27,24 @@ test('test that starting and stopping a timer without description and project wo
     await page.waitForTimeout(1500);
     await Promise.all([stoppedTimeEntryResponse(page), startOrStopTimerWithButton(page)]);
     await assertThatTimerIsStopped(page);
+});
+
+test('test that billable icon shows dollar sign for USD currency', async ({ page, ctx }) => {
+    await updateOrganizationCurrencyViaWeb(ctx, 'USD');
+    await goToDashboard(page);
+    await page.waitForLoadState('networkidle');
+    const billableButton = page.getByRole('button', { name: 'Non Billable' }).first();
+    await expect(billableButton).toBeVisible();
+    await expect(billableButton.locator('svg')).toHaveAttribute('viewBox', '0 0 8 14');
+});
+
+test('test that billable icon shows euro sign for EUR currency', async ({ page, ctx }) => {
+    await updateOrganizationCurrencyViaWeb(ctx, 'EUR');
+    await goToDashboard(page);
+    await page.waitForLoadState('networkidle');
+    const billableButton = page.getByRole('button', { name: 'Non Billable' }).first();
+    await expect(billableButton).toBeVisible();
+    await expect(billableButton.locator('svg')).toHaveAttribute('viewBox', '0 0 12 12');
 });
 
 test('test that starting and stopping a timer with a description works', async ({ page }) => {

@@ -400,3 +400,69 @@ test.describe('Command Palette', () => {
         });
     });
 });
+
+// =============================================
+// Employee Permission Tests
+// =============================================
+
+test.describe('Employee Command Palette Restrictions', () => {
+    test('employee command palette does not show restricted navigation commands', async ({
+        employee,
+    }) => {
+        await employee.page.goto(PLAYWRIGHT_BASE_URL + '/dashboard');
+        await expect(employee.page.getByTestId('dashboard_view')).toBeVisible({
+            timeout: 10000,
+        });
+
+        // Open command palette
+        await employee.page.getByTestId('command_palette_button').click();
+        await expect(employee.page.locator('[role="dialog"]')).toBeVisible({ timeout: 5000 });
+
+        // Available navigation commands
+        await expect(employee.page.getByRole('option', { name: 'Go to Dashboard' })).toBeVisible();
+        await expect(employee.page.getByRole('option', { name: 'Go to Time' })).toBeVisible();
+        await expect(employee.page.getByRole('option', { name: 'Go to Calendar' })).toBeVisible();
+
+        // Restricted commands should NOT be visible
+        await expect(
+            employee.page.getByRole('option', { name: 'Go to Members' })
+        ).not.toBeVisible();
+        await expect(
+            employee.page.getByRole('option', { name: 'Go to Settings' })
+        ).not.toBeVisible();
+    });
+
+    test('employee command palette does not show create commands for restricted entities', async ({
+        employee,
+    }) => {
+        await employee.page.goto(PLAYWRIGHT_BASE_URL + '/dashboard');
+        await expect(employee.page.getByTestId('dashboard_view')).toBeVisible({
+            timeout: 10000,
+        });
+
+        // Open command palette
+        await employee.page.getByTestId('command_palette_button').click();
+        await expect(employee.page.locator('[role="dialog"]')).toBeVisible({ timeout: 5000 });
+
+        // Search for "Create" to filter
+        await employee.page.locator('[role="dialog"] input').fill('Create');
+        await employee.page.waitForTimeout(300);
+
+        // Should NOT see create commands for restricted entities
+        await expect(
+            employee.page.getByRole('option', { name: 'Create Project' })
+        ).not.toBeVisible();
+        await expect(
+            employee.page.getByRole('option', { name: 'Create Client' })
+        ).not.toBeVisible();
+        await expect(employee.page.getByRole('option', { name: 'Create Tag' })).not.toBeVisible();
+        await expect(
+            employee.page.getByRole('option', { name: 'Invite Member' })
+        ).not.toBeVisible();
+
+        // Should still see Create Time Entry (employees can create time entries)
+        await expect(
+            employee.page.getByRole('option', { name: 'Create Time Entry' })
+        ).toBeVisible();
+    });
+});

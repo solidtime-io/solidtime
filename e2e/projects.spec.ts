@@ -4,7 +4,12 @@ import { PLAYWRIGHT_BASE_URL } from '../playwright/config';
 import { test } from '../playwright/fixtures';
 import { formatCentsWithOrganizationDefaults } from './utils/money';
 import type { CurrencyFormat } from '../resources/js/packages/ui/src/utils/money';
-import { createProjectViaApi, createTaskViaApi } from './utils/api';
+import {
+    createProjectViaApi,
+    createPublicProjectViaApi,
+    createTaskViaApi,
+    updateOrganizationSettingViaApi,
+} from './utils/api';
 
 async function goToProjectsOverview(page: Page) {
     await page.goto(PLAYWRIGHT_BASE_URL + '/projects');
@@ -501,4 +506,97 @@ test('test that editing a task name on the project detail page works', async ({ 
     // Verify updated name is shown and old name is gone
     await expect(page.getByTestId('task_table')).toContainText(updatedTaskName);
     await expect(page.getByTestId('task_table')).not.toContainText(originalTaskName);
+});
+
+// =============================================
+// Employee Permission Tests
+// =============================================
+
+test.describe('Employee Projects Restrictions', () => {
+    test('employee can view public projects but cannot create', async ({ ctx, employee }) => {
+        const projectName = 'EmpViewProj ' + Math.floor(Math.random() * 10000);
+        await createPublicProjectViaApi(ctx, { name: projectName });
+
+        await employee.page.goto(PLAYWRIGHT_BASE_URL + '/projects');
+        await expect(employee.page.getByTestId('projects_view')).toBeVisible({
+            timeout: 10000,
+        });
+
+        // Employee can see the public project
+        await expect(employee.page.getByText(projectName)).toBeVisible({ timeout: 10000 });
+
+        // Employee cannot see Create Project button
+        await expect(
+            employee.page.getByRole('button', { name: 'Create Project' })
+        ).not.toBeVisible();
+    });
+
+    test('employee cannot see edit/delete/archive actions on projects', async ({
+        ctx,
+        employee,
+    }) => {
+        const projectName = 'EmpActionsProj ' + Math.floor(Math.random() * 10000);
+        await createPublicProjectViaApi(ctx, { name: projectName });
+
+        await employee.page.goto(PLAYWRIGHT_BASE_URL + '/projects');
+        await expect(employee.page.getByText(projectName)).toBeVisible({ timeout: 10000 });
+
+        // Click the actions dropdown trigger to open the menu
+        const actionsButton = employee.page.locator(
+            `[aria-label='Actions for Project ${projectName}']`
+        );
+        await actionsButton.click();
+
+        // The dropdown menu items (Edit, Archive, Delete) should NOT be visible
+        await expect(
+            employee.page.locator(`[aria-label='Edit Project ${projectName}']`)
+        ).not.toBeVisible();
+        await expect(
+            employee.page.locator(`[aria-label='Archive Project ${projectName}']`)
+        ).not.toBeVisible();
+        await expect(
+            employee.page.locator(`[aria-label='Delete Project ${projectName}']`)
+        ).not.toBeVisible();
+    });
+});
+
+test.describe('Employee Billable Rate Visibility', () => {
+    test('employee cannot see billable rate column by default', async ({ ctx, employee }) => {
+        const projectName = 'EmpBillableProj ' + Math.floor(Math.random() * 10000);
+        await createPublicProjectViaApi(ctx, {
+            name: projectName,
+            is_billable: true,
+            billable_rate: 15000,
+        });
+
+        await employee.page.goto(PLAYWRIGHT_BASE_URL + '/projects');
+        await expect(employee.page.getByText(projectName)).toBeVisible({ timeout: 10000 });
+
+        // Billable Rate column should not be visible to employee by default
+        await expect(employee.page.getByText('Billable Rate')).not.toBeVisible();
+    });
+
+    test('employee can see billable rate column when employees_can_see_billable_rates is enabled', async ({
+        ctx,
+        employee,
+    }) => {
+        await updateOrganizationSettingViaApi(ctx, { employees_can_see_billable_rates: true });
+
+        const projectName = 'EmpBillableVisProj ' + Math.floor(Math.random() * 10000);
+        await createPublicProjectViaApi(ctx, {
+            name: projectName,
+            is_billable: true,
+            billable_rate: 20000,
+        });
+
+        await employee.page.goto(PLAYWRIGHT_BASE_URL + '/projects');
+        await expect(employee.page.getByText(projectName)).toBeVisible({ timeout: 10000 });
+
+        // Billable Rate column header should be visible
+        await expect(employee.page.getByText('Billable Rate')).toBeVisible();
+
+        // The project row should show the formatted billable rate
+        const projectRow = employee.page.getByRole('row').filter({ hasText: projectName });
+        await expect(projectRow).toContainText('200');
+    });
 });
