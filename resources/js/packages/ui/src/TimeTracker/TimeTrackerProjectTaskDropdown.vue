@@ -514,14 +514,14 @@ const showCreateProject = ref(false);
                 <Button
                     :variant="props.variant"
                     :size="props.size"
-                    :class="twMerge('w-full justify-start', props.class)">
+                    :class="twMerge('w-full justify-start overflow-hidden', props.class)">
                     <div
                         class="w-3 h-3 rounded-full shrink-0"
                         :style="{ backgroundColor: selectedProjectColor }"></div>
-                    <span class="truncate">{{ selectedProjectName }}</span>
+                    <span class="truncate shrink-[1] pr-1">{{ selectedProjectName }}</span>
                     <template v-if="currentTask">
                         <ChevronRightIcon class="w-4 h-4 text-text-tertiary shrink-0" />
-                        <span class="truncate">{{ currentTask.name }}</span>
+                        <span class="truncate shrink-[100]">{{ currentTask.name }}</span>
                     </template>
                 </Button>
                 <button
