@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import MainContainer from '@/packages/ui/src/MainContainer.vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
-import { FolderIcon, PlusIcon } from '@heroicons/vue/16/solid';
+import { FolderIcon, PlusIcon } from '@heroicons/vue/20/solid';
 import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
 import { computed, ref } from 'vue';
 import { useProjectsQuery } from '@/utils/useProjectsQuery';
@@ -84,9 +84,11 @@ const shownTasks = computed(() => {
                 <ol role="list" class="flex items-center space-x-2">
                     <li>
                         <div class="flex items-center space-x-6">
-                            <Link :href="route('projects')" class="flex items-center space-x-2.5">
-                                <FolderIcon class="w-6 text-icon-default"></FolderIcon>
-                                <span class="font-medium">Projects</span>
+                            <Link
+                                :href="route('projects')"
+                                class="flex items-center space-x-2 sm:space-x-2.5">
+                                <FolderIcon class="w-5 text-icon-default"></FolderIcon>
+                                <span class="text-sm sm:text-base font-medium">Projects</span>
                             </Link>
                         </div>
                     </li>

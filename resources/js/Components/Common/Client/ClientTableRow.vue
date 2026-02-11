@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Client } from '@/packages/api/src';
 import { computed, ref } from 'vue';
-import { CheckCircleIcon } from '@heroicons/vue/20/solid';
+import { CheckCircleIcon, ArchiveBoxIcon } from '@heroicons/vue/24/outline';
 import { useClientsStore } from '@/utils/useClients';
 import ClientMoreOptionsDropdown from '@/Components/Common/Client/ClientMoreOptionsDropdown.vue';
 import { useProjectsQuery } from '@/utils/useProjectsQuery';
@@ -46,9 +46,15 @@ const showEditModal = ref(false);
             <span class="text-text-secondary"> {{ projectCount }} Projects </span>
         </div>
         <div
-            class="whitespace-nowrap px-3 py-4 text-sm text-text-secondary flex space-x-1 items-center font-medium">
-            <CheckCircleIcon class="w-5"></CheckCircleIcon>
-            <span>Active</span>
+            class="whitespace-nowrap px-3 py-4 text-sm text-text-secondary flex space-x-1.5 items-center font-medium">
+            <template v-if="client.is_archived">
+                <ArchiveBoxIcon class="w-4 text-icon-default"></ArchiveBoxIcon>
+                <span>Archived</span>
+            </template>
+            <template v-else>
+                <CheckCircleIcon class="w-4 text-icon-default"></CheckCircleIcon>
+                <span>Active</span>
+            </template>
         </div>
         <div
             class="relative whitespace-nowrap flex items-center pl-3 text-right text-sm font-medium sm:pr-0 pr-4 sm:pr-6 lg:pr-8 3xl:pr-12">
