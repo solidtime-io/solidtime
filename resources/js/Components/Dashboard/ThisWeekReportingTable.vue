@@ -114,6 +114,12 @@ const tableData = computed(() => {
         }) ?? []
     );
 });
+
+const showBillableRate = computed(() => {
+    return !!(
+        getCurrentRole() !== 'employee' || organization?.value?.employees_can_see_billable_rates
+    );
+});
 </script>
 
 <template>
@@ -132,15 +138,20 @@ const tableData = computed(() => {
                 "></ReportingGroupBySelect>
         </div>
 
-        <div class="grid items-center" style="grid-template-columns: 1fr 100px 150px">
+        <div
+            class="grid items-center"
+            :style="`grid-template-columns: 1fr 100px ${showBillableRate ? '150px' : ''}`">
             <div
                 class="contents [&>*]:border-card-background-separator [&>*]:border-b [&>*]:pb-1.5 [&>*]:pt-1 text-text-tertiary text-sm">
                 <div class="pl-6">Name</div>
-                <div class="text-right">Duration</div>
-                <div class="text-right pr-6">Cost</div>
+                <div class="text-right" :class="!showBillableRate ? 'pr-6' : ''">Duration</div>
+                <div v-if="showBillableRate" class="text-right pr-6">Cost</div>
             </div>
 
-            <div v-if="isLoading" class="flex justify-center py-10 col-span-3 text-text-tertiary">
+            <div
+                v-if="isLoading"
+                class="flex justify-center py-10 text-text-tertiary"
+                :class="showBillableRate ? 'col-span-3' : 'col-span-2'">
                 Loading reporting data…
             </div>
 
@@ -153,12 +164,15 @@ const tableData = computed(() => {
                     v-for="entry in tableData"
                     :key="entry.description ?? 'none'"
                     :currency="getOrganizationCurrencyString()"
+                    :show-cost="showBillableRate"
                     :entry="entry"></ReportingRow>
                 <div class="contents [&>*]:transition text-text-tertiary [&>*]:h-[50px]">
                     <div class="flex items-center pl-6 font-medium">
                         <span>Total</span>
                     </div>
-                    <div class="justify-end flex items-center font-medium">
+                    <div
+                        class="justify-end flex items-center font-medium"
+                        :class="!showBillableRate ? 'pr-6' : ''">
                         {{
                             formatHumanReadableDuration(
                                 aggregatedTableTimeEntries.seconds,
@@ -167,7 +181,9 @@ const tableData = computed(() => {
                             )
                         }}
                     </div>
-                    <div class="justify-end pr-6 flex items-center font-medium">
+                    <div
+                        v-if="showBillableRate"
+                        class="justify-end pr-6 flex items-center font-medium">
                         {{
                             aggregatedTableTimeEntries.cost
                                 ? formatCents(
@@ -183,7 +199,10 @@ const tableData = computed(() => {
                 </div>
             </template>
 
-            <div v-else class="chart flex flex-col items-center justify-center py-12 col-span-3">
+            <div
+                v-else
+                class="chart flex flex-col items-center justify-center py-12"
+                :class="showBillableRate ? 'col-span-3' : 'col-span-2'">
                 <p class="text-lg text-text-primary font-medium">No time entries found</p>
                 <p>Try to track some time entries this week</p>
             </div>

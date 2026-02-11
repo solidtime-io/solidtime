@@ -8,7 +8,12 @@ import {
     startOrStopTimerWithButton,
     stoppedTimeEntryResponse,
 } from './utils/currentTimeEntry';
-import { createBareTimeEntryViaApi } from './utils/api';
+import {
+    createBareTimeEntryViaApi,
+    createPublicProjectViaApi,
+    createTimeEntryViaApi,
+    updateOrganizationSettingViaApi,
+} from './utils/api';
 
 async function goToDashboard(page: Page) {
     await page.goto(PLAYWRIGHT_BASE_URL + '/dashboard');
@@ -115,5 +120,71 @@ test.describe('Employee Dashboard Restrictions', () => {
 
         // Team Activity should NOT be visible for employees
         await expect(employee.page.getByText('Team Activity', { exact: true })).not.toBeVisible();
+    });
+
+    test('employee cannot see Cost column in This Week table by default', async ({
+        ctx,
+        employee,
+    }) => {
+        const project = await createPublicProjectViaApi(ctx, {
+            name: 'EmpDashBillProj',
+            is_billable: true,
+            billable_rate: 10000,
+        });
+        await createTimeEntryViaApi(
+            { ...ctx, memberId: employee.memberId },
+            {
+                description: 'Emp dashboard cost entry',
+                duration: '1h',
+                projectId: project.id,
+                billable: true,
+            }
+        );
+
+        await employee.page.goto(PLAYWRIGHT_BASE_URL + '/dashboard');
+        await expect(employee.page.getByTestId('dashboard_view')).toBeVisible({
+            timeout: 10000,
+        });
+
+        // This Week table should be visible
+        await expect(employee.page.getByText('This Week', { exact: true })).toBeVisible();
+
+        // Duration column should be visible, but Cost column should NOT
+        await expect(employee.page.getByText('Duration', { exact: true })).toBeVisible();
+        await expect(employee.page.getByText('Cost', { exact: true })).not.toBeVisible();
+    });
+
+    test('employee can see Cost column in This Week table when employees_can_see_billable_rates is enabled', async ({
+        ctx,
+        employee,
+    }) => {
+        await updateOrganizationSettingViaApi(ctx, { employees_can_see_billable_rates: true });
+
+        const project = await createPublicProjectViaApi(ctx, {
+            name: 'EmpDashBillVisProj',
+            is_billable: true,
+            billable_rate: 10000,
+        });
+        await createTimeEntryViaApi(
+            { ...ctx, memberId: employee.memberId },
+            {
+                description: 'Emp dashboard cost visible entry',
+                duration: '1h',
+                projectId: project.id,
+                billable: true,
+            }
+        );
+
+        await employee.page.goto(PLAYWRIGHT_BASE_URL + '/dashboard');
+        await expect(employee.page.getByTestId('dashboard_view')).toBeVisible({
+            timeout: 10000,
+        });
+
+        // Both Duration and Cost columns should be visible
+        await expect(employee.page.getByText('Duration', { exact: true })).toBeVisible();
+        await expect(employee.page.getByText('Cost', { exact: true })).toBeVisible();
+
+        // 1h at 100.00/h = 100.00 EUR cost should be visible
+        await expect(employee.page.getByText('100,00 EUR').first()).toBeVisible();
     });
 });

@@ -124,8 +124,15 @@ test('test that updating billable rate works with existing time entries', async 
 
     await page.getByRole('row').first().getByRole('button').click();
     await page.getByRole('menuitem').getByText('Edit').first().click();
-    await page.getByText('Non-Billable').click();
-    await page.getByText('Custom Rate').click();
+
+    // Set billable default to Billable
+    await page.getByRole('dialog').locator('#billable').click();
+    await page.getByRole('option', { name: 'Billable', exact: true }).click();
+
+    // Set billable rate to Custom Rate
+    await page.getByRole('dialog').locator('#billableRateType').click();
+    await page.getByRole('option', { name: 'Custom Rate' }).click();
+
     await page.getByPlaceholder('Billable Rate').fill(newBillableRate.toString());
     await page.getByRole('button', { name: 'Update Project' }).click();
 
@@ -151,6 +158,180 @@ test('test that updating billable rate works with existing time entries', async 
             .first()
             .getByText(formatCentsWithOrganizationDefaults(newBillableRate * 100))
     ).toBeVisible();
+});
+
+test('test that creating a project with default billable rate works', async ({ page }) => {
+    const newProjectName = 'Default Rate Project ' + Math.floor(1 + Math.random() * 10000);
+    await goToProjectsOverview(page);
+    await page.getByRole('button', { name: 'Create Project' }).click();
+    await page.getByLabel('Project Name').fill(newProjectName);
+
+    // Set billable default to Billable (leaves rate type as Default Rate)
+    await page.getByRole('dialog').locator('#billable').click();
+    await page.getByRole('option', { name: 'Billable', exact: true }).click();
+
+    // Verify rate type is "Default Rate" and the rate input is disabled
+    await expect(page.getByRole('dialog').locator('#billableRateType')).toContainText(
+        'Default Rate'
+    );
+    await expect(page.getByPlaceholder('Billable Rate')).toBeDisabled();
+
+    await Promise.all([
+        page.getByRole('button', { name: 'Create Project' }).click(),
+        page.waitForResponse(
+            async (response) =>
+                response.url().includes('/projects') &&
+                response.request().method() === 'POST' &&
+                response.status() === 201 &&
+                (await response.json()).data.is_billable === true &&
+                (await response.json()).data.billable_rate === null
+        ),
+    ]);
+
+    await expect(page.getByTestId('project_table')).toContainText(newProjectName);
+});
+
+test('test that creating a non-billable project works', async ({ page }) => {
+    const newProjectName = 'Non-Billable Project ' + Math.floor(1 + Math.random() * 10000);
+    await goToProjectsOverview(page);
+    await page.getByRole('button', { name: 'Create Project' }).click();
+    await page.getByLabel('Project Name').fill(newProjectName);
+
+    // Billable default should already be "Non-billable" by default
+    await expect(page.getByRole('dialog').locator('#billable')).toContainText('Non-billable');
+
+    await Promise.all([
+        page.getByRole('button', { name: 'Create Project' }).click(),
+        page.waitForResponse(
+            async (response) =>
+                response.url().includes('/projects') &&
+                response.request().method() === 'POST' &&
+                response.status() === 201 &&
+                (await response.json()).data.is_billable === false &&
+                (await response.json()).data.billable_rate === null
+        ),
+    ]);
+
+    await expect(page.getByTestId('project_table')).toContainText(newProjectName);
+});
+
+test('test that switching from custom rate to default rate clears billable rate', async ({
+    page,
+    ctx,
+}) => {
+    const newProjectName = 'Rate Switch Project ' + Math.floor(1 + Math.random() * 10000);
+    // Create a project with an existing custom billable rate
+    await createProjectViaApi(ctx, {
+        name: newProjectName,
+        is_billable: true,
+        billable_rate: 15000,
+    });
+
+    await goToProjectsOverview(page);
+    await expect(page.getByText(newProjectName)).toBeVisible({ timeout: 10000 });
+
+    await page.getByRole('row').first().getByRole('button').click();
+    await page.getByRole('menuitem').getByText('Edit').first().click();
+
+    // Verify it loaded as Billable with Custom Rate
+    await expect(page.getByRole('dialog').locator('#billable')).toContainText('Billable');
+    await expect(page.getByRole('dialog').locator('#billableRateType')).toContainText(
+        'Custom Rate'
+    );
+
+    // Switch to Default Rate
+    await page.getByRole('dialog').locator('#billableRateType').click();
+    await page.getByRole('option', { name: 'Default Rate' }).click();
+
+    // Rate input should now be disabled
+    await expect(page.getByPlaceholder('Billable Rate')).toBeDisabled();
+
+    // Submit — billable_rate changes from 15000 to null, so confirmation dialog appears
+    await page.getByRole('button', { name: 'Update Project' }).click();
+    await Promise.all([
+        page.locator('button').filter({ hasText: 'Yes, update existing time' }).click(),
+        page.waitForResponse(
+            async (response) =>
+                response.url().includes('/projects/') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 200 &&
+                (await response.json()).data.is_billable === true &&
+                (await response.json()).data.billable_rate === null
+        ),
+    ]);
+});
+
+test('test that switching from billable to non-billable preserves rate settings', async ({
+    page,
+    ctx,
+}) => {
+    const newProjectName = 'Billable Reset Project ' + Math.floor(1 + Math.random() * 10000);
+    // Create a project with a custom billable rate
+    await createProjectViaApi(ctx, {
+        name: newProjectName,
+        is_billable: true,
+        billable_rate: 20000,
+    });
+
+    await goToProjectsOverview(page);
+    await expect(page.getByText(newProjectName)).toBeVisible({ timeout: 10000 });
+
+    await page.getByRole('row').first().getByRole('button').click();
+    await page.getByRole('menuitem').getByText('Edit').first().click();
+
+    // Verify it loaded correctly as Billable with Custom Rate
+    await expect(page.getByRole('dialog').locator('#billable')).toContainText('Billable');
+    await expect(page.getByRole('dialog').locator('#billableRateType')).toContainText(
+        'Custom Rate'
+    );
+
+    // Switch to Non-billable
+    await page.getByRole('dialog').locator('#billable').click();
+    await page.getByRole('option', { name: 'Non-billable' }).click();
+
+    // Rate type should still be Custom Rate (not reset)
+    await expect(page.getByRole('dialog').locator('#billableRateType')).toContainText(
+        'Custom Rate'
+    );
+
+    // Submit and verify project is non-billable but keeps its custom rate
+    await Promise.all([
+        page.getByRole('button', { name: 'Update Project' }).click(),
+        page.waitForResponse(
+            async (response) =>
+                response.url().includes('/projects/') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 200 &&
+                (await response.json()).data.is_billable === false &&
+                (await response.json()).data.billable_rate === 20000
+        ),
+    ]);
+});
+
+test('test that editing an existing billable project with default rate loads correctly', async ({
+    page,
+    ctx,
+}) => {
+    const newProjectName = 'Default Rate Edit Project ' + Math.floor(1 + Math.random() * 10000);
+    // Create a project that is billable but has no custom rate (= default rate)
+    await createProjectViaApi(ctx, {
+        name: newProjectName,
+        is_billable: true,
+        billable_rate: null,
+    });
+
+    await goToProjectsOverview(page);
+    await expect(page.getByText(newProjectName)).toBeVisible({ timeout: 10000 });
+
+    await page.getByRole('row').first().getByRole('button').click();
+    await page.getByRole('menuitem').getByText('Edit').first().click();
+
+    // Verify it loaded as Billable with Default Rate
+    await expect(page.getByRole('dialog').locator('#billable')).toContainText('Billable');
+    await expect(page.getByRole('dialog').locator('#billableRateType')).toContainText(
+        'Default Rate'
+    );
+    await expect(page.getByPlaceholder('Billable Rate')).toBeDisabled();
 });
 
 // Sorting tests
@@ -296,8 +477,15 @@ test('test that custom billable rate is displayed correctly on project detail pa
     // Edit the project to set a custom billable rate
     await page.getByRole('row').first().getByRole('button').click();
     await page.getByRole('menuitem').getByText('Edit').first().click();
-    await page.getByText('Non-Billable').click();
-    await page.getByText('Custom Rate').click();
+
+    // Set billable default to Billable
+    await page.getByRole('dialog').locator('#billable').click();
+    await page.getByRole('option', { name: 'Billable', exact: true }).click();
+
+    // Set billable rate to Custom Rate
+    await page.getByRole('dialog').locator('#billableRateType').click();
+    await page.getByRole('option', { name: 'Custom Rate' }).click();
+
     await page.getByPlaceholder('Billable Rate').fill(newBillableRate.toString());
     await page.getByRole('button', { name: 'Update Project' }).click();
 

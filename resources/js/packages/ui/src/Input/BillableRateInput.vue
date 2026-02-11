@@ -13,6 +13,7 @@ const props = defineProps<{
     name: string;
     focus?: boolean;
     currency: string;
+    disabled?: boolean;
 }>();
 
 const model = defineModel<number | null>({
@@ -33,6 +34,7 @@ function formatValue(modelValue: number | null) {
             :id="name"
             ref="billableRateInput"
             :model-value="formatValue(model)"
+            :disabled="disabled"
             :step-snapping="false"
             class="block w-full"
             :format-options="{

@@ -8,11 +8,12 @@ import { getRandomColor } from '@/packages/ui/src/utils/color';
 import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import { useFocus } from '@vueuse/core';
 import ClientDropdown from '@/packages/ui/src/Client/ClientDropdown.vue';
-import Badge from '@/packages/ui/src/Badge.vue';
 import ProjectColorSelector from '@/packages/ui/src/Project/ProjectColorSelector.vue';
+import { Button } from '@/packages/ui/src/Buttons';
+import { ChevronDown } from 'lucide-vue-next';
 import { UserCircleIcon } from '@heroicons/vue/20/solid';
 import EstimatedTimeSection from '@/packages/ui/src/EstimatedTimeSection.vue';
-import { Field, FieldLabel } from '../field';
+import { Field, FieldGroup, FieldLabel } from '../field';
 import ProjectEditBillableSection from '@/packages/ui/src/Project/ProjectEditBillableSection.vue';
 import type { Client } from '@/packages/api/src';
 
@@ -74,9 +75,9 @@ const currentClientName = computed(() => {
         </template>
 
         <template #content>
-            <div class="sm:flex items-center space-y-2 sm:space-y-0 sm:space-x-4">
-                <div class="flex-1 flex items-center">
-                    <Field class="text-center pr-5">
+            <FieldGroup>
+                <FieldGroup class="flex-row items-end">
+                    <Field class="w-auto text-center">
                         <FieldLabel for="color">Color</FieldLabel>
                         <ProjectColorSelector v-model="project.color"></ProjectColorSelector>
                     </Field>
@@ -94,43 +95,30 @@ const currentClientName = computed(() => {
                             autocomplete="projectName"
                             @keydown.enter="submit()" />
                     </Field>
-                </div>
+                </FieldGroup>
                 <Field>
-                    <FieldLabel for="client">Client</FieldLabel>
+                    <FieldLabel for="client" :icon="UserCircleIcon">Client</FieldLabel>
                     <ClientDropdown
                         v-model="project.client_id"
                         :create-client="createClient"
                         :clients="activeClients">
                         <template #trigger>
-                            <Badge
-                                tag="button"
-                                class="bg-input-background cursor-pointer hover:bg-tertiary"
-                                size="xlarge">
-                                <div class="flex items-center space-x-2">
-                                    <UserCircleIcon class="w-5 text-icon-default"></UserCircleIcon>
-                                    <span>
-                                        {{ currentClientName }}
-                                    </span>
-                                </div>
-                            </Badge>
+                            <Button variant="input" class="w-full justify-between">
+                                <span class="truncate">{{ currentClientName }}</span>
+                                <ChevronDown class="w-4 h-4 text-icon-default" />
+                            </Button>
                         </template>
                     </ClientDropdown>
                 </Field>
-            </div>
-            <div>
-                <div>
-                    <ProjectEditBillableSection
-                        v-model:is-billable="project.is_billable"
-                        v-model:billable-rate="project.billable_rate"
-                        :currency="currency"></ProjectEditBillableSection>
-                </div>
-                <div>
-                    <EstimatedTimeSection
-                        v-if="enableEstimatedTime"
-                        v-model="project.estimated_time"
-                        @submit="submit()"></EstimatedTimeSection>
-                </div>
-            </div>
+                <ProjectEditBillableSection
+                    v-model:is-billable="project.is_billable"
+                    v-model:billable-rate="project.billable_rate"
+                    :currency="currency"></ProjectEditBillableSection>
+                <EstimatedTimeSection
+                    v-if="enableEstimatedTime"
+                    v-model="project.estimated_time"
+                    @submit="submit()"></EstimatedTimeSection>
+            </FieldGroup>
         </template>
         <template #footer>
             <SecondaryButton @click="show = false"> Cancel</SecondaryButton>

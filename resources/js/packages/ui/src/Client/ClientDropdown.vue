@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import { PlusCircleIcon } from '@heroicons/vue/20/solid';
 import { computed, nextTick, ref, watch } from 'vue';
-import ClientDropdownItem from '@/packages/ui/src/Client/ClientDropdownItem.vue';
 import type { CreateClientBody, Client } from '@/packages/api/src';
 import {
     ComboboxAnchor,
@@ -13,6 +11,7 @@ import {
 } from 'radix-vue';
 import { UseFocusTrap } from '@vueuse/integrations/useFocusTrap/component';
 import Dropdown from '@/packages/ui/src/Input/Dropdown.vue';
+import { Check, Plus } from 'lucide-vue-next';
 
 const model = defineModel<string | null>({
     default: null,
@@ -77,7 +76,7 @@ function updateValue(client: { id: string | null; name: string }) {
 </script>
 
 <template>
-    <Dropdown v-model="open" align="start" width="60">
+    <Dropdown v-model="open" align="start">
         <template #trigger>
             <slot name="trigger"></slot>
         </template>
@@ -92,35 +91,41 @@ function updateValue(client: { id: string | null; name: string }) {
                     <ComboboxAnchor>
                         <ComboboxInput
                             ref="searchInput"
-                            class="bg-card-background border-0 placeholder-text-tertiary text-sm text-text-primary py-2.5 focus:ring-0 border-b border-card-background-separator focus:border-card-background-separator w-full"
+                            class="bg-transparent border-0 placeholder-muted-foreground text-sm text-popover-foreground py-2 px-3 focus:ring-0 border-b border-popover-border focus:border-popover-border w-full"
                             placeholder="Search for a client..." />
                     </ComboboxAnchor>
                     <ComboboxContent>
-                        <ComboboxViewport class="w-60 max-h-60 overflow-y-scroll">
+                        <ComboboxViewport
+                            class="w-[--reka-popper-anchor-width] max-h-60 overflow-y-scroll p-1">
                             <ComboboxItem
                                 :value="{ id: null, name: 'No Client' }"
-                                class="data-[highlighted]:bg-card-background-active">
-                                <ClientDropdownItem :selected="model === null" name="No Client" />
+                                class="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground">
+                                <span>No Client</span>
+                                <span
+                                    v-if="model === null"
+                                    class="absolute right-2 flex h-3.5 w-3.5 items-center justify-center">
+                                    <Check class="h-4 w-4" />
+                                </span>
                             </ComboboxItem>
                             <ComboboxItem
                                 v-for="client in filteredClients"
                                 :key="client.id"
                                 :value="client"
-                                class="data-[highlighted]:bg-card-background-active"
+                                class="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground"
                                 :data-client-id="client.id">
-                                <ClientDropdownItem
-                                    :selected="isClientSelected(client.id)"
-                                    :name="client.name" />
+                                <span>{{ client.name }}</span>
+                                <span
+                                    v-if="isClientSelected(client.id)"
+                                    class="absolute right-2 flex h-3.5 w-3.5 items-center justify-center">
+                                    <Check class="h-4 w-4" />
+                                </span>
                             </ComboboxItem>
                             <div
                                 v-if="searchValue.length > 0 && filteredClients.length === 0"
-                                class="bg-card-background-active">
-                                <div
-                                    class="flex space-x-3 items-center px-4 py-3 text-xs text-text-primary font-medium border-t rounded-b-lg border-card-background-separator"
-                                    @click="addClientIfNoneExists">
-                                    <PlusCircleIcon class="w-5 flex-shrink-0" />
-                                    <span>Add "{{ searchValue }}" as a new Client</span>
-                                </div>
+                                class="flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm cursor-pointer hover:bg-accent hover:text-accent-foreground"
+                                @click="addClientIfNoneExists">
+                                <Plus class="h-4 w-4 shrink-0" />
+                                <span>Add "{{ searchValue }}" as a new Client</span>
                             </div>
                         </ComboboxViewport>
                     </ComboboxContent>

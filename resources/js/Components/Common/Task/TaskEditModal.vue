@@ -9,6 +9,7 @@ import { useTasksStore } from '@/utils/useTasks';
 import type { Task, UpdateTaskBody } from '@/packages/api/src';
 import EstimatedTimeSection from '@/packages/ui/src/EstimatedTimeSection.vue';
 import { isAllowedToPerformPremiumAction } from '@/utils/billing';
+import { Field, FieldGroup, FieldLabel } from '@/packages/ui/src/field';
 
 const { updateTask } = useTasksStore();
 const show = defineModel('show', { default: false });
@@ -42,24 +43,25 @@ useFocus(taskNameInput, { initialValue: true });
         </template>
 
         <template #content>
-            <div class="flex items-center space-x-4">
-                <div class="col-span-6 sm:col-span-4 flex-1">
+            <FieldGroup>
+                <Field>
+                    <FieldLabel for="taskName">Task name</FieldLabel>
                     <TextInput
                         id="taskName"
                         ref="taskNameInput"
                         v-model="taskBody.name"
                         type="text"
                         placeholder="Task Name"
-                        class="mt-1 block w-full"
+                        class="block w-full"
                         required
                         autocomplete="taskName"
                         @keydown.enter="submit()" />
-                </div>
-            </div>
-            <EstimatedTimeSection
-                v-if="isAllowedToPerformPremiumAction()"
-                v-model="taskBody.estimated_time"
-                @submit="submit()"></EstimatedTimeSection>
+                </Field>
+                <EstimatedTimeSection
+                    v-if="isAllowedToPerformPremiumAction()"
+                    v-model="taskBody.estimated_time"
+                    @submit="submit()"></EstimatedTimeSection>
+            </FieldGroup>
         </template>
         <template #footer>
             <SecondaryButton @click="show = false"> Cancel </SecondaryButton>

@@ -10,12 +10,12 @@ const model = defineModel<string>({ default: '' });
         <Dropdown align="center">
             <template #trigger>
                 <button
-                    class="p-2 bg-input-background hover:bg-tertiary transition rounded-full border border-input-border">
+                    class="h-9 w-9 flex items-center justify-center bg-input-background hover:bg-tertiary transition rounded-full border border-input-border">
                     <div
                         :style="{
                             backgroundColor: model,
                         }"
-                        class="w-6 h-6 rounded-full cursor-pointer"></div>
+                        class="w-5 h-5 rounded-full cursor-pointer"></div>
                 </button>
             </template>
             <template #content>

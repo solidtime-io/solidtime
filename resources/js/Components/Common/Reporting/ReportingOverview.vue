@@ -292,7 +292,9 @@ const tableData = computed(() => {
                     <div
                         class="contents [&>*]:border-card-background-separator [&>*]:border-b [&>*]:bg-secondary [&>*]:pb-1.5 [&>*]:pt-1 text-text-tertiary text-sm">
                         <div class="pl-6">Name</div>
-                        <div class="text-right">Duration</div>
+                        <div class="text-right" :class="!showBillableRate ? 'pr-6' : ''">
+                            Duration
+                        </div>
                         <div v-if="showBillableRate" class="text-right pr-6">Cost</div>
                     </div>
                     <template
@@ -311,7 +313,9 @@ const tableData = computed(() => {
                             <div class="flex items-center pl-6 font-medium">
                                 <span>Total</span>
                             </div>
-                            <div class="justify-end flex items-center font-medium">
+                            <div
+                                class="justify-end flex items-center font-medium"
+                                :class="!showBillableRate ? 'pr-6' : ''">
                                 {{
                                     formatHumanReadableDuration(
                                         aggregatedTableTimeEntries.seconds,
@@ -324,7 +328,8 @@ const tableData = computed(() => {
                                 v-if="showBillableRate"
                                 class="justify-end pr-6 flex items-center font-medium">
                                 {{
-                                    aggregatedTableTimeEntries.cost
+                                    aggregatedTableTimeEntries.cost !== null &&
+                                    aggregatedTableTimeEntries.cost !== undefined
                                         ? formatCents(
                                               aggregatedTableTimeEntries.cost,
                                               getOrganizationCurrencyString(),

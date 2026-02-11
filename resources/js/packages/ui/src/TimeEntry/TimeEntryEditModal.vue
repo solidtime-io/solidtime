@@ -166,7 +166,7 @@ const billableProxy = computed({
                             @keydown.enter="submit" />
                     </div>
                 </div>
-                <div class="flex flex-col sm:flex-row sm:items-end gap-2 sm:gap-4 pt-4">
+                <div class="flex flex-col sm:flex-row sm:items-end gap-2 sm:gap-4">
                     <div class="flex-1 min-w-0">
                         <TimeTrackerProjectTaskDropdown
                             v-model:project="editableTimeEntry.project_id"

@@ -1,82 +1,137 @@
 <script setup lang="ts">
-import { Field, FieldLabel } from '../field';
+import { Field, FieldDescription, FieldLabel } from '../field';
 import BillableRateInput from '@/packages/ui/src/Input/BillableRateInput.vue';
-import ProjectBillableSelect from '@/packages/ui/src/Project/ProjectBillableSelect.vue';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/Components/ui/select';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from '@/packages/ui/src/tooltip';
 import { computed, onMounted, ref, watch } from 'vue';
-import type { BillableKey } from '@/types/projects';
 import BillableIcon from '@/packages/ui/src/Icons/BillableIcon.vue';
+import { useOrganizationQuery } from '@/utils/useOrganizationQuery';
+import { getCurrentOrganizationId } from '@/utils/useUser';
 
 defineProps<{
     currency: string;
 }>();
 
-const billableRateSelect = ref<BillableKey>('non-billable');
+const { organization } = useOrganizationQuery(getCurrentOrganizationId()!);
+
+type RateType = 'default-rate' | 'custom-rate';
+
+const billableDefault = ref<'billable' | 'non-billable'>('non-billable');
+const rateType = ref<RateType>('default-rate');
 
 const billableRate = defineModel<number | null>('billableRate');
 const isBillable = defineModel<boolean>('isBillable');
 
 onMounted(() => {
     if (isBillable.value === true) {
-        if (billableRate.value) {
-            billableRateSelect.value = 'custom-rate';
-        } else {
-            billableRateSelect.value = 'default-rate';
-        }
+        billableDefault.value = 'billable';
+        rateType.value = billableRate.value ? 'custom-rate' : 'default-rate';
     }
 });
 
-watch(billableRateSelect, () => {
-    if (billableRateSelect.value === 'non-billable') {
+watch(billableDefault, () => {
+    if (billableDefault.value === 'non-billable') {
         isBillable.value = false;
-        billableRate.value = null;
-    } else if (billableRateSelect.value === 'default-rate') {
-        isBillable.value = true;
-        billableRate.value = null;
     } else {
         isBillable.value = true;
     }
 });
 
-billableRateSelect.value = 'non-billable';
-
-const billableOptionInfoTexts: { [key in BillableKey]: string } = {
-    'non-billable': 'New time entries for this project will not be marked billable by default.',
-    'default-rate':
-        'New time entries for this project will be billable at the default rate by default.',
-    'custom-rate':
-        'New time entries for this project will be billable at a custom rate by default.',
-};
-
-const billableOptionInfoText = computed(() => {
-    return billableOptionInfoTexts[billableRateSelect.value];
+watch(rateType, () => {
+    if (rateType.value === 'default-rate') {
+        billableRate.value = null;
+    } else if (rateType.value === 'custom-rate') {
+        billableDefault.value = 'billable';
+        isBillable.value = true;
+        if (!billableRate.value) {
+            billableRate.value = organization.value?.billable_rate ?? null;
+        }
+    }
 });
+
+const displayedRate = computed({
+    get() {
+        if (rateType.value === 'default-rate') {
+            return organization.value?.billable_rate ?? null;
+        }
+        return billableRate.value;
+    },
+    set(value: number | null) {
+        if (rateType.value === 'custom-rate') {
+            billableRate.value = value;
+        }
+    },
+});
+
+const billableDescription = computed(() => {
+    if (billableDefault.value === 'non-billable') {
+        return 'New time entries for this project will not be marked billable by default.';
+    }
+    return 'New time entries for this project will be marked billable by default.';
+});
+
 const emit = defineEmits(['submit']);
 </script>
 
 <template>
-    <div class="sm:flex items-center space-y-2 sm:space-y-0 sm:space-x-4 pt-6">
-        <Field>
-            <div class="flex items-center space-x-1">
-                <BillableIcon class="text-text-quaternary h-4 ml-1 mr-0.5"></BillableIcon>
-                <FieldLabel for="billable">Billable Default</FieldLabel>
-            </div>
-            <ProjectBillableSelect v-model="billableRateSelect"></ProjectBillableSelect>
-        </Field>
-        <Field v-if="billableRateSelect === 'custom-rate'">
-            <FieldLabel for="billableRate">Billable Rate</FieldLabel>
+    <Field>
+        <FieldLabel for="billable" :icon="BillableIcon">Billable Default</FieldLabel>
+        <Select v-model="billableDefault">
+            <SelectTrigger id="billable">
+                <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+                <SelectItem value="non-billable">Non-billable</SelectItem>
+                <SelectItem value="billable">Billable</SelectItem>
+            </SelectContent>
+        </Select>
+        <FieldDescription>{{ billableDescription }}</FieldDescription>
+    </Field>
+    <Field>
+        <FieldLabel :icon="BillableIcon" for="billableRateType">Billable Rate</FieldLabel>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <Select v-model="rateType">
+                <SelectTrigger id="billableRateType">
+                    <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="default-rate">Default Rate</SelectItem>
+                    <SelectItem value="custom-rate">Custom Rate</SelectItem>
+                </SelectContent>
+            </Select>
+            <TooltipProvider v-if="rateType === 'default-rate'">
+                <Tooltip>
+                    <TooltipTrigger as-child>
+                        <div>
+                            <BillableRateInput
+                                v-model="displayedRate"
+                                :currency="currency"
+                                disabled
+                                name="billableRate" />
+                        </div>
+                    </TooltipTrigger>
+                    <TooltipContent> Uses the default rate of the organization </TooltipContent>
+                </Tooltip>
+            </TooltipProvider>
             <BillableRateInput
-                v-model="billableRate"
+                v-else
+                v-model="displayedRate"
                 :currency="currency"
                 name="billableRate"
                 @keydown.enter="emit('submit')" />
-        </Field>
-    </div>
-    <div class="flex items-center text-text-secondary text-xs pt-2 pl-1">
-        <span>
-            <span class="font-semibold"> Info: </span>
-            {{ billableOptionInfoText }}
-        </span>
-    </div>
+        </div>
+    </Field>
 </template>
 
 <style scoped></style>

@@ -195,6 +195,69 @@ test('test that multiple tasks are displayed on project detail page', async ({ p
     await expect(page.getByText(taskName2)).toBeVisible();
 });
 
+test('test that creating a new project from the task create modal project dropdown works', async ({
+    page,
+    ctx,
+}) => {
+    const existingProjectName = 'Existing Project ' + Math.floor(1 + Math.random() * 10000);
+    const newProjectName = 'Dropdown Created Project ' + Math.floor(1 + Math.random() * 10000);
+    const newTaskName = 'Task With New Project ' + Math.floor(1 + Math.random() * 10000);
+
+    const project = await createProjectViaApi(ctx, { name: existingProjectName });
+    await page.goto(PLAYWRIGHT_BASE_URL + '/projects/' + project.id);
+
+    // Open the Create Task modal
+    await page.getByRole('button', { name: 'Create Task' }).click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await page.getByPlaceholder('Task Name').fill(newTaskName);
+
+    // Open the project dropdown (it should show the current project)
+    await page.getByRole('dialog').getByRole('button', { name: existingProjectName }).click();
+
+    // Click "Create new Project" at the bottom of the dropdown
+    await page.getByText('Create new Project').click();
+
+    // The ProjectCreateModal should appear
+    await expect(page.getByLabel('Project name')).toBeVisible();
+    await page.getByLabel('Project name').fill(newProjectName);
+
+    // Submit the project creation
+    await Promise.all([
+        page.getByRole('button', { name: 'Create Project' }).click(),
+        page.waitForResponse(
+            async (response) =>
+                response.url().includes('/projects') &&
+                response.request().method() === 'POST' &&
+                response.status() === 201 &&
+                (await response.json()).data.name === newProjectName
+        ),
+    ]);
+
+    // The project dropdown trigger should now show the new project name
+    await expect(
+        page.getByRole('dialog').getByRole('button', { name: newProjectName })
+    ).toBeVisible();
+
+    // Submit the task and capture the response to get the new project ID
+    const [taskResponse] = await Promise.all([
+        page.waitForResponse(
+            async (response) =>
+                response.url().includes('/tasks') &&
+                response.request().method() === 'POST' &&
+                response.status() === 201 &&
+                (await response.json()).data.name === newTaskName
+        ),
+        page.getByRole('button', { name: 'Create Task' }).click(),
+    ]);
+
+    const taskData = await taskResponse.json();
+    const newProjectId = taskData.data.project_id;
+
+    // Navigate to the new project's page and verify the task is there
+    await page.goto(PLAYWRIGHT_BASE_URL + '/projects/' + newProjectId);
+    await expect(page.getByTestId('task_table')).toContainText(newTaskName);
+});
+
 // =============================================
 // Employee Permission Tests
 // =============================================
