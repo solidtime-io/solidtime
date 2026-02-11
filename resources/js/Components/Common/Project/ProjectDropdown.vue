@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import ProjectBadge from '@/packages/ui/src/Project/ProjectBadge.vue';
 import { computed, nextTick, ref, watch } from 'vue';
 import { useProjectsQuery } from '@/utils/useProjectsQuery';
 import Dropdown from '@/packages/ui/src/Input/Dropdown.vue';
@@ -11,13 +10,16 @@ import {
     ComboboxRoot,
     ComboboxViewport,
 } from 'radix-vue';
-import { PlusCircleIcon } from '@heroicons/vue/20/solid';
-import { api } from '@/packages/api/src';
-import { usePage } from '@inertiajs/vue3';
-import { getRandomColor } from '@/packages/ui/src/utils/color';
-import type { Project } from '@/packages/api/src';
-import ProjectDropdownItem from '@/packages/ui/src/Project/ProjectDropdownItem.vue';
+import { Check, Plus } from 'lucide-vue-next';
+import type { CreateClientBody, CreateProjectBody, Project } from '@/packages/api/src';
 import { UseFocusTrap } from '@vueuse/integrations/useFocusTrap/component';
+import ProjectCreateModal from '@/packages/ui/src/Project/ProjectCreateModal.vue';
+import { useProjectsStore } from '@/utils/useProjects';
+import { useClientsStore } from '@/utils/useClients';
+import { useClientsQuery } from '@/utils/useClientsQuery';
+import { getOrganizationCurrencyString } from '@/utils/money';
+import { isAllowedToPerformPremiumAction } from '@/utils/billing';
+import { canCreateProjects } from '@/utils/permissions';
 
 const searchValue = ref('');
 const searchInput = ref<HTMLElement | null>(null);
@@ -25,10 +27,13 @@ const model = defineModel<string | null>({
     default: null,
 });
 const open = ref(false);
-const { projects, invalidateProjects } = useProjectsQuery();
+const showCreateProject = ref(false);
+const { projects } = useProjectsQuery();
+const { clients } = useClientsQuery();
 const emit = defineEmits(['update:modelValue', 'changed']);
 
-const projectDropdownTrigger = ref<HTMLElement | null>(null);
+const activeClients = computed(() => clients.value.filter((c) => !c.is_archived));
+
 const sortedProjects = ref<Project[]>([]);
 
 const shownProjects = computed(() => {
@@ -37,38 +42,17 @@ const shownProjects = computed(() => {
     });
 });
 
-withDefaults(
-    defineProps<{
-        border?: boolean;
-    }>(),
-    {
-        border: true,
+async function handleCreateProject(projectBody: CreateProjectBody) {
+    const newProject = await useProjectsStore().createProject(projectBody);
+    if (newProject) {
+        model.value = newProject.id;
+        emit('changed');
     }
-);
+    return newProject;
+}
 
-const page = usePage<{
-    auth: {
-        user: {
-            current_team_id: string;
-        };
-    };
-}>();
-
-async function addProjectIfNoneExists() {
-    if (searchValue.value.length > 0 && shownProjects.value.length === 0) {
-        const response = await api.createProject(
-            {
-                name: searchValue.value,
-                color: getRandomColor(),
-                is_billable: false,
-            },
-            { params: { organization: page.props.auth.user.current_team_id } }
-        );
-        invalidateProjects();
-        model.value = response.data.id;
-        searchValue.value = '';
-        open.value = false;
-    }
+async function handleCreateClient(clientBody: CreateClientBody) {
+    return await useClientsStore().createClient(clientBody);
 }
 
 watch(open, (isOpen) => {
@@ -107,16 +91,12 @@ function updateValue(project: Project) {
 </script>
 
 <template>
-    <Dropdown v-model="open" align="start" width="60">
+    <Dropdown v-model="open" align="start">
         <template #trigger>
-            <ProjectBadge
-                ref="projectDropdownTrigger"
-                :color="selectedProjectColor"
-                size="xlarge"
-                :border
-                tag="button"
-                :name="selectedProjectName"
-                class="focus:border-input-border-active bg-input-background focus:outline-0 focus:bg-card-background-separator hover:bg-card-background-separator"></ProjectBadge>
+            <slot
+                name="trigger"
+                :selected-project-name="selectedProjectName"
+                :selected-project-color="selectedProjectColor"></slot>
         </template>
 
         <template #content>
@@ -130,40 +110,53 @@ function updateValue(project: Project) {
                     <ComboboxAnchor>
                         <ComboboxInput
                             ref="searchInput"
-                            class="bg-card-background border-0 placeholder-text-tertiary text-sm text-text-primary py-2.5 focus:ring-0 border-b border-card-background-separator focus:border-card-background-separator w-full"
-                            placeholder="Search for a project..."
-                            @keydown.enter="addProjectIfNoneExists" />
+                            class="bg-transparent border-0 placeholder-muted-foreground text-sm text-popover-foreground py-2 px-3 focus:ring-0 border-b border-popover-border focus:border-popover-border w-full"
+                            placeholder="Search for a project..." />
                     </ComboboxAnchor>
                     <ComboboxContent>
                         <ComboboxViewport
-                            ref="dropdownViewport"
-                            class="w-60 max-h-60 overflow-y-scroll">
+                            class="w-[--reka-popper-anchor-width] max-h-60 overflow-y-scroll p-1">
                             <ComboboxItem
                                 v-for="project in shownProjects"
                                 :key="project.id"
                                 :value="project"
-                                class="data-[highlighted]:bg-card-background-active"
+                                class="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground"
                                 :data-project-id="project.id">
-                                <ProjectDropdownItem
-                                    :selected="isProjectSelected(project)"
-                                    :color="project.color"
-                                    :name="project.name"></ProjectDropdownItem>
+                                <span class="flex items-center gap-2">
+                                    <span
+                                        :style="{ backgroundColor: project.color }"
+                                        class="w-3 h-3 rounded-full shrink-0"></span>
+                                    <span>{{ project.name }}</span>
+                                </span>
+                                <span
+                                    v-if="isProjectSelected(project)"
+                                    class="absolute right-2 flex h-3.5 w-3.5 items-center justify-center">
+                                    <Check class="h-4 w-4" />
+                                </span>
                             </ComboboxItem>
-                            <div
-                                v-if="searchValue.length > 0 && shownProjects.length === 0"
-                                class="bg-card-background-active">
-                                <div
-                                    class="flex space-x-3 items-center px-4 py-3 text-xs font-medium border-t rounded-b-lg border-card-background-separator">
-                                    <PlusCircleIcon class="w-5 flex-shrink-0"></PlusCircleIcon>
-                                    <span>Add "{{ searchValue }}" as a new Project</span>
-                                </div>
-                            </div>
                         </ComboboxViewport>
+                        <div
+                            v-if="canCreateProjects()"
+                            class="flex items-center gap-2 px-3 py-2 text-sm cursor-pointer hover:bg-accent hover:text-accent-foreground border-t border-popover-border"
+                            @click="
+                                open = false;
+                                showCreateProject = true;
+                            ">
+                            <Plus class="h-4 w-4 shrink-0" />
+                            <span>Create new Project</span>
+                        </div>
                     </ComboboxContent>
                 </ComboboxRoot>
             </UseFocusTrap>
         </template>
     </Dropdown>
+    <ProjectCreateModal
+        v-model:show="showCreateProject"
+        :create-project="handleCreateProject"
+        :create-client="handleCreateClient"
+        :clients="activeClients"
+        :currency="getOrganizationCurrencyString()"
+        :enable-estimated-time="isAllowedToPerformPremiumAction()" />
 </template>
 
 <style scoped></style>

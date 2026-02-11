@@ -42,7 +42,7 @@ const organization = inject<ComputedRef<Organization>>('organization');
                 {{ entry.description }}
             </span>
         </div>
-        <div class="justify-end flex items-center">
+        <div class="justify-end flex items-center" :class="!showCost ? 'pr-6' : ''">
             {{
                 formatHumanReadableDuration(
                     entry.seconds,

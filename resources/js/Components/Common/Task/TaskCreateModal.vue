@@ -9,6 +9,10 @@ import { useTasksStore } from '@/utils/useTasks';
 import ProjectDropdown from '@/Components/Common/Project/ProjectDropdown.vue';
 import EstimatedTimeSection from '@/packages/ui/src/EstimatedTimeSection.vue';
 import { isAllowedToPerformPremiumAction } from '@/utils/billing';
+import { Field, FieldGroup, FieldLabel } from '@/packages/ui/src/field';
+import { Button } from '@/packages/ui/src/Buttons';
+import { ChevronDown } from 'lucide-vue-next';
+import { FolderIcon } from '@heroicons/vue/20/solid';
 
 const { createTask } = useTasksStore();
 const show = defineModel('show', { default: false });
@@ -54,8 +58,9 @@ useFocus(taskNameInput, { initialValue: true });
         </template>
 
         <template #content>
-            <div class="flex items-center space-x-4">
-                <div class="col-span-6 sm:col-span-4 flex-1">
+            <FieldGroup>
+                <Field class="w-full">
+                    <FieldLabel for="taskName">Task name</FieldLabel>
                     <TextInput
                         id="taskName"
                         ref="taskNameInput"
@@ -66,15 +71,28 @@ useFocus(taskNameInput, { initialValue: true });
                         required
                         autocomplete="taskName"
                         @keydown.enter="submit()" />
-                </div>
-                <div class="col-span-6 sm:col-span-4">
-                    <ProjectDropdown v-model="taskProjectId"></ProjectDropdown>
-                </div>
-            </div>
-            <EstimatedTimeSection
-                v-if="isAllowedToPerformPremiumAction()"
-                v-model="estimatedTime"
-                @submit="submit()"></EstimatedTimeSection>
+                </Field>
+                <Field class="w-auto">
+                    <FieldLabel :icon="FolderIcon" for="project">Project</FieldLabel>
+                    <ProjectDropdown v-model="taskProjectId">
+                        <template #trigger="{ selectedProjectName, selectedProjectColor }">
+                            <Button variant="input" class="w-full justify-between">
+                                <span class="flex items-center gap-2 truncate">
+                                    <span
+                                        :style="{ backgroundColor: selectedProjectColor }"
+                                        class="w-3 h-3 rounded-full shrink-0"></span>
+                                    <span class="truncate">{{ selectedProjectName }}</span>
+                                </span>
+                                <ChevronDown class="w-4 h-4 text-icon-default" />
+                            </Button>
+                        </template>
+                    </ProjectDropdown>
+                </Field>
+                <EstimatedTimeSection
+                    v-if="isAllowedToPerformPremiumAction()"
+                    v-model="estimatedTime"
+                    @submit="submit()"></EstimatedTimeSection>
+            </FieldGroup>
         </template>
         <template #footer>
             <SecondaryButton @click="show = false"> Cancel </SecondaryButton>
