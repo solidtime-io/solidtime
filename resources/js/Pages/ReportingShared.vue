@@ -72,9 +72,7 @@ watch(currentPage, () => {
             class="h-14 sm:h-16 border-b border-default-background-separator flex flex-wrap gap-y-3 justify-between items-center">
             <div class="flex items-center space-x-3 sm:space-x-6">
                 <PageTitle :icon="ChartBarIcon" title="Reporting"></PageTitle>
-                <ReportingTabNavbar
-                    active="shared"
-                    class="hidden sm:flex"></ReportingTabNavbar>
+                <ReportingTabNavbar active="shared" class="hidden sm:flex"></ReportingTabNavbar>
             </div>
         </MainContainer>
         <MainContainer class="sm:hidden py-2 border-b border-default-background-separator">

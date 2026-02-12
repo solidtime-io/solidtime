@@ -1,5 +1,10 @@
 <script setup lang="ts">
-import { ChartBarIcon, ArrowDownTrayIcon, EllipsisVerticalIcon, LockClosedIcon } from '@heroicons/vue/20/solid';
+import {
+    ChartBarIcon,
+    ArrowDownTrayIcon,
+    EllipsisVerticalIcon,
+    LockClosedIcon,
+} from '@heroicons/vue/20/solid';
 import { SaveIcon } from 'lucide-vue-next';
 import { getOrganizationCurrencyString } from '@/utils/money';
 import {
@@ -281,9 +286,7 @@ const tableData = computed(() => {
         class="h-14 sm:h-16 border-b border-default-background-separator flex flex-wrap gap-y-3 justify-between items-center">
         <div class="flex items-center space-x-3 sm:space-x-6">
             <PageTitle :icon="ChartBarIcon" title="Reporting"></PageTitle>
-            <ReportingTabNavbar
-                active="reporting"
-                class="hidden sm:flex"></ReportingTabNavbar>
+            <ReportingTabNavbar active="reporting" class="hidden sm:flex"></ReportingTabNavbar>
         </div>
         <div class="hidden sm:flex space-x-2">
             <DropdownMenu>
@@ -312,10 +315,7 @@ const tableData = computed(() => {
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
-            <SecondaryButton
-                v-if="canCreateReports()"
-                :icon="SaveIcon"
-                @click="onSaveReportClick">
+            <SecondaryButton v-if="canCreateReports()" :icon="SaveIcon" @click="onSaveReportClick">
                 Save Report
             </SecondaryButton>
         </div>
@@ -339,15 +339,9 @@ const tableData = computed(() => {
                 <DropdownMenuItem @click="triggerExport('xlsx')">
                     Export as Excel
                 </DropdownMenuItem>
-                <DropdownMenuItem @click="triggerExport('csv')">
-                    Export as CSV
-                </DropdownMenuItem>
-                <DropdownMenuItem @click="triggerExport('ods')">
-                    Export as ODS
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                    v-if="canCreateReports()"
-                    @click="onSaveReportClick">
+                <DropdownMenuItem @click="triggerExport('csv')"> Export as CSV </DropdownMenuItem>
+                <DropdownMenuItem @click="triggerExport('ods')"> Export as ODS </DropdownMenuItem>
+                <DropdownMenuItem v-if="canCreateReports()" @click="onSaveReportClick">
                     Save Report
                 </DropdownMenuItem>
             </DropdownMenuContent>

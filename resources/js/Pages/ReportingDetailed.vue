@@ -266,9 +266,7 @@ async function downloadExport(format: ExportFormat) {
             class="h-14 sm:h-16 border-b border-default-background-separator flex flex-wrap gap-y-3 justify-between items-center">
             <div class="flex items-center space-x-3 sm:space-x-6">
                 <PageTitle :icon="ChartBarIcon" title="Reporting"></PageTitle>
-                <ReportingTabNavbar
-                    active="detailed"
-                    class="hidden sm:flex"></ReportingTabNavbar>
+                <ReportingTabNavbar active="detailed" class="hidden sm:flex"></ReportingTabNavbar>
             </div>
             <div class="hidden sm:block">
                 <DropdownMenu>
