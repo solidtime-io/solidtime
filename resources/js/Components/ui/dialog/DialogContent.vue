@@ -31,14 +31,14 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits);
         <div
             :class="
                 cn(
-                    'fixed top-0 left-0 z-50 pointer-events-none w-screen h-screen flex items-start pt-6 md:pt-20 xl:pt-32 justify-center overflow-auto'
+                    'fixed top-0 left-0 z-50 pointer-events-none w-screen h-screen flex items-start px-2 pt-3 md:pt-20 xl:pt-32 justify-center overflow-auto'
                 )
             ">
             <DialogContent
                 v-bind="forwarded"
                 :class="
                     cn(
-                        'pointer-events-auto bg-default-background grid w-full max-w-lg border border-border-tertiary shadow-lg duration-200 sm:rounded-lg outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
+                        'pointer-events-auto bg-default-background grid w-full max-w-lg border border-border-tertiary shadow-lg duration-200 rounded-lg outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
                         props.class
                     )
                 ">

@@ -208,17 +208,22 @@ useSelectEvents(
     <div class="flex items-center relative @container" data-testid="dashboard_timer">
         <div
             class="flex flex-col @2xl:flex-row w-full justify-between rounded-lg bg-card-background border-card-border border transition shadow-card">
-            <div class="flex flex-1 items-center pr-6 relative">
+            <div class="flex flex-1 items-center relative">
                 <input
                     ref="currentTimeEntryDescriptionInput"
                     v-model="tempDescription"
                     placeholder="What are you working on?"
                     data-testid="time_entry_description"
-                    class="w-full rounded-l-lg py-4 sm:py-2.5 px-3.5 border-b border-b-card-background-separator @2xl:px-4 text-base @4xl:text-lg text-text-primary bg-transparent border-none placeholder-text-secondary font-medium focus:ring-0 transition"
+                    class="w-full rounded-l-lg py-4 sm:py-2.5 px-3.5 border-b border-b-card-background-separator @2xl:px-4 text-lg text-text-primary bg-transparent border-none placeholder-text-secondary font-medium focus:ring-0 transition"
                     type="text"
                     @keydown.enter="startTimerIfNotActive"
                     @keydown.esc="showDropdown = false"
                     @blur="updateTimeEntryDescription" />
+                <div class="@2xl:hidden pr-3 shrink-0">
+                    <TimeTrackerStartStop
+                        :active="isActive"
+                        @changed="onToggleButtonPress"></TimeTrackerStartStop>
+                </div>
                 <div
                     v-if="showDropdown && filteredRecentlyTrackedTimeEntries.length > 0"
                     ref="floating"
@@ -285,7 +290,7 @@ useSelectEvents(
                 </div>
             </div>
         </div>
-        <div class="pl-4 @2xl:pl-6 pr-3 absolute sm:relative top-[6px] sm:top-0 right-0">
+        <div class="pl-4 @2xl:pl-6 pr-3 hidden @2xl:block">
             <TimeTrackerStartStop
                 :active="isActive"
                 size="large"

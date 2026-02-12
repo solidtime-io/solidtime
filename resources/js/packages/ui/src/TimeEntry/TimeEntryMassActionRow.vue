@@ -69,7 +69,7 @@ const showMassUpdateModal = ref(false);
         ">
         <Checkbox
             id="selectAll"
-            :checked="allSelected"
+            :checked="allSelected && selectedTimeEntries.length > 0"
             @update:checked="allSelected ? emit('unselectAll') : emit('selectAll')">
         </Checkbox>
         <FieldLabel
