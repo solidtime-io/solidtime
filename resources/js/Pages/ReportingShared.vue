@@ -69,11 +69,16 @@ watch(currentPage, () => {
 <template>
     <AppLayout title="Reporting" data-testid="reporting_view" class="overflow-hidden">
         <MainContainer
-            class="py-3 sm:py-5 min-h-[79px] border-b border-default-background-separator flex justify-between items-center">
+            class="h-14 sm:h-16 border-b border-default-background-separator flex flex-wrap gap-y-3 justify-between items-center">
             <div class="flex items-center space-x-3 sm:space-x-6">
                 <PageTitle :icon="ChartBarIcon" title="Reporting"></PageTitle>
-                <ReportingTabNavbar active="shared"></ReportingTabNavbar>
+                <ReportingTabNavbar
+                    active="shared"
+                    class="hidden sm:flex"></ReportingTabNavbar>
             </div>
+        </MainContainer>
+        <MainContainer class="sm:hidden py-2 border-b border-default-background-separator">
+            <ReportingTabNavbar active="shared"></ReportingTabNavbar>
         </MainContainer>
 
         <div v-if="!isAllowedToPerformPremiumAction()">

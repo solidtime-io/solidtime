@@ -85,11 +85,11 @@ window.addEventListener('dashboard:refresh', () => {
                     filteredLatestTasks.length === 4 ? 'last:border-0' : ''
                 "></RecentlyTrackedTasksCardEntry>
         </div>
-        <div v-else class="text-center flex flex-1 justify-center items-center">
+        <div v-else class="text-center flex flex-1 justify-center items-center py-5">
             <div>
                 <PlusCircleIcon class="w-8 text-icon-default inline pb-2"></PlusCircleIcon>
                 <h3 class="text-text-primary font-semibold text-sm">No recent time entries</h3>
-                <p class="pb-5 text-sm">Start tracking your time!</p>
+                <p class="text-sm">Start tracking your time!</p>
             </div>
         </div>
     </DashboardCard>

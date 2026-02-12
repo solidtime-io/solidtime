@@ -44,6 +44,7 @@ const { data: latestTeamActivity, isLoading } = useQuery({
         <div v-else class="text-center text-gray-500 py-8">No team activity found</div>
         <div
             v-if="latestTeamActivity && latestTeamActivity.length <= 1"
+            :class="latestTeamActivity?.length === 1 ? 'pb-5' : 'py-5'"
             class="text-center flex flex-1 justify-center items-center">
             <div>
                 <UserGroupIcon class="w-8 text-icon-default inline pb-2"></UserGroupIcon>

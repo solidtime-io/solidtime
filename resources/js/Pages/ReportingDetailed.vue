@@ -9,7 +9,17 @@ import {
     ChevronRightIcon,
     ChevronDoubleRightIcon,
     ClockIcon,
+    EllipsisVerticalIcon,
+    ArrowDownTrayIcon,
+    LockClosedIcon,
 } from '@heroicons/vue/20/solid';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/Components/ui/dropdown-menu';
+import { SecondaryButton } from '@/packages/ui/src';
 import { computed, onMounted, ref, watch } from 'vue';
 import { getDayJsInstance, getLocalizedDayJs } from '@/packages/ui/src/utils/time';
 import { storeToRefs } from 'pinia';
@@ -46,7 +56,7 @@ import {
 import { useQueryClient } from '@tanstack/vue-query';
 import { getCurrentOrganizationId, getCurrentMembershipId } from '@/utils/useUser';
 import ReportingTabNavbar from '@/Components/Common/Reporting/ReportingTabNavbar.vue';
-import ReportingExportButton from '@/Components/Common/Reporting/ReportingExportButton.vue';
+import UpgradeModal from '@/Components/Common/UpgradeModal.vue';
 import type { ExportFormat } from '@/types/reporting';
 import { useNotificationsStore } from '@/utils/notification';
 import TimeEntryMassActionRow from '@/packages/ui/src/TimeEntry/TimeEntryMassActionRow.vue';
@@ -160,6 +170,19 @@ const selectedTimeEntries = ref<TimeEntry[]>([]);
 
 const showExportModal = ref(false);
 const exportUrl = ref<string | null>(null);
+const showPremiumModal = ref(false);
+const exportLoading = ref(false);
+
+function triggerExport(format: ExportFormat) {
+    if (format === 'pdf' && !isAllowedToPerformPremiumAction()) {
+        showPremiumModal.value = true;
+        return;
+    }
+    exportLoading.value = true;
+    downloadExport(format).finally(() => {
+        exportLoading.value = false;
+    });
+}
 
 async function createTag(name: string) {
     return await useTagsStore().createTag(name);
@@ -236,13 +259,76 @@ async function downloadExport(format: ExportFormat) {
         <ReportingExportModal
             v-model:show="showExportModal"
             :export-url="exportUrl"></ReportingExportModal>
+        <UpgradeModal v-model:show="showPremiumModal">
+            <strong>PDF Reports</strong> are only available in solidtime Professional.
+        </UpgradeModal>
         <MainContainer
-            class="py-3 sm:py-5 border-b border-default-background-separator flex justify-between items-center">
+            class="h-14 sm:h-16 border-b border-default-background-separator flex flex-wrap gap-y-3 justify-between items-center">
             <div class="flex items-center space-x-3 sm:space-x-6">
                 <PageTitle :icon="ChartBarIcon" title="Reporting"></PageTitle>
-                <ReportingTabNavbar active="detailed"></ReportingTabNavbar>
+                <ReportingTabNavbar
+                    active="detailed"
+                    class="hidden sm:flex"></ReportingTabNavbar>
             </div>
-            <ReportingExportButton :download="downloadExport"></ReportingExportButton>
+            <div class="hidden sm:block">
+                <DropdownMenu>
+                    <DropdownMenuTrigger as-child>
+                        <SecondaryButton :icon="ArrowDownTrayIcon" :loading="exportLoading">
+                            Export
+                        </SecondaryButton>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuItem @click="triggerExport('pdf')">
+                            <div class="flex items-center space-x-2">
+                                <span>Export as PDF</span>
+                                <LockClosedIcon
+                                    v-if="!isAllowedToPerformPremiumAction()"
+                                    class="w-3.5 text-text-tertiary" />
+                            </div>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem @click="triggerExport('xlsx')">
+                            Export as Excel
+                        </DropdownMenuItem>
+                        <DropdownMenuItem @click="triggerExport('csv')">
+                            Export as CSV
+                        </DropdownMenuItem>
+                        <DropdownMenuItem @click="triggerExport('ods')">
+                            Export as ODS
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
+            <DropdownMenu>
+                <DropdownMenuTrigger as-child class="sm:hidden">
+                    <button
+                        class="p-1.5 rounded-lg border border-border-tertiary text-text-secondary hover:text-text-primary hover:bg-secondary transition"
+                        aria-label="More options">
+                        <EllipsisVerticalIcon class="w-5 h-5" />
+                    </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuItem @click="triggerExport('pdf')">
+                        <div class="flex items-center space-x-2">
+                            <span>Export as PDF</span>
+                            <LockClosedIcon
+                                v-if="!isAllowedToPerformPremiumAction()"
+                                class="w-3.5 text-text-tertiary" />
+                        </div>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem @click="triggerExport('xlsx')">
+                        Export as Excel
+                    </DropdownMenuItem>
+                    <DropdownMenuItem @click="triggerExport('csv')">
+                        Export as CSV
+                    </DropdownMenuItem>
+                    <DropdownMenuItem @click="triggerExport('ods')">
+                        Export as ODS
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+        </MainContainer>
+        <MainContainer class="sm:hidden py-2 border-b border-default-background-separator">
+            <ReportingTabNavbar active="detailed"></ReportingTabNavbar>
         </MainContainer>
 
         <ReportingFilterBar

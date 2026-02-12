@@ -498,16 +498,16 @@ const showCreateProject = ref(false);
 </script>
 
 <template>
-    <div v-if="projects.length === 0 && canCreateProject">
+    <template v-if="projects.length === 0 && canCreateProject">
         <Button
             :variant="props.variant"
             :size="props.size"
             :class="twMerge('w-full justify-start', props.class)"
             @click="showCreateProject = true">
             <PlusIcon class="w-4" />
-            <span>Add new project</span>
+            <span class="truncate">Add new project</span>
         </Button>
-    </div>
+    </template>
     <Dropdown v-else v-model="open" :close-on-content-click="false" :align="props.align">
         <template #trigger>
             <div class="flex items-center gap-1">

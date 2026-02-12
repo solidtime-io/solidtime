@@ -25,7 +25,7 @@ const model = defineModel();
         v-model="model"
         :class="
             twMerge(
-                'h-9 px-3 py-1 text-sm border-input-border border bg-input-background text-text-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent rounded-md shadow-sm',
+                'h-9 px-3 py-1 text-base sm:text-sm border-input-border border bg-input-background text-text-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent rounded-md shadow-sm',
                 props.class
             )
         "

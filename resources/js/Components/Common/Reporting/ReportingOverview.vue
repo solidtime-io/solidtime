@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ChartBarIcon } from '@heroicons/vue/20/solid';
+import { ChartBarIcon, ArrowDownTrayIcon, EllipsisVerticalIcon, LockClosedIcon } from '@heroicons/vue/20/solid';
+import { SaveIcon } from 'lucide-vue-next';
 import { getOrganizationCurrencyString } from '@/utils/money';
 import {
     formatHumanReadableDuration,
@@ -8,17 +9,25 @@ import {
 } from '@/packages/ui/src/utils/time';
 import { formatCents } from '@/packages/ui/src/utils/money';
 import ReportingTabNavbar from '@/Components/Common/Reporting/ReportingTabNavbar.vue';
-import ReportingExportButton from '@/Components/Common/Reporting/ReportingExportButton.vue';
 import ReportingRow from '@/Components/Common/Reporting/ReportingRow.vue';
 import PageTitle from '@/Components/Common/PageTitle.vue';
 import ReportingChart from '@/Components/Common/Reporting/ReportingChart.vue';
 import ReportingGroupBySelect from '@/Components/Common/Reporting/ReportingGroupBySelect.vue';
 import MainContainer from '@/packages/ui/src/MainContainer.vue';
 import ReportingExportModal from '@/Components/Common/Reporting/ReportingExportModal.vue';
-import ReportSaveButton from '@/Components/Common/Report/ReportSaveButton.vue';
 import ReportingPieChart from '@/Components/Common/Reporting/ReportingPieChart.vue';
 import ReportingFilterBar from '@/Components/Common/Reporting/ReportingFilterBar.vue';
-
+import { SecondaryButton } from '@/packages/ui/src';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/Components/ui/dropdown-menu';
+import ReportCreateModal from '@/Components/Common/Report/ReportCreateModal.vue';
+import UpgradeModal from '@/Components/Common/UpgradeModal.vue';
+import { canCreateReports } from '@/utils/permissions';
+import { isAllowedToPerformPremiumAction } from '@/utils/billing';
 import { computed, type ComputedRef, inject, ref, watch } from 'vue';
 import { type GroupingOption, useReportingStore } from '@/utils/useReporting';
 import {
@@ -182,6 +191,28 @@ async function downloadExport(format: ExportFormat) {
 const { projects } = useProjectsQuery();
 const showExportModal = ref(false);
 const exportUrl = ref<string | null>(null);
+const showCreateReportModal = ref(false);
+const showPremiumModal = ref(false);
+const exportLoading = ref(false);
+
+function triggerExport(format: ExportFormat) {
+    if (format === 'pdf' && !isAllowedToPerformPremiumAction()) {
+        showPremiumModal.value = true;
+        return;
+    }
+    exportLoading.value = true;
+    downloadExport(format).finally(() => {
+        exportLoading.value = false;
+    });
+}
+
+function onSaveReportClick() {
+    if (isAllowedToPerformPremiumAction()) {
+        showCreateReportModal.value = true;
+    } else {
+        showPremiumModal.value = true;
+    }
+}
 
 const groupedPieChartData = computed(() => {
     return (
@@ -240,16 +271,90 @@ const tableData = computed(() => {
     <ReportingExportModal
         v-model:show="showExportModal"
         :export-url="exportUrl"></ReportingExportModal>
+    <ReportCreateModal
+        v-model:show="showCreateReportModal"
+        :properties="reportProperties"></ReportCreateModal>
+    <UpgradeModal v-model:show="showPremiumModal">
+        This feature is only available in solidtime Professional.
+    </UpgradeModal>
     <MainContainer
-        class="py-3 sm:py-5 border-b border-default-background-separator flex justify-between items-center">
+        class="h-14 sm:h-16 border-b border-default-background-separator flex flex-wrap gap-y-3 justify-between items-center">
         <div class="flex items-center space-x-3 sm:space-x-6">
             <PageTitle :icon="ChartBarIcon" title="Reporting"></PageTitle>
-            <ReportingTabNavbar active="reporting"></ReportingTabNavbar>
+            <ReportingTabNavbar
+                active="reporting"
+                class="hidden sm:flex"></ReportingTabNavbar>
         </div>
-        <div class="flex space-x-2">
-            <ReportingExportButton :download="downloadExport"></ReportingExportButton>
-            <ReportSaveButton :report-properties="reportProperties"></ReportSaveButton>
+        <div class="hidden sm:flex space-x-2">
+            <DropdownMenu>
+                <DropdownMenuTrigger as-child>
+                    <SecondaryButton :icon="ArrowDownTrayIcon" :loading="exportLoading">
+                        Export
+                    </SecondaryButton>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuItem @click="triggerExport('pdf')">
+                        <div class="flex items-center space-x-2">
+                            <span>Export as PDF</span>
+                            <LockClosedIcon
+                                v-if="!isAllowedToPerformPremiumAction()"
+                                class="w-3.5 text-text-tertiary" />
+                        </div>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem @click="triggerExport('xlsx')">
+                        Export as Excel
+                    </DropdownMenuItem>
+                    <DropdownMenuItem @click="triggerExport('csv')">
+                        Export as CSV
+                    </DropdownMenuItem>
+                    <DropdownMenuItem @click="triggerExport('ods')">
+                        Export as ODS
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+            <SecondaryButton
+                v-if="canCreateReports()"
+                :icon="SaveIcon"
+                @click="onSaveReportClick">
+                Save Report
+            </SecondaryButton>
         </div>
+        <DropdownMenu>
+            <DropdownMenuTrigger as-child class="sm:hidden">
+                <button
+                    class="p-1.5 rounded-lg border border-border-tertiary text-text-secondary hover:text-text-primary hover:bg-secondary transition"
+                    aria-label="More options">
+                    <EllipsisVerticalIcon class="w-5 h-5" />
+                </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+                <DropdownMenuItem @click="triggerExport('pdf')">
+                    <div class="flex items-center space-x-2">
+                        <span>Export as PDF</span>
+                        <LockClosedIcon
+                            v-if="!isAllowedToPerformPremiumAction()"
+                            class="w-3.5 text-text-tertiary" />
+                    </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem @click="triggerExport('xlsx')">
+                    Export as Excel
+                </DropdownMenuItem>
+                <DropdownMenuItem @click="triggerExport('csv')">
+                    Export as CSV
+                </DropdownMenuItem>
+                <DropdownMenuItem @click="triggerExport('ods')">
+                    Export as ODS
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                    v-if="canCreateReports()"
+                    @click="onSaveReportClick">
+                    Save Report
+                </DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
+    </MainContainer>
+    <MainContainer class="sm:hidden py-2 border-b border-default-background-separator">
+        <ReportingTabNavbar active="reporting"></ReportingTabNavbar>
     </MainContainer>
     <ReportingFilterBar
         v-model:selected-members="selectedMembers"
