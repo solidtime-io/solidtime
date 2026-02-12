@@ -25,7 +25,12 @@ test('test that dashboard loads with all expected sections', async ({ page }) =>
 
     // Timer section (scoped to dashboard_timer to avoid matching sidebar timer)
     await expect(page.getByTestId('time_entry_description')).toBeVisible();
-    await expect(page.getByTestId('dashboard_timer').getByTestId('timer_button')).toBeVisible();
+    await expect(
+        page
+            .getByTestId('dashboard_timer')
+            .getByTestId('timer_button')
+            .and(page.locator(':visible'))
+    ).toBeVisible();
 
     // Dashboard cards
     await expect(page.getByText('Recent Time Entries', { exact: true })).toBeVisible();
@@ -104,7 +109,10 @@ test.describe('Employee Dashboard Restrictions', () => {
 
         // Timer should be available
         await expect(
-            employee.page.getByTestId('dashboard_timer').getByTestId('timer_button')
+            employee.page
+                .getByTestId('dashboard_timer')
+                .getByTestId('timer_button')
+                .and(employee.page.locator(':visible'))
         ).toBeVisible();
         await expect(employee.page.getByTestId('time_entry_description')).toBeEditable();
     });

@@ -1450,7 +1450,10 @@ test.describe('Employee Time Entry Isolation', () => {
 
         await employee.page.goto(PLAYWRIGHT_BASE_URL + '/time');
         await expect(
-            employee.page.getByTestId('dashboard_timer').getByTestId('timer_button')
+            employee.page
+                .getByTestId('dashboard_timer')
+                .getByTestId('timer_button')
+                .and(employee.page.locator(':visible'))
         ).toBeVisible({ timeout: 10000 });
 
         // Employee's time entry IS visible

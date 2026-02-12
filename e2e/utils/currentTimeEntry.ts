@@ -2,12 +2,19 @@ import { expect } from '@playwright/test';
 import type { Page } from '@playwright/test';
 
 export async function startOrStopTimerWithButton(page: Page) {
-    await page.locator('[data-testid="dashboard_timer"] [data-testid="timer_button"]').click();
+    await page
+        .getByTestId('dashboard_timer')
+        .getByTestId('timer_button')
+        .and(page.locator(':visible'))
+        .click();
 }
 
 export async function assertThatTimerHasStarted(page: Page) {
     await expect(
-        page.locator('[data-testid="dashboard_timer"] [data-testid="timer_button"]')
+        page
+            .getByTestId('dashboard_timer')
+            .getByTestId('timer_button')
+            .and(page.locator(':visible'))
     ).toHaveClass(/bg-red-400\/80/);
 }
 
@@ -34,7 +41,10 @@ export function newTimeEntryResponse(
 
 export async function assertThatTimerIsStopped(page: Page) {
     await expect(
-        page.locator('[data-testid="dashboard_timer"] [data-testid="timer_button"]')
+        page
+            .getByTestId('dashboard_timer')
+            .getByTestId('timer_button')
+            .and(page.locator(':visible'))
     ).toHaveClass(/bg-accent-300\/70/);
 }
 

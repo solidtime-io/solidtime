@@ -31,15 +31,21 @@ async function selectCommand(page: Page, name: string) {
 }
 
 async function assertTimerIsRunning(page: Page) {
-    await expect(page.locator(TIMER_BUTTON_SELECTOR)).toHaveClass(/bg-red-400\/80/, {
-        timeout: 10000,
-    });
+    await expect(page.locator(TIMER_BUTTON_SELECTOR).and(page.locator(':visible'))).toHaveClass(
+        /bg-red-400\/80/,
+        {
+            timeout: 10000,
+        }
+    );
 }
 
 async function assertTimerIsStopped(page: Page) {
-    await expect(page.locator(TIMER_BUTTON_SELECTOR)).toHaveClass(/bg-accent-300\/70/, {
-        timeout: 10000,
-    });
+    await expect(page.locator(TIMER_BUTTON_SELECTOR).and(page.locator(':visible'))).toHaveClass(
+        /bg-accent-300\/70/,
+        {
+            timeout: 10000,
+        }
+    );
 }
 
 test.describe('Command Palette', () => {

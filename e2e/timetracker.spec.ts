@@ -354,7 +354,10 @@ test('test that timer started on dashboard is visible on time page', async ({ pa
 
     // Timer should still be running (the timer button should be red/active)
     await expect(
-        page.locator('[data-testid="dashboard_timer"] [data-testid="timer_button"]')
+        page
+            .getByTestId('dashboard_timer')
+            .getByTestId('timer_button')
+            .and(page.locator(':visible'))
     ).toHaveClass(/bg-red-400\/80/);
 
     // Stop the timer
