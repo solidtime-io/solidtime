@@ -158,7 +158,7 @@ function deleteSelected() {
                 <span> Loading more time entries... </span>
             </div>
             <div
-                v-else-if="!hasNextPage"
+                v-else-if="!hasNextPage && timeEntries.length > 0"
                 class="flex justify-center items-center py-5 text-sm text-text-tertiary">
                 All time entries are loaded!
             </div>

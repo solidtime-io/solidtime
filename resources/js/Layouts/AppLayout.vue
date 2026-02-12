@@ -17,7 +17,6 @@ import {
     UserGroupIcon,
     XMarkIcon,
     DocumentTextIcon,
-    ViewColumnsIcon,
 } from '@heroicons/vue/20/solid';
 import { PanelLeft } from 'lucide-vue-next';
 import NavigationSidebarItem from '@/Components/NavigationSidebarItem.vue';
@@ -36,7 +35,6 @@ import {
     canViewProjects,
     canViewReport,
     canViewTags,
-    canViewTasks,
 } from '@/utils/permissions';
 import { isBillingActivated, isInvoicingActivated } from '@/utils/billing';
 import type { User } from '@/types/models';
@@ -124,10 +122,7 @@ const page = usePage<{
     <div v-bind="$attrs" class="flex flex-wrap bg-background text-text-secondary">
         <!-- Mobile sidebar overlay -->
         <Teleport to="body">
-            <div
-                v-if="showSidebarMenu"
-                class="fixed inset-0 z-40 lg:hidden"
-                @click="closeSidebar">
+            <div v-if="showSidebarMenu" class="fixed inset-0 z-40 lg:hidden" @click="closeSidebar">
                 <div
                     class="absolute inset-0 bg-default-background transition-opacity duration-200"
                     :class="sidebarVisible ? 'opacity-50' : 'opacity-0'" />
@@ -190,12 +185,6 @@ const page = usePage<{
                                 :icon="CalendarIcon"
                                 :current="route().current('calendar')"
                                 :href="route('calendar')"></NavigationSidebarItem>
-                            <NavigationSidebarItem
-                                v-if="canViewTasks()"
-                                title="Board"
-                                :icon="ViewColumnsIcon"
-                                :href="route('kanban')"
-                                :current="route().current('kanban')"></NavigationSidebarItem>
                             <NavigationSidebarItem
                                 title="Reporting"
                                 :icon="ChartBarIcon"
