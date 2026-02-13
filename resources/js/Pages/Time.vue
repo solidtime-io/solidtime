@@ -32,7 +32,8 @@ import { useClientsStore } from '@/utils/useClients';
 import { useTimeEntriesInfiniteQuery } from '@/utils/useTimeEntriesInfiniteQuery';
 import { useTimeEntriesMutations } from '@/utils/useTimeEntriesMutations';
 
-const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useTimeEntriesInfiniteQuery();
+const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isPending } =
+    useTimeEntriesInfiniteQuery();
 const {
     createTimeEntry: createTimeEntryMutation,
     updateTimeEntry,
@@ -145,7 +146,10 @@ function deleteSelected() {
             :currency="getOrganizationCurrencyString()"
             :time-entries="timeEntries"
             :tags="tags"></TimeEntryGroupedTable>
-        <div v-if="timeEntries.length === 0" class="text-center pt-12">
+        <div v-if="isPending" class="flex justify-center items-center py-12">
+            <LoadingSpinner></LoadingSpinner>
+        </div>
+        <div v-else-if="timeEntries.length === 0" class="text-center pt-12">
             <ClockIcon class="w-8 text-icon-default inline pb-2"></ClockIcon>
             <h3 class="text-text-primary font-semibold">No time entries found</h3>
             <p class="pb-5">Create your first time entry now!</p>
