@@ -79,6 +79,10 @@ function prefetchDashboard(queryClient: QueryClient) {
     const organizationId = getCurrentOrganizationId();
     if (!organizationId) return;
 
+    // Prefetch projects and tasks for RecentlyTrackedTasksCard
+    prefetchProjects(queryClient);
+    prefetchTasks(queryClient);
+
     // Prefetch all dashboard card data
     queryClient.prefetchQuery({
         queryKey: ['timeEntries', organizationId],
