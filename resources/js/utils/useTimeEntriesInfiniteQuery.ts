@@ -21,6 +21,7 @@ export function useTimeEntriesInfiniteQuery() {
             const queries: Record<string, string | undefined> = {
                 only_full_dates: 'true',
                 member_id: memberId.value,
+                limit: '50',
             };
 
             if (pageParam) {
