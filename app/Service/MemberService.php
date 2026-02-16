@@ -196,6 +196,7 @@ class MemberService
 
         $placeholderUser = $user->replicate();
         $placeholderUser->is_placeholder = true;
+        $placeholderUser->current_team_id = $member->organization_id;
         $placeholderUser->save();
 
         $member->user()->associate($placeholderUser);

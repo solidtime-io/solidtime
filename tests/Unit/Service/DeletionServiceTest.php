@@ -382,4 +382,45 @@ class DeletionServiceTest extends TestCaseWithDatabase
             1
         );
     }
+
+    public function test_delete_user_with_current_organization_set_to_owned_org_that_will_be_deleted_does_not_cause_foreign_key_violation(): void
+    {
+        // Arrange
+        // User A creates an organization and invites User B
+        $userA = User::factory()->create();
+        $userB = User::factory()->create();
+        $organizationOfA = Organization::factory()->withOwner($userA)->create();
+        $organizationOfB = Organization::factory()->withOwner($userB)->create();
+        Member::factory()->forUser($userA)->forOrganization($organizationOfA)->role(Role::Owner)->create();
+        Member::factory()->forUser($userB)->forOrganization($organizationOfB)->role(Role::Owner)->create();
+        $memberBInOrgA = Member::factory()->forUser($userB)->forOrganization($organizationOfA)->role(Role::Employee)->create();
+        TimeEntry::factory()->forOrganization($organizationOfA)->forMember($memberBInOrgA)->createMany(2);
+
+        // User B's current_organization_id points to their own org (the one that will be deleted)
+        $userB->update(['current_team_id' => $organizationOfB->getKey()]);
+
+        // Act
+        $this->deletionService->deleteUser($userB);
+
+        // Assert
+        $this->assertDatabaseMissing(User::class, [
+            'id' => $userB->getKey(),
+        ]);
+        $this->assertDatabaseMissing(Organization::class, [
+            'id' => $organizationOfB->getKey(),
+        ]);
+        $this->assertDatabaseHas(Organization::class, [
+            'id' => $organizationOfA->getKey(),
+        ]);
+        // The placeholder user should exist with current_team_id set to the org where they are a placeholder
+        $placeholderUser = User::query()->where('is_placeholder', true)->first();
+        $this->assertNotNull($placeholderUser);
+        $this->assertSame($organizationOfA->getKey(), $placeholderUser->current_team_id);
+        $this->assertDatabaseHas(Member::class, [
+            'id' => $memberBInOrgA->getKey(),
+            'user_id' => $placeholderUser->getKey(),
+            'organization_id' => $organizationOfA->getKey(),
+            'role' => Role::Placeholder->value,
+        ]);
+    }
 }
