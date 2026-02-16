@@ -12,6 +12,10 @@ import { getCurrentOrganizationId } from '@/utils/useUser';
 import { api } from '@/packages/api/src';
 
 export function switchOrganization(organizationId: string) {
+    // Clear Inertia's prefetch cache to prevent stale pages from the old
+    // organization being served when navigating after the switch.
+    router.flushAll();
+
     router.put(
         route('current-team.update'),
         {
