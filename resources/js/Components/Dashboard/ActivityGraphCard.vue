@@ -112,9 +112,21 @@ const option = computed(() => {
             top: 'center',
             pieces: [
                 { value: 0, color: chartEmptyColor.value },
-                { gt: 0, lte: max.value * 0.25, color: chroma.mix(chartEmptyColor.value, chartColor.value, 0.4).hex() },
-                { gt: max.value * 0.25, lte: max.value * 0.5, color: chroma.mix(chartEmptyColor.value, chartColor.value, 0.6).hex() },
-                { gt: max.value * 0.5, lte: max.value * 0.75, color: chroma.mix(chartEmptyColor.value, chartColor.value, 0.8).hex() },
+                {
+                    gt: 0,
+                    lte: max.value * 0.25,
+                    color: chroma.mix(chartEmptyColor.value, chartColor.value, 0.3).hex(),
+                },
+                {
+                    gt: max.value * 0.25,
+                    lte: max.value * 0.5,
+                    color: chroma.mix(chartEmptyColor.value, chartColor.value, 0.6).hex(),
+                },
+                {
+                    gt: max.value * 0.5,
+                    lte: max.value * 0.75,
+                    color: chroma.mix(chartEmptyColor.value, chartColor.value, 0.8).hex(),
+                },
                 { gt: max.value * 0.75, lte: max.value, color: chartColor.value },
             ],
             show: false,
