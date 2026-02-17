@@ -9,6 +9,8 @@ import {
     createTimeEntryWithTagViaApi,
     createBareTimeEntryViaApi,
     createBillableProjectViaApi,
+    createTimeEntryWithBillableStatusViaApi,
+    createTagViaApi,
 } from './utils/api';
 import {
     goToReporting,
@@ -245,6 +247,191 @@ test('test that shared report with No Task filter shows entries without a task',
     await page.goto(shareableLink);
     await expect(page.getByText('Reporting')).toBeVisible();
     await expect(page.getByText('Total')).toBeVisible();
+});
+
+test('test that shared report respects task filter', async ({ page, ctx }) => {
+    const projectName = 'TaskFilterProj ' + Math.floor(Math.random() * 10000);
+    const taskA = 'TaskA ' + Math.floor(Math.random() * 10000);
+    const taskB = 'TaskB ' + Math.floor(Math.random() * 10000);
+    const reportName = 'TaskFilterReport ' + Math.floor(Math.random() * 10000);
+
+    const project = await createProjectViaApi(ctx, { name: projectName });
+    const task = await createTaskViaApi(ctx, { name: taskA, project_id: project.id });
+    await createTaskViaApi(ctx, { name: taskB, project_id: project.id });
+    await createTimeEntryViaApi(ctx, {
+        description: `Entry for ${taskA}`,
+        duration: '1h',
+        projectId: project.id,
+        taskId: task.id,
+    });
+    await createTimeEntryViaApi(ctx, {
+        description: `Entry for ${projectName} no task`,
+        duration: '2h',
+        projectId: project.id,
+    });
+
+    await goToReporting(page);
+    await expect(page.getByTestId('reporting_view').getByText(projectName)).toBeVisible();
+
+    // Filter by task A
+    await page.getByRole('button', { name: 'Tasks' }).first().click();
+    await Promise.all([
+        page.getByRole('option').filter({ hasText: taskA }).click(),
+        waitForReportingUpdate(page),
+    ]);
+    await page.keyboard.press('Escape');
+
+    const { shareableLink } = await saveAsSharedReport(page, reportName);
+
+    // View the shared report
+    await page.goto(shareableLink);
+    await expect(page.getByText('Reporting')).toBeVisible();
+    await expect(page.getByText('Total')).toBeVisible();
+    await expect(page.getByText('1h 00min').first()).toBeVisible();
+    await expect(page.getByText('3h 00min')).not.toBeVisible();
+});
+
+test('test that shared report respects client filter', async ({ page, ctx }) => {
+    const clientA = 'ClientA ' + Math.floor(Math.random() * 10000);
+    const clientB = 'ClientB ' + Math.floor(Math.random() * 10000);
+    const projectA = 'ClientFilterProjA ' + Math.floor(Math.random() * 10000);
+    const projectB = 'ClientFilterProjB ' + Math.floor(Math.random() * 10000);
+    const reportName = 'ClientFilterReport ' + Math.floor(Math.random() * 10000);
+
+    const cliA = await createClientViaApi(ctx, { name: clientA });
+    const cliB = await createClientViaApi(ctx, { name: clientB });
+    const projA = await createProjectViaApi(ctx, { name: projectA, client_id: cliA.id });
+    const projB = await createProjectViaApi(ctx, { name: projectB, client_id: cliB.id });
+    await createTimeEntryViaApi(ctx, {
+        description: `Entry for ${clientA}`,
+        duration: '1h',
+        projectId: projA.id,
+    });
+    await createTimeEntryViaApi(ctx, {
+        description: `Entry for ${clientB}`,
+        duration: '2h',
+        projectId: projB.id,
+    });
+
+    await goToReporting(page);
+    await expect(page.getByTestId('reporting_view').getByText(projectA)).toBeVisible();
+
+    // Filter by client A
+    await page.getByRole('button', { name: 'Clients' }).first().click();
+    await Promise.all([
+        page.getByRole('option').filter({ hasText: clientA }).click(),
+        waitForReportingUpdate(page),
+    ]);
+    await page.keyboard.press('Escape');
+
+    const { shareableLink } = await saveAsSharedReport(page, reportName);
+
+    // View the shared report
+    await page.goto(shareableLink);
+    await expect(page.getByText('Reporting')).toBeVisible();
+    await expect(page.getByText(projectA)).toBeVisible();
+    await expect(page.getByText(projectB)).not.toBeVisible();
+});
+
+test('test that shared report respects tag filter', async ({ page, ctx }) => {
+    const tagA = 'TagA ' + Math.floor(Math.random() * 10000);
+    const tagB = 'TagB ' + Math.floor(Math.random() * 10000);
+    const reportName = 'TagFilterReport ' + Math.floor(Math.random() * 10000);
+
+    const tagObjA = await createTagViaApi(ctx, { name: tagA });
+    await createTagViaApi(ctx, { name: tagB });
+    await createTimeEntryViaApi(ctx, {
+        description: `Entry with ${tagA}`,
+        duration: '1h',
+        tags: [tagObjA.id],
+    });
+    await createBareTimeEntryViaApi(ctx, 'Entry no tags', '2h');
+
+    await goToReporting(page);
+    await expect(page.getByTestId('reporting_view').getByText('Total')).toBeVisible();
+
+    // Filter by tag A
+    await page.getByRole('button', { name: 'Tags' }).first().click();
+    await Promise.all([
+        page.getByRole('option').filter({ hasText: tagA }).click(),
+        waitForReportingUpdate(page),
+    ]);
+    await page.keyboard.press('Escape');
+
+    const { shareableLink } = await saveAsSharedReport(page, reportName);
+
+    // View the shared report
+    await page.goto(shareableLink);
+    await expect(page.getByText('Reporting')).toBeVisible();
+    await expect(page.getByText('Total')).toBeVisible();
+    await expect(page.getByText('1h 00min').first()).toBeVisible();
+    await expect(page.getByText('3h 00min')).not.toBeVisible();
+});
+
+test('test that shared report respects member filter', async ({ page, ctx }) => {
+    const projectName = 'MemberFilterProj ' + Math.floor(Math.random() * 10000);
+    const reportName = 'MemberFilterReport ' + Math.floor(Math.random() * 10000);
+
+    const project = await createProjectViaApi(ctx, { name: projectName });
+    await createTimeEntryViaApi(ctx, {
+        description: `Entry for ${projectName}`,
+        duration: '1h',
+        projectId: project.id,
+    });
+
+    await goToReporting(page);
+    await expect(page.getByTestId('reporting_view').getByText(projectName)).toBeVisible();
+
+    // Filter by current member (John Doe)
+    await page.getByRole('button', { name: 'Members' }).first().click();
+    await Promise.all([
+        page.getByRole('option').filter({ hasText: 'John Doe' }).click(),
+        waitForReportingUpdate(page),
+    ]);
+    await page.keyboard.press('Escape');
+
+    const { shareableLink } = await saveAsSharedReport(page, reportName);
+
+    // View the shared report — should still show data since all entries belong to this member
+    await page.goto(shareableLink);
+    await expect(page.getByText('Reporting')).toBeVisible();
+    await expect(page.getByText(projectName)).toBeVisible();
+    await expect(page.getByText('Total')).toBeVisible();
+});
+
+test('test that shared report with billable filter only shows billable entries', async ({
+    page,
+    ctx,
+}) => {
+    const reportName = 'BillableFilterReport ' + Math.floor(Math.random() * 10000);
+
+    // Create one billable (1h) and one non-billable (2h) entry
+    await createTimeEntryWithBillableStatusViaApi(ctx, true, '1h');
+    await createTimeEntryWithBillableStatusViaApi(ctx, false, '2h');
+
+    await goToReporting(page);
+    await expect(page.getByTestId('reporting_view').getByText('Total')).toBeVisible();
+
+    // Filter by billable only
+    await page.getByRole('combobox').filter({ hasText: 'Billable' }).click();
+    await Promise.all([
+        page.getByRole('option', { name: 'Billable', exact: true }).click(),
+        waitForReportingUpdate(page),
+    ]);
+
+    // Verify only 1h shows before saving
+    await expect(page.getByTestId('reporting_view').getByText('1h 00min').first()).toBeVisible();
+
+    const { shareableLink } = await saveAsSharedReport(page, reportName);
+
+    // Navigate to the shared report
+    await page.goto(shareableLink);
+    await expect(page.getByText('Reporting')).toBeVisible();
+    await expect(page.getByText('Total')).toBeVisible();
+
+    // Shared report should only show the 1h billable entry, not the 2h non-billable
+    await expect(page.getByText('1h 00min').first()).toBeVisible();
+    await expect(page.getByText('3h 00min')).not.toBeVisible();
 });
 
 // ──────────────────────────────────────────────────

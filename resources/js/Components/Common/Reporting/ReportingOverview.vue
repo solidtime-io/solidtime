@@ -157,8 +157,18 @@ const aggregatedTableTimeEntries = computed<AggregatedTimeEntries | undefined>((
 });
 
 const reportProperties = computed(() => {
+    const { billable: billableFilter, ...rest } = filterParams.value;
+
+    let billableValue: boolean | null = null;
+    if (billableFilter === 'true') {
+        billableValue = true;
+    } else if (billableFilter === 'false') {
+        billableValue = false;
+    }
+
     return {
-        ...filterParams.value,
+        ...rest,
+        billable: billableValue,
         group: group.value,
         sub_group: subGroup.value,
         history_group: getOptimalGroupingOption(startDate.value, endDate.value),
