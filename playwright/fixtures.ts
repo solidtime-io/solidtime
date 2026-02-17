@@ -2,12 +2,17 @@ import { test as baseTest } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import { PLAYWRIGHT_BASE_URL, TEST_USER_PASSWORD } from './config';
 import { type TestContext, setupTestContext } from '../e2e/utils/api';
-import { setupEmployeeUser } from '../e2e/utils/members';
+import { setupAdminUser, setupEmployeeUser } from '../e2e/utils/members';
 
 export * from '@playwright/test';
 export type { TestContext };
 
 export interface EmployeeFixture {
+    page: Page;
+    memberId: string;
+}
+
+export interface AdminFixture {
     page: Page;
     memberId: string;
 }
@@ -19,7 +24,7 @@ export interface EmployeeFixture {
  * Uses page.context().request() to ensure cookies are shared between the API request and page.
  */
 export const test = baseTest.extend<
-    { ctx: TestContext; employee: EmployeeFixture },
+    { ctx: TestContext; employee: EmployeeFixture; admin: AdminFixture },
     { workerStorageState: string }
 >({
     page: async ({ page }, use) => {
@@ -99,5 +104,11 @@ export const test = baseTest.extend<
         );
         await use({ page: employeePage, memberId: employeeMemberId });
         await closeEmployee();
+    },
+
+    admin: async ({ page, ctx, browser }, use) => {
+        const { adminPage, adminMemberId, closeAdmin } = await setupAdminUser(page, ctx, browser);
+        await use({ page: adminPage, memberId: adminMemberId });
+        await closeAdmin();
     },
 });

@@ -69,6 +69,85 @@ export async function inviteAndAcceptMember(
 }
 
 /**
+ * Set up an admin member in the owner's organization.
+ * Returns the admin's page, their member ID, and a cleanup function.
+ */
+export async function setupAdminUser(
+    ownerPage: Page,
+    ownerCtx: TestContext,
+    browser: Browser
+): Promise<{
+    adminPage: Page;
+    adminMemberId: string;
+    closeAdmin: () => Promise<void>;
+}> {
+    const memberId = Math.floor(Math.random() * 100000);
+    const memberEmail = `admin+${memberId}@admin-perms.test`;
+    const memberName = 'Admin ' + memberId;
+
+    const admin = await registerUser(browser, memberName, memberEmail);
+
+    await ownerPage.goto(PLAYWRIGHT_BASE_URL + '/members');
+    await ownerPage.getByRole('button', { name: 'Invite Member' }).click();
+    await expect(ownerPage.getByPlaceholder('Member Email')).toBeVisible();
+    await ownerPage.getByPlaceholder('Member Email').fill(memberEmail);
+    await ownerPage.getByRole('button', { name: 'Administrator' }).click();
+    await Promise.all([
+        ownerPage.waitForResponse(
+            (response) =>
+                response.url().includes('/invitations') &&
+                response.request().method() === 'POST' &&
+                response.status() === 204
+        ),
+        ownerPage.getByRole('button', { name: 'Invite Member', exact: true }).click(),
+    ]);
+
+    const acceptUrl = await getInvitationAcceptUrl(admin.page.request, memberEmail);
+    await admin.page.goto(acceptUrl);
+    await admin.page.waitForURL(/dashboard/);
+
+    await admin.page.goto(PLAYWRIGHT_BASE_URL + '/dashboard');
+    await expect(admin.page.getByTestId('dashboard_view')).toBeVisible({ timeout: 15000 });
+
+    const orgSwitcherText = await admin.page
+        .getByTestId('organization_switcher')
+        .first()
+        .textContent();
+    if (!orgSwitcherText?.includes("John's Organization")) {
+        const cookies = await admin.page.context().cookies();
+        const xsrfCookie = cookies.find((c) => c.name === 'XSRF-TOKEN');
+        const xsrfToken = xsrfCookie ? decodeURIComponent(xsrfCookie.value) : '';
+
+        await admin.page.request.put(`${PLAYWRIGHT_BASE_URL}/current-team`, {
+            headers: {
+                'X-XSRF-TOKEN': xsrfToken,
+                Accept: 'text/html',
+            },
+            data: { team_id: ownerCtx.orgId },
+        });
+
+        await admin.page.goto(PLAYWRIGHT_BASE_URL + '/dashboard');
+        await expect(admin.page.getByTestId('dashboard_view')).toBeVisible({ timeout: 15000 });
+    }
+
+    const membersResponse = await ownerCtx.request.get(
+        `${PLAYWRIGHT_BASE_URL}/api/v1/organizations/${ownerCtx.orgId}/members`
+    );
+    expect(membersResponse.status()).toBe(200);
+    const membersBody = await membersResponse.json();
+    const adminMember = membersBody.data.find(
+        (m: { role: string; name: string }) => m.role === 'admin' && m.name === memberName
+    );
+    expect(adminMember).toBeTruthy();
+
+    return {
+        adminPage: admin.page,
+        adminMemberId: adminMember.id,
+        closeAdmin: admin.close,
+    };
+}
+
+/**
  * Set up an employee member in the owner's organization.
  * Returns the employee's page, their member ID, and a cleanup function.
  *

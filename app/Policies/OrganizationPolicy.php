@@ -6,6 +6,7 @@ namespace App\Policies;
 
 use App\Models\Organization;
 use App\Models\User;
+use App\Service\PermissionStore;
 use Filament\Facades\Filament;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
@@ -58,7 +59,7 @@ class OrganizationPolicy
             return true;
         }
 
-        return $user->ownsTeam($organization);
+        return app(PermissionStore::class)->userHas($organization, $user, 'organizations:update');
     }
 
     /**

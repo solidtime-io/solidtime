@@ -370,6 +370,40 @@ test('test that format settings persist after page reload', async ({ page }) => 
 });
 
 // =============================================
+// Admin Permission Tests
+// =============================================
+
+test.describe('Admin Organization Settings Access', () => {
+    test('admin can see and edit organization settings', async ({ ctx, admin }) => {
+        await admin.page.goto(PLAYWRIGHT_BASE_URL + '/teams/' + ctx.orgId);
+
+        // Organization Name section is visible
+        await expect(
+            admin.page.getByRole('heading', { name: 'Organization Name', level: 3 })
+        ).toBeVisible({ timeout: 10000 });
+
+        // Editable settings sections should be visible
+        await expect(
+            admin.page.getByRole('heading', { name: 'Billable Rate', level: 3 })
+        ).toBeVisible();
+        await expect(
+            admin.page.getByRole('heading', { name: 'Format Settings', level: 3 })
+        ).toBeVisible();
+        await expect(
+            admin.page.getByRole('heading', { name: 'Organization Settings', level: 3 })
+        ).toBeVisible();
+
+        // Save buttons should be visible (admin can update)
+        await expect(admin.page.getByRole('button', { name: 'Save' }).first()).toBeVisible();
+
+        // Delete organization should NOT be visible (owner only)
+        await expect(
+            admin.page.getByRole('heading', { name: 'Delete Organization' })
+        ).not.toBeVisible();
+    });
+});
+
+// =============================================
 // Employee Permission Tests
 // =============================================
 
