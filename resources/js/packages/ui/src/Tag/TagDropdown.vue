@@ -91,6 +91,7 @@ const showCreateTagModal = ref(false);
 
 <template>
     <TagCreateModal
+        v-if="showCreateTagModal"
         v-model:show="showCreateTagModal"
         :create-tag="createAndAddTag"></TagCreateModal>
     <Dropdown

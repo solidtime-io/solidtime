@@ -228,6 +228,7 @@ async function handleDeleteTimeEntry() {
     </div>
 
     <TimeEntryEditModal
+        v-if="showEditModal"
         v-model:show="showEditModal"
         :time-entry="timeEntry"
         :enable-estimated-time="enableEstimatedTime"

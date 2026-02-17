@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ChevronRightIcon, ChevronDownIcon } from '@heroicons/vue/16/solid';
 import Dropdown from '@/packages/ui/src/Input/Dropdown.vue';
-import { computed, nextTick, ref, watch, watchEffect } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 import ProjectDropdownItem from '@/packages/ui/src/Project/ProjectDropdownItem.vue';
 import type {
     CreateClientBody,
@@ -33,6 +33,7 @@ const searchValue = ref('');
 
 watch(open, (isOpen) => {
     if (isOpen) {
+        updateFilteredResults();
         nextTick(() => {
             initializeHighlightedItem();
             searchInput.value?.focus({ preventScroll: true });
@@ -148,7 +149,7 @@ function addProjectToFilterObject(
     }
 }
 
-watchEffect(() => {
+function updateFilteredResults() {
     const tempFilteredClients: ClientsWithProjectsWithTasks = [];
 
     if (searchValue.value.length === 0) {
@@ -243,6 +244,13 @@ watchEffect(() => {
     });
 
     filteredResults.value = tempFilteredClients;
+}
+
+// Recompute filtered results when search value changes while open
+watch(searchValue, () => {
+    if (open.value) {
+        updateFilteredResults();
+    }
 });
 
 async function addClientIfNoneExists() {
@@ -648,6 +656,7 @@ const showCreateProject = ref(false);
         </template>
     </Dropdown>
     <ProjectCreateModal
+        v-if="showCreateProject"
         v-model:show="showCreateProject"
         :create-client
         :enable-estimated-time="enableEstimatedTime"
