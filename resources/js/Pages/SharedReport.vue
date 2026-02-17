@@ -222,6 +222,7 @@ onMounted(async () => {
                                 :key="entry.description ?? 'none'"
                                 :currency="reportCurrency"
                                 :currency-format="reportCurrencyFormat"
+                                :show-cost="true"
                                 :entry="entry"></ReportingRow>
                             <div
                                 class="contents [&>*]:transition text-text-tertiary [&>*]:h-[50px]">
@@ -239,12 +240,15 @@ onMounted(async () => {
                                 </div>
                                 <div class="justify-end pr-6 flex items-center font-medium">
                                     {{
-                                        formatCents(
-                                            aggregatedTableTimeEntries.cost,
-                                            reportCurrency,
-                                            reportCurrencyFormat,
-                                            reportCurrencySymbol
-                                        )
+                                        aggregatedTableTimeEntries.cost
+                                            ? formatCents(
+                                                  aggregatedTableTimeEntries.cost,
+                                                  reportCurrency,
+                                                  reportCurrencyFormat,
+                                                  reportCurrencySymbol,
+                                                  reportNumberFormat
+                                              )
+                                            : '--'
                                     }}
                                 </div>
                             </div>

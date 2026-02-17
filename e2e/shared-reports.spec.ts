@@ -8,6 +8,7 @@ import {
     createTimeEntryViaApi,
     createTimeEntryWithTagViaApi,
     createBareTimeEntryViaApi,
+    createBillableProjectViaApi,
 } from './utils/api';
 import {
     goToReporting,
@@ -576,4 +577,59 @@ test('test that updating expiration date on already-public report works', async 
     // The returned date should be in the future
     const now = new Date();
     expect(returnedDate.getTime()).toBeGreaterThan(now.getTime());
+});
+
+// ──────────────────────────────────────────────────
+// Shared Report Cost Column Tests
+// ──────────────────────────────────────────────────
+
+test('test that shared report displays cost column correctly aligned with data rows', async ({
+    page,
+    ctx,
+}) => {
+    const projectName = 'BillableProj ' + Math.floor(Math.random() * 10000);
+    const reportName = 'BillableReport ' + Math.floor(Math.random() * 10000);
+
+    const project = await createBillableProjectViaApi(ctx, {
+        name: projectName,
+        billable_rate: 10000, // 100.00 per hour
+    });
+    await createTimeEntryViaApi(ctx, {
+        description: `Entry for ${projectName}`,
+        duration: '1h',
+        projectId: project.id,
+        billable: true,
+    });
+
+    await goToReporting(page);
+    await expect(page.getByTestId('reporting_view').getByText(projectName)).toBeVisible();
+
+    const { shareableLink } = await saveAsSharedReport(page, reportName);
+
+    // Navigate to the shared report
+    await page.goto(shareableLink);
+    await expect(page.getByText('Reporting')).toBeVisible();
+    await expect(page.getByText(projectName)).toBeVisible();
+
+    // Verify the table header has all three columns
+    await expect(page.getByText('Name', { exact: true })).toBeVisible();
+    await expect(page.getByText('Duration', { exact: true })).toBeVisible();
+    await expect(page.getByText('Cost', { exact: true })).toBeVisible();
+
+    // Verify the Total row displays both duration and cost
+    await expect(page.getByText('Total')).toBeVisible();
+
+    // The data rows should render cost values (not just header + duration)
+    // With 1h at 100/h the cost should be displayed somewhere in the table
+    // If showCost is not passed to ReportingRow, only the header "Cost" and
+    // the Total row cost will render, but individual row costs will be missing
+    const table = page.locator('[style*="grid-template-columns"]');
+    // Count elements containing the cost value - header "Cost" + project row cost + total row cost = 3
+    // If broken (showCost not passed), the project row won't render its cost cell
+    await expect(table.getByText(/100/).first()).toBeVisible();
+
+    // Verify the cost value appears at least twice in the table
+    // (once for the data row, once for the total) beyond just the header
+    const costValues = table.getByText(/100/);
+    await expect(costValues).toHaveCount(2);
 });
