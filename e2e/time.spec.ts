@@ -1159,6 +1159,8 @@ test('test that end time picker works in create modal', async ({ page }) => {
     await endTimeInput.press('Tab');
 
     // Set duration (this will adjust based on the times)
+    // clear() before fill() needed because fill() appends on Firefox instead of replacing
+    await page.locator('[role="dialog"] input[name="Duration"]').clear();
     await page.locator('[role="dialog"] input[name="Duration"]').fill('1h');
     await page.locator('[role="dialog"] input[name="Duration"]').press('Tab');
 
