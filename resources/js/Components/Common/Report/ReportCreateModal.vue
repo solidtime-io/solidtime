@@ -6,7 +6,7 @@ import { ref } from 'vue';
 import PrimaryButton from '../../../packages/ui/src/Buttons/PrimaryButton.vue';
 import { Field, FieldLabel } from '@/packages/ui/src/field';
 import type { CreateReportBody, CreateReportBodyProperties } from '@/packages/api/src';
-import { useMutation } from '@tanstack/vue-query';
+import { useMutation, useQueryClient } from '@tanstack/vue-query';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import { api } from '@/packages/api/src';
 import { Checkbox } from '@/packages/ui/src';
@@ -17,6 +17,7 @@ import { router } from '@inertiajs/vue3';
 
 const show = defineModel('show', { default: false });
 const saving = ref(false);
+const queryClient = useQueryClient();
 
 const createReportMutation = useMutation({
     mutationFn: async (report: CreateReportBody) => {
@@ -28,6 +29,11 @@ const createReportMutation = useMutation({
             params: {
                 organization: organizationId,
             },
+        });
+    },
+    onSuccess: () => {
+        queryClient.invalidateQueries({
+            queryKey: ['reports'],
         });
     },
 });
