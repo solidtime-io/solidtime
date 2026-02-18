@@ -52,6 +52,38 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
         $response->assertStatus(200);
     }
 
+    public function test_index_returns_members_ordered_by_created_at_descending(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'members:view',
+        ]);
+        $memberOldest = Member::factory()->forOrganization($data->organization)->create([
+            'created_at' => now()->subDays(3),
+        ]);
+        $memberNewest = Member::factory()->forOrganization($data->organization)->create([
+            'created_at' => now()->subDay(),
+        ]);
+        $memberMiddle = Member::factory()->forOrganization($data->organization)->create([
+            'created_at' => now()->subDays(2),
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.members.index', $data->organization->getKey()));
+
+        // Assert
+        $response->assertStatus(200);
+        $ids = collect($response->json('data'))->pluck('id')->values()->toArray();
+        // Verify that the three explicitly created members appear in newest-first order
+        $createdMemberIds = array_values(array_filter($ids, fn ($id) => in_array($id, [
+            $memberOldest->getKey(),
+            $memberNewest->getKey(),
+            $memberMiddle->getKey(),
+        ], true)));
+        $this->assertSame([$memberNewest->getKey(), $memberMiddle->getKey(), $memberOldest->getKey()], $createdMemberIds);
+    }
+
     public function test_update_member_fails_if_user_has_no_permission_to_update_members(): void
     {
         // Arrange

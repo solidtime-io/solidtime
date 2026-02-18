@@ -55,6 +55,32 @@ class InvitationEndpointTest extends ApiEndpointTestAbstract
         ]);
     }
 
+    public function test_index_returns_invitations_ordered_by_created_at_descending(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'invitations:view',
+        ]);
+        $invitationOldest = OrganizationInvitation::factory()->forOrganization($data->organization)->create([
+            'created_at' => now()->subDays(3),
+        ]);
+        $invitationNewest = OrganizationInvitation::factory()->forOrganization($data->organization)->create([
+            'created_at' => now()->subDay(),
+        ]);
+        $invitationMiddle = OrganizationInvitation::factory()->forOrganization($data->organization)->create([
+            'created_at' => now()->subDays(2),
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.invitations.index', $data->organization->getKey()));
+
+        // Assert
+        $response->assertStatus(200);
+        $ids = collect($response->json('data'))->pluck('id')->values()->toArray();
+        $this->assertSame([$invitationNewest->getKey(), $invitationMiddle->getKey(), $invitationOldest->getKey()], $ids);
+    }
+
     public function test_store_fails_if_user_has_no_permission_to_create_invitations(): void
     {
         // Arrange

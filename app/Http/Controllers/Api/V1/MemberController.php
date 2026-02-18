@@ -60,6 +60,7 @@ class MemberController extends Controller
         $members = Member::query()
             ->whereBelongsTo($organization, 'organization')
             ->with(['user'])
+            ->orderBy('created_at', 'desc')
             ->paginate(config('app.pagination_per_page_default'));
 
         return MemberCollection::make($members);

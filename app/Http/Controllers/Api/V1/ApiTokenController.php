@@ -35,6 +35,7 @@ class ApiTokenController extends Controller
                 /** @var Builder<Client> $query */
                 $query->whereJsonContains('grant_types', 'personal_access');
             })
+            ->orderBy('created_at', 'desc')
             ->get();
 
         return new ApiTokenCollection($tokens);

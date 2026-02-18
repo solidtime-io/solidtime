@@ -54,6 +54,33 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
         $response->assertJsonCount(4, 'data');
     }
 
+    public function test_index_endpoint_returns_projects_ordered_by_created_at_descending(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'projects:view',
+            'projects:view:all',
+        ]);
+        $projectOldest = Project::factory()->forOrganization($data->organization)->create([
+            'created_at' => now()->subDays(3),
+        ]);
+        $projectNewest = Project::factory()->forOrganization($data->organization)->create([
+            'created_at' => now()->subDay(),
+        ]);
+        $projectMiddle = Project::factory()->forOrganization($data->organization)->create([
+            'created_at' => now()->subDays(2),
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.projects.index', [$data->organization->getKey()]));
+
+        // Assert
+        $response->assertStatus(200);
+        $ids = collect($response->json('data'))->pluck('id')->values()->toArray();
+        $this->assertSame([$projectNewest->getKey(), $projectMiddle->getKey(), $projectOldest->getKey()], $ids);
+    }
+
     public function test_index_endpoint_without_filter_archived_returns_only_non_archived_projects(): void
     {
         // Arrange
@@ -211,10 +238,10 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
             ->has('data')
             ->has('links')
             ->has('meta')
-            ->where('data.0.billable_rate', 112)
-            ->where('data.1.billable_rate', 112)
-            ->where('data.2.billable_rate', 113)
-            ->where('data.3.billable_rate', 113)
+            ->where('data.0.billable_rate', 113)
+            ->where('data.1.billable_rate', 113)
+            ->where('data.2.billable_rate', 112)
+            ->where('data.3.billable_rate', 112)
         );
     }
 

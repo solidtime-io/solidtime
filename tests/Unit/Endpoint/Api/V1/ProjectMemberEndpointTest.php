@@ -80,6 +80,36 @@ class ProjectMemberEndpointTest extends ApiEndpointTestAbstract
         $response->assertJsonCount(4, 'data');
     }
 
+    public function test_index_endpoint_returns_project_members_ordered_by_created_at_descending(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'project-members:view',
+        ]);
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        $pmOldest = ProjectMember::factory()->forProject($project)->create([
+            'created_at' => now()->subDays(3),
+        ]);
+        $pmNewest = ProjectMember::factory()->forProject($project)->create([
+            'created_at' => now()->subDay(),
+        ]);
+        $pmMiddle = ProjectMember::factory()->forProject($project)->create([
+            'created_at' => now()->subDays(2),
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.project-members.index', [
+            $data->organization->getKey(),
+            $project->getKey(),
+        ]));
+
+        // Assert
+        $response->assertStatus(200);
+        $ids = collect($response->json('data'))->pluck('id')->values()->toArray();
+        $this->assertSame([$pmNewest->getKey(), $pmMiddle->getKey(), $pmOldest->getKey()], $ids);
+    }
+
     public function test_store_endpoint_fails_if_user_has_no_permission_to_add_members_to_project(): void
     {
         // Arrange

@@ -46,6 +46,31 @@ class ApiTokenEndpointTest extends ApiEndpointTestAbstract
         ]);
     }
 
+    public function test_index_endpoint_returns_api_tokens_ordered_by_created_at_descending(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([]);
+        $personalAccessClient = $this->createPersonalAccessClient();
+        $tokenOldest = Token::factory()->forUser($data->user)->forClient($personalAccessClient)->create([
+            'created_at' => now()->subDays(3),
+        ]);
+        $tokenNewest = Token::factory()->forUser($data->user)->forClient($personalAccessClient)->create([
+            'created_at' => now()->subDay(),
+        ]);
+        $tokenMiddle = Token::factory()->forUser($data->user)->forClient($personalAccessClient)->create([
+            'created_at' => now()->subDays(2),
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.api-tokens.index'));
+
+        // Assert
+        $this->assertResponseCode($response, 200);
+        $ids = collect($response->json('data'))->pluck('id')->values()->toArray();
+        $this->assertSame([$tokenNewest->id, $tokenMiddle->id, $tokenOldest->id], $ids);
+    }
+
     public function test_store_endpoint_creates_new_api_token(): void
     {
         // Arrange

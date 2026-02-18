@@ -78,6 +78,33 @@ class TaskEndpointTest extends ApiEndpointTestAbstract
         $response->assertJsonCount(4, 'data');
     }
 
+    public function test_index_endpoint_returns_tasks_ordered_by_created_at_descending(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'tasks:view',
+            'tasks:view:all',
+        ]);
+        $taskOldest = Task::factory()->forOrganization($data->organization)->create([
+            'created_at' => now()->subDays(3),
+        ]);
+        $taskNewest = Task::factory()->forOrganization($data->organization)->create([
+            'created_at' => now()->subDay(),
+        ]);
+        $taskMiddle = Task::factory()->forOrganization($data->organization)->create([
+            'created_at' => now()->subDays(2),
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.tasks.index', [$data->organization->getKey(), 'done' => 'all']));
+
+        // Assert
+        $response->assertStatus(200);
+        $ids = collect($response->json('data'))->pluck('id')->values()->toArray();
+        $this->assertSame([$taskNewest->getKey(), $taskMiddle->getKey(), $taskOldest->getKey()], $ids);
+    }
+
     public function test_index_endpoint_without_filter_done_returns_list_of_all_tasks_of_organization(): void
     {
         // Arrange
