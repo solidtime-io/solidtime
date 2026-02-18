@@ -7,7 +7,7 @@ export function useTimeEntriesReportQuery(
     filterParams: Ref<Record<string, unknown>> | ComputedRef<Record<string, unknown>>
 ) {
     return useQuery<TimeEntryResponse>({
-        queryKey: computed(() => ['timeEntries', 'detailed-report', unref(filterParams)]),
+        queryKey: computed(() => ['timeEntries', 'detailed-report', getCurrentOrganizationId(), unref(filterParams)]),
         enabled: computed(() => !!getCurrentOrganizationId()),
         queryFn: () =>
             api.getTimeEntries({

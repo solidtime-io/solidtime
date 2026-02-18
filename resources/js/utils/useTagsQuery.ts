@@ -8,7 +8,7 @@ export function useTagsQuery() {
     const queryClient = useQueryClient();
 
     const query = useQuery({
-        queryKey: ['tags'],
+        queryKey: computed(() => ['tags', getCurrentOrganizationId()]),
         queryFn: async () => {
             const organizationId = getCurrentOrganizationId();
             if (!organizationId) throw new Error('No organization');

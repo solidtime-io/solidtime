@@ -37,7 +37,7 @@ const pageLimit = 15;
 const currentPage = ref(1);
 
 const { data: reportsResponse } = useQuery<ReportIndexResponse>({
-    queryKey: ['reports', currentPage],
+    queryKey: computed(() => ['reports', getCurrentOrganizationId(), currentPage.value]),
     enabled: !!getCurrentOrganizationId(),
     queryFn: () =>
         api.getReports({

@@ -151,7 +151,7 @@ function prefetchProjects(queryClient: QueryClient) {
     if (!organizationId) return;
 
     queryClient.prefetchQuery({
-        queryKey: ['projects'],
+        queryKey: ['projects', organizationId],
         queryFn: () =>
             api.getProjects({
                 params: { organization: organizationId },
@@ -166,7 +166,7 @@ function prefetchTasks(queryClient: QueryClient) {
     if (!organizationId) return;
 
     queryClient.prefetchQuery({
-        queryKey: ['tasks'],
+        queryKey: ['tasks', organizationId],
         queryFn: () =>
             api.getTasks({
                 params: { organization: organizationId },
@@ -181,7 +181,7 @@ function prefetchTags(queryClient: QueryClient) {
     if (!organizationId) return;
 
     queryClient.prefetchQuery({
-        queryKey: ['tags'],
+        queryKey: ['tags', organizationId],
         queryFn: () =>
             api.getTags({
                 params: { organization: organizationId },
@@ -195,7 +195,7 @@ function prefetchClients(queryClient: QueryClient) {
     if (!organizationId || !canViewClients()) return;
 
     queryClient.prefetchQuery({
-        queryKey: ['clients'],
+        queryKey: ['clients', organizationId],
         queryFn: () =>
             api.getClients({
                 params: { organization: organizationId },
@@ -210,7 +210,7 @@ function prefetchMembers(queryClient: QueryClient) {
     if (!organizationId || !canViewMembers()) return;
 
     queryClient.prefetchQuery({
-        queryKey: ['members'],
+        queryKey: ['members', organizationId],
         queryFn: () =>
             api.getMembers({
                 params: { organization: organizationId },
@@ -224,7 +224,7 @@ function prefetchReports(queryClient: QueryClient) {
     if (!organizationId) return;
 
     queryClient.prefetchQuery({
-        queryKey: ['reports', 1],
+        queryKey: ['reports', organizationId],
         queryFn: () =>
             api.getReports({
                 params: { organization: organizationId },
@@ -276,7 +276,7 @@ function prefetchProjectMembers(queryClient: QueryClient, projectId: string) {
     if (!organizationId || !canViewMembers()) return;
 
     queryClient.prefetchQuery({
-        queryKey: ['projectMembers', projectId],
+        queryKey: ['projectMembers', organizationId, projectId],
         queryFn: () =>
             api.getProjectMembers({
                 params: { organization: organizationId, project: projectId },

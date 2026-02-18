@@ -8,7 +8,7 @@ export function useTasksQuery() {
     const queryClient = useQueryClient();
 
     const query = useQuery({
-        queryKey: ['tasks'],
+        queryKey: computed(() => ['tasks', getCurrentOrganizationId()]),
         queryFn: async () => {
             const organizationId = getCurrentOrganizationId();
             if (!organizationId) throw new Error('No organization');

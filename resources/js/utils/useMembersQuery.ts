@@ -8,7 +8,7 @@ export function useMembersQuery() {
     const queryClient = useQueryClient();
 
     const query = useQuery({
-        queryKey: ['members'],
+        queryKey: computed(() => ['members', getCurrentOrganizationId()]),
         queryFn: async () => {
             const organizationId = getCurrentOrganizationId();
             if (!organizationId) throw new Error('No organization');
