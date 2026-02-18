@@ -4,11 +4,17 @@ import { FolderPlusIcon } from '@heroicons/vue/24/solid';
 import { PlusIcon } from '@heroicons/vue/16/solid';
 import { computed, ref } from 'vue';
 import ProjectCreateModal from '@/packages/ui/src/Project/ProjectCreateModal.vue';
-import ProjectTableHeading, {
-    type SortColumn,
-    type SortDirection,
-} from '@/Components/Common/Project/ProjectTableHeading.vue';
+import ProjectTableHeading from '@/Components/Common/Project/ProjectTableHeading.vue';
 import ProjectTableRow from '@/Components/Common/Project/ProjectTableRow.vue';
+
+export type SortColumn =
+    | 'name'
+    | 'client_name'
+    | 'spent_time'
+    | 'progress'
+    | 'billable_rate'
+    | 'status';
+export type SortDirection = 'asc' | 'desc';
 import { canCreateProjects } from '@/utils/permissions';
 import type { CreateProjectBody, Project, Client, CreateClientBody } from '@/packages/api/src';
 import { useProjectsStore } from '@/utils/useProjects';
@@ -31,7 +37,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-    sort: [column: SortColumn];
+    sort: [column: SortColumn, direction: SortDirection];
 }>();
 
 const { clients } = useClientsQuery();
@@ -45,7 +51,7 @@ const clientNameMap = computed(() => {
     return map;
 });
 
-// Convert our sort state to TanStack Table format
+// Convert sort props to TanStack Table format
 const sorting = computed<SortingState>(() => [
     {
         id: props.sortColumn,
@@ -53,7 +59,9 @@ const sorting = computed<SortingState>(() => [
     },
 ]);
 
-// Define column accessors for sorting
+// Define column accessors for sorting.
+// Numeric columns use sortDescFirst so that the first click (chevron down) sorts highest-first,
+// while text columns default to ascending (A-Z) on first click (chevron down).
 const columns = [
     {
         id: 'name',
@@ -61,17 +69,29 @@ const columns = [
     },
     {
         id: 'client_name',
+        sortUndefined: 'last' as const,
         accessorFn: (row: Project) => {
-            if (!row.client_id) return '';
+            if (!row.client_id) return undefined;
             return (clientNameMap.value.get(row.client_id) ?? '').toLowerCase();
         },
     },
     {
         id: 'spent_time',
+        sortDescFirst: true,
         accessorFn: (row: Project) => row.spent_time ?? 0,
     },
     {
+        id: 'progress',
+        sortDescFirst: true,
+        sortUndefined: 'last' as const,
+        accessorFn: (row: Project) => {
+            if (!row.estimated_time) return undefined;
+            return (row.spent_time / row.estimated_time) * 100;
+        },
+    },
+    {
         id: 'billable_rate',
+        sortDescFirst: true,
         accessorFn: (row: Project) => row.billable_rate ?? 0,
     },
     {
@@ -79,6 +99,19 @@ const columns = [
         accessorFn: (row: Project) => (row.is_archived ? 1 : 0),
     },
 ];
+
+// Columns with sortDescFirst get desc as default direction on first click.
+const descFirstColumns = new Set<SortColumn>(
+    columns.filter((c) => c.sortDescFirst).map((c) => c.id as SortColumn)
+);
+
+function handleSort(column: SortColumn) {
+    if (props.sortColumn === column) {
+        emit('sort', column, props.sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+        emit('sort', column, descFirstColumns.has(column) ? 'desc' : 'asc');
+    }
+}
 
 const table = useVueTable({
     get data() {
@@ -98,10 +131,6 @@ const table = useVueTable({
 const sortedProjects = computed(() => {
     return table.getRowModel().rows.map((row) => row.original);
 });
-
-function handleSort(column: SortColumn) {
-    emit('sort', column);
-}
 
 const showCreateProjectModal = ref(false);
 
@@ -133,6 +162,7 @@ const gridTemplate = computed(() => {
                     :show-billable-rate="props.showBillableRate"
                     :sort-column="props.sortColumn"
                     :sort-direction="props.sortDirection"
+                    :desc-first-columns="descFirstColumns"
                     @sort="handleSort"></ProjectTableHeading>
                 <div v-if="sortedProjects.length === 0" class="col-span-5 py-24 text-center">
                     <FolderPlusIcon class="w-8 text-icon-default inline pb-2"></FolderPlusIcon>

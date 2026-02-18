@@ -12,7 +12,11 @@ export function useProjectMembersQuery(projectId: Ref<string | null> | string) {
     });
 
     const query = useQuery({
-        queryKey: computed(() => ['projectMembers', getCurrentOrganizationId(), projectIdValue.value]),
+        queryKey: computed(() => [
+            'projectMembers',
+            getCurrentOrganizationId(),
+            projectIdValue.value,
+        ]),
         queryFn: async () => {
             const organizationId = getCurrentOrganizationId();
             const pid = projectIdValue.value;

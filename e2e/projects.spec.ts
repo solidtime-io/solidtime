@@ -3,11 +3,13 @@ import type { Page } from '@playwright/test';
 import { PLAYWRIGHT_BASE_URL } from '../playwright/config';
 import { test } from '../playwright/fixtures';
 import { formatCentsWithOrganizationDefaults } from './utils/money';
-import type { CurrencyFormat } from '../resources/js/packages/ui/src/utils/money';
 import {
     createProjectViaApi,
     createPublicProjectViaApi,
     createTaskViaApi,
+    createClientViaApi,
+    createTimeEntryViaApi,
+    archiveProjectViaApi,
     updateOrganizationSettingViaApi,
 } from './utils/api';
 
@@ -335,61 +337,179 @@ test('test that editing an existing billable project with default rate loads cor
 });
 
 // Sorting tests
-test('test that sorting projects by name works', async ({ page }) => {
+test('test that sorting projects by all columns works', async ({ page, ctx }) => {
+    // Seed projects with distinct values for each sortable column
+    const clientAlpha = await createClientViaApi(ctx, { name: 'Alpha Client' });
+    const clientBeta = await createClientViaApi(ctx, { name: 'Beta Client' });
+
+    // Project A: client Alpha, low billable rate, has estimated time, active
+    const projectA = await createProjectViaApi(ctx, {
+        name: 'AAA Project',
+        client_id: clientAlpha.id,
+        is_billable: true,
+        billable_rate: 5000,
+        estimated_time: 36000, // 10h
+    });
+    // Add 1h of time entries (10% progress)
+    await createTimeEntryViaApi(ctx, {
+        duration: '1h',
+        projectId: projectA.id,
+    });
+
+    // Project B: client Beta, high billable rate, has estimated time, archived
+    const projectB = await createProjectViaApi(ctx, {
+        name: 'BBB Project',
+        client_id: clientBeta.id,
+        is_billable: true,
+        billable_rate: 15000,
+        estimated_time: 7200, // 2h
+    });
+    // Add 1h of time entries (50% progress)
+    await createTimeEntryViaApi(ctx, {
+        duration: '1h',
+        projectId: projectB.id,
+    });
+    await archiveProjectViaApi(ctx, {
+        ...projectB,
+        client_id: clientBeta.id,
+        billable_rate: 15000,
+        estimated_time: 7200,
+    });
+
+    // Project C: no client, medium billable rate, no estimated time, active
+    const projectC = await createProjectViaApi(ctx, {
+        name: 'CCC Project',
+        is_billable: true,
+        billable_rate: 10000,
+    });
+    // Add 3h of time entries
+    await createTimeEntryViaApi(ctx, {
+        duration: '3h',
+        projectId: projectC.id,
+    });
+
     await goToProjectsOverview(page);
     await clearProjectTableState(page);
     await page.reload();
-
-    // Wait for the table to load
     await expect(page.getByTestId('project_table')).toBeVisible();
+    await expect(page.getByText('AAA Project')).toBeVisible();
+    await expect(page.getByText('BBB Project')).toBeVisible();
+    await expect(page.getByText('CCC Project')).toBeVisible();
 
-    // Get initial project names
-    const getProjectNames = async () => {
-        const rows = page
-            .getByTestId('project_table')
-            .locator('[data-testid="project_table"] > div')
-            .filter({ hasNot: page.locator('.border-t') });
-        const names: string[] = [];
-        const count = await page.getByTestId('project_table').getByRole('row').count();
-        for (let i = 0; i < count; i++) {
-            const row = page.getByTestId('project_table').getByRole('row').nth(i);
-            const nameCell = row.locator('div').first();
-            const text = await nameCell.textContent();
-            if (text) {
-                names.push(text.trim());
-            }
+    // Helper to get the visual order of our seeded projects by reading
+    // all row text in a single evaluate call (avoids locator timing issues)
+    const seededNames = ['AAA Project', 'BBB Project', 'CCC Project'];
+    const getOrder = async (): Promise<string[]> => {
+        const allRowTexts = await page.evaluate(() => {
+            const table = document.querySelector('[data-testid="project_table"]');
+            if (!table) return [];
+            const rows = table.querySelectorAll('[role="row"]');
+            return Array.from(rows).map((row) => row.textContent ?? '');
+        });
+        const order: string[] = [];
+        for (const text of allRowTexts) {
+            const match = seededNames.find((name) => text.includes(name));
+            if (match) order.push(match);
         }
-        return names;
+        return order;
     };
 
-    // Click on Name header to sort ascending (default should already be ascending)
-    const nameHeader = page.getByText('Name').first();
-    await nameHeader.click();
+    // Helper: click a column header and wait for sort to apply.
+    // expectedFirstAmongSeeded = which of our 3 seeded projects should appear first
+    const clickSortHeader = async (headerText: string, expectedFirstAmongSeeded: string) => {
+        const header = page
+            .locator('[data-testid="project_table"] .select-none', {
+                hasText: headerText,
+            })
+            .first();
+        await header.click();
+        // Wait until the expected project appears before the others among our seeded set
+        await page.waitForFunction(
+            ({ expected, names }) => {
+                const table = document.querySelector('[data-testid="project_table"]');
+                if (!table) return false;
+                const rows = table.querySelectorAll('[role="row"]');
+                let firstSeededIdx = -1;
+                for (let i = 0; i < rows.length; i++) {
+                    const text = rows[i].textContent ?? '';
+                    if (names.some((n: string) => text.includes(n))) {
+                        firstSeededIdx = i;
+                        break;
+                    }
+                }
+                if (firstSeededIdx === -1) return false;
+                return (rows[firstSeededIdx].textContent ?? '').includes(expected);
+            },
+            { expected: expectedFirstAmongSeeded, names: seededNames },
+            { timeout: 5000 }
+        );
+    };
 
-    // Wait for sort indicator to appear
-    await expect(nameHeader.locator('svg')).toBeVisible();
+    // --- Sort by Name ---
+    // Default is name asc (A-Z)
+    let order = await getOrder();
+    expect(order).toEqual(['AAA Project', 'BBB Project', 'CCC Project']);
 
-    // Click again to sort descending
-    await nameHeader.click();
+    // Click to toggle to Z-A
+    await clickSortHeader('Name', 'CCC Project');
+    order = await getOrder();
+    expect(order).toEqual(['CCC Project', 'BBB Project', 'AAA Project']);
 
-    // Verify the sort indicator is still visible (showing descending)
-    await expect(nameHeader.locator('svg')).toBeVisible();
-});
+    // --- Sort by Client (text: first click = A-Z, no-client last) ---
+    await clickSortHeader('Client', 'AAA Project');
+    order = await getOrder();
+    expect(order).toEqual(['AAA Project', 'BBB Project', 'CCC Project']); // Alpha, Beta, No client
 
-test('test that sorting projects by status works', async ({ page }) => {
-    await goToProjectsOverview(page);
-    await clearProjectTableState(page);
-    await page.reload();
+    // Reverse: Z-A, no-client still last
+    await clickSortHeader('Client', 'BBB Project');
+    order = await getOrder();
+    expect(order).toEqual(['BBB Project', 'AAA Project', 'CCC Project']); // Beta, Alpha, No client
 
-    // Default is "all" so no filter needed - Wait for the table to load
-    await expect(page.getByTestId('project_table')).toBeVisible();
+    // --- Sort by Total Time (numeric: first click = highest first) ---
+    await clickSortHeader('Total Time', 'CCC Project');
+    order = await getOrder();
+    expect(order[0]).toBe('CCC Project'); // C=3h first, A and B tied at 1h
 
-    // Click on Status header to sort
-    const statusHeader = page.getByText('Status').first();
-    await statusHeader.click();
+    // Reverse: lowest first
+    await clickSortHeader('Total Time', 'AAA Project');
+    order = await getOrder();
+    expect(order[2]).toBe('CCC Project'); // C=3h last
 
-    // Sort indicator should be visible
-    await expect(statusHeader.locator('svg')).toBeVisible();
+    // --- Sort by Billable Rate (numeric: first click = highest first) ---
+    await clickSortHeader('Billable Rate', 'BBB Project');
+    order = await getOrder();
+    expect(order).toEqual(['BBB Project', 'CCC Project', 'AAA Project']); // 15000, 10000, 5000
+
+    // Reverse: lowest first
+    await clickSortHeader('Billable Rate', 'AAA Project');
+    order = await getOrder();
+    expect(order).toEqual(['AAA Project', 'CCC Project', 'BBB Project']); // 5000, 10000, 15000
+
+    // --- Sort by Progress (numeric: first click = highest first, no-estimate last) ---
+    await clickSortHeader('Progress', 'BBB Project');
+    order = await getOrder();
+    expect(order).toEqual(['BBB Project', 'AAA Project', 'CCC Project']); // 50%, 10%, no estimate
+
+    // Reverse: lowest first, no-estimate still last
+    await clickSortHeader('Progress', 'AAA Project');
+    order = await getOrder();
+    expect(order).toEqual(['AAA Project', 'BBB Project', 'CCC Project']); // 10%, 50%, no estimate
+
+    // --- Sort by Status (first click = active first, archived last) ---
+    await expect(async () => {
+        await clickSortHeader('Status', 'AAA Project');
+        order = await getOrder();
+        expect(order.indexOf('BBB Project')).toBeGreaterThan(order.indexOf('AAA Project'));
+        expect(order.indexOf('BBB Project')).toBeGreaterThan(order.indexOf('CCC Project'));
+    }).toPass({ timeout: 5000 });
+
+    // Reverse: archived first
+    await expect(async () => {
+        await clickSortHeader('Status', 'BBB Project');
+        order = await getOrder();
+        expect(order.indexOf('BBB Project')).toBeLessThan(order.indexOf('AAA Project'));
+        expect(order.indexOf('BBB Project')).toBeLessThan(order.indexOf('CCC Project'));
+    }).toPass({ timeout: 5000 });
 });
 
 // Filter tests
@@ -641,22 +761,6 @@ test('test that estimated time input displays formatted value after blur', async
     // 1:30 should be displayed as "1h 30min"
     await expect(estimatedTimeInput).toHaveValue(/1h.*30/);
 });
-
-// Create new project with new Client
-
-// Create new project with existing Client
-
-// Delete project via More Options
-
-// Test that project task count is displayed correctly
-
-// Edit Project Modal Test
-
-// Add Project with billable rate
-
-// Edit Project with billable rate
-
-// Edit Project Member Billable Rate
 
 test('test that editing a task name on the project detail page works', async ({ page, ctx }) => {
     const projectName = 'Task Edit Project ' + Math.floor(1 + Math.random() * 10000);

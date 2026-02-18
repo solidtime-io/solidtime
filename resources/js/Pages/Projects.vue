@@ -4,10 +4,6 @@ import AppLayout from '@/Layouts/AppLayout.vue';
 import { FolderIcon, PlusIcon } from '@heroicons/vue/20/solid';
 import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
 import ProjectTable from '@/Components/Common/Project/ProjectTable.vue';
-import type {
-    SortColumn,
-    SortDirection,
-} from '@/Components/Common/Project/ProjectTableHeading.vue';
 import { computed } from 'vue';
 import { useProjectsQuery } from '@/utils/useProjectsQuery';
 import { useProjectsStore } from '@/utils/useProjects';
@@ -26,6 +22,7 @@ import ProjectsFilterDropdown from '@/Components/Common/Project/ProjectsFilterDr
 import ProjectStatusFilterBadge from '@/Components/Common/Project/ProjectStatusFilterBadge.vue';
 import ProjectClientFilterBadge from '@/Components/Common/Project/ProjectClientFilterBadge.vue';
 import { NO_CLIENT_ID } from '@/Components/Common/Project/constants';
+import type { SortColumn, SortDirection } from '@/Components/Common/Project/ProjectTable.vue';
 
 // Fetch data using TanStack Query
 const { projects } = useProjectsQuery();
@@ -56,14 +53,9 @@ const tableState = useStorage<ProjectTableState>(
     { mergeDefaults: true }
 );
 
-// Handle sorting - toggle direction if same column, otherwise set new column with asc
-function handleSort(column: SortColumn) {
-    if (tableState.value.sortColumn === column) {
-        tableState.value.sortDirection = tableState.value.sortDirection === 'asc' ? 'desc' : 'asc';
-    } else {
-        tableState.value.sortColumn = column;
-        tableState.value.sortDirection = 'asc';
-    }
+function handleSort(column: SortColumn, direction: SortDirection) {
+    tableState.value.sortColumn = column;
+    tableState.value.sortDirection = direction;
 }
 
 // Filter projects based on current filters
@@ -155,9 +147,7 @@ const showBillableRate = computed(() => {
                     data-testid="status-filter-badge"
                     :value="tableState.filters.status"
                     @remove="removeStatusFilter"
-                    @update:value="
-                        tableState.filters.status = $event as 'active' | 'archived' | 'all'
-                    " />
+                    @update:value="tableState.filters.status = $event as 'active' | 'archived' | 'all'" />
 
                 <ProjectClientFilterBadge
                     v-if="tableState.filters.clientIds.length > 0"

@@ -40,6 +40,10 @@ Route::middleware([
         return Inertia::render('Calendar');
     })->name('calendar');
 
+    Route::get('/timesheet', function () {
+        return Inertia::render('Timesheet');
+    })->name('timesheet');
+
     Route::get('/reporting', function () {
         return Inertia::render('Reporting');
     })->name('reporting');

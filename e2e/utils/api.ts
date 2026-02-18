@@ -201,6 +201,37 @@ export async function createProjectViaApi(
     return body.data as { id: string; name: string; color: string; is_billable: boolean };
 }
 
+export async function archiveProjectViaApi(
+    ctx: TestContext,
+    project: {
+        id: string;
+        name: string;
+        color: string;
+        is_billable: boolean;
+        client_id?: string | null;
+        billable_rate?: number | null;
+        estimated_time?: number | null;
+    }
+) {
+    const response = await ctx.request.put(
+        `${PLAYWRIGHT_BASE_URL}/api/v1/organizations/${ctx.orgId}/projects/${project.id}`,
+        {
+            data: {
+                name: project.name,
+                color: project.color,
+                is_billable: project.is_billable,
+                is_archived: true,
+                client_id: project.client_id ?? null,
+                billable_rate: project.billable_rate ?? null,
+                estimated_time: project.estimated_time ?? null,
+            },
+        }
+    );
+    expect(response.status()).toBe(200);
+    const body = await response.json();
+    return body.data;
+}
+
 export async function createBillableProjectViaApi(
     ctx: TestContext,
     data: { name: string; billable_rate?: number | null }
