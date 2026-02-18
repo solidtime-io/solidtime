@@ -9,6 +9,7 @@ import {
     createPlaceholderMemberViaImportApi,
     getMembersViaApi,
     updateMemberBillableRateViaApi,
+    updateOrganizationSettingViaApi,
 } from './utils/api';
 import { getTableRowNames } from './utils/table';
 
@@ -84,8 +85,8 @@ test('test that organization billable rate can be updated with all existing time
     const newBillableRate = Math.round(Math.random() * 10000);
     await page.getByRole('row').first().getByRole('button').click();
     await page.getByRole('menuitem').getByText('Edit').click();
-    await page.getByText('Organization Default Rate').click();
-    await page.getByText('Custom Rate').click();
+    await page.getByRole('combobox').last().click();
+    await page.getByRole('option', { name: 'Custom Rate' }).click();
     await page.getByPlaceholder('Billable Rate').fill(newBillableRate.toString());
     await page.getByRole('button', { name: 'Update Member' }).click();
 
@@ -105,6 +106,136 @@ test('test that organization billable rate can be updated with all existing time
                 (await response.json()).data.billable_rate === newBillableRate * 100
         ),
     ]);
+});
+
+test('test that switching member billable rate from custom back to default rate works', async ({
+    page,
+    ctx,
+}) => {
+    // Set a known org billable rate
+    await updateOrganizationSettingViaApi(ctx, { billable_rate: 12000 });
+
+    // Create a placeholder member with a custom billable rate
+    await createPlaceholderMemberViaImportApi(ctx, 'CustomToDefault Member');
+    const members = await getMembersViaApi(ctx);
+    const member = members.find((m) => m.name === 'CustomToDefault Member');
+    expect(member).toBeDefined();
+    await updateMemberBillableRateViaApi(ctx, member!.id, 25000);
+
+    await goToMembersPage(page);
+    const memberRow = page.getByRole('row').filter({ hasText: 'CustomToDefault Member' });
+    await expect(memberRow).toBeVisible();
+
+    // Open edit modal
+    await memberRow.getByRole('button').click();
+    await page.getByRole('menuitem').getByText('Edit').click();
+    await expect(page.getByRole('heading', { name: 'Update Member' })).toBeVisible();
+
+    // Verify it starts on Custom Rate
+    const billableCombobox = page.getByRole('dialog').getByRole('combobox').last();
+    await expect(billableCombobox).toContainText('Custom Rate');
+
+    // Switch to Default Rate
+    await billableCombobox.click();
+    await page.getByRole('option', { name: 'Default Rate' }).click();
+    await expect(billableCombobox).toContainText('Default Rate');
+
+    // Verify the billable rate input is disabled
+    await expect(page.getByPlaceholder('Billable Rate')).toBeDisabled();
+
+    // Submit — billable_rate changes from 25000 to null, so confirmation dialog appears
+    await page.getByRole('button', { name: 'Update Member' }).click();
+    await expect(page.getByRole('heading', { name: 'Update Member Billable Rate' })).toBeVisible();
+    await expect(page.getByText('the default rate of the organization')).toBeVisible();
+
+    // Confirm the update
+    await Promise.all([
+        page.getByRole('button', { name: 'Yes, update existing time' }).click(),
+        page.waitForRequest(
+            (request) =>
+                request.url().includes('/members/') &&
+                request.method() === 'PUT' &&
+                request.postDataJSON().billable_rate === null
+        ),
+    ]);
+
+    // Verify both dialogs are closed
+    await expect(page.getByRole('dialog')).not.toBeVisible();
+});
+
+test('test that default rate shows disabled input with organization billable rate', async ({
+    page,
+    ctx,
+}) => {
+    // Set a known org billable rate (150.00)
+    await updateOrganizationSettingViaApi(ctx, { billable_rate: 15000 });
+
+    await goToMembersPage(page);
+
+    // Open edit modal for the owner (who uses default rate by default)
+    await page.getByRole('row').first().getByRole('button').click();
+    await page.getByRole('menuitem').getByText('Edit').click();
+    await expect(page.getByRole('heading', { name: 'Update Member' })).toBeVisible();
+
+    // Verify it's on Default Rate
+    const billableCombobox = page.getByRole('dialog').getByRole('combobox').last();
+    await expect(billableCombobox).toContainText('Default Rate');
+
+    // Verify the input is disabled and shows the org rate (formatted with currency)
+    const billableInput = page.getByPlaceholder('Billable Rate');
+    await expect(billableInput).toBeDisabled();
+    await expect(billableInput).toHaveAttribute('aria-valuenow', '150');
+
+    // Close the dialog
+    await page.getByRole('button', { name: 'Cancel' }).click();
+    await expect(page.getByRole('dialog')).not.toBeVisible();
+});
+
+test('test that cancelling the billable rate confirmation dialog does not update the member', async ({
+    page,
+    ctx,
+}) => {
+    // Create a placeholder member with a custom billable rate
+    await createPlaceholderMemberViaImportApi(ctx, 'CancelConfirm Member');
+    const members = await getMembersViaApi(ctx);
+    const member = members.find((m) => m.name === 'CancelConfirm Member');
+    expect(member).toBeDefined();
+    await updateMemberBillableRateViaApi(ctx, member!.id, 10000);
+
+    await goToMembersPage(page);
+    const memberRow = page.getByRole('row').filter({ hasText: 'CancelConfirm Member' });
+    await expect(memberRow).toBeVisible();
+
+    // Open edit modal
+    await memberRow.getByRole('button').click();
+    await page.getByRole('menuitem').getByText('Edit').click();
+    await expect(page.getByRole('heading', { name: 'Update Member' })).toBeVisible();
+
+    // Change the billable rate
+    await page.getByPlaceholder('Billable Rate').fill('200');
+
+    // Click Update Member — confirmation dialog should appear
+    await page.getByRole('button', { name: 'Update Member' }).click();
+    await expect(page.getByRole('heading', { name: 'Update Member Billable Rate' })).toBeVisible();
+
+    // Set up listener to verify no PUT request is sent after cancel
+    let putRequestSent = false;
+    page.on('request', (request) => {
+        if (request.url().includes('/members/') && request.method() === 'PUT') {
+            putRequestSent = true;
+        }
+    });
+
+    // Click Cancel on the confirmation dialog
+    await page.getByRole('button', { name: 'Cancel' }).click();
+
+    // Verify confirmation dialog is closed
+    await expect(
+        page.getByRole('heading', { name: 'Update Member Billable Rate' })
+    ).not.toBeVisible();
+
+    // Verify no API call was made
+    expect(putRequestSent).toBe(false);
 });
 
 test('test that changing role of placeholder member is rejected', async ({ page, ctx }) => {

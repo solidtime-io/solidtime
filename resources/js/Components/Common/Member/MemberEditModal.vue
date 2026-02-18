@@ -1,20 +1,35 @@
 <script setup lang="ts">
 import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
 import DialogModal from '@/packages/ui/src/DialogModal.vue';
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import type { Member, UpdateMemberBody } from '@/packages/api/src';
 import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import { type MemberBillableKey, useMembersStore } from '@/utils/useMembers';
 import BillableRateInput from '@/packages/ui/src/Input/BillableRateInput.vue';
-import { Field, FieldLabel } from '@/packages/ui/src/field';
+import { Field, FieldLabel, FieldDescription } from '@/packages/ui/src/field';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/Components/ui/select';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from '@/packages/ui/src/tooltip';
 import MemberBillableRateModal from '@/Components/Common/Member/MemberBillableRateModal.vue';
-import MemberBillableSelect from '@/Components/Common/Member/MemberBillableSelect.vue';
-import { onMounted, watch } from 'vue';
 import MemberRoleSelect from '@/Components/Common/Member/MemberRoleSelect.vue';
 import MemberOwnershipTransferConfirmModal from '@/Components/Common/Member/MemberOwnershipTransferConfirmModal.vue';
 import { getOrganizationCurrencyString } from '@/utils/money';
+import BillableIcon from '@/packages/ui/src/Icons/BillableIcon.vue';
+import { useOrganizationQuery } from '@/utils/useOrganizationQuery';
+import { getCurrentOrganizationId } from '@/utils/useUser';
 
 const { updateMember } = useMembersStore();
+const { organization } = useOrganizationQuery(getCurrentOrganizationId()!);
 const show = defineModel('show', { default: false });
 const saving = ref(false);
 
@@ -75,8 +90,24 @@ watch(billableRateSelect, () => {
     if (billableRateSelect.value === 'default-rate') {
         memberBody.value.billable_rate = null;
     } else if (billableRateSelect.value === 'custom-rate') {
-        memberBody.value.billable_rate = props.member.billable_rate ?? 0;
+        if (!memberBody.value.billable_rate) {
+            memberBody.value.billable_rate = organization.value?.billable_rate ?? 0;
+        }
     }
+});
+
+const displayedRate = computed({
+    get() {
+        if (billableRateSelect.value === 'default-rate') {
+            return organization.value?.billable_rate ?? null;
+        }
+        return memberBody.value.billable_rate;
+    },
+    set(value: number | null) {
+        if (billableRateSelect.value === 'custom-rate') {
+            memberBody.value.billable_rate = value;
+        }
+    },
 });
 
 const roleDescriptionTexts = {
@@ -120,34 +151,55 @@ const roleDescription = computed(() => {
 
         <template #content>
             <div class="pb-5 pt-2 divide-y divide-border-secondary">
-                <div class="pb-5 flex space-x-6">
+                <div class="pb-5">
                     <Field>
                         <FieldLabel for="role">Role</FieldLabel>
                         <MemberRoleSelect v-model="memberBody.role" name="role"></MemberRoleSelect>
+                        <FieldDescription v-if="roleDescription">{{
+                            roleDescription
+                        }}</FieldDescription>
                     </Field>
-                    <div class="flex-1 text-xs flex items-center pt-6">
-                        <p>{{ roleDescription }}</p>
-                    </div>
                 </div>
-                <div class="flex items-center space-x-4 pt-5">
-                    <div class="col-span-6 sm:col-span-4 flex-1 flex space-x-5">
-                        <Field>
-                            <FieldLabel for="billableType">Billable</FieldLabel>
-                            <MemberBillableSelect
-                                v-model="billableRateSelect"
-                                name="billableType"></MemberBillableSelect>
-                        </Field>
-                        <Field v-if="billableRateSelect === 'custom-rate'" class="flex-1">
-                            <FieldLabel for="memberBillableRate">Billable Rate</FieldLabel>
+                <div class="pt-5">
+                    <Field>
+                        <FieldLabel :icon="BillableIcon" for="billableRateType"
+                            >Billable Rate</FieldLabel
+                        >
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <Select v-model="billableRateSelect">
+                                <SelectTrigger id="billableRateType">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="default-rate">Default Rate</SelectItem>
+                                    <SelectItem value="custom-rate">Custom Rate</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <TooltipProvider v-if="billableRateSelect === 'default-rate'">
+                                <Tooltip>
+                                    <TooltipTrigger as-child>
+                                        <div>
+                                            <BillableRateInput
+                                                v-model="displayedRate"
+                                                :currency="getOrganizationCurrencyString()"
+                                                disabled
+                                                name="memberBillableRate" />
+                                        </div>
+                                    </TooltipTrigger>
+                                    <TooltipContent
+                                        >Uses the default rate of the organization</TooltipContent
+                                    >
+                                </Tooltip>
+                            </TooltipProvider>
                             <BillableRateInput
-                                v-model="memberBody.billable_rate"
+                                v-else
+                                v-model="displayedRate"
                                 focus
-                                class="w-full"
                                 :currency="getOrganizationCurrencyString()"
                                 name="memberBillableRate"
-                                @keydown.enter="saveWithChecks()"></BillableRateInput>
-                        </Field>
-                    </div>
+                                @keydown.enter="saveWithChecks()" />
+                        </div>
+                    </Field>
                 </div>
             </div>
         </template>
