@@ -32,7 +32,9 @@ export function useProjectMembersQuery(projectId: Ref<string | null> | string) {
     const projectMembers = computed<ProjectMember[]>(() => query.data.value?.data ?? []);
 
     const invalidateProjectMembers = () => {
-        queryClient.invalidateQueries({ queryKey: ['projectMembers', projectIdValue.value] });
+        queryClient.invalidateQueries({
+            queryKey: ['projectMembers', getCurrentOrganizationId(), projectIdValue.value],
+        });
     };
 
     return {

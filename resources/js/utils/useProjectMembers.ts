@@ -26,7 +26,9 @@ export const useProjectMembersStore = defineStore('project-members', () => {
                 'Project member added successfully',
                 'Failed to add project member'
             );
-            queryClient.invalidateQueries({ queryKey: ['projectMembers', projectId] });
+            queryClient.invalidateQueries({
+                queryKey: ['projectMembers', organization, projectId],
+            });
         }
     }
 
@@ -49,7 +51,7 @@ export const useProjectMembersStore = defineStore('project-members', () => {
             );
             if (response?.data?.project_id) {
                 queryClient.invalidateQueries({
-                    queryKey: ['projectMembers', response.data.project_id],
+                    queryKey: ['projectMembers', organization, response.data.project_id],
                 });
             }
         }
@@ -69,7 +71,9 @@ export const useProjectMembersStore = defineStore('project-members', () => {
                 'Project member removed successfully',
                 'Failed to remove project member'
             );
-            queryClient.invalidateQueries({ queryKey: ['projectMembers', projectId] });
+            queryClient.invalidateQueries({
+                queryKey: ['projectMembers', organizationId, projectId],
+            });
         }
     }
 

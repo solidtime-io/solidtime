@@ -190,16 +190,12 @@ test('test that sorting clients by project count works', async ({ page, ctx }) =
     await projectsHeader.click();
     await expect(projectsHeader.locator('svg')).toBeVisible();
     let names = await getTableRowNames(table);
-    expect(names.indexOf('ManyProjects Client')).toBeLessThan(
-        names.indexOf('NoProjects Client')
-    );
+    expect(names.indexOf('ManyProjects Client')).toBeLessThan(names.indexOf('NoProjects Client'));
 
     // Second click toggles to asc (least projects first)
     await projectsHeader.click();
     names = await getTableRowNames(table);
-    expect(names.indexOf('NoProjects Client')).toBeLessThan(
-        names.indexOf('ManyProjects Client')
-    );
+    expect(names.indexOf('NoProjects Client')).toBeLessThan(names.indexOf('ManyProjects Client'));
 });
 
 test('test that client sort state persists after page reload', async ({ page }) => {

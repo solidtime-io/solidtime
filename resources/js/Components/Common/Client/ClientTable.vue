@@ -67,7 +67,9 @@ const columns = computed(() => [
 ]);
 
 const descFirstColumns = new Set<SortColumn>(
-    columns.value.filter((c) => 'sortDescFirst' in c && c.sortDescFirst).map((c) => c.id as SortColumn)
+    columns.value
+        .filter((c) => 'sortDescFirst' in c && c.sortDescFirst)
+        .map((c) => c.id as SortColumn)
 );
 
 function handleSort(column: SortColumn) {
