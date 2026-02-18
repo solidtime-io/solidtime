@@ -8,6 +8,7 @@ import {
     createProjectViaApi,
     createPublicProjectViaApi,
 } from './utils/api';
+import { getTableRowNames } from './utils/table';
 
 async function goToClientsOverview(page: Page) {
     await page.goto(PLAYWRIGHT_BASE_URL + '/clients');
@@ -129,6 +130,96 @@ test('test that deleting a client via actions menu works', async ({ page, ctx })
     ]);
 
     await expect(page.getByTestId('client_table')).not.toContainText(clientName);
+});
+
+// =============================================
+// Sorting Tests
+// =============================================
+
+async function clearClientTableState(page: Page) {
+    await page.evaluate(() => {
+        localStorage.removeItem('client-table-state');
+    });
+}
+
+test('test that sorting clients by name and status works', async ({ page, ctx }) => {
+    await createClientViaApi(ctx, { name: 'AAA SortClient' });
+    await createClientViaApi(ctx, { name: 'ZZZ SortClient' });
+
+    await goToClientsOverview(page);
+    await clearClientTableState(page);
+    await page.reload();
+
+    const table = page.getByTestId('client_table');
+    await expect(table).toBeVisible();
+
+    // -- Name sorting (default is name asc) --
+    let names = await getTableRowNames(table);
+    expect(names.indexOf('AAA SortClient')).toBeLessThan(names.indexOf('ZZZ SortClient'));
+
+    const nameHeader = table.getByText('Name').first();
+    await nameHeader.click(); // toggle to desc
+    names = await getTableRowNames(table);
+    expect(names.indexOf('ZZZ SortClient')).toBeLessThan(names.indexOf('AAA SortClient'));
+
+    // -- Status sorting --
+    const statusHeader = table.getByText('Status').first();
+    await statusHeader.click(); // asc
+    await expect(statusHeader.locator('svg')).toBeVisible();
+    await statusHeader.click(); // desc
+    await expect(statusHeader.locator('svg')).toBeVisible();
+});
+
+test('test that sorting clients by project count works', async ({ page, ctx }) => {
+    const clientWithMany = await createClientViaApi(ctx, { name: 'ManyProjects Client' });
+    const clientWithNone = await createClientViaApi(ctx, { name: 'NoProjects Client' });
+
+    // Create projects for the first client
+    await createProjectViaApi(ctx, { name: 'Proj1', client_id: clientWithMany.id });
+    await createProjectViaApi(ctx, { name: 'Proj2', client_id: clientWithMany.id });
+
+    await goToClientsOverview(page);
+    await clearClientTableState(page);
+    await page.reload();
+
+    const table = page.getByTestId('client_table');
+    await expect(table).toBeVisible();
+
+    // Click Projects header - first click should sort desc (most projects first)
+    const projectsHeader = table.getByText('Projects').first();
+    await projectsHeader.click();
+    await expect(projectsHeader.locator('svg')).toBeVisible();
+    let names = await getTableRowNames(table);
+    expect(names.indexOf('ManyProjects Client')).toBeLessThan(
+        names.indexOf('NoProjects Client')
+    );
+
+    // Second click toggles to asc (least projects first)
+    await projectsHeader.click();
+    names = await getTableRowNames(table);
+    expect(names.indexOf('NoProjects Client')).toBeLessThan(
+        names.indexOf('ManyProjects Client')
+    );
+});
+
+test('test that client sort state persists after page reload', async ({ page }) => {
+    await goToClientsOverview(page);
+    await clearClientTableState(page);
+    await page.reload();
+
+    const table = page.getByTestId('client_table');
+    await expect(table).toBeVisible();
+
+    const nameHeader = table.getByText('Name').first();
+    await nameHeader.click(); // toggle to desc
+    await expect(nameHeader.locator('svg')).toBeVisible();
+
+    await page.reload();
+
+    await expect(page.getByTestId('client_table')).toBeVisible();
+    await expect(
+        page.getByTestId('client_table').getByText('Name').first().locator('svg')
+    ).toBeVisible();
 });
 
 // =============================================

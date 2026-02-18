@@ -3,6 +3,7 @@ import type { Page } from '@playwright/test';
 import { PLAYWRIGHT_BASE_URL } from '../playwright/config';
 import { test } from '../playwright/fixtures';
 import { createTagViaApi } from './utils/api';
+import { getTableRowNames } from './utils/table';
 
 async function goToTagsOverview(page: Page) {
     await page.goto(PLAYWRIGHT_BASE_URL + '/tags');
@@ -87,6 +88,57 @@ test('test that multiple tags can be created via API and displayed in the table'
     await goToTagsOverview(page);
     await expect(page.getByTestId('tag_table')).toContainText(tagName1);
     await expect(page.getByTestId('tag_table')).toContainText(tagName2);
+});
+
+// =============================================
+// Sorting Tests
+// =============================================
+
+async function clearTagTableState(page: Page) {
+    await page.evaluate(() => {
+        localStorage.removeItem('tag-table-state');
+    });
+}
+
+test('test that sorting tags by name works', async ({ page, ctx }) => {
+    await createTagViaApi(ctx, { name: 'AAA SortTag' });
+    await createTagViaApi(ctx, { name: 'ZZZ SortTag' });
+
+    await goToTagsOverview(page);
+    await clearTagTableState(page);
+    await page.reload();
+
+    const table = page.getByTestId('tag_table');
+    await expect(table).toBeVisible();
+
+    // Default is name asc
+    let names = await getTableRowNames(table);
+    expect(names.indexOf('AAA SortTag')).toBeLessThan(names.indexOf('ZZZ SortTag'));
+
+    const nameHeader = table.getByText('Name').first();
+    await nameHeader.click(); // toggle to desc
+    names = await getTableRowNames(table);
+    expect(names.indexOf('ZZZ SortTag')).toBeLessThan(names.indexOf('AAA SortTag'));
+});
+
+test('test that tag sort state persists after page reload', async ({ page }) => {
+    await goToTagsOverview(page);
+    await clearTagTableState(page);
+    await page.reload();
+
+    const table = page.getByTestId('tag_table');
+    await expect(table).toBeVisible();
+
+    const nameHeader = table.getByText('Name').first();
+    await nameHeader.click(); // toggle to desc
+    await expect(nameHeader.locator('svg')).toBeVisible();
+
+    await page.reload();
+
+    await expect(page.getByTestId('tag_table')).toBeVisible();
+    await expect(
+        page.getByTestId('tag_table').getByText('Name').first().locator('svg')
+    ).toBeVisible();
 });
 
 // =============================================

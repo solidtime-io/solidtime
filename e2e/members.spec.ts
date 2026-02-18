@@ -5,7 +5,12 @@ import { expect, test } from '../playwright/fixtures';
 import { PLAYWRIGHT_BASE_URL } from '../playwright/config';
 import type { Page } from '@playwright/test';
 import { inviteAndAcceptMember } from './utils/members';
-import { createPlaceholderMemberViaImportApi } from './utils/api';
+import {
+    createPlaceholderMemberViaImportApi,
+    getMembersViaApi,
+    updateMemberBillableRateViaApi,
+} from './utils/api';
+import { getTableRowNames } from './utils/table';
 
 // Tests that invite + accept members need more time
 test.describe.configure({ timeout: 45000 });
@@ -488,6 +493,125 @@ test('test that accepted invitation disappears from invitations tab', async ({ p
 });
 
 // =============================================
+// Sorting Tests
+// =============================================
+
+// Helper to clear localStorage before tests that check sorting
+async function clearMemberTableState(page: Page) {
+    await page.evaluate(() => {
+        localStorage.removeItem('member-table-state');
+    });
+}
+
+test('test that sorting members by name, role, and status works', async ({ page, ctx }) => {
+    // Create two placeholder members with names that sort predictably around "John Doe"
+    await createPlaceholderMemberViaImportApi(ctx, 'AAA SortFirst');
+    await createPlaceholderMemberViaImportApi(ctx, 'ZZZ SortLast');
+
+    await goToMembersPage(page);
+    await clearMemberTableState(page);
+    await page.reload();
+
+    const table = page.getByTestId('member_table');
+    await expect(table).toBeVisible();
+
+    // -- Name sorting (default is already name asc after clearing state) --
+    const nameHeader = table.getByText('Name').first();
+    let names = await getTableRowNames(table);
+    expect(names.indexOf('AAA SortFirst')).toBeLessThan(names.indexOf('ZZZ SortLast'));
+
+    await nameHeader.click(); // toggle to desc
+    names = await getTableRowNames(table);
+    expect(names.indexOf('ZZZ SortLast')).toBeLessThan(names.indexOf('AAA SortFirst'));
+
+    // -- Role sorting --
+    const roleHeader = table.getByText('Role').first();
+    await roleHeader.click(); // asc: Owner(0) < Placeholder(4)
+    names = await getTableRowNames(table);
+    const ownerIdx = names.indexOf('John Doe');
+    const placeholderIdx = names.indexOf('AAA SortFirst');
+    expect(ownerIdx).toBeLessThan(placeholderIdx);
+
+    await roleHeader.click(); // desc: Placeholder first
+    names = await getTableRowNames(table);
+    expect(names.indexOf('AAA SortFirst')).toBeLessThan(names.indexOf('John Doe'));
+
+    // -- Status sorting --
+    const statusHeader = table.getByText('Status').first();
+    await statusHeader.click(); // asc: Active(0) < Inactive(1)
+    names = await getTableRowNames(table);
+    expect(names.indexOf('John Doe')).toBeLessThan(names.indexOf('AAA SortFirst'));
+
+    await statusHeader.click(); // desc: Inactive first
+    names = await getTableRowNames(table);
+    expect(names.indexOf('AAA SortFirst')).toBeLessThan(names.indexOf('John Doe'));
+
+    // -- Email: just verify sort indicator appears --
+    const emailHeader = table.getByText('Email').first();
+    await emailHeader.click();
+    await expect(emailHeader.locator('svg')).toBeVisible();
+});
+
+test('test that member sort state persists after page reload', async ({ page }) => {
+    await goToMembersPage(page);
+    await clearMemberTableState(page);
+    await page.reload();
+
+    const table = page.getByTestId('member_table');
+    await expect(table).toBeVisible();
+
+    // Click Role header twice to set descending sort
+    const roleHeader = table.getByText('Role').first();
+    await roleHeader.click();
+    await expect(roleHeader.locator('svg')).toBeVisible();
+    await roleHeader.click();
+    await expect(roleHeader.locator('svg')).toBeVisible();
+
+    // Reload the page
+    await page.reload();
+
+    // Verify the sort indicator is still visible on Role column
+    await expect(page.getByTestId('member_table')).toBeVisible();
+    await expect(
+        page.getByTestId('member_table').getByText('Role').first().locator('svg')
+    ).toBeVisible();
+});
+
+test('test that sorting members by billable rate works', async ({ page, ctx }) => {
+    // Create two placeholder members and set different billable rates
+    await createPlaceholderMemberViaImportApi(ctx, 'HighRate Member');
+    await createPlaceholderMemberViaImportApi(ctx, 'LowRate Member');
+
+    const members = await getMembersViaApi(ctx);
+    const highRateMember = members.find((m) => m.name === 'HighRate Member');
+    const lowRateMember = members.find((m) => m.name === 'LowRate Member');
+    expect(highRateMember).toBeDefined();
+    expect(lowRateMember).toBeDefined();
+
+    await updateMemberBillableRateViaApi(ctx, highRateMember!.id, 20000);
+    await updateMemberBillableRateViaApi(ctx, lowRateMember!.id, 5000);
+
+    await goToMembersPage(page);
+    await clearMemberTableState(page);
+    await page.reload();
+
+    const table = page.getByTestId('member_table');
+    await expect(table).toBeVisible();
+
+    // First click = desc (highest first), null rates last
+    const billableHeader = table.getByText('Billable Rate').first();
+    await billableHeader.click();
+    await expect(billableHeader.locator('svg')).toBeVisible();
+    let names = await getTableRowNames(table);
+    expect(names.indexOf('HighRate Member')).toBeLessThan(names.indexOf('LowRate Member'));
+
+    // Second click = asc (lowest first), null rates still last
+    await billableHeader.click();
+    names = await getTableRowNames(table);
+    expect(names.indexOf('LowRate Member')).toBeLessThan(names.indexOf('HighRate Member'));
+});
+
+// =============================================
 // Employee Permission Tests
 // =============================================
 
@@ -522,7 +646,7 @@ test.describe('Employee Sidebar Navigation', () => {
         });
 
         // Member table is empty — no rows rendered (only headers)
-        await expect(employee.page.getByTestId('client_table').locator('[role="row"]')).toHaveCount(
+        await expect(employee.page.getByTestId('member_table').locator('[role="row"]')).toHaveCount(
             0
         );
 

@@ -345,6 +345,36 @@ export async function createProjectMemberViaApi(
     return body.data as { id: string; billable_rate: number | null };
 }
 
+export async function getMembersViaApi(ctx: TestContext) {
+    const response = await ctx.request.get(
+        `${PLAYWRIGHT_BASE_URL}/api/v1/organizations/${ctx.orgId}/members`
+    );
+    expect(response.status()).toBe(200);
+    const body = await response.json();
+    return body.data as Array<{
+        id: string;
+        name: string;
+        email: string;
+        role: string;
+        billable_rate: number | null;
+        is_placeholder: boolean;
+    }>;
+}
+
+export async function updateMemberBillableRateViaApi(
+    ctx: TestContext,
+    memberId: string,
+    billableRate: number | null
+) {
+    const response = await ctx.request.put(
+        `${PLAYWRIGHT_BASE_URL}/api/v1/organizations/${ctx.orgId}/members/${memberId}`,
+        { data: { billable_rate: billableRate } }
+    );
+    expect(response.status()).toBe(200);
+    const body = await response.json();
+    return body.data;
+}
+
 // ──────────────────────────────────────────────────
 // Composite helpers (matching existing UI helper signatures)
 // ──────────────────────────────────────────────────

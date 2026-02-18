@@ -12,12 +12,34 @@ import PageTitle from '@/Components/Common/PageTitle.vue';
 import { canCreateClients } from '@/utils/permissions';
 import TabBarItem from '@/Components/Common/TabBar/TabBarItem.vue';
 import TabBar from '@/Components/Common/TabBar/TabBar.vue';
+import { useStorage } from '@vueuse/core';
+import type { SortColumn, SortDirection } from '@/Components/Common/Client/ClientTable.vue';
 
 const { clients } = useClientsQuery();
 
 const activeTab = ref<'active' | 'archived'>('active');
 
 const createClient = ref(false);
+
+interface ClientTableState {
+    sortColumn: SortColumn;
+    sortDirection: SortDirection;
+}
+
+const tableState = useStorage<ClientTableState>(
+    'client-table-state',
+    {
+        sortColumn: 'name',
+        sortDirection: 'asc',
+    },
+    undefined,
+    { mergeDefaults: true }
+);
+
+function handleSort(column: SortColumn, direction: SortDirection) {
+    tableState.value.sortColumn = column;
+    tableState.value.sortDirection = direction;
+}
 
 const shownClients = computed(() => {
     return clients.value.filter((client) => {
@@ -45,6 +67,10 @@ const shownClients = computed(() => {
             >
             <ClientCreateModal v-model:show="createClient"></ClientCreateModal>
         </MainContainer>
-        <ClientTable :clients="shownClients"></ClientTable>
+        <ClientTable
+            :clients="shownClients"
+            :sort-column="tableState.sortColumn"
+            :sort-direction="tableState.sortDirection"
+            @sort="handleSort"></ClientTable>
     </AppLayout>
 </template>

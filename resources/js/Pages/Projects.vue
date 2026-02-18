@@ -147,7 +147,9 @@ const showBillableRate = computed(() => {
                     data-testid="status-filter-badge"
                     :value="tableState.filters.status"
                     @remove="removeStatusFilter"
-                    @update:value="tableState.filters.status = $event as 'active' | 'archived' | 'all'" />
+                    @update:value="
+                        tableState.filters.status = $event as 'active' | 'archived' | 'all'
+                    " />
 
                 <ProjectClientFilterBadge
                     v-if="tableState.filters.clientIds.length > 0"

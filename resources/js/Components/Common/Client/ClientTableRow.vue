@@ -36,13 +36,13 @@ const showEditModal = ref(false);
     <TableRow>
         <ClientEditModal v-model:show="showEditModal" :client="client"></ClientEditModal>
         <div
-            class="whitespace-nowrap flex items-center space-x-5 3xl:pl-12 py-4 pr-3 text-sm font-medium text-text-primary pl-4 sm:pl-6 lg:pl-8 3xl:pl-12">
+            class="whitespace-nowrap flex items-center space-x-5 py-4 pr-3 text-sm font-medium text-text-primary pl-4 sm:pl-6 lg:pl-8 3xl:pl-12">
             <span>
                 {{ client.name }}
             </span>
         </div>
         <div
-            class="whitespace-nowrap flex items-center space-x-5 3xl:pl-12 py-4 pr-3 text-sm font-medium text-text-primary pl-4 sm:pl-6 lg:pl-8 3xl:pl-12">
+            class="whitespace-nowrap flex items-center px-3 py-4 text-sm font-medium text-text-primary">
             <span class="text-text-secondary"> {{ projectCount }} Projects </span>
         </div>
         <div

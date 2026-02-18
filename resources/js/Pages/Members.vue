@@ -13,6 +13,8 @@ import type { Role } from '@/types/jetstream';
 import PageTitle from '@/Components/Common/PageTitle.vue';
 import InvitationTable from '@/Components/Common/Invitation/InvitationTable.vue';
 import { canCreateInvitations } from '@/utils/permissions';
+import { useStorage } from '@vueuse/core';
+import type { SortColumn, SortDirection } from '@/Components/Common/Member/MemberTable.vue';
 
 const inviteMember = ref(false);
 
@@ -21,6 +23,26 @@ defineProps<{
 }>();
 
 const activeTab = ref<'all' | 'invitations'>('all');
+
+interface MemberTableState {
+    sortColumn: SortColumn;
+    sortDirection: SortDirection;
+}
+
+const tableState = useStorage<MemberTableState>(
+    'member-table-state',
+    {
+        sortColumn: 'name',
+        sortDirection: 'asc',
+    },
+    undefined,
+    { mergeDefaults: true }
+);
+
+function handleSort(column: SortColumn, direction: SortDirection) {
+    tableState.value.sortColumn = column;
+    tableState.value.sortDirection = direction;
+}
 </script>
 
 <template>
@@ -45,7 +67,11 @@ const activeTab = ref<'all' | 'invitations'>('all');
                 :available-roles="availableRoles"
                 @close="activeTab = 'invitations'"></MemberInviteModal>
         </MainContainer>
-        <MemberTable v-if="activeTab === 'all'"></MemberTable>
+        <MemberTable
+            v-if="activeTab === 'all'"
+            :sort-column="tableState.sortColumn"
+            :sort-direction="tableState.sortDirection"
+            @sort="handleSort"></MemberTable>
         <InvitationTable v-if="activeTab === 'invitations'"></InvitationTable>
     </AppLayout>
 </template>

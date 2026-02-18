@@ -62,7 +62,7 @@ const sorting = computed<SortingState>(() => [
 // Define column accessors for sorting.
 // Numeric columns use sortDescFirst so that the first click (chevron down) sorts highest-first,
 // while text columns default to ascending (A-Z) on first click (chevron down).
-const columns = [
+const columns = computed(() => [
     {
         id: 'name',
         accessorFn: (row: Project) => row.name.toLowerCase(),
@@ -98,11 +98,11 @@ const columns = [
         id: 'status',
         accessorFn: (row: Project) => (row.is_archived ? 1 : 0),
     },
-];
+]);
 
 // Columns with sortDescFirst get desc as default direction on first click.
 const descFirstColumns = new Set<SortColumn>(
-    columns.filter((c) => c.sortDescFirst).map((c) => c.id as SortColumn)
+    columns.value.filter((c) => c.sortDescFirst).map((c) => c.id as SortColumn)
 );
 
 function handleSort(column: SortColumn) {
@@ -117,7 +117,9 @@ const table = useVueTable({
     get data() {
         return props.projects;
     },
-    columns,
+    get columns() {
+        return columns.value;
+    },
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     state: {
