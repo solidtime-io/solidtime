@@ -2,16 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Requests\V1\Invitation;
+namespace App\Http\Requests\V1\Report;
 
 use App\Http\Requests\V1\BaseFormRequest;
-use App\Models\Organization;
 use Illuminate\Contracts\Validation\ValidationRule;
 
-/**
- * @property Organization $organization
- */
-class InvitationIndexRequest extends BaseFormRequest
+class ReportIndexRequest extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.

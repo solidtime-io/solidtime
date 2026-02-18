@@ -3,6 +3,16 @@ import { api } from '@/packages/api/src';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import type { Tag } from '@/packages/api/src';
 import { computed } from 'vue';
+import { fetchAllPages } from '@/utils/fetchAllPages';
+
+export async function fetchAllTags(organizationId: string): Promise<Tag[]> {
+    return fetchAllPages((page) =>
+        api.getTags({
+            params: { organization: organizationId },
+            queries: { page },
+        })
+    );
+}
 
 export function useTagsQuery() {
     const queryClient = useQueryClient();
@@ -12,9 +22,8 @@ export function useTagsQuery() {
         queryFn: async () => {
             const organizationId = getCurrentOrganizationId();
             if (!organizationId) throw new Error('No organization');
-            return api.getTags({
-                params: { organization: organizationId },
-            });
+            const data = await fetchAllTags(organizationId);
+            return { data };
         },
         enabled: () => !!getCurrentOrganizationId(),
         staleTime: 1000 * 30, // 30 seconds

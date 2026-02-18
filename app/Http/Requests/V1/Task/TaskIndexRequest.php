@@ -26,6 +26,11 @@ class TaskIndexRequest extends BaseFormRequest
     public function rules(): array
     {
         return [
+            'page' => [
+                'integer',
+                'min:1',
+                'max:2147483647',
+            ],
             'project_id' => [
                 ExistsEloquent::make(Project::class, null, function (Builder $builder): Builder {
                     /** @var Builder<Project> $builder */

@@ -8,6 +8,13 @@ import {
     createCalendarQueryKey,
     fetchAllCalendarEntries,
 } from '@/utils/useTimeEntriesCalendarQuery';
+import { fetchAllProjects } from '@/utils/useProjectsQuery';
+import { fetchAllTasks } from '@/utils/useTasksQuery';
+import { fetchAllTags } from '@/utils/useTagsQuery';
+import { fetchAllClients } from '@/utils/useClientsQuery';
+import { fetchAllMembers } from '@/utils/useMembersQuery';
+import { fetchAllReports } from '@/utils/useReportsQuery';
+import { fetchAllProjectMembers } from '@/utils/useProjectMembersQuery';
 
 /**
  * Route patterns mapped to their prefetch functions.
@@ -152,12 +159,8 @@ function prefetchProjects(queryClient: QueryClient) {
 
     queryClient.prefetchQuery({
         queryKey: ['projects', organizationId],
-        queryFn: () =>
-            api.getProjects({
-                params: { organization: organizationId },
-                queries: { archived: 'all' },
-            }),
-        staleTime: 30000, // Consider fresh for 30 seconds
+        queryFn: async () => ({ data: await fetchAllProjects(organizationId) }),
+        staleTime: 30000,
     });
 }
 
@@ -167,11 +170,7 @@ function prefetchTasks(queryClient: QueryClient) {
 
     queryClient.prefetchQuery({
         queryKey: ['tasks', organizationId],
-        queryFn: () =>
-            api.getTasks({
-                params: { organization: organizationId },
-                queries: { done: 'all' },
-            }),
+        queryFn: async () => ({ data: await fetchAllTasks(organizationId) }),
         staleTime: 30000,
     });
 }
@@ -182,10 +181,7 @@ function prefetchTags(queryClient: QueryClient) {
 
     queryClient.prefetchQuery({
         queryKey: ['tags', organizationId],
-        queryFn: () =>
-            api.getTags({
-                params: { organization: organizationId },
-            }),
+        queryFn: async () => ({ data: await fetchAllTags(organizationId) }),
         staleTime: 30000,
     });
 }
@@ -196,11 +192,7 @@ function prefetchClients(queryClient: QueryClient) {
 
     queryClient.prefetchQuery({
         queryKey: ['clients', organizationId],
-        queryFn: () =>
-            api.getClients({
-                params: { organization: organizationId },
-                queries: { archived: 'all' },
-            }),
+        queryFn: async () => ({ data: await fetchAllClients(organizationId) }),
         staleTime: 30000,
     });
 }
@@ -211,10 +203,7 @@ function prefetchMembers(queryClient: QueryClient) {
 
     queryClient.prefetchQuery({
         queryKey: ['members', organizationId],
-        queryFn: () =>
-            api.getMembers({
-                params: { organization: organizationId },
-            }),
+        queryFn: async () => ({ data: await fetchAllMembers(organizationId) }),
         staleTime: 30000,
     });
 }
@@ -225,10 +214,7 @@ function prefetchReports(queryClient: QueryClient) {
 
     queryClient.prefetchQuery({
         queryKey: ['reports', organizationId],
-        queryFn: () =>
-            api.getReports({
-                params: { organization: organizationId },
-            }),
+        queryFn: async () => ({ data: await fetchAllReports(organizationId) }),
         staleTime: 30000,
     });
 }
@@ -277,10 +263,9 @@ function prefetchProjectMembers(queryClient: QueryClient, projectId: string) {
 
     queryClient.prefetchQuery({
         queryKey: ['projectMembers', organizationId, projectId],
-        queryFn: () =>
-            api.getProjectMembers({
-                params: { organization: organizationId, project: projectId },
-            }),
+        queryFn: async () => ({
+            data: await fetchAllProjectMembers(organizationId, projectId),
+        }),
         staleTime: 30000,
     });
 }

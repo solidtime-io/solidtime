@@ -3,6 +3,16 @@ import { api } from '@/packages/api/src';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import type { Member } from '@/packages/api/src';
 import { computed } from 'vue';
+import { fetchAllPages } from '@/utils/fetchAllPages';
+
+export async function fetchAllMembers(organizationId: string): Promise<Member[]> {
+    return fetchAllPages((page) =>
+        api.getMembers({
+            params: { organization: organizationId },
+            queries: { page },
+        })
+    );
+}
 
 export function useMembersQuery() {
     const queryClient = useQueryClient();
@@ -12,9 +22,8 @@ export function useMembersQuery() {
         queryFn: async () => {
             const organizationId = getCurrentOrganizationId();
             if (!organizationId) throw new Error('No organization');
-            return api.getMembers({
-                params: { organization: organizationId },
-            });
+            const data = await fetchAllMembers(organizationId);
+            return { data };
         },
         enabled: () => !!getCurrentOrganizationId(),
         staleTime: 1000 * 30, // 30 seconds

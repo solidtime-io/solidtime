@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1;
 
 use App\Exceptions\Api\EntityStillInUseApiException;
+use App\Http\Requests\V1\Tag\TagIndexRequest;
 use App\Http\Requests\V1\Tag\TagStoreRequest;
 use App\Http\Requests\V1\Tag\TagUpdateRequest;
 use App\Http\Resources\V1\Tag\TagCollection;
@@ -34,7 +35,7 @@ class TagController extends Controller
      *
      * @throws AuthorizationException
      */
-    public function index(Organization $organization): TagCollection
+    public function index(Organization $organization, TagIndexRequest $request): TagCollection
     {
         $this->checkPermission($organization, 'tags:view');
 

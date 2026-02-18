@@ -21,6 +21,11 @@ class MemberIndexRequest extends BaseFormRequest
     public function rules(): array
     {
         return [
+            'page' => [
+                'integer',
+                'min:1',
+                'max:2147483647',
+            ],
         ];
     }
 }

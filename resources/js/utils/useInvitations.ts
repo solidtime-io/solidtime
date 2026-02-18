@@ -1,31 +1,35 @@
 import { defineStore } from 'pinia';
 import { api } from '@/packages/api/src';
 import { computed, ref } from 'vue';
-import type {
-    InvitationsIndexResponse,
-    CreateInvitationBody,
-    Invitation,
-} from '@/packages/api/src';
+import type { CreateInvitationBody, Invitation } from '@/packages/api/src';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import { useNotificationsStore } from '@/utils/notification';
+import { fetchAllPages } from '@/utils/fetchAllPages';
+
+export async function fetchAllInvitations(organizationId: string): Promise<Invitation[]> {
+    return fetchAllPages((page) =>
+        api.getInvitations({
+            params: { organization: organizationId },
+            queries: { page },
+        })
+    );
+}
 
 export const useInvitationsStore = defineStore('invitations', () => {
-    const invitationsResponse = ref<InvitationsIndexResponse | null>(null);
+    const invitationsData = ref<Invitation[]>([]);
     const { handleApiRequestNotifications } = useNotificationsStore();
 
     async function fetchInvitations() {
         const organization = getCurrentOrganizationId();
         if (organization) {
-            invitationsResponse.value = await handleApiRequestNotifications(
-                () =>
-                    api.getInvitations({
-                        params: {
-                            organization: organization,
-                        },
-                    }),
+            const data = await handleApiRequestNotifications(
+                () => fetchAllInvitations(organization),
                 undefined,
                 'Failed to fetch invitations'
             );
+            if (data) {
+                invitationsData.value = data;
+            }
         }
     }
 
@@ -47,7 +51,7 @@ export const useInvitationsStore = defineStore('invitations', () => {
     }
 
     const invitations = computed<Invitation[]>(() => {
-        return invitationsResponse.value?.data || [];
+        return invitationsData.value;
     });
 
     return { invitations, fetchInvitations, createInvitation };
