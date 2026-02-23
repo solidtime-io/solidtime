@@ -36,6 +36,7 @@ import TimeEntryEditModal from './TimeEntry/TimeEntryEditModal.vue';
 import FullCalendarEventContent from './FullCalendar/FullCalendarEventContent.vue';
 import FullCalendarDayHeader from './FullCalendar/FullCalendarDayHeader.vue';
 import TimeEntryCalendar from './FullCalendar/TimeEntryCalendar.vue';
+import CalendarSettingsPopover from './FullCalendar/CalendarSettingsPopover.vue';
 import DateRangePicker from './Input/DateRangePicker.vue';
 import TimezoneMismatchModal from './TimezoneMismatchModal.vue';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tooltip/index';
@@ -59,6 +60,7 @@ import {
 } from './field/index';
 export type { FieldVariants } from './field/index';
 export type { ActivityPeriod } from './FullCalendar/idleStatusPlugin';
+export type { CalendarSettings } from './FullCalendar/calendarSettings';
 export type {
     CommandPaletteCommand,
     CommandPaletteGroup,
@@ -92,6 +94,7 @@ export {
     FullCalendarEventContent,
     FullCalendarDayHeader,
     TimeEntryCalendar,
+    CalendarSettingsPopover,
     DateRangePicker,
     TimezoneMismatchModal,
     Tooltip,
