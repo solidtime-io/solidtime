@@ -368,7 +368,7 @@ const calendarOptions = computed(() => {
         slotDuration: formatDuration(s.slotMinutes * 60),
         slotLabelInterval: '01:00:00',
         slotLabelFormat: getSlotLabelFormat(),
-        snapDuration: '00:01:00',
+        snapDuration: formatDuration(s.snapMinutes * 60),
         firstDay: getFirstDay(),
         allDaySlot: false,
         nowIndicator: true,
