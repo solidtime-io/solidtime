@@ -235,8 +235,8 @@ function handleDateSelect(arg: { start: Date; end: Date }) {
         .utc()
         .tz(getUserTimezone(), true);
     const endLocal = getDayJsInstance()(arg.end.toISOString()).utc().tz(getUserTimezone(), true);
-    const snappedStart = snapToGrid(startLocal, snap);
-    let snappedEnd = snapToGrid(endLocal, snap);
+    const snappedStart = snapStartToGrid(startLocal, snap);
+    let snappedEnd = snapEndToGrid(endLocal, snap);
     if (!snappedEnd.isAfter(snappedStart)) {
         snappedEnd = snappedStart.add(snap, 'minute');
     }
@@ -255,10 +255,17 @@ function handleEventClick(arg: EventClickArg) {
     showEditTimeEntryModal.value = true;
 }
 
-// Snap a dayjs time to the nearest snap interval boundary
-function snapToGrid(time: Dayjs, snapMinutes: number): Dayjs {
+// Snap a dayjs time down to the previous snap boundary (for start times)
+function snapStartToGrid(time: Dayjs, snapMinutes: number): Dayjs {
     const minutes = time.hour() * 60 + time.minute();
-    const snapped = Math.round(minutes / snapMinutes) * snapMinutes;
+    const snapped = Math.floor(minutes / snapMinutes) * snapMinutes;
+    return time.startOf('day').add(snapped, 'minute');
+}
+
+// Snap a dayjs time up to the next snap boundary (for end times)
+function snapEndToGrid(time: Dayjs, snapMinutes: number): Dayjs {
+    const minutes = time.hour() * 60 + time.minute();
+    const snapped = Math.ceil(minutes / snapMinutes) * snapMinutes;
     return time.startOf('day').add(snapped, 'minute');
 }
 
@@ -291,7 +298,7 @@ async function handleEventDrop(arg: EventDropArg) {
         .utc()
         .tz(getUserTimezone(), true)
         .second(0);
-    const snappedStart = snapToGrid(startLocal, snap);
+    const snappedStart = snapStartToGrid(startLocal, snap);
     const durationMs = getLocalizedDayJs(timeEntry.end).diff(getLocalizedDayJs(timeEntry.start));
     const snappedEnd = snappedStart.add(durationMs, 'millisecond');
     // Set FC event to snapped position immediately to avoid flash
@@ -325,8 +332,8 @@ async function handleEventResize(arg: EventChangeArg) {
     const startChanged = !newStartLocal.isSame(origStartLocal, 'minute');
 
     // Snap only the changed edge once, reuse for both setDates and API update
-    const snappedStart = startChanged ? snapToGrid(newStartLocal, snap) : null;
-    const snappedEnd = !startChanged && !ext.isRunning ? snapToGrid(newEndLocal, snap) : null;
+    const snappedStart = startChanged ? snapStartToGrid(newStartLocal, snap) : null;
+    const snappedEnd = !startChanged && !ext.isRunning ? snapEndToGrid(newEndLocal, snap) : null;
 
     // Set FC event to snapped position immediately to avoid flash.
     // Use the original event date for the edge that wasn't resized.
@@ -745,6 +752,10 @@ onUnmounted(() => {
 .fullcalendar :deep(.fc-select-mirror) {
     background-color: var(--accent);
     border: 1px solid var(--primary);
+}
+
+.fullcalendar :deep(.fc-event-mirror) {
+    pointer-events: none;
 }
 
 .fullcalendar :deep(.fc-scrollgrid) {

@@ -32,6 +32,9 @@ export function useVisualSnap({
     function findMirrorHarness(calendarEl: HTMLElement) {
         const mirror = calendarEl.querySelector('.fc-event-mirror') as HTMLElement | null;
         const harness = mirror?.closest('.fc-timegrid-event-harness') as HTMLElement | null;
+        if (harness) {
+            harness.style.pointerEvents = 'none';
+        }
         return { mirror, harness };
     }
 
@@ -81,8 +84,8 @@ export function useVisualSnap({
 
             const top = parseFloat(harness.style.top) || 0;
             const endPos = -(parseFloat(harness.style.bottom) || 0);
-            const snappedTop = Math.round(top / snapPx) * snapPx;
-            const snappedEnd = Math.round(endPos / snapPx) * snapPx;
+            const snappedTop = Math.floor(top / snapPx) * snapPx;
+            const snappedEnd = Math.ceil(endPos / snapPx) * snapPx;
             const clampedEnd = Math.max(snappedTop + snapPx, snappedEnd);
             harness.style.top = snappedTop + 'px';
             harness.style.bottom = -clampedEnd + 'px';
@@ -99,7 +102,7 @@ export function useVisualSnap({
             const top = parseFloat(harness.style.top) || 0;
             const endPos = -(parseFloat(harness.style.bottom) || 0);
             const height = endPos - top;
-            const snappedTop = Math.round(top / snapPx) * snapPx;
+            const snappedTop = Math.floor(top / snapPx) * snapPx;
             harness.style.top = snappedTop + 'px';
             harness.style.bottom = -(snappedTop + height) + 'px';
         });
@@ -135,12 +138,12 @@ export function useVisualSnap({
             }
 
             if (resizeEdge === 'bottom') {
-                const snappedEnd = Math.round(endPos / snapPx) * snapPx;
+                const snappedEnd = Math.ceil(endPos / snapPx) * snapPx;
                 const clampedEnd = Math.max(top + snapPx, snappedEnd);
                 harness.style.bottom = -clampedEnd + 'px';
                 if (mirror) updateMirrorDurationLabel(mirror, top, clampedEnd, snapPx);
             } else if (resizeEdge === 'top') {
-                const snappedTop = Math.round(top / snapPx) * snapPx;
+                const snappedTop = Math.floor(top / snapPx) * snapPx;
                 const clampedTop = Math.min(endPos - snapPx, snappedTop);
                 harness.style.top = clampedTop + 'px';
                 if (mirror) updateMirrorDurationLabel(mirror, clampedTop, endPos, snapPx);
