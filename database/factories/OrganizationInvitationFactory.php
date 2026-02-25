@@ -25,7 +25,22 @@ class OrganizationInvitationFactory extends Factory
             'email' => $this->faker->unique()->safeEmail(),
             'role' => Role::Employee->value,
             'organization_id' => Organization::factory(),
+            'accepted_at' => null,
         ];
+    }
+
+    public function role(Role $role): self
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => $role->value,
+        ]);
+    }
+
+    public function accepted(): self
+    {
+        return $this->state(fn (array $attributes): array => [
+            'accepted_at' => $this->faker->dateTime(),
+        ]);
     }
 
     public function forOrganization(Organization $organization): self

@@ -18,6 +18,8 @@ class ValidateOrganizationDeletion
      * @param  Organization  $organization  Organization to be deleted
      *
      * @throws AuthorizationException
+     *
+     * @deprecated Use REST endpoint instead
      */
     public function validate(User $user, Organization $organization): void
     {

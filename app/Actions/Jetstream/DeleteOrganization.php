@@ -12,6 +12,8 @@ class DeleteOrganization implements DeletesTeams
 {
     /**
      * Delete the given team.
+     *
+     * @deprecated Use REST endpoint instead
      */
     public function delete(Organization $organization): void
     {

@@ -63,18 +63,6 @@ class OrganizationPolicy
     }
 
     /**
-     * Determine whether the user can add team members.
-     */
-    public function addTeamMember(User $user, Organization $organization): bool
-    {
-        if (Filament::isServing()) {
-            return true;
-        }
-
-        return true;
-    }
-
-    /**
      * Determine whether the user can update team member permissions.
      */
     public function updateTeamMember(User $user, Organization $organization): bool

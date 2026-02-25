@@ -25,6 +25,8 @@ class CreateOrganization implements CreatesTeams
      *
      * @throws AuthorizationException
      * @throws ValidationException
+     *
+     * @deprecated Use REST endpoint instead
      */
     public function create(User $user, array $input): Organization
     {

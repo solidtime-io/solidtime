@@ -260,4 +260,52 @@ class OrganizationEndpointTest extends ApiEndpointTestAbstract
             'billable_rate' => $organizationFake->billable_rate,
         ]);
     }
+
+    public function test_delete_endpoint_if_user_does_not_have_permission(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->deleteJson(route('api.v1.organizations.destroy', [$data->organization->getKey()]));
+
+        // Assert
+        $response->assertForbidden();
+    }
+
+    public function test_delete_endpoint_fails_with_not_found_if_id_is_not_uuid(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'organizations:delete',
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->deleteJson(route('api.v1.organizations.destroy', ['not-uuid']));
+
+        // Assert
+        $response->assertNotFound();
+    }
+
+    public function test_delete_endpoint_can_delete_organization(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'organizations:delete',
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->deleteJson(route('api.v1.organizations.destroy', [$data->organization->getKey()]));
+
+        // Assert
+        $response->assertNoContent();
+        $this->assertDatabaseMissing(Organization::class, [
+            'id' => $data->organization->getKey(),
+        ]);
+    }
+
+    // LAST state: organization store, remove update update
 }

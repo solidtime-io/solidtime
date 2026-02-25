@@ -18,6 +18,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  * @property string $email
  * @property string $role
  * @property string $organization_id
+ * @property Carbon|null $accepted_at
  * @property Carbon|null $updated_at
  * @property Carbon|null $created_at
  * @property-read Organization $organization
@@ -41,14 +42,16 @@ class OrganizationInvitation extends JetstreamTeamInvitation implements Auditabl
     protected $table = 'organization_invitations';
 
     /**
-     * The attributes that are mass assignable.
+     * Get the attributes that should be cast.
      *
-     * @var array<int, string>
+     * @return array<string, string>
      */
-    protected $fillable = [
-        'email',
-        'role',
-    ];
+    public function casts(): array
+    {
+        return [
+            'accepted_at' => 'datetime',
+        ];
+    }
 
     /**
      * Get the organization that the invitation belongs to.

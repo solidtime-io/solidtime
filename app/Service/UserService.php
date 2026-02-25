@@ -38,7 +38,7 @@ class UserService
     ): User {
         $user = new User;
         $user->name = $name;
-        $user->email = $email;
+        $user->email = strtolower($email);
         $user->password = Hash::make($password);
         $user->timezone = $timezone;
         $user->week_start = $weekStart;
@@ -47,19 +47,22 @@ class UserService
         }
         $user->save();
 
-        $organization = app(OrganizationService::class)->createOrganization(
-            $this->getOrganizationNameForUserName($user->name),
-            $user,
-            true,
-            $currency,
-            $numberFormat,
-            $currencyFormat,
-            $dateFormat,
-            $intervalFormat,
-            $timeFormat,
-        );
+        $organizations = app(InvitationService::class)->processAcceptedInvitations($user);
 
-        $user->ownedTeams()->save($organization);
+        if ($organizations->isEmpty()) {
+            $organization = app(OrganizationService::class)->createOrganization(
+                $this->getOrganizationNameForUserName($user->name),
+                $user,
+                true,
+                $currency,
+                $numberFormat,
+                $currencyFormat,
+                $dateFormat,
+                $intervalFormat,
+                $timeFormat,
+            );
+            $user->ownedTeams()->save($organization);
+        }
 
         return $user;
     }

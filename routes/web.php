@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\Web\HomeController;
+use App\Http\Controllers\Web\OrganizationInvitationController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Jetstream\Jetstream;
@@ -83,3 +84,10 @@ Route::middleware([
     })->name('import');
 
 });
+
+Route::get('/team-invitations/{invitation}', [OrganizationInvitationController::class, 'accept'])
+    ->middleware(['signed'])
+    ->name('team-invitations.accept'); // Note: legacy naming
+Route::get('/organization-invitations/{invitation}', [OrganizationInvitationController::class, 'accept'])
+    ->middleware(['signed:relative'])
+    ->name('organization-invitations.accept');

@@ -5,11 +5,17 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1;
 
 use App\Enums\Role;
+use App\Events\AfterCreateOrganization;
+use App\Http\Requests\V1\Organization\OrganizationStoreRequest;
 use App\Http\Requests\V1\Organization\OrganizationUpdateRequest;
 use App\Http\Resources\V1\Organization\OrganizationResource;
 use App\Models\Organization;
 use App\Service\BillableRateService;
+use App\Service\DeletionService;
+use App\Service\IpLookup\IpLookupServiceContract;
+use App\Service\OrganizationService;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Http\JsonResponse;
 
 class OrganizationController extends Controller
 {
@@ -79,5 +85,49 @@ class OrganizationController extends Controller
         }
 
         return new OrganizationResource($organization, true);
+    }
+
+    /**
+     * Create organization
+     *
+     * @operationId createOrganization
+     */
+    public function store(OrganizationStoreRequest $request, OrganizationService $organizationService): OrganizationResource
+    {
+        $user = $this->user();
+        $ipLookupResponse = app(IpLookupServiceContract::class)->lookup($request->ip());
+
+        $currency = $ipLookupResponse?->currency;
+
+        $organization = $organizationService->createOrganization(
+            $request->getName(),
+            $user,
+            false,
+            $currency
+        );
+
+        $user->switchTeam($organization);
+
+        // Note: The refresh is necessary for currently unknown reasons. Do not remove it.
+        $organization = $organization->refresh();
+        AfterCreateOrganization::dispatch($organization);
+
+        return new OrganizationResource($organization, true);
+    }
+
+    /**
+     * Delete organization
+     *
+     * @operationId deleteOrganization
+     *
+     * @throws AuthorizationException
+     */
+    public function destroy(Organization $organization, DeletionService $deletionService): JsonResponse
+    {
+        $this->checkPermission($organization, 'organizations:delete');
+
+        $deletionService->deleteOrganization($organization);
+
+        return response()->json(null, 204);
     }
 }

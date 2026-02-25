@@ -42,8 +42,10 @@ Route::prefix('v1')->name('v1.')->group(static function (): void {
     ])->group(static function (): void {
         // Organization routes
         Route::name('organizations.')->group(static function (): void {
+            Route::post('/organizations', [OrganizationController::class, 'store'])->name('store');
             Route::get('/organizations/{organization}', [OrganizationController::class, 'show'])->name('show');
             Route::put('/organizations/{organization}', [OrganizationController::class, 'update'])->name('update');
+            Route::delete('/organizations/{organization}', [OrganizationController::class, 'destroy'])->name('destroy');
         });
 
         // Member routes
@@ -59,6 +61,8 @@ Route::prefix('v1')->name('v1.')->group(static function (): void {
         // User routes
         Route::name('users.')->group(static function (): void {
             Route::get('/users/me', [UserController::class, 'me'])->name('me');
+            Route::put('/users/{user}', [UserController::class, 'update'])->name('update');
+            Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('destroy');
         });
 
         // Api token routes

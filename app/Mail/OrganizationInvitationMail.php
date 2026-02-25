@@ -8,6 +8,7 @@ use App\Models\OrganizationInvitation;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\URL;
 
 class OrganizationInvitationMail extends Mailable
@@ -32,9 +33,12 @@ class OrganizationInvitationMail extends Mailable
     public function build(): self
     {
         return $this->markdown('emails.organization-invitation', [
-            'acceptUrl' => URL::signedRoute('team-invitations.accept', [
-                'invitation' => $this->invitation,
-            ]),
+            'acceptUrl' => URL::to(URL::signedRoute(
+                'organization-invitations.accept',
+                ['invitation' => $this->invitation->getKey()],
+                Carbon::now()->addDays(90),
+                false
+            )),
         ])->subject(__('Organization Invitation'));
     }
 }
