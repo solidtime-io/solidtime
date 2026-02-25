@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Endpoint\Api\V1;
 
+use App\Models\User;
 use Laravel\Passport\Passport;
 
 class UserEndpointTest extends ApiEndpointTestAbstract
@@ -39,5 +40,58 @@ class UserEndpointTest extends ApiEndpointTestAbstract
                 'week_start' => $data->user->week_start->value,
             ],
         ]);
+    }
+
+    public function test_delete_fails_if_given_user_is_not_the_authenticated_user(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission();
+        $otherData = $this->createUserWithPermission();
+        Passport::actingAs($otherData->user);
+
+        // Act
+        $response = $this->deleteJson(route('api.v1.users.destroy', $data->user->getKey()));
+
+        // Assert
+        $response->assertForbidden();
+    }
+
+    public function test_delete_fails_if_not_authenticated(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission();
+
+        // Act
+        $response = $this->deleteJson(route('api.v1.users.destroy', $data->user->getKey()));
+
+        // Assert
+        $response->assertUnauthorized();
+    }
+
+    public function test_delete_fails_if_user_does_not_exist(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->deleteJson(route('api.v1.users.destroy', 'not-valid'));
+
+        // Assert
+        $response->assertNotFound();
+    }
+
+    public function test_delete_removes_user(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->deleteJson(route('api.v1.users.destroy', $data->user->getKey()));
+
+        // Assert
+        $response->assertNoContent();
+        $this->assertDatabaseMissing(User::class, ['id' => $data->user->getKey()]);
     }
 }
