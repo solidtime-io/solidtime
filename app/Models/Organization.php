@@ -36,6 +36,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  * @property string $user_id
  * @property bool $employees_can_see_billable_rates
  * @property bool $employees_can_manage_tasks
+ * @property bool $prevent_overlapping_time_entries
  * @property User $owner
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at

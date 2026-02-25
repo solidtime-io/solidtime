@@ -88,7 +88,7 @@ class InviteTeamMemberTest extends TestCase
         Mail::fake();
         $placeholder = User::factory()->placeholder()->create();
         $owner = User::factory()->withPersonalOrganization()->create();
-        $placeholderMember = Member::factory()->forOrganization($owner->currentTeam)->forUser($placeholder)->create();
+        $placeholderMember = Member::factory()->role(Role::Placeholder)->forOrganization($owner->currentTeam)->forUser($placeholder)->create();
 
         $timeEntries = TimeEntry::factory()->forOrganization($owner->currentTeam)->forMember($placeholderMember)->createMany(5);
 
