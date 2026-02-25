@@ -28,6 +28,6 @@ class AuthApiTokenExpirationReminderMailTest extends TestCaseWithDatabase
         $rendered = $mail->render();
 
         // Assert
-        $this->assertStringContainsString('The API token "TEST" expired.', $rendered);
+        $this->assertStringContainsString('The API token "TEST" will expire in 7 days!', $rendered);
     }
 }

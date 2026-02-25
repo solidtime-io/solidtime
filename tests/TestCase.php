@@ -38,7 +38,7 @@ abstract class TestCase extends BaseTestCase
 
     protected function mockPrivateStorage(): void
     {
-        Storage::fake(config('filesystems.default'));
+        Storage::fake(config('filesystems.private'));
     }
 
     protected function mockPublicStorage(): void
