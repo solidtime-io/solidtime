@@ -1,0 +1,18 @@
+{
+    "name": "solidtime-io/linear",
+    "description": "Linear integration for solidtime",
+    "type": "library",
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "Extensions\\Linear\\": "app/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Extensions\\Linear\\Providers\\LinearServiceProvider"
+            ]
+        }
+    }
+}

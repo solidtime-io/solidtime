@@ -57,7 +57,8 @@
         "psr-4": {
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
-            "Database\\Seeders\\": "database/seeders/"
+            "Database\\Seeders\\": "database/seeders/",
+            "Extensions\\Linear\\": "extensions/Linear/app/"
         },
         "files": [
             "extensions/extensions_autoload.php"
@@ -65,7 +66,8 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Tests\\": "tests/"
+            "Tests\\": "tests/",
+            "Extensions\\Linear\\Tests\\": "extensions/Linear/tests/"
         }
     },
     "scripts": {
