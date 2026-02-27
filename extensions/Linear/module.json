@@ -1,0 +1,11 @@
+{
+    "name": "Linear",
+    "alias": "linear",
+    "description": "Linear integration for solidtime",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Extensions\\Linear\\Providers\\LinearServiceProvider"
+    ],
+    "files": []
+}

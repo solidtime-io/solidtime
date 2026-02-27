@@ -26,11 +26,12 @@ yarn-error.log
 /blob-report/
 /playwright/.cache/
 /coverage
-/extensions
+/extensions/*
 !/extensions/.gitkeep
 !/extensions/extensions_autoload.php
+!/extensions/Linear
 /auth.json
-/modules_statuses.json
+# /modules_statuses.json
 /k8s
 /_ide_helper.php
 /.phpstorm.meta.php
