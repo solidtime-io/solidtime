@@ -46,7 +46,7 @@ class LinearSyncService
                 $projectId = $defaultProject->getKey();
             }
 
-            $task = new Task();
+            $task = new Task;
             $task->linear_id = $issueData['id'];
             $task->name = $issueData['title'];
             $task->organization_id = $organization->getKey();
@@ -71,7 +71,7 @@ class LinearSyncService
             return $project;
         }
 
-        $project = new Project();
+        $project = new Project;
         $project->linear_project_id = 'linear-default';
         $project->name = 'Linear';
         $project->color = '#5E6AD2';
@@ -95,10 +95,10 @@ class LinearSyncService
             return $project;
         }
 
-        $project = new Project();
+        $project = new Project;
         $project->linear_project_id = $projectData['id'];
         $project->name = $projectData['name'];
-        $project->color = '#' . substr(md5($projectData['id']), 0, 6);
+        $project->color = '#'.substr(md5($projectData['id']), 0, 6);
         $project->organization_id = $organization->getKey();
         $project->is_billable = false;
         $project->save();

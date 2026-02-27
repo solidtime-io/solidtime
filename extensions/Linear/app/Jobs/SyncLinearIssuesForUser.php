@@ -26,13 +26,13 @@ class SyncLinearIssuesForUser implements ShouldQueue
         public readonly LinearIntegration $integration,
     ) {}
 
-    public function handle(LinearSyncService $syncService = new LinearSyncService()): void
+    public function handle(LinearSyncService $syncService = new LinearSyncService): void
     {
         $client = new LinearGraphQLClient($this->integration->access_token);
 
         $updatedFilter = '';
         if ($this->integration->last_synced_at !== null) {
-            $updatedFilter = ', updatedAt: { gt: "' . $this->integration->last_synced_at->toIso8601String() . '" }';
+            $updatedFilter = ', updatedAt: { gt: "'.$this->integration->last_synced_at->toIso8601String().'" }';
         }
 
         $query = <<<GRAPHQL
@@ -74,7 +74,7 @@ class SyncLinearIssuesForUser implements ShouldQueue
             try {
                 $result = $client->query($query, $variables);
             } catch (RuntimeException $e) {
-                Log::error('Linear sync failed: ' . $e->getMessage(), [
+                Log::error('Linear sync failed: '.$e->getMessage(), [
                     'integration_id' => $this->integration->getKey(),
                 ]);
 

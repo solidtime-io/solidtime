@@ -26,7 +26,7 @@ class ProcessLinearWebhook implements ShouldQueue
         public readonly array $payload,
     ) {}
 
-    public function handle(LinearSyncService $syncService = new LinearSyncService()): void
+    public function handle(LinearSyncService $syncService = new LinearSyncService): void
     {
         $action = $this->payload['action'] ?? '';
         $issueData = $this->payload['data'] ?? [];
