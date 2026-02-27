@@ -18,7 +18,7 @@ class LinearSyncServiceTest extends TestCaseWithDatabase
     {
         $organization = Organization::factory()->create();
 
-        $service = new LinearSyncService();
+        $service = new LinearSyncService;
         $task = $service->upsertTask($organization, [
             'id' => 'linear-issue-abc',
             'title' => 'Fix the bug',
@@ -44,7 +44,7 @@ class LinearSyncServiceTest extends TestCaseWithDatabase
     {
         $organization = Organization::factory()->create();
 
-        $service = new LinearSyncService();
+        $service = new LinearSyncService;
         $service->upsertTask($organization, [
             'id' => 'linear-issue-update',
             'title' => 'Original title',
@@ -71,7 +71,7 @@ class LinearSyncServiceTest extends TestCaseWithDatabase
     {
         $organization = Organization::factory()->create();
 
-        $service = new LinearSyncService();
+        $service = new LinearSyncService;
         $service->upsertTask($organization, [
             'id' => 'linear-issue-done',
             'title' => 'Done task',
@@ -91,7 +91,7 @@ class LinearSyncServiceTest extends TestCaseWithDatabase
             'linear_project_id' => 'linear-proj-xyz',
         ]);
 
-        $service = new LinearSyncService();
+        $service = new LinearSyncService;
         $service->upsertTask($organization, [
             'id' => 'linear-issue-linked',
             'title' => 'Linked task',
@@ -108,7 +108,7 @@ class LinearSyncServiceTest extends TestCaseWithDatabase
     {
         $organization = Organization::factory()->create();
 
-        $service = new LinearSyncService();
+        $service = new LinearSyncService;
         $service->upsertTask($organization, [
             'id' => 'linear-issue-new-proj',
             'title' => 'Task with new project',

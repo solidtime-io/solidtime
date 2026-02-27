@@ -27,6 +27,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  * @property Carbon|null $done_at
  * @property int|null $estimated_time
  * @property int $spent_time
+ * @property string|null $linear_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read Project $project

@@ -40,7 +40,7 @@ class LinearSyncService
                 'estimated_time' => $issueData['estimate'] !== null ? (int) ($issueData['estimate'] * 3600) : $task->estimated_time,
             ]);
         } else {
-            $task = new Task();
+            $task = new Task;
             $task->linear_id = $issueData['id'];
             $task->name = $issueData['title'];
             $task->organization_id = $organization->getKey();
@@ -66,7 +66,7 @@ class LinearSyncService
             return $project;
         }
 
-        $project = new Project();
+        $project = new Project;
         $project->linear_project_id = $projectData['id'];
         $project->name = $projectData['name'];
         $project->color = self::DEFAULT_PROJECT_COLOR;
@@ -88,7 +88,7 @@ class LinearSyncService
             return $project;
         }
 
-        $project = new Project();
+        $project = new Project;
         $project->name = 'Linear';
         $project->color = self::DEFAULT_PROJECT_COLOR;
         $project->organization_id = $organization->getKey();
