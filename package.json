@@ -28,7 +28,7 @@
         "@vitejs/plugin-vue": "^6.0.3",
         "@vue/tsconfig": "^0.8.0",
         "autoprefixer": "^10.4.20",
-        "axios": "^1.6.4",
+        "axios": "^1.13.5",
         "eslint-plugin-unused-imports": "^4.1.4",
         "laravel-vite-plugin": "^2.1.0",
         "openapi-zod-client": "^1.16.2",
