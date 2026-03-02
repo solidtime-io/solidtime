@@ -608,7 +608,7 @@ test('test that billable icon shows dollar sign for USD currency on time entry r
     page,
     ctx,
 }) => {
-    await updateOrganizationCurrencyViaWeb(ctx, 'USD');
+    await updateOrganizationCurrencyViaWeb(page, ctx, 'USD');
     await goToTimeOverview(page);
     await createEmptyTimeEntry(page);
     const timeEntryRow = page.locator('[data-testid="time_entry_row"]').first();
@@ -621,7 +621,7 @@ test('test that billable icon shows euro sign for EUR currency on time entry row
     page,
     ctx,
 }) => {
-    await updateOrganizationCurrencyViaWeb(ctx, 'EUR');
+    await updateOrganizationCurrencyViaWeb(page, ctx, 'EUR');
     await goToTimeOverview(page);
     await createEmptyTimeEntry(page);
     const timeEntryRow = page.locator('[data-testid="time_entry_row"]').first();
