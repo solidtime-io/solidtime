@@ -65,13 +65,10 @@ async function createApiToken(page: Page): Promise<string> {
     throw new Error('Failed to create API token after retries');
 }
 
-function buildAuthHeaders(token: string, xsrfToken: string): Record<string, string> {
+function bearerHeaders(token: string): Record<string, string> {
     return {
         Accept: 'application/json',
         Authorization: `Bearer ${token}`,
-        // XSRF header is needed for web routes (e.g. PUT /teams) that go through
-        // VerifyCsrfToken middleware. API routes ignore it but it doesn't hurt.
-        ...(xsrfToken ? { 'X-XSRF-TOKEN': xsrfToken } : {}),
     };
 }
 
@@ -82,11 +79,7 @@ function buildAuthHeaders(token: string, xsrfToken: string): Record<string, stri
 export async function setupTestContext(page: Page): Promise<TestContext> {
     const token = await createApiToken(page);
     const request = page.request;
-
-    const cookies = await page.context().cookies();
-    const xsrfCookie = cookies.find((c) => c.name === 'XSRF-TOKEN');
-    const xsrfToken = xsrfCookie ? decodeURIComponent(xsrfCookie.value) : '';
-    const headers = buildAuthHeaders(token, xsrfToken);
+    const headers = bearerHeaders(token);
 
     const orgId = await getOrganizationId(request, headers);
     const memberId = await getCurrentMemberId(request, orgId, headers);
@@ -547,11 +540,17 @@ export async function updateOrganizationSettingViaApi(
 }
 
 export async function updateOrganizationCurrencyViaWeb(
+    page: Page,
     ctx: TestContext,
     currency: string,
     name: string = 'Test Organization'
 ) {
-    const response = await ctx.request.put(`${PLAYWRIGHT_BASE_URL}/teams/${ctx.orgId}`, {
+    const cookies = await page.context().cookies();
+    const xsrfCookie = cookies.find((c) => c.name === 'XSRF-TOKEN');
+    const xsrfToken = xsrfCookie ? decodeURIComponent(xsrfCookie.value) : '';
+
+    const response = await page.request.put(`${PLAYWRIGHT_BASE_URL}/teams/${ctx.orgId}`, {
+        headers: { 'X-XSRF-TOKEN': xsrfToken },
         data: { name, currency },
     });
     expect(response.status()).toBe(200);

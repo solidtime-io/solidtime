@@ -30,7 +30,7 @@ test('test that starting and stopping a timer without description and project wo
 });
 
 test('test that billable icon shows dollar sign for USD currency', async ({ page, ctx }) => {
-    await updateOrganizationCurrencyViaWeb(ctx, 'USD');
+    await updateOrganizationCurrencyViaWeb(page, ctx, 'USD');
     await goToDashboard(page);
     await page.waitForLoadState('networkidle');
     const billableButton = page.getByRole('button', { name: 'Non Billable' }).first();
@@ -39,7 +39,7 @@ test('test that billable icon shows dollar sign for USD currency', async ({ page
 });
 
 test('test that billable icon shows euro sign for EUR currency', async ({ page, ctx }) => {
-    await updateOrganizationCurrencyViaWeb(ctx, 'EUR');
+    await updateOrganizationCurrencyViaWeb(page, ctx, 'EUR');
     await goToDashboard(page);
     await page.waitForLoadState('networkidle');
     const billableButton = page.getByRole('button', { name: 'Non Billable' }).first();
