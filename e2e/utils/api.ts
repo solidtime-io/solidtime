@@ -21,44 +21,56 @@ export interface TestContext {
  *
  * The browser's native fetch includes the laravel_token cookie (set by
  * CreateFreshApiToken during the dashboard page load), so authentication
- * is handled by the browser's own cookie jar — no Playwright cookie sync
- * issues. The returned Bearer token is then used for all subsequent API
- * calls, making them completely independent of cookie state.
+ * is handled by the browser's own cookie jar. The returned Bearer token is
+ * then used for all subsequent API calls, making them independent of cookie state.
+ *
+ * If the first attempt returns 401 (Octane hasn't fully committed the session yet),
+ * we reload the page to trigger a fresh CreateFreshApiToken and retry once.
  */
 async function createApiToken(page: Page): Promise<string> {
-    const result = await page.evaluate(async (baseUrl) => {
-        const xsrfCookie = document.cookie
-            .split('; ')
-            .find((c) => c.startsWith('XSRF-TOKEN='));
-        const xsrfToken = xsrfCookie
-            ? decodeURIComponent(xsrfCookie.split('=').slice(1).join('='))
-            : '';
+    for (let attempt = 0; attempt < 2; attempt++) {
+        const result = await page.evaluate(async (baseUrl) => {
+            const xsrfCookie = document.cookie.split('; ').find((c) => c.startsWith('XSRF-TOKEN='));
+            const xsrfToken = xsrfCookie
+                ? decodeURIComponent(xsrfCookie.split('=').slice(1).join('='))
+                : '';
 
-        const res = await fetch(`${baseUrl}/api/v1/users/me/api-tokens`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                Accept: 'application/json',
-                'X-XSRF-TOKEN': xsrfToken,
-            },
-            body: JSON.stringify({ name: 'playwright-test' }),
-        });
+            const res = await fetch(`${baseUrl}/api/v1/users/me/api-tokens`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                    'X-XSRF-TOKEN': xsrfToken,
+                },
+                body: JSON.stringify({ name: 'playwright-test' }),
+            });
 
-        if (!res.ok) {
-            throw new Error(`Failed to create API token: ${res.status} ${await res.text()}`);
+            if (!res.ok) {
+                return null;
+            }
+
+            const body = await res.json();
+            return body.data.access_token as string;
+        }, PLAYWRIGHT_BASE_URL);
+
+        if (result) {
+            return result;
         }
 
-        const body = await res.json();
-        return body.data.access_token as string;
-    }, PLAYWRIGHT_BASE_URL);
+        // Reload to get a fresh laravel_token cookie and retry
+        await page.reload({ waitUntil: 'domcontentloaded' });
+    }
 
-    return result;
+    throw new Error('Failed to create API token after retry');
 }
 
-function bearerHeaders(token: string): Record<string, string> {
+function buildAuthHeaders(token: string, xsrfToken: string): Record<string, string> {
     return {
         Accept: 'application/json',
         Authorization: `Bearer ${token}`,
+        // XSRF header is needed for web routes (e.g. PUT /teams) that go through
+        // VerifyCsrfToken middleware. API routes ignore it but it doesn't hurt.
+        ...(xsrfToken ? { 'X-XSRF-TOKEN': xsrfToken } : {}),
     };
 }
 
@@ -69,7 +81,11 @@ function bearerHeaders(token: string): Record<string, string> {
 export async function setupTestContext(page: Page): Promise<TestContext> {
     const token = await createApiToken(page);
     const request = page.request;
-    const headers = bearerHeaders(token);
+
+    const cookies = await page.context().cookies();
+    const xsrfCookie = cookies.find((c) => c.name === 'XSRF-TOKEN');
+    const xsrfToken = xsrfCookie ? decodeURIComponent(xsrfCookie.value) : '';
+    const headers = buildAuthHeaders(token, xsrfToken);
 
     const orgId = await getOrganizationId(request, headers);
     const memberId = await getCurrentMemberId(request, orgId, headers);
