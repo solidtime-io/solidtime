@@ -16,12 +16,49 @@ export interface TestContext {
 // Auth helpers
 // ──────────────────────────────────────────────────
 
-async function getApiHeaders(page: Page): Promise<Record<string, string>> {
-    const cookies = await page.context().cookies();
-    const xsrfCookie = cookies.find((c) => c.name === 'XSRF-TOKEN');
+/**
+ * Create a Passport API token by calling the token endpoint from the browser.
+ *
+ * The browser's native fetch includes the laravel_token cookie (set by
+ * CreateFreshApiToken during the dashboard page load), so authentication
+ * is handled by the browser's own cookie jar — no Playwright cookie sync
+ * issues. The returned Bearer token is then used for all subsequent API
+ * calls, making them completely independent of cookie state.
+ */
+async function createApiToken(page: Page): Promise<string> {
+    const result = await page.evaluate(async (baseUrl) => {
+        const xsrfCookie = document.cookie
+            .split('; ')
+            .find((c) => c.startsWith('XSRF-TOKEN='));
+        const xsrfToken = xsrfCookie
+            ? decodeURIComponent(xsrfCookie.split('=').slice(1).join('='))
+            : '';
+
+        const res = await fetch(`${baseUrl}/api/v1/users/me/api-tokens`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+                'X-XSRF-TOKEN': xsrfToken,
+            },
+            body: JSON.stringify({ name: 'playwright-test' }),
+        });
+
+        if (!res.ok) {
+            throw new Error(`Failed to create API token: ${res.status} ${await res.text()}`);
+        }
+
+        const body = await res.json();
+        return body.data.access_token as string;
+    }, PLAYWRIGHT_BASE_URL);
+
+    return result;
+}
+
+function bearerHeaders(token: string): Record<string, string> {
     return {
         Accept: 'application/json',
-        ...(xsrfCookie ? { 'X-XSRF-TOKEN': decodeURIComponent(xsrfCookie.value) } : {}),
+        Authorization: `Bearer ${token}`,
     };
 }
 
@@ -30,8 +67,10 @@ async function getApiHeaders(page: Page): Promise<Record<string, string>> {
 // ──────────────────────────────────────────────────
 
 export async function setupTestContext(page: Page): Promise<TestContext> {
+    const token = await createApiToken(page);
     const request = page.request;
-    const headers = await getApiHeaders(page);
+    const headers = bearerHeaders(token);
+
     const orgId = await getOrganizationId(request, headers);
     const memberId = await getCurrentMemberId(request, orgId, headers);
     return { request: createAuthenticatedRequest(request, headers), orgId, memberId };
