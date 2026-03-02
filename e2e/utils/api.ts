@@ -25,10 +25,10 @@ export interface TestContext {
  * then used for all subsequent API calls, making them independent of cookie state.
  *
  * If the first attempt returns 401 (Octane hasn't fully committed the session yet),
- * we reload the page to trigger a fresh CreateFreshApiToken and retry once.
+ * we reload the page to trigger a fresh CreateFreshApiToken and retry.
  */
 async function createApiToken(page: Page): Promise<string> {
-    for (let attempt = 0; attempt < 2; attempt++) {
+    for (let attempt = 0; attempt < 3; attempt++) {
         const result = await page.evaluate(async (baseUrl) => {
             const xsrfCookie = document.cookie.split('; ').find((c) => c.startsWith('XSRF-TOKEN='));
             const xsrfToken = xsrfCookie
@@ -57,11 +57,12 @@ async function createApiToken(page: Page): Promise<string> {
             return result;
         }
 
-        // Reload to get a fresh laravel_token cookie and retry
-        await page.reload({ waitUntil: 'domcontentloaded' });
+        // Reload to get a fresh laravel_token cookie and retry.
+        // networkidle gives Octane time to fully commit the session.
+        await page.reload({ waitUntil: 'networkidle' });
     }
 
-    throw new Error('Failed to create API token after retry');
+    throw new Error('Failed to create API token after retries');
 }
 
 function buildAuthHeaders(token: string, xsrfToken: string): Record<string, string> {
