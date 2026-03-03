@@ -45,6 +45,8 @@ import {
     TrashIcon,
     ScissorsIcon,
     PlusIcon,
+    StopIcon,
+    XMarkIcon,
 } from '@heroicons/vue/20/solid';
 import activityStatusPlugin, {
     type ActivityPeriod,
@@ -94,8 +96,6 @@ const props = defineProps<{
     createProject: (project: CreateProjectBody) => Promise<Project | undefined>;
     createClient: (client: CreateClientBody) => Promise<Client | undefined>;
     createTag: (name: string) => Promise<Tag | undefined>;
-    duplicateTimeEntry: (entry: TimeEntry) => Promise<void>;
-    splitTimeEntry: (entry: TimeEntry) => Promise<void>;
 }>();
 
 // Local component state
@@ -328,8 +328,6 @@ function handleCalendarContextMenu(event: MouseEvent) {
     if (!fcEvent) return;
 
     const ext = fcEvent.extendedProps as CalendarExtendedProps;
-    if (ext.isRunning) return;
-
     contextMenuTimeEntry.value = ext.timeEntry;
     contextMenuCreateTime.value = null;
 }
@@ -342,7 +340,16 @@ function handleContextEdit() {
 
 async function handleContextDuplicate() {
     if (!contextMenuTimeEntry.value || contextMenuTimeEntry.value.end === null) return;
-    await props.duplicateTimeEntry(contextMenuTimeEntry.value);
+    const entry = contextMenuTimeEntry.value;
+    await props.createTimeEntry({
+        start: entry.start,
+        end: entry.end,
+        billable: entry.billable,
+        description: entry.description,
+        project_id: entry.project_id,
+        task_id: entry.task_id,
+        tags: entry.tags,
+    });
     emit('refresh');
 }
 
@@ -354,7 +361,38 @@ async function handleContextDelete() {
 
 async function handleContextSplit() {
     if (!contextMenuTimeEntry.value || contextMenuTimeEntry.value.end === null) return;
-    await props.splitTimeEntry(contextMenuTimeEntry.value);
+    const entry = contextMenuTimeEntry.value;
+    if (!entry.end) return;
+    const start = getDayJsInstance()(entry.start);
+    const end = getDayJsInstance()(entry.end);
+    const midpoint = start.add(end.diff(start) / 2, 'millisecond').startOf('minute');
+
+    await props.updateTimeEntry({ ...entry, end: midpoint.utc().format() });
+    await props.createTimeEntry({
+        start: midpoint.utc().format(),
+        end: entry.end,
+        billable: entry.billable,
+        description: entry.description,
+        project_id: entry.project_id,
+        task_id: entry.task_id,
+        tags: entry.tags,
+    });
+    emit('refresh');
+}
+
+async function handleContextStop() {
+    if (!contextMenuTimeEntry.value || contextMenuTimeEntry.value.end !== null) return;
+    const entry = contextMenuTimeEntry.value;
+    await props.updateTimeEntry({
+        ...entry,
+        end: getDayJsInstance()().utc().format(),
+    });
+    emit('refresh');
+}
+
+async function handleContextDiscard() {
+    if (!contextMenuTimeEntry.value || contextMenuTimeEntry.value.end !== null) return;
+    await props.deleteTimeEntry(contextMenuTimeEntry.value.id);
     emit('refresh');
 }
 
@@ -659,7 +697,7 @@ onUnmounted(() => {
                 </FullCalendar>
             </ContextMenuTrigger>
             <ContextMenuContent class="min-w-[160px]">
-                <template v-if="contextMenuTimeEntry">
+                <template v-if="contextMenuTimeEntry && contextMenuTimeEntry.end !== null">
                     <ContextMenuItem class="space-x-3" @select="handleContextEdit()">
                         <PencilIcon class="w-4 h-4 text-icon-default" />
                         <span>Edit</span>
@@ -678,6 +716,19 @@ onUnmounted(() => {
                         @select="handleContextDelete()">
                         <TrashIcon class="w-4 h-4 text-icon-default" />
                         <span>Delete</span>
+                    </ContextMenuItem>
+                </template>
+                <template v-else-if="contextMenuTimeEntry && contextMenuTimeEntry.end === null">
+                    <ContextMenuItem class="space-x-3" @select="handleContextStop()">
+                        <StopIcon class="w-4 h-4 text-icon-default" />
+                        <span>Stop</span>
+                    </ContextMenuItem>
+                    <ContextMenuSeparator />
+                    <ContextMenuItem
+                        class="space-x-3 text-destructive"
+                        @select="handleContextDiscard()">
+                        <XMarkIcon class="w-4 h-4 text-icon-default" />
+                        <span>Discard</span>
                     </ContextMenuItem>
                 </template>
                 <template v-else>
