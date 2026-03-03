@@ -1,11 +1,5 @@
 <script setup lang="ts">
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/Components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/packages/ui/src';
 import type { Role } from '@/types/jetstream';
 import { usePage } from '@inertiajs/vue3';
 

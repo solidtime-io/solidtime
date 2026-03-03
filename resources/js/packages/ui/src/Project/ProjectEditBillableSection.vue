@@ -1,13 +1,7 @@
 <script setup lang="ts">
 import { Field, FieldDescription, FieldLabel } from '../field';
 import BillableRateInput from '@/packages/ui/src/Input/BillableRateInput.vue';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/Components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '..';
 import {
     Tooltip,
     TooltipContent,
