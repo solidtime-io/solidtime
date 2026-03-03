@@ -38,6 +38,21 @@ export function useVisualSnap({
         return { mirror, harness };
     }
 
+    /**
+     * Copy the Vue-rendered event content from the original event into the
+     * FC mirror element (which only gets FC's default time-only rendering).
+     */
+    function copyEventContentToMirror(calendarEl: HTMLElement, mirror: HTMLElement) {
+        const originalEvent = calendarEl.querySelector(
+            '.fc-event-resizing:not(.fc-event-mirror), .fc-event-dragging:not(.fc-event-mirror)'
+        ) as HTMLElement | null;
+        if (!originalEvent) return;
+        const originalMain = originalEvent.querySelector('.fc-event-main') as HTMLElement | null;
+        const mirrorMain = mirror.querySelector('.fc-event-main') as HTMLElement | null;
+        if (!originalMain || !mirrorMain) return;
+        mirrorMain.innerHTML = originalMain.innerHTML;
+    }
+
     function updateMirrorDurationLabel(
         mirror: HTMLElement,
         snappedTop: number,
@@ -46,7 +61,7 @@ export function useVisualSnap({
     ) {
         const snappedDurationMin = Math.round((snappedEnd - snappedTop) / snapPx) * snapMinutes();
         const durationText = formatDuration(snappedDurationMin * 60);
-        const durationEl = mirror.querySelector('.fc-event-main')?.querySelector('div:last-child');
+        const durationEl = mirror.querySelector('[data-duration]');
         if (durationEl) {
             durationEl.textContent = durationText;
         }
@@ -115,10 +130,16 @@ export function useVisualSnap({
         let initialTop: number | null = null;
         let initialEnd: number | null = null;
         let resizeEdge: 'top' | 'bottom' | null = null;
+        let contentCopied = false;
 
         startLoop((calendarEl, snapPx) => {
             const { mirror, harness } = findMirrorHarness(calendarEl);
             if (!harness) return;
+
+            if (mirror && !contentCopied) {
+                copyEventContentToMirror(calendarEl, mirror);
+                contentCopied = true;
+            }
 
             const top = parseFloat(harness.style.top) || 0;
             const endPos = -(parseFloat(harness.style.bottom) || 0);
