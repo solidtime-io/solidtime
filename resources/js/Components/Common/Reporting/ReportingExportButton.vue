@@ -6,7 +6,7 @@ import {
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
-} from '@/Components/ui/dropdown-menu';
+} from '@/packages/ui/src';
 import type { ExportFormat } from '@/types/reporting';
 import { ref } from 'vue';
 import { isAllowedToPerformPremiumAction } from '@/utils/billing';

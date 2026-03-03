@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { UserGroupIcon } from '@heroicons/vue/16/solid';
-import { DropdownMenuCheckboxItem, DropdownMenuSeparator } from '@/Components/ui/dropdown-menu';
+import { DropdownMenuCheckboxItem, DropdownMenuSeparator } from '@/packages/ui/src';
 import BaseFilterBadge from './BaseFilterBadge.vue';
 import type { Client } from '@/packages/api/src';
 import { NO_CLIENT_ID } from './constants';
