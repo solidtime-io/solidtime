@@ -7,7 +7,7 @@ import {
     type WeekStartDay,
 } from '@/packages/ui/src/utils/time';
 import { Popover, PopoverContent, PopoverTrigger } from '@/packages/ui/src/popover';
-import { Calendar } from '@/Components/ui/calendar';
+import { Calendar } from '..';
 import { Button } from '@/packages/ui/src/Buttons';
 import { CalendarIcon } from 'lucide-vue-next';
 import { parseDate, type DateValue } from '@internationalized/date';

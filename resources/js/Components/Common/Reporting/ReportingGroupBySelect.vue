@@ -1,11 +1,5 @@
 <script setup lang="ts">
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/Components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/packages/ui/src';
 import { type Component, computed } from 'vue';
 
 const model = defineModel<string | null>({ default: null });
