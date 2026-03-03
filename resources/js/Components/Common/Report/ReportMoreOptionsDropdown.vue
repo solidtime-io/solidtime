@@ -6,7 +6,7 @@ import {
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
-} from '@/Components/ui/dropdown-menu';
+} from '@/packages/ui/src';
 import { canDeleteReport, canUpdateReport } from '@/utils/permissions';
 
 const emit = defineEmits<{
