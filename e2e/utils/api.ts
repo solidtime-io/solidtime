@@ -473,6 +473,25 @@ export async function createTimeEntryWithTagViaApi(
     return { tag, entry };
 }
 
+export async function createRunningTimeEntryViaApi(ctx: TestContext, description: string) {
+    const start = new Date();
+    start.setMinutes(start.getMinutes() - 10);
+    const response = await ctx.request.post(
+        `${PLAYWRIGHT_BASE_URL}/api/v1/organizations/${ctx.orgId}/time-entries`,
+        {
+            data: {
+                member_id: ctx.memberId,
+                start: formatTimestamp(start),
+                description,
+                billable: false,
+            },
+        }
+    );
+    expect(response.status()).toBe(201);
+    const body = await response.json();
+    return body.data as { id: string; start: string; end: null; description: string };
+}
+
 export async function createBareTimeEntryViaApi(
     ctx: TestContext,
     description: string,
