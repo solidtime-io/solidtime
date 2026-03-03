@@ -15,6 +15,7 @@ import {
     onActivated,
     onUnmounted,
 } from 'vue';
+import type { EventApi } from '@fullcalendar/core';
 import { useLocalStorage } from '@vueuse/core';
 import chroma from 'chroma-js';
 import { useCssVariable } from '@/utils/useCssVariable';
@@ -31,6 +32,20 @@ import FullCalendarDayHeader from './FullCalendarDayHeader.vue';
 import CalendarSettingsPopover from './CalendarSettingsPopover.vue';
 import type { CalendarSettings } from './calendarSettings';
 import { useVisualSnap } from './useVisualSnap';
+import {
+    ContextMenu,
+    ContextMenuContent,
+    ContextMenuItem,
+    ContextMenuSeparator,
+    ContextMenuTrigger,
+} from '..';
+import {
+    PencilIcon,
+    DocumentDuplicateIcon,
+    TrashIcon,
+    ScissorsIcon,
+    PlusIcon,
+} from '@heroicons/vue/20/solid';
 import activityStatusPlugin, {
     type ActivityPeriod,
     renderActivityStatusBoxes,
@@ -79,6 +94,8 @@ const props = defineProps<{
     createProject: (project: CreateProjectBody) => Promise<Project | undefined>;
     createClient: (client: CreateClientBody) => Promise<Client | undefined>;
     createTag: (name: string) => Promise<Tag | undefined>;
+    duplicateTimeEntry: (entry: TimeEntry) => Promise<void>;
+    splitTimeEntry: (entry: TimeEntry) => Promise<void>;
 }>();
 
 // Local component state
@@ -255,6 +272,100 @@ function handleEventClick(arg: EventClickArg) {
     showEditTimeEntryModal.value = true;
 }
 
+// Context menu state
+const contextMenuTimeEntry = ref<TimeEntry | null>(null);
+const contextMenuCreateTime = ref<{ start: Dayjs; end: Dayjs } | null>(null);
+
+function getTimeAtClickPosition(event: MouseEvent): { start: Dayjs; end: Dayjs } | null {
+    // FullCalendar's time grid has two overlapping tables: slots (data-time) and
+    // cols (data-date). The cols layer often has pointer-events: none, so clicks
+    // land on the slots table. Use elementsFromPoint to reach both layers.
+    const elements = document.elementsFromPoint(event.clientX, event.clientY);
+    let time: string | null = null;
+    let date: string | null = null;
+
+    for (const el of elements) {
+        if (el instanceof HTMLElement) {
+            if (!time && el.dataset.time !== undefined) {
+                time = el.dataset.time;
+            }
+            if (!date && el.dataset.date !== undefined) {
+                date = el.dataset.date;
+            }
+        }
+        if (time && date) break;
+    }
+
+    if (!time || !date) return null;
+
+    const snap = calendarSettings.value.snapMinutes;
+    const startLocal = getDayJsInstance()(`${date}T${time}`).tz(getUserTimezone(), true);
+    const snappedStart = snapStartToGrid(startLocal, snap);
+    const snappedEnd = snappedStart.add(snap, 'minute');
+
+    return { start: snappedStart.utc(), end: snappedEnd.utc() };
+}
+
+function handleCalendarContextMenu(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    const eventEl = target.closest<HTMLElement>('[data-event-id]');
+
+    if (!eventEl) {
+        // Right-click on empty calendar space — show "Create Time Entry"
+        contextMenuTimeEntry.value = null;
+        const timeInfo = getTimeAtClickPosition(event);
+        contextMenuCreateTime.value = timeInfo;
+        return;
+    }
+
+    const eventId = eventEl.getAttribute('data-event-id');
+    if (!eventId) return;
+
+    const api = calendarRef.value?.getApi();
+    if (!api) return;
+
+    const fcEvent: EventApi | undefined = api.getEvents().find((e) => e.id === eventId);
+    if (!fcEvent) return;
+
+    const ext = fcEvent.extendedProps as CalendarExtendedProps;
+    if (ext.isRunning) return;
+
+    contextMenuTimeEntry.value = ext.timeEntry;
+    contextMenuCreateTime.value = null;
+}
+
+function handleContextEdit() {
+    if (!contextMenuTimeEntry.value || contextMenuTimeEntry.value.end === null) return;
+    selectedTimeEntry.value = contextMenuTimeEntry.value;
+    showEditTimeEntryModal.value = true;
+}
+
+async function handleContextDuplicate() {
+    if (!contextMenuTimeEntry.value || contextMenuTimeEntry.value.end === null) return;
+    await props.duplicateTimeEntry(contextMenuTimeEntry.value);
+    emit('refresh');
+}
+
+async function handleContextDelete() {
+    if (!contextMenuTimeEntry.value || contextMenuTimeEntry.value.end === null) return;
+    await props.deleteTimeEntry(contextMenuTimeEntry.value.id);
+    emit('refresh');
+}
+
+async function handleContextSplit() {
+    if (!contextMenuTimeEntry.value || contextMenuTimeEntry.value.end === null) return;
+    await props.splitTimeEntry(contextMenuTimeEntry.value);
+    emit('refresh');
+}
+
+function handleContextCreate() {
+    if (contextMenuCreateTime.value) {
+        newEventStart.value = contextMenuCreateTime.value.start;
+        newEventEnd.value = contextMenuCreateTime.value.end;
+    }
+    showCreateTimeEntryModal.value = true;
+}
+
 // Snap a dayjs time down to the previous snap boundary (for start times)
 function snapStartToGrid(time: Dayjs, snapMinutes: number): Dayjs {
     const minutes = time.hour() * 60 + time.minute();
@@ -387,6 +498,9 @@ const calendarOptions = computed(() => {
         eventResizeStart: startVisualResizeSnap,
         eventResize: handleEventResize,
         datesSet: emitDatesChange,
+        eventDidMount: (arg: { el: HTMLElement; event: { id: string } }) => {
+            arg.el.setAttribute('data-event-id', arg.event.id);
+        },
 
         events: events.value,
         activityPeriods: props.activityPeriods || [],
@@ -509,36 +623,71 @@ onUnmounted(() => {
                 :settings="calendarSettings"
                 @update:settings="onSettingsUpdate" />
         </div>
-        <FullCalendar ref="calendarRef" class="fullcalendar" :options="calendarOptions">
-            <template #eventContent="arg">
-                <FullCalendarEventContent
-                    :title="arg.event.title"
-                    :project-name="(arg.event.extendedProps as any).project?.name"
-                    :task-name="(arg.event.extendedProps as any).task?.name"
-                    :client-name="(arg.event.extendedProps as any).client?.name"
-                    :duration-seconds="
-                        ((arg.event.extendedProps as any).duration ?? undefined)
-                            ? (arg.event.extendedProps as any).duration * 60
-                            : undefined
-                    "
-                    :start="arg.event.start as any"
-                    :end="arg.event.end as any" />
-            </template>
-            <template #dayHeaderContent="arg">
-                <FullCalendarDayHeader
-                    :date="
-                        getDayJsInstance()(arg.date.toISOString()).utc().tz(getUserTimezone(), true)
-                    "
-                    :total-seconds="
-                        dailyTotals[
-                            getDayJsInstance()(arg.date)
-                                .utc()
-                                .tz(getUserTimezone(), true)
-                                .format('YYYY-MM-DD')
-                        ] || 0
-                    " />
-            </template>
-        </FullCalendar>
+        <ContextMenu>
+            <ContextMenuTrigger as="div" class="h-full" @contextmenu="handleCalendarContextMenu">
+                <FullCalendar ref="calendarRef" class="fullcalendar" :options="calendarOptions">
+                    <template #eventContent="arg">
+                        <FullCalendarEventContent
+                            :title="arg.event.title"
+                            :project-name="(arg.event.extendedProps as any).project?.name"
+                            :task-name="(arg.event.extendedProps as any).task?.name"
+                            :client-name="(arg.event.extendedProps as any).client?.name"
+                            :duration-seconds="
+                                ((arg.event.extendedProps as any).duration ?? undefined)
+                                    ? (arg.event.extendedProps as any).duration * 60
+                                    : undefined
+                            "
+                            :start="arg.event.start as any"
+                            :end="arg.event.end as any" />
+                    </template>
+                    <template #dayHeaderContent="arg">
+                        <FullCalendarDayHeader
+                            :date="
+                                getDayJsInstance()(arg.date.toISOString())
+                                    .utc()
+                                    .tz(getUserTimezone(), true)
+                            "
+                            :total-seconds="
+                                dailyTotals[
+                                    getDayJsInstance()(arg.date)
+                                        .utc()
+                                        .tz(getUserTimezone(), true)
+                                        .format('YYYY-MM-DD')
+                                ] || 0
+                            " />
+                    </template>
+                </FullCalendar>
+            </ContextMenuTrigger>
+            <ContextMenuContent class="min-w-[160px]">
+                <template v-if="contextMenuTimeEntry">
+                    <ContextMenuItem class="space-x-3" @select="handleContextEdit()">
+                        <PencilIcon class="w-4 h-4 text-icon-default" />
+                        <span>Edit</span>
+                    </ContextMenuItem>
+                    <ContextMenuItem class="space-x-3" @select="handleContextDuplicate()">
+                        <DocumentDuplicateIcon class="w-4 h-4 text-icon-default" />
+                        <span>Duplicate</span>
+                    </ContextMenuItem>
+                    <ContextMenuItem class="space-x-3" @select="handleContextSplit()">
+                        <ScissorsIcon class="w-4 h-4 text-icon-default" />
+                        <span>Split</span>
+                    </ContextMenuItem>
+                    <ContextMenuSeparator />
+                    <ContextMenuItem
+                        class="space-x-3 text-destructive"
+                        @select="handleContextDelete()">
+                        <TrashIcon class="w-4 h-4 text-icon-default" />
+                        <span>Delete</span>
+                    </ContextMenuItem>
+                </template>
+                <template v-else>
+                    <ContextMenuItem class="space-x-3" @select="handleContextCreate()">
+                        <PlusIcon class="w-4 h-4 text-icon-default" />
+                        <span>Create Time Entry</span>
+                    </ContextMenuItem>
+                </template>
+            </ContextMenuContent>
+        </ContextMenu>
     </div>
 </template>
 
