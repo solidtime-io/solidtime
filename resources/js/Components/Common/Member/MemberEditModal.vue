@@ -7,13 +7,7 @@ import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import { type MemberBillableKey, useMembersStore } from '@/utils/useMembers';
 import BillableRateInput from '@/packages/ui/src/Input/BillableRateInput.vue';
 import { Field, FieldLabel, FieldDescription } from '@/packages/ui/src/field';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/Components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/packages/ui/src';
 import {
     Tooltip,
     TooltipContent,

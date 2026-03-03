@@ -1,11 +1,6 @@
 <script setup lang="ts">
 import { TrashIcon, PencilIcon, DocumentDuplicateIcon } from '@heroicons/vue/20/solid';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from '..';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '..';
 
 const props = withDefaults(
     defineProps<{
