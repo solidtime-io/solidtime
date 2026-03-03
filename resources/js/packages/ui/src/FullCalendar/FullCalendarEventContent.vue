@@ -51,7 +51,7 @@ const formattedDuration = computed(() =>
         <div v-if="clientName" class="opacity-85">
             {{ clientName }}
         </div>
-        <div class="opacity-90">
+        <div class="opacity-90" data-duration>
             {{ formattedDuration }}
         </div>
     </div>
