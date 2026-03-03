@@ -9,9 +9,7 @@ import {
     type CreateClientBody,
     type CreateProjectBody,
     type Project,
-    type TimeEntry,
 } from '@/packages/api/src';
-import { getDayJsInstance } from '@/packages/ui/src/utils/time';
 import { TimeEntryCalendar } from '@/packages/ui/src';
 import { isAllowedToPerformPremiumAction } from '@/utils/billing';
 import { useTagsStore } from '@/utils/useTags';
@@ -23,6 +21,7 @@ import { useProjectsStore } from '@/utils/useProjects';
 import { useClientsStore } from '@/utils/useClients';
 import { getOrganizationCurrencyString } from '@/utils/money';
 import { canCreateProjects } from '@/utils/permissions';
+import { useCurrentTimeEntryStore } from '@/utils/useCurrentTimeEntry';
 
 const calendarStart = ref<Date | undefined>(undefined);
 const calendarEnd = ref<Date | undefined>(undefined);
@@ -57,39 +56,6 @@ async function deleteTimeEntry(timeEntryId: string): Promise<void> {
     await deleteTimeEntryMutation(timeEntryId);
 }
 
-async function duplicateTimeEntry(entry: TimeEntry): Promise<void> {
-    await createTimeEntryMutation({
-        start: entry.start,
-        end: entry.end,
-        billable: entry.billable,
-        description: entry.description,
-        project_id: entry.project_id,
-        task_id: entry.task_id,
-        tags: entry.tags,
-    });
-}
-
-async function splitTimeEntry(entry: TimeEntry): Promise<void> {
-    if (!entry.end) return;
-    const start = getDayJsInstance()(entry.start);
-    const end = getDayJsInstance()(entry.end);
-    const midpoint = start.add(end.diff(start) / 2, 'millisecond').startOf('minute');
-
-    // Update the original entry to end at the midpoint
-    await updateTimeEntryMutation({ ...entry, end: midpoint.utc().format() });
-
-    // Create a new entry from midpoint to original end
-    await createTimeEntryMutation({
-        start: midpoint.utc().format(),
-        end: entry.end,
-        billable: entry.billable,
-        description: entry.description,
-        project_id: entry.project_id,
-        task_id: entry.task_id,
-        tags: entry.tags,
-    });
-}
-
 async function createTag(name: string) {
     return await useTagsStore().createTag(name);
 }
@@ -116,8 +82,9 @@ function onDatesChange({ start, end }: { start: Date; end: Date }) {
 
 function onRefresh() {
     queryClient.invalidateQueries({
-        queryKey: ['timeEntries', 'calendar'],
+        queryKey: ['timeEntries'],
     });
+    useCurrentTimeEntryStore().fetchCurrentTimeEntry();
 }
 </script>
 
@@ -136,8 +103,6 @@ function onRefresh() {
             :create-time-entry="createTimeEntry"
             :update-time-entry="updateTimeEntry"
             :delete-time-entry="deleteTimeEntry"
-            :duplicate-time-entry="duplicateTimeEntry"
-            :split-time-entry="splitTimeEntry"
             :create-client="createClient"
             :create-project="createProject"
             :create-tag="createTag"

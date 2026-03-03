@@ -7,6 +7,7 @@ import {
     createProjectViaApi,
     createBareTimeEntryViaApi,
     createTimeEntryViaApi,
+    createRunningTimeEntryViaApi,
 } from './utils/api';
 
 async function goToCalendar(page: Page) {
@@ -413,6 +414,66 @@ test('test that context menu create time entry opens the create modal', async ({
     await expect(page.getByRole('menu')).toBeVisible();
     await page.getByRole('menuitem', { name: 'Create Time Entry' }).click();
     await expect(page.getByRole('dialog')).toBeVisible();
+});
+
+test('test that context menu for running entry shows stop and discard options', async ({
+    page,
+    ctx,
+}) => {
+    const description = 'Running ctx menu test ' + Math.floor(1 + Math.random() * 10000);
+    await createRunningTimeEntryViaApi(ctx, description);
+
+    await goToCalendar(page);
+    await openContextMenu(page, description);
+
+    // Running entry should show Stop and Discard, not Edit/Duplicate/Split/Delete
+    await expect(page.getByRole('menuitem', { name: 'Stop' })).toBeVisible();
+    await expect(page.getByRole('menuitem', { name: 'Discard' })).toBeVisible();
+    await expect(page.getByRole('menuitem', { name: 'Edit' })).not.toBeVisible();
+    await expect(page.getByRole('menuitem', { name: 'Duplicate' })).not.toBeVisible();
+    await expect(page.getByRole('menuitem', { name: 'Split' })).not.toBeVisible();
+});
+
+test('test that context menu stop on running entry sets end time', async ({ page, ctx }) => {
+    const description = 'Running stop test ' + Math.floor(1 + Math.random() * 10000);
+    await createRunningTimeEntryViaApi(ctx, description);
+
+    await goToCalendar(page);
+    await openContextMenu(page, description);
+
+    const [updateResponse] = await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/time-entries/') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 200
+        ),
+        page.getByRole('menuitem', { name: 'Stop' }).click(),
+    ]);
+
+    const body = await updateResponse.json();
+    expect(body.data.end).not.toBeNull();
+    expect(body.data.description).toBe(description);
+});
+
+test('test that context menu discard on running entry deletes it', async ({ page, ctx }) => {
+    const description = 'Running discard test ' + Math.floor(1 + Math.random() * 10000);
+    await createRunningTimeEntryViaApi(ctx, description);
+
+    await goToCalendar(page);
+    await openContextMenu(page, description);
+
+    await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/time-entries/') &&
+                response.request().method() === 'DELETE' &&
+                response.status() === 204
+        ),
+        page.getByRole('menuitem', { name: 'Discard' }).click(),
+    ]);
+
+    await expect(page.locator('.fc-event').filter({ hasText: description })).not.toBeVisible();
 });
 
 // =============================================
