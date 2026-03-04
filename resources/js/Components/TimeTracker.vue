@@ -157,7 +157,7 @@ const { tags } = useTagsQuery();
         :tags
         :clients></TimeEntryCreateModal>
     <CardTitle title="Time Tracker" :icon="ClockIcon"></CardTitle>
-    <div class="relative pt-1">
+    <div class="relative pt-1.5">
         <TimeTrackerRunningInDifferentOrganizationOverlay
             v-if="isRunningInDifferentOrganization"
             @switch-organization="

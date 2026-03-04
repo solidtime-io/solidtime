@@ -29,7 +29,7 @@ import { getUserTimezone, getWeekStart } from '../utils/settings';
 import { LoadingSpinner, TimeEntryCreateModal, TimeEntryEditModal } from '..';
 import FullCalendarEventContent from './FullCalendarEventContent.vue';
 import FullCalendarDayHeader from './FullCalendarDayHeader.vue';
-import CalendarSettingsPopover from './CalendarSettingsPopover.vue';
+import CalendarToolbar from './CalendarToolbar.vue';
 import type { CalendarSettings } from './calendarSettings';
 import { useVisualSnap } from './useVisualSnap';
 import {
@@ -121,6 +121,27 @@ const calendarSettings = useLocalStorage<CalendarSettings>(
 
 function onSettingsUpdate(newSettings: CalendarSettings) {
     calendarSettings.value = newSettings;
+}
+
+// Toolbar state — updated via datesSet callback
+const viewTitle = ref('');
+const activeView = ref('timeGridWeek');
+
+function handlePrev() {
+    calendarRef.value?.getApi().prev();
+    scrollToCurrentTime();
+}
+function handleNext() {
+    calendarRef.value?.getApi().next();
+    scrollToCurrentTime();
+}
+function handleToday() {
+    calendarRef.value?.getApi().today();
+    scrollToCurrentTime();
+}
+function handleChangeView(view: string) {
+    calendarRef.value?.getApi().changeView(view);
+    scrollToCurrentTime();
 }
 
 // Reactive "now" for running time entry - updates every minute
@@ -240,6 +261,8 @@ const dailyTotals = computed(() => {
 });
 
 function emitDatesChange(arg: DatesSetArg) {
+    viewTitle.value = arg.view.title;
+    activeView.value = arg.view.type;
     emit('dates-change', { start: arg.start, end: arg.end });
     // Render activity boxes after calendar view has been rendered
     renderActivityBoxes();
@@ -506,11 +529,7 @@ const calendarOptions = computed(() => {
     return {
         plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin, activityStatusPlugin],
         initialView: 'timeGridWeek',
-        headerToolbar: {
-            left: 'prev,next today',
-            center: 'title',
-            right: 'timeGridWeek,timeGridDay',
-        },
+        headerToolbar: false as const,
         height: 'parent',
         slotMinTime: formatDuration(s.startHour * 3600),
         slotMaxTime: formatDuration(s.endHour * 3600),
@@ -617,7 +636,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div class="w-full relative h-full flex-1">
+    <div class="w-full relative h-full flex-1 flex flex-col">
         <div v-if="loading" class="flex items-center justify-center h-full">
             <div class="flex flex-col items-center space-y-4">
                 <LoadingSpinner class="h-8 w-8" />
@@ -656,13 +675,20 @@ onUnmounted(() => {
             :clients="clients"
             :currency="currency"
             :can-create-project="canCreateProject" />
-        <div class="calendar-settings-trigger">
-            <CalendarSettingsPopover
-                :settings="calendarSettings"
-                @update:settings="onSettingsUpdate" />
-        </div>
+        <CalendarToolbar
+            :view-title="viewTitle"
+            :active-view="activeView"
+            :settings="calendarSettings"
+            @prev="handlePrev"
+            @next="handleNext"
+            @today="handleToday"
+            @change-view="handleChangeView"
+            @update:settings="onSettingsUpdate" />
         <ContextMenu>
-            <ContextMenuTrigger as="div" class="h-full" @contextmenu="handleCalendarContextMenu">
+            <ContextMenuTrigger
+                as="div"
+                class="flex-1 min-h-0"
+                @contextmenu="handleCalendarContextMenu">
                 <FullCalendar ref="calendarRef" class="fullcalendar" :options="calendarOptions">
                     <template #eventContent="arg">
                         <FullCalendarEventContent
@@ -743,13 +769,6 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-.calendar-settings-trigger {
-    position: absolute;
-    top: 0.5rem;
-    right: 0.5rem;
-    z-index: 20;
-}
-
 .fullcalendar {
     height: 100%;
     --fc-border-color: var(--border);
@@ -764,47 +783,10 @@ onUnmounted(() => {
 
 .fullcalendar :deep(.fc-timegrid-slot) {
     height: 25px;
-    transition: height 0.2s ease;
 }
 
 .fullcalendar :deep(.fc-timegrid-slot-label) {
     background-color: var(--background);
-}
-
-.fullcalendar :deep(.fc-toolbar) {
-    background-color: var(--background);
-    padding: 0.5rem;
-    padding-right: 2.75rem;
-    margin-bottom: 0;
-}
-
-.fullcalendar :deep(.fc-toolbar-title) {
-    color: var(--foreground);
-    font-size: 1rem;
-    font-weight: 600;
-}
-
-.fullcalendar :deep(.fc-button) {
-    background-color: var(--secondary);
-    border: 1px solid var(--border);
-    color: var(--foreground);
-    font-weight: 500;
-    font-size: 14px !important;
-}
-
-.fullcalendar :deep(.fc-button:hover) {
-    background-color: var(--muted);
-    border-color: var(--border);
-}
-
-.fullcalendar :deep(.fc-button:focus) {
-    box-shadow: 0 0 0 2px var(--ring);
-}
-
-.fullcalendar :deep(.fc-button-active) {
-    background-color: var(--primary);
-    border-color: var(--primary);
-    color: var(--primary-foreground);
 }
 
 .fullcalendar :deep(.fc-col-header) {

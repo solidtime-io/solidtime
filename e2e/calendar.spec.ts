@@ -222,16 +222,16 @@ test('test that calendar navigation buttons work', async ({ page }) => {
     await expect(page.locator('.fc')).toBeVisible();
 
     // Click the "next" button to navigate forward
-    await page.locator('button.fc-next-button').click();
+    await page.getByRole('button', { name: 'Next' }).click();
     await expect(page.locator('.fc')).toBeVisible();
 
     // Click the "prev" button to navigate back
-    await page.locator('button.fc-prev-button').click();
+    await page.getByRole('button', { name: 'Previous' }).click();
     await expect(page.locator('.fc')).toBeVisible();
 
-    // Navigate forward first so "today" button becomes enabled, then click it
-    await page.locator('button.fc-next-button').click();
-    await page.locator('button.fc-today-button').click();
+    // Navigate forward first, then click today
+    await page.getByRole('button', { name: 'Next' }).click();
+    await page.getByRole('button', { name: 'today' }).click();
     await expect(page.locator('.fc')).toBeVisible();
 });
 
