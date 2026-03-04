@@ -159,12 +159,12 @@ export function useVisualSnap({
             }
 
             if (resizeEdge === 'bottom') {
-                const snappedEnd = Math.ceil(endPos / snapPx) * snapPx;
+                const snappedEnd = Math.round(endPos / snapPx) * snapPx;
                 const clampedEnd = Math.max(top + snapPx, snappedEnd);
                 harness.style.bottom = -clampedEnd + 'px';
                 if (mirror) updateMirrorDurationLabel(mirror, top, clampedEnd, snapPx);
             } else if (resizeEdge === 'top') {
-                const snappedTop = Math.floor(top / snapPx) * snapPx;
+                const snappedTop = Math.round(top / snapPx) * snapPx;
                 const clampedTop = Math.min(endPos - snapPx, snappedTop);
                 harness.style.top = clampedTop + 'px';
                 if (mirror) updateMirrorDurationLabel(mirror, clampedTop, endPos, snapPx);

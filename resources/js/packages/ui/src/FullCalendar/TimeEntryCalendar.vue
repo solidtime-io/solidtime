@@ -441,6 +441,13 @@ function snapEndToGrid(time: Dayjs, snapMinutes: number): Dayjs {
     return time.startOf('day').add(snapped, 'minute');
 }
 
+// Snap a dayjs time to the nearest snap boundary (for resize)
+function snapToNearestGrid(time: Dayjs, snapMinutes: number): Dayjs {
+    const minutes = time.hour() * 60 + time.minute();
+    const snapped = Math.round(minutes / snapMinutes) * snapMinutes;
+    return time.startOf('day').add(snapped, 'minute');
+}
+
 // --- Visual snap (composable) ---
 const {
     startDragSnap: startVisualDragSnap,
@@ -503,9 +510,11 @@ async function handleEventResize(arg: EventChangeArg) {
 
     const startChanged = !newStartLocal.isSame(origStartLocal, 'minute');
 
-    // Snap only the changed edge once, reuse for both setDates and API update
-    const snappedStart = startChanged ? snapStartToGrid(newStartLocal, snap) : null;
-    const snappedEnd = !startChanged && !ext.isRunning ? snapEndToGrid(newEndLocal, snap) : null;
+    // Snap only the changed edge once, reuse for both setDates and API update.
+    // Use Math.round (snapToNearestGrid) to match the visual snap during resize.
+    const snappedStart = startChanged ? snapToNearestGrid(newStartLocal, snap) : null;
+    const snappedEnd =
+        !startChanged && !ext.isRunning ? snapToNearestGrid(newEndLocal, snap) : null;
 
     // Set FC event to snapped position immediately to avoid flash.
     // Use the original event date for the edge that wasn't resized.
