@@ -1,11 +1,6 @@
 <script setup lang="ts">
 import { PlusIcon, XMarkIcon } from '@heroicons/vue/20/solid';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from '@/Components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '..';
 
 const props = defineProps<{
     hasActiveTimer: boolean;

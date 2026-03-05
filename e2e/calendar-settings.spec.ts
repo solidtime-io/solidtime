@@ -1,7 +1,7 @@
+import type { Page } from '@playwright/test';
+import { expect } from '@playwright/test';
 import { PLAYWRIGHT_BASE_URL } from '../playwright/config';
 import { test } from '../playwright/fixtures';
-import { expect } from '@playwright/test';
-import type { Page } from '@playwright/test';
 
 async function goToCalendar(page: Page) {
     await page.goto(PLAYWRIGHT_BASE_URL + '/calendar');
@@ -15,6 +15,10 @@ async function openSettingsPopover(page: Page) {
 
 async function clearCalendarSettings(page: Page) {
     await page.evaluate(() => localStorage.removeItem('solidtime:calendar-settings'));
+}
+
+function getCalendarTitle(page: Page) {
+    return page.getByTestId('calendar-title');
 }
 
 test.describe('Calendar Settings', () => {
@@ -39,7 +43,9 @@ test.describe('Calendar Settings', () => {
         // Change snap interval to 30 min
         await page.getByLabel('Snap Interval').click();
         await page.getByRole('option', { name: '30 min' }).click();
-        await page.locator('.fc-toolbar-title').click();
+
+        // Close the popover by pressing Escape
+        await page.keyboard.press('Escape');
 
         // Verify localStorage was updated
         const stored = await page.evaluate(() =>
@@ -54,7 +60,7 @@ test.describe('Calendar Settings', () => {
         await expect(page.getByLabel('Snap Interval')).toContainText('30 min');
     });
 
-    test('start time change is applied to calendar and rejects values >= end time', async ({
+    test('start time change is applied to calendar and rejects invalid values', async ({
         page,
     }) => {
         await goToCalendar(page);
@@ -71,24 +77,23 @@ test.describe('Calendar Settings', () => {
         // Change start time to 8 AM (valid)
         await page.getByLabel('Start Time').click();
         await page.getByRole('option', { name: '8:00 AM' }).click();
-        await page.locator('.fc-toolbar-title').click();
 
-        // Calendar should no longer show hours before 8 AM
-        await expect(page.locator('.fc-timegrid-slot[data-time="07:00:00"]')).toHaveCount(0);
-        await expect(page.locator('.fc-timegrid-slot[data-time="08:00:00"]')).not.toHaveCount(0);
-
-        // Try to set start time to 6 PM (invalid: equals end time)
-        await openSettingsPopover(page);
+        // Try to set start time to 6 PM (invalid: equals end time) — should be rejected
         await page.getByLabel('Start Time').click();
         await page.getByRole('option', { name: '6:00 PM' }).click();
 
         // Should be rejected — start time stays at 8 AM
         await expect(page.getByLabel('Start Time')).toContainText('8:00 AM');
+
+        // Close the popover
+        await page.keyboard.press('Escape');
+
+        // Calendar should no longer show hours before 8 AM
+        await expect(page.locator('.fc-timegrid-slot[data-time="07:00:00"]')).toHaveCount(0);
+        await expect(page.locator('.fc-timegrid-slot[data-time="08:00:00"]')).not.toHaveCount(0);
     });
 
-    test('end time change is applied to calendar and rejects values <= start time', async ({
-        page,
-    }) => {
+    test('end time change is applied to calendar and rejects invalid values', async ({ page }) => {
         await goToCalendar(page);
 
         // Verify 19:00 slot exists with default end (24:00)
@@ -103,19 +108,20 @@ test.describe('Calendar Settings', () => {
         // Change end time to 6 PM (valid)
         await page.getByLabel('End Time').click();
         await page.getByRole('option', { name: '6:00 PM' }).click();
-        await page.locator('.fc-toolbar-title').click();
 
-        // Calendar should no longer show hours at or after 6 PM
-        await expect(page.locator('.fc-timegrid-slot[data-time="18:00:00"]')).toHaveCount(0);
-        await expect(page.locator('.fc-timegrid-slot[data-time="17:00:00"]')).not.toHaveCount(0);
-
-        // Try to set end time to 8 AM (invalid: equals start time)
-        await openSettingsPopover(page);
+        // Try to set end time to 8 AM (invalid: equals start time) — should be rejected
         await page.getByLabel('End Time').click();
         await page.getByRole('option', { name: '8:00 AM' }).click();
 
         // Should be rejected — end time stays at 6 PM
         await expect(page.getByLabel('End Time')).toContainText('6:00 PM');
+
+        // Close the popover
+        await page.keyboard.press('Escape');
+
+        // Calendar should no longer show hours at or after 6 PM
+        await expect(page.locator('.fc-timegrid-slot[data-time="18:00:00"]')).toHaveCount(0);
+        await expect(page.locator('.fc-timegrid-slot[data-time="17:00:00"]')).not.toHaveCount(0);
     });
 
     test('grid scale affects number of calendar slots', async ({ page }) => {
@@ -128,19 +134,31 @@ test.describe('Calendar Settings', () => {
         await openSettingsPopover(page);
         await page.getByLabel('Grid Scale').click();
         await page.getByRole('option', { name: '30 min' }).click();
-        await page.locator('.fc-toolbar-title').click();
+        await page.keyboard.press('Escape');
+
+        // Wait for FullCalendar to re-render with new slot count
+        await expect(async () => {
+            const count = await page.locator('.fc-timegrid-slot').count();
+            expect(count).toBeLessThan(defaultSlotCount);
+        }).toPass({ timeout: 5000 });
 
         const largerSlotCount = await page.locator('.fc-timegrid-slot').count();
-        expect(largerSlotCount).toBeLessThan(defaultSlotCount);
 
-        // Change to 5 min scale (should have many more slots)
+        // Navigate away and back to get a clean calendar mount
+        await page.goto(PLAYWRIGHT_BASE_URL + '/time');
+        await goToCalendar(page);
+
+        // Change to 5 min scale (many more slots)
         await openSettingsPopover(page);
         await page.getByLabel('Grid Scale').click();
         await page.getByRole('option', { name: '5 min', exact: true }).click();
-        await page.locator('.fc-toolbar-title').click();
+        await page.keyboard.press('Escape');
 
-        const smallerSlotCount = await page.locator('.fc-timegrid-slot').count();
-        expect(smallerSlotCount).toBeGreaterThan(defaultSlotCount);
+        // Wait for FullCalendar to re-render with new slot count
+        await expect(async () => {
+            const count = await page.locator('.fc-timegrid-slot').count();
+            expect(count).toBeGreaterThan(largerSlotCount);
+        }).toPass({ timeout: 5000 });
     });
 
     test('all settings persist across navigation', async ({ page }) => {
@@ -156,7 +174,9 @@ test.describe('Calendar Settings', () => {
         await page.getByRole('option', { name: '10:00 PM' }).click();
         await page.getByLabel('Grid Scale').click();
         await page.getByRole('option', { name: '30 min' }).click();
-        await page.locator('.fc-toolbar-title').click();
+
+        // Close the popover
+        await page.keyboard.press('Escape');
 
         // Navigate away and back
         await page.goto(PLAYWRIGHT_BASE_URL + '/time');
@@ -168,5 +188,68 @@ test.describe('Calendar Settings', () => {
         await expect(page.getByLabel('Start Time')).toContainText('6:00 AM');
         await expect(page.getByLabel('End Time')).toContainText('10:00 PM');
         await expect(page.getByLabel('Grid Scale')).toContainText('30 min');
+    });
+});
+
+test.describe('Calendar Toolbar', () => {
+    test('prev and next buttons navigate the calendar', async ({ page }) => {
+        await goToCalendar(page);
+
+        const initialTitle = await getCalendarTitle(page).textContent();
+
+        // Click next
+        await page.getByRole('button', { name: 'Next', exact: true }).click();
+        await expect(page.locator('.fc')).toBeVisible();
+
+        const nextTitle = await getCalendarTitle(page).textContent();
+        expect(nextTitle).not.toBe(initialTitle);
+
+        // Click prev — should go back to original
+        await page.getByRole('button', { name: 'Previous', exact: true }).click();
+        await expect(page.locator('.fc')).toBeVisible();
+
+        const backTitle = await getCalendarTitle(page).textContent();
+        expect(backTitle).toBe(initialTitle);
+    });
+
+    test('today button returns to current week', async ({ page }) => {
+        await goToCalendar(page);
+
+        const initialTitle = await getCalendarTitle(page).textContent();
+
+        // Navigate away
+        await page.getByRole('button', { name: 'Next', exact: true }).click();
+        await page.getByRole('button', { name: 'Next', exact: true }).click();
+
+        const awayTitle = await getCalendarTitle(page).textContent();
+        expect(awayTitle).not.toBe(initialTitle);
+
+        // Click today
+        await page.getByRole('button', { name: 'today', exact: true }).click();
+        await expect(page.locator('.fc')).toBeVisible();
+
+        const todayTitle = await getCalendarTitle(page).textContent();
+        expect(todayTitle).toBe(initialTitle);
+    });
+
+    test('view switcher toggles between week and day views', async ({ page }) => {
+        await goToCalendar(page);
+
+        // Default should be week view — verify multiple day columns exist
+        await expect(page.locator('.fc-col-header-cell')).not.toHaveCount(1);
+
+        // Switch to day view
+        await page.getByRole('tab', { name: 'day', exact: true }).click();
+        await expect(page.locator('.fc')).toBeVisible();
+
+        // Day view should show exactly 1 day column
+        await expect(page.locator('.fc-col-header-cell')).toHaveCount(1);
+
+        // Switch back to week view
+        await page.getByRole('tab', { name: 'week', exact: true }).click();
+        await expect(page.locator('.fc')).toBeVisible();
+
+        // Week view should show multiple day columns again
+        await expect(page.locator('.fc-col-header-cell')).not.toHaveCount(1);
     });
 });

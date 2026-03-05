@@ -6,13 +6,7 @@ import { Field, FieldLabel } from '@/packages/ui/src/field';
 import type { UpdateOrganizationBody } from '@/packages/api/src';
 import { useOrganizationStore } from '@/utils/useOrganization';
 import { storeToRefs } from 'pinia';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/Components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/packages/ui/src';
 import { useMutation, useQueryClient } from '@tanstack/vue-query';
 import type { DateFormat, TimeFormat, IntervalFormat } from '@/packages/ui/src/utils/time';
 import type { CurrencyFormat } from '@/packages/ui/src/utils/money';

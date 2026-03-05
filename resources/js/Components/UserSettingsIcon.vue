@@ -7,7 +7,7 @@ import {
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuLabel,
-} from '@/Components/ui/dropdown-menu';
+} from '@/packages/ui/src';
 import {
     UserCircleIcon,
     KeyIcon,

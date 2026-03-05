@@ -7,10 +7,18 @@ import {
     createProjectViaApi,
     createBareTimeEntryViaApi,
     createTimeEntryViaApi,
+    createRunningTimeEntryViaApi,
 } from './utils/api';
 
 async function goToCalendar(page: Page) {
     await page.goto(PLAYWRIGHT_BASE_URL + '/calendar');
+}
+
+async function openContextMenu(page: Page, description: string) {
+    const event = page.locator('.fc-event').filter({ hasText: description }).first();
+    await expect(event).toBeVisible();
+    await event.click({ button: 'right' });
+    await expect(page.getByRole('menu')).toBeVisible();
 }
 
 /**
@@ -214,16 +222,16 @@ test('test that calendar navigation buttons work', async ({ page }) => {
     await expect(page.locator('.fc')).toBeVisible();
 
     // Click the "next" button to navigate forward
-    await page.locator('button.fc-next-button').click();
+    await page.getByRole('button', { name: 'Next' }).click();
     await expect(page.locator('.fc')).toBeVisible();
 
     // Click the "prev" button to navigate back
-    await page.locator('button.fc-prev-button').click();
+    await page.getByRole('button', { name: 'Previous' }).click();
     await expect(page.locator('.fc')).toBeVisible();
 
-    // Navigate forward first so "today" button becomes enabled, then click it
-    await page.locator('button.fc-next-button').click();
-    await page.locator('button.fc-today-button').click();
+    // Navigate forward first, then click today
+    await page.getByRole('button', { name: 'Next' }).click();
+    await page.getByRole('button', { name: 'today' }).click();
     await expect(page.locator('.fc')).toBeVisible();
 });
 
@@ -287,6 +295,184 @@ test('test that deleting time entry from calendar modal works', async ({ page, c
     ]);
 
     // Verify the event is removed from the calendar
+    await expect(page.locator('.fc-event').filter({ hasText: description })).not.toBeVisible();
+});
+
+// =============================================
+// Context Menu Tests
+// =============================================
+
+test('test that context menu edit opens the edit modal', async ({ page, ctx }) => {
+    const description = 'Context edit test ' + Math.floor(1 + Math.random() * 10000);
+    await createBareTimeEntryViaApi(ctx, description, '1h');
+
+    await goToCalendar(page);
+    await openContextMenu(page, description);
+
+    await page.getByRole('menuitem', { name: 'Edit' }).click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await expect(page.getByRole('dialog').getByPlaceholder('What did you work on?')).toHaveValue(
+        description
+    );
+});
+
+test('test that context menu duplicate preserves project and billable status', async ({
+    page,
+    ctx,
+}) => {
+    const description = 'Context dup test ' + Math.floor(1 + Math.random() * 10000);
+    const project = await createProjectViaApi(ctx, {
+        name: 'Dup Project ' + Math.floor(1 + Math.random() * 10000),
+        is_billable: true,
+    });
+    await createTimeEntryViaApi(ctx, {
+        description,
+        duration: '1h',
+        projectId: project.id,
+        billable: true,
+    });
+
+    await goToCalendar(page);
+    await expect(page.locator('.fc-event').filter({ hasText: description })).toHaveCount(1);
+    await openContextMenu(page, description);
+
+    const [createResponse] = await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/time-entries') &&
+                response.request().method() === 'POST' &&
+                response.status() === 201
+        ),
+        page.getByRole('menuitem', { name: 'Duplicate' }).click(),
+    ]);
+
+    const body = await createResponse.json();
+    expect(body.data.description).toBe(description);
+    expect(body.data.project_id).toBe(project.id);
+    expect(body.data.billable).toBe(true);
+    await expect(page.locator('.fc-event').filter({ hasText: description })).toHaveCount(2);
+});
+
+test('test that context menu delete removes the time entry', async ({ page, ctx }) => {
+    const description = 'Context delete test ' + Math.floor(1 + Math.random() * 10000);
+    await createBareTimeEntryViaApi(ctx, description, '1h');
+
+    await goToCalendar(page);
+    await openContextMenu(page, description);
+
+    await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/time-entries/') &&
+                response.request().method() === 'DELETE' &&
+                response.status() === 204
+        ),
+        page.getByRole('menuitem', { name: 'Delete' }).click(),
+    ]);
+
+    await expect(page.locator('.fc-event').filter({ hasText: description })).not.toBeVisible();
+});
+
+test('test that context menu split divides time entry into two', async ({ page, ctx }) => {
+    const description = 'Context split test ' + Math.floor(1 + Math.random() * 10000);
+    await createBareTimeEntryViaApi(ctx, description, '2h');
+
+    await goToCalendar(page);
+    await expect(page.locator('.fc-event').filter({ hasText: description })).toHaveCount(1);
+    await openContextMenu(page, description);
+
+    const [updateResponse, createResponse] = await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/time-entries/') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 200
+        ),
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/time-entries') &&
+                response.request().method() === 'POST' &&
+                response.status() === 201
+        ),
+        page.getByRole('menuitem', { name: 'Split' }).click(),
+    ]);
+
+    const updateBody = await updateResponse.json();
+    const createBody = await createResponse.json();
+    expect(updateBody.data.end).toBe(createBody.data.start);
+    await expect(page.locator('.fc-event').filter({ hasText: description })).toHaveCount(2);
+});
+
+test('test that context menu create time entry opens the create modal', async ({ page }) => {
+    await goToCalendar(page);
+    await expect(page.locator('.fc')).toBeVisible();
+
+    const slotLane = page.locator('.fc-timegrid-slot-lane').first();
+    await expect(slotLane).toBeVisible();
+    await slotLane.click({ button: 'right' });
+
+    await expect(page.getByRole('menu')).toBeVisible();
+    await page.getByRole('menuitem', { name: 'Create Time Entry' }).click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+});
+
+test('test that context menu for running entry shows stop and discard options', async ({
+    page,
+    ctx,
+}) => {
+    const description = 'Running ctx menu test ' + Math.floor(1 + Math.random() * 10000);
+    await createRunningTimeEntryViaApi(ctx, description);
+
+    await goToCalendar(page);
+    await openContextMenu(page, description);
+
+    // Running entry should show Stop and Discard, not Edit/Duplicate/Split/Delete
+    await expect(page.getByRole('menuitem', { name: 'Stop' })).toBeVisible();
+    await expect(page.getByRole('menuitem', { name: 'Discard' })).toBeVisible();
+    await expect(page.getByRole('menuitem', { name: 'Edit' })).not.toBeVisible();
+    await expect(page.getByRole('menuitem', { name: 'Duplicate' })).not.toBeVisible();
+    await expect(page.getByRole('menuitem', { name: 'Split' })).not.toBeVisible();
+});
+
+test('test that context menu stop on running entry sets end time', async ({ page, ctx }) => {
+    const description = 'Running stop test ' + Math.floor(1 + Math.random() * 10000);
+    await createRunningTimeEntryViaApi(ctx, description);
+
+    await goToCalendar(page);
+    await openContextMenu(page, description);
+
+    const [updateResponse] = await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/time-entries/') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 200
+        ),
+        page.getByRole('menuitem', { name: 'Stop' }).click(),
+    ]);
+
+    const body = await updateResponse.json();
+    expect(body.data.end).not.toBeNull();
+    expect(body.data.description).toBe(description);
+});
+
+test('test that context menu discard on running entry deletes it', async ({ page, ctx }) => {
+    const description = 'Running discard test ' + Math.floor(1 + Math.random() * 10000);
+    await createRunningTimeEntryViaApi(ctx, description);
+
+    await goToCalendar(page);
+    await openContextMenu(page, description);
+
+    await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/time-entries/') &&
+                response.request().method() === 'DELETE' &&
+                response.status() === 204
+        ),
+        page.getByRole('menuitem', { name: 'Discard' }).click(),
+    ]);
+
     await expect(page.locator('.fc-event').filter({ hasText: description })).not.toBeVisible();
 });
 

@@ -21,6 +21,7 @@ import { useProjectsStore } from '@/utils/useProjects';
 import { useClientsStore } from '@/utils/useClients';
 import { getOrganizationCurrencyString } from '@/utils/money';
 import { canCreateProjects } from '@/utils/permissions';
+import { useCurrentTimeEntryStore } from '@/utils/useCurrentTimeEntry';
 
 const calendarStart = ref<Date | undefined>(undefined);
 const calendarEnd = ref<Date | undefined>(undefined);
@@ -81,8 +82,9 @@ function onDatesChange({ start, end }: { start: Date; end: Date }) {
 
 function onRefresh() {
     queryClient.invalidateQueries({
-        queryKey: ['timeEntries', 'calendar'],
+        queryKey: ['timeEntries'],
     });
+    useCurrentTimeEntryStore().fetchCurrentTimeEntry();
 }
 </script>
 

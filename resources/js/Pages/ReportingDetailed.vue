@@ -18,7 +18,7 @@ import {
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
-} from '@/Components/ui/dropdown-menu';
+} from '@/packages/ui/src';
 import { SecondaryButton } from '@/packages/ui/src';
 import { computed, onMounted, ref, watch } from 'vue';
 import { getDayJsInstance, getLocalizedDayJs } from '@/packages/ui/src/utils/time';

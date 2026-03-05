@@ -17,13 +17,7 @@ import type {
 } from '@/packages/api/src';
 import TagDropdown from '@/packages/ui/src/Tag/TagDropdown.vue';
 import BillableIcon from '@/packages/ui/src/Icons/BillableIcon.vue';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/Components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '..';
 import { Button } from '@/packages/ui/src/Buttons';
 import DatePicker from '@/packages/ui/src/Input/DatePicker.vue';
 import DurationHumanInput from '@/packages/ui/src/Input/DurationHumanInput.vue';

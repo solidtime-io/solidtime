@@ -15,6 +15,7 @@ import {
     onActivated,
     onUnmounted,
 } from 'vue';
+import type { EventApi } from '@fullcalendar/core';
 import { useLocalStorage } from '@vueuse/core';
 import chroma from 'chroma-js';
 import { useCssVariable } from '@/utils/useCssVariable';
@@ -28,9 +29,25 @@ import { getUserTimezone, getWeekStart } from '../utils/settings';
 import { LoadingSpinner, TimeEntryCreateModal, TimeEntryEditModal } from '..';
 import FullCalendarEventContent from './FullCalendarEventContent.vue';
 import FullCalendarDayHeader from './FullCalendarDayHeader.vue';
-import CalendarSettingsPopover from './CalendarSettingsPopover.vue';
+import CalendarToolbar from './CalendarToolbar.vue';
 import type { CalendarSettings } from './calendarSettings';
 import { useVisualSnap } from './useVisualSnap';
+import {
+    ContextMenu,
+    ContextMenuContent,
+    ContextMenuItem,
+    ContextMenuSeparator,
+    ContextMenuTrigger,
+} from '..';
+import {
+    PencilIcon,
+    DocumentDuplicateIcon,
+    TrashIcon,
+    ScissorsIcon,
+    PlusIcon,
+    StopIcon,
+    XMarkIcon,
+} from '@heroicons/vue/20/solid';
 import activityStatusPlugin, {
     type ActivityPeriod,
     renderActivityStatusBoxes,
@@ -104,6 +121,27 @@ const calendarSettings = useLocalStorage<CalendarSettings>(
 
 function onSettingsUpdate(newSettings: CalendarSettings) {
     calendarSettings.value = newSettings;
+}
+
+// Toolbar state — updated via datesSet callback
+const viewTitle = ref('');
+const activeView = ref('timeGridWeek');
+
+function handlePrev() {
+    calendarRef.value?.getApi().prev();
+    scrollToCurrentTime();
+}
+function handleNext() {
+    calendarRef.value?.getApi().next();
+    scrollToCurrentTime();
+}
+function handleToday() {
+    calendarRef.value?.getApi().today();
+    scrollToCurrentTime();
+}
+function handleChangeView(view: string) {
+    calendarRef.value?.getApi().changeView(view);
+    scrollToCurrentTime();
 }
 
 // Reactive "now" for running time entry - updates every minute
@@ -223,6 +261,8 @@ const dailyTotals = computed(() => {
 });
 
 function emitDatesChange(arg: DatesSetArg) {
+    viewTitle.value = arg.view.title;
+    activeView.value = arg.view.type;
     emit('dates-change', { start: arg.start, end: arg.end });
     // Render activity boxes after calendar view has been rendered
     renderActivityBoxes();
@@ -255,6 +295,138 @@ function handleEventClick(arg: EventClickArg) {
     showEditTimeEntryModal.value = true;
 }
 
+// Context menu state
+const contextMenuTimeEntry = ref<TimeEntry | null>(null);
+const contextMenuCreateTime = ref<{ start: Dayjs; end: Dayjs } | null>(null);
+
+function getTimeAtClickPosition(event: MouseEvent): { start: Dayjs; end: Dayjs } | null {
+    // FullCalendar's time grid has two overlapping tables: slots (data-time) and
+    // cols (data-date). The cols layer often has pointer-events: none, so clicks
+    // land on the slots table. Use elementsFromPoint to reach both layers.
+    const elements = document.elementsFromPoint(event.clientX, event.clientY);
+    let time: string | null = null;
+    let date: string | null = null;
+
+    for (const el of elements) {
+        if (el instanceof HTMLElement) {
+            if (!time && el.dataset.time !== undefined) {
+                time = el.dataset.time;
+            }
+            if (!date && el.dataset.date !== undefined) {
+                date = el.dataset.date;
+            }
+        }
+        if (time && date) break;
+    }
+
+    if (!time || !date) return null;
+
+    const snap = calendarSettings.value.snapMinutes;
+    const startLocal = getDayJsInstance()(`${date}T${time}`).tz(getUserTimezone(), true);
+    const snappedStart = snapStartToGrid(startLocal, snap);
+    const snappedEnd = snappedStart.add(snap, 'minute');
+
+    return { start: snappedStart.utc(), end: snappedEnd.utc() };
+}
+
+function handleCalendarContextMenu(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    const eventEl = target.closest<HTMLElement>('[data-event-id]');
+
+    if (!eventEl) {
+        // Right-click on empty calendar space — show "Create Time Entry"
+        contextMenuTimeEntry.value = null;
+        const timeInfo = getTimeAtClickPosition(event);
+        contextMenuCreateTime.value = timeInfo;
+        return;
+    }
+
+    const eventId = eventEl.getAttribute('data-event-id');
+    if (!eventId) return;
+
+    const api = calendarRef.value?.getApi();
+    if (!api) return;
+
+    const fcEvent: EventApi | undefined = api.getEvents().find((e) => e.id === eventId);
+    if (!fcEvent) return;
+
+    const ext = fcEvent.extendedProps as CalendarExtendedProps;
+    contextMenuTimeEntry.value = ext.timeEntry;
+    contextMenuCreateTime.value = null;
+}
+
+function handleContextEdit() {
+    if (!contextMenuTimeEntry.value || contextMenuTimeEntry.value.end === null) return;
+    selectedTimeEntry.value = contextMenuTimeEntry.value;
+    showEditTimeEntryModal.value = true;
+}
+
+async function handleContextDuplicate() {
+    if (!contextMenuTimeEntry.value || contextMenuTimeEntry.value.end === null) return;
+    const entry = contextMenuTimeEntry.value;
+    await props.createTimeEntry({
+        start: entry.start,
+        end: entry.end,
+        billable: entry.billable,
+        description: entry.description,
+        project_id: entry.project_id,
+        task_id: entry.task_id,
+        tags: entry.tags,
+    });
+    emit('refresh');
+}
+
+async function handleContextDelete() {
+    if (!contextMenuTimeEntry.value || contextMenuTimeEntry.value.end === null) return;
+    await props.deleteTimeEntry(contextMenuTimeEntry.value.id);
+    emit('refresh');
+}
+
+async function handleContextSplit() {
+    if (!contextMenuTimeEntry.value || contextMenuTimeEntry.value.end === null) return;
+    const entry = contextMenuTimeEntry.value;
+    if (!entry.end) return;
+    const start = getDayJsInstance()(entry.start);
+    const end = getDayJsInstance()(entry.end);
+    const midpoint = start.add(end.diff(start) / 2, 'millisecond').startOf('minute');
+
+    await props.updateTimeEntry({ ...entry, end: midpoint.utc().format() });
+    await props.createTimeEntry({
+        start: midpoint.utc().format(),
+        end: entry.end,
+        billable: entry.billable,
+        description: entry.description,
+        project_id: entry.project_id,
+        task_id: entry.task_id,
+        tags: entry.tags,
+    });
+    emit('refresh');
+}
+
+async function handleContextStop() {
+    if (!contextMenuTimeEntry.value || contextMenuTimeEntry.value.end !== null) return;
+    const entry = contextMenuTimeEntry.value;
+    await props.updateTimeEntry({
+        ...entry,
+        end: getDayJsInstance()().utc().format(),
+    });
+    emit('refresh');
+}
+
+async function handleContextDiscard() {
+    if (!contextMenuTimeEntry.value || contextMenuTimeEntry.value.end !== null) return;
+    await props.deleteTimeEntry(contextMenuTimeEntry.value.id);
+    emit('refresh');
+}
+
+function handleContextCreate() {
+    if (contextMenuCreateTime.value) {
+        newEventStart.value = contextMenuCreateTime.value.start;
+        newEventEnd.value = contextMenuCreateTime.value.end;
+    }
+    showCreateTimeEntryModal.value = true;
+}
+
 // Snap a dayjs time down to the previous snap boundary (for start times)
 function snapStartToGrid(time: Dayjs, snapMinutes: number): Dayjs {
     const minutes = time.hour() * 60 + time.minute();
@@ -266,6 +438,13 @@ function snapStartToGrid(time: Dayjs, snapMinutes: number): Dayjs {
 function snapEndToGrid(time: Dayjs, snapMinutes: number): Dayjs {
     const minutes = time.hour() * 60 + time.minute();
     const snapped = Math.ceil(minutes / snapMinutes) * snapMinutes;
+    return time.startOf('day').add(snapped, 'minute');
+}
+
+// Snap a dayjs time to the nearest snap boundary (for resize)
+function snapToNearestGrid(time: Dayjs, snapMinutes: number): Dayjs {
+    const minutes = time.hour() * 60 + time.minute();
+    const snapped = Math.round(minutes / snapMinutes) * snapMinutes;
     return time.startOf('day').add(snapped, 'minute');
 }
 
@@ -331,9 +510,11 @@ async function handleEventResize(arg: EventChangeArg) {
 
     const startChanged = !newStartLocal.isSame(origStartLocal, 'minute');
 
-    // Snap only the changed edge once, reuse for both setDates and API update
-    const snappedStart = startChanged ? snapStartToGrid(newStartLocal, snap) : null;
-    const snappedEnd = !startChanged && !ext.isRunning ? snapEndToGrid(newEndLocal, snap) : null;
+    // Snap only the changed edge once, reuse for both setDates and API update.
+    // Use Math.round (snapToNearestGrid) to match the visual snap during resize.
+    const snappedStart = startChanged ? snapToNearestGrid(newStartLocal, snap) : null;
+    const snappedEnd =
+        !startChanged && !ext.isRunning ? snapToNearestGrid(newEndLocal, snap) : null;
 
     // Set FC event to snapped position immediately to avoid flash.
     // Use the original event date for the edge that wasn't resized.
@@ -357,11 +538,7 @@ const calendarOptions = computed(() => {
     return {
         plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin, activityStatusPlugin],
         initialView: 'timeGridWeek',
-        headerToolbar: {
-            left: 'prev,next today',
-            center: 'title',
-            right: 'timeGridWeek,timeGridDay',
-        },
+        headerToolbar: false as const,
         height: 'parent',
         slotMinTime: formatDuration(s.startHour * 3600),
         slotMaxTime: formatDuration(s.endHour * 3600),
@@ -387,6 +564,9 @@ const calendarOptions = computed(() => {
         eventResizeStart: startVisualResizeSnap,
         eventResize: handleEventResize,
         datesSet: emitDatesChange,
+        eventDidMount: (arg: { el: HTMLElement; event: { id: string } }) => {
+            arg.el.setAttribute('data-event-id', arg.event.id);
+        },
 
         events: events.value,
         activityPeriods: props.activityPeriods || [],
@@ -465,7 +645,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div class="w-full relative h-full flex-1">
+    <div class="w-full relative h-full flex-1 flex flex-col">
         <div v-if="loading" class="flex items-center justify-center h-full">
             <div class="flex flex-col items-center space-y-4">
                 <LoadingSpinner class="h-8 w-8" />
@@ -504,52 +684,100 @@ onUnmounted(() => {
             :clients="clients"
             :currency="currency"
             :can-create-project="canCreateProject" />
-        <div class="calendar-settings-trigger">
-            <CalendarSettingsPopover
-                :settings="calendarSettings"
-                @update:settings="onSettingsUpdate" />
-        </div>
-        <FullCalendar ref="calendarRef" class="fullcalendar" :options="calendarOptions">
-            <template #eventContent="arg">
-                <FullCalendarEventContent
-                    :title="arg.event.title"
-                    :project-name="(arg.event.extendedProps as any).project?.name"
-                    :task-name="(arg.event.extendedProps as any).task?.name"
-                    :client-name="(arg.event.extendedProps as any).client?.name"
-                    :duration-seconds="
-                        ((arg.event.extendedProps as any).duration ?? undefined)
-                            ? (arg.event.extendedProps as any).duration * 60
-                            : undefined
-                    "
-                    :start="arg.event.start as any"
-                    :end="arg.event.end as any" />
-            </template>
-            <template #dayHeaderContent="arg">
-                <FullCalendarDayHeader
-                    :date="
-                        getDayJsInstance()(arg.date.toISOString()).utc().tz(getUserTimezone(), true)
-                    "
-                    :total-seconds="
-                        dailyTotals[
-                            getDayJsInstance()(arg.date)
-                                .utc()
-                                .tz(getUserTimezone(), true)
-                                .format('YYYY-MM-DD')
-                        ] || 0
-                    " />
-            </template>
-        </FullCalendar>
+        <CalendarToolbar
+            :view-title="viewTitle"
+            :active-view="activeView"
+            :settings="calendarSettings"
+            @prev="handlePrev"
+            @next="handleNext"
+            @today="handleToday"
+            @change-view="handleChangeView"
+            @update:settings="onSettingsUpdate" />
+        <ContextMenu>
+            <ContextMenuTrigger
+                as="div"
+                class="flex-1 min-h-0"
+                @contextmenu="handleCalendarContextMenu">
+                <FullCalendar ref="calendarRef" class="fullcalendar" :options="calendarOptions">
+                    <template #eventContent="arg">
+                        <FullCalendarEventContent
+                            :title="arg.event.title"
+                            :project-name="(arg.event.extendedProps as any).project?.name"
+                            :task-name="(arg.event.extendedProps as any).task?.name"
+                            :client-name="(arg.event.extendedProps as any).client?.name"
+                            :duration-seconds="
+                                ((arg.event.extendedProps as any).duration ?? undefined)
+                                    ? (arg.event.extendedProps as any).duration * 60
+                                    : undefined
+                            "
+                            :start="arg.event.start as any"
+                            :end="arg.event.end as any" />
+                    </template>
+                    <template #dayHeaderContent="arg">
+                        <FullCalendarDayHeader
+                            :date="
+                                getDayJsInstance()(arg.date.toISOString())
+                                    .utc()
+                                    .tz(getUserTimezone(), true)
+                            "
+                            :total-seconds="
+                                dailyTotals[
+                                    getDayJsInstance()(arg.date)
+                                        .utc()
+                                        .tz(getUserTimezone(), true)
+                                        .format('YYYY-MM-DD')
+                                ] || 0
+                            " />
+                    </template>
+                </FullCalendar>
+            </ContextMenuTrigger>
+            <ContextMenuContent class="min-w-[160px]">
+                <template v-if="contextMenuTimeEntry && contextMenuTimeEntry.end !== null">
+                    <ContextMenuItem class="space-x-3" @select="handleContextEdit()">
+                        <PencilIcon class="w-4 h-4 text-icon-default" />
+                        <span>Edit</span>
+                    </ContextMenuItem>
+                    <ContextMenuItem class="space-x-3" @select="handleContextDuplicate()">
+                        <DocumentDuplicateIcon class="w-4 h-4 text-icon-default" />
+                        <span>Duplicate</span>
+                    </ContextMenuItem>
+                    <ContextMenuItem class="space-x-3" @select="handleContextSplit()">
+                        <ScissorsIcon class="w-4 h-4 text-icon-default" />
+                        <span>Split</span>
+                    </ContextMenuItem>
+                    <ContextMenuSeparator />
+                    <ContextMenuItem
+                        class="space-x-3 text-destructive"
+                        @select="handleContextDelete()">
+                        <TrashIcon class="w-4 h-4 text-icon-default" />
+                        <span>Delete</span>
+                    </ContextMenuItem>
+                </template>
+                <template v-else-if="contextMenuTimeEntry && contextMenuTimeEntry.end === null">
+                    <ContextMenuItem class="space-x-3" @select="handleContextStop()">
+                        <StopIcon class="w-4 h-4 text-icon-default" />
+                        <span>Stop</span>
+                    </ContextMenuItem>
+                    <ContextMenuSeparator />
+                    <ContextMenuItem
+                        class="space-x-3 text-destructive"
+                        @select="handleContextDiscard()">
+                        <XMarkIcon class="w-4 h-4 text-icon-default" />
+                        <span>Discard</span>
+                    </ContextMenuItem>
+                </template>
+                <template v-else>
+                    <ContextMenuItem class="space-x-3" @select="handleContextCreate()">
+                        <PlusIcon class="w-4 h-4 text-icon-default" />
+                        <span>Create Time Entry</span>
+                    </ContextMenuItem>
+                </template>
+            </ContextMenuContent>
+        </ContextMenu>
     </div>
 </template>
 
 <style scoped>
-.calendar-settings-trigger {
-    position: absolute;
-    top: 0.5rem;
-    right: 0.5rem;
-    z-index: 20;
-}
-
 .fullcalendar {
     height: 100%;
     --fc-border-color: var(--border);
@@ -564,47 +792,10 @@ onUnmounted(() => {
 
 .fullcalendar :deep(.fc-timegrid-slot) {
     height: 25px;
-    transition: height 0.2s ease;
 }
 
 .fullcalendar :deep(.fc-timegrid-slot-label) {
     background-color: var(--background);
-}
-
-.fullcalendar :deep(.fc-toolbar) {
-    background-color: var(--background);
-    padding: 0.5rem;
-    padding-right: 2.75rem;
-    margin-bottom: 0;
-}
-
-.fullcalendar :deep(.fc-toolbar-title) {
-    color: var(--foreground);
-    font-size: 1rem;
-    font-weight: 600;
-}
-
-.fullcalendar :deep(.fc-button) {
-    background-color: var(--secondary);
-    border: 1px solid var(--border);
-    color: var(--foreground);
-    font-weight: 500;
-    font-size: 14px !important;
-}
-
-.fullcalendar :deep(.fc-button:hover) {
-    background-color: var(--muted);
-    border-color: var(--border);
-}
-
-.fullcalendar :deep(.fc-button:focus) {
-    box-shadow: 0 0 0 2px var(--ring);
-}
-
-.fullcalendar :deep(.fc-button-active) {
-    background-color: var(--primary);
-    border-color: var(--primary);
-    color: var(--primary-foreground);
 }
 
 .fullcalendar :deep(.fc-col-header) {
