@@ -642,7 +642,7 @@ const showCreateProject = ref(false);
                 </div>
                 <div v-if="canCreateProject" class="hover:bg-card-background-active rounded-b-lg">
                     <button
-                        class="text-text-primary flex space-x-3 items-center px-4 py-3 text-xs font-semibold border-t border-card-background-separator"
+                        class="text-text-primary w-full flex space-x-3 items-center px-4 py-3 text-xs font-semibold border-t border-card-background-separator"
                         @click="
                             open = false;
                             showCreateProject = true;
