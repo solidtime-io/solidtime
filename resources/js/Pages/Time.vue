@@ -157,7 +157,7 @@ function deleteSelected() {
         <div ref="loadMoreContainer">
             <div
                 v-if="isFetchingNextPage"
-                class="flex justify-center items-center py-5 text-text-primary font-medium">
+                class="flex justify-center items-center py-5 text-sm text-text-primary font-medium">
                 <LoadingSpinner></LoadingSpinner>
                 <span> Loading more time entries... </span>
             </div>
