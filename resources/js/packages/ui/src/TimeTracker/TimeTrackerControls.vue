@@ -267,7 +267,7 @@ useSelectEvents(
                         :enable-estimated-time="enableEstimatedTime"
                         @changed="updateProject"></TimeTrackerProjectTaskDropdown>
                 </div>
-                <div class="flex items-center space-x-1 @2xl:space-x-2 px-2 @2xl:px-4 shrink-0">
+                <div class="flex items-center space-x-0 @4xl:space-x-2 px-2 @4xl:px-4 shrink-0">
                     <TimeTrackerTagDropdown
                         v-model="currentTimeEntry.tags"
                         :create-tag
