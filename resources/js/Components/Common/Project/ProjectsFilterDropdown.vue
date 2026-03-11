@@ -12,7 +12,7 @@ import {
     DropdownMenuSubContent,
     DropdownMenuCheckboxItem,
     DropdownMenuSeparator,
-} from '@/Components/ui/dropdown-menu';
+} from '@/packages/ui/src';
 import { Button } from '@/packages/ui/src';
 import type { Client } from '@/packages/api/src';
 import { NO_CLIENT_ID } from './constants';

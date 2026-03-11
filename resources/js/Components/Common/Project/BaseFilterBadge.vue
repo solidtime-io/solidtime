@@ -1,11 +1,7 @@
 <script setup lang="ts">
 import { XMarkIcon, ChevronDownIcon } from '@heroicons/vue/16/solid';
 import type { Component } from 'vue';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuTrigger,
-} from '@/Components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/packages/ui/src';
 
 defineProps<{
     icon: Component;

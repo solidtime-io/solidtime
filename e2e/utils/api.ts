@@ -473,6 +473,25 @@ export async function createTimeEntryWithTagViaApi(
     return { tag, entry };
 }
 
+export async function createRunningTimeEntryViaApi(ctx: TestContext, description: string) {
+    const start = new Date();
+    start.setMinutes(start.getMinutes() - 10);
+    const response = await ctx.request.post(
+        `${PLAYWRIGHT_BASE_URL}/api/v1/organizations/${ctx.orgId}/time-entries`,
+        {
+            data: {
+                member_id: ctx.memberId,
+                start: formatTimestamp(start),
+                description,
+                billable: false,
+            },
+        }
+    );
+    expect(response.status()).toBe(201);
+    const body = await response.json();
+    return body.data as { id: string; start: string; end: null; description: string };
+}
+
 export async function createBareTimeEntryViaApi(
     ctx: TestContext,
     description: string,
@@ -584,7 +603,124 @@ export async function getInvitationsViaApi(ctx: TestContext) {
     const response = await ctx.request.get(
         `${PLAYWRIGHT_BASE_URL}/api/v1/organizations/${ctx.orgId}/invitations`
     );
+
     expect(response.status()).toBe(200);
     const body = await response.json();
     return body.data as Array<{ id: string; email: string; role: string }>;
+}
+
+// ──────────────────────────────────────────────────
+// Timestamp-based time entry helpers
+// ──────────────────────────────────────────────────
+
+export async function createTimeEntryWithTimestampsViaApi(
+    ctx: TestContext,
+    data: {
+        description?: string;
+        start: string;
+        end: string;
+        projectId?: string | null;
+        taskId?: string | null;
+        tags?: string[];
+        billable?: boolean;
+    }
+) {
+    const response = await ctx.request.post(
+        `${PLAYWRIGHT_BASE_URL}/api/v1/organizations/${ctx.orgId}/time-entries`,
+        {
+            data: {
+                member_id: ctx.memberId,
+                start: data.start,
+                end: data.end,
+                description: data.description ?? '',
+                project_id: data.projectId ?? null,
+                task_id: data.taskId ?? null,
+                tags: data.tags ?? [],
+                billable: data.billable ?? false,
+            },
+        }
+    );
+    expect(response.status()).toBe(201);
+    const body = await response.json();
+    return body.data as { id: string; start: string; end: string; description: string };
+}
+
+// ──────────────────────────────────────────────────
+// User profile helpers
+// ──────────────────────────────────────────────────
+
+export async function updateUserProfileViaWeb(
+    page: Page,
+    settings: { timezone?: string; week_start?: string }
+) {
+    // Read user info from Inertia's data-page attribute on the root element
+    const userInfo = await page.evaluate(() => {
+        // Try Inertia's data-page attribute (stores initial page props as JSON)
+        const appEl = document.getElementById('app');
+        if (appEl) {
+            const dataPage = appEl.getAttribute('data-page');
+            if (dataPage) {
+                try {
+                    const parsed = JSON.parse(dataPage);
+                    const user = parsed?.props?.auth?.user;
+                    if (user) {
+                        return {
+                            name: user.name,
+                            email: user.email,
+                            timezone: user.timezone,
+                            week_start: user.week_start,
+                        };
+                    }
+                } catch {
+                    // JSON parse failed
+                }
+            }
+        }
+        return null;
+    });
+    if (!userInfo) throw new Error('Could not read user info from Inertia data-page attribute');
+
+    const cookies = await page.context().cookies();
+    const xsrfCookie = cookies.find((c) => c.name === 'XSRF-TOKEN');
+    const xsrfToken = xsrfCookie ? decodeURIComponent(xsrfCookie.value) : '';
+
+    const response = await page.request.put(`${PLAYWRIGHT_BASE_URL}/user/profile-information`, {
+        headers: {
+            'X-XSRF-TOKEN': xsrfToken,
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+        },
+        data: {
+            name: userInfo.name,
+            email: userInfo.email,
+            timezone: settings.timezone ?? userInfo.timezone,
+            week_start: settings.week_start ?? userInfo.week_start,
+        },
+    });
+    expect(response.status()).toBe(200);
+}
+
+// ──────────────────────────────────────────────────
+// Running time entry with specific start
+// ──────────────────────────────────────────────────
+
+export async function createRunningTimeEntryWithStartViaApi(
+    ctx: TestContext,
+    description: string,
+    start: string
+) {
+    const response = await ctx.request.post(
+        `${PLAYWRIGHT_BASE_URL}/api/v1/organizations/${ctx.orgId}/time-entries`,
+        {
+            data: {
+                member_id: ctx.memberId,
+                start,
+                description,
+                billable: false,
+            },
+        }
+    );
+    expect(response.status()).toBe(201);
+    const body = await response.json();
+    return body.data as { id: string; start: string; end: null; description: string };
 }

@@ -2,13 +2,7 @@
 import { Switch } from '@/Components/ui/switch';
 import { Popover, PopoverContent, PopoverTrigger } from '@/packages/ui/src';
 import { Button } from '@/packages/ui/src';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/Components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/packages/ui/src';
 import { Field, FieldLabel } from '@/packages/ui/src/field';
 import {
     NumberField,
@@ -16,7 +10,7 @@ import {
     NumberFieldContent,
     NumberFieldIncrement,
     NumberFieldDecrement,
-} from '@/Components/ui/number-field';
+} from '@/packages/ui/src';
 import { ArrowsUpDownIcon } from '@heroicons/vue/20/solid';
 import { computed, ref, watch } from 'vue';
 import { twMerge } from 'tailwind-merge';

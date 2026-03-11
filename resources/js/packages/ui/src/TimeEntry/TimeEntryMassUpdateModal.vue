@@ -16,13 +16,7 @@ import {
 } from '@/packages/api/src';
 import { Checkbox } from '@/packages/ui/src';
 import { TagIcon } from '@heroicons/vue/20/solid';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/Components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '..';
 import { Button } from '@/packages/ui/src/Buttons';
 import TagDropdown from '@/packages/ui/src/Tag/TagDropdown.vue';
 import type { Tag, Task } from '@/packages/api/src';

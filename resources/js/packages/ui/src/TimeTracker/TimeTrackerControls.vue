@@ -214,7 +214,7 @@ useSelectEvents(
                     v-model="tempDescription"
                     placeholder="What are you working on?"
                     data-testid="time_entry_description"
-                    class="w-full rounded-l-lg py-4 sm:py-2.5 px-3.5 border-b border-b-card-background-separator @2xl:px-4 text-lg text-text-primary bg-transparent border-none placeholder-text-secondary font-medium focus:ring-0 transition"
+                    class="w-full rounded-l-lg py-4 sm:py-2.5 px-3.5 border-b border-b-card-background-separator @2xl:px-4 text-base text-text-primary bg-transparent border-none placeholder-text-secondary font-medium focus:ring-0 transition"
                     type="text"
                     @keydown.enter="startTimerIfNotActive"
                     @keydown.esc="showDropdown = false"
@@ -267,7 +267,7 @@ useSelectEvents(
                         :enable-estimated-time="enableEstimatedTime"
                         @changed="updateProject"></TimeTrackerProjectTaskDropdown>
                 </div>
-                <div class="flex items-center space-x-1 @2xl:space-x-2 px-2 @2xl:px-4 shrink-0">
+                <div class="flex items-center space-x-0 @4xl:space-x-2 px-2 @4xl:px-4 shrink-0">
                     <TimeTrackerTagDropdown
                         v-model="currentTimeEntry.tags"
                         :create-tag
