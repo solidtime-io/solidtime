@@ -1427,10 +1427,7 @@ test('test that bare integer in inline duration input with decimal format is int
     });
 });
 
-test('test that bare integer in create modal is interpreted as minutes', async ({
-    page,
-    ctx,
-}) => {
+test('test that bare integer in create modal is interpreted as minutes', async ({ page, ctx }) => {
     await updateOrganizationSettingViaApi(ctx, {
         interval_format: 'hours-minutes',
         number_format: 'comma-point',
