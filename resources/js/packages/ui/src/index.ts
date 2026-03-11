@@ -5,46 +5,58 @@ declare global {
     }
 }
 
-import * as money from './utils/money';
 import * as color from './utils/color';
+import * as money from './utils/money';
 import * as random from './utils/random';
 import * as time from './utils/time';
 
-export { cn } from './utils/cn';
 export { buttonVariants, type ButtonVariants } from './Buttons/index';
+export type {
+    CommandPaletteCommand,
+    CommandPaletteGroup,
+    EntitySearchResult,
+} from './CommandPalette/index';
+export type { FieldVariants } from './field/index';
+export type { CalendarSettings } from './FullCalendar/calendarSettings';
+export type { ActivityPeriod } from './FullCalendar/activityTypes';
+export { cn } from './utils/cn';
 
+import Badge from './Badge.vue';
+import Button from './Buttons/Button.vue';
 import PrimaryButton from './Buttons/PrimaryButton.vue';
 import SecondaryButton from './Buttons/SecondaryButton.vue';
-import Button from './Buttons/Button.vue';
-import TimeTrackerStartStop from './TimeTrackerStartStop.vue';
-import ProjectBadge from './Project/ProjectBadge.vue';
+import CardTitle from './CardTitle.vue';
+import Checkbox from './Input/Checkbox.vue';
+import InputLabel from './Input/InputLabel.vue';
+import TextInput from './Input/TextInput.vue';
 import LoadingSpinner from './LoadingSpinner.vue';
 import Modal from './Modal.vue';
-import TextInput from './Input/TextInput.vue';
-import InputLabel from './Input/InputLabel.vue';
-import TimeTrackerRunningInDifferentOrganizationOverlay from './TimeTracker/TimeTrackerRunningInDifferentOrganizationOverlay.vue';
-import TimeTrackerControls from './TimeTracker/TimeTrackerControls.vue';
-import TimeTrackerMoreOptionsDropdown from './TimeTracker/TimeTrackerMoreOptionsDropdown.vue';
-import CardTitle from './CardTitle.vue';
-import Badge from './Badge.vue';
-import Checkbox from './Input/Checkbox.vue';
-import TimeEntryGroupedTable from './TimeEntry/TimeEntryGroupedTable.vue';
-import TimeEntryMassActionRow from './TimeEntry/TimeEntryMassActionRow.vue';
+import ProjectBadge from './Project/ProjectBadge.vue';
 import TimeEntryCreateModal from './TimeEntry/TimeEntryCreateModal.vue';
 import TimeEntryEditModal from './TimeEntry/TimeEntryEditModal.vue';
+import TimeEntryGroupedTable from './TimeEntry/TimeEntryGroupedTable.vue';
+import TimeEntryMassActionRow from './TimeEntry/TimeEntryMassActionRow.vue';
+import TimeTrackerControls from './TimeTracker/TimeTrackerControls.vue';
+import TimeTrackerMoreOptionsDropdown from './TimeTracker/TimeTrackerMoreOptionsDropdown.vue';
+import TimeTrackerRunningInDifferentOrganizationOverlay from './TimeTracker/TimeTrackerRunningInDifferentOrganizationOverlay.vue';
+import TimeTrackerStartStop from './TimeTrackerStartStop.vue';
 
-import FullCalendarEventContent from './FullCalendar/FullCalendarEventContent.vue';
-import FullCalendarDayHeader from './FullCalendar/FullCalendarDayHeader.vue';
-import TimeEntryCalendar from './FullCalendar/TimeEntryCalendar.vue';
-import CalendarSettingsPopover from './FullCalendar/CalendarSettingsPopover.vue';
-import DateRangePicker from './Input/DateRangePicker.vue';
-import TimezoneMismatchModal from './TimezoneMismatchModal.vue';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tooltip/index';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './accordion/index';
-import { Popover, PopoverContent, PopoverTrigger, PopoverAnchor } from './popover/index';
-import { RangeCalendar } from './range-calendar/index';
+import {
+    Calendar,
+    CalendarCell,
+    CalendarCellTrigger,
+    CalendarGrid,
+    CalendarGridBody,
+    CalendarGridHead,
+    CalendarGridRow,
+    CalendarHeadCell,
+    CalendarHeader,
+    CalendarHeading,
+    CalendarNextButton,
+    CalendarPrevButton,
+} from './calendar/index';
 import { CommandPalette } from './CommandPalette/index';
-import { Separator } from './separator/index';
 import {
     ContextMenu,
     ContextMenuCheckboxItem,
@@ -61,6 +73,17 @@ import {
     ContextMenuSubTrigger,
     ContextMenuTrigger,
 } from './context-menu/index';
+import {
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogScrollContent,
+    DialogTitle,
+    DialogTrigger,
+} from './dialog/index';
 import {
     DropdownMenu,
     DropdownMenuCheckboxItem,
@@ -79,52 +102,6 @@ import {
     DropdownMenuTrigger,
 } from './dropdown-menu/index';
 import {
-    Select,
-    SelectContent,
-    SelectGroup,
-    SelectItem,
-    SelectItemText,
-    SelectLabel,
-    SelectScrollDownButton,
-    SelectScrollUpButton,
-    SelectSeparator,
-    SelectTrigger,
-    SelectValue,
-} from './select/index';
-import {
-    NumberField,
-    NumberFieldContent,
-    NumberFieldDecrement,
-    NumberFieldIncrement,
-    NumberFieldInput,
-} from './number-field/index';
-import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogScrollContent,
-    DialogTitle,
-    DialogTrigger,
-} from './dialog/index';
-import {
-    Calendar,
-    CalendarCell,
-    CalendarCellTrigger,
-    CalendarGrid,
-    CalendarGridBody,
-    CalendarGridHead,
-    CalendarGridRow,
-    CalendarHeadCell,
-    CalendarHeader,
-    CalendarHeading,
-    CalendarNextButton,
-    CalendarPrevButton,
-} from './calendar/index';
-import { Label } from './label/index';
-import {
     Field,
     FieldContent,
     FieldDescription,
@@ -137,71 +114,65 @@ import {
     FieldTitle,
     fieldVariants,
 } from './field/index';
-export type { FieldVariants } from './field/index';
-export type { ActivityPeriod } from './FullCalendar/idleStatusPlugin';
-export type { CalendarSettings } from './FullCalendar/calendarSettings';
-export type {
-    CommandPaletteCommand,
-    CommandPaletteGroup,
-    EntitySearchResult,
-} from './CommandPalette/index';
+import CalendarSettingsPopover from './FullCalendar/CalendarSettingsPopover.vue';
+import CalendarToolbar from './FullCalendar/CalendarToolbar.vue';
+import FullCalendarDayHeader from './FullCalendar/FullCalendarDayHeader.vue';
+import FullCalendarEventContent from './FullCalendar/FullCalendarEventContent.vue';
+import TimeEntryCalendar from './FullCalendar/TimeEntryCalendar.vue';
+import DateRangePicker from './Input/DateRangePicker.vue';
+import { Label } from './label/index';
+import {
+    NumberField,
+    NumberFieldContent,
+    NumberFieldDecrement,
+    NumberFieldIncrement,
+    NumberFieldInput,
+} from './number-field/index';
+import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from './popover/index';
+import { Progress } from './progress/index';
+import { RangeCalendar } from './range-calendar/index';
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectItemText,
+    SelectLabel,
+    SelectScrollDownButton,
+    SelectScrollUpButton,
+    SelectSeparator,
+    SelectTrigger,
+    SelectValue,
+} from './select/index';
+import { Separator } from './separator/index';
+import TimezoneMismatchModal from './TimezoneMismatchModal.vue';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tooltip/index';
 
 export {
-    money,
-    color,
-    random,
-    time,
-    Button,
-    PrimaryButton,
-    SecondaryButton,
-    TimeTrackerStartStop,
-    ProjectBadge,
-    LoadingSpinner,
-    Modal,
-    TextInput,
-    InputLabel,
-    TimeTrackerRunningInDifferentOrganizationOverlay,
-    TimeTrackerControls,
-    TimeTrackerMoreOptionsDropdown,
-    CardTitle,
-    Badge,
-    Checkbox,
-    TimeEntryGroupedTable,
-    TimeEntryMassActionRow,
-    TimeEntryCreateModal,
-    TimeEntryEditModal,
-    FullCalendarEventContent,
-    FullCalendarDayHeader,
-    TimeEntryCalendar,
-    CalendarSettingsPopover,
-    DateRangePicker,
-    TimezoneMismatchModal,
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
     Accordion,
     AccordionContent,
     AccordionItem,
     AccordionTrigger,
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-    PopoverAnchor,
-    RangeCalendar,
+    Badge,
+    Button,
+    Calendar,
+    CalendarCell,
+    CalendarCellTrigger,
+    CalendarGrid,
+    CalendarGridBody,
+    CalendarGridHead,
+    CalendarGridRow,
+    CalendarHeadCell,
+    CalendarHeader,
+    CalendarHeading,
+    CalendarNextButton,
+    CalendarPrevButton,
+    CalendarSettingsPopover,
+    CalendarToolbar,
+    CardTitle,
+    Checkbox,
+    color,
     CommandPalette,
-    Separator,
-    Field,
-    FieldContent,
-    FieldDescription,
-    FieldError,
-    FieldGroup,
-    FieldLabel,
-    FieldLegend,
-    FieldSeparator,
-    FieldSet,
-    FieldTitle,
-    fieldVariants,
     ContextMenu,
     ContextMenuCheckboxItem,
     ContextMenuContent,
@@ -216,6 +187,16 @@ export {
     ContextMenuSubContent,
     ContextMenuSubTrigger,
     ContextMenuTrigger,
+    DateRangePicker,
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogScrollContent,
+    DialogTitle,
+    DialogTrigger,
     DropdownMenu,
     DropdownMenuCheckboxItem,
     DropdownMenuContent,
@@ -231,6 +212,39 @@ export {
     DropdownMenuSubContent,
     DropdownMenuSubTrigger,
     DropdownMenuTrigger,
+    Field,
+    FieldContent,
+    FieldDescription,
+    FieldError,
+    FieldGroup,
+    FieldLabel,
+    FieldLegend,
+    FieldSeparator,
+    FieldSet,
+    FieldTitle,
+    fieldVariants,
+    FullCalendarDayHeader,
+    FullCalendarEventContent,
+    InputLabel,
+    Label,
+    LoadingSpinner,
+    Modal,
+    money,
+    NumberField,
+    NumberFieldContent,
+    NumberFieldDecrement,
+    NumberFieldIncrement,
+    NumberFieldInput,
+    Popover,
+    PopoverAnchor,
+    PopoverContent,
+    PopoverTrigger,
+    PrimaryButton,
+    Progress,
+    ProjectBadge,
+    random,
+    RangeCalendar,
+    SecondaryButton,
     Select,
     SelectContent,
     SelectGroup,
@@ -242,31 +256,21 @@ export {
     SelectSeparator,
     SelectTrigger,
     SelectValue,
-    NumberField,
-    NumberFieldContent,
-    NumberFieldDecrement,
-    NumberFieldIncrement,
-    NumberFieldInput,
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogScrollContent,
-    DialogTitle,
-    DialogTrigger,
-    Calendar,
-    CalendarCell,
-    CalendarCellTrigger,
-    CalendarGrid,
-    CalendarGridBody,
-    CalendarGridHead,
-    CalendarGridRow,
-    CalendarHeadCell,
-    CalendarHeader,
-    CalendarHeading,
-    CalendarNextButton,
-    CalendarPrevButton,
-    Label,
+    Separator,
+    TextInput,
+    time,
+    TimeEntryCalendar,
+    TimeEntryCreateModal,
+    TimeEntryEditModal,
+    TimeEntryGroupedTable,
+    TimeEntryMassActionRow,
+    TimeTrackerControls,
+    TimeTrackerMoreOptionsDropdown,
+    TimeTrackerRunningInDifferentOrganizationOverlay,
+    TimeTrackerStartStop,
+    TimezoneMismatchModal,
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
 };
