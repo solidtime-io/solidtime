@@ -497,10 +497,13 @@ test.describe('Visual Snapping', () => {
         await page.getByRole('option', { name: '5 min', exact: true }).click();
         await page.keyboard.press('Escape');
 
+        // Scroll so both the event (9:00) and target (14:00) are in viewport
+        await scrollCalendarToTime(page, '08:00:00');
+
         const event = page.locator('.fc-event').first();
         await expect(event).toBeVisible();
 
-        // Drag event
+        // Capture target coordinates after scroll is settled
         const targetSlot = page.locator('.fc-timegrid-slot-lane[data-time="14:00:00"]').first();
         const targetBox = await targetSlot.boundingBox();
         expect(targetBox).not.toBeNull();

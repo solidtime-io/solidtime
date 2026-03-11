@@ -26,11 +26,7 @@ function updateDuration() {
         return;
     }
 
-    const seconds = parseTimeInput(
-        input,
-        organization?.value?.number_format,
-        'hours'
-    );
+    const seconds = parseTimeInput(input, organization?.value?.number_format, 'hours');
     if (seconds !== null && seconds > 0) {
         model.value = seconds;
     }
