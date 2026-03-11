@@ -40,7 +40,7 @@ const formattedDuration = computed(() =>
 </script>
 
 <template>
-    <div class="text-2xs leading-tight px-0.5 py-1.5">
+    <div class="text-2xs leading-tight px-0.5 py-1">
         <div class="font-semibold">{{ title }}</div>
         <div v-if="projectName" class="font-medium opacity-90">
             {{ projectName }}
