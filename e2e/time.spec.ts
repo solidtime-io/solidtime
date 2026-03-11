@@ -15,6 +15,7 @@ import {
     createBareTimeEntryViaApi,
     createTimeEntryViaApi,
     updateOrganizationCurrencyViaWeb,
+    updateOrganizationSettingViaApi,
 } from './utils/api';
 
 // Date picker button name patterns for different date formats
@@ -963,7 +964,12 @@ test('test that natural language duration input works in create modal', async ({
     expect(createBody.data.duration).toBe(9000);
 });
 
-test('test that decimal duration input works in create modal', async ({ page }) => {
+test('test that decimal duration input works in create modal', async ({ page, ctx }) => {
+    // Ensure comma-point format so "1.5h" uses period as decimal
+    await updateOrganizationSettingViaApi(ctx, {
+        interval_format: 'hours-minutes',
+        number_format: 'comma-point',
+    });
     await goToTimeOverview(page);
 
     // Open the create modal
@@ -978,7 +984,6 @@ test('test that decimal duration input works in create modal', async ({ page }) 
         .fill('Decimal duration test');
 
     // Test decimal duration input "1.5h" (should be interpreted as 1.5 hours = 90 minutes)
-    // Note: parse-duration library requires a unit suffix for decimal values
     const durationInput = page.locator('[role="dialog"] input[name="Duration"]');
     await durationInput.fill('1.5h');
     await durationInput.press('Tab');
@@ -995,6 +1000,511 @@ test('test that decimal duration input works in create modal', async ({ page }) 
     ]);
     const createBody = await createResponse.json();
     expect(createBody.data.duration).toBe(5400);
+});
+
+test('test that decimal duration with comma number format does not corrupt on blur in edit modal', async ({
+    page,
+    ctx,
+}) => {
+    // Set organization to decimal interval format with European number format (comma as decimal separator)
+    await updateOrganizationSettingViaApi(ctx, {
+        interval_format: 'decimal',
+        number_format: 'point-comma',
+    });
+
+    // Create a 1-hour time entry
+    await createBareTimeEntryViaApi(ctx, 'Decimal blur test', '1h');
+    await goToTimeOverview(page);
+
+    const timeEntryRows = page.locator('[data-testid="time_entry_row"]');
+    const newTimeEntry = timeEntryRows.first();
+
+    // Open edit modal via the actions dropdown
+    const actionsDropdown = newTimeEntry
+        .getByRole('button', { name: 'Actions for the time entry' })
+        .first();
+    await actionsDropdown.click();
+    await page.getByTestId('time_entry_edit').click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+
+    // The duration input should show "1,00 h" (decimal format with comma)
+    const durationInput = page.locator('[role="dialog"] input[name="Duration"]');
+    await expect(durationInput).toHaveValue('1,00 h');
+
+    // Click on the duration input and blur it without changing the value
+    await durationInput.click();
+    await durationInput.press('Tab');
+
+    // After blur, the value should remain "1,00 h" and NOT become "100,00 h"
+    await expect(durationInput).toHaveValue('1,00 h');
+
+    // Submit and verify the duration is still 3600 seconds (1 hour)
+    const [updateResponse] = await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/time-entries') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 200
+        ),
+        page.getByRole('button', { name: 'Update Time Entry' }).click(),
+    ]);
+    const updateBody = await updateResponse.json();
+    expect(updateBody.data.duration).toBe(3600);
+
+    // Reset organization settings
+    await updateOrganizationSettingViaApi(ctx, {
+        interval_format: 'hours-minutes',
+        number_format: 'comma-point',
+    });
+});
+
+test('test that typing bare decimal 1,5 in edit modal is interpreted as 1.5 hours', async ({
+    page,
+    ctx,
+}) => {
+    // Set organization to decimal interval format with European number format
+    await updateOrganizationSettingViaApi(ctx, {
+        interval_format: 'decimal',
+        number_format: 'point-comma',
+    });
+
+    // Create a 1-hour time entry
+    await createBareTimeEntryViaApi(ctx, 'Bare decimal test', '1h');
+    await goToTimeOverview(page);
+
+    const timeEntryRows = page.locator('[data-testid="time_entry_row"]');
+    const newTimeEntry = timeEntryRows.first();
+
+    // Open edit modal
+    const actionsDropdown = newTimeEntry
+        .getByRole('button', { name: 'Actions for the time entry' })
+        .first();
+    await actionsDropdown.click();
+    await page.getByTestId('time_entry_edit').click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+
+    // Type "1,5" (bare decimal without "h" suffix) — should be interpreted as 1.5 hours
+    const durationInput = page.locator('[role="dialog"] input[name="Duration"]');
+    await durationInput.fill('1,5');
+    await durationInput.press('Tab');
+
+    // Should display as "1,50 h" (1.5 hours formatted in point-comma locale)
+    await expect(durationInput).toHaveValue('1,50 h');
+
+    // Submit and verify the duration is 5400 seconds (1.5 hours)
+    const [updateResponse] = await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/time-entries') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 200
+        ),
+        page.getByRole('button', { name: 'Update Time Entry' }).click(),
+    ]);
+    const updateBody = await updateResponse.json();
+    expect(updateBody.data.duration).toBe(5400);
+
+    // Reset organization settings
+    await updateOrganizationSettingViaApi(ctx, {
+        interval_format: 'hours-minutes',
+        number_format: 'comma-point',
+    });
+});
+
+test('test that typing bare decimal 1.5 in edit modal is interpreted as 1.5 hours', async ({
+    page,
+    ctx,
+}) => {
+    // Set organization to decimal interval format with default number format
+    await updateOrganizationSettingViaApi(ctx, {
+        interval_format: 'decimal',
+        number_format: 'comma-point',
+    });
+
+    // Create a 1-hour time entry
+    await createBareTimeEntryViaApi(ctx, 'Bare decimal dot test', '1h');
+    await goToTimeOverview(page);
+
+    const timeEntryRows = page.locator('[data-testid="time_entry_row"]');
+    const newTimeEntry = timeEntryRows.first();
+
+    // Open edit modal
+    const actionsDropdown = newTimeEntry
+        .getByRole('button', { name: 'Actions for the time entry' })
+        .first();
+    await actionsDropdown.click();
+    await page.getByTestId('time_entry_edit').click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+
+    // Type "1.5" (bare decimal with period) — should be interpreted as 1.5 hours
+    const durationInput = page.locator('[role="dialog"] input[name="Duration"]');
+    await durationInput.fill('1.5');
+    await durationInput.press('Tab');
+
+    // Should display as "1.50 h" (1.5 hours formatted in comma-point locale)
+    await expect(durationInput).toHaveValue('1.50 h');
+
+    // Submit and verify the duration is 5400 seconds (1.5 hours)
+    const [updateResponse] = await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/time-entries') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 200
+        ),
+        page.getByRole('button', { name: 'Update Time Entry' }).click(),
+    ]);
+    const updateBody = await updateResponse.json();
+    expect(updateBody.data.duration).toBe(5400);
+
+    // Reset organization settings
+    await updateOrganizationSettingViaApi(ctx, {
+        interval_format: 'hours-minutes',
+        number_format: 'comma-point',
+    });
+});
+
+test('test that decimal duration with space-comma number format does not corrupt on blur in edit modal', async ({
+    page,
+    ctx,
+}) => {
+    // Set organization to decimal interval format with space-comma number format
+    await updateOrganizationSettingViaApi(ctx, {
+        interval_format: 'decimal',
+        number_format: 'space-comma',
+    });
+
+    // Create a 1-hour time entry
+    await createBareTimeEntryViaApi(ctx, 'Space-comma blur test', '1h');
+    await goToTimeOverview(page);
+
+    const timeEntryRows = page.locator('[data-testid="time_entry_row"]');
+    const newTimeEntry = timeEntryRows.first();
+
+    // Open edit modal
+    const actionsDropdown = newTimeEntry
+        .getByRole('button', { name: 'Actions for the time entry' })
+        .first();
+    await actionsDropdown.click();
+    await page.getByTestId('time_entry_edit').click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+
+    // The duration input should show "1,00 h" (space-comma uses comma as decimal)
+    const durationInput = page.locator('[role="dialog"] input[name="Duration"]');
+    await expect(durationInput).toHaveValue('1,00 h');
+
+    // Blur without changing the value
+    await durationInput.click();
+    await durationInput.press('Tab');
+
+    // Should remain "1,00 h"
+    await expect(durationInput).toHaveValue('1,00 h');
+
+    // Submit and verify the duration is still 3600 seconds
+    const [updateResponse] = await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/time-entries') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 200
+        ),
+        page.getByRole('button', { name: 'Update Time Entry' }).click(),
+    ]);
+    const updateBody = await updateResponse.json();
+    expect(updateBody.data.duration).toBe(3600);
+
+    // Reset organization settings
+    await updateOrganizationSettingViaApi(ctx, {
+        interval_format: 'hours-minutes',
+        number_format: 'comma-point',
+    });
+});
+
+test('test that bare integer in edit modal is interpreted as minutes', async ({ page, ctx }) => {
+    await updateOrganizationSettingViaApi(ctx, {
+        interval_format: 'hours-minutes',
+        number_format: 'comma-point',
+    });
+
+    await createBareTimeEntryViaApi(ctx, 'Bare integer test', '1h');
+    await goToTimeOverview(page);
+
+    const timeEntryRows = page.locator('[data-testid="time_entry_row"]');
+    const newTimeEntry = timeEntryRows.first();
+
+    // Open edit modal
+    const actionsDropdown = newTimeEntry
+        .getByRole('button', { name: 'Actions for the time entry' })
+        .first();
+    await actionsDropdown.click();
+    await page.getByTestId('time_entry_edit').click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+
+    // Type "30" — should be interpreted as 30 minutes
+    const durationInput = page.locator('[role="dialog"] input[name="Duration"]');
+    await durationInput.fill('30');
+    await durationInput.press('Tab');
+
+    // Should display as "0h 30min"
+    await expect(durationInput).toHaveValue('0h 30min');
+
+    // Submit and verify the duration is 1800 seconds (30 minutes)
+    const [updateResponse] = await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/time-entries') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 200
+        ),
+        page.getByRole('button', { name: 'Update Time Entry' }).click(),
+    ]);
+    const updateBody = await updateResponse.json();
+    expect(updateBody.data.duration).toBe(1800);
+});
+
+test('test that bare integer in edit modal with decimal format is interpreted as hours', async ({
+    page,
+    ctx,
+}) => {
+    await updateOrganizationSettingViaApi(ctx, {
+        interval_format: 'decimal',
+        number_format: 'comma-point',
+    });
+
+    await createBareTimeEntryViaApi(ctx, 'Bare integer decimal test', '1h');
+    await goToTimeOverview(page);
+
+    const timeEntryRows = page.locator('[data-testid="time_entry_row"]');
+    const newTimeEntry = timeEntryRows.first();
+
+    // Open edit modal
+    const actionsDropdown = newTimeEntry
+        .getByRole('button', { name: 'Actions for the time entry' })
+        .first();
+    await actionsDropdown.click();
+    await page.getByTestId('time_entry_edit').click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+
+    // Type "2" — with decimal format, should be interpreted as 2 hours
+    const durationInput = page.locator('[role="dialog"] input[name="Duration"]');
+    await durationInput.fill('2');
+    await durationInput.press('Tab');
+
+    // Should display as "2.00 h"
+    await expect(durationInput).toHaveValue('2.00 h');
+
+    // Submit and verify the duration is 7200 seconds (2 hours)
+    const [updateResponse] = await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/time-entries') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 200
+        ),
+        page.getByRole('button', { name: 'Update Time Entry' }).click(),
+    ]);
+    const updateBody = await updateResponse.json();
+    expect(updateBody.data.duration).toBe(7200);
+
+    // Reset organization settings
+    await updateOrganizationSettingViaApi(ctx, {
+        interval_format: 'hours-minutes',
+        number_format: 'comma-point',
+    });
+});
+
+test('test that HH:MM input in edit modal works', async ({ page, ctx }) => {
+    await updateOrganizationSettingViaApi(ctx, {
+        interval_format: 'hours-minutes',
+        number_format: 'comma-point',
+    });
+
+    await createBareTimeEntryViaApi(ctx, 'HH:MM test', '1h');
+    await goToTimeOverview(page);
+
+    const timeEntryRows = page.locator('[data-testid="time_entry_row"]');
+    const newTimeEntry = timeEntryRows.first();
+
+    // Open edit modal
+    const actionsDropdown = newTimeEntry
+        .getByRole('button', { name: 'Actions for the time entry' })
+        .first();
+    await actionsDropdown.click();
+    await page.getByTestId('time_entry_edit').click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+
+    // Type "1:30" — should be interpreted as 1 hour 30 minutes
+    const durationInput = page.locator('[role="dialog"] input[name="Duration"]');
+    await durationInput.fill('1:30');
+    await durationInput.press('Tab');
+
+    // Should display as "1h 30min"
+    await expect(durationInput).toHaveValue('1h 30min');
+
+    // Submit and verify the duration is 5400 seconds (1.5 hours)
+    const [updateResponse] = await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/time-entries') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 200
+        ),
+        page.getByRole('button', { name: 'Update Time Entry' }).click(),
+    ]);
+    const updateBody = await updateResponse.json();
+    expect(updateBody.data.duration).toBe(5400);
+});
+
+test('test that bare integer in inline duration input is interpreted as minutes', async ({
+    page,
+    ctx,
+}) => {
+    await updateOrganizationSettingViaApi(ctx, {
+        interval_format: 'hours-minutes',
+        number_format: 'comma-point',
+    });
+
+    await createBareTimeEntryViaApi(ctx, 'Inline bare integer test', '1h');
+    await goToTimeOverview(page);
+
+    const timeEntryRows = page.locator('[data-testid="time_entry_row"]');
+    const newTimeEntry = timeEntryRows.first();
+
+    // Type "45" in the inline duration input — should be 45 minutes
+    const durationInput = newTimeEntry.getByTestId('time_entry_duration_input').first();
+    await durationInput.click();
+    await durationInput.fill('45');
+
+    const [updateResponse] = await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/time-entries') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 200
+        ),
+        durationInput.press('Tab'),
+    ]);
+    const updateBody = await updateResponse.json();
+    expect(updateBody.data.duration).toBe(2700);
+});
+
+test('test that bare integer in inline duration input with decimal format is interpreted as hours', async ({
+    page,
+    ctx,
+}) => {
+    await updateOrganizationSettingViaApi(ctx, {
+        interval_format: 'decimal',
+        number_format: 'comma-point',
+    });
+
+    await createBareTimeEntryViaApi(ctx, 'Inline bare integer decimal test', '1h');
+    await goToTimeOverview(page);
+
+    const timeEntryRows = page.locator('[data-testid="time_entry_row"]');
+    const newTimeEntry = timeEntryRows.first();
+
+    // Type "3" in the inline duration input — with decimal format, should be 3 hours
+    const durationInput = newTimeEntry.getByTestId('time_entry_duration_input').first();
+    await durationInput.click();
+    await durationInput.fill('3');
+
+    const [updateResponse] = await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/time-entries') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 200
+        ),
+        durationInput.press('Tab'),
+    ]);
+    const updateBody = await updateResponse.json();
+    expect(updateBody.data.duration).toBe(10800);
+
+    // Reset organization settings
+    await updateOrganizationSettingViaApi(ctx, {
+        interval_format: 'hours-minutes',
+        number_format: 'comma-point',
+    });
+});
+
+test('test that bare integer in create modal is interpreted as minutes', async ({
+    page,
+    ctx,
+}) => {
+    await updateOrganizationSettingViaApi(ctx, {
+        interval_format: 'hours-minutes',
+        number_format: 'comma-point',
+    });
+    await goToTimeOverview(page);
+
+    // Open the create modal
+    await page.getByRole('button', { name: 'Time entry actions' }).click();
+    await page.getByRole('menuitem', { name: 'Manual time entry' }).click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+
+    await page
+        .getByRole('dialog')
+        .getByRole('textbox', { name: 'Description' })
+        .fill('Bare integer create test');
+
+    // Type "30" — should be interpreted as 30 minutes
+    const durationInput = page.locator('[role="dialog"] input[name="Duration"]');
+    await durationInput.fill('30');
+    await durationInput.press('Tab');
+
+    await expect(durationInput).toHaveValue('0h 30min');
+
+    const [createResponse] = await Promise.all([
+        page.waitForResponse(
+            (response) => response.url().includes('/time-entries') && response.status() === 201
+        ),
+        page.getByRole('button', { name: 'Create Time Entry' }).click(),
+    ]);
+    const createBody = await createResponse.json();
+    expect(createBody.data.duration).toBe(1800);
+});
+
+test('test that bare integer in create modal with decimal format is interpreted as hours', async ({
+    page,
+    ctx,
+}) => {
+    await updateOrganizationSettingViaApi(ctx, {
+        interval_format: 'decimal',
+        number_format: 'comma-point',
+    });
+    await goToTimeOverview(page);
+
+    // Open the create modal
+    await page.getByRole('button', { name: 'Time entry actions' }).click();
+    await page.getByRole('menuitem', { name: 'Manual time entry' }).click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+
+    await page
+        .getByRole('dialog')
+        .getByRole('textbox', { name: 'Description' })
+        .fill('Bare integer decimal create test');
+
+    // Type "2" — with decimal format, should be interpreted as 2 hours
+    const durationInput = page.locator('[role="dialog"] input[name="Duration"]');
+    await durationInput.fill('2');
+    await durationInput.press('Tab');
+
+    await expect(durationInput).toHaveValue('2.00 h');
+
+    const [createResponse] = await Promise.all([
+        page.waitForResponse(
+            (response) => response.url().includes('/time-entries') && response.status() === 201
+        ),
+        page.getByRole('button', { name: 'Create Time Entry' }).click(),
+    ]);
+    const createBody = await createResponse.json();
+    expect(createBody.data.duration).toBe(7200);
+
+    // Reset organization settings
+    await updateOrganizationSettingViaApi(ctx, {
+        interval_format: 'hours-minutes',
+        number_format: 'comma-point',
+    });
 });
 
 test('test that project selection works in create modal', async ({ page, ctx }) => {
