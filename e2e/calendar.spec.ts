@@ -1445,8 +1445,8 @@ test.describe('Resize Events', () => {
         await page.mouse.move(centerX, bottomY + slotHeight * 2, { steps: 5 });
         await page.mouse.move(targetX!, bottomY + slotHeight * 2, { steps: 15 });
 
-        // Cross-day preview should be visible
-        const preview = page.locator('.fc-cross-day-preview');
+        // Cross-day preview should be visible (may appear in multiple columns)
+        const preview = page.locator('.fc-cross-day-preview').first();
         await expect(preview).toBeVisible();
 
         await page.mouse.up();

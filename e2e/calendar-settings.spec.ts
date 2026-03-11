@@ -215,41 +215,53 @@ test.describe('Calendar Toolbar', () => {
     test('prev and next buttons navigate the calendar', async ({ page }) => {
         await goToCalendar(page);
 
-        const initialTitle = await getCalendarTitle(page).textContent();
+        // Use column headers to detect navigation (title only shows month which may not change)
+        const getHeaderTexts = async () => {
+            const headers = page.locator('.fc-col-header-cell');
+            return headers.allTextContents();
+        };
+
+        const initialHeaders = await getHeaderTexts();
 
         // Click next
         await page.getByRole('button', { name: 'Next', exact: true }).click();
         await expect(page.locator('.fc')).toBeVisible();
 
-        const nextTitle = await getCalendarTitle(page).textContent();
-        expect(nextTitle).not.toBe(initialTitle);
+        const nextHeaders = await getHeaderTexts();
+        expect(nextHeaders).not.toEqual(initialHeaders);
 
         // Click prev — should go back to original
         await page.getByRole('button', { name: 'Previous', exact: true }).click();
         await expect(page.locator('.fc')).toBeVisible();
 
-        const backTitle = await getCalendarTitle(page).textContent();
-        expect(backTitle).toBe(initialTitle);
+        const backHeaders = await getHeaderTexts();
+        expect(backHeaders).toEqual(initialHeaders);
     });
 
     test('today button returns to current week', async ({ page }) => {
         await goToCalendar(page);
 
-        const initialTitle = await getCalendarTitle(page).textContent();
+        // Use column headers to detect navigation (title only shows month which may not change)
+        const getHeaderTexts = async () => {
+            const headers = page.locator('.fc-col-header-cell');
+            return headers.allTextContents();
+        };
+
+        const initialHeaders = await getHeaderTexts();
 
         // Navigate away
         await page.getByRole('button', { name: 'Next', exact: true }).click();
         await page.getByRole('button', { name: 'Next', exact: true }).click();
 
-        const awayTitle = await getCalendarTitle(page).textContent();
-        expect(awayTitle).not.toBe(initialTitle);
+        const awayHeaders = await getHeaderTexts();
+        expect(awayHeaders).not.toEqual(initialHeaders);
 
         // Click today
         await page.getByRole('button', { name: 'today', exact: true }).click();
         await expect(page.locator('.fc')).toBeVisible();
 
-        const todayTitle = await getCalendarTitle(page).textContent();
-        expect(todayTitle).toBe(initialTitle);
+        const todayHeaders = await getHeaderTexts();
+        expect(todayHeaders).toEqual(initialHeaders);
     });
 
     test('view switcher toggles between week and day views', async ({ page }) => {
