@@ -33,13 +33,13 @@ const calendarEnd = ref<Date | undefined>(undefined);
 const testActivityPeriods = ref<ActivityPeriod[]>([]);
 
 onMounted(() => {
-    (window as Record<string, unknown>).__TEST_SET_ACTIVITY_PERIODS__ = (
+    (window as unknown as Record<string, unknown>).__TEST_SET_ACTIVITY_PERIODS__ = (
         data: ActivityPeriod[]
     ) => {
         testActivityPeriods.value = data;
     };
 
-    const windowData = (window as Record<string, unknown>).__TEST_ACTIVITY_PERIODS__;
+    const windowData = (window as unknown as Record<string, unknown>).__TEST_ACTIVITY_PERIODS__;
     if (Array.isArray(windowData)) {
         setTimeout(() => {
             testActivityPeriods.value = windowData;
