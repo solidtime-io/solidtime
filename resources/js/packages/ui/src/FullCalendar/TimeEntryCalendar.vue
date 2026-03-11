@@ -440,216 +440,233 @@ function getEventDurationSeconds(dayEvent: DayEvent, dayStr: string): number {
             :currency="currency"
             :can-create-project="canCreateProject" />
 
-        <CalendarToolbar
-            :view-title="viewTitle"
-            :active-view="activeView"
-            :settings="calendarSettings"
-            @prev="handlePrev"
-            @next="handleNext"
-            @today="handleToday"
-            @change-view="handleChangeView"
-            @update:settings="onSettingsUpdate" />
+        <template v-if="!loading">
+            <CalendarToolbar
+                :view-title="viewTitle"
+                :active-view="activeView"
+                :settings="calendarSettings"
+                @prev="handlePrev"
+                @next="handleNext"
+                @today="handleToday"
+                @change-view="handleChangeView"
+                @update:settings="onSettingsUpdate" />
 
-        <ContextMenu v-model:open="contextMenuOpen">
-            <ContextMenuTrigger
-                as="div"
-                class="flex-1 min-h-0"
-                @contextmenu="handleCalendarContextMenu">
-                <div
-                    ref="rootRef"
-                    class="fc h-full flex flex-col bg-default-background text-foreground font-inherit border border-border border-l-transparent overflow-hidden">
+            <ContextMenu v-model:open="contextMenuOpen">
+                <ContextMenuTrigger
+                    as="div"
+                    class="flex-1 min-h-0"
+                    @contextmenu="handleCalendarContextMenu">
                     <div
-                        class="fc-header-scroll flex border-b border-border shrink-0 sticky top-0 z-10 bg-default-background">
+                        ref="rootRef"
+                        class="fc h-full flex flex-col bg-default-background text-foreground font-inherit border border-border border-l-transparent overflow-hidden">
                         <div
-                            class="shrink-0 bg-background border-r border-border"
-                            :style="{
-                                width: TIME_AXIS_WIDTH + 'px',
-                                minWidth: TIME_AXIS_WIDTH + 'px',
-                            }"></div>
-                        <div
-                            class="grid flex-1 min-w-0"
-                            :style="{
-                                gridTemplateColumns: 'repeat(' + viewDays.length + ', 1fr)',
-                            }">
-                            <div
-                                v-for="day in viewDays"
-                                :key="day.format('YYYY-MM-DD')"
-                                class="fc-col-header-cell border-r border-b border-border px-2 py-3 bg-default-background text-center"
-                                :class="{
-                                    'bg-secondary': isToday(day),
-                                    'fc-day-today': isToday(day),
-                                }"
-                                :data-date="day.format('YYYY-MM-DD')">
-                                <FullCalendarDayHeader
-                                    :date="day"
-                                    :is-today="isToday(day)"
-                                    :total-seconds="dailyTotals[day.format('YYYY-MM-DD')] || 0" />
-                            </div>
-                        </div>
-                    </div>
-
-                    <div ref="scrollerRef" class="fc-scroller">
-                        <div class="flex min-w-0">
+                            class="fc-header-scroll flex border-b border-border shrink-0 sticky top-0 z-10 bg-default-background">
                             <div
                                 class="shrink-0 bg-background border-r border-border"
                                 :style="{
                                     width: TIME_AXIS_WIDTH + 'px',
                                     minWidth: TIME_AXIS_WIDTH + 'px',
+                                }"></div>
+                            <div
+                                class="grid flex-1 min-w-0"
+                                :style="{
+                                    gridTemplateColumns: 'repeat(' + viewDays.length + ', 1fr)',
                                 }">
                                 <div
-                                    v-for="slot in slots"
-                                    :key="slot.time"
-                                    class="fc-timegrid-slot fc-timegrid-slot-label relative text-right border-t border-border pr-1.5 pt-2 box-border"
+                                    v-for="day in viewDays"
+                                    :key="day.format('YYYY-MM-DD')"
+                                    class="fc-col-header-cell border-r border-b border-border px-2 py-3 bg-default-background text-center"
                                     :class="{
-                                        'fc-timegrid-slot-minor border-t-transparent': !slot.isHour,
+                                        'bg-secondary': isToday(day),
+                                        'fc-day-today': isToday(day),
                                     }"
-                                    :data-time="slot.time"
-                                    :style="{ height: SLOT_HEIGHT + 'px' }">
-                                    <span
-                                        v-if="slot.isHour"
-                                        class="fc-timegrid-slot-label-cushion text-[0.8125rem] text-muted-foreground leading-none block">
-                                        {{ formatSlotLabel(slot.minutes / 60) }}
-                                    </span>
-                                </div>
-                            </div>
-
-                            <div
-                                class="flex-1 min-w-0 relative"
-                                @pointerdown="onSlotPointerDown($event)">
-                                <div
-                                    class="bg-background"
-                                    :style="{ height: totalGridHeight + 'px' }">
-                                    <div
-                                        v-for="slot in slots"
-                                        :key="'lane-' + slot.time"
-                                        class="fc-timegrid-slot fc-timegrid-slot-lane border-t border-border box-border"
-                                        :class="{
-                                            'fc-timegrid-slot-minor border-dotted': !slot.isHour,
-                                        }"
-                                        :data-time="slot.time"
-                                        :style="{ height: SLOT_HEIGHT + 'px' }"></div>
-                                </div>
-                                <div
-                                    class="grid absolute inset-0 pointer-events-none min-w-0"
-                                    :style="{
-                                        gridTemplateColumns: 'repeat(' + viewDays.length + ', 1fr)',
-                                    }">
-                                    <CalendarDayColumn
-                                        v-for="day in viewDays"
-                                        :key="day.format('YYYY-MM-DD')"
-                                        :day-str="day.format('YYYY-MM-DD')"
-                                        :total-grid-height="totalGridHeight"
-                                        :has-activity-status="
-                                            dayHasActivityStatus(day.format('YYYY-MM-DD'))
-                                        "
-                                        :day-events="eventsByDay[day.format('YYYY-MM-DD')] || []"
-                                        :get-event-style="getEventStyle"
-                                        :get-event-opacity-class="getEventOpacityClass"
-                                        :get-event-duration-seconds="getEventDurationSeconds"
-                                        :is-dragging="isDragging"
-                                        :drag-event-id="dragEventId"
-                                        :drag-preview="dragPreviewsByDay[day.format('YYYY-MM-DD')]"
-                                        :resize-event-id="resizeEventId"
-                                        :resize-cross-day-preview="
-                                            isResizing
-                                                ? resizeCrossDayPreviewsByDay[
-                                                      day.format('YYYY-MM-DD')
-                                                  ]
-                                                : undefined
-                                        "
-                                        :show-now-indicator="isToday(day) && nowIndicatorTop >= 0"
-                                        :now-indicator-top="nowIndicatorTop"
-                                        :activity-boxes="
-                                            activityBoxesForDay(day.format('YYYY-MM-DD'))
-                                        "
-                                        :get-activity-box-label="getActivityBoxLabel"
-                                        :get-activity-box-activities="getActivityBoxActivities"
-                                        :get-activity-percentage="getActivityPercentage"
-                                        :get-activity-text="getActivityText"
-                                        :show-selection="isSelecting || showCreateTimeEntryModal"
-                                        :is-selection-start="
-                                            selectionDay === day.format('YYYY-MM-DD')
-                                        "
-                                        :is-selection-intermediate="
-                                            selectionIntermediateDays.has(day.format('YYYY-MM-DD'))
-                                        "
-                                        :is-selection-end="
-                                            selectionEndDay === day.format('YYYY-MM-DD')
-                                        "
-                                        :selection-top="selectionTop"
-                                        :selection-height="selectionHeight"
-                                        :selection-end-top="selectionEndTop"
-                                        :selection-end-height="selectionEndHeight"
-                                        @event-pointerdown="
-                                            (e, dayEvent) =>
-                                                onEventPointerDown(e, dayEvent.event, dayEvent)
-                                        "
-                                        @event-keydown-enter="
-                                            (dayEvent) => {
-                                                selectedTimeEntry = dayEvent.event.timeEntry;
-                                                showEditTimeEntryModal = true;
-                                            }
-                                        "
-                                        @resizer-pointerdown="
-                                            (e, dayEvent, edge) =>
-                                                onResizerPointerDown(
-                                                    e,
-                                                    dayEvent.event,
-                                                    dayEvent,
-                                                    edge,
-                                                    day.format('YYYY-MM-DD')
-                                                )
+                                    :data-date="day.format('YYYY-MM-DD')">
+                                    <FullCalendarDayHeader
+                                        :date="day"
+                                        :is-today="isToday(day)"
+                                        :total-seconds="
+                                            dailyTotals[day.format('YYYY-MM-DD')] || 0
                                         " />
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </ContextMenuTrigger>
 
-            <ContextMenuContent class="min-w-[160px]">
-                <template v-if="contextMenuTimeEntry && contextMenuTimeEntry.end !== null">
-                    <ContextMenuItem class="space-x-3" @select="handleContextEdit()">
-                        <PencilIcon class="w-4 h-4 text-icon-default" />
-                        <span>Edit</span>
-                    </ContextMenuItem>
-                    <ContextMenuItem class="space-x-3" @select="handleContextDuplicate()">
-                        <DocumentDuplicateIcon class="w-4 h-4 text-icon-default" />
-                        <span>Duplicate</span>
-                    </ContextMenuItem>
-                    <ContextMenuItem class="space-x-3" @select="handleContextSplit()">
-                        <ScissorsIcon class="w-4 h-4 text-icon-default" />
-                        <span>Split</span>
-                    </ContextMenuItem>
-                    <ContextMenuSeparator />
-                    <ContextMenuItem
-                        class="space-x-3 text-destructive"
-                        @select="handleContextDelete()">
-                        <TrashIcon class="w-4 h-4 text-icon-default" />
-                        <span>Delete</span>
-                    </ContextMenuItem>
-                </template>
-                <template v-else-if="contextMenuTimeEntry && contextMenuTimeEntry.end === null">
-                    <ContextMenuItem class="space-x-3" @select="handleContextStop()">
-                        <StopIcon class="w-4 h-4 text-icon-default" />
-                        <span>Stop</span>
-                    </ContextMenuItem>
-                    <ContextMenuSeparator />
-                    <ContextMenuItem
-                        class="space-x-3 text-destructive"
-                        @select="handleContextDiscard()">
-                        <XMarkIcon class="w-4 h-4 text-icon-default" />
-                        <span>Discard</span>
-                    </ContextMenuItem>
-                </template>
-                <template v-else>
-                    <ContextMenuItem class="space-x-3" @select="handleContextCreate()">
-                        <PlusIcon class="w-4 h-4 text-icon-default" />
-                        <span>Create Time Entry</span>
-                    </ContextMenuItem>
-                </template>
-            </ContextMenuContent>
-        </ContextMenu>
+                        <div ref="scrollerRef" class="fc-scroller">
+                            <div class="flex min-w-0">
+                                <div
+                                    class="shrink-0 bg-background border-r border-border"
+                                    :style="{
+                                        width: TIME_AXIS_WIDTH + 'px',
+                                        minWidth: TIME_AXIS_WIDTH + 'px',
+                                    }">
+                                    <div
+                                        v-for="slot in slots"
+                                        :key="slot.time"
+                                        class="fc-timegrid-slot fc-timegrid-slot-label relative text-right border-t border-border pr-1.5 pt-2 box-border"
+                                        :class="{
+                                            'fc-timegrid-slot-minor border-t-transparent':
+                                                !slot.isHour,
+                                        }"
+                                        :data-time="slot.time"
+                                        :style="{ height: SLOT_HEIGHT + 'px' }">
+                                        <span
+                                            v-if="slot.isHour"
+                                            class="fc-timegrid-slot-label-cushion text-[0.8125rem] text-muted-foreground leading-none block">
+                                            {{ formatSlotLabel(slot.minutes / 60) }}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div
+                                    class="flex-1 min-w-0 relative"
+                                    @pointerdown="onSlotPointerDown($event)">
+                                    <div
+                                        class="bg-background"
+                                        :style="{ height: totalGridHeight + 'px' }">
+                                        <div
+                                            v-for="slot in slots"
+                                            :key="'lane-' + slot.time"
+                                            class="fc-timegrid-slot fc-timegrid-slot-lane border-t border-border box-border"
+                                            :class="{
+                                                'fc-timegrid-slot-minor border-dotted':
+                                                    !slot.isHour,
+                                            }"
+                                            :data-time="slot.time"
+                                            :style="{ height: SLOT_HEIGHT + 'px' }"></div>
+                                    </div>
+                                    <div
+                                        class="grid absolute inset-0 pointer-events-none min-w-0"
+                                        :style="{
+                                            gridTemplateColumns:
+                                                'repeat(' + viewDays.length + ', 1fr)',
+                                        }">
+                                        <CalendarDayColumn
+                                            v-for="day in viewDays"
+                                            :key="day.format('YYYY-MM-DD')"
+                                            :day-str="day.format('YYYY-MM-DD')"
+                                            :total-grid-height="totalGridHeight"
+                                            :has-activity-status="
+                                                dayHasActivityStatus(day.format('YYYY-MM-DD'))
+                                            "
+                                            :day-events="
+                                                eventsByDay[day.format('YYYY-MM-DD')] || []
+                                            "
+                                            :get-event-style="getEventStyle"
+                                            :get-event-opacity-class="getEventOpacityClass"
+                                            :get-event-duration-seconds="getEventDurationSeconds"
+                                            :is-dragging="isDragging"
+                                            :drag-event-id="dragEventId"
+                                            :drag-preview="
+                                                dragPreviewsByDay[day.format('YYYY-MM-DD')]
+                                            "
+                                            :resize-event-id="resizeEventId"
+                                            :resize-cross-day-preview="
+                                                isResizing
+                                                    ? resizeCrossDayPreviewsByDay[
+                                                          day.format('YYYY-MM-DD')
+                                                      ]
+                                                    : undefined
+                                            "
+                                            :show-now-indicator="
+                                                isToday(day) && nowIndicatorTop >= 0
+                                            "
+                                            :now-indicator-top="nowIndicatorTop"
+                                            :activity-boxes="
+                                                activityBoxesForDay(day.format('YYYY-MM-DD'))
+                                            "
+                                            :get-activity-box-label="getActivityBoxLabel"
+                                            :get-activity-box-activities="getActivityBoxActivities"
+                                            :get-activity-percentage="getActivityPercentage"
+                                            :get-activity-text="getActivityText"
+                                            :show-selection="
+                                                isSelecting || showCreateTimeEntryModal
+                                            "
+                                            :is-selection-start="
+                                                selectionDay === day.format('YYYY-MM-DD')
+                                            "
+                                            :is-selection-intermediate="
+                                                selectionIntermediateDays.has(
+                                                    day.format('YYYY-MM-DD')
+                                                )
+                                            "
+                                            :is-selection-end="
+                                                selectionEndDay === day.format('YYYY-MM-DD')
+                                            "
+                                            :selection-top="selectionTop"
+                                            :selection-height="selectionHeight"
+                                            :selection-end-top="selectionEndTop"
+                                            :selection-end-height="selectionEndHeight"
+                                            @event-pointerdown="
+                                                (e, dayEvent) =>
+                                                    onEventPointerDown(e, dayEvent.event, dayEvent)
+                                            "
+                                            @event-keydown-enter="
+                                                (dayEvent) => {
+                                                    selectedTimeEntry = dayEvent.event.timeEntry;
+                                                    showEditTimeEntryModal = true;
+                                                }
+                                            "
+                                            @resizer-pointerdown="
+                                                (e, dayEvent, edge) =>
+                                                    onResizerPointerDown(
+                                                        e,
+                                                        dayEvent.event,
+                                                        dayEvent,
+                                                        edge,
+                                                        day.format('YYYY-MM-DD')
+                                                    )
+                                            " />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </ContextMenuTrigger>
+
+                <ContextMenuContent class="min-w-[160px]">
+                    <template v-if="contextMenuTimeEntry && contextMenuTimeEntry.end !== null">
+                        <ContextMenuItem class="space-x-3" @select="handleContextEdit()">
+                            <PencilIcon class="w-4 h-4 text-icon-default" />
+                            <span>Edit</span>
+                        </ContextMenuItem>
+                        <ContextMenuItem class="space-x-3" @select="handleContextDuplicate()">
+                            <DocumentDuplicateIcon class="w-4 h-4 text-icon-default" />
+                            <span>Duplicate</span>
+                        </ContextMenuItem>
+                        <ContextMenuItem class="space-x-3" @select="handleContextSplit()">
+                            <ScissorsIcon class="w-4 h-4 text-icon-default" />
+                            <span>Split</span>
+                        </ContextMenuItem>
+                        <ContextMenuSeparator />
+                        <ContextMenuItem
+                            class="space-x-3 text-destructive"
+                            @select="handleContextDelete()">
+                            <TrashIcon class="w-4 h-4 text-icon-default" />
+                            <span>Delete</span>
+                        </ContextMenuItem>
+                    </template>
+                    <template v-else-if="contextMenuTimeEntry && contextMenuTimeEntry.end === null">
+                        <ContextMenuItem class="space-x-3" @select="handleContextStop()">
+                            <StopIcon class="w-4 h-4 text-icon-default" />
+                            <span>Stop</span>
+                        </ContextMenuItem>
+                        <ContextMenuSeparator />
+                        <ContextMenuItem
+                            class="space-x-3 text-destructive"
+                            @select="handleContextDiscard()">
+                            <XMarkIcon class="w-4 h-4 text-icon-default" />
+                            <span>Discard</span>
+                        </ContextMenuItem>
+                    </template>
+                    <template v-else>
+                        <ContextMenuItem class="space-x-3" @select="handleContextCreate()">
+                            <PlusIcon class="w-4 h-4 text-icon-default" />
+                            <span>Create Time Entry</span>
+                        </ContextMenuItem>
+                    </template>
+                </ContextMenuContent>
+            </ContextMenu>
+        </template>
     </div>
 </template>
 
