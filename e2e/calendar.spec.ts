@@ -1728,7 +1728,8 @@ test.describe('Click-Drag Selection to Create', () => {
 
         await goToCalendar(page);
         await expect(page.locator('.fc')).toBeVisible();
-        await scrollCalendarToTime(page, '22:00:00');
+        // Use mid-day times so both start and end slots are visible in the viewport
+        await scrollCalendarToTime(page, '10:00:00');
 
         // Find today's and tomorrow's columns
         const todayStr = new Date(now.getFullYear(), now.getMonth(), now.getDate())
@@ -1743,31 +1744,33 @@ test.describe('Click-Drag Selection to Create', () => {
         await expect(todayCol).toBeVisible();
         await expect(tomorrowCol).toBeVisible();
 
-        // Find the 23:00 slot on today's column
-        const startSlot = page.locator('.fc-timegrid-slot-lane[data-time="23:00:00"]').first();
+        // Find the 11:00 slot (start) and 13:00 slot (end on tomorrow)
+        const startSlot = page.locator('.fc-timegrid-slot-lane[data-time="11:00:00"]').first();
+        const endSlot = page.locator('.fc-timegrid-slot-lane[data-time="13:00:00"]').first();
         await expect(startSlot).toBeVisible();
+        await expect(endSlot).toBeVisible();
+
         const startSlotBox = await startSlot.boundingBox();
+        const endSlotBox = await endSlot.boundingBox();
         const todayColBox = await todayCol.boundingBox();
         const tomorrowColBox = await tomorrowCol.boundingBox();
 
-        // Start drag at 23:00 on today's column
+        // Start drag at 11:00 on today's column
         const startX = todayColBox!.x + todayColBox!.width / 2;
         const startY = startSlotBox!.y + 2;
 
-        // End drag at ~01:00 on tomorrow's column
-        const slotHeight = await getSlotHeight(page);
+        // End drag at 13:00 on tomorrow's column
         const endX = tomorrowColBox!.x + tomorrowColBox!.width / 2;
-        // 01:00 = 4 slots from the top of the grid
-        const slot0100 = page.locator('.fc-timegrid-slot-lane[data-time="01:00:00"]').first();
-        const slot0100Box = await slot0100.boundingBox();
-        const endY = slot0100Box!.y + 2;
+        const endY = endSlotBox!.y + 2;
 
-        // Drag from 23:00 today to 01:00 tomorrow
+        // Drag from today to tomorrow — move down first, then across
+        const slotHeight = await getSlotHeight(page);
         await page.mouse.move(startX, startY);
         await page.mouse.down();
-        // Move down to bottom of today's column first, then across to tomorrow
+        await page.waitForTimeout(100);
         await page.mouse.move(startX, startY + slotHeight * 2, { steps: 5 });
-        await page.mouse.move(endX, endY, { steps: 15 });
+        await page.mouse.move(endX, startY + slotHeight * 2, { steps: 10 });
+        await page.mouse.move(endX, endY, { steps: 10 });
         await page.mouse.up();
 
         // Create modal should appear
@@ -1779,10 +1782,8 @@ test.describe('Click-Drag Selection to Create', () => {
         await expect(dialog.getByText('End')).toBeVisible();
 
         // Start date should be today, end date should be tomorrow
-        const todayFormatted = `${todayStr}`;
-        const tomorrowFormatted = `${tomorrowStr}`;
-        await expect(dialog.getByText(todayFormatted)).toBeVisible();
-        await expect(dialog.getByText(tomorrowFormatted)).toBeVisible();
+        await expect(dialog.getByText(todayStr)).toBeVisible();
+        await expect(dialog.getByText(tomorrowStr)).toBeVisible();
     });
 });
 
