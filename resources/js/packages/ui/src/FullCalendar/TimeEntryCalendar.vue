@@ -1,11 +1,5 @@
 <script setup lang="ts">
-import FullCalendar from '@fullcalendar/vue3';
-import dayGridPlugin from '@fullcalendar/daygrid';
-import timeGridPlugin from '@fullcalendar/timegrid';
-import interactionPlugin from '@fullcalendar/interaction';
-import type { DatesSetArg, EventClickArg, EventDropArg, EventChangeArg } from '@fullcalendar/core';
 import {
-    computed,
     ref,
     watch,
     inject,
@@ -13,25 +7,17 @@ import {
     nextTick,
     onMounted,
     onActivated,
+    onDeactivated,
     onUnmounted,
 } from 'vue';
-import type { EventApi } from '@fullcalendar/core';
 import { useLocalStorage } from '@vueuse/core';
-import chroma from 'chroma-js';
 import { useCssVariable } from '@/utils/useCssVariable';
-import {
-    getDayJsInstance,
-    getLocalizedDayJs,
-    formatHumanReadableDuration,
-    formatDuration,
-} from '../utils/time';
-import { getUserTimezone, getWeekStart } from '../utils/settings';
+import { getLocalizedDayJs } from '../utils/time';
 import { LoadingSpinner, TimeEntryCreateModal, TimeEntryEditModal } from '..';
-import FullCalendarEventContent from './FullCalendarEventContent.vue';
 import FullCalendarDayHeader from './FullCalendarDayHeader.vue';
 import CalendarToolbar from './CalendarToolbar.vue';
+import CalendarDayColumn from './CalendarDayColumn.vue';
 import type { CalendarSettings } from './calendarSettings';
-import { useVisualSnap } from './useVisualSnap';
 import {
     ContextMenu,
     ContextMenuContent,
@@ -48,10 +34,16 @@ import {
     StopIcon,
     XMarkIcon,
 } from '@heroicons/vue/20/solid';
-import activityStatusPlugin, {
-    type ActivityPeriod,
-    renderActivityStatusBoxes,
-} from './idleStatusPlugin';
+import type { ActivityPeriod } from './activityTypes';
+import { SLOT_HEIGHT, TIME_AXIS_WIDTH, type DayEvent } from './calendarTypes';
+import { useCalendarGrid } from './useCalendarGrid';
+import { useCalendarNavigation } from './useCalendarNavigation';
+import { useCalendarEvents } from './useCalendarEvents';
+import { useActivityBoxes } from './useActivityBoxes';
+import { useEventDrag } from './useEventDrag';
+import { useEventResize } from './useEventResize';
+import { useSlotSelection } from './useSlotSelection';
+import { useContextMenu } from './useContextMenu';
 import type {
     TimeEntry,
     Project,
@@ -63,11 +55,6 @@ import type {
     Organization,
 } from '@/packages/api/src';
 import type { Dayjs } from 'dayjs';
-
-type CalendarExtendedProps = { timeEntry: TimeEntry; isRunning?: boolean } & Record<
-    string,
-    unknown
->;
 
 const emit = defineEmits<{
     (e: 'dates-change', payload: { start: Date; end: Date }): void;
@@ -83,7 +70,6 @@ const props = defineProps<{
     activityPeriods?: ActivityPeriod[];
     loading?: boolean;
 
-    // Permissions / feature flags
     enableEstimatedTime: boolean;
     currency: string;
     canCreateProject: boolean;
@@ -98,16 +84,16 @@ const props = defineProps<{
     createTag: (name: string) => Promise<Tag | undefined>;
 }>();
 
-// Local component state
 const newEventStart = ref<Dayjs | null>(null);
 const newEventEnd = ref<Dayjs | null>(null);
 const showCreateTimeEntryModal = ref<boolean>(false);
 const showEditTimeEntryModal = ref<boolean>(false);
 const selectedTimeEntry = ref<TimeEntry | null>(null);
+const contextMenuOpen = ref(false);
 
-const calendarRef = ref<InstanceType<typeof FullCalendar> | null>(null);
+const rootRef = ref<HTMLElement | null>(null);
+const scrollerRef = ref<HTMLElement | null>(null);
 
-// Calendar settings with localStorage persistence via VueUse
 const calendarSettings = useLocalStorage<CalendarSettings>(
     'solidtime:calendar-settings',
     {
@@ -123,462 +109,165 @@ function onSettingsUpdate(newSettings: CalendarSettings) {
     calendarSettings.value = newSettings;
 }
 
-// Toolbar state — updated via datesSet callback
-const viewTitle = ref('');
-const activeView = ref('timeGridWeek');
-
-function handlePrev() {
-    calendarRef.value?.getApi().prev();
-    scrollToCurrentTime();
-}
-function handleNext() {
-    calendarRef.value?.getApi().next();
-    scrollToCurrentTime();
-}
-function handleToday() {
-    calendarRef.value?.getApi().today();
-    scrollToCurrentTime();
-}
-function handleChangeView(view: string) {
-    calendarRef.value?.getApi().changeView(view);
-    scrollToCurrentTime();
-}
-
-// Reactive "now" for running time entry - updates every minute
-const currentTime = ref(getDayJsInstance()());
+const currentTime = ref(getLocalizedDayJs());
 let currentTimeInterval: ReturnType<typeof setInterval> | null = null;
 
-// Inject organization data for settings
 const organization = inject<ComputedRef<Organization>>('organization');
 
-// Helper function to convert week start to FullCalendar firstDay value
-const getFirstDay = () => {
-    const weekStart = getWeekStart();
-    const weekStartMap: Record<string, number> = {
-        'sunday': 0,
-        'monday': 1,
-        'tuesday': 2,
-        'wednesday': 3,
-        'thursday': 4,
-        'friday': 5,
-        'saturday': 6,
-    };
-    return weekStartMap[weekStart] ?? 1; // Default to Monday if not found
-};
+const {
+    slots,
+    totalGridHeight,
+    formatSlotLabel,
+    minutesToPixels,
+    pixelsToMinutesFromMidnight,
+    timeToMinutesFromMidnight,
+    getDayFromClientX,
+    clientYToGridPixels,
+} = useCalendarGrid(calendarSettings, organization, scrollerRef, rootRef);
 
-// Helper function to get time format for slot labels
-const getSlotLabelFormat = () => {
-    const timeFormat = organization?.value?.time_format || '24-hours';
-    if (timeFormat === '12-hours') {
-        return {
-            hour: 'numeric' as const,
-            hour12: true,
-        };
-    } else {
-        return {
-            hour: '2-digit' as const,
-            minute: '2-digit' as const,
-            hour12: false,
-        };
-    }
-};
+const {
+    activeView,
+    viewDays,
+    viewTitle,
+    emitDatesChange,
+    handlePrev,
+    handleNext,
+    handleToday,
+    handleChangeView,
+} = useCalendarNavigation({
+    onDatesChange: (payload) => emit('dates-change', payload),
+    scrollToCurrentTime: () => scrollToCurrentTime(),
+});
 
 const cssBackground = useCssVariable('--color-bg-background');
 
-const events = computed(() => {
-    const themeBackground = (() => {
-        return cssBackground.value?.trim();
-    })();
-    return props.timeEntries?.map((timeEntry) => {
-        const isRunning = timeEntry.end === null;
-        const project = props.projects.find((p) => p.id === timeEntry.project_id);
-        const client = props.clients.find((c) => c.id === project?.client_id);
-        const task = props.tasks.find((t) => t.id === timeEntry.task_id);
-
-        // For running entries, use current time as end
-        const effectiveEnd = isRunning ? currentTime.value : getDayJsInstance()(timeEntry.end!);
-        const duration = effectiveEnd.diff(getDayJsInstance()(timeEntry.start), 'minutes');
-
-        const title = timeEntry.description || 'No description';
-
-        const baseColor = project?.color || '#6B7280';
-        const backgroundColor = chroma.mix(baseColor, themeBackground, 0.65, 'lab').hex();
-        const borderColor = chroma.mix(baseColor, themeBackground, 0.5, 'lab').hex();
-
-        // For 0-duration events, display them with minimum visual duration but preserve actual duration
-        const startTime = getLocalizedDayJs(timeEntry.start);
-        const endTime =
-            duration === 0
-                ? startTime.add(1, 'second') // Show as 1 second for minimal visibility
-                : isRunning
-                  ? getLocalizedDayJs(currentTime.value.toISOString())
-                  : getLocalizedDayJs(timeEntry.end!);
-
-        return {
-            id: timeEntry.id,
-            start: startTime.format(),
-            end: endTime.format(),
-            title,
-            backgroundColor,
-            borderColor,
-            textColor: 'var(--foreground)',
-            // For running entries: disable dragging and resizing
-            startEditable: !isRunning,
-            classNames: isRunning ? ['running-entry'] : [],
-            extendedProps: {
-                timeEntry,
-                project,
-                client,
-                task,
-                duration,
-                isRunning,
-            },
-        };
+const { optimisticOverrides, calendarEvents, eventsByDay, dailyTotals, isToday, nowIndicatorTop } =
+    useCalendarEvents({
+        timeEntries: () => props.timeEntries,
+        projects: () => props.projects,
+        clients: () => props.clients,
+        tasks: () => props.tasks,
+        calendarSettings,
+        viewDays,
+        currentTime,
+        cssBackground,
+        minutesToPixels,
+        timeToMinutesFromMidnight,
     });
-});
 
-// Daily totals used in day header
-const dailyTotals = computed(() => {
-    const totals: Record<string, number> = {};
-    props.timeEntries.forEach((entry) => {
-        const date = getDayJsInstance()(entry.start).format('YYYY-MM-DD');
-        let durationSeconds: number;
-
-        if (entry.end !== null) {
-            // Completed entry
-            durationSeconds = getDayJsInstance()(entry.end).diff(
-                getDayJsInstance()(entry.start),
-                'seconds'
-            );
-        } else {
-            // Running entry - use current time
-            durationSeconds = currentTime.value.diff(getDayJsInstance()(entry.start), 'seconds');
-        }
-
-        totals[date] = (totals[date] || 0) + durationSeconds;
-    });
-    return totals;
-});
-
-function emitDatesChange(arg: DatesSetArg) {
-    viewTitle.value = arg.view.title;
-    activeView.value = arg.view.type;
-    emit('dates-change', { start: arg.start, end: arg.end });
-    // Render activity boxes after calendar view has been rendered
-    renderActivityBoxes();
-}
-
-function handleDateSelect(arg: { start: Date; end: Date }) {
-    stopVisualSnap();
-    const snap = calendarSettings.value.snapMinutes;
-    const startLocal = getDayJsInstance()(arg.start.toISOString())
-        .utc()
-        .tz(getUserTimezone(), true);
-    const endLocal = getDayJsInstance()(arg.end.toISOString()).utc().tz(getUserTimezone(), true);
-    const snappedStart = snapStartToGrid(startLocal, snap);
-    let snappedEnd = snapEndToGrid(endLocal, snap);
-    if (!snappedEnd.isAfter(snappedStart)) {
-        snappedEnd = snappedStart.add(snap, 'minute');
-    }
-    newEventStart.value = snappedStart.utc();
-    newEventEnd.value = snappedEnd.utc();
-    showCreateTimeEntryModal.value = true;
-}
-
-function handleEventClick(arg: EventClickArg) {
-    const ext = arg.event.extendedProps as CalendarExtendedProps;
-    // Don't open edit modal for running time entries
-    if (ext.isRunning) {
-        return;
-    }
-    selectedTimeEntry.value = ext.timeEntry;
-    showEditTimeEntryModal.value = true;
-}
-
-// Context menu state
-const contextMenuTimeEntry = ref<TimeEntry | null>(null);
-const contextMenuCreateTime = ref<{ start: Dayjs; end: Dayjs } | null>(null);
-
-function getTimeAtClickPosition(event: MouseEvent): { start: Dayjs; end: Dayjs } | null {
-    // FullCalendar's time grid has two overlapping tables: slots (data-time) and
-    // cols (data-date). The cols layer often has pointer-events: none, so clicks
-    // land on the slots table. Use elementsFromPoint to reach both layers.
-    const elements = document.elementsFromPoint(event.clientX, event.clientY);
-    let time: string | null = null;
-    let date: string | null = null;
-
-    for (const el of elements) {
-        if (el instanceof HTMLElement) {
-            if (!time && el.dataset.time !== undefined) {
-                time = el.dataset.time;
-            }
-            if (!date && el.dataset.date !== undefined) {
-                date = el.dataset.date;
-            }
-        }
-        if (time && date) break;
-    }
-
-    if (!time || !date) return null;
-
-    const snap = calendarSettings.value.snapMinutes;
-    const startLocal = getDayJsInstance()(`${date}T${time}`).tz(getUserTimezone(), true);
-    const snappedStart = snapStartToGrid(startLocal, snap);
-    const snappedEnd = snappedStart.add(snap, 'minute');
-
-    return { start: snappedStart.utc(), end: snappedEnd.utc() };
-}
-
-function handleCalendarContextMenu(event: MouseEvent) {
-    const target = event.target as HTMLElement;
-    const eventEl = target.closest<HTMLElement>('[data-event-id]');
-
-    if (!eventEl) {
-        // Right-click on empty calendar space — show "Create Time Entry"
-        contextMenuTimeEntry.value = null;
-        const timeInfo = getTimeAtClickPosition(event);
-        contextMenuCreateTime.value = timeInfo;
-        return;
-    }
-
-    const eventId = eventEl.getAttribute('data-event-id');
-    if (!eventId) return;
-
-    const api = calendarRef.value?.getApi();
-    if (!api) return;
-
-    const fcEvent: EventApi | undefined = api.getEvents().find((e) => e.id === eventId);
-    if (!fcEvent) return;
-
-    const ext = fcEvent.extendedProps as CalendarExtendedProps;
-    contextMenuTimeEntry.value = ext.timeEntry;
-    contextMenuCreateTime.value = null;
-}
-
-function handleContextEdit() {
-    if (!contextMenuTimeEntry.value || contextMenuTimeEntry.value.end === null) return;
-    selectedTimeEntry.value = contextMenuTimeEntry.value;
-    showEditTimeEntryModal.value = true;
-}
-
-async function handleContextDuplicate() {
-    if (!contextMenuTimeEntry.value || contextMenuTimeEntry.value.end === null) return;
-    const entry = contextMenuTimeEntry.value;
-    await props.createTimeEntry({
-        start: entry.start,
-        end: entry.end,
-        billable: entry.billable,
-        description: entry.description,
-        project_id: entry.project_id,
-        task_id: entry.task_id,
-        tags: entry.tags,
-    });
-    emit('refresh');
-}
-
-async function handleContextDelete() {
-    if (!contextMenuTimeEntry.value || contextMenuTimeEntry.value.end === null) return;
-    await props.deleteTimeEntry(contextMenuTimeEntry.value.id);
-    emit('refresh');
-}
-
-async function handleContextSplit() {
-    if (!contextMenuTimeEntry.value || contextMenuTimeEntry.value.end === null) return;
-    const entry = contextMenuTimeEntry.value;
-    if (!entry.end) return;
-    const start = getDayJsInstance()(entry.start);
-    const end = getDayJsInstance()(entry.end);
-    const midpoint = start.add(end.diff(start) / 2, 'millisecond').startOf('minute');
-
-    await props.updateTimeEntry({ ...entry, end: midpoint.utc().format() });
-    await props.createTimeEntry({
-        start: midpoint.utc().format(),
-        end: entry.end,
-        billable: entry.billable,
-        description: entry.description,
-        project_id: entry.project_id,
-        task_id: entry.task_id,
-        tags: entry.tags,
-    });
-    emit('refresh');
-}
-
-async function handleContextStop() {
-    if (!contextMenuTimeEntry.value || contextMenuTimeEntry.value.end !== null) return;
-    const entry = contextMenuTimeEntry.value;
-    await props.updateTimeEntry({
-        ...entry,
-        end: getDayJsInstance()().utc().format(),
-    });
-    emit('refresh');
-}
-
-async function handleContextDiscard() {
-    if (!contextMenuTimeEntry.value || contextMenuTimeEntry.value.end !== null) return;
-    await props.deleteTimeEntry(contextMenuTimeEntry.value.id);
-    emit('refresh');
-}
-
-function handleContextCreate() {
-    if (contextMenuCreateTime.value) {
-        newEventStart.value = contextMenuCreateTime.value.start;
-        newEventEnd.value = contextMenuCreateTime.value.end;
-    }
-    showCreateTimeEntryModal.value = true;
-}
-
-// Snap a dayjs time down to the previous snap boundary (for start times)
-function snapStartToGrid(time: Dayjs, snapMinutes: number): Dayjs {
-    const minutes = time.hour() * 60 + time.minute();
-    const snapped = Math.floor(minutes / snapMinutes) * snapMinutes;
-    return time.startOf('day').add(snapped, 'minute');
-}
-
-// Snap a dayjs time up to the next snap boundary (for end times)
-function snapEndToGrid(time: Dayjs, snapMinutes: number): Dayjs {
-    const minutes = time.hour() * 60 + time.minute();
-    const snapped = Math.ceil(minutes / snapMinutes) * snapMinutes;
-    return time.startOf('day').add(snapped, 'minute');
-}
-
-// Snap a dayjs time to the nearest snap boundary (for resize)
-function snapToNearestGrid(time: Dayjs, snapMinutes: number): Dayjs {
-    const minutes = time.hour() * 60 + time.minute();
-    const snapped = Math.round(minutes / snapMinutes) * snapMinutes;
-    return time.startOf('day').add(snapped, 'minute');
-}
-
-// --- Visual snap (composable) ---
 const {
-    startDragSnap: startVisualDragSnap,
-    startResizeSnap: startVisualResizeSnap,
-    stop: stopVisualSnap,
-} = useVisualSnap({
-    calendarRef,
-    snapMinutes: () => calendarSettings.value.snapMinutes,
-    slotMinutes: () => calendarSettings.value.slotMinutes,
-    formatDuration: (seconds) =>
-        formatHumanReadableDuration(
-            seconds,
-            organization?.value?.interval_format,
-            organization?.value?.number_format
-        ),
+    activityBoxesForDay,
+    dayHasActivityStatus,
+    getActivityBoxLabel,
+    getActivityBoxActivities,
+    getActivityPercentage,
+    getActivityText,
+} = useActivityBoxes({
+    activityPeriods: () => props.activityPeriods,
+    viewDays,
+    calendarSettings,
+    minutesToPixels,
 });
 
-async function handleEventDrop(arg: EventDropArg) {
-    stopVisualSnap();
-    const ext = arg.event.extendedProps as CalendarExtendedProps;
-    const timeEntry = ext.timeEntry;
-    if (!arg.event.start || !arg.event.end) return;
-    // Running entries have no end time — can't compute duration for drop
-    if (!timeEntry.end) return;
-    const snap = calendarSettings.value.snapMinutes;
-    const startLocal = getDayJsInstance()(arg.event.start.toISOString())
-        .utc()
-        .tz(getUserTimezone(), true)
-        .second(0);
-    const snappedStart = snapStartToGrid(startLocal, snap);
-    const durationMs = getLocalizedDayJs(timeEntry.end).diff(getLocalizedDayJs(timeEntry.start));
-    const snappedEnd = snappedStart.add(durationMs, 'millisecond');
-    // Set FC event to snapped position immediately to avoid flash
-    arg.event.setDates(snappedStart.utc(true).toDate(), snappedEnd.utc(true).toDate());
-    const updatedTimeEntry = {
-        ...timeEntry,
-        start: snappedStart.utc().format(),
-        end: snappedEnd.utc().format(),
-    } as TimeEntry;
-    await props.updateTimeEntry(updatedTimeEntry);
-    emit('refresh');
-}
+const { isDragging, dragEventId, dragPreviewsByDay, onEventPointerDown } = useEventDrag({
+    calendarSettings,
+    viewDays,
+    optimisticOverrides,
+    updateTimeEntry: (entry) => props.updateTimeEntry(entry),
+    emitRefresh: () => emit('refresh'),
+    minutesToPixels,
+    pixelsToMinutesFromMidnight,
+    getDayFromClientX,
+    clientYToGridPixels,
+    onClickEvent: (ev) => {
+        selectedTimeEntry.value = ev.timeEntry;
+        showEditTimeEntryModal.value = true;
+    },
+});
 
-async function handleEventResize(arg: EventChangeArg) {
-    stopVisualSnap();
-    const ext = arg.event.extendedProps as CalendarExtendedProps;
-    const timeEntry = ext.timeEntry;
-    if (!arg.event.start || !arg.event.end) return;
-    const snap = calendarSettings.value.snapMinutes;
+const {
+    isResizing,
+    resizeEventId,
+    resizeCurrentTop,
+    resizeCurrentHeight,
+    resizeCrossDayPreviewsByDay,
+    resizeLiveDurationSeconds,
+    getResizeOriginalDayStr,
+    onResizerPointerDown,
+} = useEventResize({
+    calendarSettings,
+    viewDays,
+    eventsByDay,
+    optimisticOverrides,
+    updateTimeEntry: (entry) => props.updateTimeEntry(entry),
+    emitRefresh: () => emit('refresh'),
+    minutesToPixels,
+    pixelsToMinutesFromMidnight,
+    getDayFromClientX,
+    clientYToGridPixels,
+});
 
-    const newStartLocal = getDayJsInstance()(arg.event.start.toISOString())
-        .utc()
-        .tz(getUserTimezone(), true)
-        .second(0);
-    const newEndLocal = getDayJsInstance()(arg.event.end.toISOString())
-        .utc()
-        .tz(getUserTimezone(), true)
-        .second(0);
-    const origStartLocal = getLocalizedDayJs(timeEntry.start).second(0);
+const {
+    isSelecting,
+    selectionDay,
+    selectionTop,
+    selectionHeight,
+    selectionEndDay,
+    selectionEndTop,
+    selectionEndHeight,
+    selectionIntermediateDays,
+    onSlotPointerDown,
+    clearSelection,
+} = useSlotSelection({
+    calendarSettings,
+    viewDays,
+    totalGridHeight,
+    pixelsToMinutesFromMidnight,
+    getDayFromClientX,
+    clientYToGridPixels,
+    onSelectionComplete: (start, end) => {
+        newEventStart.value = start;
+        newEventEnd.value = end;
+        showCreateTimeEntryModal.value = true;
+    },
+});
 
-    const startChanged = !newStartLocal.isSame(origStartLocal, 'minute');
-
-    // Snap only the changed edge once, reuse for both setDates and API update.
-    // Use Math.round (snapToNearestGrid) to match the visual snap during resize.
-    const snappedStart = startChanged ? snapToNearestGrid(newStartLocal, snap) : null;
-    const snappedEnd =
-        !startChanged && !ext.isRunning ? snapToNearestGrid(newEndLocal, snap) : null;
-
-    // Set FC event to snapped position immediately to avoid flash.
-    // Use the original event date for the edge that wasn't resized.
-    if (snappedStart) {
-        arg.event.setDates(snappedStart.utc(true).toDate(), arg.oldEvent.end!);
-    } else if (snappedEnd) {
-        arg.event.setDates(arg.oldEvent.start!, snappedEnd.utc(true).toDate());
-    }
-    const updatedTimeEntry = {
-        ...timeEntry,
-        start: snappedStart ? snappedStart.utc().format() : timeEntry.start,
-        end: ext.isRunning ? null : snappedEnd ? snappedEnd.utc().format() : timeEntry.end,
-    } as TimeEntry;
-    await props.updateTimeEntry(updatedTimeEntry);
-    emit('refresh');
-}
-
-const calendarOptions = computed(() => {
-    const s = calendarSettings.value;
-
-    return {
-        plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin, activityStatusPlugin],
-        initialView: 'timeGridWeek',
-        headerToolbar: false as const,
-        height: 'parent',
-        slotMinTime: formatDuration(s.startHour * 3600),
-        slotMaxTime: formatDuration(s.endHour * 3600),
-        slotDuration: formatDuration(s.slotMinutes * 60),
-        slotLabelInterval: '01:00:00',
-        slotLabelFormat: getSlotLabelFormat(),
-        snapDuration: '00:01:00',
-        firstDay: getFirstDay(),
-        allDaySlot: false,
-        nowIndicator: true,
-        eventMinHeight: 1,
-        selectable: true,
-        selectMirror: true,
-        editable: true,
-        eventResizableFromStart: true,
-        eventDurationEditable: true,
-        timeZone: getUserTimezone(),
-        eventStartEditable: true,
-        select: handleDateSelect,
-        eventClick: handleEventClick,
-        eventDragStart: startVisualDragSnap,
-        eventDrop: handleEventDrop,
-        eventResizeStart: startVisualResizeSnap,
-        eventResize: handleEventResize,
-        datesSet: emitDatesChange,
-        eventDidMount: (arg: { el: HTMLElement; event: { id: string } }) => {
-            arg.el.setAttribute('data-event-id', arg.event.id);
-        },
-
-        events: events.value,
-        activityPeriods: props.activityPeriods || [],
-    };
+const {
+    contextMenuTimeEntry,
+    handleCalendarContextMenu,
+    handleContextEdit,
+    handleContextDuplicate,
+    handleContextDelete,
+    handleContextSplit,
+    handleContextStop,
+    handleContextDiscard,
+    handleContextCreate,
+} = useContextMenu({
+    calendarSettings,
+    calendarEvents,
+    pixelsToMinutesFromMidnight,
+    getDayFromClientX,
+    clientYToGridPixels,
+    createTimeEntry: (entry) => props.createTimeEntry(entry),
+    updateTimeEntry: (entry) => props.updateTimeEntry(entry),
+    deleteTimeEntry: (id) => props.deleteTimeEntry(id),
+    onEditEvent: (entry) => {
+        selectedTimeEntry.value = entry;
+        showEditTimeEntryModal.value = true;
+    },
+    onCreateEvent: (start, end) => {
+        newEventStart.value = start;
+        newEventEnd.value = end;
+        showCreateTimeEntryModal.value = true;
+    },
+    emitRefresh: () => emit('refresh'),
 });
 
 watch(showCreateTimeEntryModal, (value) => {
     if (!value) {
         newEventStart.value = null;
         newEventEnd.value = null;
-        // Ensure FullCalendar clears the selection mirror when modal closes
-        calendarRef.value?.getApi().unselect();
+        clearSelection();
         emit('refresh');
     }
 });
@@ -590,50 +279,54 @@ watch(showEditTimeEntryModal, (value) => {
     }
 });
 
-// Render activity status boxes after FullCalendar has rendered
-const renderActivityBoxes = () => {
-    if (!calendarRef.value || !props.activityPeriods) return;
-
-    const calendarEl = calendarRef.value.$el as HTMLElement;
-    if (calendarEl && props.activityPeriods.length > 0) {
-        renderActivityStatusBoxes(calendarEl, props.activityPeriods);
-    }
-};
-
-// Watch for activity periods changes - re-render when data changes
-watch(
-    () => props.activityPeriods,
-    () => {
-        renderActivityBoxes();
-    }
-);
-
 const scrollToCurrentTime = () => {
     nextTick(() => {
-        if (calendarRef.value) {
-            const now = getDayJsInstance()();
-            const oneHourBefore = now.subtract(1, 'hour');
+        if (!scrollerRef.value) return;
+        const now = getLocalizedDayJs();
+        const oneHourBefore = now.subtract(1, 'hour');
+        const s = calendarSettings.value;
+        const startMin = s.startHour * 60;
 
-            // If subtracting 1 hour keeps us on the same day, scroll to 1 hour before
-            const scrollTime = now.isSame(oneHourBefore, 'day')
-                ? oneHourBefore.format('HH:mm:ss')
-                : now.format('HH:mm:ss');
+        const targetMinutes = now.isSame(oneHourBefore, 'day')
+            ? oneHourBefore.hour() * 60 + oneHourBefore.minute()
+            : now.hour() * 60 + now.minute();
 
-            calendarRef.value.getApi().scrollToTime(scrollTime);
-        }
+        const scrollTop = minutesToPixels(Math.max(0, targetMinutes - startMin));
+        scrollerRef.value.scrollTop = scrollTop;
     });
 };
 
+watch(
+    () => props.timeEntries,
+    () => {
+        if (optimisticOverrides.value.size > 0) {
+            optimisticOverrides.value = new Map();
+        }
+    }
+);
+
+watch(
+    calendarSettings,
+    () => {
+        emitDatesChange();
+    },
+    { deep: true }
+);
+
 onMounted(() => {
     scrollToCurrentTime();
-    // Start interval to update running time entry
+    emitDatesChange();
     currentTimeInterval = setInterval(() => {
-        currentTime.value = getDayJsInstance()();
-    }, 60000); // Update every minute
+        currentTime.value = getLocalizedDayJs();
+    }, 60000);
 });
 
 onActivated(() => {
     scrollToCurrentTime();
+});
+
+onDeactivated(() => {
+    contextMenuOpen.value = false;
 });
 
 onUnmounted(() => {
@@ -642,10 +335,72 @@ onUnmounted(() => {
         currentTimeInterval = null;
     }
 });
+
+function getEventStyle(dayEvent: DayEvent, dayStr: string): Record<string, string> {
+    const ev = dayEvent.event;
+    const isResizeTarget = resizeEventId.value === ev.id;
+
+    let top = dayEvent.top;
+    let height = dayEvent.height;
+    const left = dayEvent.left;
+    const width = dayEvent.width;
+    let zIndex = '1';
+
+    if (isResizeTarget) {
+        const isOnResizeOriginDay = dayStr === getResizeOriginalDayStr();
+        if (isOnResizeOriginDay) {
+            top = resizeCurrentTop.value;
+            height = resizeCurrentHeight.value;
+            zIndex = '100';
+        }
+    }
+
+    return {
+        position: 'absolute',
+        top: `${top}px`,
+        height: `${height}px`,
+        left,
+        width,
+        backgroundColor: ev.backgroundColor,
+        borderColor: ev.borderColor,
+        zIndex,
+    };
+}
+
+function getEventOpacityClass(dayEvent: DayEvent, dayStr: string): string {
+    const ev = dayEvent.event;
+    const isDragTarget = isDragging.value && dragEventId.value === ev.id;
+    const isResizeTarget = resizeEventId.value === ev.id;
+
+    if (isDragTarget) return 'opacity-30';
+
+    if (isResizeTarget) {
+        const isOnResizeOriginDay = dayStr === getResizeOriginalDayStr();
+        if (!isOnResizeOriginDay) return 'opacity-50';
+        return 'opacity-100';
+    }
+
+    return 'opacity-90 hover:opacity-100';
+}
+
+function getEventDurationSeconds(dayEvent: DayEvent, dayStr: string): number {
+    const ev = dayEvent.event;
+    const isResizeTarget = resizeEventId.value === ev.id;
+
+    if (
+        isResizeTarget &&
+        dayStr === getResizeOriginalDayStr() &&
+        resizeLiveDurationSeconds.value !== null
+    ) {
+        return resizeLiveDurationSeconds.value;
+    }
+
+    return ev.durationMinutes * 60;
+}
 </script>
 
 <template>
-    <div class="w-full relative h-full flex-1 flex flex-col">
+    <div class="w-full relative h-full flex-1 flex flex-col overflow-hidden min-h-0">
         <div v-if="loading" class="flex items-center justify-center h-full">
             <div class="flex flex-col items-center space-y-4">
                 <LoadingSpinner class="h-8 w-8" />
@@ -684,6 +439,7 @@ onUnmounted(() => {
             :clients="clients"
             :currency="currency"
             :can-create-project="canCreateProject" />
+
         <CalendarToolbar
             :view-title="viewTitle"
             :active-view="activeView"
@@ -693,44 +449,164 @@ onUnmounted(() => {
             @today="handleToday"
             @change-view="handleChangeView"
             @update:settings="onSettingsUpdate" />
-        <ContextMenu>
+
+        <ContextMenu v-model:open="contextMenuOpen">
             <ContextMenuTrigger
                 as="div"
                 class="flex-1 min-h-0"
                 @contextmenu="handleCalendarContextMenu">
-                <FullCalendar ref="calendarRef" class="fullcalendar" :options="calendarOptions">
-                    <template #eventContent="arg">
-                        <FullCalendarEventContent
-                            :title="arg.event.title"
-                            :project-name="(arg.event.extendedProps as any).project?.name"
-                            :task-name="(arg.event.extendedProps as any).task?.name"
-                            :client-name="(arg.event.extendedProps as any).client?.name"
-                            :duration-seconds="
-                                ((arg.event.extendedProps as any).duration ?? undefined)
-                                    ? (arg.event.extendedProps as any).duration * 60
-                                    : undefined
-                            "
-                            :start="arg.event.start as any"
-                            :end="arg.event.end as any" />
-                    </template>
-                    <template #dayHeaderContent="arg">
-                        <FullCalendarDayHeader
-                            :date="
-                                getDayJsInstance()(arg.date.toISOString())
-                                    .utc()
-                                    .tz(getUserTimezone(), true)
-                            "
-                            :total-seconds="
-                                dailyTotals[
-                                    getDayJsInstance()(arg.date)
-                                        .utc()
-                                        .tz(getUserTimezone(), true)
-                                        .format('YYYY-MM-DD')
-                                ] || 0
-                            " />
-                    </template>
-                </FullCalendar>
+                <div
+                    ref="rootRef"
+                    class="fc h-full flex flex-col bg-default-background text-foreground font-inherit border border-border border-l-transparent overflow-hidden">
+                    <div
+                        class="fc-header-scroll flex border-b border-border shrink-0 sticky top-0 z-10 bg-default-background">
+                        <div
+                            class="shrink-0 bg-background border-r border-border"
+                            :style="{
+                                width: TIME_AXIS_WIDTH + 'px',
+                                minWidth: TIME_AXIS_WIDTH + 'px',
+                            }"></div>
+                        <div
+                            class="grid flex-1 min-w-0"
+                            :style="{
+                                gridTemplateColumns: 'repeat(' + viewDays.length + ', 1fr)',
+                            }">
+                            <div
+                                v-for="day in viewDays"
+                                :key="day.format('YYYY-MM-DD')"
+                                class="fc-col-header-cell border-r border-b border-border px-2 py-3 bg-default-background text-center"
+                                :class="{
+                                    'bg-secondary': isToday(day),
+                                    'fc-day-today': isToday(day),
+                                }"
+                                :data-date="day.format('YYYY-MM-DD')">
+                                <FullCalendarDayHeader
+                                    :date="day"
+                                    :is-today="isToday(day)"
+                                    :total-seconds="dailyTotals[day.format('YYYY-MM-DD')] || 0" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div ref="scrollerRef" class="fc-scroller">
+                        <div class="flex min-w-0">
+                            <div
+                                class="shrink-0 bg-background border-r border-border"
+                                :style="{
+                                    width: TIME_AXIS_WIDTH + 'px',
+                                    minWidth: TIME_AXIS_WIDTH + 'px',
+                                }">
+                                <div
+                                    v-for="slot in slots"
+                                    :key="slot.time"
+                                    class="fc-timegrid-slot fc-timegrid-slot-label relative text-right border-t border-border pr-1.5 pt-2 box-border"
+                                    :class="{
+                                        'fc-timegrid-slot-minor border-t-transparent': !slot.isHour,
+                                    }"
+                                    :data-time="slot.time"
+                                    :style="{ height: SLOT_HEIGHT + 'px' }">
+                                    <span
+                                        v-if="slot.isHour"
+                                        class="fc-timegrid-slot-label-cushion text-[0.8125rem] text-muted-foreground leading-none block">
+                                        {{ formatSlotLabel(slot.minutes / 60) }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div
+                                class="flex-1 min-w-0 relative"
+                                @pointerdown="onSlotPointerDown($event)">
+                                <div
+                                    class="bg-background"
+                                    :style="{ height: totalGridHeight + 'px' }">
+                                    <div
+                                        v-for="slot in slots"
+                                        :key="'lane-' + slot.time"
+                                        class="fc-timegrid-slot fc-timegrid-slot-lane border-t border-border box-border"
+                                        :class="{
+                                            'fc-timegrid-slot-minor border-dotted': !slot.isHour,
+                                        }"
+                                        :data-time="slot.time"
+                                        :style="{ height: SLOT_HEIGHT + 'px' }"></div>
+                                </div>
+                                <div
+                                    class="grid absolute inset-0 pointer-events-none min-w-0"
+                                    :style="{
+                                        gridTemplateColumns: 'repeat(' + viewDays.length + ', 1fr)',
+                                    }">
+                                    <CalendarDayColumn
+                                        v-for="day in viewDays"
+                                        :key="day.format('YYYY-MM-DD')"
+                                        :day-str="day.format('YYYY-MM-DD')"
+                                        :total-grid-height="totalGridHeight"
+                                        :has-activity-status="
+                                            dayHasActivityStatus(day.format('YYYY-MM-DD'))
+                                        "
+                                        :day-events="eventsByDay[day.format('YYYY-MM-DD')] || []"
+                                        :get-event-style="getEventStyle"
+                                        :get-event-opacity-class="getEventOpacityClass"
+                                        :get-event-duration-seconds="getEventDurationSeconds"
+                                        :is-dragging="isDragging"
+                                        :drag-event-id="dragEventId"
+                                        :drag-preview="dragPreviewsByDay[day.format('YYYY-MM-DD')]"
+                                        :resize-event-id="resizeEventId"
+                                        :resize-cross-day-preview="
+                                            isResizing
+                                                ? resizeCrossDayPreviewsByDay[
+                                                      day.format('YYYY-MM-DD')
+                                                  ]
+                                                : undefined
+                                        "
+                                        :show-now-indicator="isToday(day) && nowIndicatorTop >= 0"
+                                        :now-indicator-top="nowIndicatorTop"
+                                        :activity-boxes="
+                                            activityBoxesForDay(day.format('YYYY-MM-DD'))
+                                        "
+                                        :get-activity-box-label="getActivityBoxLabel"
+                                        :get-activity-box-activities="getActivityBoxActivities"
+                                        :get-activity-percentage="getActivityPercentage"
+                                        :get-activity-text="getActivityText"
+                                        :show-selection="isSelecting || showCreateTimeEntryModal"
+                                        :is-selection-start="
+                                            selectionDay === day.format('YYYY-MM-DD')
+                                        "
+                                        :is-selection-intermediate="
+                                            selectionIntermediateDays.has(day.format('YYYY-MM-DD'))
+                                        "
+                                        :is-selection-end="
+                                            selectionEndDay === day.format('YYYY-MM-DD')
+                                        "
+                                        :selection-top="selectionTop"
+                                        :selection-height="selectionHeight"
+                                        :selection-end-top="selectionEndTop"
+                                        :selection-end-height="selectionEndHeight"
+                                        @event-pointerdown="
+                                            (e, dayEvent) =>
+                                                onEventPointerDown(e, dayEvent.event, dayEvent)
+                                        "
+                                        @event-keydown-enter="
+                                            (dayEvent) => {
+                                                selectedTimeEntry = dayEvent.event.timeEntry;
+                                                showEditTimeEntryModal = true;
+                                            }
+                                        "
+                                        @resizer-pointerdown="
+                                            (e, dayEvent, edge) =>
+                                                onResizerPointerDown(
+                                                    e,
+                                                    dayEvent.event,
+                                                    dayEvent,
+                                                    edge,
+                                                    day.format('YYYY-MM-DD')
+                                                )
+                                        " />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </ContextMenuTrigger>
+
             <ContextMenuContent class="min-w-[160px]">
                 <template v-if="contextMenuTimeEntry && contextMenuTimeEntry.end !== null">
                     <ContextMenuItem class="space-x-3" @select="handleContextEdit()">
@@ -778,311 +654,46 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-.fullcalendar {
-    height: 100%;
-    --fc-border-color: var(--border);
-}
-
-/* FullCalendar theme customization */
-.fullcalendar :deep(.fc) {
-    background-color: var(--theme-color-default-background);
-    color: var(--foreground);
-    font-family: inherit;
-}
-
-.fullcalendar :deep(.fc-timegrid-slot) {
-    height: 25px;
-}
-
-.fullcalendar :deep(.fc-timegrid-slot-label) {
-    background-color: var(--background);
-}
-
-.fullcalendar :deep(.fc-col-header) {
-    border-bottom: 1px solid var(--border);
-}
-
-.fullcalendar :deep(.fc-col-header-cell) {
-    border-right: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-    padding: 0.75rem 0.5rem;
-    background-color: var(--theme-color-default-background);
-}
-
-.fullcalendar :deep(.fc-timegrid-axis) {
-    background-color: var(--theme-color-default-background) !important;
-}
-
-.fullcalendar :deep(.fc-col-header-cell .fc-col-header-cell-cushion) {
-    padding: 0;
-}
-
-.fullcalendar :deep(.fc-timegrid-axis) {
-    background-color: var(--theme-color-default-background);
-    border-right: 1px solid var(--border);
-}
-
-/* Quarter-hour slots - transparent borders */
-.fullcalendar :deep(.fc-timegrid-slot-minor.fc-timegrid-slot-label) {
-    border-top: 1px solid transparent;
-}
-
-.fullcalendar :deep(.fc-timegrid-slot-minor.fc-timegrid-slot-lane) {
-    --tw-border-opacity: 0;
-}
-
-.fullcalendar :deep(.fc-day-today.fc-col-header-cell) {
-    background-color: var(--color-bg-secondary);
-}
-
-.fullcalendar :deep(.fc-day-today) {
-    background-color: var(--theme-color-default-background);
-}
-
-.fullcalendar :deep(.fc-now-indicator) {
-    border-color: var(--primary);
-    border-width: 2px;
-}
-
-.fullcalendar :deep(.fc-event) {
-    border-radius: calc(var(--radius) - 4px);
-    padding: 0;
-    font-size: 0.75rem;
-    cursor: pointer;
-    box-shadow: var(--theme-shadow-card);
-    opacity: 0.9;
-    overflow: hidden;
-}
-
-.fullcalendar :deep(.fc-v-event) {
-    background-color: var(--muted);
-    border-color: var(--muted);
-}
-
-.fullcalendar :deep(.fc-event-title) {
-    font-weight: 500;
-    line-height: 1.2;
-}
-
-/* Resize handle hit areas */
-.fullcalendar :deep(.fc-event-resizer) {
-    position: absolute;
-    z-index: 99;
-    width: 100%;
-    height: 12px;
-    left: 0;
-    cursor: row-resize;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 0.15s ease;
-}
-
-.fullcalendar :deep(.fc-event-resizer-start) {
-    top: -2px;
-}
-
-.fullcalendar :deep(.fc-event-resizer-end) {
-    bottom: -2px;
-}
-
-/* Visual grip indicator */
-.fullcalendar :deep(.fc-event-resizer::after) {
-    content: '';
-    width: 24px;
-    height: 3px;
-    border-radius: 1.5px;
-    background: rgba(255, 255, 255, 0.6);
-    transition: background 0.15s ease;
-}
-
-.fullcalendar :deep(.fc-event:hover .fc-event-resizer) {
-    opacity: 1;
-}
-
-.fullcalendar :deep(.fc-event-resizer:hover::after) {
-    background: rgba(255, 255, 255, 0.9);
-}
-
-/* Keep resize cursor during active resize */
-.fullcalendar :deep(.fc-event-resizing),
-.fullcalendar :deep(.fc-event-resizing .fc-event-resizer) {
-    cursor: row-resize !important;
-}
-
-/* Keep event in hover state while resizing */
-.fullcalendar :deep(.fc-event-resizing) {
-    opacity: 1;
-    box-shadow: var(--theme-shadow-dropdown);
-}
-
-.fullcalendar :deep(.fc-event-resizing .fc-event-resizer) {
-    opacity: 1;
-}
-
-.fullcalendar :deep(.fc-event-resizing .fc-event-resizer::after) {
-    background: rgba(255, 255, 255, 0.9);
-}
-
-/* Update the earlier hover rule to include the shadow */
-.fullcalendar :deep(.fc-event:hover) {
-    opacity: 1;
-    transition: all 0.2s ease;
-    box-shadow: var(--theme-shadow-dropdown);
-}
-
-.fullcalendar :deep(.fc-timegrid-event-harness) {
-    margin: 0 1px;
-}
-
-.fullcalendar :deep(.fc-highlight) {
-    background-color: var(--primary);
-}
-
-.fullcalendar :deep(.fc-select-mirror) {
-    background-color: var(--accent);
-    border: 1px solid var(--primary);
-}
-
-.fullcalendar :deep(.fc-event-mirror) {
-    pointer-events: none;
-}
-
-.fullcalendar :deep(.fc-scrollgrid) {
-    border: 1px solid var(--border);
-    border-left: 1px solid transparent;
-}
-
-.fullcalendar :deep(.fc-scrollgrid-section > td) {
-    border-right: 1px solid var(--border);
-}
-
-.fullcalendar :deep(.fc-timegrid-body) {
-    background-color: var(--background);
-}
-
-.fullcalendar :deep(.fc-timegrid-col) {
-    border-right: 1px solid var(--border);
-}
-
-.fullcalendar :deep(.fc-timegrid-axis-cushion) {
-    color: var(--theme-text-secondary);
-    font-size: 0.75rem;
-    font-weight: 500;
-}
-
-.fullcalendar :deep(.fc-timegrid-slot-label-cushion) {
-    font-size: 0.8125rem;
-    color: var(--muted-foreground);
-}
-
-.fullcalendar :deep(.fc-col-header-cell-cushion) {
-    color: var(--foreground);
-    font-size: 0.875rem;
-    font-weight: 600;
-}
-
-/* Daily totals styling */
-.fullcalendar :deep(.fc-col-header-cell .text-muted-foreground) {
-    color: var(--muted-foreground);
-    margin-top: 0.125rem;
-}
-
-/* Reduce visibility of time slot dividers */
-.fullcalendar :deep(.fc-timegrid-divider) {
-    display: none;
-}
-
-/* Make scrollbars gray */
-.fullcalendar :deep(.fc-scroller) {
+.fc-header-scroll {
+    overflow-y: auto;
     scrollbar-width: thin;
-    scrollbar-color: var(--muted-foreground) transparent;
+    scrollbar-gutter: stable;
+    scrollbar-color: transparent transparent;
 }
-
-.fullcalendar :deep(.fc-scroller::-webkit-scrollbar) {
+.fc-header-scroll::-webkit-scrollbar {
     width: 8px;
 }
-
-.fullcalendar :deep(.fc-scroller::-webkit-scrollbar-track) {
+.fc-header-scroll::-webkit-scrollbar-track {
     background: transparent;
 }
+.fc-header-scroll::-webkit-scrollbar-thumb {
+    background-color: transparent;
+}
 
-.fullcalendar :deep(.fc-scroller::-webkit-scrollbar-thumb) {
+.fc-scroller {
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+    scrollbar-width: thin;
+    scrollbar-color: var(--muted-foreground) transparent;
+    scrollbar-gutter: stable;
+}
+.fc-scroller::-webkit-scrollbar {
+    width: 8px;
+}
+.fc-scroller::-webkit-scrollbar-track {
+    background: transparent;
+}
+.fc-scroller::-webkit-scrollbar-thumb {
     background-color: var(--muted-foreground);
     border-radius: 4px;
 }
-
-.fullcalendar :deep(.fc-scroller::-webkit-scrollbar-thumb:hover) {
+.fc-scroller::-webkit-scrollbar-thumb:hover {
     background-color: var(--foreground);
-}
-
-/* Improve time axis styling */
-.fullcalendar :deep(.fc-timegrid-axis-chunk) {
-    background-color: var(--theme-color-default-background);
-}
-
-/* Simple event main styling */
-.fullcalendar :deep(.fc-event-main) {
-    padding: 0.125rem 0.25rem;
-}
-
-/* Activity status plugin styles */
-.fullcalendar :deep(.activity-status-box) {
-    position: absolute;
-    width: 10px;
-    left: 0px;
-    z-index: 10;
-    cursor: default;
-}
-
-.fullcalendar :deep(.activity-status-box::before) {
-    content: '';
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 5px;
-    transition: opacity 0.2s ease;
-}
-
-.fullcalendar :deep(.activity-status-box.idle::before) {
-    background-color: rgba(156, 163, 175, 0.1);
-}
-
-.fullcalendar :deep(.activity-status-box.idle):hover::before {
-    background-color: rgba(156, 163, 175, 0.5);
-}
-
-.fullcalendar :deep(.activity-status-box.active::before) {
-    background-color: rgba(34, 197, 94, 0.3);
-}
-
-.fullcalendar :deep(.activity-status-box.active):hover::before {
-    background-color: rgba(34, 197, 94, 1);
-}
-
-/* Add left margin to events only on days with activity status data */
-.fullcalendar :deep(.has-activity-status .fc-timegrid-event-harness) {
-    margin-left: 8px !important;
-}
-
-.fullcalendar :deep(.fc-timegrid-event) {
-    margin-left: 0 !important;
-}
-
-/* Hide end resizer for running time entries */
-.fullcalendar :deep(.running-entry .fc-event-resizer-end) {
-    display: none;
-}
-
-.fullcalendar :deep(.running-entry) {
-    border-bottom-left-radius: 0px;
-    border-bottom-right-radius: 0px;
 }
 </style>
 
 <style>
-/* Global cursor override during resize — must be unscoped to affect body */
 body.fc-resizing-active,
 body.fc-resizing-active * {
     cursor: row-resize !important;

@@ -2,7 +2,7 @@
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { useTimeEntriesCalendarQuery } from '@/utils/useTimeEntriesCalendarQuery';
 import { useTimeEntriesMutations } from '@/utils/useTimeEntriesMutations';
-import { computed, ref } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 import { useQueryClient } from '@tanstack/vue-query';
 import {
     type Client,
@@ -11,6 +11,7 @@ import {
     type Project,
 } from '@/packages/api/src';
 import { TimeEntryCalendar } from '@/packages/ui/src';
+import type { ActivityPeriod } from '@/packages/ui/src/FullCalendar/activityTypes';
 import { isAllowedToPerformPremiumAction } from '@/utils/billing';
 import { useTagsStore } from '@/utils/useTags';
 import { useProjectsQuery } from '@/utils/useProjectsQuery';
@@ -25,6 +26,26 @@ import { useCurrentTimeEntryStore } from '@/utils/useCurrentTimeEntry';
 
 const calendarStart = ref<Date | undefined>(undefined);
 const calendarEnd = ref<Date | undefined>(undefined);
+
+// Test-injectable activity periods (for E2E testing).
+// These hooks are no-ops in production — they only take effect when test code
+// explicitly sets window globals, so they are safe to ship.
+const testActivityPeriods = ref<ActivityPeriod[]>([]);
+
+onMounted(() => {
+    (window as Record<string, unknown>).__TEST_SET_ACTIVITY_PERIODS__ = (
+        data: ActivityPeriod[]
+    ) => {
+        testActivityPeriods.value = data;
+    };
+
+    const windowData = (window as Record<string, unknown>).__TEST_ACTIVITY_PERIODS__;
+    if (Array.isArray(windowData)) {
+        setTimeout(() => {
+            testActivityPeriods.value = windowData;
+        }, 2000);
+    }
+});
 
 const { data: timeEntryResponse, isLoading: timeEntriesLoading } = useTimeEntriesCalendarQuery(
     calendarStart,
@@ -89,7 +110,10 @@ function onRefresh() {
 </script>
 
 <template>
-    <AppLayout title="Calendar" data-testid="calendar_view" main-class="p-0">
+    <AppLayout
+        title="Calendar"
+        data-testid="calendar_view"
+        main-class="p-0 min-h-0 overflow-hidden">
         <TimeEntryCalendar
             :time-entries="currentTimeEntries"
             :projects="projects"
@@ -106,6 +130,7 @@ function onRefresh() {
             :create-client="createClient"
             :create-project="createProject"
             :create-tag="createTag"
+            :activity-periods="testActivityPeriods"
             @dates-change="onDatesChange"
             @refresh="onRefresh" />
     </AppLayout>
