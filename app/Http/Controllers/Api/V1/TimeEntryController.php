@@ -53,6 +53,7 @@ use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 use Spatie\TemporaryDirectory\TemporaryDirectory;
 
@@ -246,7 +247,7 @@ class TimeEntryController extends Controller
             'user',
             'tagsRelation',
         ]);
-        $filename = 'time-entries-export-'.now()->format('Y-m-d_H-i-s').'.'.$format->getFileExtension();
+        $filename = 'time-entries-export-'.now()->format('Y-m-d_H-i-s').'-'.Str::uuid().'.'.$format->getFileExtension();
         $folderPath = 'exports';
         $path = $folderPath.'/'.$filename;
         $localizationService = LocalizationService::forOrganization($organization);
@@ -469,7 +470,7 @@ class TimeEntryController extends Controller
         $timezone = app(TimezoneService::class)->getTimezoneFromUser($this->user());
         $localizationService = LocalizationService::forOrganization($organization);
 
-        $filename = 'time-entries-report-'.now()->format('Y-m-d_H-i-s').'.'.$format->getFileExtension();
+        $filename = 'time-entries-report-'.now()->format('Y-m-d_H-i-s').'-'.Str::uuid().'.'.$format->getFileExtension();
         $folderPath = 'exports';
         $path = $folderPath.'/'.$filename;
 
