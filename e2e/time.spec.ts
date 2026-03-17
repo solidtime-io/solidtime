@@ -2042,3 +2042,228 @@ test.describe('Employee Time Entry Isolation', () => {
         await expect(timeEntryRow).not.toBeVisible();
     });
 });
+
+// =============================================
+// Context Menu Tests
+// =============================================
+
+async function openTimeEntryContextMenu(page: Page, description: string) {
+    const row = page
+        .locator('[data-testid="time_entry_row"]')
+        .filter({ hasText: description })
+        .first();
+    await row.click({ button: 'right' });
+    await expect(page.getByRole('menu')).toBeVisible();
+}
+
+test('test that context menu appears with correct items on time entry row', async ({
+    page,
+    ctx,
+}) => {
+    const description = 'Context menu items test ' + Math.floor(1 + Math.random() * 10000);
+    await createBareTimeEntryViaApi(ctx, description, '1h');
+
+    await goToTimeOverview(page);
+    await openTimeEntryContextMenu(page, description);
+
+    await expect(page.getByRole('menuitem', { name: 'Continue' })).toBeVisible();
+    await expect(page.getByRole('menuitem', { name: 'Edit' })).toBeVisible();
+    await expect(page.getByRole('menuitem', { name: 'Duplicate' })).toBeVisible();
+    await expect(page.getByRole('menuitem', { name: 'Delete' })).toBeVisible();
+});
+
+test('test that context menu edit opens the edit modal', async ({ page, ctx }) => {
+    const description = 'Context edit test ' + Math.floor(1 + Math.random() * 10000);
+    await createBareTimeEntryViaApi(ctx, description, '1h');
+
+    await goToTimeOverview(page);
+    await openTimeEntryContextMenu(page, description);
+
+    await page.getByRole('menuitem', { name: 'Edit' }).click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await expect(page.getByRole('dialog').getByPlaceholder('What did you work on?')).toHaveValue(
+        description
+    );
+});
+
+test('test that context menu duplicate creates a copy', async ({ page, ctx }) => {
+    const description = 'Context dup test ' + Math.floor(1 + Math.random() * 10000);
+    const project = await createProjectViaApi(ctx, {
+        name: 'Dup Project ' + Math.floor(1 + Math.random() * 10000),
+        is_billable: true,
+    });
+    await createTimeEntryViaApi(ctx, {
+        description,
+        duration: '1h',
+        projectId: project.id,
+        billable: true,
+    });
+
+    await goToTimeOverview(page);
+    await openTimeEntryContextMenu(page, description);
+
+    const [createResponse] = await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/time-entries') &&
+                response.request().method() === 'POST' &&
+                response.status() === 201
+        ),
+        page.getByRole('menuitem', { name: 'Duplicate' }).click(),
+    ]);
+
+    const body = await createResponse.json();
+    expect(body.data.description).toBe(description);
+    expect(body.data.project_id).toBe(project.id);
+    expect(body.data.billable).toBe(true);
+});
+
+test('test that context menu continue starts a new time entry', async ({ page, ctx }) => {
+    const description = 'Context continue test ' + Math.floor(1 + Math.random() * 10000);
+    const project = await createProjectViaApi(ctx, {
+        name: 'Continue Project ' + Math.floor(1 + Math.random() * 10000),
+        is_billable: false,
+    });
+    await createTimeEntryViaApi(ctx, {
+        description,
+        duration: '1h',
+        projectId: project.id,
+    });
+
+    await goToTimeOverview(page);
+    await openTimeEntryContextMenu(page, description);
+
+    const [createResponse] = await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/time-entries') &&
+                response.request().method() === 'POST' &&
+                response.status() === 201
+        ),
+        page.getByRole('menuitem', { name: 'Continue' }).click(),
+    ]);
+
+    const body = await createResponse.json();
+    expect(body.data.description).toBe(description);
+    expect(body.data.project_id).toBe(project.id);
+    expect(body.data.end).toBeNull();
+});
+
+test('test that context menu delete removes the time entry', async ({ page, ctx }) => {
+    const description = 'Context delete test ' + Math.floor(1 + Math.random() * 10000);
+    await createBareTimeEntryViaApi(ctx, description, '1h');
+
+    await goToTimeOverview(page);
+    await openTimeEntryContextMenu(page, description);
+
+    await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/time-entries') && response.request().method() === 'DELETE'
+        ),
+        page.getByRole('menuitem', { name: 'Delete' }).click(),
+    ]);
+
+    await expect(
+        page.locator('[data-testid="time_entry_row"]').filter({ hasText: description })
+    ).not.toBeVisible();
+});
+
+test('test that aggregate row context menu shows only Continue and Delete', async ({
+    page,
+    ctx,
+}) => {
+    const description = 'Context agg items ' + Math.floor(1 + Math.random() * 10000);
+    await createBareTimeEntryViaApi(ctx, description, '1h');
+    await createBareTimeEntryViaApi(ctx, description, '30min');
+
+    await goToTimeOverview(page);
+
+    const aggregateRow = page
+        .locator('[data-testid="time_entry_row"]')
+        .filter({ hasText: description })
+        .first();
+    await aggregateRow.click({ button: 'right' });
+    await expect(page.getByRole('menu')).toBeVisible();
+
+    await expect(page.getByRole('menuitem', { name: 'Continue' })).toBeVisible();
+    await expect(page.getByRole('menuitem', { name: 'Delete' })).toBeVisible();
+    await expect(page.getByRole('menuitem', { name: 'Edit' })).not.toBeVisible();
+    await expect(page.getByRole('menuitem', { name: 'Duplicate' })).not.toBeVisible();
+});
+
+test('test that aggregate row context menu continue starts a new time entry', async ({
+    page,
+    ctx,
+}) => {
+    const description = 'Context agg continue ' + Math.floor(1 + Math.random() * 10000);
+    const project = await createProjectViaApi(ctx, {
+        name: 'Agg Continue Project ' + Math.floor(1 + Math.random() * 10000),
+        is_billable: false,
+    });
+    await createTimeEntryViaApi(ctx, {
+        description,
+        duration: '1h',
+        projectId: project.id,
+    });
+    await createTimeEntryViaApi(ctx, {
+        description,
+        duration: '30min',
+        projectId: project.id,
+    });
+
+    await goToTimeOverview(page);
+
+    const aggregateRow = page
+        .locator('[data-testid="time_entry_row"]')
+        .filter({ hasText: description })
+        .first();
+    await aggregateRow.click({ button: 'right' });
+    await expect(page.getByRole('menu')).toBeVisible();
+
+    const [createResponse] = await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/time-entries') &&
+                response.request().method() === 'POST' &&
+                response.status() === 201
+        ),
+        page.getByRole('menuitem', { name: 'Continue' }).click(),
+    ]);
+
+    const body = await createResponse.json();
+    expect(body.data.description).toBe(description);
+    expect(body.data.project_id).toBe(project.id);
+    expect(body.data.end).toBeNull();
+});
+
+test('test that aggregate row context menu delete removes all grouped entries', async ({
+    page,
+    ctx,
+}) => {
+    const description = 'Context agg delete ' + Math.floor(1 + Math.random() * 10000);
+    await createBareTimeEntryViaApi(ctx, description, '1h');
+    await createBareTimeEntryViaApi(ctx, description, '30min');
+
+    await goToTimeOverview(page);
+
+    // The aggregate row groups entries with same description
+    const aggregateRow = page
+        .locator('[data-testid="time_entry_row"]')
+        .filter({ hasText: description })
+        .first();
+    await aggregateRow.click({ button: 'right' });
+    await expect(page.getByRole('menu')).toBeVisible();
+
+    await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/time-entries') && response.request().method() === 'DELETE'
+        ),
+        page.getByRole('menuitem', { name: 'Delete' }).click(),
+    ]);
+
+    await expect(
+        page.locator('[data-testid="time_entry_row"]').filter({ hasText: description })
+    ).not.toBeVisible();
+});
