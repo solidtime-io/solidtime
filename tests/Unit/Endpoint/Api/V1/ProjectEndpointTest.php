@@ -281,6 +281,7 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
         // Arrange
         $data = $this->createUserWithPermission([
             'projects:view',
+            'projects:view:all',
         ]);
         $project = Project::factory()->forOrganization($data->organization)->create();
         Passport::actingAs($data->user);
@@ -291,6 +292,20 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
         // Assert
         $response->assertStatus(200);
         $response->assertJsonPath('data.id', $project->getKey());
+    }
+
+    public function test_show_endpoint_fails_if_employee_tries_to_access_private_project_that_they_are_not_a_member_of(): void
+    {
+        // Arrange
+        $data = $this->createUserWithRole(Role::Employee);
+        $privateProject = Project::factory()->forOrganization($data->organization)->isPrivate()->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.projects.show', [$data->organization->getKey(), $privateProject->getKey()]));
+
+        // Assert
+        $response->assertForbidden();
     }
 
     public function test_store_endpoint_fails_if_user_has_no_permission_to_create_projects(): void

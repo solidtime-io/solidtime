@@ -78,7 +78,7 @@ class ProjectController extends Controller
      */
     public function show(Organization $organization, Project $project): JsonResource
     {
-        $this->checkPermission($organization, 'projects:view', $project);
+        $this->checkPermission($organization, 'projects:view:all', $project);
 
         // Note: There is currently no need to check if a user is a member of the project,
         // since this is only relevant for users with the role "employee" and they can not access this endpoint.
