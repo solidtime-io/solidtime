@@ -39,7 +39,31 @@ export type IntervalFormat =
     | 'hours-minutes'
     | 'hours-minutes-colon-separated'
     | 'hours-minutes-seconds-colon-separated';
-export type TimeInputUnit = 'minutes' | 'hours';
+function configureParseLocale(numberFormat?: string) {
+    switch (numberFormat) {
+        case 'point-comma':
+            parse.unit.group = '.';
+            parse.unit.decimal = ',';
+            break;
+        case 'space-comma':
+            parse.unit.group = ' ';
+            parse.unit.decimal = ',';
+            break;
+        case 'space-point':
+            parse.unit.group = ' ';
+            parse.unit.decimal = '.';
+            break;
+        case 'apostrophe-point':
+            parse.unit.group = "'";
+            parse.unit.decimal = '.';
+            break;
+        default:
+            // 'comma-point' or unset — default English
+            parse.unit.group = ',';
+            parse.unit.decimal = '.';
+            break;
+    }
+}
 
 dayjs.extend(relativeTime);
 dayjs.extend(isToday);
@@ -210,8 +234,11 @@ export function formatStartEnd(
 
 export function parseTimeInput(
     input: string,
-    defaultUnit: TimeInputUnit = 'minutes'
+    numberFormat?: string,
+    defaultUnit: 'minutes' | 'hours' = 'minutes'
 ): number | null {
+    configureParseLocale(numberFormat);
+
     // Check if input is a decimal number (hours)
     const decimalRegex = /^-?\d+[.,]\d+$/;
     if (decimalRegex.test(input)) {
@@ -219,10 +246,10 @@ export function parseTimeInput(
         return Math.round(hours * 3600);
     }
 
-    // Check if input is just a number (minutes or hours based on defaultUnit)
+    // Check if input is just a number
     if (/^-?\d+$/.test(input)) {
         const value = parseInt(input);
-        return defaultUnit === 'minutes' ? value * 60 : value * 3600;
+        return defaultUnit === 'hours' ? value * 3600 : value * 60;
     }
 
     // Check if input is in HH:MM:SS format
@@ -248,7 +275,7 @@ export function parseTimeInput(
         }
     }
 
-    // Try to parse natural language like "1h 30m"
+    // Try to parse natural language like "1h 30m" or locale-formatted like "1,00 h"
     const parsedDuration = parse(input, 's');
     if (parsedDuration && parsedDuration > 0) {
         return parsedDuration;

@@ -1,13 +1,7 @@
 <script setup lang="ts">
 import FormSection from '@/Components/FormSection.vue';
 import { Field, FieldLabel, FieldDescription } from '@/packages/ui/src/field';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/Components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/packages/ui/src';
 import { usePreferredColorScheme } from '@vueuse/core';
 import { themeSetting } from '@/utils/theme';
 

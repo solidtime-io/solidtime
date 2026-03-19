@@ -28,7 +28,7 @@ import {
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
-} from '@/Components/ui/dropdown-menu';
+} from '@/packages/ui/src';
 import ReportCreateModal from '@/Components/Common/Report/ReportCreateModal.vue';
 import UpgradeModal from '@/Components/Common/UpgradeModal.vue';
 import { canCreateReports } from '@/utils/permissions';

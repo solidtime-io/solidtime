@@ -17,7 +17,27 @@ export default defineConfig({
         rollupOptions: {
             // make sure to externalize deps that shouldn't be bundled
             // into your library
-            external: ['vue'],
+            external: [
+                'vue',
+                'lucide-vue-next',
+                '@floating-ui/vue',
+                '@heroicons/vue',
+                /^@heroicons\/vue\/.*/,
+                '@vueuse/core',
+                '@vueuse/integrations',
+                /^@vueuse\/integrations\/.*/,
+                'focus-trap',
+                'chroma-js',
+                'class-variance-authority',
+                'clsx',
+                'dayjs',
+                /^dayjs\/.*/,
+                'parse-duration',
+                '@internationalized/date',
+                'radix-vue',
+                'reka-ui',
+                'tailwind-merge',
+            ],
             output: {
                 // Provide global variables to use in the UMD build
                 // for externalized deps

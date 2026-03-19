@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { CircleStackIcon } from '@heroicons/vue/16/solid';
-import { DropdownMenuItem } from '@/Components/ui/dropdown-menu';
+import { DropdownMenuItem } from '@/packages/ui/src';
 import BaseFilterBadge from './BaseFilterBadge.vue';
 
 type StatusValue = 'active' | 'archived' | 'all';

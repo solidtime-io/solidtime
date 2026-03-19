@@ -17,13 +17,7 @@ import type {
 } from '@/packages/api/src';
 import TagDropdown from '@/packages/ui/src/Tag/TagDropdown.vue';
 import BillableIcon from '@/packages/ui/src/Icons/BillableIcon.vue';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/Components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '..';
 import { Button } from '@/packages/ui/src/Buttons';
 import DatePicker from '@/packages/ui/src/Input/DatePicker.vue';
 import DurationHumanInput from '@/packages/ui/src/Input/DurationHumanInput.vue';
@@ -166,12 +160,13 @@ const billableProxy = computed({
                             @keydown.enter="submit" />
                     </div>
                 </div>
-                <div class="flex flex-col sm:flex-row sm:items-end gap-2 sm:gap-4">
+                <div class="flex flex-col sm:flex-row sm:items-end gap-2">
                     <div class="flex-1 min-w-0">
                         <TimeTrackerProjectTaskDropdown
                             v-model:project="editableTimeEntry.project_id"
                             v-model:task="editableTimeEntry.task_id"
                             variant="input"
+                            size="default"
                             :clients
                             :create-project
                             :create-client
@@ -188,7 +183,7 @@ const billableProxy = computed({
                             :tags="tags"
                             :show-no-tag-option="false">
                             <template #trigger>
-                                <Button variant="input" size="sm">
+                                <Button variant="input">
                                     <TagIcon class="h-4 text-icon-default" />
                                     <span>{{
                                         editableTimeEntry.tags.length === 0
@@ -199,7 +194,7 @@ const billableProxy = computed({
                             </template>
                         </TagDropdown>
                         <Select v-model="billableProxy">
-                            <SelectTrigger size="sm" :show-chevron="false">
+                            <SelectTrigger :show-chevron="false">
                                 <SelectValue class="flex items-center gap-2">
                                     <BillableIcon class="h-4 text-icon-default" />
                                     <span>{{

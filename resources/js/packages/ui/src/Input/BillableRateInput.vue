@@ -7,7 +7,7 @@ import {
     NumberFieldDecrement,
     NumberFieldIncrement,
     NumberFieldInput,
-} from '@/Components/ui/number-field';
+} from '..';
 
 const props = defineProps<{
     name: string;

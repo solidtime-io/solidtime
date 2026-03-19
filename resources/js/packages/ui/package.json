@@ -21,7 +21,7 @@
                 "default": "./dist/solidtime-ui-lib.umd.cjs"
             }
         },
-        "./style.css": "./dist/style.css",
+        "./style.css": "./dist/solidtime-ui-lib.css",
         "./styles.css": "./styles.css",
         "./tailwind.theme.js": "./tailwind.theme.js"
     },
@@ -55,10 +55,16 @@
         "@heroicons/vue": "^2.1.5",
         "@vitejs/plugin-vue": "^5.1.2 || ^6.0.0",
         "@vueuse/core": "^12.5.0 || ^14.0.0",
+        "@vueuse/integrations": "^12.5.0 || ^14.0.0",
+        "focus-trap": "^7.0.0 || ^8.0.0",
+        "chroma-js": "^3.1.0",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
         "dayjs": "^1.11.13",
+        "lucide-vue-next": ">=0.453.0",
+        "@internationalized/date": "^3.0.0",
         "parse-duration": "^2.0.1",
+        "radix-vue": "^1.9.0",
         "reka-ui": "^2.2.0",
         "tailwind-merge": "^2.5.2",
         "tailwindcss": "^3.1.0",

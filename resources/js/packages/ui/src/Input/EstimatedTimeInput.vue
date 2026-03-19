@@ -26,8 +26,7 @@ function updateDuration() {
         return;
     }
 
-    // Use parseTimeInput with 'hours' as default unit for estimated time
-    const seconds = parseTimeInput(input, 'hours');
+    const seconds = parseTimeInput(input, organization?.value?.number_format, 'hours');
     if (seconds !== null && seconds > 0) {
         model.value = seconds;
     }
