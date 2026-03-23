@@ -10,13 +10,11 @@ import {
     createRunningTimeEntryViaApi,
     createTimeEntryWithTimestampsViaApi,
     createRunningTimeEntryWithStartViaApi,
-    createClientViaApi,
     createTaskViaApi,
     createProjectWithClientViaApi,
     updateUserProfileViaWeb,
     updateOrganizationSettingViaApi,
 } from './utils/api';
-import type { TestContext } from '../playwright/fixtures';
 
 async function goToCalendar(page: Page) {
     await page.goto(PLAYWRIGHT_BASE_URL + '/calendar');
@@ -550,7 +548,7 @@ test.describe('Employee Calendar Isolation', () => {
 // =============================================
 
 test.describe('Event Rendering & Display', () => {
-    test('1.1 event shows description, project name, and duration', async ({ page, ctx }) => {
+    test('event shows description, project name, and duration', async ({ page, ctx }) => {
         const projectName = 'Render Project ' + Math.floor(Math.random() * 10000);
         const project = await createProjectViaApi(ctx, { name: projectName });
         await createTimeEntryViaApi(ctx, {
@@ -565,7 +563,7 @@ test.describe('Event Rendering & Display', () => {
         await expect(event).toContainText('1h 00min');
     });
 
-    test('1.2 event shows task and client name', async ({ page, ctx }) => {
+    test('event shows task and client name', async ({ page, ctx }) => {
         const clientName = 'Render Client ' + Math.floor(Math.random() * 10000);
         const projectName = 'Render Task Project ' + Math.floor(Math.random() * 10000);
         const taskName = 'Render Task ' + Math.floor(Math.random() * 10000);
@@ -584,7 +582,7 @@ test.describe('Event Rendering & Display', () => {
         await expect(event).toContainText(clientName);
     });
 
-    test('1.3 event color uses project color blended with background', async ({ page, ctx }) => {
+    test('event color uses project color blended with background', async ({ page, ctx }) => {
         const project = await createProjectViaApi(ctx, {
             name: 'Color Project ' + Math.floor(Math.random() * 10000),
             color: '#ef5350',
@@ -606,7 +604,7 @@ test.describe('Event Rendering & Display', () => {
         expect(bgColor).not.toBe('rgb(239, 83, 80)');
     });
 
-    test('1.4 event without project uses default gray color', async ({ page, ctx }) => {
+    test('event without project uses default gray color', async ({ page, ctx }) => {
         await createBareTimeEntryViaApi(ctx, 'No project entry', '1h');
         await goToCalendar(page);
         const event = page.locator('.fc-event').filter({ hasText: 'No project entry' }).first();
@@ -615,7 +613,7 @@ test.describe('Event Rendering & Display', () => {
         expect(bgColor).not.toBe('rgba(0, 0, 0, 0)');
     });
 
-    test('1.5 overlapping events render side by side', async ({ page, ctx }) => {
+    test('overlapping events render side by side', async ({ page, ctx }) => {
         // Create 2 overlapping entries using explicit timestamps
         const start = todayAt(10);
         const end = todayAt(11);
@@ -639,7 +637,7 @@ test.describe('Event Rendering & Display', () => {
         expect(xDiff > 5 || combinedWidth < boxA!.width * 3).toBeTruthy();
     });
 
-    test('1.6 very short event still renders visibly', async ({ page, ctx }) => {
+    test('very short event still renders visibly', async ({ page, ctx }) => {
         const start = todayAt(10);
         const end = todayAt(10, 5); // 5 minutes
         await createTimeEntryWithTimestampsViaApi(ctx, { description: 'Short event', start, end });
@@ -651,7 +649,7 @@ test.describe('Event Rendering & Display', () => {
         expect(box!.height).toBeGreaterThan(0);
     });
 
-    test('1.7 running entry has distinct visual style', async ({ page, ctx }) => {
+    test('running entry has distinct visual style', async ({ page, ctx }) => {
         await createRunningTimeEntryViaApi(ctx, 'Running style test');
         await goToCalendar(page);
         const event = page.locator('.fc-event').filter({ hasText: 'Running style test' }).first();
@@ -660,7 +658,7 @@ test.describe('Event Rendering & Display', () => {
         await expect(event).toHaveClass(/running-entry/);
     });
 
-    test('1.8 entry with no description shows fallback text', async ({ page, ctx }) => {
+    test('entry with no description shows fallback text', async ({ page, ctx }) => {
         await createTimeEntryViaApi(ctx, { description: '', duration: '1h' });
         await goToCalendar(page);
         const event = page.locator('.fc-event').filter({ hasText: 'No description' }).first();
@@ -673,7 +671,7 @@ test.describe('Event Rendering & Display', () => {
 // =============================================
 
 test.describe('Drag-to-Move Events', () => {
-    test('2.1 drag event to different time slot on same day', async ({ page, ctx }) => {
+    test('drag event to different time slot on same day', async ({ page, ctx }) => {
         const start = todayAt(10);
         const end = todayAt(11);
         await createTimeEntryWithTimestampsViaApi(ctx, {
@@ -721,7 +719,7 @@ test.describe('Drag-to-Move Events', () => {
         expect(durationMs).toBe(3600000); // 1 hour
     });
 
-    test('2.2 drag event to different day', async ({ page, ctx }) => {
+    test('drag event to different day', async ({ page, ctx }) => {
         const start = todayAt(10);
         const end = todayAt(11);
         await createTimeEntryWithTimestampsViaApi(ctx, {
@@ -773,7 +771,7 @@ test.describe('Drag-to-Move Events', () => {
         expect(newDate).not.toBe(originalDate);
     });
 
-    test('2.4 drag preserves original event duration', async ({ page, ctx }) => {
+    test('drag preserves original event duration', async ({ page, ctx }) => {
         const start = todayAt(9);
         const end = todayAt(11); // 2 hours
         await createTimeEntryWithTimestampsViaApi(ctx, {
@@ -821,7 +819,7 @@ test.describe('Drag-to-Move Events', () => {
         expect(durationMs).toBe(7200000); // 2 hours preserved
     });
 
-    test('2.5 running entry cannot be dragged', async ({ page, ctx }) => {
+    test('running entry cannot be dragged', async ({ page, ctx }) => {
         await createRunningTimeEntryViaApi(ctx, 'No drag running');
         await goToCalendar(page);
         // Scroll to make the running entry visible (it started ~10min ago)
@@ -848,7 +846,7 @@ test.describe('Drag-to-Move Events', () => {
         expect(Math.abs(newBox!.y - originalY)).toBeLessThan(26);
     });
 
-    test('2.6 cross-day drag preserves time of day and duration', async ({ page, ctx }) => {
+    test('cross-day drag preserves time of day and duration', async ({ page, ctx }) => {
         const start = todayAt(10);
         const end = todayAt(11);
         await createTimeEntryWithTimestampsViaApi(ctx, {
@@ -911,7 +909,7 @@ test.describe('Drag-to-Move Events', () => {
         expect(newEnd.getTime() - newStart.getTime()).toBe(3600000);
     });
 
-    test('2.7 cross-day drag shows faded ghost in original column', async ({ page, ctx }) => {
+    test('cross-day drag shows faded ghost in original column', async ({ page, ctx }) => {
         const start = todayAt(10);
         const end = todayAt(12);
         await createTimeEntryWithTimestampsViaApi(ctx, {
@@ -960,7 +958,7 @@ test.describe('Drag-to-Move Events', () => {
         await page.mouse.up();
     });
 
-    test('2.8 dragging single-day event upward past midnight spills to previous day', async ({
+    test('dragging single-day event upward past midnight spills to previous day', async ({
         page,
         ctx,
     }) => {
@@ -1032,7 +1030,7 @@ test.describe('Drag-to-Move Events', () => {
 // =============================================
 
 test.describe('Resize Events', () => {
-    test('3.1 resize event from bottom edge extends duration', async ({ page, ctx }) => {
+    test('resize event from bottom edge extends duration', async ({ page, ctx }) => {
         const start = todayAt(10);
         const end = todayAt(11);
         await createTimeEntryWithTimestampsViaApi(ctx, {
@@ -1077,7 +1075,7 @@ test.describe('Resize Events', () => {
         expect(durationMs).toBeGreaterThan(3600000);
     });
 
-    test('3.2 resize event from top edge changes start time', async ({ page, ctx }) => {
+    test('resize event from top edge changes start time', async ({ page, ctx }) => {
         const start = todayAt(12);
         const end = todayAt(14);
         await createTimeEntryWithTimestampsViaApi(ctx, {
@@ -1121,7 +1119,7 @@ test.describe('Resize Events', () => {
         expect(startDate.getTime()).toBeLessThan(new Date(start).getTime());
     });
 
-    test('3.4 resize preserves the non-resized edge', async ({ page, ctx }) => {
+    test('resize preserves the non-resized edge', async ({ page, ctx }) => {
         const start = todayAt(10);
         const end = todayAt(12);
         await createTimeEntryWithTimestampsViaApi(ctx, {
@@ -1162,7 +1160,7 @@ test.describe('Resize Events', () => {
         expect(Math.abs(startDate.getTime() - origStart.getTime())).toBeLessThan(60000);
     });
 
-    test('3.5 running entry cannot be resized from bottom', async ({ page, ctx }) => {
+    test('running entry cannot be resized from bottom', async ({ page, ctx }) => {
         await createRunningTimeEntryViaApi(ctx, 'No bottom resize');
         await goToCalendar(page);
         const event = page.locator('.fc-event').filter({ hasText: 'No bottom resize' }).first();
@@ -1176,9 +1174,14 @@ test.describe('Resize Events', () => {
         }
     });
 
-    test('3.6 running entry start can be changed via top-edge resize', async ({ page, ctx }) => {
-        const startTime = new Date();
-        startTime.setHours(startTime.getHours() - 2);
+    test('running entry start can be changed via top-edge resize', async ({ page, ctx }) => {
+        const now = new Date();
+        const startTime = new Date(now.getTime() - 2 * 60 * 60 * 1000);
+        // Skip if start would be on a different day (near midnight UTC)
+        test.skip(
+            startTime.getUTCDate() !== now.getUTCDate(),
+            'Skipping near midnight UTC to avoid cross-day issues'
+        );
         const startStr = startTime.toISOString().replace(/\.\d{3}Z$/, 'Z');
         await createRunningTimeEntryWithStartViaApi(ctx, 'Resize running start', startStr);
         await goToCalendar(page);
@@ -1218,9 +1221,14 @@ test.describe('Resize Events', () => {
         expect(new Date(body.data.start).getTime()).toBeGreaterThan(startTime.getTime());
     });
 
-    test('3.8 running entry resize preserves end:null in API response', async ({ page, ctx }) => {
-        const startTime = new Date();
-        startTime.setHours(startTime.getHours() - 1);
+    test('running entry resize preserves end:null in API response', async ({ page, ctx }) => {
+        const now = new Date();
+        const startTime = new Date(now.getTime() - 1 * 60 * 60 * 1000);
+        // Skip if start would be on a different day (near midnight UTC)
+        test.skip(
+            startTime.getUTCDate() !== now.getUTCDate(),
+            'Skipping near midnight UTC to avoid cross-day issues'
+        );
         const startStr = startTime.toISOString().replace(/\.\d{3}Z$/, 'Z');
         await createRunningTimeEntryWithStartViaApi(ctx, 'End null preserve', startStr);
         await goToCalendar(page);
@@ -1252,7 +1260,7 @@ test.describe('Resize Events', () => {
         expect(requestBody.end).toBeNull();
     });
 
-    test('3.9 resize bottom edge across day boundary changes end date', async ({ page, ctx }) => {
+    test('resize bottom edge across day boundary changes end date', async ({ page, ctx }) => {
         const start = todayAt(10);
         const end = todayAt(11);
         await createTimeEntryWithTimestampsViaApi(ctx, {
@@ -1328,7 +1336,10 @@ test.describe('Resize Events', () => {
         );
     });
 
-    test('3.10 resize bottom edge across day boundary changes end date', async ({ page, ctx }) => {
+    test('resize bottom edge across day boundary changes end date backward', async ({
+        page,
+        ctx,
+    }) => {
         const start = todayAt(10);
         const end = todayAt(14);
         await createTimeEntryWithTimestampsViaApi(ctx, {
@@ -1405,7 +1416,7 @@ test.describe('Resize Events', () => {
         );
     });
 
-    test('3.11 cross-day resize shows preview in target column', async ({ page, ctx }) => {
+    test('cross-day resize shows preview in target column', async ({ page, ctx }) => {
         const start = todayAt(10);
         const end = todayAt(14);
         await createTimeEntryWithTimestampsViaApi(ctx, {
@@ -1452,7 +1463,7 @@ test.describe('Resize Events', () => {
         await page.mouse.up();
     });
 
-    test('3.12 multi-day event end resize on last day works correctly', async ({ page, ctx }) => {
+    test('multi-day event end resize on last day works correctly', async ({ page, ctx }) => {
         // Create entry spanning today evening → tomorrow morning
         const start = todayAt(20);
         const tomorrow = new Date();
@@ -1526,7 +1537,7 @@ test.describe('Resize Events', () => {
         expect(newEnd.getTime()).toBeGreaterThan(newStart.getTime());
     });
 
-    test('3.13 multi-day event end resize backward to start day produces valid entry', async ({
+    test('multi-day event end resize backward to start day produces valid entry', async ({
         page,
         ctx,
     }) => {
@@ -1615,7 +1626,7 @@ test.describe('Resize Events', () => {
         expect(Math.abs(newStart.getTime() - new Date(start).getTime())).toBeLessThan(60000);
     });
 
-    test('3.14 resize end to earlier column prevents end before start', async ({ page, ctx }) => {
+    test('resize end to earlier column prevents end before start', async ({ page, ctx }) => {
         const start = todayAt(10);
         const end = todayAt(14);
         await createTimeEntryWithTimestampsViaApi(ctx, {
@@ -1694,7 +1705,7 @@ test.describe('Resize Events', () => {
 // =============================================
 
 test.describe('Click-Drag Selection to Create', () => {
-    test('4.2 completing selection opens create modal with correct times', async ({ page }) => {
+    test('completing selection opens create modal with correct times', async ({ page }) => {
         await goToCalendar(page);
         await expect(page.locator('.fc')).toBeVisible();
         await scrollCalendarToTime(page, '09:00:00');
@@ -1718,7 +1729,7 @@ test.describe('Click-Drag Selection to Create', () => {
         await expect(page.getByRole('dialog')).toBeVisible({ timeout: 5000 });
     });
 
-    test('4.3 drag-to-create spanning two days opens create modal with correct cross-day times', async ({
+    test('drag-to-create spanning two days opens create modal with correct cross-day times', async ({
         page,
     }) => {
         const now = new Date();
@@ -2267,8 +2278,13 @@ test.describe('Activity Plugin Overlays', () => {
 
 test.describe('Running Entry Behavior', () => {
     test('running entry extends to approximately current time', async ({ page, ctx }) => {
-        const startTime = new Date();
-        startTime.setHours(startTime.getHours() - 1);
+        const now = new Date();
+        const startTime = new Date(now.getTime() - 1 * 60 * 60 * 1000);
+        // Skip if start would be on a different day (near midnight UTC)
+        test.skip(
+            startTime.getUTCDate() !== now.getUTCDate(),
+            'Skipping near midnight UTC to avoid cross-day issues'
+        );
         const startStr = startTime.toISOString().replace(/\.\d{3}Z$/, 'Z');
         await createRunningTimeEntryWithStartViaApi(ctx, 'Running extends test', startStr);
         await goToCalendar(page);
