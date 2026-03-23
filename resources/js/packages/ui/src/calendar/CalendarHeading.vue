@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { cn } from '@/lib/utils';
+import { cn } from '../utils/cn';
 import { CalendarHeading, type CalendarHeadingProps, useForwardProps } from 'reka-ui';
 import { computed, type HTMLAttributes } from 'vue';
 

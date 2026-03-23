@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { cn } from '@/lib/utils';
+import { cn } from '../utils/cn';
 import { Circle } from 'lucide-vue-next';
 import {
     DropdownMenuItemIndicator,
