@@ -125,7 +125,7 @@ async function submit() {
                         </Field>
                         <Field v-if="report.is_public" orientation="horizontal">
                             <FieldLabel for="public_until">Expires at</FieldLabel>
-                            <DatePicker v-model="localPublicUntil"></DatePicker>
+                            <DatePicker v-model="localPublicUntil" clearable></DatePicker>
                         </Field>
                     </div>
                 </Field>
