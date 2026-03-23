@@ -47,6 +47,11 @@ export default defineConfig({
             },
         },
     },
+    css: {
+        postcss: {
+            plugins: [],
+        },
+    },
     resolve: {
         alias: {
             '@': resolve('../../'),
