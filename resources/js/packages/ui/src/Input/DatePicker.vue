@@ -79,9 +79,7 @@ function handleClear(event: Event) {
                     :tabindex="tabindex"
                     :class="['w-full px-2 gap-1.5', props.class]">
                     <CalendarIcon class="!size-3 text-muted-foreground" />
-                    <span :class="{ 'flex-1': clearable }">{{
-                        displayDate || 'Pick a date'
-                    }}</span>
+                    <span :class="{ 'flex-1': clearable }">{{ displayDate || 'Pick a date' }}</span>
                     <span
                         v-if="clearable && model"
                         role="button"
