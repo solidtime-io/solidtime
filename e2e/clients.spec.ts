@@ -133,6 +133,80 @@ test('test that deleting a client via actions menu works', async ({ page, ctx })
 });
 
 // =============================================
+// Context Menu Tests
+// =============================================
+
+test('test that client context menu edit updates the client', async ({ page, ctx }) => {
+    const clientName = 'CtxEditClient ' + Math.floor(1 + Math.random() * 10000);
+    const updatedName = 'CtxUpdatedClient ' + Math.floor(1 + Math.random() * 10000);
+    await createClientViaApi(ctx, { name: clientName });
+    await goToClientsOverview(page);
+
+    const row = page.getByRole('row').filter({ hasText: clientName }).first();
+    await expect(row).toBeVisible();
+    await row.click({ button: 'right' });
+    await expect(page.getByRole('menu')).toBeVisible();
+    await page.getByRole('menuitem', { name: 'Edit' }).click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+
+    await page.getByPlaceholder('Client Name').fill(updatedName);
+    await Promise.all([
+        page.getByRole('button', { name: 'Update Client' }).click(),
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/clients') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 200
+        ),
+    ]);
+
+    await expect(page.getByTestId('client_table')).toContainText(updatedName);
+    await expect(page.getByTestId('client_table')).not.toContainText(clientName);
+});
+
+test('test that client context menu archive archives the client', async ({ page, ctx }) => {
+    const clientName = 'CtxArchiveClient ' + Math.floor(1 + Math.random() * 10000);
+    await createClientViaApi(ctx, { name: clientName });
+    await goToClientsOverview(page);
+
+    const row = page.getByRole('row').filter({ hasText: clientName }).first();
+    await expect(row).toBeVisible();
+    await row.click({ button: 'right' });
+    await expect(page.getByRole('menu')).toBeVisible();
+    await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/clients') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 200
+        ),
+        page.getByRole('menuitem', { name: 'Archive' }).click(),
+    ]);
+    await expect(page.getByTestId('client_table')).not.toContainText(clientName);
+});
+
+test('test that client context menu delete deletes the client', async ({ page, ctx }) => {
+    const clientName = 'CtxDeleteClient ' + Math.floor(1 + Math.random() * 10000);
+    await createClientViaApi(ctx, { name: clientName });
+    await goToClientsOverview(page);
+
+    const row = page.getByRole('row').filter({ hasText: clientName }).first();
+    await expect(row).toBeVisible();
+    await row.click({ button: 'right' });
+    await expect(page.getByRole('menu')).toBeVisible();
+    await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/clients') &&
+                response.request().method() === 'DELETE' &&
+                response.status() === 204
+        ),
+        page.getByRole('menuitem', { name: 'Delete' }).click(),
+    ]);
+    await expect(page.getByTestId('client_table')).not.toContainText(clientName);
+});
+
+// =============================================
 // Sorting Tests
 // =============================================
 
