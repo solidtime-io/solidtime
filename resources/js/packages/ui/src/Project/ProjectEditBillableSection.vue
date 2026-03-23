@@ -10,14 +10,11 @@ import {
 } from '@/packages/ui/src/tooltip';
 import { computed, onMounted, ref, watch } from 'vue';
 import BillableIcon from '@/packages/ui/src/Icons/BillableIcon.vue';
-import { useOrganizationQuery } from '@/utils/useOrganizationQuery';
-import { getCurrentOrganizationId } from '@/utils/useUser';
 
-defineProps<{
+const props = defineProps<{
     currency: string;
+    organizationBillableRate: number | null;
 }>();
-
-const { organization } = useOrganizationQuery(getCurrentOrganizationId()!);
 
 type RateType = 'default-rate' | 'custom-rate';
 
@@ -49,7 +46,7 @@ watch(rateType, () => {
         billableDefault.value = 'billable';
         isBillable.value = true;
         if (!billableRate.value) {
-            billableRate.value = organization.value?.billable_rate ?? null;
+            billableRate.value = props.organizationBillableRate ?? null;
         }
     }
 });
@@ -57,7 +54,7 @@ watch(rateType, () => {
 const displayedRate = computed({
     get() {
         if (rateType.value === 'default-rate') {
-            return organization.value?.billable_rate ?? null;
+            return props.organizationBillableRate ?? null;
         }
         return billableRate.value;
     },

@@ -42,6 +42,7 @@ const props = defineProps<{
     start?: string;
     end?: string;
     currency: string;
+    organizationBillableRate: number | null;
     canCreateProject: boolean;
 }>();
 
@@ -165,6 +166,7 @@ const billableProxy = computed({
                         :create-client
                         :can-create-project
                         :currency
+                        :organization-billable-rate="organizationBillableRate"
                         :projects="projects"
                         :tasks="tasks"
                         :enable-estimated-time="enableEstimatedTime" />

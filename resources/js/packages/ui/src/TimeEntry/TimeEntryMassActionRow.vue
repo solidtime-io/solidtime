@@ -33,6 +33,7 @@ const props = defineProps<{
     currency: string;
     enableEstimatedTime: boolean;
     canCreateProject: boolean;
+    organizationBillableRate: number | null;
 }>();
 
 const emit = defineEmits<{
@@ -58,6 +59,7 @@ const showMassUpdateModal = ref(false);
         :enable-estimated-time
         :can-create-project
         :currency
+        :organization-billable-rate="organizationBillableRate"
         :time-entries="selectedTimeEntries"
         @submit="emit('submit')"></TimeEntryMassUpdateModal>
     <MainContainer

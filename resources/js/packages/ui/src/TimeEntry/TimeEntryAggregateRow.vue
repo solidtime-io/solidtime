@@ -46,6 +46,7 @@ const props = defineProps<{
     updateTimeEntry: (timeEntry: TimeEntry) => void;
     deleteTimeEntries: (timeEntries: TimeEntry[]) => void;
     currency: string;
+    organizationBillableRate: number | null;
     selectedTimeEntries: TimeEntry[];
     enableEstimatedTime: boolean;
     canCreateProject: boolean;
@@ -136,6 +137,7 @@ function onSelectChange(checked: boolean) {
                                     :project="timeEntry.project_id"
                                     :enable-estimated-time
                                     :currency="currency"
+                                    :organization-billable-rate="organizationBillableRate"
                                     :task="timeEntry.task_id"
                                     @changed="
                                         updateProjectAndTask
@@ -240,6 +242,7 @@ function onSelectChange(checked: boolean) {
                                     :project="timeEntry.project_id"
                                     :enable-estimated-time
                                     :currency="currency"
+                                    :organization-billable-rate="organizationBillableRate"
                                     :task="timeEntry.task_id"
                                     @changed="
                                         updateProjectAndTask
@@ -291,6 +294,7 @@ function onSelectChange(checked: boolean) {
                         :create-client
                         :clients
                         :create-project
+                        :organization-billable-rate="organizationBillableRate"
                         :tags="tags"
                         indent
                         :update-time-entry="(timeEntry: TimeEntry) => updateTimeEntry(timeEntry)"

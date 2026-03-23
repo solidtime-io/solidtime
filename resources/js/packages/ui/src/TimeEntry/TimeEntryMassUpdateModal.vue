@@ -35,6 +35,7 @@ const props = defineProps<{
     createTag: (name: string) => Promise<Tag | undefined>;
     updateTimeEntries: (changeset: UpdateMultipleTimeEntriesChangeset) => Promise<void>;
     currency: string;
+    organizationBillableRate: number | null;
     enableEstimatedTime: boolean;
     canCreateProject: boolean;
 }>();
@@ -162,6 +163,7 @@ watch(removeAllTags, () => {
                         :create-project
                         :create-client
                         :currency="currency"
+                        :organization-billable-rate="organizationBillableRate"
                         :can-create-project
                         empty-placeholder="Select project..."
                         allow-reset

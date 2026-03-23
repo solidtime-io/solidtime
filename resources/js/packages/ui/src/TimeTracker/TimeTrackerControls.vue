@@ -38,6 +38,7 @@ const props = defineProps<{
     createClient: (client: CreateClientBody) => Promise<Client | undefined>;
     isActive: boolean;
     currency: string;
+    organizationBillableRate: number | null;
     enableEstimatedTime: boolean;
     canCreateProject: boolean;
 }>();
@@ -262,6 +263,7 @@ useSelectEvents(
                         :clients
                         :create-project
                         :currency="currency"
+                        :organization-billable-rate="organizationBillableRate"
                         :projects="projects"
                         :tasks="tasks"
                         :enable-estimated-time="enableEstimatedTime"

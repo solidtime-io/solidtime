@@ -26,6 +26,7 @@ const props = defineProps<{
     createClient: (client: CreateClientBody) => Promise<Client | undefined>;
     currency: string;
     enableEstimatedTime: boolean;
+    organizationBillableRate: number | null;
 }>();
 
 const activeClients = computed(() => {
@@ -113,7 +114,10 @@ const currentClientName = computed(() => {
                 <ProjectEditBillableSection
                     v-model:is-billable="project.is_billable"
                     v-model:billable-rate="project.billable_rate"
-                    :currency="currency"></ProjectEditBillableSection>
+                    :currency="currency"
+                    :organization-billable-rate="
+                        organizationBillableRate
+                    "></ProjectEditBillableSection>
                 <EstimatedTimeSection
                     v-if="enableEstimatedTime"
                     v-model="project.estimated_time"

@@ -2,8 +2,7 @@
 import { router } from '@inertiajs/vue3';
 import { canViewReport } from '@/utils/permissions';
 import { computed } from 'vue';
-import TabBar from '@/Components/Common/TabBar/TabBar.vue';
-import TabBarItem from '@/Components/Common/TabBar/TabBarItem.vue';
+import { TabBar, TabBarItem } from '@/packages/ui/src';
 
 const props = defineProps<{
     active: 'reporting' | 'detailed' | 'shared';

@@ -9,6 +9,8 @@ import { useTagsStore } from '@/utils/useTags';
 import { useTimeEntriesMutations } from '@/utils/useTimeEntriesMutations';
 import { getOrganizationCurrencyString } from '@/utils/money';
 import { isAllowedToPerformPremiumAction } from '@/utils/billing';
+import { useOrganizationQuery } from '@/utils/useOrganizationQuery';
+import { getCurrentOrganizationId } from '@/utils/useUser';
 import { canCreateProjects } from '@/utils/permissions';
 import type {
     CreateClientBody,
@@ -36,6 +38,8 @@ import TagDropdown from '@/packages/ui/src/Tag/TagDropdown.vue';
 // Dialog components for selectors
 import DialogModal from '@/packages/ui/src/DialogModal.vue';
 import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
+
+const { organization } = useOrganizationQuery(getCurrentOrganizationId()!);
 
 const {
     isOpen,
@@ -162,6 +166,7 @@ const firstProjectId = computed(() => projects.value[0]?.id ?? '');
         :create-client="createClient"
         :clients="activeClients"
         :currency="getOrganizationCurrencyString()"
+        :organization-billable-rate="organization?.billable_rate ?? null"
         :enable-estimated-time="isAllowedToPerformPremiumAction()" />
 
     <!-- Client Create Modal -->
@@ -192,7 +197,8 @@ const firstProjectId = computed(() => projects.value[0]?.id ?? '');
         :clients="activeClients"
         :currency="getOrganizationCurrencyString()"
         :enable-estimated-time="isAllowedToPerformPremiumAction()"
-        :can-create-project="canCreateProjects()" />
+        :can-create-project="canCreateProjects()"
+        :organization-billable-rate="organization?.billable_rate ?? null" />
 
     <!-- Project Selector Dialog for Active Timer -->
     <DialogModal :show="showProjectSelector" closeable @close="showProjectSelector = false">
@@ -210,6 +216,7 @@ const firstProjectId = computed(() => projects.value[0]?.id ?? '');
                 :can-create-project="canCreateProjects()"
                 :currency="getOrganizationCurrencyString()"
                 :enable-estimated-time="isAllowedToPerformPremiumAction()"
+                :organization-billable-rate="organization?.billable_rate ?? null"
                 class="w-full" />
         </template>
         <template #footer>
@@ -234,6 +241,7 @@ const firstProjectId = computed(() => projects.value[0]?.id ?? '');
                 :can-create-project="canCreateProjects()"
                 :currency="getOrganizationCurrencyString()"
                 :enable-estimated-time="isAllowedToPerformPremiumAction()"
+                :organization-billable-rate="organization?.billable_rate ?? null"
                 class="w-full" />
         </template>
         <template #footer>
