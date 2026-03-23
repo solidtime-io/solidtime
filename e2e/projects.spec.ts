@@ -850,7 +850,8 @@ test('test that project context menu archive archives the project', async ({ pag
         ),
         page.getByRole('menuitem', { name: 'Archive' }).click(),
     ]);
-    await expect(page.getByTestId('project_table')).not.toContainText(projectName);
+    // After archiving, the project stays visible (default filter is 'all') but status changes to 'Archived'
+    await expect(row).toContainText('Archived');
 });
 
 test('test that project context menu delete deletes the project', async ({ page, ctx }) => {

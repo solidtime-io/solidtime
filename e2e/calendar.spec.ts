@@ -1188,29 +1188,29 @@ test.describe('Resize Events', () => {
         const event = page.locator('.fc-event').filter({ hasText: 'Resize running start' }).first();
         await expect(event).toBeVisible();
 
-        const eventBox = await event.boundingBox();
-        const topY = eventBox!.y;
-        const centerX = eventBox!.x + eventBox!.width / 2;
+        // Use the start resizer element directly for more reliable interaction
+        const startResizer = event.locator('.fc-event-resizer-start');
+        const resizerBox = await startResizer.boundingBox();
+        const centerX = resizerBox!.x + resizerBox!.width / 2;
+        const resizerY = resizerBox!.y + resizerBox!.height / 2;
 
         const [putResponse] = await Promise.all([
             page.waitForResponse(
-                (r) =>
-                    r.url().includes('/time-entries/') &&
-                    r.request().method() === 'PUT' &&
-                    r.status() === 200
+                (r) => r.url().includes('/time-entries/') && r.request().method() === 'PUT'
             ),
             (async () => {
-                await page.mouse.move(centerX, topY + 3);
+                await page.mouse.move(centerX, resizerY);
                 await page.waitForTimeout(100);
                 await page.mouse.down();
                 const slotLane = page.locator('.fc-timegrid-slot-lane').first();
                 const slotHeight = (await slotLane.boundingBox())!.height;
                 // Move down (make it start later)
-                await page.mouse.move(centerX, topY + slotHeight * 4, { steps: 15 });
+                await page.mouse.move(centerX, resizerY + slotHeight * 4, { steps: 15 });
                 await page.mouse.up();
             })(),
         ]);
 
+        expect(putResponse.status()).toBe(200);
         const body = await putResponse.json();
         // End should remain null for running entries
         expect(body.data.end).toBeNull();
