@@ -37,6 +37,9 @@ export default defineConfig({
                 'radix-vue',
                 'reka-ui',
                 'tailwind-merge',
+                '@zodios/core',
+                /^@zodios\/.*/,
+                'zod',
             ],
             output: {
                 // Provide global variables to use in the UMD build
