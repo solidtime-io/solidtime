@@ -111,7 +111,7 @@ async function submit() {
                                 <FieldLabel for="public_until">Expires at</FieldLabel>
                                 <div class="text-text-tertiary font-medium">(optional)</div>
                             </div>
-                            <DatePicker v-model="report.public_until"></DatePicker>
+                            <DatePicker v-model="report.public_until" clearable></DatePicker>
                         </Field>
                     </div>
                 </Field>

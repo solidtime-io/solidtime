@@ -1,6 +1,10 @@
 import { expect } from '@playwright/test';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc.js';
 import { PLAYWRIGHT_BASE_URL } from '../playwright/config';
 import { test } from '../playwright/fixtures';
+
+dayjs.extend(utc);
 import {
     createProjectViaApi,
     createClientViaApi,
@@ -11,6 +15,7 @@ import {
     createBillableProjectViaApi,
     createTimeEntryWithBillableStatusViaApi,
     createTagViaApi,
+    createReportViaApi,
 } from './utils/api';
 import {
     goToReporting,
@@ -764,6 +769,97 @@ test('test that updating expiration date on already-public report works', async 
     // The returned date should be in the future
     const now = new Date();
     expect(returnedDate.getTime()).toBeGreaterThan(now.getTime());
+});
+
+test('test that clearing the expiration date on a report works', async ({ page, ctx }) => {
+    const reportName = 'ClearExpReport ' + Math.floor(Math.random() * 10000);
+
+    // Create a public report with an expiration date via API
+    await createReportViaApi(ctx, {
+        name: reportName,
+        is_public: true,
+        public_until: dayjs().add(1, 'month').utc().format('YYYY-MM-DDTHH:mm:ss[Z]'),
+    });
+
+    // Go to shared reports and edit the report
+    await goToReportingShared(page);
+    await expect(page.getByText(reportName)).toBeVisible();
+
+    await page
+        .getByRole('button', { name: new RegExp('Actions for Project ' + reportName) })
+        .click();
+    await page.getByRole('menuitem', { name: /^Edit Report/ }).click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+
+    // The date picker should show a date (not "Pick a date")
+    await expect(
+        page.getByRole('dialog').getByRole('button', { name: 'Pick a date' })
+    ).not.toBeVisible();
+
+    // Click the clear button (X icon) to remove the expiration date
+    const clearButton = page
+        .getByRole('dialog')
+        .locator('[role="button"]')
+        .filter({ has: page.locator('svg.lucide-x') });
+    await expect(clearButton).toBeVisible();
+    await clearButton.click();
+
+    // The date picker should now show "Pick a date"
+    await expect(
+        page.getByRole('dialog').getByRole('button', { name: 'Pick a date' })
+    ).toBeVisible();
+
+    // The clear button should no longer be visible
+    await expect(clearButton).not.toBeVisible();
+
+    // Update the report and verify public_until is null
+    const [updateResponse] = await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/reports/') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 200
+        ),
+        page.getByRole('button', { name: 'Update Report' }).click(),
+    ]);
+    const updateBody = await updateResponse.json();
+    expect(updateBody.data.public_until).toBeNull();
+});
+
+test('test that date picker clear button is not visible when no date is set', async ({
+    page,
+    ctx,
+}) => {
+    const reportName = 'NoClearReport ' + Math.floor(Math.random() * 10000);
+
+    // Create a public report without an expiration date via API
+    await createReportViaApi(ctx, {
+        name: reportName,
+        is_public: true,
+        public_until: null,
+    });
+
+    // Go to shared reports and edit the report
+    await goToReportingShared(page);
+    await expect(page.getByText(reportName)).toBeVisible();
+
+    await page
+        .getByRole('button', { name: new RegExp('Actions for Project ' + reportName) })
+        .click();
+    await page.getByRole('menuitem', { name: /^Edit Report/ }).click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+
+    // The date picker should show "Pick a date"
+    await expect(
+        page.getByRole('dialog').getByRole('button', { name: 'Pick a date' })
+    ).toBeVisible();
+
+    // The clear button should NOT be visible
+    const clearButton = page
+        .getByRole('dialog')
+        .locator('[role="button"]')
+        .filter({ has: page.locator('svg.lucide-x') });
+    await expect(clearButton).not.toBeVisible();
 });
 
 // ──────────────────────────────────────────────────

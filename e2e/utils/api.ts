@@ -724,3 +724,43 @@ export async function createRunningTimeEntryWithStartViaApi(
     const body = await response.json();
     return body.data as { id: string; start: string; end: null; description: string };
 }
+
+// ──────────────────────────────────────────────────
+// Reports
+// ──────────────────────────────────────────────────
+
+export async function createReportViaApi(
+    ctx: TestContext,
+    data: {
+        name: string;
+        is_public?: boolean;
+        public_until?: string | null;
+    }
+) {
+    const response = await ctx.request.post(
+        `${PLAYWRIGHT_BASE_URL}/api/v1/organizations/${ctx.orgId}/reports`,
+        {
+            data: {
+                name: data.name,
+                description: '',
+                is_public: data.is_public ?? true,
+                public_until: data.public_until ?? null,
+                properties: {
+                    start: '2024-01-01T00:00:00Z',
+                    end: '2030-12-31T23:59:59Z',
+                    group: 'project',
+                    sub_group: 'project',
+                    history_group: 'day',
+                },
+            },
+        }
+    );
+    expect(response.status()).toBe(201);
+    const body = await response.json();
+    return body.data as {
+        id: string;
+        name: string;
+        is_public: boolean;
+        public_until: string | null;
+    };
+}
