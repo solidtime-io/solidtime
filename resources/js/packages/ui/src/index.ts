@@ -20,6 +20,7 @@ export type { FieldVariants } from './field/index';
 export type { CalendarSettings } from './FullCalendar/calendarSettings';
 export type { ActivityPeriod } from './FullCalendar/activityTypes';
 export { cn } from './utils/cn';
+export { useCssVariable } from './utils/useCssVariable';
 
 import Badge from './Badge.vue';
 import Button from './Buttons/Button.vue';

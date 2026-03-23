@@ -11,7 +11,7 @@ import {
     TooltipComponent,
 } from 'echarts/components';
 import { formatHumanReadableDuration } from '@/packages/ui/src/utils/time';
-import { useCssVariable } from '@/utils/useCssVariable';
+import { useCssVariable } from '@/packages/ui/src';
 import type { Organization } from '@/packages/api/src';
 
 use([CanvasRenderer, PieChart, TitleComponent, GridComponent, TooltipComponent, LegendComponent]);

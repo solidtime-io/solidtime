@@ -13,7 +13,7 @@ import {
     TooltipComponent,
 } from 'echarts/components';
 import type { AggregatedTimeEntries, Organization } from '@/packages/api/src';
-import { useCssVariable } from '@/utils/useCssVariable';
+import { useCssVariable } from '@/packages/ui/src';
 
 use([CanvasRenderer, BarChart, TitleComponent, GridComponent, TooltipComponent, LegendComponent]);
 

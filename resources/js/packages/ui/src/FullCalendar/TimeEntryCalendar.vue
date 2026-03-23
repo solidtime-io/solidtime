@@ -11,7 +11,7 @@ import {
     onUnmounted,
 } from 'vue';
 import { useLocalStorage } from '@vueuse/core';
-import { useCssVariable } from '@/utils/useCssVariable';
+import { useCssVariable } from '../utils/useCssVariable';
 import { getLocalizedDayJs } from '../utils/time';
 import { LoadingSpinner, TimeEntryCreateModal, TimeEntryEditModal } from '..';
 import FullCalendarDayHeader from './FullCalendarDayHeader.vue';

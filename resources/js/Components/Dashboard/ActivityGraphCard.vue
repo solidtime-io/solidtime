@@ -20,7 +20,7 @@ import {
     getDayJsInstance,
 } from '@/packages/ui/src/utils/time';
 import chroma from 'chroma-js';
-import { useCssVariable } from '@/utils/useCssVariable';
+import { useCssVariable } from '@/packages/ui/src';
 import { useQuery } from '@tanstack/vue-query';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import { api, type Organization } from '@/packages/api/src';

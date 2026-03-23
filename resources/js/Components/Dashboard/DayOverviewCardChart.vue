@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import VChart from 'vue-echarts';
 import { computed } from 'vue';
-import { useCssVariable } from '@/utils/useCssVariable';
+import { useCssVariable } from '@/packages/ui/src';
 
 const props = defineProps<{
     history: number[];
