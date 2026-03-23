@@ -801,6 +801,80 @@ test('test that editing a task name on the project detail page works', async ({ 
 });
 
 // =============================================
+// Context Menu Tests
+// =============================================
+
+test('test that project context menu edit updates the project', async ({ page, ctx }) => {
+    const projectName = 'CtxEditProject ' + Math.floor(1 + Math.random() * 10000);
+    const updatedName = 'CtxUpdatedProject ' + Math.floor(1 + Math.random() * 10000);
+    await createProjectViaApi(ctx, { name: projectName });
+    await goToProjectsOverview(page);
+
+    const row = page.getByRole('row').filter({ hasText: projectName }).first();
+    await expect(row).toBeVisible();
+    await row.click({ button: 'right' });
+    await expect(page.getByRole('menu')).toBeVisible();
+    await page.getByRole('menuitem', { name: 'Edit' }).click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+
+    await page.getByPlaceholder('Project Name').fill(updatedName);
+    await Promise.all([
+        page.getByRole('button', { name: 'Update Project' }).click(),
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/projects/') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 200
+        ),
+    ]);
+
+    await expect(page.getByTestId('project_table')).toContainText(updatedName);
+    await expect(page.getByTestId('project_table')).not.toContainText(projectName);
+});
+
+test('test that project context menu archive archives the project', async ({ page, ctx }) => {
+    const projectName = 'CtxArchiveProject ' + Math.floor(1 + Math.random() * 10000);
+    await createProjectViaApi(ctx, { name: projectName });
+    await goToProjectsOverview(page);
+
+    const row = page.getByRole('row').filter({ hasText: projectName }).first();
+    await expect(row).toBeVisible();
+    await row.click({ button: 'right' });
+    await expect(page.getByRole('menu')).toBeVisible();
+    await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/projects') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 200
+        ),
+        page.getByRole('menuitem', { name: 'Archive' }).click(),
+    ]);
+    await expect(page.getByTestId('project_table')).not.toContainText(projectName);
+});
+
+test('test that project context menu delete deletes the project', async ({ page, ctx }) => {
+    const projectName = 'CtxDeleteProject ' + Math.floor(1 + Math.random() * 10000);
+    await createProjectViaApi(ctx, { name: projectName });
+    await goToProjectsOverview(page);
+
+    const row = page.getByRole('row').filter({ hasText: projectName }).first();
+    await expect(row).toBeVisible();
+    await row.click({ button: 'right' });
+    await expect(page.getByRole('menu')).toBeVisible();
+    await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/projects') &&
+                response.request().method() === 'DELETE' &&
+                response.status() === 204
+        ),
+        page.getByRole('menuitem', { name: 'Delete' }).click(),
+    ]);
+    await expect(page.getByTestId('project_table')).not.toContainText(projectName);
+});
+
+// =============================================
 // Employee Permission Tests
 // =============================================
 

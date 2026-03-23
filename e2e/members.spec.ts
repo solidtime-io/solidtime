@@ -497,6 +497,158 @@ test('test that organization owner cannot be deleted', async ({ page }) => {
 });
 
 // =============================================
+// Context Menu Tests
+// =============================================
+
+test('test that member context menu edit updates the member billable rate', async ({
+    page,
+    ctx,
+}) => {
+    const memberName = 'CtxEditMember ' + Math.floor(1 + Math.random() * 10000);
+    await createPlaceholderMemberViaImportApi(ctx, memberName);
+    await goToMembersPage(page);
+
+    const row = page.getByRole('row').filter({ hasText: memberName }).first();
+    await expect(row).toBeVisible();
+    await row.click({ button: 'right' });
+    await expect(page.getByRole('menu')).toBeVisible();
+    await page.getByRole('menuitem', { name: 'Edit' }).click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Update Member' })).toBeVisible();
+
+    // Change billable rate from default to custom
+    const billableRateSelect = page.getByRole('dialog').getByRole('combobox').last();
+    await billableRateSelect.click();
+    await page.getByRole('option', { name: 'Custom Rate' }).click();
+
+    // Set a custom billable rate
+    await page.getByPlaceholder('Billable Rate').fill('150');
+
+    // Click Update Member — confirmation dialog should appear
+    await page.getByRole('button', { name: 'Update Member' }).click();
+    await expect(page.getByRole('heading', { name: 'Update Member Billable Rate' })).toBeVisible();
+
+    // Confirm the billable rate change
+    await Promise.all([
+        page.getByRole('button', { name: 'Yes, update existing time entries' }).click(),
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/members/') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 200
+        ),
+    ]);
+
+    // Verify dialog closed
+    await expect(page.getByRole('dialog')).not.toBeVisible();
+});
+
+test('test that member context menu merge merges the member', async ({ page, ctx }) => {
+    const memberName = 'CtxMergeMember ' + Math.floor(1 + Math.random() * 10000);
+    await createPlaceholderMemberViaImportApi(ctx, memberName);
+    await goToMembersPage(page);
+
+    const row = page.getByRole('row').filter({ hasText: memberName }).first();
+    await expect(row).toBeVisible();
+    await row.click({ button: 'right' });
+    await expect(page.getByRole('menu')).toBeVisible();
+    await page.getByRole('menuitem', { name: 'Merge' }).click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Merge Member' })).toBeVisible();
+
+    // Select the first available member as merge target
+    await page.getByRole('dialog').getByRole('button', { name: 'Select a member...' }).click();
+    const firstOption = page.getByRole('option').first();
+    await expect(firstOption).toBeVisible({ timeout: 10000 });
+    await firstOption.click();
+
+    // Submit merge
+    await Promise.all([
+        page.getByRole('button', { name: 'Merge Member' }).click(),
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/member/') &&
+                response.url().includes('/merge-into') &&
+                response.ok()
+        ),
+    ]);
+
+    // Verify placeholder member is no longer visible
+    await expect(page.getByRole('dialog').filter({ hasText: 'Merge Member' })).not.toBeVisible();
+    await expect(page.getByRole('main').getByText(memberName)).not.toBeVisible();
+});
+
+test('test that member context menu deactivate deactivates the member', async ({
+    page,
+    browser,
+}) => {
+    const memberId = Math.floor(Math.random() * 100000);
+    const memberEmail = `member+${memberId}@deactivate.test`;
+    const memberName = 'Deactivate Target';
+
+    // Invite and accept a new Employee member
+    await inviteAndAcceptMember(page, browser, memberName, memberEmail, 'Employee');
+
+    await goToMembersPage(page);
+    const row = page.getByRole('row').filter({ hasText: memberName }).first();
+    await expect(row).toBeVisible();
+
+    // Open context menu and click Deactivate
+    await row.click({ button: 'right' });
+    await expect(page.getByRole('menu')).toBeVisible();
+    await page.getByRole('menuitem', { name: 'Deactivate' }).click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Deactivate User' })).toBeVisible();
+
+    // Confirm deactivation
+    await Promise.all([
+        page.getByRole('button', { name: 'Deactivate' }).click(),
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/make-placeholder') &&
+                response.request().method() === 'POST' &&
+                response.ok()
+        ),
+    ]);
+
+    // Verify dialog closed and member role changed to Placeholder
+    await expect(page.getByRole('dialog')).not.toBeVisible();
+    await expect(row.getByText('Placeholder', { exact: true })).toBeVisible();
+});
+
+test('test that member context menu delete deletes the member', async ({ page, ctx }) => {
+    const memberName = 'CtxDeleteMember ' + Math.floor(1 + Math.random() * 10000);
+    await createPlaceholderMemberViaImportApi(ctx, memberName);
+    await goToMembersPage(page);
+
+    const row = page.getByRole('row').filter({ hasText: memberName }).first();
+    await expect(row).toBeVisible();
+    await row.click({ button: 'right' });
+    await expect(page.getByRole('menu')).toBeVisible();
+    await page.getByRole('menuitem', { name: 'Delete' }).click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Delete Member' })).toBeVisible();
+
+    // Check the confirmation checkbox
+    await page.getByRole('checkbox').click();
+
+    // Click Delete Member button and wait for API response
+    await Promise.all([
+        page.getByRole('button', { name: 'Delete Member' }).click(),
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/members/') &&
+                response.request().method() === 'DELETE' &&
+                response.ok()
+        ),
+    ]);
+
+    // Verify modal closed and member removed from table
+    await expect(page.getByRole('dialog')).not.toBeVisible();
+    await expect(page.getByRole('main').getByText(memberName)).not.toBeVisible();
+});
+
+// =============================================
 // Invitations Tab Tests
 // =============================================
 
