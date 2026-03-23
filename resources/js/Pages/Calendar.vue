@@ -23,7 +23,10 @@ import { useClientsStore } from '@/utils/useClients';
 import { getOrganizationCurrencyString } from '@/utils/money';
 import { canCreateProjects } from '@/utils/permissions';
 import { useCurrentTimeEntryStore } from '@/utils/useCurrentTimeEntry';
+import { useOrganizationQuery } from '@/utils/useOrganizationQuery';
+import { getCurrentOrganizationId } from '@/utils/useUser';
 
+const { organization } = useOrganizationQuery(getCurrentOrganizationId()!);
 const calendarStart = ref<Date | undefined>(undefined);
 const calendarEnd = ref<Date | undefined>(undefined);
 
@@ -124,6 +127,7 @@ function onRefresh() {
             :enable-estimated-time="isAllowedToPerformPremiumAction()"
             :currency="getOrganizationCurrencyString()"
             :can-create-project="canCreateProjects()"
+            :organization-billable-rate="organization?.billable_rate ?? null"
             :create-time-entry="createTimeEntry"
             :update-time-entry="updateTimeEntry"
             :delete-time-entry="deleteTimeEntry"

@@ -11,6 +11,7 @@ import duration from 'dayjs/plugin/duration';
 import { useCurrentTimeEntryStore } from '@/utils/useCurrentTimeEntry';
 import { storeToRefs } from 'pinia';
 import { getCurrentOrganizationId } from '@/utils/useUser';
+import { useOrganizationQuery } from '@/utils/useOrganizationQuery';
 import { switchOrganization } from '@/utils/useOrganization';
 import { useProjectsQuery } from '@/utils/useProjectsQuery';
 import { useTasksQuery } from '@/utils/useTasksQuery';
@@ -46,6 +47,8 @@ const page = usePage<{
 dayjs.extend(duration);
 
 dayjs.extend(utc);
+
+const { organization } = useOrganizationQuery(getCurrentOrganizationId()!);
 
 const currentTimeEntryStore = useCurrentTimeEntryStore();
 const { currentTimeEntry, isActive, now } = storeToRefs(currentTimeEntryStore);
@@ -152,6 +155,7 @@ const { tags } = useTagsQuery();
         :create-time-entry="createTimeEntry"
         :currency="getOrganizationCurrencyString()"
         :can-create-project="canCreateProjects()"
+        :organization-billable-rate="organization?.billable_rate ?? null"
         :projects
         :tasks
         :tags
@@ -173,6 +177,7 @@ const { tags } = useTagsQuery();
                         :create-project
                         :enable-estimated-time="isAllowedToPerformPremiumAction()"
                         :can-create-project="canCreateProjects()"
+                        :organization-billable-rate="organization?.billable_rate ?? null"
                         :create-client
                         :clients
                         :tags

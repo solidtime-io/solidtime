@@ -21,8 +21,7 @@ import ProjectMemberTable from '@/Components/Common/ProjectMember/ProjectMemberT
 import ProjectMemberCreateModal from '@/Components/Common/ProjectMember/ProjectMemberCreateModal.vue';
 import { useProjectMembersQuery } from '@/utils/useProjectMembersQuery';
 import { canCreateProjects, canCreateTasks, canViewProjectMembers } from '@/utils/permissions';
-import TabBarItem from '@/Components/Common/TabBar/TabBarItem.vue';
-import TabBar from '@/Components/Common/TabBar/TabBar.vue';
+import { TabBar, TabBarItem } from '@/packages/ui/src';
 import { useTasksQuery } from '@/utils/useTasksQuery';
 import ProjectEditModal from '@/Components/Common/Project/ProjectEditModal.vue';
 import { Badge } from '@/packages/ui/src';

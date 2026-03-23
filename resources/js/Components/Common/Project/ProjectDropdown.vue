@@ -20,7 +20,10 @@ import { useClientsQuery } from '@/utils/useClientsQuery';
 import { getOrganizationCurrencyString } from '@/utils/money';
 import { isAllowedToPerformPremiumAction } from '@/utils/billing';
 import { canCreateProjects } from '@/utils/permissions';
+import { useOrganizationQuery } from '@/utils/useOrganizationQuery';
+import { getCurrentOrganizationId } from '@/utils/useUser';
 
+const { organization } = useOrganizationQuery(getCurrentOrganizationId()!);
 const searchValue = ref('');
 const searchInput = ref<HTMLElement | null>(null);
 const model = defineModel<string | null>({
@@ -156,6 +159,7 @@ function updateValue(project: Project) {
         :create-client="handleCreateClient"
         :clients="activeClients"
         :currency="getOrganizationCurrencyString()"
+        :organization-billable-rate="organization?.billable_rate ?? null"
         :enable-estimated-time="isAllowedToPerformPremiumAction()" />
 </template>
 

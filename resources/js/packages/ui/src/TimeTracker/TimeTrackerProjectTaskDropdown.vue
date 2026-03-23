@@ -58,6 +58,7 @@ const props = withDefaults(
         emptyPlaceholder?: string;
         allowReset?: boolean;
         enableEstimatedTime: boolean;
+        organizationBillableRate: number | null;
         canCreateProject: boolean;
         class?: string;
         variant?: 'input' | 'ghost' | 'outline';
@@ -660,6 +661,7 @@ const showCreateProject = ref(false);
         v-model:show="showCreateProject"
         :create-client
         :enable-estimated-time="enableEstimatedTime"
+        :organization-billable-rate="organizationBillableRate"
         :currency="currency"
         :clients="clients"
         :create-project></ProjectCreateModal>

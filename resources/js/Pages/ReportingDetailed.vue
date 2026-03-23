@@ -66,6 +66,7 @@ import ReportingExportModal from '@/Components/Common/Reporting/ReportingExportM
 import ReportingFilterBar from '@/Components/Common/Reporting/ReportingFilterBar.vue';
 import { useTimeEntriesReportQuery } from '@/utils/useTimeEntriesReportQuery';
 import { useTimeEntriesMutations } from '@/utils/useTimeEntriesMutations';
+import { useOrganizationQuery } from '@/utils/useOrganizationQuery';
 
 // TimeEntryRoundingType is now defined in ReportingRoundingControls component
 type TimeEntryRoundingType = 'up' | 'down' | 'nearest';
@@ -89,6 +90,7 @@ const roundingType = ref<TimeEntryRoundingType>('nearest');
 const roundingMinutes = ref<number>(15);
 
 const { members } = useMembersQuery();
+const { organization } = useOrganizationQuery(getCurrentOrganizationId()!);
 const pageLimit = 15;
 
 // Watch rounding enabled state to trigger updates
@@ -353,6 +355,7 @@ async function downloadExport(format: ExportFormat) {
             :tags="tags"
             :currency="getOrganizationCurrencyString()"
             :clients="clients"
+            :organization-billable-rate="organization?.billable_rate ?? null"
             class="border-b border-default-background-separator"
             :update-time-entries="
                 (args) =>
@@ -384,6 +387,7 @@ async function downloadExport(format: ExportFormat) {
                     :on-start-stop-click="() => startTimeEntryFromExisting(entry)"
                     :delete-time-entry="() => deleteTimeEntries([entry])"
                     :currency="getOrganizationCurrencyString()"
+                    :organization-billable-rate="organization?.billable_rate ?? null"
                     :duplicate-time-entry="() => createTimeEntry(entry)"
                     :members="members"
                     show-date

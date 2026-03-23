@@ -10,8 +10,7 @@ import ClientTable from '@/Components/Common/Client/ClientTable.vue';
 import ClientCreateModal from '@/Components/Common/Client/ClientCreateModal.vue';
 import PageTitle from '@/Components/Common/PageTitle.vue';
 import { canCreateClients } from '@/utils/permissions';
-import TabBarItem from '@/Components/Common/TabBar/TabBarItem.vue';
-import TabBar from '@/Components/Common/TabBar/TabBar.vue';
+import { TabBar, TabBarItem } from '@/packages/ui/src';
 import { useStorage } from '@vueuse/core';
 import type { SortColumn, SortDirection } from '@/Components/Common/Client/ClientTable.vue';
 

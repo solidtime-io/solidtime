@@ -73,6 +73,7 @@ const props = defineProps<{
     enableEstimatedTime: boolean;
     currency: string;
     canCreateProject: boolean;
+    organizationBillableRate: number | null;
 
     createTimeEntry: (
         entry: Omit<TimeEntry, 'id' | 'organization_id' | 'user_id'>
@@ -417,6 +418,7 @@ function getEventDurationSeconds(dayEvent: DayEvent, dayStr: string): number {
             :create-tag="createTag"
             :currency="currency"
             :can-create-project="canCreateProject"
+            :organization-billable-rate="organizationBillableRate"
             :tags="tags as any"
             :projects="projects"
             :tasks="tasks"
@@ -438,7 +440,8 @@ function getEventDurationSeconds(dayEvent: DayEvent, dayStr: string): number {
             :tasks="tasks"
             :clients="clients"
             :currency="currency"
-            :can-create-project="canCreateProject" />
+            :can-create-project="canCreateProject"
+            :organization-billable-rate="organizationBillableRate" />
 
         <template v-if="!loading">
             <CalendarToolbar

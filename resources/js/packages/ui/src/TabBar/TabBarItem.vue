@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { TabsTrigger } from '@/Components/ui/tabs';
+import { TabsTrigger } from '../tabs';
 import { twMerge } from 'tailwind-merge';
 import type { Component } from 'vue';
 

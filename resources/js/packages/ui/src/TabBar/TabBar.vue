@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Tabs, TabsList } from '@/Components/ui/tabs';
+import { Tabs, TabsList } from '../tabs';
 
 defineProps<{
     defaultValue?: string;

@@ -26,6 +26,8 @@ import TimeEntryMassActionRow from '@/packages/ui/src/TimeEntry/TimeEntryMassAct
 import type { UpdateMultipleTimeEntriesChangeset } from '@/packages/api/src';
 import { isAllowedToPerformPremiumAction } from '@/utils/billing';
 import { canCreateProjects } from '@/utils/permissions';
+import { useOrganizationQuery } from '@/utils/useOrganizationQuery';
+import { getCurrentOrganizationId } from '@/utils/useUser';
 import { useTagsStore } from '@/utils/useTags';
 import { useProjectsStore } from '@/utils/useProjects';
 import { useClientsStore } from '@/utils/useClients';
@@ -87,6 +89,8 @@ async function createClient(body: CreateClientBody): Promise<Client | undefined>
     return await useClientsStore().createClient(body);
 }
 
+const { organization } = useOrganizationQuery(getCurrentOrganizationId()!);
+
 const selectedTimeEntries = ref([] as TimeEntry[]);
 
 async function clearSelectionAndState() {
@@ -115,6 +119,7 @@ function deleteSelected() {
             :tags="tags"
             :currency="getOrganizationCurrencyString()"
             :clients="clients"
+            :organization-billable-rate="organization?.billable_rate ?? null"
             class="border-t border-default-background-separator hidden sm:block"
             :update-time-entries="
                 (args) =>
@@ -134,6 +139,7 @@ function deleteSelected() {
             :create-project
             :enable-estimated-time="isAllowedToPerformPremiumAction()"
             :can-create-project="canCreateProjects()"
+            :organization-billable-rate="organization?.billable_rate ?? null"
             :clients
             :create-client
             :update-time-entry

@@ -46,6 +46,7 @@ const props = defineProps<{
     duplicateTimeEntry?: () => void;
     updateTimeEntry: (timeEntry: TimeEntry) => void;
     currency: string;
+    organizationBillableRate: number | null;
     showMember?: boolean;
     showDate?: boolean;
     selected?: boolean;
@@ -142,6 +143,7 @@ async function handleDeleteTimeEntry() {
                                 :tasks="tasks"
                                 :project="timeEntry.project_id"
                                 :currency="currency"
+                                :organization-billable-rate="organizationBillableRate"
                                 :enable-estimated-time
                                 :task="timeEntry.task_id"
                                 @changed="updateProjectAndTask"></TimeTrackerProjectTaskDropdown>
@@ -209,6 +211,7 @@ async function handleDeleteTimeEntry() {
                                     :tasks="tasks"
                                     :project="timeEntry.project_id"
                                     :currency="currency"
+                                    :organization-billable-rate="organizationBillableRate"
                                     :enable-estimated-time
                                     :task="timeEntry.task_id"
                                     @changed="
@@ -277,6 +280,7 @@ async function handleDeleteTimeEntry() {
         :tasks="tasks"
         :clients="clients"
         :currency="currency"
+        :organization-billable-rate="organizationBillableRate"
         :can-create-project="canCreateProject" />
 </template>
 

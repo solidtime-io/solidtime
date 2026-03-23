@@ -145,6 +145,9 @@ import {
     SelectValue,
 } from './select/index';
 import { Separator } from './separator/index';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './tabs/index';
+import TabBar from './TabBar/TabBar.vue';
+import TabBarItem from './TabBar/TabBarItem.vue';
 import TimezoneMismatchModal from './TimezoneMismatchModal.vue';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tooltip/index';
 
@@ -257,6 +260,12 @@ export {
     SelectTrigger,
     SelectValue,
     Separator,
+    TabBar,
+    TabBarItem,
+    Tabs,
+    TabsContent,
+    TabsList,
+    TabsTrigger,
     TextInput,
     time,
     TimeEntryCalendar,

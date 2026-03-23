@@ -34,6 +34,7 @@ const props = defineProps<{
     createProject: (project: CreateProjectBody) => Promise<Project | undefined>;
     createClient: (client: CreateClientBody) => Promise<Client | undefined>;
     currency: string;
+    organizationBillableRate: number | null;
     enableEstimatedTime: boolean;
     canCreateProject: boolean;
 }>();
@@ -163,6 +164,7 @@ function unselectAllTimeEntries(value: TimeEntriesGroupedByType[]) {
                     :delete-time-entries
                     :create-tag
                     :currency="currency"
+                    :organization-billable-rate="organizationBillableRate"
                     :time-entry="entry"
                     @selected="
                         (timeEntries: TimeEntry[]) => {
@@ -195,6 +197,7 @@ function unselectAllTimeEntries(value: TimeEntriesGroupedByType[]) {
                     :tags="tags"
                     :clients
                     :create-tag
+                    :organization-billable-rate="organizationBillableRate"
                     :update-time-entry
                     :on-start-stop-click="() => startTimeEntryFromExisting(entry)"
                     :delete-time-entry="() => deleteTimeEntries([entry])"

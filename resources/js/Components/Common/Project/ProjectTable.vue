@@ -22,12 +22,16 @@ import { useClientsStore } from '@/utils/useClients';
 import { useClientsQuery } from '@/utils/useClientsQuery';
 import { getOrganizationCurrencyString } from '@/utils/money';
 import { isAllowedToPerformPremiumAction } from '@/utils/billing';
+import { useOrganizationQuery } from '@/utils/useOrganizationQuery';
+import { getCurrentOrganizationId } from '@/utils/useUser';
 import {
     useVueTable,
     getCoreRowModel,
     getSortedRowModel,
     type SortingState,
 } from '@tanstack/vue-table';
+
+const { organization } = useOrganizationQuery(getCurrentOrganizationId()!);
 
 const props = defineProps<{
     projects: Project[];
@@ -155,6 +159,7 @@ const gridTemplate = computed(() => {
         :create-project
         :create-client
         :currency="getOrganizationCurrencyString()"
+        :organization-billable-rate="organization?.billable_rate ?? null"
         :clients="clients"
         :enable-estimated-time="isAllowedToPerformPremiumAction()"></ProjectCreateModal>
     <div class="flow-root max-w-[100vw] overflow-x-auto">
