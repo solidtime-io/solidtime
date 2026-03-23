@@ -73,6 +73,7 @@ const dropdownContent = ref();
                 <DatePicker
                     v-model="tempStart"
                     class="w-full"
+                    size="sm"
                     @changed="updateTimeEntry"></DatePicker>
             </div>
         </div>
@@ -89,6 +90,7 @@ const dropdownContent = ref();
                 <DatePicker
                     v-model="tempEnd"
                     class="w-full"
+                    size="sm"
                     @changed="updateTimeEntry"></DatePicker>
             </div>
             <div v-else-if="end === null && !showEndTimePicker">
@@ -102,7 +104,7 @@ const dropdownContent = ref();
                     class="w-full"
                     data-testid="time_entry_range_end"
                     @keydown.enter.prevent.stop="confirmEndTime"></TimePickerSimple>
-                <DatePicker v-model="tempEnd" class="w-full"></DatePicker>
+                <DatePicker v-model="tempEnd" class="w-full" size="sm"></DatePicker>
                 <Button variant="outline" size="sm" class="w-full" @click="confirmEndTime">
                     Confirm
                 </Button>

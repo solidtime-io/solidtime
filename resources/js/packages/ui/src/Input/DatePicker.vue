@@ -16,6 +16,7 @@ import type { Organization } from '@/packages/api/src';
 const props = defineProps<{
     tabindex?: string;
     class?: string;
+    size?: 'sm' | 'default';
 }>();
 
 // This has to be a localized timestamp, not UTC
@@ -67,7 +68,7 @@ function handleDateSelect(newDate: DateValue | undefined) {
             <PopoverTrigger as-child>
                 <Button
                     variant="input"
-                    size="sm"
+                    :size="props.size ?? 'default'"
                     :tabindex="tabindex"
                     :class="['w-full px-2 gap-1.5', props.class]">
                     <CalendarIcon class="!size-3 text-muted-foreground" />
