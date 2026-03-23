@@ -58,13 +58,14 @@ const modelValue = computed<CalendarDateRange>({
     }),
     set: (newValue) => {
         if (newValue.start) {
-            console.log(newValue.start);
             const date = newValue.start.toDate(getUserTimezone());
             emit('update:start', getLocalizedDayJs(date.toString()).format());
         }
         if (newValue.end) {
             const date = newValue.end.toDate(getUserTimezone());
             emit('update:end', getLocalizedDayJs(date.toString()).format());
+        } else {
+            emit('update:end', '');
         }
     },
 });
