@@ -48,7 +48,10 @@
     "author": "solidtime",
     "license": "AGPL-3.0",
     "devDependencies": {
-        "vite-plugin-dts": "^4.0.3"
+        "@types/chroma-js": "^3.1.0",
+        "@zodios/core": "^10.9.6",
+        "vite-plugin-dts": "^4.0.3",
+        "zod": "^3.23.8"
     },
     "peerDependencies": {
         "@floating-ui/vue": "^1.1.4",

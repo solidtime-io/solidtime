@@ -74,10 +74,10 @@ const props = withDefaults(
     }
 );
 
-const filteredResults = ref([] as ClientsWithProjectsWithTasks);
+const filteredResults = ref<ClientsWithProjectsWithTasks>([]);
 
 // computed filterProjects that flattens the first layer of filteredResults and combines all the projects
-const filteredProjects = computed(() => {
+const filteredProjects = computed<ProjectWithTasks[]>(() => {
     return filteredResults.value.map((client) => client.projects).flat();
 });
 
