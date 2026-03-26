@@ -1,6 +1,6 @@
 export interface WindowActivityInPeriod {
     appName: string;
-    url: string | null;
+    label: string | null;
     count: number;
     icon?: string | null;
 }

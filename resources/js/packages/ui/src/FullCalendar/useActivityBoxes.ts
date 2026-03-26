@@ -37,7 +37,7 @@ export function useActivityBoxes(params: {
     }
 
     function getActivityText(activity: WindowActivityInPeriod): string {
-        return activity.url ? `${activity.appName} - ${activity.url}` : activity.appName;
+        return activity.label ? `${activity.appName} - ${activity.label}` : activity.appName;
     }
 
     const activityBoxes = computed<ActivityBox[]>(() => {
