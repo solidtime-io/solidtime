@@ -664,7 +664,8 @@ const showCreateProject = ref(false);
         :organization-billable-rate="organizationBillableRate"
         :currency="currency"
         :clients="clients"
-        :create-project></ProjectCreateModal>
+        :create-project
+        :initial-project-name="searchValue"></ProjectCreateModal>
 </template>
 
 <style scoped></style>
