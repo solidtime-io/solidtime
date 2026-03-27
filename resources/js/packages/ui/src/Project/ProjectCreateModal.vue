@@ -27,6 +27,7 @@ const props = defineProps<{
     currency: string;
     enableEstimatedTime: boolean;
     organizationBillableRate: number | null;
+    initialProjectName?: string;
 }>();
 
 const activeClients = computed(() => {
@@ -34,7 +35,7 @@ const activeClients = computed(() => {
 });
 
 const project = ref<CreateProjectBody>({
-    name: '',
+    name: props.initialProjectName ?? '',
     color: getRandomColor(),
     client_id: null,
     billable_rate: null,
