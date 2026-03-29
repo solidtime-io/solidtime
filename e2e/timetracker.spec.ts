@@ -9,7 +9,7 @@ import {
 } from './utils/currentTimeEntry';
 import type { Page } from '@playwright/test';
 import { newTagResponse } from './utils/tags';
-import { updateOrganizationCurrencyViaWeb } from './utils/api';
+import { createProjectViaApi, updateOrganizationCurrencyViaWeb } from './utils/api';
 
 // Date picker button name patterns for different date formats
 const DATE_DISPLAY_PATTERN = /^\d{4}-\d{2}-\d{2}$|^\d{2}\/\d{2}\/\d{4}$|^\d{2}\.\d{2}\.\d{4}$/;
@@ -366,6 +366,45 @@ test('test that timer started on dashboard is visible on time page', async ({ pa
         startOrStopTimerWithButton(page),
     ]);
     await assertThatTimerIsStopped(page);
+});
+
+test('test that creating a new project from the time tracker dropdown prefills the search text', async ({
+    page,
+    ctx,
+}) => {
+    const existingProjectName = 'Existing Project ' + Math.floor(Math.random() * 10000);
+    const searchText = 'PrefillProject ' + Math.floor(Math.random() * 10000);
+
+    // Create a project so the dropdown renders (not the "Add new project" button)
+    await createProjectViaApi(ctx, { name: existingProjectName });
+    await goToDashboard(page);
+
+    // Open the project dropdown
+    await page.getByRole('button', { name: 'No Project' }).click();
+
+    // Type a search term that won't match any existing project
+    await page.getByTestId('client_dropdown_search').fill(searchText);
+
+    // Click "Create new Project"
+    await page.getByText('Create new Project').click();
+
+    // Verify the project name input is pre-filled with the search text
+    await expect(page.getByLabel('Project name')).toHaveValue(searchText);
+
+    // Complete project creation to verify full flow works
+    await Promise.all([
+        page.waitForResponse(
+            async (response) =>
+                response.url().includes('/projects') &&
+                response.request().method() === 'POST' &&
+                response.status() === 201 &&
+                (await response.json()).data.name === searchText
+        ),
+        page.getByRole('button', { name: 'Create Project' }).click(),
+    ]);
+
+    // The project dropdown should now show the newly created project
+    await expect(page.getByRole('button', { name: searchText })).toBeVisible();
 });
 
 test('test that adding a project and tag before starting timer works', async ({ page }) => {
