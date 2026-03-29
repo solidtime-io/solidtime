@@ -1,8 +1,8 @@
 import { ref, type Ref, type ComputedRef } from 'vue';
 import type { Dayjs } from 'dayjs';
 import type { TimeEntry } from '@/packages/api/src';
-import { getDayJsInstance } from '../utils/time';
-import { getUserTimezone } from '../utils/settings';
+import { getDayJsInstance, getLocalizedDayJsFromMinutes } from '../utils/time';
+
 import type { CalendarSettings } from './calendarSettings';
 import type { CalendarEvent } from './calendarTypes';
 
@@ -34,11 +34,8 @@ export function useContextMenu(params: {
         const snap = params.calendarSettings.value.snapMinutes;
         const snappedMinutes = Math.floor(minutesFromGridStart / snap) * snap;
 
-        const dayjs = getDayJsInstance();
-        const startLocal = dayjs(`${date}T00:00:00`)
-            .tz(getUserTimezone(), true)
-            .add(snappedMinutes, 'minute');
-        const snappedEnd = startLocal.add(snap, 'minute');
+        const startLocal = getLocalizedDayJsFromMinutes(date, snappedMinutes);
+        const snappedEnd = getLocalizedDayJsFromMinutes(date, snappedMinutes + snap);
 
         return { start: startLocal.utc(), end: snappedEnd.utc() };
     }

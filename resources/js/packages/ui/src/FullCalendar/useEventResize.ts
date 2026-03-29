@@ -1,18 +1,13 @@
 import { computed, ref, onUnmounted, type Ref, type ComputedRef } from 'vue';
 import type { Dayjs } from 'dayjs';
 import type { TimeEntry } from '@/packages/api/src';
-import { getDayJsInstance, getLocalizedDayJs } from '../utils/time';
-import { getUserTimezone } from '../utils/settings';
+import { getDayJsInstance, getLocalizedDayJs, getLocalizedDayJsFromMinutes } from '../utils/time';
 import type { CalendarSettings } from './calendarSettings';
 import type { CalendarEvent, DayEvent } from './calendarTypes';
 import { SLOT_HEIGHT } from './calendarTypes';
 
 function snapTo(value: number, step: number): number {
     return Math.round(value / step) * step;
-}
-
-function dayMidnightLocal(dayStr: string): Dayjs {
-    return getDayJsInstance()(`${dayStr}T00:00:00`).tz(getUserTimezone(), true);
 }
 
 export function useEventResize(params: {
@@ -89,7 +84,7 @@ export function useEventResize(params: {
                           ),
                           s.snapMinutes
                       );
-            return { start, end: dayMidnightLocal(endDay).add(endMinutes, 'minute') };
+            return { start, end: getLocalizedDayJsFromMinutes(endDay, endMinutes) };
         } else {
             const end = resizeOriginalEvent.isRunning
                 ? getLocalizedDayJs()
@@ -105,7 +100,7 @@ export function useEventResize(params: {
                           params.pixelsToMinutesFromMidnight(resizeCurrentTop.value),
                           s.snapMinutes
                       );
-            return { start: dayMidnightLocal(startDay).add(startMinutes, 'minute'), end };
+            return { start: getLocalizedDayJsFromMinutes(startDay, startMinutes), end };
         }
     }
 

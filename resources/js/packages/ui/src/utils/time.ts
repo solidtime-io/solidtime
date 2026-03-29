@@ -147,6 +147,18 @@ export function getLocalizedDayJs(timestamp?: string | null) {
     return dayjs.utc(timestamp).tz(getUserTimezone());
 }
 
+/**
+ * Create a dayjs instance for a specific wall-clock time on a given day.
+ * Sets hour/minute directly to avoid DST issues with .add() on transition days.
+ */
+export function getLocalizedDayJsFromMinutes(dayStr: string, minutesFromMidnight: number) {
+    return dayjs
+        .tz(`${dayStr}T00:00:00`, getUserTimezone())
+        .hour(Math.floor(minutesFromMidnight / 60))
+        .minute(Math.round(minutesFromMidnight % 60))
+        .second(0);
+}
+
 export function getLocalizedDateFromTimestamp(timestamp: string) {
     return getLocalizedDayJs(timestamp).format('YYYY-MM-DD');
 }

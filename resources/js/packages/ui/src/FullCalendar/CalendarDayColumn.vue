@@ -91,9 +91,7 @@ const emit = defineEmits<{
                 :aria-label="dayEvent.event.title"
                 role="button"
                 @pointerdown="emit('event-pointerdown', $event, dayEvent)"
-                @keydown.enter.prevent="
-                    !dayEvent.event.isRunning && emit('event-keydown-enter', dayEvent)
-                ">
+                @keydown.enter.prevent="emit('event-keydown-enter', dayEvent)">
                 <div
                     v-if="!dayEvent.isClippedStart"
                     class="fc-event-resizer fc-event-resizer-start absolute z-[99] w-full h-3 left-0 top-[-2px] cursor-row-resize flex items-center justify-center opacity-0 group-hover:opacity-100"

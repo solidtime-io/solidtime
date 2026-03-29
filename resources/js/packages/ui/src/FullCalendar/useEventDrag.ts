@@ -1,8 +1,7 @@
 import { computed, ref, onUnmounted, type Ref, type ComputedRef } from 'vue';
 import type { Dayjs } from 'dayjs';
 import type { TimeEntry } from '@/packages/api/src';
-import { getDayJsInstance, getLocalizedDayJs } from '../utils/time';
-import { getUserTimezone } from '../utils/settings';
+import { getLocalizedDayJs, getLocalizedDayJsFromMinutes } from '../utils/time';
 import type { CalendarSettings } from './calendarSettings';
 import type { CalendarEvent, DayEvent } from './calendarTypes';
 import { SLOT_HEIGHT, DRAG_THRESHOLD } from './calendarTypes';
@@ -67,8 +66,7 @@ export function useEventDrag(params: {
         }
 
         if (dayEvent.isClippedStart && originDay && ev.timeEntry.end) {
-            const dayjs = getDayJsInstance();
-            const dayMidnight = dayjs(`${originDay}T00:00:00`).tz(getUserTimezone(), true);
+            const dayMidnight = getLocalizedDayJsFromMinutes(originDay, 0);
             const evStart = getLocalizedDayJs(ev.timeEntry.start);
             const eventStartFromGridStart = evStart.diff(dayMidnight, 'minute') - s.startHour * 60;
             const segmentTopMinutes = (dayEvent.top / SLOT_HEIGHT) * s.slotMinutes;
@@ -154,13 +152,11 @@ export function useEventDrag(params: {
         const lowerBound = startMin - 4 * 60;
         const clampedMinutes = Math.max(lowerBound, Math.min(snappedMinutes, s.endHour * 60));
 
-        const dayjs = getDayJsInstance();
-        const originalSegmentStart = dayjs(`${savedOriginalDayStr}T00:00:00`)
-            .tz(getUserTimezone(), true)
-            .add(startMin + params.pixelsToMinutesFromMidnight(dragStartEventTop), 'minute');
-        const newSegmentStart = dayjs(`${targetDateStr}T00:00:00`)
-            .tz(getUserTimezone(), true)
-            .add(clampedMinutes, 'minute');
+        const originalSegmentStart = getLocalizedDayJsFromMinutes(
+            savedOriginalDayStr,
+            startMin + params.pixelsToMinutesFromMidnight(dragStartEventTop)
+        );
+        const newSegmentStart = getLocalizedDayJsFromMinutes(targetDateStr, clampedMinutes);
         const deltaMs = newSegmentStart.diff(originalSegmentStart);
 
         const origStart = getLocalizedDayJs(timeEntry.start);
@@ -240,11 +236,14 @@ export function useEventDrag(params: {
         }
 
         // Multi-day: compute actual start/end datetimes, then clip per day
-        const dayjs = getDayJsInstance();
-        const eventStartAbsolute = dayjs(`${dragCurrentDay.value}T00:00:00`)
-            .tz(getUserTimezone(), true)
-            .add(startMin + eventStartOnGrid, 'minute');
-        const eventEndAbsolute = eventStartAbsolute.add(dragFullDurationMinutes, 'minute');
+        const eventStartAbsolute = getLocalizedDayJsFromMinutes(
+            dragCurrentDay.value,
+            startMin + eventStartOnGrid
+        );
+        const eventEndAbsolute = getLocalizedDayJsFromMinutes(
+            dragCurrentDay.value,
+            startMin + eventStartOnGrid + dragFullDurationMinutes
+        );
 
         const result: Record<string, Record<string, string>> = {};
 
