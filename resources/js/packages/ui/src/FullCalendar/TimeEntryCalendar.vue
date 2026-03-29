@@ -314,6 +314,18 @@ watch(
     { deep: true }
 );
 
+let hasScrolledOnLoad = false;
+
+watch(
+    () => props.loading,
+    (loading) => {
+        if (!loading && !hasScrolledOnLoad) {
+            hasScrolledOnLoad = true;
+            scrollToCurrentTime();
+        }
+    }
+);
+
 onMounted(() => {
     scrollToCurrentTime();
     emitDatesChange();
