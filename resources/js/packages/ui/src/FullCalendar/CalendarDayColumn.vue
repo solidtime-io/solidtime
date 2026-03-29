@@ -72,7 +72,7 @@ const emit = defineEmits<{
             <div
                 v-for="dayEvent in dayEvents"
                 :key="dayEvent.event.id"
-                class="fc-event group pointer-events-auto rounded-sm text-xs cursor-pointer shadow-card overflow-hidden border border-border touch-none select-none hover:shadow-dropdown focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
+                class="fc-event group pointer-events-auto rounded-sm text-xs cursor-pointer shadow-card border border-border touch-none select-none hover:shadow-dropdown focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
                 :class="[
                     getEventOpacityClass(dayEvent, dayStr),
                     {
@@ -128,7 +128,7 @@ const emit = defineEmits<{
                         :class="abox.isIdle ? 'idle' : 'active'"
                         :style="{ top: abox.top + 'px', height: abox.height + 'px' }"></div>
                 </TooltipTrigger>
-                <TooltipContent side="right" :side-offset="8">
+                <TooltipContent side="left" :side-offset="8">
                     <template v-if="getActivityBoxActivities(abox).length === 0">
                         {{ getActivityBoxLabel(abox) }}
                     </template>
