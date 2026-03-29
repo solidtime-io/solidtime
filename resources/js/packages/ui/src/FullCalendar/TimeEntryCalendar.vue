@@ -526,7 +526,7 @@ function getEventDurationSeconds(dayEvent: DayEvent, dayStr: string): number {
                                         :style="{ height: SLOT_HEIGHT + 'px' }">
                                         <span
                                             v-if="slot.isHour"
-                                            class="fc-timegrid-slot-label-cushion text-[0.8125rem] text-muted-foreground leading-none block">
+                                            class="fc-timegrid-slot-label-cushion text-[0.8125rem] text-muted-foreground leading-none block font-light">
                                             {{ formatSlotLabel(slot.minutes / 60) }}
                                         </span>
                                     </div>
@@ -536,12 +536,30 @@ function getEventDurationSeconds(dayEvent: DayEvent, dayStr: string): number {
                                     class="flex-1 min-w-0 relative"
                                     @pointerdown="onSlotPointerDown($event)">
                                     <div
-                                        class="bg-background"
+                                        class="bg-background relative"
                                         :style="{ height: totalGridHeight + 'px' }">
+                                        <div
+                                            class="absolute inset-0 grid"
+                                            :style="{
+                                                gridTemplateColumns:
+                                                    'repeat(' + viewDays.length + ', 1fr)',
+                                            }">
+                                            <div
+                                                v-for="day in viewDays"
+                                                :key="'bg-' + day.format('YYYY-MM-DD')"
+                                                :style="
+                                                    isToday(day)
+                                                        ? {
+                                                              backgroundColor:
+                                                                  'var(--theme-color-default-background)',
+                                                          }
+                                                        : undefined
+                                                " />
+                                        </div>
                                         <div
                                             v-for="slot in slots"
                                             :key="'lane-' + slot.time"
-                                            class="fc-timegrid-slot fc-timegrid-slot-lane border-t border-border box-border"
+                                            class="fc-timegrid-slot fc-timegrid-slot-lane border-t border-border box-border relative"
                                             :class="{
                                                 'fc-timegrid-slot-minor border-dotted':
                                                     !slot.isHour,
