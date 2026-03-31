@@ -17,6 +17,7 @@ use App\Models\TimeEntry;
 use App\Service\CurrencyService;
 use App\Service\Dto\ReportPropertiesDto;
 use App\Service\TimeEntryFilter;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Tests\Unit\Endpoint\Api\V1\ApiEndpointTestAbstract;
 
@@ -82,10 +83,11 @@ class PublicReportEndpointTest extends ApiEndpointTestAbstract
     {
         // Arrange
         $timezone = 'Europe/Vienna';
+        $now = Carbon::now($timezone);
         $reportDto = new ReportPropertiesDto;
         $organization = Organization::factory()->create();
-        $reportDto->start = now()->subDays(2);
-        $reportDto->end = now();
+        $reportDto->start = $now->copy()->subDays(2);
+        $reportDto->end = $now->copy();
         $reportDto->group = TimeEntryAggregationType::Project;
         $reportDto->subGroup = TimeEntryAggregationType::Task;
         $reportDto->historyGroup = TimeEntryAggregationTypeInterval::Day;
@@ -102,9 +104,9 @@ class PublicReportEndpointTest extends ApiEndpointTestAbstract
         $task2 = Task::factory()->forOrganization($organization)->forProject($project)->create([
             'id' => '3c54796d-5ab4-41e1-8f30-aa61a0a919ae',
         ]);
-        TimeEntry::factory()->forOrganization($organization)->forTask($task1)->startWithDuration(now()->subDay(), 100)->create();
-        TimeEntry::factory()->forOrganization($organization)->forTask($task2)->startWithDuration(now()->subDay(), 100)->create();
-        TimeEntry::factory()->forOrganization($organization)->startWithDuration(now()->subDay(), 100)->create();
+        TimeEntry::factory()->forOrganization($organization)->forTask($task1)->startWithDuration($now->copy()->subDay(), 100)->create();
+        TimeEntry::factory()->forOrganization($organization)->forTask($task2)->startWithDuration($now->copy()->subDay(), 100)->create();
+        TimeEntry::factory()->forOrganization($organization)->startWithDuration($now->copy()->subDay(), 100)->create();
 
         $currencyService = app(CurrencyService::class);
 
@@ -193,7 +195,7 @@ class PublicReportEndpointTest extends ApiEndpointTestAbstract
                 'grouped_type' => TimeEntryAggregationTypeInterval::Day->value,
                 'grouped_data' => [
                     [
-                        'key' => now()->timezone($timezone)->subDays(2)->toDateString(),
+                        'key' => $now->copy()->subDays(2)->toDateString(),
                         'seconds' => 0,
                         'cost' => 0,
                         'grouped_type' => null,
@@ -202,7 +204,7 @@ class PublicReportEndpointTest extends ApiEndpointTestAbstract
                         'color' => null,
                     ],
                     [
-                        'key' => now()->timezone($timezone)->subDays(1)->toDateString(),
+                        'key' => $now->copy()->subDays(1)->toDateString(),
                         'seconds' => 300,
                         'cost' => 0,
                         'grouped_type' => null,
@@ -211,7 +213,7 @@ class PublicReportEndpointTest extends ApiEndpointTestAbstract
                         'color' => null,
                     ],
                     [
-                        'key' => now()->timezone($timezone)->toDateString(),
+                        'key' => $now->toDateString(),
                         'seconds' => 0,
                         'cost' => 0,
                         'grouped_type' => null,
@@ -332,6 +334,7 @@ class PublicReportEndpointTest extends ApiEndpointTestAbstract
     {
         // Arrange
         $timezone = 'Europe/Vienna';
+        $now = Carbon::now($timezone);
         $organization = Organization::factory()->create();
         $client = Client::factory()->forOrganization($organization)->create();
         $project = Project::factory()->forClient($client)->forOrganization($organization)->create();
@@ -341,14 +344,14 @@ class PublicReportEndpointTest extends ApiEndpointTestAbstract
         TimeEntry::factory()->forOrganization($organization)
             ->forTask($task)
             ->billable()
-            ->startWithDuration(now()->subDay(), 100)
+            ->startWithDuration($now->copy()->subDay(), 100)
             ->create([
                 'tags' => [$tag->getKey()],
             ]);
 
         $reportDto = new ReportPropertiesDto;
-        $reportDto->start = now()->subDays(2);
-        $reportDto->end = now();
+        $reportDto->start = $now->copy()->subDays(2);
+        $reportDto->end = $now->copy();
         $reportDto->group = TimeEntryAggregationType::Project;
         $reportDto->subGroup = TimeEntryAggregationType::Task;
         $reportDto->historyGroup = TimeEntryAggregationTypeInterval::Day;
@@ -394,7 +397,7 @@ class PublicReportEndpointTest extends ApiEndpointTestAbstract
                 'grouped_type' => TimeEntryAggregationTypeInterval::Day->value,
                 'grouped_data' => [
                     [
-                        'key' => now()->timezone($timezone)->subDays(2)->toDateString(),
+                        'key' => $now->copy()->subDays(2)->toDateString(),
                         'seconds' => 0,
                         'cost' => 0,
                         'grouped_type' => null,
@@ -403,7 +406,7 @@ class PublicReportEndpointTest extends ApiEndpointTestAbstract
                         'color' => null,
                     ],
                     [
-                        'key' => now()->timezone($timezone)->subDays(1)->toDateString(),
+                        'key' => $now->copy()->subDays(1)->toDateString(),
                         'seconds' => 0,
                         'cost' => 0,
                         'grouped_type' => null,
@@ -412,7 +415,7 @@ class PublicReportEndpointTest extends ApiEndpointTestAbstract
                         'color' => null,
                     ],
                     [
-                        'key' => now()->timezone($timezone)->toDateString(),
+                        'key' => $now->toDateString(),
                         'seconds' => 0,
                         'cost' => 0,
                         'grouped_type' => null,
