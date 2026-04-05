@@ -37,6 +37,7 @@ const props = defineProps<{
     organizationBillableRate: number | null;
     enableEstimatedTime: boolean;
     canCreateProject: boolean;
+    groupSimilarTimeEntries: boolean;
 }>();
 
 const groupedTimeEntries = computed(() => {
@@ -59,13 +60,13 @@ const groupedTimeEntries = computed(() => {
 
         for (const entry of dailyEntries) {
             // check if same entry already exists
-            const oldEntriesIndex = newDailyEntries.findIndex(
+            const oldEntriesIndex = props.groupSimilarTimeEntries ? newDailyEntries.findIndex(
                 (e) =>
                     e.project_id === entry.project_id &&
                     e.task_id === entry.task_id &&
                     e.billable === entry.billable &&
                     e.description === entry.description
-            );
+            ) : -1;
             if (oldEntriesIndex !== -1 && newDailyEntries[oldEntriesIndex]) {
                 const existingEntry = newDailyEntries[oldEntriesIndex]!;
                 existingEntry.timeEntries.push(entry);
