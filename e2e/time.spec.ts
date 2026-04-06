@@ -349,6 +349,7 @@ test('test that Group similar time entries option is affected', async ({ page })
     // Enable grouping and go to Time page
     await goToProfileAndSetGrouping(page, true);
     await goToTimeOverview(page);
+    await page.waitForTimeout(500);
 
     // Create 2 similar time entries
     await createEmptyTimeEntry(page);
@@ -363,8 +364,12 @@ test('test that Group similar time entries option is affected', async ({ page })
     // Disable grouping and go to Time page
     await goToProfileAndSetGrouping(page, false);
     await goToTimeOverview(page);
+    await page.waitForTimeout(500);
 
     // Verify similar time entries are not grouped
+    const timeEntryRows = await page.locator('[data-testid="time_entry_row"]').count();
+    expect(timeEntryRows).toBe(2);
+
     const groupedCountDisabled = await page.getByTestId('grouped_items_count_button').count();
     expect(groupedCountDisabled).toBe(0);
 });
