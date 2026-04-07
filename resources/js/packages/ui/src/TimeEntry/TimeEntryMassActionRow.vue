@@ -14,7 +14,7 @@ import type {
 } from '@/packages/api/src';
 import { ref } from 'vue';
 import { twMerge } from 'tailwind-merge';
-import { Checkbox } from '@/packages/ui/src';
+import { Button, Checkbox } from '@/packages/ui/src';
 import { FieldLabel } from '../field';
 
 const props = defineProps<{
@@ -66,7 +66,7 @@ const showMassUpdateModal = ref(false);
         :class="
             twMerge(
                 props.class,
-                'text-sm py-1.5 font-medium hidden sm:flex border-b border-border-primary items-center space-x-3'
+                'text-sm h-8 font-medium hidden sm:flex border-b border-border-primary items-center space-x-3'
             )
         ">
         <Checkbox
@@ -83,20 +83,24 @@ const showMassUpdateModal = ref(false);
         <FieldLabel v-else for="selectAll" class="text-text-secondary select-none"
             >Select All</FieldLabel
         >
-        <button
+        <Button
             v-if="selectedTimeEntries.length"
-            class="text-text-tertiary flex space-x-1 items-center hover:text-text-secondary transition focus-visible:ring-2 outline-0 focus-visible:text-text-primary focus-visible:ring-ring rounded h-full px-2"
+            variant="ghost"
+            size="xs"
+            class="text-text-tertiary hover:text-text-secondary"
             @click="showMassUpdateModal = true">
             <PencilSquareIcon class="w-4"></PencilSquareIcon>
-            <span> Edit </span>
-        </button>
-        <button
+            <span>Edit</span>
+        </Button>
+        <Button
             v-if="selectedTimeEntries.length"
-            class="text-red-400 h-full px-2 space-x-1 items-center flex hover:text-red-500 transition focus-visible:ring-2 outline-0 focus-visible:text-red-500 focus-visible:ring-ring rounded"
+            variant="ghost"
+            size="xs"
+            class="text-red-400 hover:text-red-500 hover:bg-red-500/10"
             @click="deleteSelected">
             <TrashIcon class="w-3.5"></TrashIcon>
-            <span> Delete </span>
-        </button>
+            <span>Delete</span>
+        </Button>
     </MainContainer>
 </template>
 
