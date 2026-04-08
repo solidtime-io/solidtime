@@ -163,6 +163,7 @@ const {
     getActivityBoxActivities,
     getActivityPercentage,
     getActivityText,
+    getTopActivity,
 } = useActivityBoxes({
     activityPeriods: () => props.activityPeriods,
     viewDays,
@@ -279,6 +280,22 @@ watch(showEditTimeEntryModal, (value) => {
         emit('refresh');
     }
 });
+
+/**
+ * Guards slot pointer-down so that clicks which dismiss an open Reka UI
+ * layer (context menu, popover, dialog) don't simultaneously start a
+ * new time-entry selection on the calendar grid.
+ *
+ * Because Reka's DismissableLayer registers its document-level
+ * `pointerdown` listener *without* capture, it fires AFTER the
+ * calendar grid's own handler. That means when this guard runs,
+ * `contextMenuOpen` (and modal refs) still reflect the *open* state.
+ */
+function guardedSlotPointerDown(e: PointerEvent) {
+    if (contextMenuOpen.value) return;
+    if (showCreateTimeEntryModal.value || showEditTimeEntryModal.value) return;
+    onSlotPointerDown(e);
+}
 
 const scrollToCurrentTime = () => {
     nextTick(() => {
@@ -490,7 +507,7 @@ function getEventDurationSeconds(dayEvent: DayEvent, dayStr: string): number {
                                 <div
                                     v-for="day in viewDays"
                                     :key="day.format('YYYY-MM-DD')"
-                                    class="fc-col-header-cell border-r border-b border-border px-2 py-3 bg-default-background text-center"
+                                    class="fc-col-header-cell border-r border-border px-2 py-3 bg-default-background text-center"
                                     :class="{
                                         'bg-secondary': isToday(day),
                                         'fc-day-today': isToday(day),
@@ -534,7 +551,7 @@ function getEventDurationSeconds(dayEvent: DayEvent, dayStr: string): number {
 
                                 <div
                                     class="flex-1 min-w-0 relative"
-                                    @pointerdown="onSlotPointerDown($event)">
+                                    @pointerdown="guardedSlotPointerDown($event)">
                                     <div
                                         class="bg-background relative"
                                         :style="{ height: totalGridHeight + 'px' }">
@@ -611,6 +628,8 @@ function getEventDurationSeconds(dayEvent: DayEvent, dayStr: string): number {
                                             :get-activity-box-activities="getActivityBoxActivities"
                                             :get-activity-percentage="getActivityPercentage"
                                             :get-activity-text="getActivityText"
+                                            :get-top-activity="getTopActivity"
+                                            :is-day-view="activeView === 'timeGridDay'"
                                             :show-selection="
                                                 isSelecting || showCreateTimeEntryModal
                                             "
@@ -629,6 +648,7 @@ function getEventDurationSeconds(dayEvent: DayEvent, dayStr: string): number {
                                             :selection-height="selectionHeight"
                                             :selection-end-top="selectionEndTop"
                                             :selection-end-height="selectionEndHeight"
+                                            @activity-pointerdown="guardedSlotPointerDown"
                                             @event-pointerdown="
                                                 (e, dayEvent) =>
                                                     onEventPointerDown(e, dayEvent.event, dayEvent)

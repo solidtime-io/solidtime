@@ -21,10 +21,10 @@ export function useActivityBoxes(params: {
     function getActivityBoxLabel(box: ActivityBox): string {
         const periodStart = getLocalizedDayJs(box.period.start);
         const periodEnd = getLocalizedDayJs(box.period.end);
-        const durationMinutes = Math.round(periodEnd.diff(periodStart, 'minute', true));
-        const durationText = formatActivityDuration(durationMinutes);
+        const startText = periodStart.format('HH:mm');
+        const endText = periodEnd.format('HH:mm');
         const status = box.isIdle ? 'Idling' : 'Active';
-        return `${status} (${durationText})`;
+        return `${status} (${startText} - ${endText})`;
     }
 
     function getActivityBoxActivities(box: ActivityBox) {
@@ -38,6 +38,15 @@ export function useActivityBoxes(params: {
 
     function getActivityText(activity: WindowActivityInPeriod): string {
         return activity.label ? `${activity.appName} - ${activity.label}` : activity.appName;
+    }
+
+    function getTopActivity(box: ActivityBox): WindowActivityInPeriod | null {
+        const activities = box.period.windowActivities;
+        if (!activities || activities.length === 0) return null;
+        return activities.reduce<WindowActivityInPeriod>(
+            (top, a) => (a.count > top.count ? a : top),
+            activities[0]!
+        );
     }
 
     const activityBoxes = computed<ActivityBox[]>(() => {
@@ -99,5 +108,6 @@ export function useActivityBoxes(params: {
         getActivityBoxActivities,
         getActivityPercentage,
         getActivityText,
+        getTopActivity,
     };
 }

@@ -4,7 +4,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '..';
 import type { DayEvent, ActivityBox } from './calendarTypes';
 import type { WindowActivityInPeriod } from './activityTypes';
 
-defineProps<{
+const props = defineProps<{
     dayStr: string;
     totalGridHeight: number;
     hasActivityStatus: boolean;
@@ -34,6 +34,8 @@ defineProps<{
     getActivityBoxActivities: (box: ActivityBox) => WindowActivityInPeriod[];
     getActivityPercentage: (count: number, total: number) => string;
     getActivityText: (activity: WindowActivityInPeriod) => string;
+    getTopActivity: (box: ActivityBox) => WindowActivityInPeriod | null;
+    isDayView: boolean;
 
     // Selection
     showSelection: boolean;
@@ -46,6 +48,16 @@ defineProps<{
     selectionEndHeight: number;
 }>();
 
+function isUncoveredByEvents(abox: ActivityBox): boolean {
+    return !props.dayEvents.some((de) => {
+        const eTop = de.top;
+        const eBottom = de.top + de.height;
+        const aTop = abox.top;
+        const aBottom = abox.top + abox.height;
+        return eTop < aBottom && eBottom > aTop;
+    });
+}
+
 const emit = defineEmits<{
     (e: 'event-pointerdown', event: PointerEvent, dayEvent: DayEvent): void;
     (e: 'event-keydown-enter', dayEvent: DayEvent): void;
@@ -55,6 +67,7 @@ const emit = defineEmits<{
         dayEvent: DayEvent,
         edge: 'start' | 'end'
     ): void;
+    (e: 'activity-pointerdown', event: PointerEvent): void;
 }>();
 </script>
 
@@ -63,12 +76,16 @@ const emit = defineEmits<{
         class="fc-timegrid-col relative border-r border-border bg-transparent pointer-events-none"
         :class="{
             'has-activity-status': hasActivityStatus,
+            'activity-expanded': hasActivityStatus && isDayView,
         }"
         :data-date="dayStr"
         :style="{ height: totalGridHeight + 'px' }">
         <div
             class="absolute inset-y-0 left-0.5 right-0.5"
-            :class="{ 'fc-events-inset': hasActivityStatus }">
+            :class="{
+                'fc-events-inset': hasActivityStatus && !isDayView,
+                'fc-events-inset-expanded': hasActivityStatus && isDayView,
+            }">
             <div
                 v-for="dayEvent in dayEvents"
                 :key="dayEvent.event.id"
@@ -120,15 +137,47 @@ const emit = defineEmits<{
             class="fc-timegrid-now-indicator-line absolute left-0 right-0 border-t-2 border-red-500 z-50 pointer-events-none"
             :style="{ top: nowIndicatorTop + 'px' }"></div>
 
-        <TooltipProvider :delay-duration="0">
+        <TooltipProvider :disable-hoverable-content="true" :delay-duration="0">
             <Tooltip v-for="(abox, ai) in activityBoxes" :key="'activity-' + ai">
                 <TooltipTrigger as-child>
                     <div
                         class="activity-status-box"
-                        :class="abox.isIdle ? 'idle' : 'active'"
-                        :style="{ top: abox.top + 'px', height: abox.height + 'px' }"></div>
+                        :class="[
+                            abox.isIdle ? 'idle' : 'active',
+                            {
+                                'activity-status-box-expanded': isDayView,
+                                'activity-status-box-uncovered':
+                                    !isDayView &&
+                                    !abox.isIdle &&
+                                    getTopActivity(abox) &&
+                                    isUncoveredByEvents(abox),
+                            },
+                        ]"
+                        :style="{ top: abox.top + 'px', height: abox.height + 'px' }"
+                        @pointerdown="emit('activity-pointerdown', $event)">
+                        <div
+                            v-if="
+                                !abox.isIdle &&
+                                getTopActivity(abox) &&
+                                abox.height >= 16 &&
+                                (isDayView || isUncoveredByEvents(abox))
+                            "
+                            class="activity-status-content">
+                            <img
+                                v-if="getTopActivity(abox)?.icon"
+                                :src="getTopActivity(abox)!.icon!"
+                                :alt="getTopActivity(abox)!.appName"
+                                class="activity-status-icon" />
+                            <div v-else class="activity-status-icon-fallback">
+                                {{ getTopActivity(abox)!.appName.charAt(0).toUpperCase() }}
+                            </div>
+                            <span class="activity-status-label">
+                                {{ getTopActivity(abox)!.label || getTopActivity(abox)!.appName }}
+                            </span>
+                        </div>
+                    </div>
                 </TooltipTrigger>
-                <TooltipContent side="left" :side-offset="8">
+                <TooltipContent :side="isDayView ? 'right' : 'left'" :side-offset="8">
                     <template v-if="getActivityBoxActivities(abox).length === 0">
                         {{ getActivityBoxLabel(abox) }}
                     </template>
@@ -269,13 +318,99 @@ const emit = defineEmits<{
     background-color: rgba(156, 163, 175, 0.5);
 }
 .activity-status-box.active::before {
-    background-color: rgba(34, 197, 94, 0.3);
+    background-color: rgba(14, 165, 233, 0.3);
 }
 .activity-status-box.active:hover::before {
-    background-color: rgba(34, 197, 94, 1);
+    background-color: rgba(14, 165, 233, 1);
+}
+
+/* Uncovered activity boxes in week view — fill column width */
+.activity-status-box-uncovered {
+    width: calc(100% - 4px);
+    border-radius: 3px;
+    overflow: hidden;
+}
+.activity-status-box-uncovered::before {
+    left: 0;
+    right: 0;
+    width: auto;
+}
+.activity-status-box-uncovered.active::before {
+    background-color: rgba(14, 165, 233, 0.12);
+}
+.activity-status-box-uncovered.active:hover::before {
+    background-color: rgba(14, 165, 233, 0.25);
+}
+
+/* Expanded activity boxes for day view */
+.activity-status-box-expanded {
+    width: 200px;
+    border-radius: 3px;
+    overflow: hidden;
+}
+.activity-status-box-expanded::before {
+    left: 0;
+    right: 0;
+    width: auto;
+}
+.activity-status-box-expanded.idle::before {
+    background-color: rgba(156, 163, 175, 0.08);
+}
+.activity-status-box-expanded.idle:hover::before {
+    background-color: rgba(156, 163, 175, 0.2);
+}
+.activity-status-box-expanded.active::before {
+    background-color: rgba(14, 165, 233, 0.12);
+}
+.activity-status-box-expanded.active:hover::before {
+    background-color: rgba(14, 165, 233, 0.25);
+}
+
+.activity-status-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 4px;
+    height: 100%;
+    overflow: hidden;
+}
+
+.activity-status-icon {
+    width: 14px;
+    height: 14px;
+    border-radius: 2px;
+    flex-shrink: 0;
+}
+
+.activity-status-icon-fallback {
+    width: 14px;
+    height: 14px;
+    border-radius: 2px;
+    background-color: rgba(14, 165, 233, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8px;
+    flex-shrink: 0;
+    color: rgba(14, 165, 233, 0.8);
+}
+
+.activity-status-label {
+    font-size: 10px;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    opacity: 0.8;
 }
 
 .fc-events-inset {
     left: 8px;
+}
+
+.fc-events-inset-expanded {
+    left: 204px;
 }
 </style>
