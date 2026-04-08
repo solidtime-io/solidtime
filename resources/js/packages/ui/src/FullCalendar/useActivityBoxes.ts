@@ -12,12 +12,6 @@ export function useActivityBoxes(params: {
     calendarSettings: Ref<CalendarSettings>;
     minutesToPixels: (minutes: number) => number;
 }) {
-    function formatActivityDuration(durationMinutes: number): string {
-        const hours = Math.floor(durationMinutes / 60);
-        const minutes = durationMinutes % 60;
-        return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
-    }
-
     function getActivityBoxLabel(box: ActivityBox): string {
         const periodStart = getLocalizedDayJs(box.period.start);
         const periodEnd = getLocalizedDayJs(box.period.end);
