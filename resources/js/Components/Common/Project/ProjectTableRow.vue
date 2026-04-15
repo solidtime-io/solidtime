@@ -72,7 +72,7 @@ const billableRateInfo = computed(() => {
             return 'Default Rate';
         }
     }
-    return '--';
+    return null;
 });
 
 const showEditProjectModal = ref(false);
@@ -98,13 +98,13 @@ const showEditProjectModal = ref(false);
                     </span>
                     <span class="text-text-secondary"> {{ projectTasksCount }} Tasks </span>
                 </div>
-                <div class="whitespace-nowrap min-w-0 px-3 py-4 text-sm text-text-secondary">
+                <div class="whitespace-nowrap min-w-0 px-3 py-4 text-sm text-text-primary">
                     <div v-if="project.client_id" class="overflow-ellipsis overflow-hidden">
                         {{ client?.name }}
                     </div>
-                    <div v-else>No client</div>
+                    <div v-else class="text-text-tertiary">No client</div>
                 </div>
-                <div class="whitespace-nowrap px-3 py-4 text-sm text-text-secondary">
+                <div class="whitespace-nowrap px-3 py-4 text-sm text-text-primary">
                     <div v-if="project.spent_time">
                         {{
                             formatHumanReadableDuration(
@@ -114,23 +114,24 @@ const showEditProjectModal = ref(false);
                             )
                         }}
                     </div>
-                    <div v-else>--</div>
+                    <div v-else class="text-text-tertiary">--</div>
                 </div>
-                <div class="whitespace-nowrap px-3 flex items-center text-sm text-text-secondary">
+                <div class="whitespace-nowrap px-3 flex items-center text-sm text-text-primary">
                     <UpgradeBadge v-if="!isAllowedToPerformPremiumAction()"></UpgradeBadge>
                     <EstimatedTimeProgress
                         v-else-if="project.estimated_time"
                         :estimated="project.estimated_time"
                         :current="project.spent_time"></EstimatedTimeProgress>
-                    <span v-else> -- </span>
+                    <span v-else class="text-text-tertiary"> -- </span>
                 </div>
                 <div
                     v-if="showBillableRate"
-                    class="whitespace-nowrap px-3 py-4 text-sm text-text-secondary">
-                    {{ billableRateInfo }}
+                    class="whitespace-nowrap px-3 py-4 text-sm text-text-primary">
+                    <span v-if="billableRateInfo">{{ billableRateInfo }}</span>
+                    <span v-else class="text-text-tertiary">--</span>
                 </div>
                 <div
-                    class="whitespace-nowrap px-3 py-4 text-sm text-text-secondary flex space-x-1.5 items-center font-medium">
+                    class="whitespace-nowrap px-3 py-4 text-sm text-text-primary flex space-x-1.5 items-center font-medium">
                     <template v-if="project.is_archived">
                         <ArchiveBoxIcon class="w-4 text-icon-default"></ArchiveBoxIcon>
                         <span>Archived</span>

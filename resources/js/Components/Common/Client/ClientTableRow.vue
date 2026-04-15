@@ -57,11 +57,11 @@ const showEditModal = ref(false);
                     </span>
                 </div>
                 <div
-                    class="whitespace-nowrap flex items-center px-3 py-4 text-sm font-medium text-text-primary">
-                    <span class="text-text-secondary"> {{ projectCount }} Projects </span>
+                    class="whitespace-nowrap flex items-center px-3 py-4 text-sm text-text-primary">
+                    <span> {{ projectCount }} Projects </span>
                 </div>
                 <div
-                    class="whitespace-nowrap px-3 py-4 text-sm text-text-secondary flex space-x-1.5 items-center font-medium">
+                    class="whitespace-nowrap px-3 py-4 text-sm text-text-primary flex space-x-1.5 items-center">
                     <template v-if="client.is_archived">
                         <ArchiveBoxIcon class="w-4 text-icon-default"></ArchiveBoxIcon>
                         <span>Archived</span>

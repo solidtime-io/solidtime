@@ -11,7 +11,7 @@ defineProps<{
         <div class="col-span-2">
             <div class="flex justify-between">
                 <p
-                    class="text-xs min-w-0 overflow-ellipsis overflow-hidden flex-1 text-text-secondary">
+                    class="text-sm font-medium min-w-0 overflow-ellipsis overflow-hidden flex-1 text-text-primary">
                     {{ name }}
                 </p>
                 <div v-if="working" class="flex space-x-1.5 items-center justify-end">
@@ -20,11 +20,11 @@ defineProps<{
                             class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75"></span>
                         <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
                     </span>
-                    <span class="text-green-500 font-medium text-sm block pb-0.5"> working </span>
+                    <span class="text-green-500 text-sm block pb-0.5"> working </span>
                 </div>
             </div>
             <div
-                class="text-text-secondary text-sm font-medium text-ellipsis whitespace-nowrap max-w-full overflow-hidden">
+                class="text-text-secondary text-sm text-ellipsis whitespace-nowrap max-w-full overflow-hidden">
                 {{ description }}
             </div>
         </div>

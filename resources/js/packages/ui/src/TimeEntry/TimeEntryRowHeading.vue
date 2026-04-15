@@ -47,14 +47,14 @@ function selectUnselectAll(value: boolean) {
                             class="group-hover:block hidden"
                             @update:checked="selectUnselectAll"></Checkbox>
                     </div>
-                    <span class="font-medium text-text-secondary">
+                    <span class="text-text-primary">
                         {{ formatWeekday(date) }}
                     </span>
-                    <span class="text-text-tertiary ml-2">
+                    <span class="text-text-secondary ml-2">
                         {{ formatDate(date, organization?.date_format) }}
                     </span>
                 </div>
-                <div class="text-text-secondary pr-2 @lg:pr-[92px]">
+                <div class="text-text-primary pr-2 @lg:pr-[92px]">
                     <span class="font-medium">
                         {{
                             formatHumanReadableDuration(

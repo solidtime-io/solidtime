@@ -23,7 +23,7 @@ defineProps<{
         <div class="items-center justify-center flex-1 hidden @2xs:flex">
             <DayOverviewCardChart :history="history"></DayOverviewCardChart>
         </div>
-        <div class="flex text-sm items-center justify-center text-text-secondary min-w-[65px]">
+        <div class="flex text-sm items-center justify-center text-text-primary min-w-[65px]">
             {{
                 formatHumanReadableDuration(
                     duration,

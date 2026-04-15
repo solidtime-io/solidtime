@@ -83,27 +83,28 @@ const userHasValidMailAddress = computed(() => {
                         {{ member.name }}
                     </span>
                 </div>
-                <div class="whitespace-nowrap px-3 py-4 text-sm text-text-secondary">
+                <div class="whitespace-nowrap px-3 py-4 text-sm text-text-primary">
                     {{ member.email }}
                 </div>
-                <div class="whitespace-nowrap px-3 py-4 text-sm text-text-secondary">
+                <div class="whitespace-nowrap px-3 py-4 text-sm text-text-primary">
                     {{ capitalizeFirstLetter(member.role) }}
                 </div>
-                <div class="whitespace-nowrap px-3 py-4 text-sm text-text-secondary">
-                    {{
-                        member.billable_rate
-                            ? formatCents(
-                                  member.billable_rate,
-                                  organization?.currency,
-                                  organization?.currency_format,
-                                  organization?.currency_symbol,
-                                  organization?.number_format
-                              )
-                            : '--'
-                    }}
+                <div class="whitespace-nowrap px-3 py-4 text-sm text-text-primary">
+                    <span v-if="member.billable_rate">
+                        {{
+                            formatCents(
+                                member.billable_rate,
+                                organization?.currency,
+                                organization?.currency_format,
+                                organization?.currency_symbol,
+                                organization?.number_format
+                            )
+                        }}
+                    </span>
+                    <span v-else class="text-text-tertiary"> -- </span>
                 </div>
                 <div
-                    class="whitespace-nowrap px-3 py-4 text-sm text-text-secondary flex space-x-1.5 items-center font-medium">
+                    class="whitespace-nowrap px-3 py-4 text-sm text-text-primary flex space-x-1.5 items-center">
                     <template v-if="member.is_placeholder === false">
                         <CheckCircleIcon class="w-4 text-icon-default"></CheckCircleIcon>
                         <span>Active</span>

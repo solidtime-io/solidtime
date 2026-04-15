@@ -148,8 +148,7 @@ async function handleDeleteTimeEntry() {
                                 :task="timeEntry.task_id"
                                 @changed="updateProjectAndTask"></TimeTrackerProjectTaskDropdown>
                         </div>
-                        <div
-                            class="hidden @lg:flex items-center font-medium space-x-1 @lg:space-x-2 shrink-0">
+                        <div class="hidden @lg:flex items-center space-x-1 @lg:space-x-2 shrink-0">
                             <div v-if="showMember && members" class="text-sm px-2">
                                 {{ memberName }}
                             </div>

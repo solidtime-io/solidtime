@@ -494,7 +494,7 @@ function getEventDurationSeconds(dayEvent: DayEvent, dayStr: string): number {
                         <div
                             class="fc-header-scroll flex border-b border-border shrink-0 sticky top-0 z-10 bg-default-background">
                             <div
-                                class="shrink-0 bg-background border-r border-border"
+                                class="shrink-0 bg-default-background border-r border-border"
                                 :style="{
                                     width: TIME_AXIS_WIDTH + 'px',
                                     minWidth: TIME_AXIS_WIDTH + 'px',
@@ -526,7 +526,7 @@ function getEventDurationSeconds(dayEvent: DayEvent, dayStr: string): number {
                         <div ref="scrollerRef" class="fc-scroller">
                             <div class="flex min-w-0">
                                 <div
-                                    class="shrink-0 bg-background border-r border-border"
+                                    class="shrink-0 bg-default-background border-r border-border"
                                     :style="{
                                         width: TIME_AXIS_WIDTH + 'px',
                                         minWidth: TIME_AXIS_WIDTH + 'px',
@@ -553,7 +553,7 @@ function getEventDurationSeconds(dayEvent: DayEvent, dayStr: string): number {
                                     class="flex-1 min-w-0 relative"
                                     @pointerdown="guardedSlotPointerDown($event)">
                                     <div
-                                        class="bg-background relative"
+                                        class="bg-default-background relative"
                                         :style="{ height: totalGridHeight + 'px' }">
                                         <div
                                             class="absolute inset-0 grid"

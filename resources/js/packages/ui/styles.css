@@ -14,28 +14,30 @@
 @tailwind utilities;
 
 :root.dark {
-    --color-bg-primary: oklch(0.14 0.0041 285.97);
-    --color-bg-secondary: oklch(0.18 0.005 285.97);
-    --color-bg-tertiary: oklch(0.22 0.0112 285.97);
-    --color-bg-quaternary: oklch(0.26 0.015 285.97);
-    --color-bg-background: oklch(0.1 0 0);
-    --color-text-primary: #ffffff;
-    --color-text-secondary: #e3e4e6;
-    --color-text-tertiary: #969799;
-    --color-text-quaternary: #595a5c;
+    /* Linear/Raycast: cool blue-tinted neutrals, content surface at Material floor */
+    --color-bg-primary: oklch(0.17 0 0);       /* content surface */
+    --color-bg-secondary: oklch(0.20 0 0);     /* cards, input fills */
+    --color-bg-tertiary: oklch(0.25 0 0);      /* hover / active row */
+    --color-bg-quaternary: oklch(0.29 0 0);    /* pressed / selected */
+    --color-bg-elevated: oklch(0.22 0 0);      /* popovers, modals, dropdowns */
+    --color-bg-background: oklch(0.14 0 0);    /* sidebar / chrome — recessed */
+    --color-text-primary: oklch(0.97 0 0);
+    --color-text-secondary: oklch(0.85 0 0);
+    --color-text-tertiary: oklch(0.70 0 0);
+    --color-text-quaternary: oklch(0.55 0 0);
 
-    --color-border-primary: #191b1f;
-    --color-border-secondary: oklch(0.25 0.0098 268.31);
-    --color-border-tertiary: #2c2e33;
-    --color-border-quaternary: #393b42;
-    --color-input-border-active: rgba(255, 255, 255, 0.15);
+    --color-border-primary: oklch(0.24 0 0);    /* separators — above elevated */
+    --color-border-secondary: oklch(0.28 0 0);  /* card borders */
+    --color-border-tertiary: oklch(0.32 0 0);   /* input borders */
+    --color-border-quaternary: oklch(0.36 0 0); /* emphasized borders */
+    --color-input-border-active: rgba(255, 255, 255, 0.18);
 
     --theme-color-chart: var(--color-accent-200);
 
     --theme-color-menu-active: var(--color-bg-secondary);
     --theme-color-card-background: var(--color-bg-secondary);
     --theme-shadow-card: 0 4px 7px 0px rgb(0 0 0 / 15%);
-    --theme-shadow-dropdown: 0 4px 7px 0px rgb(0 0 0 / 40%);
+    --theme-shadow-dropdown: 0 8px 24px -4px rgb(0 0 0 / 55%), 0 2px 6px 0 rgb(0 0 0 / 35%);
 
     --theme-color-card-background-active: var(--color-bg-tertiary);
 
@@ -187,7 +189,7 @@ body {
         --foreground: var(--color-text-primary);
         --card: var(--theme-color-card-background);
         --card-foreground: var(--color-text-primary);
-        --popover: var(--color-bg-secondary);
+        --popover: var(--color-bg-elevated, var(--color-bg-secondary));
         --popover-foreground: var(--color-text-primary);
         --primary: var(--color-bg-primary);
         --primary-foreground: var(--color-text-primary);

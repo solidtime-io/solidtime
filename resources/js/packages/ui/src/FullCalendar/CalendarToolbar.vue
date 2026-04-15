@@ -22,7 +22,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-    <div class="flex items-center justify-between bg-background px-2 py-1.5">
+    <div class="flex items-center justify-between bg-default-background px-2 py-1.5">
         <!-- Left: Navigation -->
         <div class="flex items-center gap-1">
             <Button

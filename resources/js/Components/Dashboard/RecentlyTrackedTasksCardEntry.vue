@@ -47,9 +47,9 @@ async function startTaskTimer() {
 <template>
     <div class="px-3.5 py-2 grid grid-cols-5">
         <div class="col-span-4">
-            <p class="text-text-secondary text-sm pb-1.5 truncate">
+            <p class="text-text-primary text-sm pb-1.5 truncate">
                 <span v-if="timeEntry.description"> {{ timeEntry.description }}</span>
-                <span v-else>No description</span>
+                <span v-else class="text-text-secondary">No description</span>
             </p>
             <ProjectBadge size="base" class="min-w-0 max-w-full" :color="project?.color">
                 <div class="flex items-center lg:space-x-0.5 min-w-0">
