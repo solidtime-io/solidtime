@@ -71,12 +71,13 @@ async function createEmptyTimeEntry(page: Page) {
     ]);
 }
 
-async function goToProfileAndSetGrouping(page: Page, enabled: boolean) {
+async function setTimeEntriesGrouping(page: Page, enabled: boolean) {
     await goToProfilePage(page);
     const checkbox = page.getByLabel('Group similar time entries');
     const isChecked = await checkbox.isChecked();
     if (isChecked !== enabled)
         await checkbox.click();
+    await goToTimeOverview(page);
 }
 
 test('test that starting and stopping an empty time entry shows a new time entry in the overview', async ({
@@ -346,32 +347,23 @@ test.skip('test that load more works when the end of page is reached', async ({ 
 });
 
 test('test that Group similar time entries option is affected', async ({ page }) => {
-    // Enable grouping and go to Time page
-    await goToProfileAndSetGrouping(page, true);
-    await goToTimeOverview(page);
-    await page.waitForTimeout(500);
+    // Enable grouping
+    await setTimeEntriesGrouping(page, true);
 
     // Create 2 similar time entries
     await createEmptyTimeEntry(page);
-    await page.waitForTimeout(500);
+    await page.waitForSelector('[data-testid="time_entry_row"]', { timeout: 1000 });
     await createEmptyTimeEntry(page);
-    await page.waitForTimeout(500);
 
     // Verify similar time entries are grouped
-    const groupedCount = await page.getByTestId('grouped_items_count_button').count();
-    expect(groupedCount).toBeGreaterThan(0);
+    await expect(page.getByTestId('grouped_items_count_button').first()).toBeVisible({ timeout: 1000 });
 
-    // Disable grouping and go to Time page
-    await goToProfileAndSetGrouping(page, false);
-    await goToTimeOverview(page);
-    await page.waitForTimeout(500);
+    // Disable grouping
+    await setTimeEntriesGrouping(page, false);
 
     // Verify similar time entries are not grouped
-    const timeEntryRows = await page.locator('[data-testid="time_entry_row"]').count();
-    expect(timeEntryRows).toBe(2);
-
-    const groupedCountDisabled = await page.getByTestId('grouped_items_count_button').count();
-    expect(groupedCountDisabled).toBe(0);
+    await expect(page.locator('[data-testid="time_entry_row"]')).toHaveCount(2, { timeout: 1000 });
+    await expect(page.locator('[data-testid="grouped_items_count_button"]')).toHaveCount(0, { timeout: 1000 });
 });
 
 // TODO: Test that updating the time entry start / end times works while it is running
