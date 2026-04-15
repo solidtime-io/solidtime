@@ -59,14 +59,19 @@ const groupedTimeEntries = computed(() => {
         const newDailyEntries: TimeEntriesGroupedByType[] = [];
 
         for (const entry of dailyEntries) {
+            if (!props.groupSimilarTimeEntries) {
+                newDailyEntries.push({ ...entry, timeEntries: [entry] });
+                continue;
+            }
+
             // check if same entry already exists
-            const oldEntriesIndex = props.groupSimilarTimeEntries ? newDailyEntries.findIndex(
+            const oldEntriesIndex = newDailyEntries.findIndex(
                 (e) =>
                     e.project_id === entry.project_id &&
                     e.task_id === entry.task_id &&
                     e.billable === entry.billable &&
                     e.description === entry.description
-            ) : -1;
+            );
             if (oldEntriesIndex !== -1 && newDailyEntries[oldEntriesIndex]) {
                 const existingEntry = newDailyEntries[oldEntriesIndex]!;
                 existingEntry.timeEntries.push(entry);
