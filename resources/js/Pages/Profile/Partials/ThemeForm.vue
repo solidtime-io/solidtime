@@ -37,7 +37,9 @@ const preferredColor = usePreferredColorScheme();
 
             <!-- Group similar time entries -->
             <Field class="col-span-6 sm:col-span-4" orientation="horizontal">
-                <Checkbox id="group_similar_time_entries" v-model:checked="groupSimilarTimeEntriesSetting" />
+                <Checkbox
+                    id="group_similar_time_entries"
+                    v-model:checked="groupSimilarTimeEntriesSetting" />
                 <FieldLabel for="group_similar_time_entries">Group similar time entries</FieldLabel>
             </Field>
         </template>

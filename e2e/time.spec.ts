@@ -75,8 +75,7 @@ async function setTimeEntriesGrouping(page: Page, enabled: boolean) {
     await goToProfilePage(page);
     const checkbox = page.getByLabel('Group similar time entries');
     const isChecked = await checkbox.isChecked();
-    if (isChecked !== enabled)
-        await checkbox.click();
+    if (isChecked !== enabled) await checkbox.click();
     await goToTimeOverview(page);
 }
 
@@ -356,14 +355,18 @@ test('test that Group similar time entries option is affected', async ({ page })
     await createEmptyTimeEntry(page);
 
     // Verify similar time entries are grouped
-    await expect(page.getByTestId('grouped_items_count_button').first()).toBeVisible({ timeout: 1000 });
+    await expect(page.getByTestId('grouped_items_count_button').first()).toBeVisible({
+        timeout: 1000,
+    });
 
     // Disable grouping
     await setTimeEntriesGrouping(page, false);
 
     // Verify similar time entries are not grouped
     await expect(page.locator('[data-testid="time_entry_row"]')).toHaveCount(2, { timeout: 1000 });
-    await expect(page.locator('[data-testid="grouped_items_count_button"]')).toHaveCount(0, { timeout: 1000 });
+    await expect(page.locator('[data-testid="grouped_items_count_button"]')).toHaveCount(0, {
+        timeout: 1000,
+    });
 });
 
 // TODO: Test that updating the time entry start / end times works while it is running

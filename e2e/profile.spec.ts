@@ -255,7 +255,9 @@ test('test that group similar time entries setting can be toggled', async ({ pag
     expect(afterValue).toBe(!initialValue);
 
     // Verify localStorage persists the setting
-    const storedValue = await page.evaluate(() => localStorage.getItem('group-similar-time-entries'));
+    const storedValue = await page.evaluate(() =>
+        localStorage.getItem('group-similar-time-entries')
+    );
     expect(storedValue).toBe(String(!initialValue));
 });
 
