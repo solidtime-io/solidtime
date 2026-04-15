@@ -24,5 +24,3 @@ function useTheme() {
 }
 
 export { type themeOption, themeSetting, theme, useTheme };
-
-export const groupSimilarTimeEntriesSettings = useStorage<boolean>('theme-group-similar-time-entries', true);
