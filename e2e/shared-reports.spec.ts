@@ -292,8 +292,8 @@ test('test that shared report respects task filter', async ({ page, ctx }) => {
     await page.goto(shareableLink);
     await expect(page.getByText('Reporting')).toBeVisible();
     await expect(page.getByText('Total')).toBeVisible();
-    await expect(page.getByText('1h 00min').first()).toBeVisible();
-    await expect(page.getByText('3h 00min')).not.toBeVisible();
+    await expect(page.getByText('1:00:00').first()).toBeVisible();
+    await expect(page.getByText('3:00:00')).not.toBeVisible();
 });
 
 test('test that shared report respects client filter', async ({ page, ctx }) => {
@@ -369,8 +369,8 @@ test('test that shared report respects tag filter', async ({ page, ctx }) => {
     await page.goto(shareableLink);
     await expect(page.getByText('Reporting')).toBeVisible();
     await expect(page.getByText('Total')).toBeVisible();
-    await expect(page.getByText('1h 00min').first()).toBeVisible();
-    await expect(page.getByText('3h 00min')).not.toBeVisible();
+    await expect(page.getByText('1:00:00').first()).toBeVisible();
+    await expect(page.getByText('3:00:00')).not.toBeVisible();
 });
 
 test('test that shared report respects member filter', async ({ page, ctx }) => {
@@ -425,7 +425,7 @@ test('test that shared report with billable filter only shows billable entries',
     ]);
 
     // Verify only 1h shows before saving
-    await expect(page.getByTestId('reporting_view').getByText('1h 00min').first()).toBeVisible();
+    await expect(page.getByTestId('reporting_view').getByText('1:00:00').first()).toBeVisible();
 
     const { shareableLink } = await saveAsSharedReport(page, reportName);
 
@@ -435,8 +435,8 @@ test('test that shared report with billable filter only shows billable entries',
     await expect(page.getByText('Total')).toBeVisible();
 
     // Shared report should only show the 1h billable entry, not the 2h non-billable
-    await expect(page.getByText('1h 00min').first()).toBeVisible();
-    await expect(page.getByText('3h 00min')).not.toBeVisible();
+    await expect(page.getByText('1:00:00').first()).toBeVisible();
+    await expect(page.getByText('3:00:00')).not.toBeVisible();
 });
 
 // ──────────────────────────────────────────────────

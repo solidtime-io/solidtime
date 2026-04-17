@@ -333,7 +333,7 @@ test('test that task filtering works in reporting', async ({ page, ctx }) => {
     await page.keyboard.press('Escape');
 
     // Verify the report only shows 1h (task1's duration)
-    await expect(page.getByTestId('reporting_view').getByText('1h 00min').first()).toBeVisible();
+    await expect(page.getByTestId('reporting_view').getByText('1:00:00').first()).toBeVisible();
 });
 
 test('test that task multiselect search filters the option list', async ({ page, ctx }) => {
@@ -474,7 +474,7 @@ test('test that tag filtering works in reporting', async ({ page, ctx }) => {
     await page.keyboard.press('Escape');
 
     // Verify only time entries with tag1 are shown
-    await expect(page.getByTestId('reporting_view').getByText('1h 00min').first()).toBeVisible();
+    await expect(page.getByTestId('reporting_view').getByText('1:00:00').first()).toBeVisible();
 });
 
 test('test that tag dropdown search filters the option list', async ({ page, ctx }) => {
@@ -594,7 +594,7 @@ test('test that billable status filtering works in reporting', async ({ page, ct
         waitForReportingUpdate(page),
     ]);
 
-    await expect(page.getByTestId('reporting_view').getByText('1h 00min').first()).toBeVisible();
+    await expect(page.getByTestId('reporting_view').getByText('1:00:00').first()).toBeVisible();
 });
 
 test('test that billable filter can switch between all three states', async ({ page }) => {
@@ -885,7 +885,7 @@ test.describe('Employee Reporting Restrictions', () => {
 
         // Employee's data should be visible (1h)
         await expect(
-            employee.page.getByTestId('reporting_view').getByText('1h 00min').first()
+            employee.page.getByTestId('reporting_view').getByText('1:00:00').first()
         ).toBeVisible();
     });
 

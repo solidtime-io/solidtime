@@ -32,7 +32,7 @@ test('test that detailed view shows time entries correctly', async ({ page, ctx 
 
     // Verify the time entry is shown with all details
     await expect(page.getByText(projectName, { exact: true }).first()).toBeVisible();
-    await expect(page.locator('input[name="Duration"]').first()).toHaveValue('1h 00min');
+    await expect(page.locator('input[name="Duration"]').first()).toHaveValue('1:00:00');
     await expect(page.getByText('Entry for ' + projectName, { exact: true }).first()).toBeVisible();
 });
 
@@ -62,8 +62,8 @@ test('test that updating duration in detailed view works correctly', async ({ pa
         ),
     ]);
 
-    // Verify the new duration is displayed
-    await expect(durationInput).toHaveValue(updatedDuration);
+    // Verify the new duration is displayed (reporting views promote to HH:MM:SS format)
+    await expect(durationInput).toHaveValue('2:30:00');
 });
 
 // ──────────────────────────────────────────────────

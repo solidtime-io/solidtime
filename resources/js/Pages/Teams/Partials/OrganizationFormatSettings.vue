@@ -157,9 +157,9 @@ async function submit() {
                 </Select>
                 <FieldDescription v-if="showsHhMmSsInReports">
                     Reports and totals shown next to cost use HH:MM:SS for this format, so the
-                    duration reconciles with the billable amount down to the second. Everywhere
-                    else (time tracker, calendar, entry rows) seconds are omitted and durations
-                    stay in your chosen format.
+                    duration reconciles with the billable amount down to the second. Everywhere else
+                    (time tracker, calendar, entry rows) seconds are omitted and durations stay in
+                    your chosen format.
                 </FieldDescription>
             </Field>
         </template>
