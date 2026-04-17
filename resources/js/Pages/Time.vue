@@ -16,6 +16,7 @@ import { useElementVisibility } from '@vueuse/core';
 import { ClockIcon } from '@heroicons/vue/20/solid';
 import LoadingSpinner from '@/packages/ui/src/LoadingSpinner.vue';
 import { useCurrentTimeEntryStore } from '@/utils/useCurrentTimeEntry';
+import { groupSimilarTimeEntriesSetting } from '@/utils/timeEntryGrouping';
 import { useTasksQuery } from '@/utils/useTasksQuery';
 import { useProjectsQuery } from '@/utils/useProjectsQuery';
 import TimeEntryGroupedTable from '@/packages/ui/src/TimeEntry/TimeEntryGroupedTable.vue';
@@ -151,6 +152,7 @@ function deleteSelected() {
             :tasks="tasks"
             :currency="getOrganizationCurrencyString()"
             :time-entries="timeEntries"
+            :group-similar-time-entries="groupSimilarTimeEntriesSetting"
             :tags="tags"></TimeEntryGroupedTable>
         <div v-if="isPending" class="flex justify-center items-center py-12">
             <LoadingSpinner></LoadingSpinner>

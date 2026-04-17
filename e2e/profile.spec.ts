@@ -231,6 +231,37 @@ test('test that theme can be changed to dark and light', async ({ page }) => {
 });
 
 // =============================================
+// Group similar time entries
+// =============================================
+
+test('test that group similar time entries setting can be toggled', async ({ page }) => {
+    await goToProfilePage(page);
+
+    // Get the checkbox
+    const checkbox = page.getByLabel('Group similar time entries');
+
+    // Get initial value and verify it is checked (default is true)
+    const initialValue = await checkbox.isChecked();
+    await expect(checkbox).toBeChecked();
+
+    // Toggle the checkbox
+    await checkbox.click();
+
+    // Reload
+    await page.reload();
+
+    // Verify the value is toggled
+    const afterValue = await page.getByLabel('Group similar time entries').isChecked();
+    expect(afterValue).toBe(!initialValue);
+
+    // Verify localStorage persists the setting
+    const storedValue = await page.evaluate(() =>
+        localStorage.getItem('group-similar-time-entries')
+    );
+    expect(storedValue).toBe(String(!initialValue));
+});
+
+// =============================================
 // Two Factor Authentication Tests
 // =============================================
 
