@@ -390,6 +390,7 @@ async function downloadExport(format: ExportFormat) {
                     :organization-billable-rate="organization?.billable_rate ?? null"
                     :duplicate-time-entry="() => createTimeEntry(entry)"
                     :members="members"
+                    is-report
                     show-date
                     show-member
                     :time-entry="entry"

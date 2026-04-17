@@ -129,6 +129,58 @@ class LocalizationServiceTest extends TestCaseWithDatabase
         $this->assertSame('30001:03:04', $formatted);
     }
 
+    public function test_format_interval_for_reporting_with_type_decimal(): void
+    {
+        // Arrange
+        $interval = CarbonInterval::seconds(4 + (60 * 3) + (60 * 60 * 30001));
+        $this->localizationService->setIntervalFormat(IntervalFormat::Decimal);
+
+        // Act
+        $formatted = $this->localizationService->formatIntervalForReporting($interval);
+
+        // Assert
+        $this->assertSame('30.001,05 h', $formatted);
+    }
+
+    public function test_format_interval_for_reporting_with_type_hours_minutes(): void
+    {
+        // Arrange
+        $interval = CarbonInterval::seconds(4 + (60 * 3) + (60 * 60 * 30001));
+        $this->localizationService->setIntervalFormat(IntervalFormat::HoursMinutes);
+
+        // Act
+        $formatted = $this->localizationService->formatIntervalForReporting($interval);
+
+        // Assert
+        $this->assertSame('30001:03:04', $formatted);
+    }
+
+    public function test_format_interval_for_reporting_with_type_hours_minutes_colon_separated(): void
+    {
+        // Arrange
+        $interval = CarbonInterval::seconds(4 + (60 * 3) + (60 * 60 * 30001));
+        $this->localizationService->setIntervalFormat(IntervalFormat::HoursMinutesColonSeparated);
+
+        // Act
+        $formatted = $this->localizationService->formatIntervalForReporting($interval);
+
+        // Assert
+        $this->assertSame('30001:03:04', $formatted);
+    }
+
+    public function test_format_interval_for_reporting_with_type_hours_minutes_seconds_colon_separated(): void
+    {
+        // Arrange
+        $interval = CarbonInterval::seconds(4 + (60 * 3) + (60 * 60 * 30001));
+        $this->localizationService->setIntervalFormat(IntervalFormat::HoursMinutesSecondsColonSeparated);
+
+        // Act
+        $formatted = $this->localizationService->formatIntervalForReporting($interval);
+
+        // Assert
+        $this->assertSame('30001:03:04', $formatted);
+    }
+
     public function test_format_currency_with_type_symbol_after_with_space_and_number_format_thousands_space_decimal_comma(): void
     {
         // Arrange

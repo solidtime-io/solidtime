@@ -10,7 +10,7 @@ import {
     TitleComponent,
     TooltipComponent,
 } from 'echarts/components';
-import { formatHumanReadableDuration } from '@/packages/ui/src/utils/time';
+import { formatReportingDuration } from '@/packages/ui/src/utils/time';
 import { useCssVariable } from '@/packages/ui/src';
 import type { Organization } from '@/packages/api/src';
 
@@ -67,7 +67,7 @@ const option = computed(() => ({
             },
             tooltip: {
                 valueFormatter: (value: number) => {
-                    return formatHumanReadableDuration(
+                    return formatReportingDuration(
                         value,
                         organization?.value?.interval_format,
                         organization?.value?.number_format

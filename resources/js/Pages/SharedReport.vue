@@ -3,7 +3,7 @@ import MainContainer from '@/packages/ui/src/MainContainer.vue';
 import PageTitle from '@/Components/Common/PageTitle.vue';
 import { ChartBarIcon } from '@heroicons/vue/20/solid';
 import ReportingChart from '@/Components/Common/Reporting/ReportingChart.vue';
-import { formatHumanReadableDuration } from '@/packages/ui/src/utils/time';
+import { formatReportingDuration } from '@/packages/ui/src/utils/time';
 import ReportingRow from '@/Components/Common/Reporting/ReportingRow.vue';
 import ReportingPieChart from '@/Components/Common/Reporting/ReportingPieChart.vue';
 import { formatCents } from '@/packages/ui/src/utils/money';
@@ -231,7 +231,7 @@ onMounted(async () => {
                                 </div>
                                 <div class="justify-end flex items-center font-medium">
                                     {{
-                                        formatHumanReadableDuration(
+                                        formatReportingDuration(
                                             aggregatedTableTimeEntries.seconds,
                                             reportIntervalFormat,
                                             reportNumberFormat

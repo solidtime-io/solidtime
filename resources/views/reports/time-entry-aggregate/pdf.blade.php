@@ -150,7 +150,7 @@
         <div style="padding: 8px 12px; border-radius: 8px;">
             <div style="color: #71717a; font-weight: 600;">Duration</div>
             <div
-                style="font-size: 24px; font-weight: 500; margin-top: 2px;">{{ $localization->formatInterval(CarbonInterval::seconds($aggregatedData['seconds'])) }} </div>
+                style="font-size: 24px; font-weight: 500; margin-top: 2px;">{{ $localization->formatIntervalForReporting(CarbonInterval::seconds($aggregatedData['seconds'])) }} </div>
         </div>
         @if($showBillableRate)
         <div style="padding: 8px 12px; border-radius: 8px;">
@@ -199,7 +199,7 @@
                             </span>
                         </td>
                         <td style="text-align: left;">
-                            {{ $localization->formatInterval(CarbonInterval::seconds($group1Entry['seconds'])) }}
+                            {{ $localization->formatIntervalForReporting(CarbonInterval::seconds($group1Entry['seconds'])) }}
                         </td>
                         @if($showBillableRate)
                         <td style="text-align: right;">
@@ -214,7 +214,7 @@
                         Total
                     </td>
                     <td style="font-weight: 500;color: #18181b;">
-                        {{ $localization->formatInterval(CarbonInterval::seconds($aggregatedData['seconds'])) }}
+                        {{ $localization->formatIntervalForReporting(CarbonInterval::seconds($aggregatedData['seconds'])) }}
                     </td>
                     @if($showBillableRate)
                     <td style="text-align: right; font-weight: 500;color: #18181b;">
@@ -282,7 +282,7 @@
                             @endif
                         </td>
                         <td>
-                            {{ $localization->formatInterval($duration) }}
+                            {{ $localization->formatIntervalForReporting($duration) }}
                         </td>
                         <td>
                             {{ $localization->formatNumber($duration->totalHours) }}
@@ -403,7 +403,7 @@
                 type: "bar",
                 data: {!! json_encode(collect($dataHistoryChart['grouped_data'])->map(fn($value) => (object) [
                             'value' => $value['seconds'],
-                            'name' => ((int) $value['seconds']) === 0 ? '' : $localization->formatInterval(CarbonInterval::seconds((int) $value['seconds']))
+                            'name' => ((int) $value['seconds']) === 0 ? '' : $localization->formatIntervalForReporting(CarbonInterval::seconds((int) $value['seconds']))
                         ])->toArray()) !!},
                 itemStyle: {
                     borderColor: "#7dd3fc",

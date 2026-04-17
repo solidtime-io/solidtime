@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { formatHumanReadableDuration } from '@/packages/ui/src/utils/time';
+import { formatReportingDuration } from '@/packages/ui/src/utils/time';
 import { formatCents } from '@/packages/ui/src/utils/money';
 import GroupedItemsCountButton from '@/packages/ui/src/GroupedItemsCountButton.vue';
 import { ref, inject, type ComputedRef } from 'vue';
@@ -44,7 +44,7 @@ const organization = inject<ComputedRef<Organization>>('organization');
         </div>
         <div class="justify-end flex items-center" :class="!showCost ? 'pr-6' : ''">
             {{
-                formatHumanReadableDuration(
+                formatReportingDuration(
                     entry.seconds,
                     organization?.interval_format,
                     organization?.number_format

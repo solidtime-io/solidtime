@@ -138,7 +138,7 @@
         <div style="padding: 8px 12px; border-radius: 8px;">
             <div style="color: #71717a; font-weight: 600;">Duration</div>
             <div
-                style="font-size: 24px; font-weight: 500; margin-top: 2px;">{{ $localization->formatInterval(CarbonInterval::seconds($aggregatedData['seconds'])) }} </div>
+                style="font-size: 24px; font-weight: 500; margin-top: 2px;">{{ $localization->formatIntervalForReporting(CarbonInterval::seconds($aggregatedData['seconds'])) }} </div>
         </div>
         @if($showBillableRate)
         <div style="padding: 8px 12px; border-radius: 8px;">
@@ -189,7 +189,7 @@
                         {{ $localization->formatTime($timeEntry->start->timezone($timezone)) }} - {{ $localization->formatTime($timeEntry->end->timezone($timezone)) }}
                     </td>
                     <td style="overflow-wrap: break-word; min-width: 75px;">
-                        {{ $localization->formatInterval($timeEntry->getDuration()) }}
+                        {{ $localization->formatIntervalForReporting($timeEntry->getDuration()) }}
                     </td>
                     <td style="overflow-wrap: break-word;">{{ $timeEntry->billable ? 'Yes' : 'No' }}</td>
                     <td style="overflow-wrap: break-word; min-width: 75px;">{{ count($timeEntry->tagsRelation) === 0 ? '-' : $timeEntry->tagsRelation->implode('name', ', ') }}</td>

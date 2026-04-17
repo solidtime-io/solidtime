@@ -52,6 +52,7 @@ const props = defineProps<{
     selected?: boolean;
     canCreateProject: boolean;
     enableEstimatedTime: boolean;
+    isReport?: boolean;
 }>();
 
 const emit = defineEmits<{ selected: []; unselected: [] }>();
@@ -172,6 +173,7 @@ async function handleDeleteTimeEntry() {
                             <TimeEntryRowDurationInput
                                 :start="timeEntry.start"
                                 :end="timeEntry.end"
+                                :is-report="props.isReport"
                                 @changed="updateStartEndTime"></TimeEntryRowDurationInput>
                             <TimeTrackerStartStop
                                 :active="!!(timeEntry.start && !timeEntry.end)"
@@ -196,6 +198,7 @@ async function handleDeleteTimeEntry() {
                                 <TimeEntryRowDurationInput
                                     :start="timeEntry.start"
                                     :end="timeEntry.end"
+                                    :is-report="props.isReport"
                                     @changed="updateStartEndTime"></TimeEntryRowDurationInput>
                             </div>
                             <!-- Second row: project/task - tags - billable - start - more -->

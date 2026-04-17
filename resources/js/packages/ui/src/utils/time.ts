@@ -118,6 +118,26 @@ export function formatHumanReadableDuration(
     }
 }
 
+/**
+ * Format a duration for reporting views where cost and duration must reconcile.
+ *
+ * When the org's `hours-minutes` format is selected, seconds are normally dropped for
+ * readability (e.g. "14h 45min"). In reports this can make the total duration appear
+ * inconsistent with the billable cost (which is computed to the second). To keep the
+ * two columns reconcilable without inflating column widths with "14h 45min 06s",
+ * promote to the compact `HH:MM:SS` format in reporting contexts.
+ */
+export function formatReportingDuration(
+    duration: number,
+    intervalFormat?: string,
+    numberFormat?: string
+): string {
+    const promoted =
+        intervalFormat === 'hours-minutes' || intervalFormat === 'hours-minutes-colon-separated';
+    const effectiveFormat = promoted ? 'hours-minutes-seconds-colon-separated' : intervalFormat;
+    return formatHumanReadableDuration(duration, effectiveFormat, numberFormat);
+}
+
 export function formatDuration(duration: number): string {
     const dayJsDuration = dayjs.duration(duration, 's');
     const hours = Math.floor(dayJsDuration.asHours());

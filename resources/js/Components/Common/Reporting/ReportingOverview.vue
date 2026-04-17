@@ -8,7 +8,7 @@ import {
 import { SaveIcon } from 'lucide-vue-next';
 import { getOrganizationCurrencyString } from '@/utils/money';
 import {
-    formatHumanReadableDuration,
+    formatReportingDuration,
     getDayJsInstance,
     getLocalizedDayJs,
 } from '@/packages/ui/src/utils/time';
@@ -426,7 +426,7 @@ const tableData = computed(() => {
                                 class="justify-end flex items-center font-medium"
                                 :class="!showBillableRate ? 'pr-6' : ''">
                                 {{
-                                    formatHumanReadableDuration(
+                                    formatReportingDuration(
                                         aggregatedTableTimeEntries.seconds,
                                         organization?.interval_format,
                                         organization?.number_format

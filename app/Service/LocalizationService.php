@@ -96,6 +96,30 @@ class LocalizationService
         }
     }
 
+    /**
+     * Format a duration for reporting contexts (PDF reports, places that display duration
+     * directly next to cost). Promotes the verbose `Hh Mm` format to the compact `HH:MM:SS`
+     * so totals stay narrow and reconcile with cost, which is always computed to the second.
+     */
+    public function formatIntervalForReporting(CarbonInterval $interval): string
+    {
+        $promoted = [
+            IntervalFormat::HoursMinutes,
+            IntervalFormat::HoursMinutesColonSeparated,
+        ];
+        if (! in_array($this->intervalFormat, $promoted, true)) {
+            return $this->formatInterval($interval);
+        }
+
+        $previous = $this->intervalFormat;
+        $this->intervalFormat = IntervalFormat::HoursMinutesSecondsColonSeparated;
+        try {
+            return $this->formatInterval($interval);
+        } finally {
+            $this->intervalFormat = $previous;
+        }
+    }
+
     public function formatCurrency(Money $money): string
     {
         $currencyService = app(CurrencyService::class);

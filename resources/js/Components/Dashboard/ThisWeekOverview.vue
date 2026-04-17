@@ -16,7 +16,7 @@ import CardTitle from '@/packages/ui/src/CardTitle.vue';
 import LinearGradient from 'zrender/lib/graphic/LinearGradient';
 import ProjectsChartCard from '@/Components/Dashboard/ProjectsChartCard.vue';
 import ThisWeekReportingTable from '@/Components/Dashboard/ThisWeekReportingTable.vue';
-import { formatHumanReadableDuration } from '@/packages/ui/src/utils/time';
+import { formatReportingDuration } from '@/packages/ui/src/utils/time';
 import { formatCents } from '@/packages/ui/src/utils/money';
 import { getWeekStart } from '@/packages/ui/src/utils/settings';
 import { useCssVariable } from '@/packages/ui/src';
@@ -223,7 +223,7 @@ const option = computed(() => {
                 type: 'bar',
                 tooltip: {
                     valueFormatter: (value: number) => {
-                        return formatHumanReadableDuration(
+                        return formatReportingDuration(
                             value,
                             organization?.value?.interval_format,
                             organization?.value?.number_format
@@ -252,7 +252,7 @@ const option = computed(() => {
                 title="Spent Time"
                 :value="
                     totalWeeklyTime
-                        ? formatHumanReadableDuration(
+                        ? formatReportingDuration(
                               totalWeeklyTime,
                               organization?.interval_format,
                               organization?.number_format
@@ -263,7 +263,7 @@ const option = computed(() => {
                 title="Billable Time"
                 :value="
                     totalWeeklyBillableTime
-                        ? formatHumanReadableDuration(
+                        ? formatReportingDuration(
                               totalWeeklyBillableTime,
                               organization?.interval_format,
                               organization?.number_format

@@ -2,6 +2,7 @@
 import {
     calculateDifference,
     formatHumanReadableDuration,
+    formatReportingDuration,
     parseTimeInput,
 } from '@/packages/ui/src/utils/time';
 import { computed, ref, inject, type ComputedRef } from 'vue';
@@ -18,6 +19,7 @@ const organizationSettings = computed(() => ({
 const props = defineProps<{
     start: string;
     end: string | null;
+    isReport?: boolean;
 }>();
 const emit = defineEmits<{
     changed: [start: string, end: string | null];
@@ -51,7 +53,8 @@ const currentTime = computed({
         if (temporaryCustomTimerEntry.value !== '') {
             return temporaryCustomTimerEntry.value;
         }
-        return formatHumanReadableDuration(
+        const formatter = props.isReport ? formatReportingDuration : formatHumanReadableDuration;
+        return formatter(
             calculateDifference(props.start, props.end),
             organizationSettings.value.intervalFormat,
             organizationSettings.value.numberFormat

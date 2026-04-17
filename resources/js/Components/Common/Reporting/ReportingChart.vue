@@ -2,7 +2,7 @@
 import VChart, { THEME_KEY } from 'vue-echarts';
 import { computed, provide, inject, shallowRef, type ComputedRef } from 'vue';
 import LinearGradient from 'zrender/lib/graphic/LinearGradient';
-import { formatDate, formatHumanReadableDuration, formatWeek } from '@/packages/ui/src/utils/time';
+import { formatDate, formatReportingDuration, formatWeek } from '@/packages/ui/src/utils/time';
 import { use } from 'echarts/core';
 import { CanvasRenderer } from 'echarts/renderers';
 import { BarChart } from 'echarts/charts';
@@ -137,7 +137,7 @@ const option = computed(() => ({
             type: 'bar',
             tooltip: {
                 valueFormatter: (value: number) => {
-                    return formatHumanReadableDuration(
+                    return formatReportingDuration(
                         value,
                         organization?.value?.interval_format,
                         organization?.value?.number_format

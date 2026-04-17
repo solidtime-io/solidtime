@@ -2,7 +2,7 @@
 import ReportingRow from '@/Components/Common/Reporting/ReportingRow.vue';
 import ReportingGroupBySelect from '@/Components/Common/Reporting/ReportingGroupBySelect.vue';
 import {
-    formatHumanReadableDuration,
+    formatReportingDuration,
     getDayJsInstance,
     getLocalizedDayJs,
 } from '@/packages/ui/src/utils/time';
@@ -174,7 +174,7 @@ const showBillableRate = computed(() => {
                         class="justify-end flex items-center font-medium"
                         :class="!showBillableRate ? 'pr-6' : ''">
                         {{
-                            formatHumanReadableDuration(
+                            formatReportingDuration(
                                 aggregatedTableTimeEntries.seconds,
                                 organization?.interval_format,
                                 organization?.number_format
