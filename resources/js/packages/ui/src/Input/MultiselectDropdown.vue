@@ -35,7 +35,8 @@ watch(open, (isOpen) => {
         sortedItems.value = [...props.items].sort((a, b) => {
             const aSelected = model.value.includes(props.getKeyFromItem(a)) ? 0 : 1;
             const bSelected = model.value.includes(props.getKeyFromItem(b)) ? 0 : 1;
-            return aSelected - bSelected;
+            if (aSelected !== bSelected) return aSelected - bSelected;
+            return props.getNameForItem(a).localeCompare(props.getNameForItem(b));
         });
     }
 });
