@@ -188,6 +188,15 @@ export function getLocalizedDateFromTimestamp(timestamp: string) {
     return getLocalizedDayJs(timestamp).format('YYYY-MM-DD');
 }
 
+/**
+ * Converts a local Date to a UTC-formatted ISO string.
+ * Treats the Date as being in the user's timezone and converts to UTC.
+ * This is the inverse of getLocalizedDayJs (which goes UTC → local).
+ */
+export function localDateToUtc(date: dayjs.Dayjs): string {
+    return date.tz(getUserTimezone(), true).utc().format();
+}
+
 /*
  * Returns a formatted date.
  * @param date - date in the format of 'YYYY-MM-DD'

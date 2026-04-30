@@ -2,43 +2,28 @@ import { useQuery } from '@tanstack/vue-query';
 import { api, type TimeEntryResponse, type TimeEntry } from '@/packages/api/src';
 import { getCurrentMembershipId, getCurrentOrganizationId } from '@/utils/useUser';
 import { computed, type Ref } from 'vue';
-import { getDayJsInstance } from '@/packages/ui/src/utils/time';
-import { getUserTimezone, getWeekStart } from '@/packages/ui/src/utils/settings';
-
-const weekStartMap: Record<string, number> = {
-    sunday: 0,
-    monday: 1,
-    tuesday: 2,
-    wednesday: 3,
-    thursday: 4,
-    friday: 5,
-    saturday: 6,
-};
+import type { Dayjs } from 'dayjs';
+import { getDayJsInstance, localDateToUtc } from '@/packages/ui/src/utils/time';
+import { getWeekStartDayNumber } from '@/packages/ui/src/utils/settings';
 
 /**
  * Calculate expanded date range to include previous and next periods with timezone transformations.
  * This allows smooth navigation between calendar views without loading delays.
  */
 export function getExpandedCalendarDateRange(
-    calendarStart: Date,
-    calendarEnd: Date
+    calendarStart: Dayjs,
+    calendarEnd: Dayjs
 ): { start: string; end: string } {
-    const dayjs = getDayJsInstance();
-    const duration = dayjs(calendarEnd).diff(dayjs(calendarStart), 'milliseconds');
+    const duration = calendarEnd.diff(calendarStart, 'milliseconds');
 
     // Calculate previous period
-    const previousStart = dayjs(calendarStart).subtract(duration, 'milliseconds');
+    const previousStart = calendarStart.subtract(duration, 'milliseconds');
     // Calculate next period
-    const nextEnd = dayjs(calendarEnd).add(duration, 'milliseconds');
-
-    // Apply timezone transformations
-    const timezone = getUserTimezone();
-    const formattedStart = previousStart.utc().tz(timezone, true).utc().format();
-    const formattedEnd = nextEnd.utc().tz(timezone, true).utc().format();
+    const nextEnd = calendarEnd.add(duration, 'milliseconds');
 
     return {
-        start: formattedStart,
-        end: formattedEnd,
+        start: localDateToUtc(previousStart),
+        end: localDateToUtc(nextEnd),
     };
 }
 
@@ -46,21 +31,17 @@ export function getExpandedCalendarDateRange(
  * Get the initial week view date range based on user's week start preference.
  * Matches FullCalendar's timeGridWeek initial view.
  */
-export function getInitialWeekRange(): { start: Date; end: Date } {
+export function getInitialWeekRange(): { start: Dayjs; end: Dayjs } {
     const dayjs = getDayJsInstance();
-    const weekStart = getWeekStart();
-    const firstDay = weekStartMap[weekStart] ?? 1;
+    const firstDay = getWeekStartDayNumber();
 
     const now = dayjs();
     const currentDayOfWeek = now.day();
     const daysFromWeekStart = (currentDayOfWeek - firstDay + 7) % 7;
-    const calendarStart = now.subtract(daysFromWeekStart, 'day').startOf('day');
-    const calendarEnd = calendarStart.add(7, 'day');
+    const start = now.subtract(daysFromWeekStart, 'day').startOf('day');
+    const end = start.add(7, 'day');
 
-    return {
-        start: calendarStart.toDate(),
-        end: calendarEnd.toDate(),
-    };
+    return { start, end };
 }
 
 /**
@@ -115,8 +96,8 @@ export async function fetchAllCalendarEntries(
 }
 
 export function useTimeEntriesCalendarQuery(
-    calendarStart: Ref<Date | undefined>,
-    calendarEnd: Ref<Date | undefined>
+    calendarStart: Ref<Dayjs | undefined>,
+    calendarEnd: Ref<Dayjs | undefined>
 ) {
     const enableCalendarQuery = computed(() => {
         return !!getCurrentOrganizationId() && !!calendarStart.value && !!calendarEnd.value;
