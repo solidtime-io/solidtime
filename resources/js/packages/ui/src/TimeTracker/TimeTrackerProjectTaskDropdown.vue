@@ -519,29 +519,33 @@ const showCreateProject = ref(false);
     </template>
     <Dropdown v-else v-model="open" :close-on-content-click="false" :align="props.align">
         <template #trigger>
-            <div class="flex items-center gap-1">
-                <Button
-                    :variant="props.variant"
-                    :size="props.size"
-                    :class="twMerge('w-full justify-start overflow-hidden', props.class)">
-                    <div
-                        class="w-3 h-3 rounded-full shrink-0"
-                        :style="{ backgroundColor: selectedProjectColor }"></div>
-                    <span class="truncate shrink-[1] pr-1">{{ selectedProjectName }}</span>
-                    <template v-if="currentTask">
-                        <ChevronRightIcon class="w-4 h-4 text-text-tertiary shrink-0" />
-                        <span class="truncate shrink-[100]">{{ currentTask.name }}</span>
-                    </template>
-                </Button>
-                <button
-                    v-if="allowReset && project !== null"
-                    type="button"
-                    data-testid="project_reset_button"
-                    class="p-1 rounded hover:bg-quaternary text-text-tertiary hover:text-text-primary"
-                    @click.stop="resetProject">
-                    <XMarkIcon class="w-4 h-4" />
-                </button>
-            </div>
+            <slot name="trigger">
+                <div class="flex items-center gap-1">
+                    <Button
+                        :variant="props.variant"
+                        :size="props.size"
+                        :class="twMerge('w-full justify-start overflow-hidden', props.class)">
+                        <div
+                            class="w-3 h-3 rounded-full shrink-0"
+                            :style="{ backgroundColor: selectedProjectColor }"></div>
+                        <span class="truncate shrink-[1] text-text-primary pr-1">{{
+                            selectedProjectName
+                        }}</span>
+                        <template v-if="currentTask">
+                            <ChevronRightIcon class="w-4 h-4 text-text-tertiary shrink-0" />
+                            <span class="truncate shrink-[100]">{{ currentTask.name }}</span>
+                        </template>
+                    </Button>
+                    <button
+                        v-if="allowReset && project !== null"
+                        type="button"
+                        data-testid="project_reset_button"
+                        class="p-1 rounded hover:bg-quaternary text-text-tertiary hover:text-text-primary"
+                        @click.stop="resetProject">
+                        <XMarkIcon class="w-4 h-4" />
+                    </button>
+                </div>
+            </slot>
         </template>
         <template #content>
             <UseFocusTrap v-if="open" :options="{ immediate: true, allowOutsideClick: true }">

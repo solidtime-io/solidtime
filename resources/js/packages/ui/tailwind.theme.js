@@ -104,7 +104,7 @@ export const solidtimeTheme = {
             border: 'var(--popover-border)',
         },
         destructive: {
-            DEFAULT: 'var(--destructive)',
+            DEFAULT: 'hsl(var(--destructive))',
             foreground: 'var(--destructive-foreground)',
         },
         border: 'var(--border)',

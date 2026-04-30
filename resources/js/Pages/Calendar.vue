@@ -3,6 +3,7 @@ import AppLayout from '@/Layouts/AppLayout.vue';
 import { useTimeEntriesCalendarQuery } from '@/utils/useTimeEntriesCalendarQuery';
 import { useTimeEntriesMutations } from '@/utils/useTimeEntriesMutations';
 import { computed, ref, onMounted } from 'vue';
+import type { Dayjs } from 'dayjs';
 import { useQueryClient } from '@tanstack/vue-query';
 import {
     type Client,
@@ -27,8 +28,8 @@ import { useOrganizationQuery } from '@/utils/useOrganizationQuery';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 
 const { organization } = useOrganizationQuery(getCurrentOrganizationId()!);
-const calendarStart = ref<Date | undefined>(undefined);
-const calendarEnd = ref<Date | undefined>(undefined);
+const calendarStart = ref<Dayjs | undefined>(undefined);
+const calendarEnd = ref<Dayjs | undefined>(undefined);
 
 // Test-injectable activity periods (for E2E testing).
 // These hooks are no-ops in production — they only take effect when test code
@@ -99,7 +100,7 @@ const { tags } = useTagsQuery();
 
 const queryClient = useQueryClient();
 
-function onDatesChange({ start, end }: { start: Date; end: Date }) {
+function onDatesChange({ start, end }: { start: Dayjs; end: Dayjs }) {
     calendarStart.value = start;
     calendarEnd.value = end;
 }

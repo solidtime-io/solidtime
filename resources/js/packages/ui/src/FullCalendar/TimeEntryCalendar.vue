@@ -57,7 +57,7 @@ import type {
 import type { Dayjs } from 'dayjs';
 
 const emit = defineEmits<{
-    (e: 'dates-change', payload: { start: Date; end: Date }): void;
+    (e: 'dates-change', payload: { start: Dayjs; end: Dayjs }): void;
     (e: 'refresh'): void;
 }>();
 

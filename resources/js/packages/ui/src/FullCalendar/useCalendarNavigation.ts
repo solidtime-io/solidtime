@@ -1,27 +1,17 @@
 import { computed, ref } from 'vue';
 import type { Dayjs } from 'dayjs';
 import { getLocalizedDayJs } from '../utils/time';
-import { getWeekStart } from '../utils/settings';
+import { getWeekStartDayNumber } from '../utils/settings';
 
 export function useCalendarNavigation(callbacks: {
-    onDatesChange: (payload: { start: Date; end: Date }) => void;
+    onDatesChange: (payload: { start: Dayjs; end: Dayjs }) => void;
     scrollToCurrentTime: () => void;
 }) {
     const activeView = ref('timeGridWeek');
     const currentDate = ref(getLocalizedDayJs());
 
     function getFirstDay(): number {
-        const weekStart = getWeekStart();
-        const weekStartMap: Record<string, number> = {
-            sunday: 0,
-            monday: 1,
-            tuesday: 2,
-            wednesday: 3,
-            thursday: 4,
-            friday: 5,
-            saturday: 6,
-        };
-        return weekStartMap[weekStart] ?? 1;
+        return getWeekStartDayNumber();
     }
 
     const viewDays = computed<Dayjs[]>(() => {
@@ -67,8 +57,8 @@ export function useCalendarNavigation(callbacks: {
         const days = viewDays.value;
         if (days.length === 0) return;
 
-        const start = days[0]!.toDate();
-        const end = days[days.length - 1]!.add(1, 'day').toDate();
+        const start = days[0]!;
+        const end = days[days.length - 1]!.add(1, 'day');
         callbacks.onDatesChange({ start, end });
     }
 
