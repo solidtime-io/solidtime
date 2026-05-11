@@ -1,5 +1,223 @@
-#!/usr/bin/env sh
+#!/bin/bash
 set -e
+
+# ============================================================================
+# Solidtime container entrypoint.
+#
+# Layout:
+#   1. Storage tree bootstrap (idempotent, runs as any user)
+#   2. UID/GID remap + chown (root only, controlled by PUID/PGID env vars)
+#   3. Pre-flight write test (fails fast with a diagnosis message)
+#   4. Privilege drop via gosu, then re-exec self as APP_USER
+#   5. Original CONTAINER_MODE routing (runs as APP_USER)
+#
+# Env vars:
+#   PUID, PGID                    UID/GID for the application user. Defaults 1000:1000.
+#   SOLIDTIME_DROP_PRIVILEGES     auto (default) | always | never
+#       auto:    if started as root, drop privileges; otherwise just exec.
+#       always:  if started as root, drop privileges (errors if not root).
+#       never:   never drop. Run as whatever UID/GID was started.
+# ============================================================================
+
+APP_USER="octane"
+APP_PATH="${ROOT:-/var/www/html}"
+STORAGE_PATH="${APP_PATH}/storage"
+CACHE_PATH="${APP_PATH}/bootstrap/cache"
+DEFAULT_UID=1000
+DEFAULT_GID=1000
+TARGET_UID="${PUID:-${DEFAULT_UID}}"
+TARGET_GID="${PGID:-${DEFAULT_GID}}"
+DROP_PRIVS="${SOLIDTIME_DROP_PRIVILEGES:-auto}"
+WRITABLE_PATHS=(
+    "${STORAGE_PATH}/framework/cache/data"
+    "${STORAGE_PATH}/framework/sessions"
+    "${STORAGE_PATH}/framework/views"
+    "${STORAGE_PATH}/framework/testing"
+    "${STORAGE_PATH}/logs"
+    "${STORAGE_PATH}/app/public"
+    "${STORAGE_PATH}/app/private"
+    "${CACHE_PATH}"
+)
+
+case "${DROP_PRIVS}" in
+    always) SHOULD_DROP=1 ;;
+    never)  SHOULD_DROP=0 ;;
+    auto)
+        if [ "$(id -u)" = "0" ]; then
+            SHOULD_DROP=1
+        else
+            SHOULD_DROP=0
+        fi
+        ;;
+    *)
+        echo "[entrypoint] ERROR: invalid SOLIDTIME_DROP_PRIVILEGES='${DROP_PRIVS}'" >&2
+        echo "[entrypoint] Valid values: auto (default), always, never" >&2
+        exit 1
+        ;;
+esac
+
+if [ "${DROP_PRIVS}" = "always" ] && [ "$(id -u)" != "0" ] && [ "${SOLIDTIME_PRIVILEGES_DROPPED:-0}" != "1" ]; then
+    echo "[entrypoint] ERROR: SOLIDTIME_DROP_PRIVILEGES=always requires the container to start as root" >&2
+    exit 1
+fi
+
+bootstrap_storage_tree() {
+    mkdir -p "${WRITABLE_PATHS[@]}" 2>/dev/null || return 1
+}
+
+# Proactive warning when the existing storage directory is owned by a non-default
+# UID (typical on NAS systems where host users aren't UID 1000) and PUID/PGID
+# aren't set. Without this nudge, the chown step silently re-owns the files to
+# 1000:1000 and the user only discovers the mismatch later when host-side tools
+# (backup, file browser, rsync) show unfamiliar ownership.
+maybe_warn_ownership_mismatch() {
+    [ "${SHOULD_DROP}" = "1" ] || return 0
+    [ -n "${PUID}" ] && return 0
+    [ -n "${PGID}" ] && return 0
+    [ -d "${STORAGE_PATH}" ] || return 0
+
+    local owner_uid owner_gid
+    owner_uid="$(stat -c '%u' "${STORAGE_PATH}" 2>/dev/null)" || return 0
+    owner_gid="$(stat -c '%g' "${STORAGE_PATH}" 2>/dev/null)" || return 0
+
+    # Root-owned: probably freshly created by the entrypoint, will be chowned shortly.
+    [ "${owner_uid}" = "0" ] && return 0
+    # Already the target: nothing to warn about.
+    [ "${owner_uid}" = "${TARGET_UID}" ] && return 0
+
+    cat >&2 <<EOF
+[entrypoint] NOTE: ${STORAGE_PATH} is owned by UID ${owner_uid}:${owner_gid},
+[entrypoint]       but the container is starting as UID ${TARGET_UID}:${TARGET_GID}.
+[entrypoint]       Files will be chowned to ${TARGET_UID}:${TARGET_GID} and may
+[entrypoint]       appear with an unfamiliar owner on the host.
+[entrypoint]
+[entrypoint]       If you want the container to write as UID ${owner_uid} (common
+[entrypoint]       on Synology / TrueNAS / Unraid where host users aren't UID
+[entrypoint]       1000), set in your env and restart:
+[entrypoint]
+[entrypoint]           PUID=${owner_uid}
+[entrypoint]           PGID=${owner_gid}
+[entrypoint]
+[entrypoint]       More: https://docs.solidtime.io/self-hosting/guides/permissions
+
+EOF
+}
+
+print_write_test_failure() {
+    local owner
+    owner="$(stat -c '%u:%g' "${STORAGE_PATH}" 2>/dev/null || echo unknown)"
+    local runtime_uid
+    local runtime_gid
+    if [ "$(id -u)" = "0" ] && [ "${SHOULD_DROP}" = "1" ]; then
+        runtime_uid="${TARGET_UID}"
+        runtime_gid="${TARGET_GID}"
+    else
+        runtime_uid="$(id -u)"
+        runtime_gid="$(id -g)"
+    fi
+    local owner_uid
+    owner_uid="$(stat -c '%u' "${STORAGE_PATH}" 2>/dev/null || echo 1000)"
+    local owner_gid
+    owner_gid="$(stat -c '%g' "${STORAGE_PATH}" 2>/dev/null || echo 1000)"
+    cat >&2 <<EOF
+
+============================================================
+ERROR: Solidtime writable directories are not writable.
+
+Diagnosis:
+  Container will run as: UID ${runtime_uid}, GID ${runtime_gid}
+  Storage directory owner: ${owner}
+
+Likely cause: a bind-mounted host directory is owned by a different
+user than the container's application user.
+
+Fix on the host:
+
+    sudo chown -R ${runtime_uid}:${runtime_gid} <your-bind-mount-path>
+
+Or set PUID/PGID to match the host directory owner:
+
+    PUID=${owner_uid}
+    PGID=${owner_gid}
+
+To run intentionally as root, set:
+
+    SOLIDTIME_DROP_PRIVILEGES=never
+
+For more help: https://docs.solidtime.io/self-hosting/guides/permissions
+============================================================
+
+EOF
+}
+
+write_test_as_user() {
+    local user="$1"
+    local script='
+        set -e
+        for dir in "$@"; do
+            test_file="${dir}/.solidtime-write-test"
+            touch "${test_file}"
+            rm -f "${test_file}"
+        done
+    '
+    if [ -n "${user}" ]; then
+        gosu "${user}" sh -c "${script}" sh "${WRITABLE_PATHS[@]}" 2>/dev/null
+    else
+        sh -c "${script}" sh "${WRITABLE_PATHS[@]}" 2>/dev/null
+    fi
+}
+
+# ----------------------------------------------------------------------------
+# Root preamble: bootstrap, remap, chown, write-test, then drop and re-exec.
+# ----------------------------------------------------------------------------
+if [ "$(id -u)" = "0" ]; then
+    if ! bootstrap_storage_tree; then
+        echo "[entrypoint] ERROR: failed to create storage subdirectories at ${STORAGE_PATH}" >&2
+        exit 1
+    fi
+
+    if [ "${SHOULD_DROP}" = "1" ]; then
+        maybe_warn_ownership_mismatch
+        if [ "${TARGET_UID}" != "${DEFAULT_UID}" ] || [ "${TARGET_GID}" != "${DEFAULT_GID}" ]; then
+            echo "[entrypoint] Remapping ${APP_USER} to ${TARGET_UID}:${TARGET_GID}"
+            groupmod -o -g "${TARGET_GID}" "${APP_USER}"
+            usermod  -o -u "${TARGET_UID}" "${APP_USER}"
+        fi
+        # Idempotent chown: only fix entries whose owner or group is wrong.
+        # On large storage volumes (lots of user uploads) this is dramatically
+        # faster than a blanket `chown -R` every restart. Pattern borrowed from
+        # docker-library/postgres and linuxserver.io's baseimage.
+        find "${STORAGE_PATH}" "${CACHE_PATH}" \
+            \( ! -user "${TARGET_UID}" -o ! -group "${TARGET_GID}" \) \
+            -exec chown "${TARGET_UID}:${TARGET_GID}" {} + 2>/dev/null || true
+
+        if ! write_test_as_user "${APP_USER}"; then
+            print_write_test_failure
+            exit 1
+        fi
+
+        exec gosu "${APP_USER}" env SOLIDTIME_PRIVILEGES_DROPPED=1 "$0" "$@"
+    fi
+
+    if ! write_test_as_user ""; then
+        print_write_test_failure
+        exit 1
+    fi
+else
+    if ! bootstrap_storage_tree; then
+        echo "[entrypoint] WARNING: could not create some storage subdirectories at ${STORAGE_PATH} (will continue if existing tree is writable)" >&2
+    fi
+    if ! write_test_as_user ""; then
+        print_write_test_failure
+        exit 1
+    fi
+fi
+
+# ----------------------------------------------------------------------------
+# Application: runs as APP_USER (or whatever non-root UID was started).
+# ----------------------------------------------------------------------------
+
+unset SOLIDTIME_PRIVILEGES_DROPPED
 
 container_mode=${CONTAINER_MODE:-"http"}
 octane_server=${OCTANE_SERVER}
@@ -8,14 +226,16 @@ auto_db_migrate=${AUTO_DB_MIGRATE:-false}
 initialStuff() {
     echo "Container mode: $container_mode"
 
-    if [ ${auto_db_migrate} = "true" ]; then
+    if [ "${auto_db_migrate}" = "true" ]; then
         echo "Auto database migration enabled."
         php artisan migrate --isolated --force
     fi
 
-    php artisan storage:link; \
-    php artisan optimize:clear; \
-    php artisan optimize;
+    if [ ! -L "${APP_PATH}/public/storage" ]; then
+        php artisan storage:link
+    fi
+    php artisan optimize:clear
+    php artisan optimize
 }
 
 if [ "$1" != "" ]; then
@@ -23,11 +243,11 @@ if [ "$1" != "" ]; then
 elif [ "${container_mode}" = "http" ]; then
     initialStuff
     echo "Octane Server: $octane_server"
-    if [ "${octane_server}"  = "frankenphp" ]; then
+    if [ "${octane_server}" = "frankenphp" ]; then
         exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.frankenphp.conf
-    elif [ "${octane_server}"  = "swoole" ]; then
+    elif [ "${octane_server}" = "swoole" ]; then
         exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.swoole.conf
-    elif [ "${octane_server}"  = "roadrunner" ]; then
+    elif [ "${octane_server}" = "roadrunner" ]; then
         exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.roadrunner.conf
     else
         echo "Invalid Octane server supplied."
