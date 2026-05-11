@@ -21,6 +21,7 @@ jobs:
           - openshift
           - drop-never
           - diagnostic
+          - puid-mismatch-warning
 
     steps:
       - name: Check out code
@@ -165,6 +166,49 @@ jobs:
               touch /var/www/html/storage/framework/cache/data/test-file
               echo "[smoke] PASS"
             '
+
+      - name: "Smoke: PUID set + started non-root prints a warning but continues"
+        if: matrix.mode == 'puid-mismatch-warning'
+        run: |
+          mkdir -p test-storage test-cache
+          sudo chown -R 1500:1500 test-storage test-cache
+
+          set +e
+          docker run --rm \
+            --user 1500:1500 \
+            -e PUID=1500 -e PGID=1500 \
+            -v "$(pwd)/test-storage:/var/www/html/storage" \
+            -v "$(pwd)/test-cache:/var/www/html/bootstrap/cache" \
+            solidtime-smoke:test \
+            sh -c '
+              set -e
+              echo "[smoke] running as 1500 (user: directive wins)"
+              [ "$(id -u)" = "1500" ]
+              echo "[smoke] storage is writable as 1500"
+              touch /var/www/html/storage/framework/cache/data/test-file
+              echo "[smoke] container completed successfully"
+            ' \
+            >stdout.log 2>stderr.log
+          exit_code=$?
+          set -e
+
+          echo "[smoke] exit code: $exit_code"
+          echo "--- stderr ---"
+          cat stderr.log
+          echo "--- end stderr ---"
+
+          if [ "$exit_code" -ne 0 ]; then
+            echo "Expected the entrypoint to continue (warning is non-fatal)."
+            exit 1
+          fi
+
+          for needle in "PUID/PGID is set but the container started as UID" "remove any 'user:' directive" "Continuing as UID"; do
+            if ! grep -q "$needle" stderr.log; then
+              echo "Missing warning fragment: $needle"
+              exit 1
+            fi
+          done
+          echo "[smoke] PASS"
 
       - name: "Smoke: diagnostic error path (read-only storage mount)"
         if: matrix.mode == 'diagnostic'

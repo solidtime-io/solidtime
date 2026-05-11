@@ -13,10 +13,13 @@ set -e
 #
 # Env vars:
 #   PUID, PGID                    UID/GID for the application user. Defaults 1000:1000.
-#   SOLIDTIME_DROP_PRIVILEGES     auto (default) | always | never
-#       auto:    if started as root, drop privileges; otherwise just exec.
-#       always:  if started as root, drop privileges (errors if not root).
-#       never:   never drop. Run as whatever UID/GID was started.
+#                                 Only takes effect when the container starts as root
+#                                 (which is the image's default — if you set a
+#                                 `user:` directive in compose, PUID/PGID are ignored
+#                                 and a startup warning is printed).
+#   SOLIDTIME_DROP_PRIVILEGES     auto (default) | never
+#       auto:    if started as root, drop privileges to APP_USER; otherwise just exec.
+#       never:   never drop privileges. Run as whatever UID/GID was started.
 # ============================================================================
 
 APP_USER="octane"
@@ -40,7 +43,6 @@ WRITABLE_PATHS=(
 )
 
 case "${DROP_PRIVS}" in
-    always) SHOULD_DROP=1 ;;
     never)  SHOULD_DROP=0 ;;
     auto)
         if [ "$(id -u)" = "0" ]; then
@@ -51,14 +53,28 @@ case "${DROP_PRIVS}" in
         ;;
     *)
         echo "[entrypoint] ERROR: invalid SOLIDTIME_DROP_PRIVILEGES='${DROP_PRIVS}'" >&2
-        echo "[entrypoint] Valid values: auto (default), always, never" >&2
+        echo "[entrypoint] Valid values: auto (default), never" >&2
         exit 1
         ;;
 esac
 
-if [ "${DROP_PRIVS}" = "always" ] && [ "$(id -u)" != "0" ] && [ "${SOLIDTIME_PRIVILEGES_DROPPED:-0}" != "1" ]; then
-    echo "[entrypoint] ERROR: SOLIDTIME_DROP_PRIVILEGES=always requires the container to start as root" >&2
-    exit 1
+# Warn if PUID/PGID are set but the container started non-root. PUID/PGID only
+# take effect during the drop-privileges flow, which requires starting as root.
+# A common cause is leaving `user:` in the compose file alongside PUID env vars.
+if { [ -n "${PUID}" ] || [ -n "${PGID}" ]; } \
+    && [ "$(id -u)" != "0" ] \
+    && [ "${SOLIDTIME_PRIVILEGES_DROPPED:-0}" != "1" ]; then
+    cat >&2 <<EOF
+[entrypoint] WARNING: PUID/PGID is set but the container started as UID $(id -u) (not root).
+[entrypoint] WARNING: PUID/PGID only apply when the entrypoint runs as root and drops privileges.
+[entrypoint] WARNING:
+[entrypoint] WARNING: To use PUID/PGID: remove any 'user:' directive from your compose file.
+[entrypoint] WARNING: To run as a fixed UID: remove PUID/PGID from your env.
+[entrypoint] WARNING:
+[entrypoint] WARNING: Continuing as UID $(id -u). See:
+[entrypoint] WARNING:   https://docs.solidtime.io/self-hosting/guides/permissions
+
+EOF
 fi
 
 bootstrap_storage_tree() {
