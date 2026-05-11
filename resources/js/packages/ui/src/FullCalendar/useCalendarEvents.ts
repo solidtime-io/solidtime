@@ -265,9 +265,9 @@ export function useCalendarEvents(params: {
                     'seconds'
                 );
             } else {
-                durationSeconds = params.currentTime.value.diff(
-                    getDayJsInstance()(entry.start),
-                    'seconds'
+                durationSeconds = Math.max(
+                    0,
+                    params.currentTime.value.diff(getDayJsInstance()(entry.start), 'seconds')
                 );
             }
 
