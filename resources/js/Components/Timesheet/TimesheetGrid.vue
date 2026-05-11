@@ -59,10 +59,9 @@ const emit = defineEmits<{
             <div
                 class="grid min-w-full w-max border-y border-default-background-separator"
                 style="
-                    grid-template-columns: minmax(420px, 1fr) repeat(7, minmax(96px, 120px)) minmax(
-                            100px,
-                            auto
-                        ) 40px;
+                    grid-template-columns:
+                        minmax(420px, 1fr) repeat(7, minmax(96px, 120px)) minmax(100px, auto)
+                        40px;
                 ">
                 <!-- Header row -->
                 <div
