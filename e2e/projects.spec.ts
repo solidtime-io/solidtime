@@ -640,7 +640,7 @@ test('test that creating a project with estimated time in human-readable format 
     await page.getByLabel('Project Name').fill(newProjectName);
 
     // Fill in estimated time using human-readable format
-    const estimatedTimeInput = page.getByPlaceholder('e.g. 2h 30m or 1.5');
+    const estimatedTimeInput = page.getByLabel('Time Estimated');
     await estimatedTimeInput.fill('2h 30m');
     await estimatedTimeInput.press('Tab');
 
@@ -668,7 +668,7 @@ test('test that creating a project with estimated time using decimal notation wo
     await page.getByLabel('Project Name').fill(newProjectName);
 
     // Fill in estimated time using decimal notation (1.5 hours = 1h 30m)
-    const estimatedTimeInput = page.getByPlaceholder('e.g. 2h 30m or 1.5');
+    const estimatedTimeInput = page.getByLabel('Time Estimated');
     await estimatedTimeInput.fill('1.5');
     await estimatedTimeInput.press('Tab');
 
@@ -696,7 +696,7 @@ test('test that creating a project with estimated time using comma decimal notat
     await page.getByLabel('Project Name').fill(newProjectName);
 
     // Fill in estimated time using comma decimal notation (2,5 hours = 2h 30m)
-    const estimatedTimeInput = page.getByPlaceholder('e.g. 2h 30m or 1.5');
+    const estimatedTimeInput = page.getByLabel('Time Estimated');
     await estimatedTimeInput.fill('2,5');
     await estimatedTimeInput.press('Tab');
 
@@ -727,7 +727,7 @@ test('test that updating estimated time on existing project works', async ({ pag
     await page.getByRole('menuitem').getByText('Edit').first().click();
 
     // Fill in estimated time
-    const estimatedTimeInput = page.getByPlaceholder('e.g. 2h 30m or 1.5');
+    const estimatedTimeInput = page.getByLabel('Time Estimated');
     await estimatedTimeInput.fill('4h 15m');
     await estimatedTimeInput.press('Tab');
 
@@ -748,7 +748,7 @@ test('test that estimated time input displays formatted value after blur', async
     await goToProjectsOverview(page);
     await page.getByRole('button', { name: 'Create Project' }).click();
 
-    const estimatedTimeInput = page.getByPlaceholder('e.g. 2h 30m or 1.5');
+    const estimatedTimeInput = page.getByLabel('Time Estimated');
 
     // Enter time in various formats and check the displayed value
     await estimatedTimeInput.fill('90');
