@@ -170,12 +170,9 @@ async function createTag(name: string): Promise<Tag | undefined> {
                 @remove-row="handleRemoveRow"
                 @cell-update="handleCellUpdate"
                 @project-task-change="
-                    (row, projectId, taskId) =>
-                        handleRowIdentityChange(row, { projectId, taskId })
+                    (row, projectId, taskId) => handleRowIdentityChange(row, { projectId, taskId })
                 "
-                @billable-change="
-                    (row, billable) => handleRowIdentityChange(row, { billable })
-                "
+                @billable-change="(row, billable) => handleRowIdentityChange(row, { billable })"
                 @tags-change="(row, tags) => handleRowIdentityChange(row, { tags })"
                 @add-row="handleAddRow" />
 

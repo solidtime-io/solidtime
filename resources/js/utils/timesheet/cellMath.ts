@@ -88,7 +88,6 @@ export function findFreeWindowOnDay(
     // Sort + merge so we can walk a clean [gap, obstacle, gap, ...] sequence.
     obstacles.sort((a, b) => a.start.diff(b.start));
 
-
     // merge overlaps
     const merged: Interval[] = [];
     for (const obs of obstacles) {

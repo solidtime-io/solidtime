@@ -43,9 +43,7 @@ const emit = defineEmits<{
                                 disabled:opacity-50 disabled:cursor-not-allowed" />
                     </span>
                 </TooltipTrigger>
-                <TooltipContent>
-                    Stop the running time entry to edit the timesheet
-                </TooltipContent>
+                <TooltipContent> Stop the running time entry to edit the timesheet </TooltipContent>
             </Tooltip>
         </TooltipProvider>
         <DurationSecondsInput
