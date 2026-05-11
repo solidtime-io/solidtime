@@ -907,7 +907,7 @@ test.describe('Employee Sidebar Navigation', () => {
 
         // Visible links
         await expect(employee.page.getByRole('link', { name: 'Dashboard' })).toBeVisible();
-        await expect(employee.page.getByRole('link', { name: 'Time' })).toBeVisible();
+        await expect(employee.page.getByRole('link', { name: 'Time', exact: true })).toBeVisible();
         await expect(employee.page.getByRole('link', { name: 'Calendar' })).toBeVisible();
         await expect(employee.page.getByRole('link', { name: 'Projects' })).toBeVisible();
         await expect(employee.page.getByRole('link', { name: 'Clients' })).toBeVisible();
