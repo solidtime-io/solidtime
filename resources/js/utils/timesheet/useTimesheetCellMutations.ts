@@ -19,7 +19,6 @@ import {
     type FreeWindow,
 } from './cellMath';
 
-
 /**
  * Cell-level edit dispatcher. Picks one of four strategies based on
  * the diff between current and requested totals:
@@ -316,7 +315,6 @@ export function useTimesheetCellMutations(
         }
         return best;
     }
-
 
     return { handleCellUpdate };
 }
