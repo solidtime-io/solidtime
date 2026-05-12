@@ -10,12 +10,57 @@ use App\Models\Tag;
 use App\Models\Task;
 use App\Models\TimeEntry;
 use App\Service\TimeEntryFilter;
+use Illuminate\Support\Carbon;
 use PHPUnit\Framework\Attributes\CoversClass;
 use Tests\TestCaseWithDatabase;
 
 #[CoversClass(TimeEntryFilter::class)]
 class TimeEntryFilterTest extends TestCaseWithDatabase
 {
+    public function test_add_start_is_inclusive_of_boundary(): void
+    {
+        // Arrange
+        $boundary = Carbon::parse('2024-01-01 12:00:00', 'UTC');
+        $entryAtBoundary = TimeEntry::factory()->start($boundary)->create();
+        $entryAfterBoundary = TimeEntry::factory()->start($boundary->copy()->addSecond())->create();
+        $entryBeforeBoundary = TimeEntry::factory()->start($boundary->copy()->subSecond())->create();
+
+        $builder = TimeEntry::query();
+        $filter = new TimeEntryFilter($builder);
+
+        // Act
+        $filter->addStart($boundary);
+
+        // Assert
+        $timeEntries = $builder->get();
+        $this->assertCount(2, $timeEntries);
+        $this->assertTrue($timeEntries->contains($entryAtBoundary));
+        $this->assertTrue($timeEntries->contains($entryAfterBoundary));
+        $this->assertFalse($timeEntries->contains($entryBeforeBoundary));
+    }
+
+    public function test_add_end_is_exclusive_of_boundary(): void
+    {
+        // Arrange
+        $boundary = Carbon::parse('2024-01-01 12:00:00', 'UTC');
+        $entryAtBoundary = TimeEntry::factory()->start($boundary)->create();
+        $entryAfterBoundary = TimeEntry::factory()->start($boundary->copy()->addSecond())->create();
+        $entryBeforeBoundary = TimeEntry::factory()->start($boundary->copy()->subSecond())->create();
+
+        $builder = TimeEntry::query();
+        $filter = new TimeEntryFilter($builder);
+
+        // Act
+        $filter->addEnd($boundary);
+
+        // Assert
+        $timeEntries = $builder->get();
+        $this->assertCount(1, $timeEntries);
+        $this->assertTrue($timeEntries->contains($entryBeforeBoundary));
+        $this->assertFalse($timeEntries->contains($entryAtBoundary));
+        $this->assertFalse($timeEntries->contains($entryAfterBoundary));
+    }
+
     public function test_add_tag_ids_filter_is_or(): void
     {
         // Arrange
