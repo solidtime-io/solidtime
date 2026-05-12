@@ -16,6 +16,8 @@ import ProjectCreateModal from '@/packages/ui/src/Project/ProjectCreateModal.vue
 import { twMerge } from 'tailwind-merge';
 import { Button } from '@/packages/ui/src/Buttons';
 
+const NO_PROJECT_ID = '';
+
 const task = defineModel<string | null>('task', {
     default: null,
 });
@@ -57,6 +59,7 @@ const props = withDefaults(
         currency: string;
         emptyPlaceholder?: string;
         allowReset?: boolean;
+        noProjectValue?: string | null;
         enableEstimatedTime: boolean;
         organizationBillableRate: number | null;
         canCreateProject: boolean;
@@ -68,6 +71,7 @@ const props = withDefaults(
     {
         emptyPlaceholder: 'No Project',
         allowReset: false,
+        noProjectValue: NO_PROJECT_ID,
         variant: 'ghost',
         align: 'center',
         size: 'sm',
@@ -164,10 +168,10 @@ function updateFilteredResults() {
             is_archived: false,
             projects: [
                 {
-                    id: '',
+                    id: NO_PROJECT_ID,
                     name: 'No Project',
                     color: 'var(--theme-color-icon-default)',
-                    value: '',
+                    value: NO_PROJECT_ID,
                     client_id: null,
                     billable_rate: null,
                     is_archived: false,
@@ -490,7 +494,7 @@ function selectTask(taskId: string) {
 }
 
 function selectProject(projectId: string) {
-    project.value = projectId;
+    project.value = projectId === NO_PROJECT_ID ? props.noProjectValue : projectId;
     task.value = null;
     open.value = false;
     searchValue.value = '';
