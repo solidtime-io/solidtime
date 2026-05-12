@@ -123,6 +123,7 @@ const emit = defineEmits<{
                         :create-project="createProject"
                         :create-client="createClient"
                         :organization-billable-rate="organization?.billable_rate ?? null"
+                        :no-project-value="null"
                         @changed="(p, t) => emit('add-row', p, t)">
                         <template #trigger>
                             <Button variant="ghost" size="sm" class="text-text-secondary">

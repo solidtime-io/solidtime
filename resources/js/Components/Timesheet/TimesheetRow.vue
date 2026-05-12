@@ -81,6 +81,7 @@ function hasRunningEntry(dayIndex: number): boolean {
                     :create-project="createProject"
                     :create-client="createClient"
                     :organization-billable-rate="organization?.billable_rate ?? null"
+                    :no-project-value="null"
                     variant="ghost"
                     size="sm"
                     class="w-full" />
