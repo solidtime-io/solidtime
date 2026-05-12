@@ -26,6 +26,15 @@ interface Interval {
     end: Dayjs;
 }
 
+function localDayBounds(date: string, tz: string): { dayStart: Dayjs; dayEnd: Dayjs } {
+    const dayjs = getDayJsInstance();
+    const localDayStart = dayjs.tz(`${date} 00:00:00`, tz);
+    return {
+        dayStart: localDayStart.utc(),
+        dayEnd: localDayStart.add(1, 'day').utc(),
+    };
+}
+
 /**
  * Collect entries that intersect the day `[dayStart, dayEnd)`, clipped
  * to those bounds. Running entries use `nowDayjs` as their end.
@@ -76,8 +85,7 @@ export function findFreeWindowOnDay(
     if (requiredSeconds <= 0) return null;
 
     const dayjs = getDayJsInstance();
-    const dayStart = dayjs.tz(`${date} 00:00:00`, tz).utc();
-    const dayEnd = dayStart.add(1, 'day');
+    const { dayStart, dayEnd } = localDayBounds(date, tz);
 
     if (requiredSeconds > dayEnd.diff(dayStart, 'second')) return null;
 
@@ -149,8 +157,7 @@ export function freeGapSecondsAfter(
     now?: string | Dayjs
 ): number {
     const dayjs = getDayJsInstance();
-    const dayStart = dayjs.tz(`${date} 00:00:00`, tz).utc();
-    const dayEnd = dayStart.add(1, 'day');
+    const { dayStart, dayEnd } = localDayBounds(date, tz);
     const cursorDjs = dayjs.utc(cursor);
 
     if (cursorDjs.isSameOrAfter(dayEnd)) return 0;
