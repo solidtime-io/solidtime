@@ -62,7 +62,7 @@ class TimeEntryFilter
         if ($start === null) {
             return $this;
         }
-        $this->builder->where('start', '>', $start);
+        $this->builder->where('start', '>=', $start);
 
         return $this;
     }
