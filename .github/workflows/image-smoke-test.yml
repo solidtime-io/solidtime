@@ -249,7 +249,7 @@ jobs:
             exit 1
           fi
 
-          for needle in "is not writable" "PUID=" "permissions"; do
+          for needle in "not writable" "PUID=" "permissions"; do
             if ! grep -q "$needle" stderr.log; then
               echo "Missing diagnostic fragment: $needle"
               exit 1
