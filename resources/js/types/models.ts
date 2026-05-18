@@ -29,9 +29,7 @@ export interface Organization {
     created_at: string | null;
     updated_at: string | null;
     // relations
-    owner: User;
-    users: User[];
-    team_invitations: OrganizationInvitation[];
+    owner: Pick<User, 'id' | 'name' | 'profile_photo_url'>;
 }
 
 export interface OrganizationInvitation {
