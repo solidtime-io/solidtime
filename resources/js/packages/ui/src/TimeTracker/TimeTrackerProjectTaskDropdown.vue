@@ -11,7 +11,7 @@ import type {
     Client,
 } from '@/packages/api/src';
 
-import { PlusIcon, PlusCircleIcon, MinusIcon, XMarkIcon } from '@heroicons/vue/16/solid';
+import { PlusCircleIcon, MinusIcon, XMarkIcon } from '@heroicons/vue/16/solid';
 import ProjectCreateModal from '@/packages/ui/src/Project/ProjectCreateModal.vue';
 import { twMerge } from 'tailwind-merge';
 import { Button } from '@/packages/ui/src/Buttons';
@@ -511,17 +511,7 @@ const showCreateProject = ref(false);
 </script>
 
 <template>
-    <template v-if="projects.length === 0 && canCreateProject">
-        <Button
-            :variant="props.variant"
-            :size="props.size"
-            :class="twMerge('w-full justify-start', props.class)"
-            @click="showCreateProject = true">
-            <PlusIcon class="w-4" />
-            <span class="truncate">Add new project</span>
-        </Button>
-    </template>
-    <Dropdown v-else v-model="open" :close-on-content-click="false" :align="props.align">
+    <Dropdown v-model="open" :close-on-content-click="false" :align="props.align">
         <template #trigger>
             <slot name="trigger">
                 <div class="flex items-center gap-1">
