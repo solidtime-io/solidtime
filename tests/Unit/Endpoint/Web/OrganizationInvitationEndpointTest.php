@@ -131,8 +131,8 @@ class OrganizationInvitationEndpointTest extends EndpointTestAbstract
         // Assert
         $response->assertValid();
         $response->assertRedirect(route('login'));
-        $response->assertSessionHas('bannerText', 'Please log in to finish joining the '.$user->organization->name.' organization.');
-        $response->assertSessionHas('bannerStyle', 'info');
+        $response->assertSessionHas('bannerText', 'Great! You have accepted the invitation to join the '.$user->organization->name.' organization. Please log in to access it.');
+        $response->assertSessionHas('bannerStyle', 'success');
         // Member was added silently — invitation is consumed.
         $this->assertDatabaseHas(Member::class, [
             'user_id' => $invitee->getKey(),
