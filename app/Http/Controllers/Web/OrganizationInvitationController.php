@@ -9,6 +9,7 @@ use App\Models\OrganizationInvitation;
 use App\Models\User;
 use App\Service\MemberService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
 use RuntimeException;
 
 class OrganizationInvitationController extends Controller
@@ -21,44 +22,54 @@ class OrganizationInvitationController extends Controller
             throw new RuntimeException('Invalid role');
         }
 
-        $newOrganizationMember = User::query()
+        $organization = $invitation->organization;
+        $invitee = User::query()
             ->where('email', $email)
             ->where('is_placeholder', '=', false)
             ->first();
 
-        if ($newOrganizationMember === null) {
+        // No account yet — finish on registration.
+        if ($invitee === null) {
             if ($invitation->accepted_at === null) {
                 $invitation->accepted_at = now();
                 $invitation->save();
             }
 
-            return redirect(route('register', [
-                'bannerStyle' => 'info',
-                'bannerText' => __('Please create an account to finish joining the :organization organization.', [
-                    'organization' => $invitation->organization->name,
-                ]),
-            ]));
-        } else {
-            $organization = $invitation->organization;
-            if ($memberService->isEmailAlreadyMember($organization, $email)) {
-                return redirect(route('dashboard', [
-                    'bannerStyle' => 'danger',
-                    'bannerText' => __('You are already a member of the :organization organization.', [
-                        'organization' => $organization->name,
-                    ]),
-                ]));
-            }
-
-            $memberService->addMember($newOrganizationMember, $organization, $role);
-
-            $invitation->delete();
-
-            return redirect(route('dashboard', [
-                'bannerStyle' => 'success',
-                'bannerText' => __('Great! You have accepted the invitation to join the :organization organization.', [
-                    'organization' => $invitation->organization->name,
-                ]),
-            ]));
+            return redirect(route('register'))
+                ->with('bannerText', __('Please create an account to finish joining the :organization organization.', [
+                    'organization' => $organization->name,
+                ]))
+                ->with('bannerStyle', 'info');
         }
+
+        $alreadyMember = $memberService->isEmailAlreadyMember($organization, $email);
+        if (! $alreadyMember) {
+            $memberService->addMember($invitee, $organization, $role);
+            $invitation->delete();
+        }
+
+        // Logged out — banner on /login.
+        if (! Auth::check()) {
+            return redirect(route('login'))
+                ->with('bannerText', __('Please log in to finish joining the :organization organization.', [
+                    'organization' => $organization->name,
+                ]))
+                ->with('bannerStyle', 'info');
+        }
+
+        // Logged in — banner on /dashboard.
+        if ($alreadyMember) {
+            return redirect(route('dashboard'))
+                ->with('bannerText', __('You are already a member of the :organization organization.', [
+                    'organization' => $organization->name,
+                ]))
+                ->with('bannerStyle', 'danger');
+        }
+
+        return redirect(route('dashboard'))
+            ->with('bannerText', __('Great! You have accepted the invitation to join the :organization organization.', [
+                'organization' => $organization->name,
+            ]))
+            ->with('bannerStyle', 'success');
     }
 }

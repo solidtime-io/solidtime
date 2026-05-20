@@ -60,6 +60,8 @@ class HandleInertiaRequests extends Middleware
             ] : null,
             'flash' => [
                 'message' => fn () => $request->session()->get('message'),
+                'bannerText' => fn () => $request->session()->get('bannerText'),
+                'bannerStyle' => fn () => $request->session()->get('bannerStyle'),
             ],
         ]);
     }
