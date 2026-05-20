@@ -170,10 +170,24 @@ function parseDurationToSeconds(duration: string): number {
     return totalSeconds;
 }
 
+/**
+ * Builds a start/end pair anchored to 09:00 UTC on today's UTC date.
+ *
+ * Intentionally pinned to UTC (rather than the runner's local time) so
+ * the produced timestamps are identical regardless of where the suite
+ * runs. Playwright test users default to UTC, so this matches what the
+ * app will see and keeps day-of-week / "this week" assertions stable
+ * for developers running the suite locally in non-UTC timezones.
+ */
 function createTimestamps(duration: string): { start: string; end: string } {
     const durationSeconds = parseDurationToSeconds(duration);
     const now = new Date();
-    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 9, 0, 0);
+    const start = createUtcTimestampFromDateParts(
+        now.getUTCFullYear(),
+        now.getUTCMonth(),
+        now.getUTCDate(),
+        9
+    );
     const end = new Date(start.getTime() + durationSeconds * 1000);
 
     return {
@@ -184,6 +198,32 @@ function createTimestamps(duration: string): { start: string; end: string } {
 
 function formatTimestamp(date: Date): string {
     return date.toISOString().replace(/\.\d{3}Z$/, 'Z');
+}
+
+function createUtcTimestampFromDateParts(
+    year: number,
+    month: number,
+    date: number,
+    hours: number,
+    minutes: number = 0,
+    seconds: number = 0
+): Date {
+    return new Date(Date.UTC(year, month, date, hours, minutes, seconds));
+}
+
+function createTimestampsOnDate(date: Date, duration: string): { start: string; end: string } {
+    const durationSeconds = parseDurationToSeconds(duration);
+    const start = createUtcTimestampFromDateParts(
+        date.getUTCFullYear(),
+        date.getUTCMonth(),
+        date.getUTCDate(),
+        9
+    );
+    const end = new Date(start.getTime() + durationSeconds * 1000);
+    return {
+        start: formatTimestamp(start),
+        end: formatTimestamp(end),
+    };
 }
 
 function randomColor(): string {
@@ -355,6 +395,39 @@ export async function createTimeEntryViaApi(
     }
 ) {
     const { start, end } = createTimestamps(data.duration);
+    const response = await ctx.request.post(
+        `${PLAYWRIGHT_BASE_URL}/api/v1/organizations/${ctx.orgId}/time-entries`,
+        {
+            data: {
+                member_id: ctx.memberId,
+                start,
+                end,
+                description: data.description ?? '',
+                project_id: data.projectId ?? null,
+                task_id: data.taskId ?? null,
+                tags: data.tags ?? [],
+                billable: data.billable ?? false,
+            },
+        }
+    );
+    expect(response.status()).toBe(201);
+    const body = await response.json();
+    return body.data as { id: string; start: string; end: string; description: string };
+}
+
+export async function createTimeEntryOnDateViaApi(
+    ctx: TestContext,
+    data: {
+        date: Date;
+        duration: string;
+        description?: string;
+        projectId?: string | null;
+        taskId?: string | null;
+        tags?: string[];
+        billable?: boolean;
+    }
+) {
+    const { start, end } = createTimestampsOnDate(data.date, data.duration);
     const response = await ctx.request.post(
         `${PLAYWRIGHT_BASE_URL}/api/v1/organizations/${ctx.orgId}/time-entries`,
         {
@@ -612,6 +685,72 @@ export async function getInvitationsViaApi(ctx: TestContext) {
 // ──────────────────────────────────────────────────
 // Timestamp-based time entry helpers
 // ──────────────────────────────────────────────────
+
+/**
+ * Creates a time entry on `date` at a specific UTC hour with a duration
+ * in seconds. Playwright test users default to the UTC timezone, so this
+ * keeps time-placement scenarios stable across runner locales.
+ */
+export async function createTimeEntryAtHourViaApi(
+    ctx: TestContext,
+    data: {
+        date: Date;
+        startHour: number;
+        startMinute?: number;
+        durationSeconds: number;
+        projectId?: string | null;
+        taskId?: string | null;
+        description?: string;
+    }
+) {
+    const start = createUtcTimestampFromDateParts(
+        data.date.getUTCFullYear(),
+        data.date.getUTCMonth(),
+        data.date.getUTCDate(),
+        data.startHour,
+        data.startMinute ?? 0
+    );
+    const end = new Date(start.getTime() + data.durationSeconds * 1000);
+    return createTimeEntryWithTimestampsViaApi(ctx, {
+        start: formatTimestamp(start),
+        end: formatTimestamp(end),
+        projectId: data.projectId ?? null,
+        taskId: data.taskId ?? null,
+        description: data.description ?? '',
+    });
+}
+
+/**
+ * Reads time entries for the current member, optionally filtered to a
+ * date range. Returns the raw API objects (id, start, end, project_id,
+ * etc.) so tests can assert on the database state after a UI action.
+ */
+export async function getTimeEntriesViaApi(
+    ctx: TestContext,
+    filters: { start?: string; end?: string } = {}
+): Promise<
+    Array<{
+        id: string;
+        start: string;
+        end: string | null;
+        duration: number | null;
+        project_id: string | null;
+        task_id: string | null;
+        description: string;
+    }>
+> {
+    const params = new URLSearchParams();
+    params.set('member_id', ctx.memberId);
+    if (filters.start) params.set('start', filters.start);
+    if (filters.end) params.set('end', filters.end);
+
+    const response = await ctx.request.get(
+        `${PLAYWRIGHT_BASE_URL}/api/v1/organizations/${ctx.orgId}/time-entries?${params.toString()}`
+    );
+    expect(response.status()).toBe(200);
+    const body = await response.json();
+    return body.data;
+}
 
 export async function createTimeEntryWithTimestampsViaApi(
     ctx: TestContext,
