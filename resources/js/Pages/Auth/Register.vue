@@ -2,6 +2,7 @@
 import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import AuthenticationCard from '@/Components/AuthenticationCard.vue';
 import AuthenticationCardLogo from '@/Components/AuthenticationCardLogo.vue';
+import Banner from '@/Components/Banner.vue';
 import Checkbox from '@/packages/ui/src/Input/Checkbox.vue';
 import { Field, FieldLabel, FieldError } from '@/packages/ui/src/field';
 import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
@@ -40,6 +41,8 @@ const page = usePage<{
 
 <template>
     <Head title="Register" />
+
+    <Banner />
 
     <AuthenticationCard>
         <template #logo>
