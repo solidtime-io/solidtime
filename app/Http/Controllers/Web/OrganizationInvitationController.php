@@ -51,10 +51,10 @@ class OrganizationInvitationController extends Controller
         // Logged out — banner on /login.
         if (! Auth::check()) {
             return redirect(route('login'))
-                ->with('bannerText', __('Please log in to finish joining the :organization organization.', [
+                ->with('bannerText', __('Great! You have accepted the invitation to join the :organization organization. Please log in to access it.', [
                     'organization' => $organization->name,
                 ]))
-                ->with('bannerStyle', 'info');
+                ->with('bannerStyle', 'success');
         }
 
         // Logged in — banner on /dashboard.
