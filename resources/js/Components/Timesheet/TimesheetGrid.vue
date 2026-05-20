@@ -124,6 +124,7 @@ const emit = defineEmits<{
                         :create-client="createClient"
                         :organization-billable-rate="organization?.billable_rate ?? null"
                         :no-project-value="null"
+                        align="start"
                         @changed="(p, t) => emit('add-row', p, t)">
                         <template #trigger>
                             <Button variant="ghost" size="sm" class="text-text-secondary">
@@ -144,7 +145,7 @@ const emit = defineEmits<{
                     :key="dayIndex"
                     data-testid="timesheet_day_total"
                     :class="[
-                        'flex items-center justify-center border-t border-default-background-separator bg-secondary px-2 py-1 text-xs font-medium',
+                        'flex items-center justify-center border-t border-default-background-separator bg-background dark:bg-secondary px-2 py-1 text-xs font-medium',
                         weekDays[dayIndex] === todayDate
                             ? 'text-text-primary'
                             : 'text-text-secondary',
@@ -154,10 +155,11 @@ const emit = defineEmits<{
                     </span>
                 </div>
                 <div
-                    class="flex items-center justify-end border-t border-default-background-separator bg-secondary pl-3 pr-3 py-1 text-xs font-semibold text-text-primary">
+                    class="flex items-center justify-end border-t border-default-background-separator bg-background dark:bg-secondary pl-3 pr-3 py-1 text-xs font-semibold text-text-primary">
                     {{ weekTotalFormatted }}
                 </div>
-                <div class="border-t border-default-background-separator bg-secondary"></div>
+                <div
+                    class="border-t border-default-background-separator bg-background dark:bg-secondary"></div>
             </div>
         </div>
     </div>

@@ -124,6 +124,7 @@ function hasRunningEntry(dayIndex: number): boolean {
             <Button
                 variant="ghost"
                 size="icon"
+                aria-label="Remove row"
                 class="h-6 w-6 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
                 @click="emit('removeRow', row.key)">
                 <XMarkIcon class="h-3.5 w-3.5 text-icon-default" />
