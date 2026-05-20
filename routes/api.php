@@ -61,7 +61,6 @@ Route::prefix('v1')->name('v1.')->group(static function (): void {
         // User routes
         Route::name('users.')->group(static function (): void {
             Route::get('/users/me', [UserController::class, 'me'])->name('me');
-            Route::put('/users/{user}', [UserController::class, 'update'])->name('update');
             Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('destroy');
         });
 

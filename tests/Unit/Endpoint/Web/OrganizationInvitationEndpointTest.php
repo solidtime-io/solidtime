@@ -35,10 +35,9 @@ class OrganizationInvitationEndpointTest extends EndpointTestAbstract
 
         // Assert
         $response->assertValid();
-        $response->assertRedirect(route('register', [
-            'bannerStyle' => 'info',
-            'bannerText' => 'Please create an account to finish joining the '.$user->organization->name.' organization.',
-        ]));
+        $response->assertRedirect(route('register'));
+        $response->assertSessionHas('bannerText', 'Please create an account to finish joining the '.$user->organization->name.' organization.');
+        $response->assertSessionHas('bannerStyle', 'info');
         $invitation->refresh();
         $this->assertNotNull($invitation->accepted_at);
     }
@@ -52,7 +51,7 @@ class OrganizationInvitationEndpointTest extends EndpointTestAbstract
             ->create();
 
         // Act
-        $acceptUrl = URl::to(URL::temporarySignedRoute(
+        $acceptUrl = URL::to(URL::temporarySignedRoute(
             'organization-invitations.accept',
             now()->addMinutes(60),
             [$invitation->getKey()],
@@ -62,10 +61,9 @@ class OrganizationInvitationEndpointTest extends EndpointTestAbstract
 
         // Assert
         $response->assertValid();
-        $response->assertRedirect(route('register', [
-            'bannerStyle' => 'info',
-            'bannerText' => 'Please create an account to finish joining the '.$user->organization->name.' organization.',
-        ]));
+        $response->assertRedirect(route('register'));
+        $response->assertSessionHas('bannerText', 'Please create an account to finish joining the '.$user->organization->name.' organization.');
+        $response->assertSessionHas('bannerStyle', 'info');
         $invitation->refresh();
         $this->assertNotNull($invitation->accepted_at);
     }
@@ -84,7 +82,7 @@ class OrganizationInvitationEndpointTest extends EndpointTestAbstract
         $this->actingAs($user2->user);
 
         // Act
-        $acceptUrl = URl::to(URL::temporarySignedRoute(
+        $acceptUrl = URL::to(URL::temporarySignedRoute(
             'organization-invitations.accept',
             now()->addMinutes(60),
             [$invitation->getKey()],
@@ -94,12 +92,50 @@ class OrganizationInvitationEndpointTest extends EndpointTestAbstract
 
         // Assert
         $response->assertValid();
-        $response->assertRedirect(route('dashboard', [
-            'bannerStyle' => 'success',
-            'bannerText' => 'Great! You have accepted the invitation to join the '.$user->organization->name.' organization.',
-        ]));
+        $response->assertRedirect(route('dashboard'));
+        $response->assertSessionHas('bannerText', 'Great! You have accepted the invitation to join the '.$user->organization->name.' organization.');
+        $response->assertSessionHas('bannerStyle', 'success');
         $this->assertDatabaseHas(Member::class, [
             'user_id' => $user2->user->getKey(),
+            'organization_id' => $user->organization->getKey(),
+            'role' => Role::Employee->value,
+        ]);
+        $this->assertDatabaseMissing(OrganizationInvitation::class, [
+            'id' => $invitation->getKey(),
+        ]);
+    }
+
+    public function test_accepting_invitation_while_logged_out_redirects_to_login(): void
+    {
+        // Arrange
+        $user = $this->createUserWithPermission();
+        $invitee = User::factory()->create([
+            'email' => 'invitee@example.com',
+        ]);
+        $invitation = OrganizationInvitation::factory()
+            ->forOrganization($user->organization)
+            ->create([
+                'role' => Role::Employee->value,
+                'email' => $invitee->email,
+            ]);
+
+        // Act (no actingAs — request is unauthenticated)
+        $acceptUrl = URL::to(URL::temporarySignedRoute(
+            'organization-invitations.accept',
+            now()->addMinutes(60),
+            [$invitation->getKey()],
+            false
+        ));
+        $response = $this->get($acceptUrl);
+
+        // Assert
+        $response->assertValid();
+        $response->assertRedirect(route('login'));
+        $response->assertSessionHas('bannerText', 'Please log in to finish joining the '.$user->organization->name.' organization.');
+        $response->assertSessionHas('bannerStyle', 'info');
+        // Member was added silently — invitation is consumed.
+        $this->assertDatabaseHas(Member::class, [
+            'user_id' => $invitee->getKey(),
             'organization_id' => $user->organization->getKey(),
             'role' => Role::Employee->value,
         ]);
@@ -123,7 +159,7 @@ class OrganizationInvitationEndpointTest extends EndpointTestAbstract
         $this->actingAs($user2->user);
 
         // Act
-        $acceptUrl = URl::to(URL::temporarySignedRoute(
+        $acceptUrl = URL::to(URL::temporarySignedRoute(
             'organization-invitations.accept',
             now()->addMinutes(60),
             [$invitation->getKey()],
@@ -133,10 +169,9 @@ class OrganizationInvitationEndpointTest extends EndpointTestAbstract
 
         // Assert
         $response->assertValid();
-        $response->assertRedirect(route('dashboard', [
-            'bannerStyle' => 'danger',
-            'bannerText' => 'You are already a member of the '.$user->organization->name.' organization.',
-        ]));
+        $response->assertRedirect(route('dashboard'));
+        $response->assertSessionHas('bannerText', 'You are already a member of the '.$user->organization->name.' organization.');
+        $response->assertSessionHas('bannerStyle', 'danger');
     }
 
     public function test_accepting_invitation_with_existing_account_migrates_data_of_placeholder_users_with_same_email_to_new_member(): void
@@ -162,7 +197,7 @@ class OrganizationInvitationEndpointTest extends EndpointTestAbstract
         $this->actingAs($user2->user);
 
         // Act
-        $acceptUrl = URl::to(URL::temporarySignedRoute(
+        $acceptUrl = URL::to(URL::temporarySignedRoute(
             'organization-invitations.accept',
             now()->addMinutes(60),
             [$invitation->getKey()],
@@ -172,10 +207,9 @@ class OrganizationInvitationEndpointTest extends EndpointTestAbstract
 
         // Assert
         $response->assertValid();
-        $response->assertRedirect(route('dashboard', [
-            'bannerStyle' => 'success',
-            'bannerText' => 'Great! You have accepted the invitation to join the '.$user->organization->name.' organization.',
-        ]));
+        $response->assertRedirect(route('dashboard'));
+        $response->assertSessionHas('bannerText', 'Great! You have accepted the invitation to join the '.$user->organization->name.' organization.');
+        $response->assertSessionHas('bannerStyle', 'success');
         $this->assertDatabaseHas(Member::class, [
             'user_id' => $user2->user->getKey(),
             'organization_id' => $user->organization->getKey(),

@@ -46,7 +46,9 @@ export async function getInvitationAcceptUrl(
     expect(searchResult.messages.length).toBeGreaterThan(0);
 
     const message = await getMessage(request, searchResult.messages[0].ID);
-    const acceptUrlMatch = message.HTML.match(/href="([^"]*team-invitations[^"]*)"/);
+    const acceptUrlMatch = message.HTML.match(
+        /href="([^"]*(?:organization-invitations|team-invitations)[^"]*)"/
+    );
     expect(acceptUrlMatch).toBeTruthy();
 
     return acceptUrlMatch![1].replace(/&amp;/g, '&');
