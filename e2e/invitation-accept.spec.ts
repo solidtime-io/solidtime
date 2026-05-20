@@ -83,7 +83,9 @@ test.describe('invitation accept banners', () => {
 
         const banner = inviteePage.getByTestId('banner');
         await expect(banner).toBeVisible();
-        await expect(banner).toContainText(/Please log in to finish joining the .* organization\./);
+        await expect(banner).toContainText(
+            /Great! You have accepted the invitation to join the .* organization\. Please log in to access it\./
+        );
 
         // Logging in lands the invitee on the dashboard — they were already added silently
         // by the accept controller, so the inviter's members list shows them.
