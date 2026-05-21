@@ -50,6 +50,7 @@ abstract class TestCase extends BaseTestCase
     {
         // Note: It is necessary to clear the permission cache after each test, since the "scoped singletons" are not reset between tests.
         app(PermissionStore::class)->clear();
+        PermissionStore::resetCustomRoles();
         parent::tearDown();
     }
 

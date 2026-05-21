@@ -14,7 +14,7 @@ class UserMembershipController extends Controller
     /**
      * Get the memberships of the current user
      *
-     * This endpoint is independent of organization.
+     * This endpoint is independent of the organization.
      *
      * @operationId getMyMemberships
      *
