@@ -17,7 +17,7 @@ class UserTimeEntryController extends Controller
     /**
      * Get the active time entry of the current user
      *
-     * This endpoint is independent of organization.
+     * This endpoint is independent of the organization.
      *
      * @operationId getMyActiveTimeEntry
      */

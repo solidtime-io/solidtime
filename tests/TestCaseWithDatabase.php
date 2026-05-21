@@ -8,6 +8,7 @@ use App\Enums\Role;
 use App\Models\Member;
 use App\Models\Organization;
 use App\Models\User;
+use App\Service\PermissionStore;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -26,6 +27,7 @@ abstract class TestCaseWithDatabase extends TestCase
         $roleName = 'custom-test-'.Str::uuid();
         Jetstream::role($roleName, 'Custom Test', $permissions)
             ->description('Role custom for testing');
+        PermissionStore::registerCustomRole($roleName, $permissions);
         $user = User::factory()->create();
         if ($isOwner) {
             $organization = Organization::factory()->withOwner($user)->create();

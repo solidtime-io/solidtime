@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace App\Actions\Fortify;
 
 use App\Enums\Weekday;
+use App\Mail\VerifyUpdatedEmailMail;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Korridor\LaravelModelValidationRules\Rules\UniqueEloquent;
@@ -24,6 +27,10 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
      */
     public function update(User $user, array $input): void
     {
+        if (isset($input['email']) && is_string($input['email'])) {
+            $input['email'] = Str::lower($input['email']);
+        }
+
         Validator::make($input, [
             'name' => [
                 'required',
@@ -58,16 +65,17 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
             $user->updateProfilePhoto($input['photo']);
         }
 
-        if ($input['email'] !== $user->email) {
+        $email = Str::lower((string) $input['email']);
+
+        if ($email !== Str::lower($user->email)) {
             $user->forceFill([
                 'name' => $input['name'],
-                'email' => $input['email'],
-                'email_verified_at' => null,
+                'pending_email' => $email,
                 'timezone' => $input['timezone'],
                 'week_start' => $input['week_start'],
             ])->save();
 
-            $user->sendEmailVerificationNotification();
+            Mail::to($email)->send(new VerifyUpdatedEmailMail($user, $email));
         } else {
             $user->forceFill([
                 'name' => $input['name'],
