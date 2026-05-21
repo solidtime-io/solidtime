@@ -5,18 +5,25 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1;
 
 use App\Exceptions\Api\CanNotDeleteUserWhoIsOwnerOfOrganizationWithMultipleMembers;
+use App\Exceptions\Api\UserResendEmailVerificationNoPendingEmailApiException;
+use App\Http\Requests\V1\User\UserUpdateRequest;
 use App\Http\Resources\V1\User\UserResource;
+use App\Mail\VerifyUpdatedEmailMail;
 use App\Models\User;
 use App\Service\DeletionService;
+use App\Support\Base64File;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
     /**
      * Get the current user
      *
-     * This endpoint is independent of organization.
+     * This endpoint is independent of the organization.
      *
      * @operationId getMe
      *
@@ -30,9 +37,94 @@ class UserController extends Controller
     }
 
     /**
+     * Update the current user
+     *
+     * This endpoint is independent of the organization.
+     *
+     * @operationId updateUser
+     */
+    public function update(User $user, UserUpdateRequest $request): UserResource
+    {
+        if ($user->getKey() !== $this->user()->getKey()) {
+            throw new AuthorizationException;
+        }
+
+        if ($request->getPhoto() !== null) {
+            $photo = Base64File::decode($request->getPhoto());
+            assert($photo !== null);
+            $extension = Base64File::extension($photo['mime_type']);
+            assert($extension !== null);
+
+            $previousPhotoPath = $user->profile_photo_path;
+            $photoPath = 'profile-photos/'.Str::uuid().'.'.$extension;
+            $photoDisk = (string) config('jetstream.profile_photo_disk', 'public');
+
+            Storage::disk($photoDisk)->put($photoPath, $photo['data'], 'public');
+            $user->profile_photo_path = $photoPath;
+
+            if ($previousPhotoPath !== null) {
+                Storage::disk($photoDisk)->delete($previousPhotoPath);
+            }
+        }
+
+        $emailToVerify = null;
+        $email = $request->getEmail();
+        if ($email !== null && $email !== Str::lower($user->email)) {
+            $emailToVerify = $email;
+            $user->pending_email = $email;
+        }
+
+        if ($request->getName() !== null) {
+            $user->name = $request->getName();
+        }
+
+        if ($request->getTimezone() !== null) {
+            $user->timezone = $request->getTimezone();
+        }
+
+        if ($request->getWeekStart() !== null) {
+            $user->week_start = $request->getWeekStart();
+        }
+
+        $user->save();
+
+        if ($emailToVerify !== null) {
+            Mail::to($emailToVerify)->send(new VerifyUpdatedEmailMail($user, $emailToVerify));
+        }
+
+        return new UserResource($user);
+    }
+
+    /**
+     * Resend the pending email update verification email.
+     *
+     * This endpoint is independent of the organization.
+     *
+     * @operationId resendUserEmailVerification
+     *
+     * @throws AuthorizationException Thrown when the authenticated user does not match the user whose email is pending verification.
+     * @throws UserResendEmailVerificationNoPendingEmailApiException Thrown when the user does not have a pending email to verify.
+     */
+    public function resendEmailVerification(User $user): JsonResponse
+    {
+        if ($user->getKey() !== $this->user()->getKey()) {
+            throw new AuthorizationException;
+        }
+
+        if ($user->pending_email === null) {
+            throw new UserResendEmailVerificationNoPendingEmailApiException;
+        }
+
+        Mail::to($user->pending_email)
+            ->queue(new VerifyUpdatedEmailMail($user, $user->pending_email));
+
+        return response()->json(null, 204);
+    }
+
+    /**
      * Handles the deletion of a user.
      *
-     * This endpoint is independent of organization.
+     * This endpoint is independent of the organization.
      *
      * @operationId deleteUser
      *
