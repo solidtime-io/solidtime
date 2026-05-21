@@ -20,7 +20,7 @@ class ApiTokenController extends Controller
     /**
      * List all api token of the currently authenticated user
      *
-     * This endpoint is independent of organization.
+     * This endpoint is independent of the organization.
      *
      * @operationId getApiTokens
      *

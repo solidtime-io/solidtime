@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
+use Inertia\Inertia;
 use Laravel\Fortify\Contracts\TwoFactorLoginResponse;
 use Laravel\Fortify\Fortify;
 use Laravel\Fortify\Http\Responses\LoginResponse;
@@ -40,6 +41,14 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::updateUserProfileInformationUsing(UpdateUserProfileInformation::class);
         Fortify::updateUserPasswordsUsing(UpdateUserPassword::class);
         Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
+
+        Fortify::registerView(function () {
+            return Inertia::render('Auth/Register', [
+                'terms_url' => config('auth.terms_url'),
+                'privacy_policy_url' => config('auth.privacy_policy_url'),
+                'newsletter_consent' => config('auth.newsletter_consent'),
+            ]);
+        });
 
         Fortify::authenticateUsing(function (Request $request): ?User {
             /** @var User|null $user */

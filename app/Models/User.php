@@ -36,6 +36,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  * @property string $id
  * @property string $name
  * @property string $email
+ * @property string|null $pending_email
  * @property Carbon|null $email_verified_at
  * @property string|null $password
  * @property string|null $two_factor_secret
@@ -105,6 +106,7 @@ class User extends Authenticatable implements AuditableContract, FilamentUser, M
     protected $casts = [
         'name' => 'string',
         'email' => 'string',
+        'pending_email' => 'string',
         'email_verified_at' => 'datetime',
         'is_admin' => 'boolean',
         'is_placeholder' => 'boolean',
