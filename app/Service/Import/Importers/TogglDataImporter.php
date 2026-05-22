@@ -127,7 +127,11 @@ class TogglDataImporter extends DefaultImporter
                 if ($project->client_id !== null) {
                     $clientId = $this->clientImportHelper->getKeyByExternalIdentifier((string) $project->client_id);
                     if ($clientId === null) {
-                        throw new Exception('Client does not exist');
+                        // Client was deleted in Toggl but still referenced by a project — skip gracefully
+                        Log::warning('TogglDataImporter: Project references a non-existent client, importing without client', [
+                            'project_name' => $project->name,
+                            'client_id' => $project->client_id,
+                        ]);
                     }
                 }
 
