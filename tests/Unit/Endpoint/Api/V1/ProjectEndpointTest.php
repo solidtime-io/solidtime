@@ -308,6 +308,22 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
         $response->assertForbidden();
     }
 
+    public function test_show_endpoint_fails_if_employee_tries_to_access_public_project(): void
+    {
+        // Arrange
+        // Employees do not have the projects:view:all permission that the show endpoint requires,
+        // so they are forbidden even from public projects (they list them via the index endpoint instead).
+        $data = $this->createUserWithRole(Role::Employee);
+        $publicProject = Project::factory()->forOrganization($data->organization)->isPublic()->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.projects.show', [$data->organization->getKey(), $publicProject->getKey()]));
+
+        // Assert
+        $response->assertForbidden();
+    }
+
     public function test_store_endpoint_fails_if_user_has_no_permission_to_create_projects(): void
     {
         // Arrange
@@ -325,6 +341,29 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
 
         // Assert
         $response->assertForbidden();
+    }
+
+    public function test_store_endpoint_fails_if_user_is_employee(): void
+    {
+        // Arrange
+        $data = $this->createUserWithRole(Role::Employee);
+        $projectFake = Project::factory()->forOrganization($data->organization)->make();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.projects.store', [$data->organization->getKey()]), [
+            'name' => $projectFake->name,
+            'color' => $projectFake->color,
+            'client_id' => null,
+            'is_billable' => $projectFake->is_billable,
+        ]);
+
+        // Assert
+        $response->assertForbidden();
+        $this->assertDatabaseMissing(Project::class, [
+            'name' => $projectFake->name,
+            'organization_id' => $data->organization->getKey(),
+        ]);
     }
 
     public function test_store_endpoint_highest_possible_billable_rate_can_be_stored_in_database(): void
@@ -668,6 +707,124 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
         ]);
     }
 
+    public function test_store_endpoint_creates_public_project(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'projects:create',
+        ]);
+        $projectFake = Project::factory()->forOrganization($data->organization)->make();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.projects.store', [$data->organization->getKey()]), [
+            'name' => $projectFake->name,
+            'color' => $projectFake->color,
+            'client_id' => null,
+            'is_billable' => $projectFake->is_billable,
+            'is_public' => true,
+        ]);
+
+        // Assert
+        $response->assertStatus(201);
+        $response->assertJson(fn (AssertableJson $json) => $json
+            ->has('data')
+            ->where('data.is_public', true)
+            ->etc()
+        );
+        $this->assertDatabaseHas(Project::class, [
+            'name' => $projectFake->name,
+            'organization_id' => $projectFake->organization_id,
+            'is_public' => true,
+        ]);
+    }
+
+    public function test_store_endpoint_creates_private_project_if_is_public_is_false(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'projects:create',
+        ]);
+        $projectFake = Project::factory()->forOrganization($data->organization)->make();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.projects.store', [$data->organization->getKey()]), [
+            'name' => $projectFake->name,
+            'color' => $projectFake->color,
+            'client_id' => null,
+            'is_billable' => $projectFake->is_billable,
+            'is_public' => false,
+        ]);
+
+        // Assert
+        $response->assertStatus(201);
+        $response->assertJson(fn (AssertableJson $json) => $json
+            ->has('data')
+            ->where('data.is_public', false)
+            ->etc()
+        );
+        $this->assertDatabaseHas(Project::class, [
+            'name' => $projectFake->name,
+            'organization_id' => $projectFake->organization_id,
+            'is_public' => false,
+        ]);
+    }
+
+    public function test_store_endpoint_creates_private_project_by_default_if_is_public_is_not_given(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'projects:create',
+        ]);
+        $projectFake = Project::factory()->forOrganization($data->organization)->make();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.projects.store', [$data->organization->getKey()]), [
+            'name' => $projectFake->name,
+            'color' => $projectFake->color,
+            'client_id' => null,
+            'is_billable' => $projectFake->is_billable,
+        ]);
+
+        // Assert
+        $response->assertStatus(201);
+        $response->assertJson(fn (AssertableJson $json) => $json
+            ->has('data')
+            ->where('data.is_public', false)
+            ->etc()
+        );
+        $this->assertDatabaseHas(Project::class, [
+            'name' => $projectFake->name,
+            'organization_id' => $projectFake->organization_id,
+            'is_public' => false,
+        ]);
+    }
+
+    public function test_store_endpoint_fails_if_is_public_is_not_boolean(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'projects:create',
+        ]);
+        $projectFake = Project::factory()->forOrganization($data->organization)->make();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.projects.store', [$data->organization->getKey()]), [
+            'name' => $projectFake->name,
+            'color' => $projectFake->color,
+            'client_id' => null,
+            'is_billable' => $projectFake->is_billable,
+            'is_public' => 'public',
+        ]);
+
+        // Assert
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['is_public']);
+    }
+
     public function test_update_endpoint_fails_if_user_is_not_part_of_project_organization(): void
     {
         // Arrange
@@ -711,6 +868,30 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
 
         // Assert
         $response->assertForbidden();
+    }
+
+    public function test_update_endpoint_fails_if_user_is_employee(): void
+    {
+        // Arrange
+        $data = $this->createUserWithRole(Role::Employee);
+        $project = Project::factory()->forOrganization($data->organization)->isPublic()->create();
+        $this->assertBillableRateServiceIsUnused();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.projects.update', [$data->organization->getKey(), $project->getKey()]), [
+            'name' => 'Employee Updated Name',
+            'color' => $project->color,
+            'client_id' => null,
+            'is_billable' => $project->is_billable,
+        ]);
+
+        // Assert
+        $response->assertForbidden();
+        $this->assertDatabaseMissing(Project::class, [
+            'id' => $project->getKey(),
+            'name' => 'Employee Updated Name',
+        ]);
     }
 
     public function test_update_endpoint_can_update_project_if_project_name_already_exists_in_organization_but_with_different_client(): void
@@ -957,6 +1138,120 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
         $this->assertFalse($project->is_archived);
     }
 
+    public function test_update_endpoint_can_make_a_private_project_public(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'projects:update',
+        ]);
+        $project = Project::factory()->forOrganization($data->organization)->isPrivate()->create();
+        $this->assertBillableRateServiceIsUnused();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.projects.update', [$data->organization->getKey(), $project->getKey()]), [
+            'name' => $project->name,
+            'color' => $project->color,
+            'is_billable' => $project->is_billable,
+            'client_id' => null,
+            'is_public' => true,
+        ]);
+
+        // Assert
+        $response->assertStatus(200);
+        $response->assertJson(fn (AssertableJson $json) => $json
+            ->has('data')
+            ->where('data.is_public', true)
+            ->etc()
+        );
+        $project->refresh();
+        $this->assertTrue($project->is_public);
+    }
+
+    public function test_update_endpoint_can_make_a_public_project_private(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'projects:update',
+        ]);
+        $project = Project::factory()->forOrganization($data->organization)->isPublic()->create();
+        $this->assertBillableRateServiceIsUnused();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.projects.update', [$data->organization->getKey(), $project->getKey()]), [
+            'name' => $project->name,
+            'color' => $project->color,
+            'is_billable' => $project->is_billable,
+            'client_id' => null,
+            'is_public' => false,
+        ]);
+
+        // Assert
+        $response->assertStatus(200);
+        $response->assertJson(fn (AssertableJson $json) => $json
+            ->has('data')
+            ->where('data.is_public', false)
+            ->etc()
+        );
+        $project->refresh();
+        $this->assertFalse($project->is_public);
+    }
+
+    public function test_update_endpoint_keeps_project_visibility_if_is_public_is_not_given(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'projects:update',
+        ]);
+        $project = Project::factory()->forOrganization($data->organization)->isPublic()->create();
+        $this->assertBillableRateServiceIsUnused();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.projects.update', [$data->organization->getKey(), $project->getKey()]), [
+            'name' => $project->name,
+            'color' => $project->color,
+            'is_billable' => $project->is_billable,
+            'client_id' => null,
+        ]);
+
+        // Assert
+        $response->assertStatus(200);
+        $response->assertJson(fn (AssertableJson $json) => $json
+            ->has('data')
+            ->where('data.is_public', true)
+            ->etc()
+        );
+        $project->refresh();
+        $this->assertTrue($project->is_public);
+    }
+
+    public function test_update_endpoint_fails_if_is_public_is_not_boolean(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'projects:update',
+        ]);
+        $project = Project::factory()->forOrganization($data->organization)->isPublic()->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.projects.update', [$data->organization->getKey(), $project->getKey()]), [
+            'name' => $project->name,
+            'color' => $project->color,
+            'is_billable' => $project->is_billable,
+            'client_id' => null,
+            'is_public' => 'public',
+        ]);
+
+        // Assert
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['is_public']);
+        $project->refresh();
+        $this->assertTrue($project->is_public);
+    }
+
     public function test_update_endpoint_ignores_estimated_time_if_pro_features_are_disabled(): void
     {
         // Arrange
@@ -1173,6 +1468,23 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
 
         // Assert
         $response->assertForbidden();
+    }
+
+    public function test_destroy_endpoint_fails_if_user_is_employee(): void
+    {
+        // Arrange
+        $data = $this->createUserWithRole(Role::Employee);
+        $project = Project::factory()->forOrganization($data->organization)->isPublic()->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->deleteJson(route('api.v1.projects.destroy', [$data->organization->getKey(), $project->getKey()]));
+
+        // Assert
+        $response->assertForbidden();
+        $this->assertDatabaseHas(Project::class, [
+            'id' => $project->getKey(),
+        ]);
     }
 
     public function test_destroy_endpoint_fails_if_project_is_still_in_use_by_a_task(): void

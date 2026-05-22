@@ -15,6 +15,7 @@ import { UserCircleIcon } from '@heroicons/vue/20/solid';
 import EstimatedTimeSection from '@/packages/ui/src/EstimatedTimeSection.vue';
 import { Field, FieldGroup, FieldLabel } from '../field';
 import ProjectEditBillableSection from '@/packages/ui/src/Project/ProjectEditBillableSection.vue';
+import ProjectVisibilitySelect from '@/packages/ui/src/Project/ProjectVisibilitySelect.vue';
 import type { Client } from '@/packages/api/src';
 
 const show = defineModel('show', { default: false });
@@ -41,6 +42,7 @@ const project = ref<CreateProjectBody>({
     billable_rate: null,
     is_billable: false,
     estimated_time: null,
+    is_public: false,
 });
 
 async function submit() {
@@ -53,6 +55,7 @@ async function submit() {
         billable_rate: null,
         is_billable: false,
         estimated_time: null,
+        is_public: false,
     };
 }
 
@@ -123,6 +126,7 @@ const currentClientName = computed(() => {
                     v-if="enableEstimatedTime"
                     v-model="project.estimated_time"
                     @submit="submit()"></EstimatedTimeSection>
+                <ProjectVisibilitySelect v-model="project.is_public"></ProjectVisibilitySelect>
             </FieldGroup>
         </template>
         <template #footer>

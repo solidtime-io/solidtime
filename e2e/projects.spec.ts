@@ -6,6 +6,7 @@ import { formatCentsWithOrganizationDefaults } from './utils/money';
 import {
     createProjectViaApi,
     createPublicProjectViaApi,
+    createProjectMemberViaApi,
     createTaskViaApi,
     createClientViaApi,
     createTimeEntryViaApi,
@@ -215,6 +216,59 @@ test('test that creating a non-billable project works', async ({ page }) => {
     ]);
 
     await expect(page.getByTestId('project_table')).toContainText(newProjectName);
+});
+
+test('test that creating a public project via the modal works', async ({ page }) => {
+    const newProjectName = 'Public Project ' + Math.floor(1 + Math.random() * 10000);
+    await goToProjectsOverview(page);
+    await page.getByRole('button', { name: 'Create Project' }).click();
+    await page.getByLabel('Project Name').fill(newProjectName);
+
+    // Visibility defaults to Private — switch it to Public
+    await expect(page.getByRole('dialog').locator('#visibility')).toContainText('Private');
+    await page.getByRole('dialog').locator('#visibility').click();
+    await page.getByRole('option', { name: 'Public' }).click();
+
+    await Promise.all([
+        page.getByRole('button', { name: 'Create Project' }).click(),
+        page.waitForResponse(
+            async (response) =>
+                response.url().includes('/projects') &&
+                response.request().method() === 'POST' &&
+                response.status() === 201 &&
+                (await response.json()).data.is_public === true
+        ),
+    ]);
+
+    await expect(page.getByTestId('project_table')).toContainText(newProjectName);
+});
+
+test('test that changing a project to public via the edit modal works', async ({ page, ctx }) => {
+    const newProjectName = 'Edit Visibility Project ' + Math.floor(1 + Math.random() * 10000);
+    await createProjectViaApi(ctx, { name: newProjectName });
+
+    await goToProjectsOverview(page);
+    await expect(page.getByText(newProjectName)).toBeVisible({ timeout: 10000 });
+
+    const projectRow = page.getByRole('row').filter({ hasText: newProjectName }).first();
+    await projectRow.getByRole('button').click();
+    await page.locator(`[aria-label='Edit Project ${newProjectName}']`).click();
+
+    // Loaded as Private — switch it to Public
+    await expect(page.getByRole('dialog').locator('#visibility')).toContainText('Private');
+    await page.getByRole('dialog').locator('#visibility').click();
+    await page.getByRole('option', { name: 'Public' }).click();
+
+    await Promise.all([
+        page.getByRole('button', { name: 'Update Project' }).click(),
+        page.waitForResponse(
+            async (response) =>
+                response.url().includes('/projects/') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 200 &&
+                (await response.json()).data.is_public === true
+        ),
+    ]);
 });
 
 test('test that switching from custom rate to default rate clears billable rate', async ({
@@ -924,6 +978,39 @@ test.describe('Employee Projects Restrictions', () => {
         await expect(
             employee.page.locator(`[aria-label='Delete Project ${projectName}']`)
         ).not.toBeVisible();
+    });
+
+    test('employee does not see private projects they are not a member of', async ({
+        ctx,
+        employee,
+    }) => {
+        const publicName = 'EmpPublicVisible ' + Math.floor(Math.random() * 10000);
+        const privateName = 'EmpPrivateHidden ' + Math.floor(Math.random() * 10000);
+        await createPublicProjectViaApi(ctx, { name: publicName });
+        // createProjectViaApi defaults to is_public: false (private); the employee is not a member
+        await createProjectViaApi(ctx, { name: privateName });
+
+        await employee.page.goto(PLAYWRIGHT_BASE_URL + '/projects');
+        await expect(employee.page.getByTestId('projects_view')).toBeVisible({ timeout: 10000 });
+
+        // The public project is visible — confirms the list has loaded
+        await expect(employee.page.getByText(publicName)).toBeVisible({ timeout: 10000 });
+
+        // The private project the employee is not a member of must not appear
+        await expect(employee.page.getByText(privateName)).not.toBeVisible();
+    });
+
+    test('employee can see a private project they are a member of', async ({ ctx, employee }) => {
+        const projectName = 'EmpPrivateMember ' + Math.floor(Math.random() * 10000);
+        const project = await createProjectViaApi(ctx, { name: projectName });
+        // Add the employee as a project member so the private project becomes visible to them
+        await createProjectMemberViaApi(ctx, project.id, { member_id: employee.memberId });
+
+        await employee.page.goto(PLAYWRIGHT_BASE_URL + '/projects');
+        await expect(employee.page.getByTestId('projects_view')).toBeVisible({ timeout: 10000 });
+
+        // The private project is visible because the employee is a member
+        await expect(employee.page.getByText(projectName)).toBeVisible({ timeout: 10000 });
     });
 });
 

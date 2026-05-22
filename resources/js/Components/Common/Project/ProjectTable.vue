@@ -13,7 +13,8 @@ export type SortColumn =
     | 'spent_time'
     | 'progress'
     | 'billable_rate'
-    | 'status';
+    | 'status'
+    | 'visibility';
 export type SortDirection = 'asc' | 'desc';
 import { canCreateProjects } from '@/utils/permissions';
 import type { CreateProjectBody, Project, Client, CreateClientBody } from '@/packages/api/src';
@@ -102,6 +103,10 @@ const columns = computed(() => [
         id: 'status',
         accessorFn: (row: Project) => (row.is_archived ? 1 : 0),
     },
+    {
+        id: 'visibility',
+        accessorFn: (row: Project) => (row.is_public ? 1 : 0),
+    },
 ]);
 
 // Columns with sortDescFirst get desc as default direction on first click.
@@ -149,7 +154,7 @@ async function createClient(client: CreateClientBody): Promise<Client | undefine
 }
 
 const gridTemplate = computed(() => {
-    return `grid-template-columns: minmax(300px, 1fr) minmax(150px, auto) minmax(140px, auto) minmax(130px, auto) ${props.showBillableRate ? 'minmax(130px, auto)' : ''} minmax(120px, auto) 80px;`;
+    return `grid-template-columns: minmax(300px, 1fr) minmax(150px, auto) minmax(140px, auto) minmax(130px, auto) ${props.showBillableRate ? 'minmax(130px, auto)' : ''} minmax(120px, auto) minmax(120px, auto) 80px;`;
 });
 </script>
 
@@ -171,7 +176,7 @@ const gridTemplate = computed(() => {
                     :sort-direction="props.sortDirection"
                     :desc-first-columns="descFirstColumns"
                     @sort="handleSort"></ProjectTableHeading>
-                <div v-if="sortedProjects.length === 0" class="col-span-5 py-24 text-center">
+                <div v-if="sortedProjects.length === 0" class="col-span-full py-24 text-center">
                     <FolderPlusIcon class="w-8 text-icon-default inline pb-2"></FolderPlusIcon>
                     <h3 class="text-text-primary font-semibold">
                         {{
