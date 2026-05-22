@@ -109,7 +109,7 @@ const shownTasks = computed(() => {
                         </div>
                     </li>
                 </ol>
-                <div class="px-4">
+                <div class="px-4 space-x-1">
                     <Badge v-if="project?.billable_rate">
                         {{ billableRateFormatted }}
                         / h
@@ -118,6 +118,7 @@ const shownTasks = computed(() => {
                         Default Rate
                     </Badge>
                     <Badge v-if="!project?.is_billable"> Non-Billable </Badge>
+                    <Badge>{{ project?.is_public ? 'Public' : 'Private' }}</Badge>
                 </div>
             </nav>
             <div>

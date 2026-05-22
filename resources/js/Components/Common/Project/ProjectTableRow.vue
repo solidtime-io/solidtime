@@ -7,6 +7,8 @@ import {
     PencilSquareIcon,
     ArchiveBoxIcon as ArchiveBoxIconSolid,
     TrashIcon,
+    GlobeAltIcon,
+    LockClosedIcon,
 } from '@heroicons/vue/20/solid';
 import { useClientsQuery } from '@/utils/useClientsQuery';
 import { useTasksQuery } from '@/utils/useTasksQuery';
@@ -139,6 +141,17 @@ const showEditProjectModal = ref(false);
                     <template v-else>
                         <CheckCircleIcon class="w-4 text-icon-default"></CheckCircleIcon>
                         <span>Active</span>
+                    </template>
+                </div>
+                <div
+                    class="whitespace-nowrap px-3 py-4 text-sm text-text-primary flex space-x-1.5 items-center font-medium">
+                    <template v-if="project.is_public">
+                        <GlobeAltIcon class="w-4 text-icon-default"></GlobeAltIcon>
+                        <span>Public</span>
+                    </template>
+                    <template v-else>
+                        <LockClosedIcon class="w-4 text-icon-default"></LockClosedIcon>
+                        <span>Private</span>
                     </template>
                 </div>
                 <div
