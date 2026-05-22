@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { UserGroupIcon, CheckCircleIcon } from '@heroicons/vue/16/solid';
+import { UserGroupIcon, CheckCircleIcon, GlobeAltIcon } from '@heroicons/vue/16/solid';
 import ListFilterIcon from '@/packages/ui/src/Icons/ListFilterIcon.vue';
 import {
     DropdownMenu,
@@ -19,6 +19,7 @@ import { NO_CLIENT_ID } from './constants';
 
 export interface ProjectFilters {
     status: 'active' | 'archived' | 'all';
+    visibility: 'public' | 'private' | 'all';
     clientIds: string[];
 }
 
@@ -36,12 +37,25 @@ const statusOptions = [
     { id: 'archived' as const, name: 'Archived' },
 ];
 
+const visibilityOptions = [
+    { id: 'public' as const, name: 'Public' },
+    { id: 'private' as const, name: 'Private' },
+];
+
 const open = ref(false);
 
 function updateStatus(status: 'active' | 'archived' | 'all') {
     emit('update:filters', {
         ...props.filters,
         status,
+    });
+    open.value = false;
+}
+
+function updateVisibility(visibility: 'public' | 'private' | 'all') {
+    emit('update:filters', {
+        ...props.filters,
+        visibility,
     });
     open.value = false;
 }
@@ -69,7 +83,11 @@ function toggleNoClient() {
 }
 
 const hasActiveFilters = computed(() => {
-    return props.filters.status !== 'all' || props.filters.clientIds.length > 0;
+    return (
+        props.filters.status !== 'all' ||
+        props.filters.visibility !== 'all' ||
+        props.filters.clientIds.length > 0
+    );
 });
 </script>
 
@@ -97,6 +115,25 @@ const hasActiveFilters = computed(() => {
                             filters.status === option.id && 'bg-accent text-accent-foreground',
                         ]"
                         @click="updateStatus(option.id)">
+                        {{ option.name }}
+                    </DropdownMenuItem>
+                </DropdownMenuSubContent>
+            </DropdownMenuSub>
+
+            <!-- Visibility Filter -->
+            <DropdownMenuSub>
+                <DropdownMenuSubTrigger class="gap-2">
+                    <GlobeAltIcon class="h-4 w-4 text-icon-default" />
+                    <span>Visibility</span>
+                </DropdownMenuSubTrigger>
+                <DropdownMenuSubContent>
+                    <DropdownMenuItem
+                        v-for="option in visibilityOptions"
+                        :key="option.id"
+                        :class="[
+                            filters.visibility === option.id && 'bg-accent text-accent-foreground',
+                        ]"
+                        @click="updateVisibility(option.id)">
                         {{ option.name }}
                     </DropdownMenuItem>
                 </DropdownMenuSubContent>
