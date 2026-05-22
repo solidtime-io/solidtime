@@ -251,4 +251,27 @@ class OrganizationInvitationEndpointTest extends EndpointTestAbstract
         // Assert
         $response->assertForbidden();
     }
+
+    public function test_fails_if_invitation_has_owner_role(): void
+    {
+        // Arrange
+        $user = $this->createUserWithPermission();
+        $invitation = OrganizationInvitation::factory()
+            ->forOrganization($user->organization)
+            ->create([
+                'role' => Role::Owner->value,
+            ]);
+
+        // Act
+        $acceptUrl = URL::to(URL::temporarySignedRoute(
+            'organization-invitations.accept',
+            now()->addMinutes(60),
+            [$invitation->getKey()],
+            false
+        ));
+        $response = $this->get($acceptUrl);
+
+        // Assert
+        $response->assertStatus(500);
+    }
 }
