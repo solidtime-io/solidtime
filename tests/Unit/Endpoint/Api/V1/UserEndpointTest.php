@@ -240,6 +240,22 @@ class UserEndpointTest extends ApiEndpointTestAbstract
         $response->assertJsonValidationErrors(['name']);
     }
 
+    public function test_update_fails_if_given_user_is_not_the_authenticated_user(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission();
+        $otherData = $this->createUserWithPermission();
+        Passport::actingAs($otherData->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.users.update', $data->user->getKey()), [
+            'name' => 'Updated Name',
+        ]);
+
+        // Assert
+        $response->assertForbidden();
+    }
+
     public function test_update_fails_if_name_is_too_long(): void
     {
         // Arrange
