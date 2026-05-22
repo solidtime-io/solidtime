@@ -9,6 +9,7 @@ use App\Enums\Weekday;
 use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Http\FileHelpers;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -90,7 +91,7 @@ class UserFactory extends Factory
     public function withProfilePicture(): static
     {
         $profilePhoto = $this->faker->image(null, 500, 500);
-        /** @see \Illuminate\Http\FileHelpers::hashName */
+        /** @see FileHelpers::hashName */
         $path = 'profile-photos/'.Str::random(40).'.png';
         Storage::disk(config('jetstream.profile_photo_disk', 'public'))->put($path, $profilePhoto);
 
