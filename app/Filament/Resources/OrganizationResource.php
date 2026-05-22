@@ -55,7 +55,7 @@ class OrganizationResource extends Resource
                     ->label('Is personal?')
                     ->hiddenOn(['create'])
                     ->required(),
-                Forms\Components\Select::make('user_id')
+                Select::make('user_id')
                     ->label('Owner')
                     ->relationship(name: 'owner', titleAttribute: 'email')
                     ->searchable(['name', 'email'])
@@ -76,7 +76,7 @@ class OrganizationResource extends Resource
                 Select::make('time_format')
                     ->options(TimeFormat::toSelectArray())
                     ->required(),
-                Forms\Components\Select::make('currency')
+                Select::make('currency')
                     ->label('Currency')
                     ->options(function (): array {
                         $currencies = ISOCurrencyProvider::getInstance()->getAvailableCurrencies();
@@ -114,22 +114,22 @@ class OrganizationResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\IconColumn::make('personal_team')
                     ->boolean()
                     ->label('Is personal?')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('owner.email')
+                TextColumn::make('owner.email')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('currency'),
+                TextColumn::make('currency'),
                 TextColumn::make('billable_rate')
                     ->money(fn (Organization $resource) => $resource->currency, divideBy: 100),
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('updated_at')
+                TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -223,7 +223,7 @@ class OrganizationResource extends Resource
 
                                 return $select;
                             }),
-                        Forms\Components\Select::make('timezone')
+                        Select::make('timezone')
                             ->label('Timezone')
                             ->options(fn (): array => app(TimezoneService::class)->getSelectOptions())
                             ->searchable()

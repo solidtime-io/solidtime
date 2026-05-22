@@ -27,7 +27,7 @@ return new class extends Migration
         if ($duplicateEmails->isNotEmpty()) {
             $duplicateEmailMessage = $duplicateEmails
                 ->take(20)
-                ->map(fn (\stdClass $duplicateEmail): string => sprintf(
+                ->map(fn (stdClass $duplicateEmail): string => sprintf(
                     '%s (%d users: %s)',
                     $duplicateEmail->normalized_email,
                     $duplicateEmail->user_count,

@@ -59,7 +59,7 @@ use Spatie\TemporaryDirectory\TemporaryDirectory;
 
 class TimeEntryController extends Controller
 {
-    private function assertNoOverlap(Organization $organization, Member $member, \Illuminate\Support\Carbon $start, ?\Illuminate\Support\Carbon $end, ?TimeEntry $exclude = null): void
+    private function assertNoOverlap(Organization $organization, Member $member, Carbon $start, ?Carbon $end, ?TimeEntry $exclude = null): void
     {
         if (! $organization->prevent_overlapping_time_entries) {
             return;

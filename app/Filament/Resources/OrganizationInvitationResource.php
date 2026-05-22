@@ -39,7 +39,7 @@ class OrganizationInvitationResource extends Resource
                     ->required(),
                 Select::make('role')
                     ->options(Role::class),
-                Forms\Components\Select::make('organization_id')
+                Select::make('organization_id')
                     ->label('Organization')
                     ->relationship(name: 'organization', titleAttribute: 'name')
                     ->searchable(['name'])
