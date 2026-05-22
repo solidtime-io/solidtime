@@ -24,6 +24,7 @@ use Illuminate\Support\Str;
 use Laravel\Jetstream\Events\TeamCreated;
 use Laravel\Jetstream\Events\TeamDeleted;
 use Laravel\Jetstream\Events\TeamUpdated;
+use Laravel\Jetstream\Team;
 use Laravel\Jetstream\Team as JetstreamTeam;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
@@ -177,7 +178,7 @@ class Organization extends JetstreamTeam implements AuditableContract
      *
      * @param  array<string>  $columns
      */
-    public function findOrFail(string $id, array $columns = ['*']): \Laravel\Jetstream\Team
+    public function findOrFail(string $id, array $columns = ['*']): Team
     {
         if (! Str::isUuid($id)) {
             throw (new ModelNotFoundException)->setModel(

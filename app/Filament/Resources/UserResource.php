@@ -47,17 +47,17 @@ class UserResource extends Resource
         return $form
             ->columns(1)
             ->schema([
-                Forms\Components\TextInput::make('id')
+                TextInput::make('id')
                     ->label('ID')
                     ->disabled()
                     ->visibleOn(['update', 'show'])
                     ->readOnly()
                     ->maxLength(255),
-                Forms\Components\TextInput::make('name')
+                TextInput::make('name')
                     ->label('Name')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\TextInput::make('email')
+                TextInput::make('email')
                     ->label('Email')
                     ->required()
                     ->rules($record?->is_placeholder ? [] : [
