@@ -49,13 +49,13 @@ class UsersRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('name')
             ->columns([
-                Tables\Columns\TextColumn::make('name'),
-                Tables\Columns\TextColumn::make('role'),
+                TextColumn::make('name'),
+                TextColumn::make('role'),
                 TextColumn::make('billable_rate')
                     ->money($organization->currency, divideBy: 100),
             ])
             ->headerActions([
-                Tables\Actions\AttachAction::make()
+                AttachAction::make()
                     ->recordTitle(fn (User $record): string => "{$record->name} ({$record->email})")
                     ->form(fn (AttachAction $action): array => [
                         $action->getRecordSelect(),

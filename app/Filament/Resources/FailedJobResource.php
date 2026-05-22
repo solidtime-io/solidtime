@@ -50,7 +50,7 @@ class FailedJobResource extends Resource
                 TextInput::make('queue')->disabled(),
 
                 // make text a little bit smaller because often a complete Stack Trace is shown:
-                TextArea::make('exception')->disabled()->columnSpan(4)->extraInputAttributes(['style' => 'font-size: 80%;']),
+                Textarea::make('exception')->disabled()->columnSpan(4)->extraInputAttributes(['style' => 'font-size: 80%;']),
                 PrettyJsonField::make('payload')->disabled()->columnSpan(4),
             ])->columns(4);
     }

@@ -6,6 +6,7 @@ namespace App\Http\Requests\V1\Organization;
 
 use App\Http\Requests\V1\BaseFormRequest;
 use App\Models\Organization;
+use Illuminate\Contracts\Validation\Rule;
 
 /**
  * @property Organization $organization Organization from model binding
@@ -15,7 +16,7 @@ class OrganizationStoreRequest extends BaseFormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, array<string|\Illuminate\Contracts\Validation\Rule>>
+     * @return array<string, array<string|Rule>>
      */
     public function rules(): array
     {
