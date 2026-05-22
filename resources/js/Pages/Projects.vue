@@ -20,6 +20,7 @@ import { isAllowedToPerformPremiumAction } from '@/utils/billing';
 import { useStorage } from '@vueuse/core';
 import ProjectsFilterDropdown from '@/Components/Common/Project/ProjectsFilterDropdown.vue';
 import ProjectStatusFilterBadge from '@/Components/Common/Project/ProjectStatusFilterBadge.vue';
+import ProjectVisibilityFilterBadge from '@/Components/Common/Project/ProjectVisibilityFilterBadge.vue';
 import ProjectClientFilterBadge from '@/Components/Common/Project/ProjectClientFilterBadge.vue';
 import { NO_CLIENT_ID } from '@/Components/Common/Project/constants';
 import type { SortColumn, SortDirection } from '@/Components/Common/Project/ProjectTable.vue';
@@ -36,6 +37,7 @@ interface ProjectTableState {
     filters: {
         clientIds: string[];
         status: 'active' | 'archived' | 'all';
+        visibility: 'public' | 'private' | 'all';
     };
 }
 
@@ -47,6 +49,7 @@ const tableState = useStorage<ProjectTableState>(
         filters: {
             clientIds: [],
             status: 'all',
+            visibility: 'all',
         },
     },
     undefined,
@@ -66,6 +69,14 @@ const filteredProjects = computed(() => {
             return false;
         }
         if (tableState.value.filters.status === 'archived' && !project.is_archived) {
+            return false;
+        }
+
+        // Visibility filter
+        if (tableState.value.filters.visibility === 'public' && !project.is_public) {
+            return false;
+        }
+        if (tableState.value.filters.visibility === 'private' && project.is_public) {
             return false;
         }
 
@@ -89,6 +100,10 @@ const filteredProjects = computed(() => {
 // Helper functions for active filters
 function removeStatusFilter() {
     tableState.value.filters.status = 'all';
+}
+
+function removeVisibilityFilter() {
+    tableState.value.filters.visibility = 'all';
 }
 
 function removeClientFilter() {
@@ -150,6 +165,15 @@ const showBillableRate = computed(() => {
                     @remove="removeStatusFilter"
                     @update:value="
                         tableState.filters.status = $event as 'active' | 'archived' | 'all'
+                    " />
+
+                <ProjectVisibilityFilterBadge
+                    v-if="tableState.filters.visibility !== 'all'"
+                    data-testid="visibility-filter-badge"
+                    :value="tableState.filters.visibility"
+                    @remove="removeVisibilityFilter"
+                    @update:value="
+                        tableState.filters.visibility = $event as 'public' | 'private' | 'all'
                     " />
 
                 <ProjectClientFilterBadge
