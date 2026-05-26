@@ -31,7 +31,7 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits);
         <div
             :class="
                 cn(
-                    'fixed top-0 left-0 z-50 pointer-events-none w-screen h-screen flex items-start px-2 pt-3 md:pt-20 xl:pt-32 justify-center overflow-auto'
+                    'fixed top-0 left-0 z-50 pointer-events-none w-screen h-screen flex items-start px-2 pt-3 md:pt-14 xl:pt-24 justify-center overflow-auto'
                 )
             ">
             <DialogContent
