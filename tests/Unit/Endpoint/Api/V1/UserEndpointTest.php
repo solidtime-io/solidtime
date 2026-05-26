@@ -354,6 +354,25 @@ class UserEndpointTest extends ApiEndpointTestAbstract
         $response->assertJsonValidationErrors(['photo']);
     }
 
+    public function test_update_fails_if_photo_exceeds_1_megabyte(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission();
+        $photo = file_get_contents(resource_path('testfiles/test.png'));
+        $this->assertIsString($photo);
+        $photo .= str_repeat("\0", 1024 * 1024);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.users.update', $data->user->getKey()), [
+            'photo' => base64_encode($photo),
+        ]);
+
+        // Assert
+        $response->assertUnprocessable();
+        $response->assertJsonValidationErrors(['photo']);
+    }
+
     public function test_update_with_null_photo_deletes_photo_file_and_clears_profile_photo_path(): void
     {
         // Arrange
