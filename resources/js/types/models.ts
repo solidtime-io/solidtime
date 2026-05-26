@@ -80,6 +80,7 @@ export interface User {
     id: string;
     name: string;
     email: string;
+    pending_email: string | null;
     email_verified_at: string | null;
     password?: string;
     remember_token?: string | null;
