@@ -53,7 +53,13 @@ const tableState = useStorage<ProjectTableState>(
         },
     },
     undefined,
-    { mergeDefaults: true }
+    {
+        mergeDefaults: (storage, defaults) => ({
+            ...defaults,
+            ...storage,
+            filters: { ...defaults.filters, ...storage.filters },
+        }),
+    }
 );
 
 function handleSort(column: SortColumn, direction: SortDirection) {
