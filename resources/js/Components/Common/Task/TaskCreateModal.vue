@@ -11,7 +11,7 @@ import EstimatedTimeSection from '@/packages/ui/src/EstimatedTimeSection.vue';
 import { isAllowedToPerformPremiumAction } from '@/utils/billing';
 import { Field, FieldGroup, FieldLabel } from '@/packages/ui/src/field';
 import { Button } from '@/packages/ui/src/Buttons';
-import { ChevronDown } from 'lucide-vue-next';
+import { ChevronDown } from '@lucide/vue';
 import { FolderIcon } from '@heroicons/vue/20/solid';
 
 const { createTask } = useTasksStore();

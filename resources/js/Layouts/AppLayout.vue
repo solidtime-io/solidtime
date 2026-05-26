@@ -18,7 +18,7 @@ import {
     XMarkIcon,
     DocumentTextIcon,
 } from '@heroicons/vue/20/solid';
-import { PanelLeft } from 'lucide-vue-next';
+import { PanelLeft } from '@lucide/vue';
 import NavigationSidebarItem from '@/Components/NavigationSidebarItem.vue';
 import UserSettingsIcon from '@/Components/UserSettingsIcon.vue';
 import MainContainer from '@/packages/ui/src/MainContainer.vue';
