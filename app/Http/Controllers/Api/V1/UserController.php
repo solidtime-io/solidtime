@@ -49,18 +49,23 @@ class UserController extends Controller
             throw new AuthorizationException;
         }
 
-        if ($request->getPhoto() !== null) {
-            $photo = Base64File::decode($request->getPhoto());
-            assert($photo !== null);
-            $extension = Base64File::extension($photo['mime_type']);
-            assert($extension !== null);
-
-            $previousPhotoPath = $user->profile_photo_path;
-            $photoPath = 'profile-photos/'.Str::uuid().'.'.$extension;
+        if ($request->hasPhotoKey()) {
             $photoDisk = (string) config('jetstream.profile_photo_disk', 'public');
+            $previousPhotoPath = $user->profile_photo_path;
+            $newPhoto = $request->getPhoto();
 
-            Storage::disk($photoDisk)->put($photoPath, $photo['data'], 'public');
-            $user->profile_photo_path = $photoPath;
+            if ($newPhoto === null) {
+                $user->profile_photo_path = null;
+            } else {
+                $decoded = Base64File::decode($newPhoto);
+                assert($decoded !== null);
+                $extension = Base64File::extension($decoded['mime_type']);
+                assert($extension !== null);
+
+                $photoPath = 'profile-photos/'.Str::uuid().'.'.$extension;
+                Storage::disk($photoDisk)->put($photoPath, $decoded['data'], 'public');
+                $user->profile_photo_path = $photoPath;
+            }
 
             if ($previousPhotoPath !== null) {
                 Storage::disk($photoDisk)->delete($previousPhotoPath);
