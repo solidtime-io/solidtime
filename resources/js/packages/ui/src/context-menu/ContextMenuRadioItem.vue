@@ -2,7 +2,7 @@
 import type { ContextMenuRadioItemEmits, ContextMenuRadioItemProps } from 'reka-ui';
 import type { HTMLAttributes } from 'vue';
 import { reactiveOmit } from '@vueuse/core';
-import { Circle } from 'lucide-vue-next';
+import { Circle } from '@lucide/vue';
 import { ContextMenuItemIndicator, ContextMenuRadioItem, useForwardPropsEmits } from 'reka-ui';
 import { cn } from '../utils/cn';
 
