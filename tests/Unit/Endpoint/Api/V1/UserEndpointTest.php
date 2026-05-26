@@ -133,6 +133,59 @@ class UserEndpointTest extends ApiEndpointTestAbstract
         });
     }
 
+    public function test_update_with_the_current_email_does_not_change_pending_email_or_send_a_mail(): void
+    {
+        // Arrange
+        Mail::fake();
+        $data = $this->createUserWithPermission();
+        $data->user->email = 'current@example.com';
+        $data->user->pending_email = null;
+        $data->user->save();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.users.update', $data->user->getKey()), [
+            'email' => 'current@example.com',
+        ]);
+
+        // Assert
+        $response->assertSuccessful();
+        $user = $data->user->fresh();
+        $this->assertSame('current@example.com', $user->email);
+        $this->assertNull($user->pending_email);
+        Mail::assertNothingSent();
+    }
+
+    public function test_update_fails_if_email_format_is_invalid(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.users.update', $data->user->getKey()), [
+            'email' => 'not-an-email',
+        ]);
+
+        // Assert
+        $response->assertUnprocessable();
+        $response->assertJsonValidationErrors(['email']);
+    }
+
+    public function test_update_fails_when_not_authenticated(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission();
+
+        // Act
+        $response = $this->putJson(route('api.v1.users.update', $data->user->getKey()), [
+            'name' => 'Anonymous Edit',
+        ]);
+
+        // Assert
+        $response->assertUnauthorized();
+    }
+
     public function test_resend_email_verification_sends_pending_email_verification_email(): void
     {
         // Arrange
