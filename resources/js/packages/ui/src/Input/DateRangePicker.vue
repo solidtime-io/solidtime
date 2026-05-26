@@ -3,7 +3,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '../popover';
 import Button from '../Buttons/Button.vue';
 import { RangeCalendar } from '../range-calendar';
 import { CalendarDate } from '@internationalized/date';
-import { CalendarIcon } from 'lucide-vue-next';
+import { CalendarIcon } from '@lucide/vue';
 import { computed, ref, inject, type ComputedRef, watch } from 'vue';
 import { twMerge } from 'tailwind-merge';
 import {

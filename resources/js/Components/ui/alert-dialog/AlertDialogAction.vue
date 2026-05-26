@@ -2,7 +2,7 @@
 import { buttonVariants } from '@/packages/ui/src';
 import { AlertDialogAction, type AlertDialogActionProps } from 'reka-ui';
 import { computed, type HTMLAttributes } from 'vue';
-import { twMerge } from 'tailwind-merge';
+import { cn } from '@/lib/utils';
 const props = defineProps<AlertDialogActionProps & { class?: HTMLAttributes['class'] }>();
 
 const delegatedProps = computed(() => {
@@ -13,7 +13,7 @@ const delegatedProps = computed(() => {
 </script>
 
 <template>
-    <AlertDialogAction v-bind="delegatedProps" :class="twMerge(buttonVariants(), props.class)">
+    <AlertDialogAction v-bind="delegatedProps" :class="cn(buttonVariants(), props.class)">
         <slot />
     </AlertDialogAction>
 </template>
