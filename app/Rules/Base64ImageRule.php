@@ -16,6 +16,8 @@ class Base64ImageRule implements ValidationRule
         'image/png',
     ];
 
+    private const int MAX_BYTES = 1024 * 1024;
+
     /**
      * Run the validation rule.
      *
@@ -32,6 +34,12 @@ class Base64ImageRule implements ValidationRule
         $file = Base64File::decode($value);
         if ($file === null || ! in_array($file['mime_type'], self::ALLOWED_MIME_TYPES, true)) {
             $fail(__('validation.mimes', ['values' => 'jpg, png']));
+
+            return;
+        }
+
+        if (strlen($file['data']) > self::MAX_BYTES) {
+            $fail(__('validation.max.file', ['max' => (string) (self::MAX_BYTES / 1024)]));
         }
     }
 }
