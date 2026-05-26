@@ -10,7 +10,7 @@ import {
     ComboboxRoot,
     ComboboxViewport,
 } from 'radix-vue';
-import { Check, Plus } from 'lucide-vue-next';
+import { Check, Plus } from '@lucide/vue';
 import type { CreateClientBody, CreateProjectBody, Project } from '@/packages/api/src';
 import { UseFocusTrap } from '@vueuse/integrations/useFocusTrap/component';
 import ProjectCreateModal from '@/packages/ui/src/Project/ProjectCreateModal.vue';
