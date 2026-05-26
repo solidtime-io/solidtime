@@ -2,7 +2,7 @@
 import { Popover, PopoverContent, PopoverTrigger, Button } from '..';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '..';
 import { Field, FieldLabel } from '../field';
-import { Settings } from 'lucide-vue-next';
+import { Settings } from '@lucide/vue';
 import { ref, watch } from 'vue';
 import type { CalendarSettings } from './calendarSettings';
 

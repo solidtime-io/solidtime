@@ -19,7 +19,7 @@ export default defineConfig({
             // into your library
             external: [
                 'vue',
-                'lucide-vue-next',
+                '@lucide/vue',
                 '@floating-ui/vue',
                 '@heroicons/vue',
                 /^@heroicons\/vue\/.*/,
