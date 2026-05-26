@@ -354,6 +354,75 @@ class UserEndpointTest extends ApiEndpointTestAbstract
         $response->assertJsonValidationErrors(['photo']);
     }
 
+    public function test_update_with_null_photo_deletes_photo_file_and_clears_profile_photo_path(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission();
+        $photoDisk = (string) config('jetstream.profile_photo_disk', 'public');
+        $photoPath = 'profile-photos/existing.png';
+        Storage::fake($photoDisk);
+        Storage::disk($photoDisk)->put($photoPath, 'photo contents');
+        $data->user->profile_photo_path = $photoPath;
+        $data->user->save();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.users.update', $data->user->getKey()), [
+            'photo' => null,
+        ]);
+
+        // Assert
+        $response->assertSuccessful();
+        $user = $data->user->fresh();
+        $this->assertNull($user->profile_photo_path);
+        Storage::disk($photoDisk)->assertMissing($photoPath);
+    }
+
+    public function test_update_with_null_photo_is_a_noop_when_user_has_no_photo(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission();
+        $photoDisk = (string) config('jetstream.profile_photo_disk', 'public');
+        Storage::fake($photoDisk);
+        $data->user->profile_photo_path = null;
+        $data->user->save();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.users.update', $data->user->getKey()), [
+            'photo' => null,
+        ]);
+
+        // Assert
+        $response->assertSuccessful();
+        $user = $data->user->fresh();
+        $this->assertNull($user->profile_photo_path);
+    }
+
+    public function test_update_without_photo_key_leaves_existing_photo_untouched(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission();
+        $photoDisk = (string) config('jetstream.profile_photo_disk', 'public');
+        $photoPath = 'profile-photos/existing.png';
+        Storage::fake($photoDisk);
+        Storage::disk($photoDisk)->put($photoPath, 'photo contents');
+        $data->user->profile_photo_path = $photoPath;
+        $data->user->save();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.users.update', $data->user->getKey()), [
+            'name' => 'Just A Name Change',
+        ]);
+
+        // Assert
+        $response->assertSuccessful();
+        $user = $data->user->fresh();
+        $this->assertSame($photoPath, $user->profile_photo_path);
+        Storage::disk($photoDisk)->assertExists($photoPath);
+    }
+
     public function test_delete_fails_if_given_user_is_not_the_authenticated_user(): void
     {
         // Arrange
