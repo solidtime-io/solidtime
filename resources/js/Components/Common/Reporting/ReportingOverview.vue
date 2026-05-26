@@ -5,7 +5,7 @@ import {
     EllipsisVerticalIcon,
     LockClosedIcon,
 } from '@heroicons/vue/20/solid';
-import { SaveIcon } from 'lucide-vue-next';
+import { SaveIcon } from '@lucide/vue';
 import { getOrganizationCurrencyString } from '@/utils/money';
 import {
     formatReportingDuration,
