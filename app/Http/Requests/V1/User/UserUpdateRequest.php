@@ -81,8 +81,15 @@ class UserUpdateRequest extends BaseFormRequest
         return $this->has('week_start') ? Weekday::from($this->input('week_start')) : null;
     }
 
+    public function hasPhotoKey(): bool
+    {
+        return $this->has('photo');
+    }
+
     public function getPhoto(): ?string
     {
-        return $this->has('photo') ? (string) $this->input('photo') : null;
+        $value = $this->input('photo');
+
+        return is_string($value) ? $value : null;
     }
 }
