@@ -32,6 +32,9 @@ export const test = baseTest.extend<
         const email = `john+${Date.now()}_${Math.floor(Math.random() * 10000)}@doe.com`;
         const password = TEST_USER_PASSWORD;
         const name = 'John Doe';
+        const timezone = await page.evaluate(
+            () => Intl.DateTimeFormat().resolvedOptions().timeZone
+        );
 
         // Use page.context().request() so cookies are automatically shared with the page
         const request = page.context().request;
@@ -64,6 +67,7 @@ export const test = baseTest.extend<
                 password,
                 password_confirmation: password,
                 terms: 'on',
+                timezone,
             },
             maxRedirects: 0,
         });

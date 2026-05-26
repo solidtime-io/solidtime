@@ -649,6 +649,19 @@ export async function createTimeEntryWithTimestampsViaApi(
 // User profile helpers
 // ──────────────────────────────────────────────────
 
+export async function getCurrentUserViaApi(ctx: TestContext) {
+    const response = await ctx.request.get(`${PLAYWRIGHT_BASE_URL}/api/v1/users/me`);
+    expect(response.status()).toBe(200);
+    const body = await response.json();
+    return body.data as {
+        id: string;
+        name: string;
+        email: string;
+        timezone: string;
+        week_start: string;
+    };
+}
+
 export async function updateUserProfileViaWeb(
     page: Page,
     settings: { timezone?: string; week_start?: string }

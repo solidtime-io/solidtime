@@ -81,3 +81,64 @@ export async function getPasswordResetUrl(
 
     return resetUrlMatch![1].replace(/&amp;/g, '&');
 }
+
+/**
+ * Count emails matching the given subject sent to the given address.
+ */
+export async function countEmailsWithSubject(
+    request: APIRequestContext,
+    recipientEmail: string,
+    subject: string
+): Promise<number> {
+    const searchResult = await searchEmails(
+        request,
+        `to:${encodeURIComponent(recipientEmail)} subject:"${subject}"`
+    );
+    return searchResult.messages.length;
+}
+
+/**
+ * Poll Mailpit until the count of matching emails reaches `min`, or 5 attempts
+ * (~2.5s) elapse. Returns the final count.
+ */
+export async function waitForEmailCount(
+    request: APIRequestContext,
+    recipientEmail: string,
+    subject: string,
+    min: number
+): Promise<number> {
+    let count = 0;
+    for (let attempt = 0; attempt < 5; attempt++) {
+        count = await countEmailsWithSubject(request, recipientEmail, subject);
+        if (count >= min) break;
+        await new Promise((r) => setTimeout(r, 500));
+    }
+    return count;
+}
+
+/**
+ * Find the email-change verification URL from a Mailpit email sent to the given address.
+ * Retries a few times to allow for email delivery delay.
+ */
+export async function getEmailChangeVerificationUrl(
+    request: APIRequestContext,
+    recipientEmail: string
+): Promise<string> {
+    let searchResult: { messages: Array<{ ID: string }> } = { messages: [] };
+
+    for (let attempt = 0; attempt < 5; attempt++) {
+        searchResult = await searchEmails(
+            request,
+            `to:${encodeURIComponent(recipientEmail)} subject:"Verify Email Address"`
+        );
+        if (searchResult.messages.length > 0) break;
+        await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+    expect(searchResult.messages.length).toBeGreaterThan(0);
+
+    const message = await getMessage(request, searchResult.messages[0].ID);
+    const verifyUrlMatch = message.HTML.match(/href="([^"]*verify-email-change[^"]*)"/);
+    expect(verifyUrlMatch).toBeTruthy();
+
+    return verifyUrlMatch![1].replace(/&amp;/g, '&');
+}
