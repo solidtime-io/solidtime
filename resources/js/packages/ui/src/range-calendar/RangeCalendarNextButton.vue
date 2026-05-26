@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { cn, buttonVariants } from '@/packages/ui/src';
-import { ChevronRight } from 'lucide-vue-next';
+import { ChevronRight } from '@lucide/vue';
 import { RangeCalendarNext, type RangeCalendarNextProps, useForwardProps } from 'reka-ui';
 import { computed, type HTMLAttributes } from 'vue';
 

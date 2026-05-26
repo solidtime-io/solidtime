@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Button } from '..';
-import { ChevronLeft, ChevronRight } from 'lucide-vue-next';
+import { ChevronLeft, ChevronRight } from '@lucide/vue';
 import { Tabs, TabsList } from '../tabs';
 import TabBarItem from '../TabBar/TabBarItem.vue';
 import CalendarSettingsPopover from './CalendarSettingsPopover.vue';

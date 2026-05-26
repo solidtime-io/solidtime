@@ -48,10 +48,10 @@
     "author": "solidtime",
     "license": "AGPL-3.0",
     "devDependencies": {
-        "@types/chroma-js": "^3.1.0",
+        "@types/chroma-js": "^3.1.2",
         "@zodios/core": "^10.9.6",
-        "vite-plugin-dts": "^4.0.3",
-        "zod": "^3.23.8"
+        "vite-plugin-dts": "^4.5.4",
+        "zod": "^3.25.76"
     },
     "peerDependencies": {
         "@floating-ui/vue": "^1.1.4",
@@ -64,7 +64,7 @@
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
         "dayjs": "^1.11.13",
-        "lucide-vue-next": ">=0.453.0",
+        "@lucide/vue": ">=1.0.0",
         "@internationalized/date": "^3.0.0",
         "parse-duration": "^2.0.1",
         "radix-vue": "^1.9.0",

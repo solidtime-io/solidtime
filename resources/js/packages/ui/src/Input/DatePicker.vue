@@ -9,7 +9,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/packages/ui/src/popover';
 import { Calendar } from '..';
 import { Button } from '@/packages/ui/src/Buttons';
-import { CalendarIcon, XIcon } from 'lucide-vue-next';
+import { CalendarIcon, XIcon } from '@lucide/vue';
 import { parseDate, type DateValue } from '@internationalized/date';
 import type { Organization } from '@/packages/api/src';
 
