@@ -36,10 +36,9 @@ class UserController extends Controller
             ->exists();
 
         if ($emailAlreadyInUse) {
-            return redirect(route('dashboard', [
-                'bannerStyle' => 'danger',
-                'bannerText' => __('The email address is already in use.'),
-            ]));
+            return redirect(route('dashboard'))
+                ->with('bannerStyle', 'danger')
+                ->with('bannerText', __('The email address is already in use.'));
         }
 
         $user->email = $email;
@@ -47,9 +46,8 @@ class UserController extends Controller
         $user->email_verified_at = Carbon::now();
         $user->save();
 
-        return redirect(route('dashboard', [
-            'bannerStyle' => 'success',
-            'bannerText' => __('Your email address has been updated successfully.'),
-        ]));
+        return redirect(route('dashboard'))
+            ->with('bannerStyle', 'success')
+            ->with('bannerText', __('Your email address has been updated successfully.'));
     }
 }
