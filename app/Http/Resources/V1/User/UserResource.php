@@ -28,6 +28,8 @@ class UserResource extends BaseResource
             'name' => $this->resource->name,
             /** @var string $email Email of user */
             'email' => $this->resource->email,
+            /** @var string|null $pending_email Email address awaiting verification (set when the user has requested an email change but not yet verified the new address) */
+            'pending_email' => $this->resource->pending_email,
             /** @var string $profile_photo_url Profile photo URL */
             'profile_photo_url' => $this->resource->profile_photo_url,
             /** @var string $timezone Timezone (f.e. Europe/Berlin or America/New_York) */
