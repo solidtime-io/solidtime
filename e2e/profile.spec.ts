@@ -297,6 +297,43 @@ test('visiting the verification link while logged out redirects to login', async
     }
 });
 
+test('delete account shows an error when the password is wrong', async ({ page }) => {
+    await goToProfilePage(page);
+    await page.getByRole('button', { name: 'Delete Account' }).click();
+    const dialog = page.getByRole('dialog');
+    await dialog.getByPlaceholder('Password').fill('not-the-real-password');
+    await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/user/confirm-password') &&
+                response.request().method() === 'POST' &&
+                response.status() === 422
+        ),
+        dialog.getByRole('button', { name: 'Delete Account' }).click(),
+    ]);
+    await expect(dialog.getByRole('alert')).toBeVisible();
+    await expect(dialog).toBeVisible();
+});
+
+test('delete account succeeds with the correct password and logs the user out', async ({
+    page,
+}) => {
+    await goToProfilePage(page);
+    await page.getByRole('button', { name: 'Delete Account' }).click();
+    const dialog = page.getByRole('dialog');
+    await dialog.getByPlaceholder('Password').fill(TEST_USER_PASSWORD);
+    await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/api/v1/users/') &&
+                response.request().method() === 'DELETE' &&
+                response.status() === 204
+        ),
+        dialog.getByRole('button', { name: 'Delete Account' }).click(),
+    ]);
+    await page.waitForURL(/\/login/);
+});
+
 async function createNewApiToken(page) {
     await page.getByLabel('API Key Name').fill('NEW API KEY');
     await Promise.all([
