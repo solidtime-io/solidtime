@@ -57,6 +57,29 @@ export function useUpdateUserMutation() {
     });
 }
 
+export function useDeleteUserMutation() {
+    const { addNotification } = useNotificationsStore();
+
+    return useMutation({
+        mutationFn: async (userId: string) => {
+            try {
+                await api.deleteUser(undefined, { params: { user: userId } });
+            } catch (error) {
+                if (!axios.isAxiosError(error) || error.response?.status !== 422) {
+                    addNotification(
+                        'error',
+                        'Failed to delete account',
+                        axios.isAxiosError(error)
+                            ? (error.response?.data?.message ?? 'Please try again later.')
+                            : 'Please try again later.'
+                    );
+                }
+                throw error;
+            }
+        },
+    });
+}
+
 export function useResendUserEmailVerificationMutation() {
     const { handleApiRequestNotifications } = useNotificationsStore();
 
