@@ -469,7 +469,7 @@ test('test that creating a report with an expiration date works', async ({ page,
     await datePicker.click();
 
     // Select a date in the next month
-    const calendarGrid = page.getByRole('grid');
+    const calendarGrid = page.getByRole('gridcell').first();
     await expect(calendarGrid).toBeVisible({ timeout: 5000 });
     await page.getByRole('button', { name: /Next/i }).click();
     await page.getByRole('gridcell').filter({ hasText: /^15$/ }).first().click();
@@ -547,7 +547,7 @@ test('test that editing a report to make it public with expiration date works', 
     await datePicker.click();
 
     // Select a date in the next month
-    const calendarGrid = page.getByRole('grid');
+    const calendarGrid = page.getByRole('gridcell').first();
     await expect(calendarGrid).toBeVisible({ timeout: 5000 });
     await page.getByRole('button', { name: /Next/i }).click();
     await page.getByRole('gridcell').filter({ hasText: /^20$/ }).first().click();
@@ -741,7 +741,7 @@ test('test that updating expiration date on already-public report works', async 
     await datePicker.click();
 
     // Select the 25th of next month
-    const calendarGrid = page.getByRole('grid');
+    const calendarGrid = page.getByRole('gridcell').first();
     await expect(calendarGrid).toBeVisible({ timeout: 5000 });
     await page.getByRole('button', { name: /Next/i }).click();
     await page.getByRole('gridcell').filter({ hasText: /^25$/ }).first().click();

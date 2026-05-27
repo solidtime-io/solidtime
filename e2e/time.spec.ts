@@ -462,7 +462,7 @@ test('test that setting a date in the create modal works', async ({ page }) => {
     await startDatePicker.click();
 
     // Wait for calendar to appear
-    const calendarGrid = page.getByRole('grid');
+    const calendarGrid = page.getByRole('gridcell').first();
     await expect(calendarGrid).toBeVisible({ timeout: 5000 });
 
     // Navigate to previous month and select the 15th (a day that's always in the middle of the month)
@@ -515,7 +515,7 @@ test('test that updating the date via the time entry row range selector works', 
     await startDatePicker.click();
 
     // Wait for the calendar to appear and select a day
-    const calendarGrid = page.getByRole('grid');
+    const calendarGrid = page.getByRole('gridcell').first();
     await expect(calendarGrid).toBeVisible({ timeout: 5000 });
 
     // Navigate to previous month and select the 5th
@@ -568,7 +568,7 @@ test('test that updating the end date via the time entry row range selector work
     await endDatePicker.click();
 
     // Wait for the calendar to appear
-    const calendarGrid = page.getByRole('grid');
+    const calendarGrid = page.getByRole('gridcell').first();
     await expect(calendarGrid).toBeVisible({ timeout: 5000 });
 
     // Navigate to next month and select the 20th (to ensure end > start)
