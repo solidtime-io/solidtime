@@ -8,20 +8,22 @@ import {
 import { getCurrentUserViaApi } from './utils/api';
 import { registerUser } from './utils/members';
 import type { Page } from '@playwright/test';
+import path from 'path';
 
 async function goToProfilePage(page: Page) {
     await page.goto(PLAYWRIGHT_BASE_URL + '/user/profile');
 }
 
+function profileInformationForm(page: Page) {
+    return page
+        .getByRole('heading', { name: 'Profile Information', exact: true })
+        .locator('xpath=ancestor::*[descendant::form][1]');
+}
+
 async function saveProfileForm(page: Page): Promise<void> {
-    await Promise.all([
-        page.waitForResponse(
-            (resp) =>
-                resp.url().includes('/user/profile-information') &&
-                resp.request().method() === 'POST'
-        ),
-        page.getByRole('button', { name: 'Save' }).first().click(),
-    ]);
+    const form = profileInformationForm(page);
+    await form.getByRole('button', { name: 'Save' }).click();
+    await expect(form.getByText('Saved.', { exact: true })).toBeVisible();
 }
 
 test('user name can be updated', async ({ page }) => {
@@ -46,6 +48,64 @@ test('week-start change persists across reload', async ({ page }) => {
     await saveProfileForm(page);
     await page.reload();
     await expect(page.getByLabel('Start of the week')).toHaveValue('sunday');
+});
+
+test('profile photo can be uploaded, persists across reload, and can be removed', async ({
+    page,
+}) => {
+    await goToProfilePage(page);
+    const form = profileInformationForm(page);
+    const profilePhoto = form.getByRole('img', { name: 'John Doe' });
+
+    await expect(profilePhoto).toBeVisible();
+    await expect(profilePhoto).toHaveAttribute('src', /ui-avatars\.com/);
+    await expect(form.getByRole('button', { name: 'Remove Photo' })).toBeHidden();
+
+    await form.locator('#photo').setInputFiles(path.resolve('resources/testfiles/test.png'));
+    await saveProfileForm(page);
+    await expect(profilePhoto).toHaveAttribute('src', /profile-photos/);
+    await expect(form.getByRole('button', { name: 'Remove Photo' })).toBeVisible();
+
+    await page.reload();
+    const reloadedForm = profileInformationForm(page);
+    const reloadedProfilePhoto = reloadedForm.getByRole('img', { name: 'John Doe' });
+    await expect(reloadedProfilePhoto).toHaveAttribute('src', /profile-photos/);
+
+    await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/api/v1/users/') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 200
+        ),
+        reloadedForm.getByRole('button', { name: 'Remove Photo' }).click(),
+    ]);
+    await expect(reloadedProfilePhoto).toHaveAttribute('src', /ui-avatars\.com/);
+
+    await page.reload();
+    const finalForm = profileInformationForm(page);
+    await expect(finalForm.getByRole('img', { name: 'John Doe' })).toHaveAttribute(
+        'src',
+        /ui-avatars\.com/
+    );
+});
+
+test('field-level validation errors render inline when the server returns 422', async ({
+    page,
+}) => {
+    await goToProfilePage(page);
+    const form = profileInformationForm(page);
+    await form.getByLabel('Name').fill('a'.repeat(256));
+    await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/api/v1/users/') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 422
+        ),
+        form.getByRole('button', { name: 'Save' }).click(),
+    ]);
+    await expect(form.getByRole('alert').filter({ hasText: /255 characters/i })).toBeVisible();
 });
 
 test('submitting a new email keeps the current email displayed after reload', async ({
@@ -108,6 +168,59 @@ test('re-submitting the current email does not send a verification email', async
 
     await new Promise((r) => setTimeout(r, 1000));
     const afterCount = await countEmailsWithSubject(request, currentEmail, 'Verify Email Address');
+    expect(afterCount).toBe(beforeCount);
+});
+
+test('after submitting a new email the pending-email banner is shown with a resend button', async ({
+    page,
+}) => {
+    await goToProfilePage(page);
+    const newEmail = `pending+${Date.now()}@test.com`;
+    await page.getByLabel('Email').fill(newEmail);
+    await saveProfileForm(page);
+
+    await expect(page.getByText(`A verification link was sent to`)).toBeVisible();
+    await expect(page.getByText(newEmail)).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Resend verification email' })).toBeVisible();
+});
+
+test('clicking resend sends a second verification email and shows confirmation', async ({
+    page,
+    request,
+}) => {
+    await goToProfilePage(page);
+    const newEmail = `resend+${Date.now()}@test.com`;
+    await page.getByLabel('Email').fill(newEmail);
+    await saveProfileForm(page);
+
+    const beforeCount = await waitForEmailCount(request, newEmail, 'Verify Email Address', 1);
+    await page.getByRole('button', { name: 'Resend verification email' }).click();
+
+    await expect(page.getByText('Verification email sent.')).toBeVisible();
+    const afterCount = await waitForEmailCount(
+        request,
+        newEmail,
+        'Verify Email Address',
+        beforeCount + 1
+    );
+    expect(afterCount).toBeGreaterThan(beforeCount);
+});
+
+test('re-submitting the same pending email does not send another verification email', async ({
+    page,
+    request,
+}) => {
+    await goToProfilePage(page);
+    const newEmail = `dup+${Date.now()}@test.com`;
+    await page.getByLabel('Email').fill(newEmail);
+    await saveProfileForm(page);
+    const beforeCount = await waitForEmailCount(request, newEmail, 'Verify Email Address', 1);
+
+    await page.getByLabel('Email').fill(newEmail);
+    await saveProfileForm(page);
+
+    await new Promise((r) => setTimeout(r, 1000));
+    const afterCount = await countEmailsWithSubject(request, newEmail, 'Verify Email Address');
     expect(afterCount).toBe(beforeCount);
 });
 
