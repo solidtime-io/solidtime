@@ -1,40 +1,57 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useForm } from '@inertiajs/vue3';
+import axios from 'axios';
 import ActionSection from '@/Components/ActionSection.vue';
 import DangerButton from '@/packages/ui/src/Buttons/DangerButton.vue';
 import DialogModal from '@/packages/ui/src/DialogModal.vue';
 import { Field, FieldError } from '@/packages/ui/src/field';
 import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
 import TextInput from '@/packages/ui/src/Input/TextInput.vue';
+import { useDeleteUserMutation, useUserQuery } from '@/utils/useUserQuery';
+
+const { user } = useUserQuery();
+const deleteUserMutation = useDeleteUserMutation();
 
 const confirmingUserDeletion = ref(false);
-const passwordInput = ref<HTMLElement | null>(null);
+const passwordInput = ref<HTMLInputElement | null>(null);
+const password = ref('');
+const passwordError = ref('');
+const processing = ref(false);
 
-const form = useForm({
-    password: '',
-});
-
-const confirmUserDeletion = () => {
+function confirmUserDeletion() {
     confirmingUserDeletion.value = true;
-
     setTimeout(() => passwordInput.value?.focus(), 250);
-};
+}
 
-const deleteUser = () => {
-    form.delete(route('current-user.destroy'), {
-        preserveScroll: true,
-        onSuccess: () => closeModal(),
-        onError: () => passwordInput.value?.focus(),
-        onFinish: () => form.reset(),
-    });
-};
+async function deleteUser() {
+    if (!user.value || processing.value) return;
+    processing.value = true;
+    passwordError.value = '';
+    try {
+        await axios.post(route('password.confirm'), { password: password.value });
+    } catch (error) {
+        processing.value = false;
+        if (axios.isAxiosError(error) && error.response?.status === 422) {
+            passwordError.value = error.response.data?.errors?.password?.[0] ?? 'Invalid password.';
+        } else {
+            passwordError.value = 'Could not confirm password. Please try again.';
+        }
+        passwordInput.value?.focus();
+        return;
+    }
+    try {
+        await deleteUserMutation.mutateAsync(user.value.id);
+        window.location.href = '/';
+    } catch {
+        processing.value = false;
+    }
+}
 
-const closeModal = () => {
+function closeModal() {
     confirmingUserDeletion.value = false;
-
-    form.reset();
-};
+    password.value = '';
+    passwordError.value = '';
+}
 </script>
 
 <template>
@@ -66,16 +83,14 @@ const closeModal = () => {
                     <Field class="mt-4">
                         <TextInput
                             ref="passwordInput"
-                            v-model="form.password"
+                            v-model="password"
                             type="password"
                             class="block w-3/4"
                             placeholder="Password"
                             autocomplete="current-password"
                             @keyup.enter="deleteUser" />
 
-                        <FieldError v-if="form.errors.password">{{
-                            form.errors.password
-                        }}</FieldError>
+                        <FieldError v-if="passwordError">{{ passwordError }}</FieldError>
                     </Field>
                 </template>
 
@@ -84,8 +99,8 @@ const closeModal = () => {
 
                     <DangerButton
                         class="ms-3"
-                        :class="{ 'opacity-25': form.processing }"
-                        :disabled="form.processing"
+                        :class="{ 'opacity-25': processing }"
+                        :disabled="processing"
                         @click="deleteUser">
                         Delete Account
                     </DangerButton>
