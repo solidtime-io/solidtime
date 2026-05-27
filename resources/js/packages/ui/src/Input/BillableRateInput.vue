@@ -24,7 +24,7 @@ const billableRateInput = ref<HTMLInputElement | null>(null);
 useFocus(billableRateInput, { initialValue: props.focus });
 
 function formatValue(modelValue: number | null) {
-    return modelValue ? modelValue / 100 : 0;
+    return modelValue ? modelValue / 100 : null;
 }
 </script>
 
@@ -43,7 +43,7 @@ function formatValue(modelValue: number | null) {
                 currencyDisplay: 'code',
                 currencySign: 'accounting',
             }"
-            @update:model-value="(value) => (model = value * 100)">
+            @update:model-value="(value) => (model = value ? value * 100 : null)">
             <NumberFieldContent>
                 <NumberFieldDecrement />
                 <NumberFieldInput placeholder="Billable Rate" />
