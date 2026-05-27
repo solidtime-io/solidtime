@@ -293,7 +293,7 @@ test('test that setting an end time with a different date via the timetracker ra
     await endDatePicker.click();
 
     // Calendar should appear
-    const calendarGrid = page.getByRole('grid');
+    const calendarGrid = page.getByRole('gridcell').first();
     await expect(calendarGrid).toBeVisible({ timeout: 5000 });
 
     // Navigate to the next month and select a day to ensure end > start
