@@ -245,6 +245,67 @@ class UserEndpointTest extends ApiEndpointTestAbstract
         Mail::assertNotQueued(VerifyUpdatedEmailMail::class);
     }
 
+    public function test_reset_pending_email_clears_pending_email(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission();
+        $data->user->pending_email = 'new.email@example.com';
+        $data->user->save();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.users.reset-pending-email', $data->user->getKey()));
+
+        // Assert
+        $response->assertNoContent();
+        $this->assertNull($data->user->fresh()->pending_email);
+    }
+
+    public function test_reset_pending_email_fails_if_given_id_is_not_the_authenticated_user(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission();
+        $data->user->pending_email = 'new.email@example.com';
+        $data->user->save();
+        $otherData = $this->createUserWithPermission();
+        Passport::actingAs($otherData->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.users.reset-pending-email', $data->user->getKey()));
+
+        // Assert
+        $response->assertForbidden();
+        $this->assertSame('new.email@example.com', $data->user->fresh()->pending_email);
+    }
+
+    public function test_reset_pending_email_fails_when_not_authenticated(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission();
+        $data->user->pending_email = 'new.email@example.com';
+        $data->user->save();
+
+        // Act
+        $response = $this->postJson(route('api.v1.users.reset-pending-email', $data->user->getKey()));
+
+        // Assert
+        $response->assertUnauthorized();
+        $this->assertSame('new.email@example.com', $data->user->fresh()->pending_email);
+    }
+
+    public function test_reset_pending_email_fails_if_user_does_not_exist(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.users.reset-pending-email', 'not-valid'));
+
+        // Assert
+        $response->assertNotFound();
+    }
+
     public function test_update_changes_user_photo_from_base64_encoded_image(): void
     {
         // Arrange
