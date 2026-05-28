@@ -101,6 +101,27 @@ class UserController extends Controller
     }
 
     /**
+     * Reset the pending email for a user.
+     *
+     * This endpoint is independent of the organization.
+     *
+     * @operationId resetUserPendingEmail
+     *
+     * @throws AuthorizationException Thrown when the authenticated user does not match the user whose email is pending verification.
+     */
+    public function resetPendingEmail(User $user): JsonResponse
+    {
+        if ($user->getKey() !== $this->user()->getKey()) {
+            throw new AuthorizationException;
+        }
+
+        $user->pending_email = null;
+        $user->save();
+
+        return response()->json(null, 204);
+    }
+
+    /**
      * Resend the pending email update verification email.
      *
      * This endpoint is independent of the organization.
