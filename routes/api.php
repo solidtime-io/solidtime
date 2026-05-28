@@ -64,6 +64,7 @@ Route::prefix('v1')->name('v1.')->group(static function (): void {
             Route::put('/users/{user}', [UserController::class, 'update'])->name('update');
             Route::post('/users/{user}/resend-email-verification', [UserController::class, 'resendEmailVerification'])->name('resend-email-verification');
             Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('destroy');
+            Route::post('/users/{user}/reset-pending-email', [UserController::class, 'resetPendingEmail'])->name('reset-pending-email');
         });
 
         // Api token routes
