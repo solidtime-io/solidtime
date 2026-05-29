@@ -283,7 +283,9 @@ const page = usePage<{
                             @click="clickResend">
                             Resend verification email
                         </Button>
-                        <p v-else class="ms-3 font-medium text-green-400">Verification email sent.</p>
+                        <p v-else class="ms-3 font-medium text-green-400">
+                            Verification email sent.
+                        </p>
                         <Button
                             variant="ghost"
                             size="sm"
