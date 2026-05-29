@@ -93,3 +93,21 @@ export function useResendUserEmailVerificationMutation() {
         },
     });
 }
+
+export function useResetUserPendingEmailMutation() {
+    const queryClient = useQueryClient();
+    const { handleApiRequestNotifications } = useNotificationsStore();
+
+    return useMutation({
+        mutationFn: async (userId: string) => {
+            return handleApiRequestNotifications(
+                () => api.resetUserPendingEmail(undefined, { params: { user: userId } }),
+                'Email change canceled',
+                'Failed to cancel email change'
+            );
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ME_QUERY_KEY });
+        },
+    });
+}
