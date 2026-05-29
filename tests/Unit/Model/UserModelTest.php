@@ -62,6 +62,9 @@ class UserModelTest extends ModelTestAbstract
         $user->organizations()->attach($organization, [
             'role' => Role::Employee->value,
         ]);
+        $owner->organizations()->attach($organization, [
+            'role' => Role::Owner->value,
+        ]);
         $otherOrganization = Organization::factory()->create();
         $otherUser = User::factory()->create();
         $otherUser->organizations()->attach($otherOrganization, [
@@ -78,6 +81,70 @@ class UserModelTest extends ModelTestAbstract
         $userIds = $users->pluck('id')->toArray();
         $this->assertContains($user->getKey(), $userIds);
         $this->assertContains($owner->getKey(), $userIds);
+    }
+
+    public function test_is_member_of_organization_returns_true_for_user_attached_to_organization(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $user = User::factory()->create();
+        $user->organizations()->attach($organization, [
+            'role' => Role::Employee->value,
+        ]);
+
+        // Act
+        $isMemberOfOrganization = $user->isMemberOfOrganization($organization);
+
+        // Assert
+        $this->assertTrue($isMemberOfOrganization);
+    }
+
+    public function test_is_member_of_organization_returns_false_for_user_not_attached_to_organization(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $user = User::factory()->create();
+
+        // Act
+        $isMemberOfOrganization = $user->isMemberOfOrganization($organization);
+
+        // Assert
+        $this->assertFalse($isMemberOfOrganization);
+    }
+
+    public function test_is_member_of_organization_uses_loaded_organizations_relation(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $user = User::factory()
+            ->attachToOrganization($organization, [
+                'role' => Role::Employee->value,
+            ])
+            ->create();
+        $user->load('organizations');
+
+        // Act
+        $isMemberOfOrganization = $user->isMemberOfOrganization($organization);
+
+        // Assert
+        $this->assertTrue($isMemberOfOrganization);
+    }
+
+    public function test_is_member_of_organization_does_not_query_when_organizations_relation_is_loaded(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $user = User::factory()->create();
+        $user->load('organizations');
+        $user->organizations()->attach($organization, [
+            'role' => Role::Employee->value,
+        ]);
+
+        // Act
+        $isMemberOfOrganization = $user->isMemberOfOrganization($organization);
+
+        // Assert
+        $this->assertFalse($isMemberOfOrganization);
     }
 
     public function test_it_has_many_time_entries(): void

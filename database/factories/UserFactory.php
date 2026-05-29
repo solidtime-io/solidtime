@@ -120,7 +120,7 @@ class UserFactory extends Factory
 
             $organization->owner()->associate($user);
             $organization->users()->attach($user, ['role' => Role::Owner->value]);
-            $user->currentTeam()->associate($organization);
+            $user->currentOrganization()->associate($organization);
             $user->save();
         });
     }

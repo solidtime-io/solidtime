@@ -173,7 +173,7 @@ class DeletionService
         $user->authCodes()->delete();
 
         // Note: Since the deletion of the profile photo is not reversible via a database rollback this needs to be done last
-        $user->deleteProfilePhoto();
+        $this->userService->deleteProfilePhoto($user);
 
         $user->delete();
 

@@ -16,7 +16,7 @@ class OwnedOrganizationsRelationManager extends RelationManager
 {
     protected static ?string $title = 'Owned Organizations';
 
-    protected static string $relationship = 'ownedTeams';
+    protected static string $relationship = 'ownedOrganizations';
 
     public function form(Form $form): Form
     {

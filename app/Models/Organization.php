@@ -43,7 +43,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  * @property Carbon|null $updated_at
  * @property Collection<int, User> $users
  * @property Collection<int, User> $realUsers
- * @property-read Collection<int, OrganizationInvitation> $teamInvitations
+ * @property-read Collection<int, OrganizationInvitation> $organizationInvitations
  * @property Member $membership
  * @property NumberFormat $number_format
  * @property CurrencyFormat $currency_format
@@ -51,7 +51,6 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  * @property IntervalFormat $interval_format
  * @property TimeFormat $time_format
  *
- * @method HasMany<OrganizationInvitation, $this> teamInvitations()
  * @method static OrganizationFactory factory()
  */
 class Organization extends JetstreamTeam implements AuditableContract
@@ -112,23 +111,6 @@ class Organization extends JetstreamTeam implements AuditableContract
     ];
 
     /**
-     * Get all the non-placeholder users of the organization including its owner.
-     *
-     * @return Collection<int, User>
-     */
-    public function allRealUsers(): Collection
-    {
-        return $this->realUsers->merge([$this->owner]);
-    }
-
-    public function hasRealUserWithEmail(string $email): bool
-    {
-        return $this->allRealUsers()->contains(function (User $user) use ($email): bool {
-            return $user->email === $email;
-        });
-    }
-
-    /**
      * Get all the users that belong to the team.
      *
      * @return BelongsToMany<User, $this, Pivot, 'membership'>
@@ -170,6 +152,14 @@ class Organization extends JetstreamTeam implements AuditableContract
     {
         return $this->users()
             ->where('is_placeholder', false);
+    }
+
+    /**
+     * @return HasMany<OrganizationInvitation, $this>
+     */
+    public function organizationInvitations(): HasMany
+    {
+        return $this->hasMany(OrganizationInvitation::class, 'organization_id');
     }
 
     /**

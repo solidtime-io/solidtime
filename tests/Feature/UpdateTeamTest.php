@@ -32,15 +32,15 @@ class UpdateTeamTest extends TestCase
         $this->actingAs($user);
 
         // Act
-        $response = $this->put('/teams/'.$user->currentTeam->id, [
+        $response = $this->put('/teams/'.$user->currentOrganization->id, [
             'name' => 'Test Organization',
             'currency' => 'USD',
         ]);
 
         // Assert
         $response->assertValid(errorBag: 'updateTeamName');
-        $this->assertCount(1, $user->fresh()->ownedTeams);
-        $organization = $user->currentTeam->fresh();
+        $this->assertCount(1, $user->fresh()->ownedOrganizations);
+        $organization = $user->currentOrganization->fresh();
         $this->assertEquals('Test Organization', $organization->name);
         $this->assertEquals('USD', $organization->currency);
     }

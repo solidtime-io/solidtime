@@ -34,10 +34,10 @@ class CreateOrganizationTest extends TestCase
         // Assert
         $response->assertStatus(302);
         /** @var Organization|null $newOrganization */
-        $ownedTeams = $user->fresh()->ownedTeams;
-        $this->assertCount(2, $ownedTeams);
-        $this->assertTrue($ownedTeams->contains('name', 'Test Organization'));
-        $newOrganization = $ownedTeams->firstWhere('name', 'Test Organization');
+        $ownedOrganizations = $user->fresh()->ownedOrganizations;
+        $this->assertCount(2, $ownedOrganizations);
+        $this->assertTrue($ownedOrganizations->contains('name', 'Test Organization'));
+        $newOrganization = $ownedOrganizations->firstWhere('name', 'Test Organization');
         /** @var Member $member */
         $member = Member::query()->whereBelongsTo($user, 'user')->whereBelongsTo($newOrganization, 'organization')->firstOrFail();
         $this->assertSame(Role::Owner->value, $member->role);
