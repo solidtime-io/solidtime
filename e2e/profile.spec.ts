@@ -81,6 +81,7 @@ test('profile photo can be uploaded, persists across reload, and can be removed'
         reloadedForm.getByRole('button', { name: 'Remove Photo' }).click(),
     ]);
     await expect(reloadedProfilePhoto).toHaveAttribute('src', /ui-avatars\.com/);
+    await expect(reloadedForm.getByRole('button', { name: 'Remove Photo' })).toBeHidden();
 
     await page.reload();
     const finalForm = profileInformationForm(page);
@@ -88,6 +89,7 @@ test('profile photo can be uploaded, persists across reload, and can be removed'
         'src',
         /ui-avatars\.com/
     );
+    await expect(finalForm.getByRole('button', { name: 'Remove Photo' })).toBeHidden();
 });
 
 test('field-level validation errors render inline when the server returns 422', async ({
@@ -204,6 +206,41 @@ test('clicking resend sends a second verification email and shows confirmation',
         beforeCount + 1
     );
     expect(afterCount).toBeGreaterThan(beforeCount);
+});
+
+test('cancelling a pending email change clears it and hides the banner', async ({ page, ctx }) => {
+    const { email: currentEmail } = await getCurrentUserViaApi(ctx);
+    const newEmail = `cancel+${Date.now()}@test.com`;
+
+    await goToProfilePage(page);
+    await page.getByLabel('Email').fill(newEmail);
+    await saveProfileForm(page);
+
+    // The pending-email banner is shown with the cancel control.
+    await expect(page.getByText('A verification link was sent to')).toBeVisible();
+    await expect(page.getByText(newEmail)).toBeVisible();
+    const cancelButton = page.getByRole('button', { name: 'Cancel email change' });
+    await expect(cancelButton).toBeVisible();
+
+    // Cancelling clears the pending email server-side (204).
+    await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/reset-pending-email') &&
+                response.request().method() === 'POST' &&
+                response.status() === 204
+        ),
+        cancelButton.click(),
+    ]);
+
+    // The banner disappears and the email field still shows the current address.
+    await expect(page.getByText('A verification link was sent to')).toBeHidden();
+    await expect(page.getByLabel('Email')).toHaveValue(currentEmail);
+
+    // The cancellation is persistent — still gone after a reload.
+    await page.reload();
+    await expect(page.getByText('A verification link was sent to')).toBeHidden();
+    await expect(page.getByLabel('Email')).toHaveValue(currentEmail);
 });
 
 test('re-submitting the same pending email does not send another verification email', async ({
