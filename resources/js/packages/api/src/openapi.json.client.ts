@@ -4527,6 +4527,38 @@ The report is considered public if the &#x60;is_public&#x60; field is set to &#x
     },
     {
         method: 'post',
+        path: '/v1/users/:user/reset-pending-email',
+        alias: 'resetUserPendingEmail',
+        description: `This endpoint is independent of the organization.`,
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'user',
+                type: 'Path',
+                schema: z.string(),
+            },
+        ],
+        response: z.void(),
+        errors: [
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 403,
+                description: `Authorization error`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 404,
+                description: `Not found`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+        ],
+    },
+    {
+        method: 'post',
         path: '/v1/users/:user/resend-email-verification',
         alias: 'resendUserEmailVerification',
         description: `This endpoint is independent of the organization.`,
