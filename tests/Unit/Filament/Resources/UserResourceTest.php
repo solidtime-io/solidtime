@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Filament\Resources;
 
+use App\Enums\Role;
 use App\Exceptions\Api\CanNotDeleteUserWhoIsOwnerOfOrganizationWithMultipleMembers;
 use App\Filament\Resources\TimeEntryResource;
 use App\Filament\Resources\UserResource;
+use App\Models\Member;
 use App\Models\Organization;
 use App\Models\User;
 use App\Service\DeletionService;
@@ -103,7 +105,7 @@ class UserResourceTest extends FilamentTestCase
         $this->assertSame($userFake->email, $user->email);
         $this->assertSame($userFake->timezone, $user->timezone);
         $this->assertSame($userFake->week_start->value, $user->week_start->value);
-        $organization = $user->ownedTeams()->first();
+        $organization = $user->ownedOrganizations()->first();
         $this->assertNotNull($organization);
         $this->assertSame('EUR', $organization->currency);
         $this->assertTrue(Hash::check('password', $user->password));
@@ -152,7 +154,9 @@ class UserResourceTest extends FilamentTestCase
         // Arrange
         $user = User::factory()->create();
         $ownedOrganization = Organization::factory()->withOwner($user)->create();
+        Member::factory()->forOrganization($ownedOrganization)->forUser($user)->role(Role::Owner)->create();
         $organization = Organization::factory()->create();
+        Member::factory()->forOrganization($organization)->forUser($user)->role(Role::Employee)->create();
 
         // Act
         $response = Livewire::test(UserResource\RelationManagers\OrganizationsRelationManager::class, [
@@ -163,7 +167,7 @@ class UserResourceTest extends FilamentTestCase
         // Assert
         $response->assertSuccessful();
         $response->assertCanSeeTableRecords($user->organizations()->get());
-        $response->assertCanNotSeeTableRecords($user->ownedTeams()->get());
+        $response->assertCanSeeTableRecords($user->ownedOrganizations()->get());
     }
 
     public function test_can_list_related_owned_organizations(): void
@@ -171,7 +175,9 @@ class UserResourceTest extends FilamentTestCase
         // Arrange
         $user = User::factory()->create();
         $ownedOrganization = Organization::factory()->withOwner($user)->create();
+        Member::factory()->forOrganization($ownedOrganization)->forUser($user)->role(Role::Owner)->create();
         $organization = Organization::factory()->create();
+        Member::factory()->forOrganization($organization)->forUser($user)->role(Role::Employee)->create();
 
         // Act
         $response = Livewire::test(UserResource\RelationManagers\OwnedOrganizationsRelationManager::class, [
@@ -181,7 +187,7 @@ class UserResourceTest extends FilamentTestCase
 
         // Assert
         $response->assertSuccessful();
-        $response->assertCanSeeTableRecords($user->ownedTeams()->get());
-        $response->assertCanNotSeeTableRecords($user->organizations()->get());
+        $response->assertCanSeeTableRecords($user->ownedOrganizations()->get());
+        $response->assertCanNotSeeTableRecords([$organization]);
     }
 }

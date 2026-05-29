@@ -97,7 +97,7 @@ class MemberService
         $isPlaceholder = $user->is_placeholder;
 
         if (! $isPlaceholder && $user->current_team_id === $member->organization_id) {
-            $user->currentTeam()->disassociate();
+            $user->currentOrganization()->disassociate();
             $user->save();
         }
 
@@ -216,7 +216,7 @@ class MemberService
     {
         $user = $member->user;
         if ($user->current_team_id === $member->organization_id) {
-            $user->currentTeam()->disassociate();
+            $user->currentOrganization()->disassociate();
             $user->save();
         }
 

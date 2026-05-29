@@ -19,6 +19,7 @@ use App\Models\TimeEntry;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class UserService
 {
@@ -61,7 +62,6 @@ class UserService
                 $intervalFormat,
                 $timeFormat,
             );
-            $user->ownedTeams()->save($organization);
         }
 
         return $user;
@@ -103,11 +103,15 @@ class UserService
             true
         );
 
-        // Set the organization as the user's current organization
-        $user->currentOrganization()->associate($organization);
-        $user->save();
+        $this->switchCurrentOrganization($user, $organization);
 
         AfterCreateOrganization::dispatch($organization);
+    }
+
+    public function switchCurrentOrganization(User $user, Organization $organization): void
+    {
+        $user->currentOrganization()->associate($organization);
+        $user->save();
     }
 
     public function getOrganizationNameForUserName(string $username): string
@@ -156,5 +160,17 @@ class UserService
             $oldOwner->role = Role::Admin->value;
             $oldOwner->save();
         }
+    }
+
+    public function deleteProfilePhoto(User $user): void
+    {
+        if ($user->profile_photo_path === null) {
+            return;
+        }
+
+        Storage::disk(config('filesystems.public'))->delete($user->profile_photo_path);
+
+        $user->profile_photo_path = null;
+        $user->save();
     }
 }
