@@ -35,7 +35,7 @@ class OrganizationPolicy
             return true;
         }
 
-        return $user->belongsToTeam($organization);
+        return $user->isMemberOfOrganization($organization);
     }
 
     /**
@@ -97,6 +97,6 @@ class OrganizationPolicy
             return true;
         }
 
-        return $user->ownsTeam($organization);
+        return app(PermissionStore::class)->userHas($organization, $user, 'organizations:delete');
     }
 }

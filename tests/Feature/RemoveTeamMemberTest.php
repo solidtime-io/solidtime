@@ -17,12 +17,12 @@ class RemoveTeamMemberTest extends TestCase
         // Arrange
         $this->actingAs($user = User::factory()->withPersonalOrganization()->create());
 
-        $user->currentTeam->users()->attach(
+        $user->currentOrganization->users()->attach(
             $otherUser = User::factory()->create(), ['role' => 'admin']
         );
 
         // Act
-        $response = $this->delete('/teams/'.$user->currentTeam->id.'/members/'.$otherUser->id);
+        $response = $this->delete('/teams/'.$user->currentOrganization->id.'/members/'.$otherUser->id);
 
         // Assert
         $response->assertStatus(403);

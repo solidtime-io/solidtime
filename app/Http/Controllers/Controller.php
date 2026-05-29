@@ -59,7 +59,7 @@ class Controller extends BaseController
     protected function currentOrganization(): Organization
     {
         $user = $this->user();
-        $organization = $user->currentTeam;
+        $organization = $user->currentOrganization;
         if ($organization === null) {
             $organization = $user->organizations()->first();
         }

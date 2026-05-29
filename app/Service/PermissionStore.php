@@ -291,7 +291,7 @@ class PermissionStore
     public function userHas(Organization $organization, User $user, string $permission): bool
     {
         if (! isset($this->permissionCache[$user->getKey().'|'.$organization->getKey()])) {
-            if (! $user->belongsToTeam($organization)) {
+            if (! $user->isMemberOfOrganization($organization)) {
                 return false;
             }
 
@@ -309,7 +309,7 @@ class PermissionStore
      */
     private function getPermissionsByUser(Organization $organization, User $user): array
     {
-        if (! $user->belongsToTeam($organization)) {
+        if (! $user->isMemberOfOrganization($organization)) {
             return [];
         }
 

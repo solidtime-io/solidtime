@@ -69,7 +69,7 @@ class UserCreateCommand extends Command
             );
         });
         /** @var Organization|null $organization */
-        $organization = $user->ownedTeams->first();
+        $organization = $user->ownedOrganizations->first();
         if ($organization === null) {
             throw new LogicException('User does not have an organization');
         }

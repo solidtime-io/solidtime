@@ -14,6 +14,7 @@ use App\Service\BillableRateService;
 use App\Service\DeletionService;
 use App\Service\IpLookup\IpLookupServiceContract;
 use App\Service\OrganizationService;
+use App\Service\UserService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 
@@ -106,10 +107,8 @@ class OrganizationController extends Controller
             $currency
         );
 
-        $user->switchTeam($organization);
+        app(UserService::class)->switchCurrentOrganization($user, $organization);
 
-        // Note: The refresh is necessary for currently unknown reasons. Do not remove it.
-        $organization = $organization->refresh();
         AfterCreateOrganization::dispatch($organization);
 
         return new OrganizationResource($organization, true);
