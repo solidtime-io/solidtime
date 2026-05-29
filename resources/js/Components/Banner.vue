@@ -5,6 +5,15 @@ import { usePage } from '@inertiajs/vue3';
 const ALLOWED_STYLES = ['success', 'danger', 'info', 'warning'] as const;
 type BannerStyle = (typeof ALLOWED_STYLES)[number];
 
+withDefaults(
+    defineProps<{
+        // Render as a self-contained rounded alert that sits inside a card
+        // (e.g. the auth card on login/register) instead of a full-width page banner.
+        card?: boolean;
+    }>(),
+    { card: false }
+);
+
 const page = usePage<{
     flash: {
         bannerText?: string;
@@ -26,10 +35,16 @@ const show = ref(true);
         <div
             v-if="show && message"
             data-testid="banner"
-            class="bg-secondary border-b border-border-secondary">
-            <div class="mx-auto py-1 px-3 sm:px-6 lg:px-8">
+            :class="
+                card
+                    ? 'bg-secondary border border-border-secondary rounded-lg mb-4'
+                    : 'bg-secondary border-b border-border-secondary'
+            ">
+            <div :class="card ? 'py-2 px-3' : 'mx-auto py-1 px-3 sm:px-6 lg:px-8'">
                 <div class="flex items-center justify-between flex-wrap">
-                    <div class="w-0 flex-1 flex items-center min-w-0">
+                    <div
+                        class="w-0 flex-1 flex min-w-0"
+                        :class="card ? 'items-start' : 'items-center'">
                         <span class="flex">
                             <svg
                                 v-if="style === 'success'"
@@ -74,7 +89,9 @@ const show = ref(true);
                             </svg>
                         </span>
 
-                        <p class="ms-3 font-medium text-sm text-text-primary truncate">
+                        <p
+                            class="ms-3 font-medium text-sm text-text-primary"
+                            :class="{ truncate: !card }">
                             {{ message }}
                         </p>
                     </div>

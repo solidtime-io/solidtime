@@ -42,8 +42,6 @@ const page = usePage<{
 <template>
     <Head title="Register" />
 
-    <Banner />
-
     <AuthenticationCard>
         <template #logo>
             <AuthenticationCardLogo />
@@ -57,6 +55,8 @@ const page = usePage<{
                 <span class="text-text-primary">Login here!</span>
             </Link>
         </template>
+
+        <Banner card />
 
         <div
             v-if="page.props.flash?.message"
