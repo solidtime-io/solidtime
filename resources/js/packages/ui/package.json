@@ -50,7 +50,7 @@
     "devDependencies": {
         "@types/chroma-js": "^3.1.0",
         "@zodios/core": "^10.9.6",
-        "vite-plugin-dts": "^4.0.3",
+        "vite-plugin-dts": "^5.0.1",
         "zod": "^3.23.8"
     },
     "peerDependencies": {
