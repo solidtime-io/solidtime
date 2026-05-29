@@ -5,11 +5,13 @@ import axios from 'axios';
 import ActionMessage from '@/Components/ActionMessage.vue';
 import FormSection from '@/Components/FormSection.vue';
 import { Field, FieldError, FieldLabel } from '@/packages/ui/src/field';
+import { Button } from '@/packages/ui/src/Buttons';
 import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
 import TextInput from '@/packages/ui/src/Input/TextInput.vue';
 import {
     useResendUserEmailVerificationMutation,
+    useResetUserPendingEmailMutation,
     useUpdateUserMutation,
     useUserQuery,
 } from '@/utils/useUserQuery';
@@ -18,6 +20,7 @@ import type { UpdateUserBody, User } from '@/packages/api/src';
 const { user } = useUserQuery();
 const updateUser = useUpdateUserMutation();
 const resendVerification = useResendUserEmailVerificationMutation();
+const resetPendingEmail = useResetUserPendingEmailMutation();
 
 const name = ref('');
 const email = ref('');
@@ -152,6 +155,17 @@ async function clickResend() {
     }
 }
 
+async function clickCancelEmailChange() {
+    if (!user.value || resetPendingEmail.isPending.value) return;
+    try {
+        // Clears pending_email on the server; the pending banner hides once the
+        // me query refetches. The email field already shows the current address.
+        await resetPendingEmail.mutateAsync(user.value.id);
+    } catch {
+        // notification handled by mutation
+    }
+}
+
 function flashSaved() {
     recentlySaved.value = true;
     setTimeout(() => (recentlySaved.value = false), 2000);
@@ -259,15 +273,26 @@ const page = usePage<{
                         <span class="font-medium">{{ pendingEmail }}</span
                         >. Click the link in the email to confirm the change.
                     </p>
-                    <button
-                        v-if="!resendCooldown"
-                        type="button"
-                        class="mt-1 underline text-text-secondary hover:text-text-primary rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                        :disabled="!isUserLoaded || resendVerification.isPending.value"
-                        @click="clickResend">
-                        Resend verification email
-                    </button>
-                    <p v-else class="mt-1 font-medium text-green-400">Verification email sent.</p>
+                    <div class="mt-2 -ms-3 flex flex-wrap items-center gap-x-1 gap-y-1">
+                        <Button
+                            v-if="!resendCooldown"
+                            variant="ghost"
+                            size="sm"
+                            type="button"
+                            :disabled="!isUserLoaded || resendVerification.isPending.value"
+                            @click="clickResend">
+                            Resend verification email
+                        </Button>
+                        <p v-else class="ms-3 font-medium text-green-400">Verification email sent.</p>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            type="button"
+                            :disabled="!isUserLoaded || resetPendingEmail.isPending.value"
+                            @click="clickCancelEmailChange">
+                            Cancel email change
+                        </Button>
+                    </div>
                 </div>
             </Field>
 
