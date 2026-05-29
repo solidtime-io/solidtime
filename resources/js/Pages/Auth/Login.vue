@@ -37,8 +37,6 @@ const page = usePage<{
 <template>
     <Head title="Log in" />
 
-    <Banner />
-
     <AuthenticationCard>
         <template #logo>
             <AuthenticationCardLogo />
@@ -51,6 +49,8 @@ const page = usePage<{
                 No account yet? <span class="text-text-primary">Register here!</span>
             </Link>
         </template>
+
+        <Banner card />
 
         <div v-if="status" class="mb-4 font-medium text-sm text-green-400">
             {{ status }}
