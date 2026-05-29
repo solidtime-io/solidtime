@@ -114,6 +114,8 @@ export type ApiToken = ApiTokenIndexResponse['data'][0];
 
 export type DetailedInvoiceResponse = ZodiosResponseByAlias<SolidTimeApi, 'getInvoice'>;
 
+export type DetailedInvoice = DetailedInvoiceResponse['data'];
+
 export type InvoiceIndexEntry = ZodiosResponseByAlias<SolidTimeApi, 'getInvoices'>['data'][0];
 
 export type UpdateInvoiceSettings = ZodiosBodyByAlias<SolidTimeApi, 'updateInvoiceSettings'>;
