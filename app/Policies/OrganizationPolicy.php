@@ -35,7 +35,7 @@ class OrganizationPolicy
             return true;
         }
 
-        return $user->belongsToTeam($organization);
+        return $user->isMemberOfOrganization($organization);
     }
 
     /**
@@ -60,18 +60,6 @@ class OrganizationPolicy
         }
 
         return app(PermissionStore::class)->userHas($organization, $user, 'organizations:update');
-    }
-
-    /**
-     * Determine whether the user can add team members.
-     */
-    public function addTeamMember(User $user, Organization $organization): bool
-    {
-        if (Filament::isServing()) {
-            return true;
-        }
-
-        return true;
     }
 
     /**
@@ -109,6 +97,6 @@ class OrganizationPolicy
             return true;
         }
 
-        return $user->ownsTeam($organization);
+        return app(PermissionStore::class)->userHas($organization, $user, 'organizations:delete');
     }
 }

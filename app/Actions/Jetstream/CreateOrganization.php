@@ -9,6 +9,7 @@ use App\Models\Organization;
 use App\Models\User;
 use App\Service\IpLookup\IpLookupServiceContract;
 use App\Service\OrganizationService;
+use App\Service\UserService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
@@ -25,6 +26,8 @@ class CreateOrganization implements CreatesTeams
      *
      * @throws AuthorizationException
      * @throws ValidationException
+     *
+     * @deprecated Use REST endpoint instead
      */
     public function create(User $user, array $input): Organization
     {
@@ -48,10 +51,8 @@ class CreateOrganization implements CreatesTeams
             $currency
         );
 
-        $user->switchTeam($organization);
+        app(UserService::class)->switchCurrentOrganization($user, $organization);
 
-        // Note: The refresh is necessary for currently unknown reasons. Do not remove it.
-        $organization = $organization->refresh();
         AfterCreateOrganization::dispatch($organization);
 
         return $organization;

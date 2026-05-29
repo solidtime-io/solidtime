@@ -16,6 +16,8 @@ class DeleteUser implements DeletesUsers
      * Delete the given user.
      *
      * @throws ValidationException
+     *
+     * @deprecated Use REST endpoint instead
      */
     public function delete(User $user): void
     {

@@ -1,30 +1,374 @@
 import { test, expect } from '../playwright/fixtures';
 import { PLAYWRIGHT_BASE_URL, TEST_USER_PASSWORD } from '../playwright/config';
+import {
+    countEmailsWithSubject,
+    getEmailChangeVerificationUrl,
+    waitForEmailCount,
+} from './utils/mailpit';
+import { getCurrentUserViaApi } from './utils/api';
+import { registerUser } from './utils/members';
 import type { Page } from '@playwright/test';
+import path from 'path';
 
 async function goToProfilePage(page: Page) {
     await page.goto(PLAYWRIGHT_BASE_URL + '/user/profile');
 }
 
-test('test that user name can be updated', async ({ page }) => {
-    await page.goto(PLAYWRIGHT_BASE_URL + '/user/profile');
+function profileInformationForm(page: Page) {
+    return page
+        .getByRole('heading', { name: 'Profile Information', exact: true })
+        .locator('xpath=ancestor::*[descendant::form][1]');
+}
+
+async function saveProfileForm(page: Page): Promise<void> {
+    const form = profileInformationForm(page);
+    await form.getByRole('button', { name: 'Save' }).click();
+    await expect(form.getByText('Saved.', { exact: true })).toBeVisible();
+}
+
+test('user name can be updated', async ({ page }) => {
+    await goToProfilePage(page);
     await page.getByLabel('Name', { exact: true }).fill('NEW NAME');
-    await Promise.all([
-        page.getByRole('button', { name: 'Save' }).first().click(),
-        page.waitForResponse('**/user/profile-information'),
-    ]);
+    await saveProfileForm(page);
     await page.reload();
     await expect(page.getByLabel('Name', { exact: true })).toHaveValue('NEW NAME');
 });
 
-test.skip('test that user email can be updated', async ({ page }) => {
-    // this does not work because of email verification currently
-    await page.goto(PLAYWRIGHT_BASE_URL + '/user/profile');
-    const emailId = Math.round(Math.random() * 10000);
-    await page.getByLabel('Email').fill(`newemail+${emailId}@test.com`);
-    await page.getByRole('button', { name: 'Save' }).first().click();
+test('timezone change persists across reload', async ({ page }) => {
+    await goToProfilePage(page);
+    await page.getByLabel('Timezone').selectOption('America/New_York');
+    await saveProfileForm(page);
     await page.reload();
-    await expect(page.getByLabel('Email')).toHaveValue(`newemail+${emailId}@test.com`);
+    await expect(page.getByLabel('Timezone')).toHaveValue('America/New_York');
+});
+
+test('week-start change persists across reload', async ({ page }) => {
+    await goToProfilePage(page);
+    await page.getByLabel('Start of the week').selectOption('sunday');
+    await saveProfileForm(page);
+    await page.reload();
+    await expect(page.getByLabel('Start of the week')).toHaveValue('sunday');
+});
+
+test('profile photo can be uploaded, persists across reload, and can be removed', async ({
+    page,
+}) => {
+    await goToProfilePage(page);
+    const form = profileInformationForm(page);
+    const profilePhoto = form.getByRole('img', { name: 'John Doe' });
+
+    await expect(profilePhoto).toBeVisible();
+    await expect(profilePhoto).toHaveAttribute('src', /ui-avatars\.com/);
+    await expect(form.getByRole('button', { name: 'Remove Photo' })).toBeHidden();
+
+    await form.locator('#photo').setInputFiles(path.resolve('resources/testfiles/test.png'));
+    await saveProfileForm(page);
+    await expect(profilePhoto).toHaveAttribute('src', /profile-photos/);
+    await expect(form.getByRole('button', { name: 'Remove Photo' })).toBeVisible();
+
+    await page.reload();
+    const reloadedForm = profileInformationForm(page);
+    const reloadedProfilePhoto = reloadedForm.getByRole('img', { name: 'John Doe' });
+    await expect(reloadedProfilePhoto).toHaveAttribute('src', /profile-photos/);
+
+    await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/api/v1/users/') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 200
+        ),
+        reloadedForm.getByRole('button', { name: 'Remove Photo' }).click(),
+    ]);
+    await expect(reloadedProfilePhoto).toHaveAttribute('src', /ui-avatars\.com/);
+    await expect(reloadedForm.getByRole('button', { name: 'Remove Photo' })).toBeHidden();
+
+    await page.reload();
+    const finalForm = profileInformationForm(page);
+    await expect(finalForm.getByRole('img', { name: 'John Doe' })).toHaveAttribute(
+        'src',
+        /ui-avatars\.com/
+    );
+    await expect(finalForm.getByRole('button', { name: 'Remove Photo' })).toBeHidden();
+});
+
+test('field-level validation errors render inline when the server returns 422', async ({
+    page,
+}) => {
+    await goToProfilePage(page);
+    const form = profileInformationForm(page);
+    await form.getByLabel('Name').fill('a'.repeat(256));
+    await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/api/v1/users/') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 422
+        ),
+        form.getByRole('button', { name: 'Save' }).click(),
+    ]);
+    await expect(form.getByRole('alert').filter({ hasText: /255 characters/i })).toBeVisible();
+});
+
+test('submitting a new email keeps the current email displayed after reload', async ({
+    page,
+    ctx,
+}) => {
+    const { email: oldEmail } = await getCurrentUserViaApi(ctx);
+    const newEmail = `newemail+${Date.now()}@test.com`;
+
+    await goToProfilePage(page);
+    await page.getByLabel('Email').fill(newEmail);
+    await saveProfileForm(page);
+    await page.reload();
+
+    await expect(page.getByLabel('Email')).toHaveValue(oldEmail);
+});
+
+test('submitting a new email sends a verification email to the new address', async ({
+    page,
+    request,
+}) => {
+    await goToProfilePage(page);
+    const newEmail = `newemail+${Date.now()}@test.com`;
+
+    await page.getByLabel('Email').fill(newEmail);
+    await saveProfileForm(page);
+
+    expect(await waitForEmailCount(request, newEmail, 'Verify Email Address', 1)).toBeGreaterThan(
+        0
+    );
+});
+
+test('mixed-case email is lower-cased before the verification mail is sent', async ({
+    page,
+    request,
+}) => {
+    await goToProfilePage(page);
+    const stamp = Date.now();
+    const mixedCase = `MixedCase+${stamp}@Example.COM`;
+    const lowerCased = `mixedcase+${stamp}@example.com`;
+
+    await page.getByLabel('Email').fill(mixedCase);
+    await saveProfileForm(page);
+
+    const verifyUrl = await getEmailChangeVerificationUrl(request, lowerCased);
+    expect(new URL(verifyUrl).searchParams.get('email')).toBe(lowerCased);
+});
+
+test('re-submitting the current email does not send a verification email', async ({
+    page,
+    ctx,
+    request,
+}) => {
+    const { email: currentEmail } = await getCurrentUserViaApi(ctx);
+    const beforeCount = await countEmailsWithSubject(request, currentEmail, 'Verify Email Address');
+
+    await goToProfilePage(page);
+    await page.getByLabel('Email').fill(currentEmail);
+    await saveProfileForm(page);
+
+    await new Promise((r) => setTimeout(r, 1000));
+    const afterCount = await countEmailsWithSubject(request, currentEmail, 'Verify Email Address');
+    expect(afterCount).toBe(beforeCount);
+});
+
+test('after submitting a new email the pending-email banner is shown with a resend button', async ({
+    page,
+}) => {
+    await goToProfilePage(page);
+    const newEmail = `pending+${Date.now()}@test.com`;
+    await page.getByLabel('Email').fill(newEmail);
+    await saveProfileForm(page);
+
+    await expect(page.getByText(`A verification link was sent to`)).toBeVisible();
+    await expect(page.getByText(newEmail)).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Resend verification email' })).toBeVisible();
+});
+
+test('clicking resend sends a second verification email and shows confirmation', async ({
+    page,
+    request,
+}) => {
+    await goToProfilePage(page);
+    const newEmail = `resend+${Date.now()}@test.com`;
+    await page.getByLabel('Email').fill(newEmail);
+    await saveProfileForm(page);
+
+    const beforeCount = await waitForEmailCount(request, newEmail, 'Verify Email Address', 1);
+    await page.getByRole('button', { name: 'Resend verification email' }).click();
+
+    await expect(page.getByText('Verification email sent.')).toBeVisible();
+    const afterCount = await waitForEmailCount(
+        request,
+        newEmail,
+        'Verify Email Address',
+        beforeCount + 1
+    );
+    expect(afterCount).toBeGreaterThan(beforeCount);
+});
+
+test('cancelling a pending email change clears it and hides the banner', async ({ page, ctx }) => {
+    const { email: currentEmail } = await getCurrentUserViaApi(ctx);
+    const newEmail = `cancel+${Date.now()}@test.com`;
+
+    await goToProfilePage(page);
+    await page.getByLabel('Email').fill(newEmail);
+    await saveProfileForm(page);
+
+    // The pending-email banner is shown with the cancel control.
+    await expect(page.getByText('A verification link was sent to')).toBeVisible();
+    await expect(page.getByText(newEmail)).toBeVisible();
+    const cancelButton = page.getByRole('button', { name: 'Cancel email change' });
+    await expect(cancelButton).toBeVisible();
+
+    // Cancelling clears the pending email server-side (204).
+    await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/reset-pending-email') &&
+                response.request().method() === 'POST' &&
+                response.status() === 204
+        ),
+        cancelButton.click(),
+    ]);
+
+    // The banner disappears and the email field still shows the current address.
+    await expect(page.getByText('A verification link was sent to')).toBeHidden();
+    await expect(page.getByLabel('Email')).toHaveValue(currentEmail);
+
+    // The cancellation is persistent — still gone after a reload.
+    await page.reload();
+    await expect(page.getByText('A verification link was sent to')).toBeHidden();
+    await expect(page.getByLabel('Email')).toHaveValue(currentEmail);
+});
+
+test('re-submitting the same pending email does not send another verification email', async ({
+    page,
+    request,
+}) => {
+    await goToProfilePage(page);
+    const newEmail = `dup+${Date.now()}@test.com`;
+    await page.getByLabel('Email').fill(newEmail);
+    await saveProfileForm(page);
+    const beforeCount = await waitForEmailCount(request, newEmail, 'Verify Email Address', 1);
+
+    await page.getByLabel('Email').fill(newEmail);
+    await saveProfileForm(page);
+
+    await new Promise((r) => setTimeout(r, 1000));
+    const afterCount = await countEmailsWithSubject(request, newEmail, 'Verify Email Address');
+    expect(afterCount).toBe(beforeCount);
+});
+
+test('clicking the verification link swaps the email and shows a success banner', async ({
+    page,
+}) => {
+    await goToProfilePage(page);
+    const newEmail = `verify+${Date.now()}@test.com`;
+    await page.getByLabel('Email').fill(newEmail);
+    await saveProfileForm(page);
+    const verifyUrl = await getEmailChangeVerificationUrl(page.request, newEmail);
+
+    await page.goto(verifyUrl);
+    await page.waitForURL(/\/dashboard/);
+
+    const banner = page.getByTestId('banner');
+    await expect(banner).toBeVisible();
+    await expect(banner).toContainText('Your email address has been updated successfully.');
+
+    await goToProfilePage(page);
+    await expect(page.getByLabel('Email')).toHaveValue(newEmail);
+});
+
+test('visiting another user’s verification link is forbidden', async ({ page, browser }) => {
+    await goToProfilePage(page);
+    const newEmail = `victim+${Date.now()}@test.com`;
+    await page.getByLabel('Email').fill(newEmail);
+    await saveProfileForm(page);
+    const verifyUrl = await getEmailChangeVerificationUrl(page.request, newEmail);
+
+    const other = await registerUser(browser, 'Other User', `other+${Date.now()}@test.com`);
+    try {
+        const response = await other.page.goto(verifyUrl);
+        expect(response?.status()).toBe(403);
+    } finally {
+        await other.close();
+    }
+});
+
+test('a stale verification link from a previous submission is rejected', async ({ page }) => {
+    await goToProfilePage(page);
+    const stamp = Date.now();
+    const olderEmail = `older+${stamp}@test.com`;
+    const newerEmail = `newer+${stamp}@test.com`;
+
+    await page.getByLabel('Email').fill(olderEmail);
+    await saveProfileForm(page);
+    const staleUrl = await getEmailChangeVerificationUrl(page.request, olderEmail);
+
+    await page.getByLabel('Email').fill(newerEmail);
+    await saveProfileForm(page);
+
+    const response = await page.goto(staleUrl);
+    expect(response?.status()).toBe(403);
+});
+
+test('visiting the verification link while logged out redirects to login', async ({
+    page,
+    browser,
+}) => {
+    await goToProfilePage(page);
+    const newEmail = `loggedout+${Date.now()}@test.com`;
+    await page.getByLabel('Email').fill(newEmail);
+    await saveProfileForm(page);
+    const verifyUrl = await getEmailChangeVerificationUrl(page.request, newEmail);
+
+    const anonContext = await browser.newContext();
+    try {
+        const anonPage = await anonContext.newPage();
+        await anonPage.goto(verifyUrl);
+        await anonPage.waitForURL(/\/login/);
+    } finally {
+        await anonContext.close();
+    }
+});
+
+test('delete account shows an error when the password is wrong', async ({ page }) => {
+    await goToProfilePage(page);
+    await page.getByRole('button', { name: 'Delete Account' }).click();
+    const dialog = page.getByRole('dialog');
+    await dialog.getByPlaceholder('Password').fill('not-the-real-password');
+    await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/user/confirm-password') &&
+                response.request().method() === 'POST' &&
+                response.status() === 422
+        ),
+        dialog.getByRole('button', { name: 'Delete Account' }).click(),
+    ]);
+    await expect(dialog.getByRole('alert')).toBeVisible();
+    await expect(dialog).toBeVisible();
+});
+
+test('delete account succeeds with the correct password and logs the user out', async ({
+    page,
+}) => {
+    await goToProfilePage(page);
+    await page.getByRole('button', { name: 'Delete Account' }).click();
+    const dialog = page.getByRole('dialog');
+    await dialog.getByPlaceholder('Password').fill(TEST_USER_PASSWORD);
+    await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/api/v1/users/') &&
+                response.request().method() === 'DELETE' &&
+                response.status() === 204
+        ),
+        dialog.getByRole('button', { name: 'Delete Account' }).click(),
+    ]);
+    await page.waitForURL(/\/login/);
 });
 
 async function createNewApiToken(page) {

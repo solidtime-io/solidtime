@@ -21,7 +21,7 @@ use Illuminate\Validation\Rule;
 
 class InvitationsRelationManager extends RelationManager
 {
-    protected static string $relationship = 'teamInvitations';
+    protected static string $relationship = 'organizationInvitations';
 
     protected static ?string $title = 'Invitations';
 

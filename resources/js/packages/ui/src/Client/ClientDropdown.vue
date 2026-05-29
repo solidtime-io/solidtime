@@ -11,7 +11,7 @@ import {
 } from 'radix-vue';
 import { UseFocusTrap } from '@vueuse/integrations/useFocusTrap/component';
 import Dropdown from '@/packages/ui/src/Input/Dropdown.vue';
-import { Check, Plus } from 'lucide-vue-next';
+import { Check, Plus } from '@lucide/vue';
 
 const model = defineModel<string | null>({
     default: null,

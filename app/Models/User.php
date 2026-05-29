@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\Role;
 use App\Enums\Weekday;
 use App\Models\Concerns\CustomAuditable;
 use App\Models\Concerns\HasUuids;
@@ -36,6 +37,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  * @property string $id
  * @property string $name
  * @property string $email
+ * @property string|null $pending_email
  * @property Carbon|null $email_verified_at
  * @property string|null $password
  * @property string|null $two_factor_secret
@@ -51,6 +53,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  * @property Carbon|null $updated_at
  * @property string|null $current_team_id
  * @property Collection<int, Organization> $organizations
+ * @property Collection<int, Organization> $ownedOrganizations
  * @property Collection<int, TimeEntry> $timeEntries
  * @property Member $membership
  *
@@ -105,6 +108,7 @@ class User extends Authenticatable implements AuditableContract, FilamentUser, M
     protected $casts = [
         'name' => 'string',
         'email' => 'string',
+        'pending_email' => 'string',
         'email_verified_at' => 'datetime',
         'is_admin' => 'boolean',
         'is_placeholder' => 'boolean',
@@ -129,14 +133,37 @@ class User extends Authenticatable implements AuditableContract, FilamentUser, M
     {
         return Attribute::get(function (): string {
             return $this->profile_photo_path
-                ? Storage::disk($this->profilePhotoDisk())->url($this->profile_photo_path)
+                ? Storage::disk(config('filesystems.public'))->url($this->profile_photo_path)
                 : $this->defaultProfilePhotoUrl();
         });
+    }
+
+    /**
+     * Get the default profile photo URL if no profile photo has been uploaded.
+     */
+    protected function defaultProfilePhotoUrl(): string
+    {
+        $name = trim(collect(explode(' ', $this->name))->map(function ($segment) {
+            return mb_substr($segment, 0, 1);
+        })->join(' '));
+
+        return 'https://ui-avatars.com/api/?name='.urlencode($name).'&color=7F9CF5&background=EBF4FF';
     }
 
     public function canAccessPanel(Panel $panel): bool
     {
         return in_array($this->email, config('auth.super_admins', []), true) && $this->hasVerifiedEmail();
+    }
+
+    public function isMemberOfOrganization(Organization $organization): bool
+    {
+        if ($this->relationLoaded('organizations')) {
+            return $this->organizations->contains(function (Organization $o) use ($organization): bool {
+                return $o->getKey() === $organization->getKey();
+            });
+        }
+
+        return $this->organizations()->whereKey($organization->getKey())->exists();
     }
 
     public function canBeImpersonated(): bool
@@ -157,6 +184,14 @@ class User extends Authenticatable implements AuditableContract, FilamentUser, M
             ])
             ->withTimestamps()
             ->as('membership');
+    }
+
+    /**
+     * @return BelongsToMany<Organization, $this, Pivot, 'membership'>
+     */
+    public function ownedOrganizations(): BelongsToMany
+    {
+        return $this->organizations()->wherePivot('role', Role::Owner->value);
     }
 
     /**
@@ -213,12 +248,8 @@ class User extends Authenticatable implements AuditableContract, FilamentUser, M
      */
     public function scopeBelongsToOrganization(Builder $builder, Organization $organization): Builder
     {
-        return $builder->where(function (Builder $builder) use ($organization): Builder {
-            return $builder->whereHas('organizations', function (Builder $query) use ($organization): void {
-                $query->whereKey($organization->getKey());
-            })->orWhereHas('ownedTeams', function (Builder $query) use ($organization): void {
-                $query->whereKey($organization->getKey());
-            });
+        return $builder->whereHas('organizations', function (Builder $query) use ($organization): void {
+            $query->whereKey($organization->getKey());
         });
     }
 }

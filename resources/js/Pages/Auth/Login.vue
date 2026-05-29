@@ -2,6 +2,7 @@
 import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import AuthenticationCard from '@/Components/AuthenticationCard.vue';
 import AuthenticationCardLogo from '@/Components/AuthenticationCardLogo.vue';
+import Banner from '@/Components/Banner.vue';
 import { Field, FieldLabel, FieldError } from '@/packages/ui/src/field';
 import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import TextInput from '@/packages/ui/src/Input/TextInput.vue';
@@ -48,6 +49,8 @@ const page = usePage<{
                 No account yet? <span class="text-text-primary">Register here!</span>
             </Link>
         </template>
+
+        <Banner card />
 
         <div v-if="status" class="mb-4 font-medium text-sm text-green-400">
             {{ status }}

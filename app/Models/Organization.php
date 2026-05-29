@@ -24,6 +24,7 @@ use Illuminate\Support\Str;
 use Laravel\Jetstream\Events\TeamCreated;
 use Laravel\Jetstream\Events\TeamDeleted;
 use Laravel\Jetstream\Events\TeamUpdated;
+use Laravel\Jetstream\Team;
 use Laravel\Jetstream\Team as JetstreamTeam;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
@@ -36,12 +37,13 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  * @property string $user_id
  * @property bool $employees_can_see_billable_rates
  * @property bool $employees_can_manage_tasks
+ * @property bool $prevent_overlapping_time_entries
  * @property User $owner
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property Collection<int, User> $users
  * @property Collection<int, User> $realUsers
- * @property-read Collection<int, OrganizationInvitation> $teamInvitations
+ * @property-read Collection<int, OrganizationInvitation> $organizationInvitations
  * @property Member $membership
  * @property NumberFormat $number_format
  * @property CurrencyFormat $currency_format
@@ -49,7 +51,6 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  * @property IntervalFormat $interval_format
  * @property TimeFormat $time_format
  *
- * @method HasMany<OrganizationInvitation, $this> teamInvitations()
  * @method static OrganizationFactory factory()
  */
 class Organization extends JetstreamTeam implements AuditableContract
@@ -110,23 +111,6 @@ class Organization extends JetstreamTeam implements AuditableContract
     ];
 
     /**
-     * Get all the non-placeholder users of the organization including its owner.
-     *
-     * @return Collection<int, User>
-     */
-    public function allRealUsers(): Collection
-    {
-        return $this->realUsers->merge([$this->owner]);
-    }
-
-    public function hasRealUserWithEmail(string $email): bool
-    {
-        return $this->allRealUsers()->contains(function (User $user) use ($email): bool {
-            return $user->email === $email;
-        });
-    }
-
-    /**
      * Get all the users that belong to the team.
      *
      * @return BelongsToMany<User, $this, Pivot, 'membership'>
@@ -171,12 +155,20 @@ class Organization extends JetstreamTeam implements AuditableContract
     }
 
     /**
+     * @return HasMany<OrganizationInvitation, $this>
+     */
+    public function organizationInvitations(): HasMany
+    {
+        return $this->hasMany(OrganizationInvitation::class, 'organization_id');
+    }
+
+    /**
      * This method prevents an unhandled exception when the ID is not a UUID.
      * Normally this can be fixed with a route pattern, but Jetstream does not use route model binding.
      *
      * @param  array<string>  $columns
      */
-    public function findOrFail(string $id, array $columns = ['*']): \Laravel\Jetstream\Team
+    public function findOrFail(string $id, array $columns = ['*']): Team
     {
         if (! Str::isUuid($id)) {
             throw (new ModelNotFoundException)->setModel(

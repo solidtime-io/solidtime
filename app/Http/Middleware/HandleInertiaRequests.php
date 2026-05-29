@@ -46,7 +46,7 @@ class HandleInertiaRequests extends Middleware
         /** @var BillingContract $billing */
         $billing = app(BillingContract::class);
 
-        $currentOrganization = $request->user()?->currentTeam;
+        $currentOrganization = $request->user()?->currentOrganization;
 
         return array_merge(parent::share($request), [
             'has_billing_extension' => $hasBilling,
@@ -60,6 +60,8 @@ class HandleInertiaRequests extends Middleware
             ] : null,
             'flash' => [
                 'message' => fn () => $request->session()->get('message'),
+                'bannerText' => fn () => $request->session()->get('bannerText'),
+                'bannerStyle' => fn () => $request->session()->get('bannerStyle'),
             ],
         ]);
     }

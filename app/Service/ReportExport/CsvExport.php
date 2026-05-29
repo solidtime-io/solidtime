@@ -10,6 +10,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\File;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
+use League\Csv\CannotInsertRecord;
+use League\Csv\Exception;
+use League\Csv\UnavailableStream;
 use League\Csv\Writer;
 use Spatie\TemporaryDirectory\TemporaryDirectory;
 
@@ -58,9 +61,9 @@ abstract class CsvExport
     abstract public function mapRow(Model $model): array;
 
     /**
-     * @throws \League\Csv\CannotInsertRecord
-     * @throws \League\Csv\Exception
-     * @throws \League\Csv\UnavailableStream
+     * @throws CannotInsertRecord
+     * @throws Exception
+     * @throws UnavailableStream
      */
     public function export(): void
     {
@@ -72,6 +75,7 @@ abstract class CsvExport
         $writer->insertOne(static::HEADER);
 
         $this->builder->chunk($this->chunk, function (Collection $models) use ($writer): void {
+            /** @var T $model */
             foreach ($models as $model) {
                 $data = $this->mapRow($model);
                 $row = $this->convertRow($data);

@@ -38,7 +38,7 @@ abstract class TestCase extends BaseTestCase
 
     protected function mockPrivateStorage(): void
     {
-        Storage::fake(config('filesystems.default'));
+        Storage::fake(config('filesystems.private'));
     }
 
     protected function mockPublicStorage(): void
@@ -50,6 +50,7 @@ abstract class TestCase extends BaseTestCase
     {
         // Note: It is necessary to clear the permission cache after each test, since the "scoped singletons" are not reset between tests.
         app(PermissionStore::class)->clear();
+        PermissionStore::resetCustomRoles();
         parent::tearDown();
     }
 

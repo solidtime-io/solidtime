@@ -9,6 +9,7 @@ use App\Enums\Weekday;
 use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Http\FileHelpers;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -27,6 +28,7 @@ class UserFactory extends Factory
         return [
             'name' => $this->faker->name(),
             'email' => $this->faker->unique()->safeEmail(),
+            'pending_email' => null,
             'email_verified_at' => now(),
             'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
             'two_factor_secret' => null,
@@ -90,7 +92,7 @@ class UserFactory extends Factory
     public function withProfilePicture(): static
     {
         $profilePhoto = $this->faker->image(null, 500, 500);
-        /** @see \Illuminate\Http\FileHelpers::hashName */
+        /** @see FileHelpers::hashName */
         $path = 'profile-photos/'.Str::random(40).'.png';
         Storage::disk(config('jetstream.profile_photo_disk', 'public'))->put($path, $profilePhoto);
 
@@ -118,7 +120,7 @@ class UserFactory extends Factory
 
             $organization->owner()->associate($user);
             $organization->users()->attach($user, ['role' => Role::Owner->value]);
-            $user->currentTeam()->associate($organization);
+            $user->currentOrganization()->associate($organization);
             $user->save();
         });
     }

@@ -688,10 +688,21 @@ const UserResource = z
         id: z.string(),
         name: z.string(),
         email: z.string(),
+        pending_email: z.union([z.string(), z.null()]),
         profile_photo_url: z.string(),
         timezone: z.string(),
         week_start: Weekday,
     })
+    .passthrough();
+const UserUpdateRequest = z
+    .object({
+        name: z.string(),
+        email: z.string(),
+        photo: z.union([z.string(), z.null()]),
+        timezone: z.string(),
+        week_start: Weekday,
+    })
+    .partial()
     .passthrough();
 const PersonalMembershipResource = z
     .object({
@@ -764,6 +775,7 @@ export const schemas = {
     TimeEntryUpdateMultipleRequest,
     TimeEntryUpdateRequest,
     UserResource,
+    UserUpdateRequest,
     PersonalMembershipResource,
 };
 
@@ -4419,10 +4431,154 @@ The report is considered public if the &#x60;is_public&#x60; field is set to &#x
         method: 'get',
         path: '/v1/users/me',
         alias: 'getMe',
-        description: `This endpoint is independent of organization.`,
+        description: `This endpoint is independent of the organization.`,
         requestFormat: 'json',
         response: z.object({ data: UserResource }).passthrough(),
         errors: [
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 403,
+                description: `Authorization error`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+        ],
+    },
+    {
+        method: 'put',
+        path: '/v1/users/:user',
+        alias: 'updateUser',
+        description: `This endpoint is independent of the organization.`,
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'body',
+                type: 'Body',
+                schema: UserUpdateRequest,
+            },
+            {
+                name: 'user',
+                type: 'Path',
+                schema: z.string(),
+            },
+        ],
+        response: z.object({ data: UserResource }).passthrough(),
+        errors: [
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 403,
+                description: `Authorization error`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 422,
+                description: `Validation error`,
+                schema: z
+                    .object({ message: z.string(), errors: z.record(z.array(z.string())) })
+                    .passthrough(),
+            },
+        ],
+    },
+    {
+        method: 'delete',
+        path: '/v1/users/:user',
+        alias: 'deleteUser',
+        description: `This endpoint is independent of the organization.`,
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'user',
+                type: 'Path',
+                schema: z.string(),
+            },
+        ],
+        response: z.void(),
+        errors: [
+            {
+                status: 400,
+                description: `API exception`,
+                schema: z
+                    .object({ error: z.boolean(), key: z.string(), message: z.string() })
+                    .passthrough(),
+            },
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 403,
+                description: `Authorization error`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 404,
+                description: `Not found`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+        ],
+    },
+    {
+        method: 'post',
+        path: '/v1/users/:user/reset-pending-email',
+        alias: 'resetUserPendingEmail',
+        description: `This endpoint is independent of the organization.`,
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'user',
+                type: 'Path',
+                schema: z.string(),
+            },
+        ],
+        response: z.void(),
+        errors: [
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 403,
+                description: `Authorization error`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 404,
+                description: `Not found`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+        ],
+    },
+    {
+        method: 'post',
+        path: '/v1/users/:user/resend-email-verification',
+        alias: 'resendUserEmailVerification',
+        description: `This endpoint is independent of the organization.`,
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'user',
+                type: 'Path',
+                schema: z.string(),
+            },
+        ],
+        response: z.void(),
+        errors: [
+            {
+                status: 400,
+                description: `API exception`,
+                schema: z
+                    .object({ error: z.boolean(), key: z.string(), message: z.string() })
+                    .passthrough(),
+            },
             {
                 status: 401,
                 description: `Unauthenticated`,

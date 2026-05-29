@@ -2,7 +2,7 @@
 import { computed, nextTick, ref, watch } from 'vue';
 import { useMembersQuery } from '@/utils/useMembersQuery';
 import { UserIcon } from '@heroicons/vue/24/solid';
-import { ChevronDown } from 'lucide-vue-next';
+import { ChevronDown } from '@lucide/vue';
 import type { ProjectMember } from '@/packages/api/src';
 import type { Member } from '@/packages/api/src';
 import {

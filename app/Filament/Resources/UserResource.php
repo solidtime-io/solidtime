@@ -12,6 +12,7 @@ use App\Filament\Resources\UserResource\RelationManagers\OwnedOrganizationsRelat
 use App\Models\User;
 use App\Service\DeletionService;
 use App\Service\TimezoneService;
+use App\Service\UserService;
 use Brick\Money\ISOCurrencyProvider;
 use Exception;
 use Filament\Forms;
@@ -47,17 +48,17 @@ class UserResource extends Resource
         return $form
             ->columns(1)
             ->schema([
-                Forms\Components\TextInput::make('id')
+                TextInput::make('id')
                     ->label('ID')
                     ->disabled()
                     ->visibleOn(['update', 'show'])
                     ->readOnly()
                     ->maxLength(255),
-                Forms\Components\TextInput::make('name')
+                TextInput::make('name')
                     ->label('Name')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\TextInput::make('email')
+                TextInput::make('email')
                     ->label('Email')
                     ->required()
                     ->rules($record?->is_placeholder ? [] : [
@@ -179,7 +180,7 @@ class UserResource extends Resource
             ])
             ->actions([
                 Impersonate::make()->before(function (User $record): void {
-                    if ($record->currentTeam === null) {
+                    if ($record->currentOrganization === null) {
                         $organization = $record->organizations()->where('personal_team', '=', true)->first();
                         if ($organization === null) {
                             $organization = $record->organizations()->first();
@@ -187,8 +188,7 @@ class UserResource extends Resource
                         if ($organization === null) {
                             throw new Exception('User has no organization');
                         }
-                        $record->currentTeam()->associate($organization);
-                        $record->save();
+                        app(UserService::class)->switchCurrentOrganization($record, $organization);
                     }
                 }),
                 Tables\Actions\EditAction::make(),

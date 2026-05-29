@@ -12,6 +12,7 @@
     },
     "scripts": {
         "build": "vite build",
+        "watch": "vite build --watch",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "files": [
@@ -28,7 +29,7 @@
     "author": "solidtime",
     "license": "AGPL-3.0",
     "devDependencies": {
-        "vite-plugin-dts": "^4.0.3"
+        "vite-plugin-dts": "^4.5.4"
     },
     "peerDependencies": {
         "@zodios/core": "^10.9.6",

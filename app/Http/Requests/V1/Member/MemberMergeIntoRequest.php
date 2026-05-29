@@ -7,6 +7,7 @@ namespace App\Http\Requests\V1\Member;
 use App\Http\Requests\V1\BaseFormRequest;
 use App\Models\Member;
 use App\Models\Organization;
+use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Builder;
 use Korridor\LaravelModelValidationRules\Rules\ExistsEloquent;
@@ -19,7 +20,7 @@ class MemberMergeIntoRequest extends BaseFormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, array<string|ValidationRule|\Illuminate\Contracts\Validation\Rule>>
+     * @return array<string, array<string|ValidationRule|Rule>>
      */
     public function rules(): array
     {

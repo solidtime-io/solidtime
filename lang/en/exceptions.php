@@ -23,6 +23,7 @@ use App\Exceptions\Api\TimeEntryStillRunningApiException;
 use App\Exceptions\Api\UserIsAlreadyMemberOfOrganizationApiException;
 use App\Exceptions\Api\UserIsAlreadyMemberOfProjectApiException;
 use App\Exceptions\Api\UserNotPlaceholderApiException;
+use App\Exceptions\Api\UserResendEmailVerificationNoPendingEmailApiException;
 use App\Service\Export\ExportException;
 
 return [
@@ -49,6 +50,7 @@ return [
         ThisPlaceholderCanNotBeInvitedUseTheMergeToolInsteadException::KEY => 'This placeholder can not be invited use the merge tool instead',
         InvitationForTheEmailAlreadyExistsApiException::KEY => 'The email has already been invited to the organization. Please wait for the user to accept the invitation or resend the invitation email.',
         OverlappingTimeEntryApiException::KEY => 'Overlapping time entries are not allowed.',
+        UserResendEmailVerificationNoPendingEmailApiException::KEY => 'Resend email not possible, no pending email.',
     ],
     'unknown_error_in_admin_panel' => 'An unknown error occurred. Please check the logs.',
 ];

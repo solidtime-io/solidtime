@@ -1,93 +1,190 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { Link, router, useForm, usePage } from '@inertiajs/vue3';
+import { computed, onBeforeUnmount, ref, watch } from 'vue';
+import { usePage } from '@inertiajs/vue3';
+import axios from 'axios';
 import ActionMessage from '@/Components/ActionMessage.vue';
 import FormSection from '@/Components/FormSection.vue';
-import { Field, FieldLabel, FieldError } from '@/packages/ui/src/field';
+import { Field, FieldError, FieldLabel } from '@/packages/ui/src/field';
+import { Button } from '@/packages/ui/src/Buttons';
 import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
 import TextInput from '@/packages/ui/src/Input/TextInput.vue';
-import type { User } from '@/types/models';
+import {
+    useResendUserEmailVerificationMutation,
+    useResetUserPendingEmailMutation,
+    useUpdateUserMutation,
+    useUserQuery,
+} from '@/utils/useUserQuery';
+import type { UpdateUserBody, User } from '@/packages/api/src';
 
-const props = defineProps<{
-    user: User;
-}>();
+const { user } = useUserQuery();
+const updateUser = useUpdateUserMutation();
+const resendVerification = useResendUserEmailVerificationMutation();
+const resetPendingEmail = useResetUserPendingEmailMutation();
 
-const form = useForm({
-    _method: 'PUT',
-    name: props.user.name,
-    email: props.user.email,
-    photo: null as File | null,
-    timezone: props.user.timezone,
-    week_start: props.user.week_start,
-});
+const name = ref('');
+const email = ref('');
+const timezone = ref('');
+const weekStart = ref('');
 
-const verificationLinkSent = ref<boolean | null>(null);
-const photoPreview = ref<ArrayBuffer | undefined | string | null>(null);
+const photoBase64 = ref<string | null>(null);
+const photoPreview = ref<string | null>(null);
 const photoInput = ref<HTMLInputElement | null>(null);
 
-const updateProfileInformation = () => {
-    if (photoInput.value && photoInput.value.files && photoInput.value.files?.length > 0) {
-        form.photo = photoInput.value?.files[0] ?? null;
+const recentlySaved = ref(false);
+const resendCooldown = ref(false);
+let resendCooldownTimer: ReturnType<typeof setTimeout> | null = null;
+
+function seedForm(u: User) {
+    name.value = u.name;
+    email.value = u.email;
+    timezone.value = u.timezone;
+    weekStart.value = u.week_start;
+}
+
+watch(
+    user,
+    (u, prev) => {
+        if (u && prev === undefined) seedForm(u);
+    },
+    { immediate: true }
+);
+
+const isUserLoaded = computed(() => user.value !== undefined);
+const isSaveDisabled = computed(() => !isUserLoaded.value || updateUser.isPending.value);
+const pendingEmail = computed(() => user.value?.pending_email ?? null);
+const hasUploadedPhoto = computed(() => {
+    const url = user.value?.profile_photo_url;
+    return !!url && !url.includes('ui-avatars.com');
+});
+
+const fieldErrors = computed<Record<string, string>>(() => {
+    const err = updateUser.error.value;
+    if (!axios.isAxiosError(err) || err.response?.status !== 422) return {};
+    const raw = err.response.data?.errors as Record<string, string[]> | undefined;
+    if (!raw) return {};
+    const flat: Record<string, string> = {};
+    for (const [key, messages] of Object.entries(raw)) {
+        if (Array.isArray(messages) && messages[0]) flat[key] = messages[0];
+    }
+    return flat;
+});
+
+function buildPayload(): UpdateUserBody {
+    if (!user.value) return {};
+    const body: UpdateUserBody = {};
+    if (name.value !== user.value.name) body.name = name.value;
+
+    const typedEmail = email.value.trim().toLowerCase();
+    const currentEmail = user.value.email.toLowerCase();
+    const currentPending = (user.value.pending_email ?? '').toLowerCase();
+    if (typedEmail !== currentEmail && typedEmail !== currentPending) {
+        body.email = email.value.trim();
     }
 
-    form.post(route('user-profile-information.update'), {
-        errorBag: 'updateProfileInformation',
-        preserveScroll: true,
-        onSuccess: () => clearPhotoFileInput(),
-    });
-};
+    if (timezone.value !== user.value.timezone) body.timezone = timezone.value;
+    if (weekStart.value !== user.value.week_start) {
+        body.week_start = weekStart.value as UpdateUserBody['week_start'];
+    }
+    if (photoBase64.value !== null) body.photo = photoBase64.value;
+    return body;
+}
 
-const sendEmailVerification = () => {
-    verificationLinkSent.value = true;
-};
+function clearPhotoInput() {
+    if (photoInput.value) photoInput.value.value = '';
+    photoBase64.value = null;
+    photoPreview.value = null;
+}
 
-const selectNewPhoto = () => {
+function selectNewPhoto() {
+    if (!isUserLoaded.value) return;
     photoInput.value?.click();
-};
+}
 
-const updatePhotoPreview = () => {
-    if (photoInput.value?.files) {
-        const photo = photoInput.value?.files[0];
-        if (!photo) return;
+function readSelectedPhoto() {
+    if (!isUserLoaded.value) return;
+    const file = photoInput.value?.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const dataUrl = e.target?.result as string;
+        photoBase64.value = dataUrl;
+        photoPreview.value = dataUrl;
+    };
+    reader.readAsDataURL(file);
+}
 
-        const reader = new FileReader();
-
-        reader.onload = (e) => {
-            photoPreview.value = e.target?.result;
-        };
-
-        reader.readAsDataURL(photo);
+async function save() {
+    if (isSaveDisabled.value || !user.value) return;
+    const body = buildPayload();
+    if (Object.keys(body).length === 0) {
+        flashSaved();
+        return;
     }
-};
-
-const deletePhoto = () => {
-    router.delete(route('current-user-photo.destroy'), {
-        preserveScroll: true,
-        onSuccess: () => {
-            photoPreview.value = null;
-            clearPhotoFileInput();
-        },
-    });
-};
-
-const clearPhotoFileInput = () => {
-    if (photoInput.value?.value) {
-        photoInput.value.value = '';
+    try {
+        const updated = await updateUser.mutateAsync({ userId: user.value.id, body });
+        seedForm(updated);
+        clearPhotoInput();
+        flashSaved();
+    } catch {
+        // 422: field errors render via fieldErrors. Other errors: toast handled in the mutation.
     }
-};
+}
+
+async function removePhoto() {
+    if (!isUserLoaded.value || updateUser.isPending.value || !user.value) return;
+    try {
+        await updateUser.mutateAsync({ userId: user.value.id, body: { photo: null } });
+        clearPhotoInput();
+    } catch {
+        // notification handled by mutation
+    }
+}
+
+async function clickResend() {
+    if (!user.value || resendCooldown.value || resendVerification.isPending.value) return;
+    try {
+        await resendVerification.mutateAsync(user.value.id);
+        resendCooldown.value = true;
+        if (resendCooldownTimer) clearTimeout(resendCooldownTimer);
+        resendCooldownTimer = setTimeout(() => {
+            resendCooldown.value = false;
+        }, 5000);
+    } catch {
+        // notification handled by mutation
+    }
+}
+
+async function clickCancelEmailChange() {
+    if (!user.value || resetPendingEmail.isPending.value) return;
+    try {
+        // Clears pending_email on the server; the pending banner hides once the
+        // me query refetches. The email field already shows the current address.
+        await resetPendingEmail.mutateAsync(user.value.id);
+    } catch {
+        // notification handled by mutation
+    }
+}
+
+function flashSaved() {
+    recentlySaved.value = true;
+    setTimeout(() => (recentlySaved.value = false), 2000);
+}
+
+onBeforeUnmount(() => {
+    if (resendCooldownTimer) clearTimeout(resendCooldownTimer);
+});
 
 const page = usePage<{
-    jetstream: {
-        managesProfilePhotos: boolean;
-        hasEmailVerification: boolean;
-    };
+    jetstream: { managesProfilePhotos: boolean };
+    timezones: Record<string, string>;
+    weekdays: Record<string, string>;
 }>();
 </script>
 
 <template>
-    <FormSection @submitted="updateProfileInformation">
-        <template #title> Profile Information</template>
+    <FormSection @submitted="save">
+        <template #title>Profile Information</template>
 
         <template #description>
             Update your account's profile information and email address.
@@ -96,44 +193,51 @@ const page = usePage<{
         <template #form>
             <!-- Profile Photo -->
             <div v-if="page.props.jetstream.managesProfilePhotos" class="col-span-6 sm:col-span-4">
-                <!-- Profile Photo File Input -->
                 <input
                     id="photo"
                     ref="photoInput"
                     type="file"
+                    accept="image/jpeg,image/png"
                     class="hidden"
-                    @change="updatePhotoPreview" />
+                    :disabled="!isUserLoaded"
+                    @change="readSelectedPhoto" />
 
                 <FieldLabel for="photo">Photo</FieldLabel>
 
-                <!-- Current Profile Photo -->
                 <div v-show="!photoPreview" class="mt-2">
                     <img
+                        v-if="user"
                         :src="user.profile_photo_url"
                         :alt="user.name"
                         class="rounded-full h-20 w-20 object-cover" />
                 </div>
 
-                <!-- New Profile Photo Preview -->
                 <div v-show="photoPreview" class="mt-2">
                     <span
                         class="block rounded-full w-20 h-20 bg-cover bg-no-repeat bg-center"
                         :style="'background-image: url(\'' + photoPreview + '\');'" />
                 </div>
 
-                <SecondaryButton class="mt-2 me-2" type="button" @click.prevent="selectNewPhoto">
+                <SecondaryButton
+                    class="mt-2 me-2"
+                    type="button"
+                    :disabled="!isUserLoaded"
+                    @click.prevent="selectNewPhoto">
                     Select A New Photo
                 </SecondaryButton>
 
                 <SecondaryButton
-                    v-if="user.profile_photo_path"
+                    v-if="hasUploadedPhoto"
                     type="button"
                     class="mt-2"
-                    @click.prevent="deletePhoto">
+                    :disabled="!isUserLoaded || updateUser.isPending.value"
+                    @click.prevent="removePhoto">
                     Remove Photo
                 </SecondaryButton>
 
-                <FieldError v-if="form.errors.photo">{{ form.errors.photo }}</FieldError>
+                <FieldError v-if="fieldErrors.photo" class="mt-2">
+                    {{ fieldErrors.photo }}
+                </FieldError>
             </div>
 
             <!-- Name -->
@@ -141,12 +245,13 @@ const page = usePage<{
                 <FieldLabel for="name">Name</FieldLabel>
                 <TextInput
                     id="name"
-                    v-model="form.name"
+                    v-model="name"
                     type="text"
                     class="block w-full"
                     required
+                    :disabled="!isUserLoaded"
                     autocomplete="name" />
-                <FieldError v-if="form.errors.name">{{ form.errors.name }}</FieldError>
+                <FieldError v-if="fieldErrors.name">{{ fieldErrors.name }}</FieldError>
             </Field>
 
             <!-- Email -->
@@ -154,34 +259,41 @@ const page = usePage<{
                 <FieldLabel for="email">Email</FieldLabel>
                 <TextInput
                     id="email"
-                    v-model="form.email"
+                    v-model="email"
                     type="email"
                     class="block w-full"
                     required
+                    :disabled="!isUserLoaded"
                     autocomplete="username" />
-                <FieldError v-if="form.errors.email">{{ form.errors.email }}</FieldError>
+                <FieldError v-if="fieldErrors.email">{{ fieldErrors.email }}</FieldError>
 
-                <div
-                    v-if="
-                        page.props.jetstream.hasEmailVerification && user.email_verified_at === null
-                    ">
-                    <p class="text-sm mt-2 text-text-primary">
-                        Your email address is unverified.
-
-                        <Link
-                            :href="route('verification.send')"
-                            method="post"
-                            as="button"
-                            class="underline text-sm text-text-secondary hover:text-text-secondary rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800"
-                            @click.prevent="sendEmailVerification">
-                            Click here to re-send the verification email.
-                        </Link>
+                <div v-if="pendingEmail" class="mt-2 text-sm">
+                    <p class="text-text-primary">
+                        A verification link was sent to
+                        <span class="font-medium">{{ pendingEmail }}</span
+                        >. Click the link in the email to confirm the change.
                     </p>
-
-                    <div
-                        v-show="verificationLinkSent"
-                        class="mt-2 font-medium text-sm text-green-400">
-                        A new verification link has been sent to your email address.
+                    <div class="mt-2 -ms-3 flex flex-wrap items-center gap-x-1 gap-y-1">
+                        <Button
+                            v-if="!resendCooldown"
+                            variant="ghost"
+                            size="sm"
+                            type="button"
+                            :disabled="!isUserLoaded || resendVerification.isPending.value"
+                            @click="clickResend">
+                            Resend verification email
+                        </Button>
+                        <p v-else class="ms-3 font-medium text-green-400">
+                            Verification email sent.
+                        </p>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            type="button"
+                            :disabled="!isUserLoaded || resetPendingEmail.isPending.value"
+                            @click="clickCancelEmailChange">
+                            Cancel email change
+                        </Button>
                     </div>
                 </div>
             </Field>
@@ -191,19 +303,20 @@ const page = usePage<{
                 <FieldLabel for="timezone">Timezone</FieldLabel>
                 <select
                     id="timezone"
-                    v-model="form.timezone"
+                    v-model="timezone"
                     name="timezone"
                     required
+                    :disabled="!isUserLoaded"
                     class="block w-full border-input-border bg-input-background text-text-primary focus:border-input-border-active rounded-md shadow-sm">
                     <option value="" disabled>Select a Timezone</option>
                     <option
-                        v-for="(timezoneTranslated, timezoneKey) in $page.props.timezones"
-                        :key="timezoneKey"
-                        :value="timezoneKey">
+                        v-for="(timezoneTranslated, timezoneValue) in page.props.timezones"
+                        :key="timezoneValue"
+                        :value="timezoneValue">
                         {{ timezoneTranslated }}
                     </option>
                 </select>
-                <FieldError v-if="form.errors.timezone">{{ form.errors.timezone }}</FieldError>
+                <FieldError v-if="fieldErrors.timezone">{{ fieldErrors.timezone }}</FieldError>
             </Field>
 
             <!-- Week start -->
@@ -211,26 +324,27 @@ const page = usePage<{
                 <FieldLabel for="week_start">Start of the week</FieldLabel>
                 <select
                     id="week_start"
-                    v-model="form.week_start"
+                    v-model="weekStart"
                     name="week_start"
                     required
+                    :disabled="!isUserLoaded"
                     class="block w-full border-input-border bg-input-background text-text-primary focus:border-input-border-active rounded-md shadow-sm">
                     <option value="" disabled>Select a week day</option>
                     <option
-                        v-for="(weekdayTranslated, weekdayKey) in $page.props.weekdays"
-                        :key="weekdayKey"
-                        :value="weekdayKey">
+                        v-for="(weekdayTranslated, weekdayValue) in page.props.weekdays"
+                        :key="weekdayValue"
+                        :value="weekdayValue">
                         {{ weekdayTranslated }}
                     </option>
                 </select>
-                <FieldError v-if="form.errors.week_start">{{ form.errors.week_start }}</FieldError>
+                <FieldError v-if="fieldErrors.week_start">{{ fieldErrors.week_start }}</FieldError>
             </Field>
         </template>
 
         <template #actions>
-            <ActionMessage :on="form.recentlySuccessful" class="me-3"> Saved. </ActionMessage>
+            <ActionMessage :on="recentlySaved" class="me-3"> Saved. </ActionMessage>
 
-            <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
+            <PrimaryButton :class="{ 'opacity-25': isSaveDisabled }" :disabled="isSaveDisabled">
                 Save
             </PrimaryButton>
         </template>

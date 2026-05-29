@@ -93,11 +93,11 @@ class TimeEntryResource extends Resource
                             ($record->end?->toDateTimeString('minute') ?? '...').')';
                     })
                     ->label('Time'),
-                Tables\Columns\TextColumn::make('organization.name')
+                TextColumn::make('organization.name')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('updated_at')
+                TextColumn::make('updated_at')
                     ->sortable(),
             ])
             ->filters([

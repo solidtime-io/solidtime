@@ -24,7 +24,7 @@ class InviteTeamMemberTest extends TestCase
         $this->actingAs($user = User::factory()->withPersonalOrganization()->create());
 
         // Act
-        $response = $this->post('/teams/'.$user->currentTeam->id.'/members', [
+        $response = $this->post('/teams/'.$user->currentOrganization->id.'/members', [
             'email' => 'test@example.com',
             'role' => 'admin',
         ]);
@@ -42,7 +42,7 @@ class InviteTeamMemberTest extends TestCase
 
         $this->actingAs($user = User::factory()->withPersonalOrganization()->create());
 
-        $invitation = $user->currentTeam->teamInvitations()->create([
+        $invitation = $user->currentOrganization->organizationInvitations()->create([
             'email' => 'test@example.com',
             'role' => 'admin',
         ]);
@@ -52,7 +52,7 @@ class InviteTeamMemberTest extends TestCase
 
         // Assert
         $response->assertStatus(403);
-        $this->assertCount(1, $user->currentTeam->fresh()->teamInvitations);
+        $this->assertCount(1, $user->currentOrganization->fresh()->organizationInvitations);
     }
 
     public function test_team_member_invitations_can_be_accepted(): void
@@ -61,7 +61,7 @@ class InviteTeamMemberTest extends TestCase
         Mail::fake();
         $owner = User::factory()->withPersonalOrganization()->create();
         $user = User::factory()->withPersonalOrganization()->create();
-        $invitation = $owner->currentTeam->teamInvitations()->create([
+        $invitation = $owner->currentOrganization->organizationInvitations()->create([
             'email' => $user->email,
             'role' => Role::Employee->value,
         ]);
@@ -76,10 +76,10 @@ class InviteTeamMemberTest extends TestCase
         $response = $this->get($acceptUrl);
 
         // Assert
-        $this->assertCount(0, $owner->currentTeam->fresh()->teamInvitations);
+        $this->assertCount(0, $owner->currentOrganization->fresh()->organizationInvitations);
         $user->refresh();
         $this->assertCount(2, $user->organizations);
-        $this->assertContains($owner->currentTeam->getKey(), $user->organizations->pluck('id'));
+        $this->assertContains($owner->currentOrganization->getKey(), $user->organizations->pluck('id'));
     }
 
     public function test_team_member_invitations_of_placeholder_can_be_accepted_and_migrates_date_to_real_user(): void
@@ -88,15 +88,15 @@ class InviteTeamMemberTest extends TestCase
         Mail::fake();
         $placeholder = User::factory()->placeholder()->create();
         $owner = User::factory()->withPersonalOrganization()->create();
-        $placeholderMember = Member::factory()->forOrganization($owner->currentTeam)->forUser($placeholder)->create();
+        $placeholderMember = Member::factory()->role(Role::Placeholder)->forOrganization($owner->currentOrganization)->forUser($placeholder)->create();
 
-        $timeEntries = TimeEntry::factory()->forOrganization($owner->currentTeam)->forMember($placeholderMember)->createMany(5);
+        $timeEntries = TimeEntry::factory()->forOrganization($owner->currentOrganization)->forMember($placeholderMember)->createMany(5);
 
         $user = User::factory()->withPersonalOrganization()->create([
             'email' => $placeholder->email,
         ]);
 
-        $invitation = $owner->currentTeam->teamInvitations()->create([
+        $invitation = $owner->currentOrganization->organizationInvitations()->create([
             'email' => $user->email,
             'role' => Role::Employee->value,
         ]);
@@ -114,9 +114,9 @@ class InviteTeamMemberTest extends TestCase
         $response->assertRedirect();
         $user->refresh();
         $this->assertDatabaseMissing(User::class, ['id' => $placeholder->id]);
-        $this->assertCount(0, $owner->currentTeam->fresh()->teamInvitations);
+        $this->assertCount(0, $owner->currentOrganization->fresh()->organizationInvitations);
         $this->assertCount(2, $user->organizations);
-        $this->assertContains($owner->currentTeam->getKey(), $user->organizations->pluck('id'));
+        $this->assertContains($owner->currentOrganization->getKey(), $user->organizations->pluck('id'));
         $this->assertCount(5, $user->timeEntries);
     }
 
@@ -126,7 +126,7 @@ class InviteTeamMemberTest extends TestCase
         Mail::fake();
         $owner = User::factory()->withPersonalOrganization()->create();
         $user = User::factory()->withPersonalOrganization()->create();
-        $invitation = $owner->currentTeam->teamInvitations()->create([
+        $invitation = $owner->currentOrganization->organizationInvitations()->create([
             'email' => 'firstname.lastname@mail.test',
             'role' => Role::Employee->value,
         ]);
@@ -141,7 +141,7 @@ class InviteTeamMemberTest extends TestCase
         $response = $this->get($acceptUrl);
 
         // Assert
-        $this->assertCount(1, $owner->currentTeam->fresh()->teamInvitations);
+        $this->assertCount(1, $owner->currentOrganization->fresh()->organizationInvitations);
         $user->refresh();
         $this->assertCount(1, $user->organizations);
     }

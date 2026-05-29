@@ -9,7 +9,6 @@ use App\Models\Organization;
 use App\Models\User;
 use App\Service\PermissionStore;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Laravel\Jetstream\Jetstream;
 use PHPUnit\Framework\Attributes\CoversClass;
 use Tests\TestCase;
 
@@ -122,7 +121,7 @@ class PermissionStoreTest extends TestCase
         $result = $permissionStore->getPermissions($organization);
 
         // Assert
-        $this->assertSame(Jetstream::findRole(Role::Employee->value)->permissions, $result);
+        $this->assertSame(PermissionStore::permissionsForRole(Role::Employee->value), $result);
     }
 
     public function test_employee_does_not_have_task_permissions_by_default(): void
