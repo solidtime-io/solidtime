@@ -28,10 +28,14 @@ interface Interval {
 
 function localDayBounds(date: string, tz: string): { dayStart: Dayjs; dayEnd: Dayjs } {
     const dayjs = getDayJsInstance();
-    const localDayStart = dayjs.tz(`${date} 00:00:00`, tz);
+    // `.add(1, 'day')` on a Dayjs instance advances by a fixed 24h, which is
+    // wrong on DST-transition days (the local day is 23h or 25h long). Derive
+    // the next calendar date in UTC (no DST) and take its local midnight, so
+    // `dayEnd` is always the real next local midnight.
+    const nextDate = dayjs.utc(date).add(1, 'day').format('YYYY-MM-DD');
     return {
-        dayStart: localDayStart.utc(),
-        dayEnd: localDayStart.add(1, 'day').utc(),
+        dayStart: dayjs.tz(`${date} 00:00:00`, tz).utc(),
+        dayEnd: dayjs.tz(`${nextDate} 00:00:00`, tz).utc(),
     };
 }
 

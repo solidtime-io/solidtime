@@ -78,7 +78,7 @@
         "parse-duration": "^2.0.1",
         "pinia": "^3.0.0",
         "radix-vue": "^1.9.6",
-        "reka-ui": "^2.8.2",
+        "reka-ui": "2.8.2",
         "tailwind-merge": "^2.6.0",
         "tailwindcss-animate": "^1.0.7",
         "vue-echarts": "^8.0.0",
