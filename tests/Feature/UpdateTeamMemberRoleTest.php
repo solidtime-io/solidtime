@@ -19,12 +19,12 @@ class UpdateTeamMemberRoleTest extends TestCase
         $user = User::factory()->withPersonalOrganization()->create();
         $this->actingAs($user);
 
-        $user->currentTeam->users()->attach(
+        $user->currentOrganization->users()->attach(
             $otherUser = User::factory()->create(), ['role' => 'admin']
         );
 
         // Act
-        $response = $this->put('/teams/'.$user->currentTeam->id.'/members/'.$otherUser->id, [
+        $response = $this->put('/teams/'.$user->currentOrganization->id.'/members/'.$otherUser->id, [
             'role' => Role::Employee->value,
         ]);
 

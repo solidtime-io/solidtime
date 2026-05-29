@@ -17,17 +17,17 @@ class LeaveTeamTest extends TestCase
         // Arrange
         $user = User::factory()->withPersonalOrganization()->create();
 
-        $user->currentTeam->users()->attach(
+        $user->currentOrganization->users()->attach(
             $otherUser = User::factory()->create(), ['role' => 'admin']
         );
 
         $this->actingAs($otherUser);
 
         // Act
-        $response = $this->delete('/teams/'.$user->currentTeam->id.'/members/'.$otherUser->id);
+        $response = $this->delete('/teams/'.$user->currentOrganization->id.'/members/'.$otherUser->id);
 
         // Assert
         $response->assertStatus(403);
-        $this->assertCount(2, $user->currentTeam->fresh()->users);
+        $this->assertCount(2, $user->currentOrganization->fresh()->users);
     }
 }

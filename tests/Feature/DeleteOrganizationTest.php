@@ -36,15 +36,15 @@ class DeleteOrganizationTest extends TestCase
 
         // Assert
         $this->assertNull($organization->fresh());
-        $this->assertCount(1, $otherUser->fresh()->teams);
-        $this->assertFalse($otherUser->fresh()->teams->first()->is($organization));
+        $this->assertCount(1, $otherUser->fresh()->organizations);
+        $this->assertFalse($otherUser->fresh()->organizations->first()->is($organization));
     }
 
     public function test_personal_organizations_can_be_deleted_but_user_gets_an_new_one_if_this_is_the_only_one_left(): void
     {
         // Arrange
         $user = User::factory()->withPersonalOrganization()->create();
-        $organization = $user->currentTeam;
+        $organization = $user->currentOrganization;
         $this->actingAs($user);
 
         // Act
@@ -55,7 +55,7 @@ class DeleteOrganizationTest extends TestCase
         $this->assertDatabaseMissing(Organization::class, [
             'id' => $organization->getKey(),
         ]);
-        $this->assertTrue($user->currentTeam->isNot($organization));
+        $this->assertTrue($user->currentOrganization->isNot($organization));
     }
 
     public function test_organization_can_not_be_deleted_if_user_is_not_owner(): void
