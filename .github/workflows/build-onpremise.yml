@@ -130,7 +130,7 @@ jobs:
             ${{ env.DOCKER_REPO }}
 
       - name: "Login to solidtime OnPremise Registry"
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: registry.on-premise.solidtime.io
           username: ${{ secrets.ONPREMISE_USERNAME }}
@@ -184,7 +184,7 @@ jobs:
           merge-multiple: true
 
       - name: "Login to solidtime OnPremise Registry"
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: registry.on-premise.solidtime.io
           username: ${{ secrets.ONPREMISE_USERNAME }}
