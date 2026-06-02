@@ -15,6 +15,7 @@ import type {
     Task,
 } from '@/packages/api/src';
 import type { TimesheetRow as TimesheetRowType, TimesheetRowKey } from '@/utils/useTimesheetGrid';
+import type { CellSaveStatus } from '@/utils/timesheet/useTimesheetCellMutations';
 
 const organization = inject<ComputedRef<Organization>>('organization');
 const dayjs = getDayJsInstance();
@@ -36,6 +37,8 @@ defineProps<{
     createClient: (client: CreateClientBody) => Promise<Client | undefined>;
     createTag: (name: string) => Promise<Tag | undefined>;
     formatDuration: (seconds: number) => string;
+    cellStatuses: Record<string, CellSaveStatus>;
+    cellPendingSeconds: Record<string, number>;
 }>();
 
 const emit = defineEmits<{
@@ -60,7 +63,7 @@ const emit = defineEmits<{
                 class="grid min-w-full w-max border-y border-default-background-separator"
                 style="
                     grid-template-columns:
-                        minmax(420px, 1fr) repeat(7, minmax(96px, 120px)) minmax(100px, auto)
+                        minmax(420px, 1fr) repeat(7, minmax(116px, 120px)) minmax(100px, auto)
                         40px;
                 ">
                 <!-- Header row -->
@@ -100,6 +103,8 @@ const emit = defineEmits<{
                     :create-client="createClient"
                     :create-tag="createTag"
                     :format-duration="formatDuration"
+                    :cell-statuses="cellStatuses"
+                    :cell-pending-seconds="cellPendingSeconds"
                     @remove-row="$emit('remove-row', $event)"
                     @cell-update="
                         (dayIndex, seconds) => $emit('cell-update', row, dayIndex, seconds)

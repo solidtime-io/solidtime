@@ -1,4 +1,4 @@
-import type { Ref } from 'vue';
+import { ref, type Ref } from 'vue';
 import { useQueryClient } from '@tanstack/vue-query';
 import { api, type CreateTimeEntryBody, type TimeEntry } from '@/packages/api/src';
 import { formatHumanReadableDuration, getDayJsInstance } from '@/packages/ui/src/utils/time';
@@ -18,6 +18,17 @@ import {
     workDayStartOn,
     type FreeWindow,
 } from './cellMath';
+
+export type CellSaveStatus = 'saving' | 'saved' | 'error';
+
+/** Map key for a cell's save state (row + day). */
+export function makeCellStatusKey(rowKey: TimesheetRowKey, dayIndex: number): string {
+    return `${rowKey}:${dayIndex}`;
+}
+
+/** How long the saved/error state stays visible before fading. */
+const SAVED_VISIBLE_MS = 2800;
+const ERROR_VISIBLE_MS = 2500;
 
 /**
  * Cell-level edit dispatcher. Picks one of four strategies based on
@@ -48,14 +59,57 @@ export function useTimesheetCellMutations(
     const queryClient = useQueryClient();
     const notifications = useNotificationsStore();
 
+    // Save status + the optimistic value shown while saving, so a saved cell
+    // doesn't flicker back to its old total before the refetch lands.
+    const cellStatus = ref<Record<string, CellSaveStatus>>({});
+    const cellPendingSeconds = ref<Record<string, number>>({});
+    const statusClearTimers: Record<string, ReturnType<typeof setTimeout>> = {};
+
+    function clearStatusTimer(key: string): void {
+        clearTimeout(statusClearTimers[key]);
+        delete statusClearTimers[key];
+    }
+
+    function beginSaving(key: string, seconds: number): void {
+        clearStatusTimer(key);
+        cellPendingSeconds.value[key] = seconds;
+        cellStatus.value[key] = 'saving';
+    }
+
+    function markSaved(key: string): void {
+        clearStatusTimer(key);
+        cellStatus.value[key] = 'saved';
+        statusClearTimers[key] = setTimeout(() => {
+            delete cellStatus.value[key];
+            delete cellPendingSeconds.value[key];
+            delete statusClearTimers[key];
+        }, SAVED_VISIBLE_MS);
+    }
+
+    function markError(key: string): void {
+        clearStatusTimer(key);
+        cellStatus.value[key] = 'error';
+        // Drop the optimistic value so the cell shows server truth after refetch.
+        delete cellPendingSeconds.value[key];
+        statusClearTimers[key] = setTimeout(() => {
+            delete cellStatus.value[key];
+            delete statusClearTimers[key];
+        }, ERROR_VISIBLE_MS);
+    }
+
     async function handleCellUpdate(
         row: TimesheetRow,
         dayIndex: number,
         newTotalSeconds: number
     ): Promise<void> {
+        const statusKey = makeCellStatusKey(row.key, dayIndex);
+        if (cellStatus.value[statusKey] === 'saving') return;
+
         const cell = row.cells.get(dayIndex);
         const existingSeconds = cell?.totalSeconds ?? 0;
         if (newTotalSeconds === existingSeconds) return;
+
+        beginSaving(statusKey, newTotalSeconds);
 
         // Capture row state before the mutation: a row that was empty
         // and shares identity with another slot collapses after the
@@ -74,7 +128,9 @@ export function useTimesheetCellMutations(
                     'Another row with the same project, task, billable status and tags already exists.'
                 );
             }
+            markSaved(statusKey);
         } catch (err) {
+            markError(statusKey);
             if (err instanceof NoFreeWindowError) {
                 const friendlyDuration = formatHumanReadableDuration(
                     err.requiredSeconds,
@@ -93,7 +149,6 @@ export function useTimesheetCellMutations(
                 'Failed to update timesheet',
                 'Please try again later.'
             );
-            throw err;
         } finally {
             queryClient.invalidateQueries({ queryKey: ['timeEntries'] });
         }
@@ -316,5 +371,5 @@ export function useTimesheetCellMutations(
         return best;
     }
 
-    return { handleCellUpdate };
+    return { handleCellUpdate, cellStatus, cellPendingSeconds };
 }

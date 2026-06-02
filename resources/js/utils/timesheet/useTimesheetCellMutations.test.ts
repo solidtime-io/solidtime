@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { ref } from 'vue';
 import { createPinia, setActivePinia } from 'pinia';
-import { useTimesheetCellMutations } from './useTimesheetCellMutations';
+import { useTimesheetCellMutations, makeCellStatusKey } from './useTimesheetCellMutations';
 import { api } from '@/packages/api/src';
 import type { TimesheetRow, TimesheetCell } from '@/utils/useTimesheetGrid';
 import type { TimeEntry } from '@/packages/api/src';
@@ -547,5 +547,121 @@ describe('useTimesheetCellMutations.handleCellUpdate', () => {
             expect(updated.id).toBe('a');
             expect(updated.end).toBe('2026-04-10T09:30:00Z');
         });
+    });
+});
+
+describe('useTimesheetCellMutations save status', () => {
+    // Timer handles keep old fade-outs from clearing newer status, and
+    // the same-cell saving guard prevents concurrent writes from stale rows.
+
+    it('does not let a stale fade-out timer clear a newer edit on the same cell', async () => {
+        const { cellMutations } = setup([]);
+        const row = buildEmptyRow('p-1');
+        const key = makeCellStatusKey(row.key, 0);
+
+        await cellMutations.handleCellUpdate(row, 0, HOUR);
+        expect(cellMutations.cellStatus.value[key]).toBe('saved');
+
+        // Re-edit the same cell partway through the first "saved" window.
+        vi.advanceTimersByTime(1000);
+        await cellMutations.handleCellUpdate(row, 0, 2 * HOUR);
+        expect(cellMutations.cellPendingSeconds.value[key]).toBe(2 * HOUR);
+
+        // Advance past the FIRST timer's deadline: it must not wipe the newer state.
+        vi.advanceTimersByTime(2000);
+        expect(cellMutations.cellStatus.value[key]).toBe('saved');
+        expect(cellMutations.cellPendingSeconds.value[key]).toBe(2 * HOUR);
+    });
+
+    it('ignores another commit while the same cell is saving', async () => {
+        const { cellMutations } = setup([]);
+        const row = buildEmptyRow('p-1');
+        const key = makeCellStatusKey(row.key, 0);
+
+        let release!: () => void;
+        const gateA = new Promise<void>((res) => {
+            release = () => res();
+        });
+        apiMocks.createTimeEntry.mockImplementationOnce(async () => {
+            await gateA;
+            return { data: { id: 'a' } } as never;
+        });
+
+        const save = cellMutations.handleCellUpdate(row, 0, HOUR);
+        expect(cellMutations.cellStatus.value[key]).toBe('saving');
+        expect(cellMutations.cellPendingSeconds.value[key]).toBe(HOUR);
+
+        // The second commit would be planned from the same stale row, so it is ignored.
+        await cellMutations.handleCellUpdate(row, 0, 2 * HOUR);
+        expect(apiMocks.createTimeEntry).toHaveBeenCalledTimes(1);
+        expect(cellMutations.cellPendingSeconds.value[key]).toBe(HOUR);
+
+        release();
+        await save;
+        expect(cellMutations.cellStatus.value[key]).toBe('saved');
+        expect(cellMutations.cellPendingSeconds.value[key]).toBe(HOUR);
+    });
+
+    it('marks error and drops the optimistic value when the save fails', async () => {
+        const { cellMutations } = setup([]);
+        const row = buildEmptyRow('p-1');
+        const key = makeCellStatusKey(row.key, 0);
+
+        apiMocks.createTimeEntry.mockRejectedValueOnce(new Error('boom'));
+
+        await cellMutations.handleCellUpdate(row, 0, HOUR);
+
+        expect(cellMutations.cellStatus.value[key]).toBe('error');
+        expect(cellMutations.cellPendingSeconds.value[key]).toBeUndefined();
+        expect(addNotification).toHaveBeenCalledWith(
+            'error',
+            'Failed to update timesheet',
+            expect.any(String)
+        );
+    });
+
+    it('marks error and drops the optimistic value when the day is full', async () => {
+        // Block all but the last 2h, then ask for 3h → NoFreeWindowError.
+        const blocker = entry('2026-04-10T00:00:00Z', '2026-04-10T22:00:00Z', { id: 'blocker' });
+        const { cellMutations } = setup([blocker]);
+        const row = buildEmptyRow('p-1');
+        const key = makeCellStatusKey(row.key, 0);
+
+        await cellMutations.handleCellUpdate(row, 0, 3 * HOUR);
+
+        expect(cellMutations.cellStatus.value[key]).toBe('error');
+        expect(cellMutations.cellPendingSeconds.value[key]).toBeUndefined();
+        expect(addNotification).toHaveBeenCalledWith(
+            'error',
+            "This day can't fit any more work",
+            expect.any(String)
+        );
+    });
+
+    it('creates no status when the committed value is unchanged', async () => {
+        const cellEntry = entry('2026-04-10T09:00:00Z', '2026-04-10T10:00:00Z');
+        const { cellMutations } = setup([cellEntry]);
+        const row = buildRow('p-1', [cellEntry]);
+        const key = makeCellStatusKey(row.key, 0);
+
+        await cellMutations.handleCellUpdate(row, 0, HOUR);
+
+        expect(cellMutations.cellStatus.value[key]).toBeUndefined();
+        expect(cellMutations.cellPendingSeconds.value[key]).toBeUndefined();
+    });
+
+    it('tracks save status independently for each cell', async () => {
+        const { cellMutations } = setup([]);
+        const row = buildEmptyRow('p-1');
+        const mondayKey = makeCellStatusKey(row.key, 0);
+        const tuesdayKey = makeCellStatusKey(row.key, 1);
+
+        await cellMutations.handleCellUpdate(row, 0, HOUR);
+        await cellMutations.handleCellUpdate(row, 1, 2 * HOUR);
+
+        expect(cellMutations.cellStatus.value[mondayKey]).toBe('saved');
+        expect(cellMutations.cellStatus.value[tuesdayKey]).toBe('saved');
+        expect(cellMutations.cellPendingSeconds.value[mondayKey]).toBe(HOUR);
+        expect(cellMutations.cellPendingSeconds.value[tuesdayKey]).toBe(2 * HOUR);
     });
 });

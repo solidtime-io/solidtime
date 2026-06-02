@@ -90,7 +90,12 @@ const weekRangeDisplay = computed(() => {
 });
 
 // ── Cell / row mutation handlers ──────────────────────────────────
-const { handleCellUpdate } = useTimesheetCellMutations(weekDays, timeEntries, rows, removeSlot);
+const { handleCellUpdate, cellStatus, cellPendingSeconds } = useTimesheetCellMutations(
+    weekDays,
+    timeEntries,
+    rows,
+    removeSlot
+);
 
 const { handleRowIdentityChange, handleAddRow } = useTimesheetRowMutations(
     mutations,
@@ -167,6 +172,8 @@ async function createTag(name: string): Promise<Tag | undefined> {
                 :create-client="createClient"
                 :create-tag="createTag"
                 :format-duration="formatDuration"
+                :cell-statuses="cellStatus"
+                :cell-pending-seconds="cellPendingSeconds"
                 @remove-row="handleRemoveRow"
                 @cell-update="handleCellUpdate"
                 @project-task-change="

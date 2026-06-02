@@ -62,4 +62,35 @@ describe('TimesheetCell', () => {
         expect(wrapper.emitted('update')).toBeUndefined();
         expect((input.element as HTMLInputElement).value).toBe(previousValue);
     });
+
+    it('shows a pending 0 (delete in flight) over the cell total', () => {
+        const wrapper = mount(TimesheetCell, {
+            props: {
+                cell: buildCell(2 * 3600),
+                dayIndex: 0,
+                date: '2026-04-13',
+                isToday: false,
+                hasRunningEntry: false,
+                pendingSeconds: 0,
+            },
+        });
+
+        // `??` (not `||`): a pending 0 must win over the 2h cell total.
+        expect((wrapper.get('input').element as HTMLInputElement).value).toBe('');
+    });
+
+    it('disables editing while the cell is saving', () => {
+        const wrapper = mount(TimesheetCell, {
+            props: {
+                cell: buildCell(2 * 3600),
+                dayIndex: 0,
+                date: '2026-04-13',
+                isToday: false,
+                hasRunningEntry: false,
+                saveStatus: 'saving',
+            },
+        });
+
+        expect((wrapper.get('input').element as HTMLInputElement).disabled).toBe(true);
+    });
 });

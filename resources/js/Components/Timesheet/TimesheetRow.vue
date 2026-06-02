@@ -15,6 +15,10 @@ import type {
     Organization,
 } from '@/packages/api/src';
 import type { TimesheetRow, TimesheetRowKey } from '@/utils/useTimesheetGrid';
+import {
+    makeCellStatusKey,
+    type CellSaveStatus,
+} from '@/utils/timesheet/useTimesheetCellMutations';
 import { Button } from '@/packages/ui/src/Buttons';
 
 const organization = inject<ComputedRef<Organization>>('organization');
@@ -34,6 +38,8 @@ const props = defineProps<{
     createClient: (client: CreateClientBody) => Promise<Client | undefined>;
     createTag: (name: string) => Promise<Tag | undefined>;
     formatDuration: (seconds: number) => string;
+    cellStatuses: Record<string, CellSaveStatus>;
+    cellPendingSeconds: Record<string, number>;
 }>();
 
 const emit = defineEmits<{
@@ -109,6 +115,8 @@ function hasRunningEntry(dayIndex: number): boolean {
             :date="day"
             :is-today="day === todayDate"
             :has-running-entry="hasRunningEntry(dayIndex)"
+            :save-status="cellStatuses[makeCellStatusKey(row.key, dayIndex)]"
+            :pending-seconds="cellPendingSeconds[makeCellStatusKey(row.key, dayIndex)]"
             @update="(seconds) => emit('cellUpdate', dayIndex, seconds)" />
 
         <!-- Row total -->
