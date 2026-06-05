@@ -10,7 +10,6 @@ import {
 } from '@/packages/ui/src';
 import {
     UserCircleIcon,
-    KeyIcon,
     ArrowLeftOnRectangleIcon,
     ChatBubbleLeftRightIcon,
 } from '@heroicons/vue/24/solid';
@@ -19,12 +18,6 @@ import { openFeedback } from '@/utils/feedback';
 const page = usePage<{
     has_services_extension?: boolean;
     has_billing_extension?: boolean;
-    jetstream: {
-        canCreateTeams: boolean;
-        hasTeamFeatures: boolean;
-        managesProfilePhotos: boolean;
-        hasApiFeatures: boolean;
-    };
     auth: {
         user: User & {
             all_teams: Organization[];
@@ -58,15 +51,6 @@ const logout = () => {
                         class="inline-flex items-center gap-2.5 w-full">
                         <UserCircleIcon class="w-5 h-5 text-icon-default" />
                         <span>Profile Settings</span>
-                    </Link>
-                </DropdownMenuItem>
-
-                <DropdownMenuItem v-if="page.props.jetstream.hasApiFeatures" as-child>
-                    <Link
-                        :href="route('api-tokens.index')"
-                        class="inline-flex items-center gap-2.5 w-full">
-                        <KeyIcon class="w-5 h-5 text-icon-default" />
-                        <span>API Tokens</span>
                     </Link>
                 </DropdownMenuItem>
 

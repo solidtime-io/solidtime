@@ -176,7 +176,6 @@ onBeforeUnmount(() => {
 });
 
 const page = usePage<{
-    jetstream: { managesProfilePhotos: boolean };
     timezones: Record<string, string>;
     weekdays: Record<string, string>;
 }>();
@@ -192,7 +191,7 @@ const page = usePage<{
 
         <template #form>
             <!-- Profile Photo -->
-            <div v-if="page.props.jetstream.managesProfilePhotos" class="col-span-6 sm:col-span-4">
+            <div class="col-span-6 sm:col-span-4">
                 <input
                     id="photo"
                     ref="photoInput"

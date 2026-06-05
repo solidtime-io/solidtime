@@ -30,9 +30,6 @@ const page = usePage<{
     terms_url: string | null;
     privacy_policy_url: string | null;
     newsletter_consent: boolean;
-    jetstream: {
-        hasTermsAndPrivacyPolicyFeature: boolean;
-    };
     flash: {
         message: string;
     };
@@ -117,11 +114,7 @@ const page = usePage<{
             </Field>
 
             <div
-                v-if="
-                    page.props.jetstream.hasTermsAndPrivacyPolicyFeature &&
-                    page.props.terms_url !== null &&
-                    page.props.privacy_policy_url !== null
-                "
+                v-if="page.props.terms_url !== null && page.props.privacy_policy_url !== null"
                 class="mt-4">
                 <Field orientation="horizontal">
                     <Checkbox id="terms" v-model:checked="form.terms" name="terms" />
