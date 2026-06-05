@@ -33,10 +33,3 @@ export interface Role {
 export type JetstreamUser = User & {
     two_factor_enabled: boolean;
 };
-export interface Token {
-    name: string;
-    token: string;
-    abilities: string[];
-    id: string;
-    last_used_ago: string;
-}

@@ -9,12 +9,10 @@ use App\Models\User;
 use App\Service\PermissionStore;
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\MessageBag;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
-use Laravel\Jetstream\Jetstream;
 use Symfony\Component\HttpFoundation\Response;
 
 class ShareInertiaData
@@ -27,25 +25,6 @@ class ShareInertiaData
         /** @var PermissionStore $permissions */
         $permissions = app(PermissionStore::class);
         Inertia::share([
-            'jetstream' => function () use ($request) {
-                /** @var User|null $user */
-                $user = $request->user();
-
-                return [
-                    'canCreateTeams' => $user !== null &&
-                        Jetstream::userHasTeamFeatures($user) &&
-                        Gate::forUser($user)->check('create', Jetstream::newTeamModel()),
-                    'canManageTwoFactorAuthentication' => Features::canManageTwoFactorAuthentication(),
-                    'canUpdatePassword' => Features::enabled(Features::updatePasswords()),
-                    'canUpdateProfileInformation' => Features::canUpdateProfileInformation(),
-                    'hasEmailVerification' => Features::enabled(Features::emailVerification()),
-                    'hasAccountDeletionFeatures' => Jetstream::hasAccountDeletionFeatures(),
-                    'hasApiFeatures' => Jetstream::hasApiFeatures(),
-                    'hasTeamFeatures' => Jetstream::hasTeamFeatures(),
-                    'hasTermsAndPrivacyPolicyFeature' => Jetstream::hasTermsAndPrivacyPolicyFeature(),
-                    'managesProfilePhotos' => Jetstream::managesProfilePhotos(),
-                ];
-            },
             'auth' => [
                 'permissions' => $request->user() !== null && $request->user()->currentTeam !== null ? $permissions->getPermissions($request->user()->currentTeam) : [],
                 'user' => function () use ($request): array {

@@ -20,12 +20,6 @@ import {
 } from '@/packages/ui/src';
 
 const page = usePage<{
-    jetstream: {
-        canCreateTeams: boolean;
-        hasTeamFeatures: boolean;
-        managesProfilePhotos: boolean;
-        hasApiFeatures: boolean;
-    };
     auth: {
         user: User & {
             all_teams: Organization[];
@@ -39,7 +33,7 @@ const switchToTeam = (organization: Organization) => {
 </script>
 
 <template>
-    <DropdownMenu v-if="page.props.jetstream.hasTeamFeatures">
+    <DropdownMenu>
         <DropdownMenuTrigger
             class="flex w-full text-left hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-ring cursor-pointer transition pl-2 py-1 rounded w-full items-center justify-between"
             as-child>
@@ -78,7 +72,7 @@ const switchToTeam = (organization: Organization) => {
                     <Link href="/billing" class="inline-flex items-center w-full"> Billing </Link>
                 </DropdownMenuItem>
 
-                <DropdownMenuItem v-if="page.props.jetstream.canCreateTeams" as-child>
+                <DropdownMenuItem as-child>
                     <Link
                         :href="route('teams.create')"
                         class="inline-flex items-center gap-2.5 w-full">
