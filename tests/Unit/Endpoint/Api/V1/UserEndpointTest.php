@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Endpoint\Api\V1;
 
+use App\Enums\Role;
 use App\Enums\Weekday;
 use App\Mail\VerifyUpdatedEmailMail;
+use App\Models\Member;
+use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
@@ -44,6 +47,88 @@ class UserEndpointTest extends ApiEndpointTestAbstract
                 'week_start' => $data->user->week_start->value,
             ],
         ]);
+    }
+
+    public function test_update_current_organization_fails_when_not_authenticated(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+
+        // Act
+        $response = $this->putJson(route('api.v1.users.update-current-organization'), [
+            'organization_id' => $organization->getKey(),
+        ]);
+
+        // Assert
+        $response->assertUnauthorized();
+    }
+
+    public function test_update_current_organization_switches_the_current_organization_of_the_user(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([], isOwner: true);
+        $otherOrganization = Organization::factory()->create();
+        Member::factory()->forUser($data->user)->forOrganization($otherOrganization)->create([
+            'role' => Role::Admin->value,
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.users.update-current-organization'), [
+            'organization_id' => $otherOrganization->getKey(),
+        ]);
+
+        // Assert
+        $response->assertSuccessful();
+        $this->assertSame($otherOrganization->getKey(), $data->user->fresh()->current_team_id);
+    }
+
+    public function test_update_current_organization_fails_if_user_is_not_a_member_of_the_target_organization(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([], isOwner: true);
+        $currentOrganizationId = $data->user->current_team_id;
+        $otherOrganization = Organization::factory()->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.users.update-current-organization'), [
+            'organization_id' => $otherOrganization->getKey(),
+        ]);
+
+        // Assert
+        $response->assertForbidden();
+        $this->assertSame($currentOrganizationId, $data->user->fresh()->current_team_id);
+    }
+
+    public function test_update_current_organization_fails_if_organization_id_is_missing(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([], isOwner: true);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.users.update-current-organization'), []);
+
+        // Assert
+        $response->assertUnprocessable();
+        $response->assertJsonValidationErrors('organization_id');
+    }
+
+    public function test_update_current_organization_fails_if_organization_id_is_not_a_uuid(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([], isOwner: true);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.users.update-current-organization'), [
+            'organization_id' => 'not-a-uuid',
+        ]);
+
+        // Assert
+        $response->assertUnprocessable();
+        $response->assertJsonValidationErrors('organization_id');
     }
 
     public function test_update_changes_user_name_timezone_and_week_start(): void
