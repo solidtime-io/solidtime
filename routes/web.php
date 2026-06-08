@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-use App\Enums\Role;
 use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\Web\HomeController;
 use App\Http\Controllers\Web\OrganizationController;
 use App\Http\Controllers\Web\OrganizationInvitationController;
 use App\Http\Controllers\Web\UserController;
 use App\Http\Controllers\Web\UserProfileController;
+use App\Service\PermissionStore;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -74,7 +74,14 @@ Route::middleware([
 
     Route::get('/members', function () {
         return Inertia::render('Members', [
-            'availableRoles' => Role::values(),
+            'availableRoles' => collect(PermissionStore::roleDefinitions())
+                ->map(fn (array $definition, string $key): array => [
+                    'key' => $key,
+                    'name' => $definition['name'],
+                    'description' => $definition['description'],
+                ])
+                ->values()
+                ->all(),
         ]);
     })->name('members');
 
