@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Endpoint\Web;
 
+use App\Enums\Role;
 use App\Http\Controllers\Web\OrganizationController;
 use App\Models\Organization;
 use App\Models\OrganizationInvitation;
 use App\Models\User;
 use Inertia\Testing\AssertableInertia as Assert;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 #[CoversClass(OrganizationController::class)]
 class OrganizationEndpointTest extends EndpointTestAbstract
@@ -65,8 +67,37 @@ class OrganizationEndpointTest extends EndpointTestAbstract
             ->where('team.owner.name', $data->owner->name)
             ->has('team.owner.profile_photo_url')
             ->has('currencies')
-            ->where('permissions.canDeleteTeam', true)
-            ->where('permissions.canUpdateTeam', true)
+        );
+    }
+
+    /**
+     * @return array<string, array{role: Role, canUpdateTeam: bool, canDeleteTeam: bool}>
+     */
+    public static function showPermissionsPerRoleProvider(): array
+    {
+        return [
+            'owner can update and delete' => ['role' => Role::Owner, 'canUpdateTeam' => true, 'canDeleteTeam' => true],
+            'admin can update but not delete' => ['role' => Role::Admin, 'canUpdateTeam' => true, 'canDeleteTeam' => false],
+            'employee can neither update nor delete' => ['role' => Role::Employee, 'canUpdateTeam' => false, 'canDeleteTeam' => false],
+        ];
+    }
+
+    #[DataProvider('showPermissionsPerRoleProvider')]
+    public function test_organization_show_returns_permissions_based_on_role(Role $role, bool $canUpdateTeam, bool $canDeleteTeam): void
+    {
+        // Arrange
+        $data = $this->createUserWithRole($role);
+        $this->actingAs($data->user);
+
+        // Act
+        $response = $this->get(route('organizations.show', [$data->organization->getKey()]));
+
+        // Assert
+        $response->assertOk();
+        $response->assertInertia(fn (Assert $page) => $page
+            ->component('Teams/Show')
+            ->where('permissions.canUpdateTeam', $canUpdateTeam)
+            ->where('permissions.canDeleteTeam', $canDeleteTeam)
         );
     }
 

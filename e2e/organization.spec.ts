@@ -526,6 +526,9 @@ test.describe('Admin Organization Settings Access', () => {
         // Save buttons should be visible (admin can update)
         await expect(admin.page.getByRole('button', { name: 'Save' }).first()).toBeVisible();
 
+        // The Organization Name input is editable (admin can update)
+        await expect(admin.page.getByLabel('Organization Name')).toBeEnabled();
+
         // Delete organization should NOT be visible (owner only)
         await expect(
             admin.page.getByRole('heading', { name: 'Delete Organization' })
@@ -546,6 +549,10 @@ test.describe('Employee Organization Settings Restrictions', () => {
             employee.page.getByRole('heading', { name: 'Organization Name', level: 3 })
         ).toBeVisible({ timeout: 10000 });
 
+        // The name and currency inputs are rendered but disabled (employee cannot update)
+        await expect(employee.page.getByLabel('Organization Name')).toBeDisabled();
+        await expect(employee.page.getByLabel('Currency')).toBeDisabled();
+
         // Editable settings sections should NOT be visible
         await expect(
             employee.page.getByRole('heading', { name: 'Billable Rate', level: 3 })
@@ -559,5 +566,10 @@ test.describe('Employee Organization Settings Restrictions', () => {
 
         // Save button should not be visible (employee cannot update)
         await expect(employee.page.getByRole('button', { name: 'Save' })).not.toBeVisible();
+
+        // Delete organization should NOT be visible (owner only)
+        await expect(
+            employee.page.getByRole('heading', { name: 'Delete Organization' })
+        ).not.toBeVisible();
     });
 });

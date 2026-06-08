@@ -55,8 +55,8 @@ class OrganizationController extends Controller
                 return $currency->getName();
             }, ISOCurrencyProvider::getInstance()->getAvailableCurrencies()),
             'permissions' => [
-                'canDeleteTeam' => true,
-                'canUpdateTeam' => true,
+                'canDeleteTeam' => $this->hasPermission($organization, 'organizations:delete'),
+                'canUpdateTeam' => $this->hasPermission($organization, 'organizations:update'),
             ],
         ]);
     }
