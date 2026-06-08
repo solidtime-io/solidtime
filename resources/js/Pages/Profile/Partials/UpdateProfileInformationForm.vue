@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { usePage } from '@inertiajs/vue3';
-import axios from 'axios';
 import ActionMessage from '@/Components/ActionMessage.vue';
 import FormSection from '@/Components/FormSection.vue';
 import { Field, FieldError, FieldLabel } from '@/packages/ui/src/field';
@@ -16,6 +15,7 @@ import {
     useUserQuery,
 } from '@/utils/useUserQuery';
 import type { UpdateUserBody, User } from '@/packages/api/src';
+import { getApiValidationFieldErrors } from '@/utils/apiValidation';
 
 const { user } = useUserQuery();
 const updateUser = useUpdateUserMutation();
@@ -58,17 +58,9 @@ const hasUploadedPhoto = computed(() => {
     return !!url && !url.includes('ui-avatars.com');
 });
 
-const fieldErrors = computed<Record<string, string>>(() => {
-    const err = updateUser.error.value;
-    if (!axios.isAxiosError(err) || err.response?.status !== 422) return {};
-    const raw = err.response.data?.errors as Record<string, string[]> | undefined;
-    if (!raw) return {};
-    const flat: Record<string, string> = {};
-    for (const [key, messages] of Object.entries(raw)) {
-        if (Array.isArray(messages) && messages[0]) flat[key] = messages[0];
-    }
-    return flat;
-});
+const fieldErrors = computed<Record<string, string>>(() =>
+    getApiValidationFieldErrors(updateUser.error.value)
+);
 
 function buildPayload(): UpdateUserBody {
     if (!user.value) return {};

@@ -1,25 +1,68 @@
 <script setup lang="ts">
-import { useForm, usePage } from '@inertiajs/vue3';
+import { computed, ref, watch } from 'vue';
+import axios from 'axios';
+import { router, usePage } from '@inertiajs/vue3';
 import FormSection from '@/Components/FormSection.vue';
-import { Field, FieldLabel, FieldError } from '@/packages/ui/src/field';
+import { Field, FieldError, FieldLabel } from '@/packages/ui/src/field';
 import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import TextInput from '@/packages/ui/src/Input/TextInput.vue';
 import type { User } from '@/types/models';
-import { initializeStores } from '@/utils/init';
+import { useOrganizationStore } from '@/utils/useOrganization';
+import { useNotificationsStore } from '@/utils/notification';
+import {
+    getApiValidationFieldErrors,
+    getApiValidationMessage,
+    isApiValidationError,
+} from '@/utils/apiValidation';
 
-const form = useForm({
-    name: '',
+const name = ref('');
+const processing = ref(false);
+const createError = ref<unknown>(null);
+const organizationStore = useOrganizationStore();
+const notifications = useNotificationsStore();
+
+const fieldErrors = computed<Record<string, string>>(() =>
+    getApiValidationFieldErrors(createError.value)
+);
+
+watch(name, () => {
+    createError.value = null;
 });
 
-const createTeam = () => {
-    form.post(route('teams.store'), {
-        errorBag: 'createTeam',
-        preserveScroll: true,
-        onSuccess: () => {
-            initializeStores();
-        },
-    });
+const createTeam = async () => {
+    processing.value = true;
+    createError.value = null;
+    try {
+        const organization = await organizationStore.createOrganization(name.value);
+        if (organization) {
+            notifications.addNotification('success', 'Organization created successfully');
+            // The backend already switched the current organization to the new one.
+            // Flush Inertia's prefetch cache and do a full reload so the new
+            // organization context is picked up everywhere.
+            router.flushAll();
+            router.visit(route('dashboard'));
+        }
+    } catch (error) {
+        createError.value = error;
+        if (isApiValidationError(error)) {
+            notifications.addNotification(
+                'error',
+                getApiValidationMessage(error, 'Failed to create organization')
+            );
+        } else if (axios.isAxiosError(error)) {
+            notifications.addNotification(
+                'error',
+                'Failed to create organization',
+                error.response?.data?.message ?? 'Please try again later.'
+            );
+        } else {
+            notifications.addNotification('error', 'Failed to create organization');
+        }
+    } finally {
+        processing.value = false;
+    }
 };
+
 const page = usePage<{
     auth: {
         user: User;
@@ -60,16 +103,17 @@ const page = usePage<{
                 <FieldLabel for="name">Organization Name</FieldLabel>
                 <TextInput
                     id="name"
-                    v-model="form.name"
+                    v-model="name"
                     type="text"
                     class="block w-full"
-                    autofocus />
-                <FieldError v-if="form.errors.name">{{ form.errors.name }}</FieldError>
+                    autofocus
+                    :aria-invalid="Boolean(fieldErrors.name)" />
+                <FieldError v-if="fieldErrors.name">{{ fieldErrors.name }}</FieldError>
             </Field>
         </template>
 
         <template #actions>
-            <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
+            <PrimaryButton :class="{ 'opacity-25': processing }" :disabled="processing">
                 Create
             </PrimaryButton>
         </template>

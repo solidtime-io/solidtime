@@ -804,6 +804,39 @@ const endpoints = makeApi([
         ),
     },
     {
+        method: 'post',
+        path: '/v1/organizations',
+        alias: 'createOrganization',
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'body',
+                type: 'Body',
+                schema: z.object({ name: z.string().max(255) }).passthrough(),
+            },
+        ],
+        response: z.object({ data: OrganizationResource }).passthrough(),
+        errors: [
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 403,
+                description: `Authorization error`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 422,
+                description: `Validation error`,
+                schema: z
+                    .object({ message: z.string(), errors: z.record(z.array(z.string())) })
+                    .passthrough(),
+            },
+        ],
+    },
+    {
         method: 'get',
         path: '/v1/organizations/:organization',
         alias: 'getOrganization',
@@ -874,6 +907,37 @@ const endpoints = makeApi([
                 schema: z
                     .object({ message: z.string(), errors: z.record(z.array(z.string())) })
                     .passthrough(),
+            },
+        ],
+    },
+    {
+        method: 'delete',
+        path: '/v1/organizations/:organization',
+        alias: 'deleteOrganization',
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'organization',
+                type: 'Path',
+                schema: z.string(),
+            },
+        ],
+        response: z.void(),
+        errors: [
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 403,
+                description: `Authorization error`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 404,
+                description: `Not found`,
+                schema: z.object({ message: z.string() }).passthrough(),
             },
         ],
     },
@@ -4492,6 +4556,42 @@ The report is considered public if the &#x60;is_public&#x60; field is set to &#x
                 status: 403,
                 description: `Authorization error`,
                 schema: z.object({ message: z.string() }).passthrough(),
+            },
+        ],
+    },
+    {
+        method: 'put',
+        path: '/v1/users/me/current-organization',
+        alias: 'updateMyCurrentOrganization',
+        description: `Switches the organization that the user is currently working in. The user
+must be a member of the given organization. This endpoint is independent of
+the organization.`,
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'body',
+                type: 'Body',
+                schema: z.object({ organization_id: z.string().uuid() }).passthrough(),
+            },
+        ],
+        response: z.object({ data: UserResource }).passthrough(),
+        errors: [
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 403,
+                description: `Authorization error`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 422,
+                description: `Validation error`,
+                schema: z
+                    .object({ message: z.string(), errors: z.record(z.array(z.string())) })
+                    .passthrough(),
             },
         ],
     },
