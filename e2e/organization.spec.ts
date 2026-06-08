@@ -36,8 +36,20 @@ async function createTimeEntry(page, duration: string) {
 test('test that organization name can be updated', async ({ page }) => {
     await goToOrganizationSettings(page);
     await page.getByLabel('Organization Name').fill('NEW ORG NAME');
-    await page.getByLabel('Organization Name').press('Enter');
-    await page.getByLabel('Organization Name').press('Meta+r');
+    await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/api/v1/organizations/') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 200
+        ),
+        page
+            .locator('form')
+            .filter({ hasText: 'Organization Name' })
+            .getByRole('button', { name: 'Save' })
+            .click(),
+    ]);
+    await page.reload();
     await expect(page.locator('[data-testid="organization_switcher"]:visible')).toContainText(
         'NEW ORG NAME'
     );
@@ -367,6 +379,124 @@ test('test that format settings persist after page reload', async ({ page }) => 
     // Reload and verify it persisted
     await page.reload();
     await expect(page.getByLabel('Date Format')).toContainText('DD/MM/YYYY');
+});
+
+// =============================================
+// Create, Delete & Switch
+// =============================================
+
+test.describe('Organization Create, Delete & Switch', () => {
+    async function createOrganization(page, name: string) {
+        await page.goto(PLAYWRIGHT_BASE_URL + '/teams/create');
+        await page.getByLabel('Organization Name').fill(name);
+        await Promise.all([
+            page.waitForResponse(
+                (response) =>
+                    response.url().includes('/api/v1/organizations') &&
+                    response.request().method() === 'POST' &&
+                    response.status() === 201
+            ),
+            page.getByRole('button', { name: 'Create' }).click(),
+        ]);
+        // The backend switches the current organization to the new one and the
+        // frontend reloads into its dashboard.
+        await expect(page.getByTestId('dashboard_view')).toBeVisible({ timeout: 10000 });
+    }
+
+    test('can create a new organization and switches to it automatically', async ({ page }) => {
+        const newOrgName = 'CreateOrg' + Math.floor(Math.random() * 100000);
+        await createOrganization(page, newOrgName);
+
+        await expect(page.locator('[data-testid="organization_switcher"]:visible')).toContainText(
+            newOrgName
+        );
+    });
+
+    test('does not create an organization when the name is empty', async ({ page }) => {
+        await page.goto(PLAYWRIGHT_BASE_URL + '/teams/create');
+
+        // The form posts to the API, which rejects the empty name with a 422.
+        await Promise.all([
+            page.waitForResponse(
+                (response) =>
+                    response.url().includes('/api/v1/organizations') &&
+                    response.request().method() === 'POST' &&
+                    response.status() === 422
+            ),
+            page.getByRole('button', { name: 'Create' }).click(),
+        ]);
+
+        // Validation failed, so we stay on the create form and never reach a
+        // dashboard. ('/teams/create' redirects to '/organizations/create', so
+        // assert on the form rather than the URL.)
+        await expect(page.getByText('Organization Details')).toBeVisible();
+        await expect(page.getByRole('alert')).toContainText('The name field is required.');
+        await expect(page.getByLabel('Organization Name')).toHaveAttribute('aria-invalid', 'true');
+        await expect(page.getByTestId('dashboard_view')).toHaveCount(0);
+    });
+
+    test('can delete an organization', async ({ page }) => {
+        // Create a throwaway organization so the primary one is never deleted.
+        const orgName = 'DeleteOrg' + Math.floor(Math.random() * 100000);
+        await createOrganization(page, orgName);
+
+        // Open the (now current) throwaway organization's settings.
+        await goToOrganizationSettings(page);
+
+        // Open the confirmation modal, then confirm inside the dialog.
+        await page.getByRole('button', { name: 'Delete Organization' }).click();
+        await Promise.all([
+            page.waitForResponse(
+                (response) =>
+                    response.url().includes('/api/v1/organizations') &&
+                    response.request().method() === 'DELETE' &&
+                    response.status() === 204
+            ),
+            page.getByRole('dialog').getByRole('button', { name: 'Delete Organization' }).click(),
+        ]);
+
+        // We are redirected to the dashboard of a different organization.
+        await expect(page.getByTestId('dashboard_view')).toBeVisible({ timeout: 10000 });
+        await expect(
+            page.locator('[data-testid="organization_switcher"]:visible')
+        ).not.toContainText(orgName);
+    });
+
+    test('can switch the current organization via the organization switcher', async ({ page }) => {
+        await page.goto(PLAYWRIGHT_BASE_URL + '/dashboard');
+        const orgSwitcher = page.locator('[data-testid="organization_switcher"]:visible');
+        await expect(orgSwitcher).toBeVisible();
+        const previousOrgNameLines = (await orgSwitcher.innerText())
+            .split('\n')
+            .map((line) => line.trim())
+            .filter(Boolean);
+        const previousOrgName = previousOrgNameLines[previousOrgNameLines.length - 1];
+
+        // Ensure there are at least two organizations to switch between.
+        const orgName = 'SwitchOrg' + Math.floor(Math.random() * 100000);
+        await createOrganization(page, orgName);
+
+        await expect(orgSwitcher).toContainText(orgName);
+
+        // Open the switcher and pick a different organization.
+        await orgSwitcher.click();
+        await expect(page.getByText('Switch Organizations')).toBeVisible();
+        const otherOrgButton = page.getByRole('menuitem', { name: previousOrgName });
+        await expect(otherOrgButton).toBeVisible();
+
+        await Promise.all([
+            page.waitForResponse(
+                (response) =>
+                    response.url().includes('/users/me/current-organization') &&
+                    response.request().method() === 'PUT' &&
+                    response.status() === 200
+            ),
+            otherOrgButton.click(),
+        ]);
+
+        await expect(orgSwitcher).not.toContainText(orgName, { timeout: 10000 });
+        await expect(orgSwitcher).toContainText(previousOrgName, { timeout: 10000 });
+    });
 });
 
 // =============================================

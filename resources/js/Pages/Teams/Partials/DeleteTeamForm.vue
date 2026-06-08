@@ -1,26 +1,36 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useForm } from '@inertiajs/vue3';
+import { router } from '@inertiajs/vue3';
 import ActionSection from '@/Components/ActionSection.vue';
 import ConfirmationModal from '@/Components/ConfirmationModal.vue';
 import DangerButton from '@/packages/ui/src/Buttons/DangerButton.vue';
 import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
+import { useOrganizationStore } from '@/utils/useOrganization';
 
-const props = defineProps({
-    team: Object,
-});
+const props = defineProps<{
+    team: { id: string };
+}>();
 
 const confirmingTeamDeletion = ref(false);
-const form = useForm({});
+const processing = ref(false);
+const organizationStore = useOrganizationStore();
 
 const confirmTeamDeletion = () => {
     confirmingTeamDeletion.value = true;
 };
 
-const deleteTeam = () => {
-    form.delete(route('teams.destroy', props.team), {
-        errorBag: 'deleteTeam',
-    });
+const deleteTeam = async () => {
+    processing.value = true;
+    try {
+        await organizationStore.deleteOrganization(props.team.id);
+        // The backend reassigns the user's current organization after deletion,
+        // so flush the prefetch cache and reload into the dashboard.
+        router.flushAll();
+        router.visit(route('dashboard'));
+    } catch {
+        // Request errors are surfaced as notifications by the store.
+        processing.value = false;
+    }
 };
 </script>
 
@@ -59,8 +69,8 @@ const deleteTeam = () => {
 
                     <DangerButton
                         class="ms-3"
-                        :class="{ 'opacity-25': form.processing }"
-                        :disabled="form.processing"
+                        :class="{ 'opacity-25': processing }"
+                        :disabled="processing"
                         @click="deleteTeam">
                         Delete Organization
                     </DangerButton>

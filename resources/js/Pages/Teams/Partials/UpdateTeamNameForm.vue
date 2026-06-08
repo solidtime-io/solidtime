@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { Link, useForm } from '@inertiajs/vue3';
+import { Link, router } from '@inertiajs/vue3';
+import { reactive, ref } from 'vue';
+import axios from 'axios';
 import ActionMessage from '@/Components/ActionMessage.vue';
 import FormSection from '@/Components/FormSection.vue';
 import { Field, FieldLabel, FieldError } from '@/packages/ui/src/field';
@@ -10,22 +12,66 @@ import type { Permissions } from '@/types/jetstream';
 import { CreditCardIcon } from '@heroicons/vue/20/solid';
 import { isBillingActivated } from '@/utils/billing';
 import { canManageBilling } from '@/utils/permissions';
+import { api } from '@/packages/api/src';
+import { useNotificationsStore } from '@/utils/notification';
+import { getApiValidationFieldErrors, isApiValidationError } from '@/utils/apiValidation';
 
 const props = defineProps<{
     team: Organization;
     permissions: Permissions;
 }>();
 
-const form = useForm({
+const form = reactive({
     name: props.team.name,
     currency: props.team.currency,
 });
 
-const updateTeamName = () => {
-    form.put(route('teams.update', props.team.id), {
-        errorBag: 'updateTeamName',
-        preserveScroll: true,
-    });
+const errors = ref<Record<string, string>>({});
+const processing = ref(false);
+const recentlySuccessful = ref(false);
+const notifications = useNotificationsStore();
+let recentlySuccessfulTimeout: ReturnType<typeof setTimeout> | undefined;
+
+const updateTeamName = async () => {
+    processing.value = true;
+    recentlySuccessful.value = false;
+    errors.value = {};
+    try {
+        await api.updateOrganization(
+            {
+                name: form.name,
+                currency: form.currency,
+            },
+            {
+                params: {
+                    organization: props.team.id,
+                },
+            }
+        );
+        notifications.addNotification('success', 'Organization updated successfully');
+        recentlySuccessful.value = true;
+        if (recentlySuccessfulTimeout) {
+            clearTimeout(recentlySuccessfulTimeout);
+        }
+        recentlySuccessfulTimeout = setTimeout(() => {
+            recentlySuccessful.value = false;
+        }, 2000);
+        router.reload({ only: ['auth', 'team'] });
+    } catch (error) {
+        if (isApiValidationError(error)) {
+            errors.value = getApiValidationFieldErrors(error);
+        } else if (axios.isAxiosError(error)) {
+            notifications.addNotification(
+                'error',
+                'Failed to update organization',
+                error.response?.data?.message ?? 'Please try again later.'
+            );
+        } else {
+            notifications.addNotification('error', 'Failed to update organization');
+        }
+    } finally {
+        processing.value = false;
+    }
 };
 </script>
 
@@ -74,7 +120,7 @@ const updateTeamName = () => {
                     class="block w-full"
                     :disabled="!permissions.canUpdateTeam" />
 
-                <FieldError v-if="form.errors.name">{{ form.errors.name }}</FieldError>
+                <FieldError v-if="errors.name">{{ errors.name }}</FieldError>
             </Field>
 
             <!-- Currency -->
@@ -94,14 +140,14 @@ const updateTeamName = () => {
                         {{ currencyKey }} - {{ currencyTranslated }}
                     </option>
                 </select>
-                <FieldError v-if="form.errors.currency">{{ form.errors.currency }}</FieldError>
+                <FieldError v-if="errors.currency">{{ errors.currency }}</FieldError>
             </Field>
         </template>
 
         <template v-if="permissions.canUpdateTeam" #actions>
-            <ActionMessage :on="form.recentlySuccessful" class="me-3"> Saved. </ActionMessage>
+            <ActionMessage :on="recentlySuccessful" class="me-3"> Saved. </ActionMessage>
 
-            <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
+            <PrimaryButton :class="{ 'opacity-25': processing }" :disabled="processing">
                 Save
             </PrimaryButton>
         </template>
