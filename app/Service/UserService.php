@@ -62,6 +62,7 @@ class UserService
                 $intervalFormat,
                 $timeFormat,
             );
+            $this->switchCurrentOrganization($user, $organization);
         }
 
         return $user;
