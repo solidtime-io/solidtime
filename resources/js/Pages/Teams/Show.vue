@@ -53,7 +53,7 @@ onMounted(async () => {
                     <OrganizationTimeEntrySettings v-if="permissions.canUpdateTeam" />
                     <SectionBorder />
 
-                    <template v-if="permissions.canDeleteTeam && !team.personal_team">
+                    <template v-if="permissions.canDeleteTeam">
                         <DeleteTeamForm class="mt-10 sm:mt-0" :team="team" />
                     </template>
                 </template>
