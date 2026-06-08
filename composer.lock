@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4c728f01d2beb426b2d157143618fdae",
+    "content-hash": "897ca7bc13f827db641f7affa54a8523",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -4414,72 +4414,6 @@
             "time": "2026-05-20T11:48:19+00:00"
         },
         {
-            "name": "laravel/jetstream",
-            "version": "v5.5.3",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/laravel/jetstream.git",
-                "reference": "61cac5cde455311890f6981fb2da47acd298e4e2"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/laravel/jetstream/zipball/61cac5cde455311890f6981fb2da47acd298e4e2",
-                "reference": "61cac5cde455311890f6981fb2da47acd298e4e2",
-                "shasum": ""
-            },
-            "require": {
-                "ext-json": "*",
-                "illuminate/console": "^11.0|^12.0|^13.0",
-                "illuminate/support": "^11.0|^12.0|^13.0",
-                "laravel/fortify": "^1.20",
-                "mobiledetect/mobiledetectlib": "^4.8.08",
-                "php": "^8.2.0",
-                "symfony/console": "^7.0|^8.0"
-            },
-            "require-dev": {
-                "inertiajs/inertia-laravel": "^2.0",
-                "laravel/sanctum": "^4.0",
-                "livewire/livewire": "^3.3",
-                "mockery/mockery": "^1.0",
-                "orchestra/testbench": "^9.15|^10.8|^11.0",
-                "phpstan/phpstan": "^1.10"
-            },
-            "type": "library",
-            "extra": {
-                "laravel": {
-                    "providers": [
-                        "Laravel\\Jetstream\\JetstreamServiceProvider"
-                    ]
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Laravel\\Jetstream\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Taylor Otwell",
-                    "email": "taylor@laravel.com"
-                }
-            ],
-            "description": "Tailwind scaffolding for the Laravel framework.",
-            "keywords": [
-                "auth",
-                "laravel",
-                "tailwind"
-            ],
-            "support": {
-                "issues": "https://github.com/laravel/jetstream/issues",
-                "source": "https://github.com/laravel/jetstream"
-            },
-            "time": "2026-05-19T01:30:03+00:00"
-        },
-        {
             "name": "laravel/octane",
             "version": "v2.17.4",
             "source": {
@@ -6445,16 +6379,16 @@
         },
         {
             "name": "mobiledetect/mobiledetectlib",
-            "version": "4.10.0",
+            "version": "4.11.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/serbanghita/Mobile-Detect.git",
-                "reference": "1473bd9d6aa40158f75f1e05116e6dd081148b2c"
+                "reference": "ab39168b7556f44c11c80be1222b44b239f5c2e4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/serbanghita/Mobile-Detect/zipball/1473bd9d6aa40158f75f1e05116e6dd081148b2c",
-                "reference": "1473bd9d6aa40158f75f1e05116e6dd081148b2c",
+                "url": "https://api.github.com/repos/serbanghita/Mobile-Detect/zipball/ab39168b7556f44c11c80be1222b44b239f5c2e4",
+                "reference": "ab39168b7556f44c11c80be1222b44b239f5c2e4",
                 "shasum": ""
             },
             "require": {
@@ -6497,7 +6431,7 @@
             ],
             "support": {
                 "issues": "https://github.com/serbanghita/Mobile-Detect/issues",
-                "source": "https://github.com/serbanghita/Mobile-Detect/tree/4.10.0"
+                "source": "https://github.com/serbanghita/Mobile-Detect/tree/4.11.0"
             },
             "funding": [
                 {
@@ -6505,7 +6439,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-04-23T13:05:57+00:00"
+            "time": "2026-05-24T12:32:40+00:00"
         },
         {
             "name": "monolog/monolog",
@@ -13803,16 +13737,16 @@
         },
         {
             "name": "web-auth/webauthn-lib",
-            "version": "5.3.3",
+            "version": "5.3.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/web-auth/webauthn-lib.git",
-                "reference": "e6f656d6c6b29fa305382fe6a0a3be8177d177df"
+                "reference": "9e0986d999f4102e24ac8a598d3a80d98b56c19f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/web-auth/webauthn-lib/zipball/e6f656d6c6b29fa305382fe6a0a3be8177d177df",
-                "reference": "e6f656d6c6b29fa305382fe6a0a3be8177d177df",
+                "url": "https://api.github.com/repos/web-auth/webauthn-lib/zipball/9e0986d999f4102e24ac8a598d3a80d98b56c19f",
+                "reference": "9e0986d999f4102e24ac8a598d3a80d98b56c19f",
                 "shasum": ""
             },
             "require": {
@@ -13873,7 +13807,7 @@
                 "webauthn"
             ],
             "support": {
-                "source": "https://github.com/web-auth/webauthn-lib/tree/5.3.3"
+                "source": "https://github.com/web-auth/webauthn-lib/tree/5.3.5"
             },
             "funding": [
                 {
@@ -13885,7 +13819,7 @@
                     "type": "patreon"
                 }
             ],
-            "time": "2026-05-17T19:04:30+00:00"
+            "time": "2026-05-31T15:00:08+00:00"
         },
         {
             "name": "webmozart/assert",

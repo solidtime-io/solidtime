@@ -193,7 +193,7 @@ class InvitationEndpointTest extends ApiEndpointTestAbstract
         Passport::actingAs($data->user);
 
         // Act
-        $response = $this->postJson(route('api.v1.invitations.store', $data->organization->getKey()), [
+        $response = $this->withoutExceptionHandling()->postJson(route('api.v1.invitations.store', $data->organization->getKey()), [
             'email' => $user->email,
             'role' => Role::Employee->value,
         ]);

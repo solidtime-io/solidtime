@@ -23,8 +23,6 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
-use Laravel\Jetstream\Events\AddingTeamMember;
-use Laravel\Jetstream\Events\TeamMemberAdded;
 
 class MemberService
 {
@@ -39,7 +37,6 @@ class MemberService
     {
         if (! $asSuperAdmin) {
             MemberAdding::dispatch($user, $organization, $role);
-            AddingTeamMember::dispatch($organization, $user); // Legacy event
         }
 
         $member = new Member;
@@ -56,7 +53,6 @@ class MemberService
 
         if (! $asSuperAdmin) {
             MemberAdded::dispatch($member, $organization, $user);
-            TeamMemberAdded::dispatch($organization, $user); // Legacy event
         }
 
         return $member;

@@ -9,10 +9,11 @@ use App\Models\Concerns\HasUuids;
 use Database\Factories\MemberFactory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Support\Carbon;
-use Laravel\Jetstream\Membership as JetstreamMembership;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
@@ -30,7 +31,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  *
  * @method static MemberFactory factory()
  */
-class Member extends JetstreamMembership implements AuditableContract
+class Member extends Pivot implements AuditableContract
 {
     use CustomAuditable;
 

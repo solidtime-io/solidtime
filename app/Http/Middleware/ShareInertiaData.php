@@ -26,7 +26,7 @@ class ShareInertiaData
         $permissions = app(PermissionStore::class);
         Inertia::share([
             'auth' => [
-                'permissions' => $request->user() !== null && $request->user()->currentTeam !== null ? $permissions->getPermissions($request->user()->currentTeam) : [],
+                'permissions' => $request->user() !== null && $request->user()->currentOrganization !== null ? $permissions->getPermissions($request->user()->currentOrganization) : [],
                 'user' => function () use ($request): array {
                     /** @var User|null $user */
                     $user = $request->user();
@@ -34,6 +34,8 @@ class ShareInertiaData
                     if ($user === null) {
                         return [];
                     }
+
+                    $currentOrganization = $user->currentOrganization;
 
                     return array_merge([
                         'id' => $user->id,
@@ -47,12 +49,12 @@ class ShareInertiaData
                         'profile_photo_url' => $user->profile_photo_url,
                         'two_factor_enabled' => Features::enabled(Features::twoFactorAuthentication())
                             && ! is_null($user->two_factor_secret),
-                        'current_team' => $user->currentTeam !== null ? [
-                            'id' => $user->currentTeam->id,
-                            'user_id' => $user->currentTeam->user_id,
-                            'name' => $user->currentTeam->name,
-                            'personal_team' => $user->currentTeam->personal_team,
-                            'currency' => $user->currentTeam->currency,
+                        'current_team' => $currentOrganization !== null ? [
+                            'id' => $currentOrganization->id,
+                            'user_id' => $currentOrganization->user_id,
+                            'name' => $currentOrganization->name,
+                            'personal_team' => $currentOrganization->personal_team,
+                            'currency' => $currentOrganization->currency,
                         ] : null,
                     ], array_filter([
                         'all_teams' => $user->organizations->map(function (Organization $organization): array {

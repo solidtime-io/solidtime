@@ -17,44 +17,6 @@ class InviteTeamMemberTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_team_members_can_no_longer_be_invited_to_team_over_jetstream(): void
-    {
-        // Arrange
-        Mail::fake();
-        $this->actingAs($user = User::factory()->withPersonalOrganization()->create());
-
-        // Act
-        $response = $this->post('/teams/'.$user->currentOrganization->id.'/members', [
-            'email' => 'test@example.com',
-            'role' => 'admin',
-        ]);
-
-        // Assert
-        $response->assertStatus(403);
-        $response->assertSee('Moved to API');
-        Mail::assertNothingSent();
-    }
-
-    public function test_team_member_invitations_can_no_longer_be_cancelled_over_jetstream(): void
-    {
-        // Arrange
-        Mail::fake();
-
-        $this->actingAs($user = User::factory()->withPersonalOrganization()->create());
-
-        $invitation = $user->currentOrganization->organizationInvitations()->create([
-            'email' => 'test@example.com',
-            'role' => 'admin',
-        ]);
-
-        // Act
-        $response = $this->delete('/team-invitations/'.$invitation->id);
-
-        // Assert
-        $response->assertStatus(403);
-        $this->assertCount(1, $user->currentOrganization->fresh()->organizationInvitations);
-    }
-
     public function test_team_member_invitations_can_be_accepted(): void
     {
         // Arrange

@@ -12,7 +12,6 @@ use App\Service\PermissionStore;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Laravel\Jetstream\Jetstream;
 
 abstract class TestCaseWithDatabase extends TestCase
 {
@@ -25,8 +24,6 @@ abstract class TestCaseWithDatabase extends TestCase
     protected function createUserWithPermission(array $permissions = [], bool $isOwner = false): object
     {
         $roleName = 'custom-test-'.Str::uuid();
-        Jetstream::role($roleName, 'Custom Test', $permissions)
-            ->description('Role custom for testing');
         PermissionStore::registerCustomRole($roleName, $permissions);
         $user = User::factory()->create();
         if ($isOwner) {

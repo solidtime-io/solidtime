@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\V1\ReportController;
 use App\Http\Controllers\Api\V1\TagController;
 use App\Http\Controllers\Api\V1\TaskController;
 use App\Http\Controllers\Api\V1\TimeEntryController;
+use App\Http\Controllers\Api\V1\TimeZoneController;
 use App\Http\Controllers\Api\V1\UserController;
 use App\Http\Controllers\Api\V1\UserMembershipController;
 use App\Http\Controllers\Api\V1\UserTimeEntryController;
@@ -179,9 +180,14 @@ Route::prefix('v1')->name('v1.')->group(static function (): void {
         Route::name('export.')->prefix('/organizations/{organization}')->group(static function (): void {
             Route::post('/export', [ExportController::class, 'export'])->name('export');
         });
+
     });
 
+    // Currency routes
     Route::get('/currencies', [CurrencyController::class, 'index'])->name('currencies.index');
+
+    // Timezone routes
+    Route::get('/time-zones', [TimeZoneController::class, 'index'])->name('time-zones.index');
 
     // Public routes
     Route::name('public.')->prefix('/public')->group(static function (): void {

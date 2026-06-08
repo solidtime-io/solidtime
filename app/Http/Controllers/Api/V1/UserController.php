@@ -50,7 +50,7 @@ class UserController extends Controller
         }
 
         if ($request->hasPhotoKey()) {
-            $photoDisk = (string) config('jetstream.profile_photo_disk', 'public');
+            $photoDisk = (string) config('filesystems.public');
             $previousPhotoPath = $user->profile_photo_path;
             $newPhoto = $request->getPhoto();
 
