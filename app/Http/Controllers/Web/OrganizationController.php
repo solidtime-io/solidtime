@@ -54,15 +54,9 @@ class OrganizationController extends Controller
             'currencies' => array_map(function (Currency $currency): string {
                 return $currency->getName();
             }, ISOCurrencyProvider::getInstance()->getAvailableCurrencies()),
-            'availableRoles' => [],
-            'availablePermissions' => [],
-            'defaultPermissions' => [],
             'permissions' => [
-                'canAddTeamMembers' => true,
                 'canDeleteTeam' => true,
-                'canRemoveTeamMembers' => true,
                 'canUpdateTeam' => true,
-                'canUpdateTeamMembers' => true,
             ],
         ]);
     }
