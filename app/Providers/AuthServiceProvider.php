@@ -4,14 +4,11 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Models\Organization;
 use App\Models\Passport\AuthCode;
 use App\Models\Passport\Client;
 use App\Models\Passport\RefreshToken;
 use App\Models\Passport\Token;
-use App\Policies\OrganizationPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
-use Laravel\Jetstream\Jetstream;
 use Laravel\Passport\Passport;
 
 class AuthServiceProvider extends ServiceProvider
@@ -22,7 +19,6 @@ class AuthServiceProvider extends ServiceProvider
      * @var array<class-string, class-string>
      */
     protected $policies = [
-        Organization::class => OrganizationPolicy::class,
     ];
 
     /**
@@ -56,11 +52,5 @@ class AuthServiceProvider extends ServiceProvider
         // Passport::tokensExpireIn(now()->addDays(15));
         // Passport::refreshTokensExpireIn(now()->addDays(30));
         Passport::personalAccessTokensExpireIn(now()->addMonths(12));
-
-        // same as passport default above
-        Jetstream::defaultApiTokenPermissions(['read']);
-
-        // use passport scopes for jetstream token permissions
-        Jetstream::permissions(Passport::scopeIds());
     }
 }

@@ -16,7 +16,6 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Korridor\LaravelModelValidationRules\Rules\UniqueEloquent;
 use Laravel\Fortify\Contracts\CreatesNewUsers;
-use Laravel\Jetstream\Jetstream;
 use Log;
 
 class CreateNewUser implements CreatesNewUsers
@@ -55,7 +54,7 @@ class CreateNewUser implements CreatesNewUsers
                 }),
             ],
             'password' => $this->passwordRules(),
-            'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature() ? ['accepted', 'required'] : '',
+            'terms' => ['accepted', 'required'],
             'newsletter_consent' => [
                 'boolean',
             ],

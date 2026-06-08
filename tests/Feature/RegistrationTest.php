@@ -17,7 +17,6 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use Laravel\Fortify\Features;
-use Laravel\Jetstream\Jetstream;
 use Tests\TestCaseWithDatabase;
 use TiMacDonald\Log\LogEntry;
 
@@ -47,7 +46,7 @@ class RegistrationTest extends TestCaseWithDatabase
             'email' => 'test@example.com',
             'password' => 'password',
             'password_confirmation' => 'password',
-            'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature(),
+            'terms' => true,
         ]);
 
         // Assert
@@ -78,7 +77,7 @@ class RegistrationTest extends TestCaseWithDatabase
             'email' => 'test@example.com',
             'password' => 'password',
             'password_confirmation' => 'password',
-            'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature(),
+            'terms' => true,
         ]);
 
         // Assert
@@ -97,7 +96,7 @@ class RegistrationTest extends TestCaseWithDatabase
             'email' => 'peter.test@gmail',
             'password' => 'password',
             'password_confirmation' => 'password',
-            'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature(),
+            'terms' => true,
         ]);
 
         // Assert
@@ -112,7 +111,7 @@ class RegistrationTest extends TestCaseWithDatabase
             'email' => 'PETER.test@gmail.com ',
             'password' => 'password',
             'password_confirmation' => 'password',
-            'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature(),
+            'terms' => true,
         ]);
 
         // Assert
@@ -132,7 +131,7 @@ class RegistrationTest extends TestCaseWithDatabase
             'email' => 'test@example.com',
             'password' => 'password',
             'password_confirmation' => 'password',
-            'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature(),
+            'terms' => true,
             'newsletter_consent' => true,
         ]);
 
@@ -154,7 +153,7 @@ class RegistrationTest extends TestCaseWithDatabase
             'email' => 'test@example.com',
             'password' => 'password',
             'password_confirmation' => 'password',
-            'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature(),
+            'terms' => true,
             'timezone' => 'Europe/Berlin',
         ]);
 
@@ -182,7 +181,7 @@ class RegistrationTest extends TestCaseWithDatabase
             'email' => 'test@example.com',
             'password' => 'password',
             'password_confirmation' => 'password',
-            'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature(),
+            'terms' => true,
             'timezone' => 'Europe/Berlin',
         ]);
 
@@ -213,7 +212,7 @@ class RegistrationTest extends TestCaseWithDatabase
             'email' => 'test@example.com',
             'password' => 'password',
             'password_confirmation' => 'password',
-            'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature(),
+            'terms' => true,
             'timezone' => null,
         ]);
 
@@ -244,7 +243,7 @@ class RegistrationTest extends TestCaseWithDatabase
             'email' => 'test@example.com',
             'password' => 'password',
             'password_confirmation' => 'password',
-            'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature(),
+            'terms' => true,
             'timezone' => 'Unknown timezone',
         ]);
 
@@ -275,7 +274,7 @@ class RegistrationTest extends TestCaseWithDatabase
             'email' => 'test@example.com',
             'password' => 'password',
             'password_confirmation' => 'password',
-            'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature(),
+            'terms' => true,
             'timezone' => 'Asia/Calcutta',
         ]);
 
@@ -296,7 +295,7 @@ class RegistrationTest extends TestCaseWithDatabase
             'email' => 'test@example.com',
             'password' => 'password',
             'password_confirmation' => 'password',
-            'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature(),
+            'terms' => true,
             'timezone' => 'Unknown timezone',
         ]);
 
@@ -319,7 +318,7 @@ class RegistrationTest extends TestCaseWithDatabase
             'email' => 'test@example.com',
             'password' => 'password',
             'password_confirmation' => 'password',
-            'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature(),
+            'terms' => true,
         ]);
 
         $this->assertFalse($this->isAuthenticated(), 'The user is authenticated');
@@ -340,7 +339,7 @@ class RegistrationTest extends TestCaseWithDatabase
             'email' => 'test@example.com',
             'password' => 'password',
             'password_confirmation' => 'password',
-            'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature(),
+            'terms' => true,
         ]);
 
         $this->assertAuthenticated();
@@ -365,7 +364,7 @@ class RegistrationTest extends TestCaseWithDatabase
             'email' => 'test@example.com',
             'password' => 'password',
             'password_confirmation' => 'password',
-            'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature(),
+            'terms' => true,
         ]);
 
         $this->assertAuthenticated();
@@ -398,7 +397,7 @@ class RegistrationTest extends TestCaseWithDatabase
             'email' => 'test@example.com',
             'password' => 'password',
             'password_confirmation' => 'password',
-            'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature(),
+            'terms' => true,
         ]);
 
         // Assert

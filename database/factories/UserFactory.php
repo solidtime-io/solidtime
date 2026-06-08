@@ -94,7 +94,7 @@ class UserFactory extends Factory
         $profilePhoto = $this->faker->image(null, 500, 500);
         /** @see FileHelpers::hashName */
         $path = 'profile-photos/'.Str::random(40).'.png';
-        Storage::disk(config('jetstream.profile_photo_disk', 'public'))->put($path, $profilePhoto);
+        Storage::disk(config('filesystems.public'))->put($path, $profilePhoto);
 
         return $this->state(function (array $attributes) use ($path): array {
             return [

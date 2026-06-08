@@ -310,7 +310,7 @@ class UserEndpointTest extends ApiEndpointTestAbstract
     {
         // Arrange
         $data = $this->createUserWithPermission();
-        $photoDisk = (string) config('jetstream.profile_photo_disk', 'public');
+        $photoDisk = (string) config('filesystems.public', 'public');
         $previousPhotoPath = 'profile-photos/previous.png';
         $photo = file_get_contents(resource_path('testfiles/test.png'));
         $this->assertIsString($photo);
@@ -491,7 +491,7 @@ class UserEndpointTest extends ApiEndpointTestAbstract
     {
         // Arrange
         $data = $this->createUserWithPermission();
-        $photoDisk = (string) config('jetstream.profile_photo_disk', 'public');
+        $photoDisk = (string) config('filesystems.public', 'public');
         $photoPath = 'profile-photos/existing.png';
         Storage::fake($photoDisk);
         Storage::disk($photoDisk)->put($photoPath, 'photo contents');
@@ -515,7 +515,7 @@ class UserEndpointTest extends ApiEndpointTestAbstract
     {
         // Arrange
         $data = $this->createUserWithPermission();
-        $photoDisk = (string) config('jetstream.profile_photo_disk', 'public');
+        $photoDisk = (string) config('filesystems.public', 'public');
         Storage::fake($photoDisk);
         $data->user->profile_photo_path = null;
         $data->user->save();
@@ -536,7 +536,7 @@ class UserEndpointTest extends ApiEndpointTestAbstract
     {
         // Arrange
         $data = $this->createUserWithPermission();
-        $photoDisk = (string) config('jetstream.profile_photo_disk', 'public');
+        $photoDisk = (string) config('filesystems.public', 'public');
         $photoPath = 'profile-photos/existing.png';
         Storage::fake($photoDisk);
         Storage::disk($photoDisk)->put($photoPath, 'photo contents');

@@ -4,16 +4,9 @@ declare(strict_types=1);
 
 namespace App\Actions\Fortify;
 
-use App\Enums\Weekday;
-use App\Mail\VerifyUpdatedEmailMail;
+use App\Exceptions\MovedToApiException;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
-use Korridor\LaravelModelValidationRules\Rules\UniqueEloquent;
 use Laravel\Fortify\Contracts\UpdatesUserProfileInformation;
 
 class UpdateUserProfileInformation implements UpdatesUserProfileInformation
@@ -27,61 +20,6 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
      */
     public function update(User $user, array $input): void
     {
-        if (isset($input['email']) && is_string($input['email'])) {
-            $input['email'] = Str::lower($input['email']);
-        }
-
-        Validator::make($input, [
-            'name' => [
-                'required',
-                'string',
-                'max:255',
-            ],
-            'email' => [
-                'required',
-                'email',
-                'max:255',
-                UniqueEloquent::make(User::class, 'email')->ignore($user->id)->query(function (Builder $query) {
-                    /** @var Builder<User> $query */
-                    return $query->where('is_placeholder', '=', false);
-                }),
-            ],
-            'photo' => [
-                'nullable',
-                'mimes:jpg,jpeg,png',
-                'max:1024',
-            ],
-            'timezone' => [
-                'required',
-                'timezone:all',
-            ],
-            'week_start' => [
-                'required',
-                Rule::enum(Weekday::class),
-            ],
-        ])->validateWithBag('updateProfileInformation');
-
-        if (isset($input['photo'])) {
-            $user->updateProfilePhoto($input['photo']);
-        }
-
-        $email = Str::lower((string) $input['email']);
-
-        if ($email !== Str::lower($user->email)) {
-            $user->forceFill([
-                'name' => $input['name'],
-                'pending_email' => $email,
-                'timezone' => $input['timezone'],
-                'week_start' => $input['week_start'],
-            ])->save();
-
-            Mail::to($email)->send(new VerifyUpdatedEmailMail($user, $email));
-        } else {
-            $user->forceFill([
-                'name' => $input['name'],
-                'timezone' => $input['timezone'],
-                'week_start' => $input['week_start'],
-            ])->save();
-        }
+        throw new MovedToApiException;
     }
 }

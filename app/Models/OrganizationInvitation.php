@@ -8,9 +8,9 @@ use App\Models\Concerns\CustomAuditable;
 use App\Models\Concerns\HasUuids;
 use Database\Factories\OrganizationInvitationFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
-use Laravel\Jetstream\TeamInvitation as JetstreamTeamInvitation;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
@@ -25,7 +25,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  *
  * @method static OrganizationInvitationFactory factory()
  */
-class OrganizationInvitation extends JetstreamTeamInvitation implements AuditableContract
+class OrganizationInvitation extends Model implements AuditableContract
 {
     use CustomAuditable;
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Enums\Role;
+use App\Events\OrganizationInvitationAdding;
 use App\Exceptions\Api\InvitationForTheEmailAlreadyExistsApiException;
 use App\Exceptions\Api\UserIsAlreadyMemberOfOrganizationApiException;
 use App\Mail\OrganizationInvitationMail;
@@ -14,14 +15,13 @@ use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
-use Laravel\Jetstream\Events\InvitingTeamMember;
 
 class InvitationService
 {
     /**
      * @throws UserIsAlreadyMemberOfOrganizationApiException|InvitationForTheEmailAlreadyExistsApiException
      */
-    public function inviteUser(Organization $organization, string $email, Role $role): OrganizationInvitation
+    public function inviteUser(Organization $organization, string $email, Role $role, User $inviter): OrganizationInvitation
     {
         if (app(MemberService::class)->isEmailAlreadyMember($organization, $email)) {
             throw new UserIsAlreadyMemberOfOrganizationApiException;
@@ -34,7 +34,7 @@ class InvitationService
             throw new InvitationForTheEmailAlreadyExistsApiException;
         }
 
-        InvitingTeamMember::dispatch($organization, $email, $role->value);
+        OrganizationInvitationAdding::dispatch($organization, $email, $role, $inviter);
 
         $invitation = new OrganizationInvitation;
         $invitation->email = $email;

@@ -2,13 +2,16 @@
 
 declare(strict_types=1);
 
+use App\Enums\Role;
 use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\Web\HomeController;
+use App\Http\Controllers\Web\OrganizationController;
 use App\Http\Controllers\Web\OrganizationInvitationController;
 use App\Http\Controllers\Web\UserController;
+use App\Http\Controllers\Web\UserProfileController;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-use Laravel\Jetstream\Jetstream;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,7 +32,6 @@ Route::get('/shared-report', function () {
 
 Route::middleware([
     'auth:web',
-    config('jetstream.auth_session'),
     'verified',
 ])->group(function (): void {
     Route::get('/dashboard', [DashboardController::class, 'dashboard'])->name('dashboard');
@@ -72,7 +74,7 @@ Route::middleware([
 
     Route::get('/members', function () {
         return Inertia::render('Members', [
-            'availableRoles' => array_values(Jetstream::$roles),
+            'availableRoles' => Role::values(),
         ]);
     })->name('members');
 
@@ -84,6 +86,15 @@ Route::middleware([
         return Inertia::render('Import');
     })->name('import');
 
+    Route::get('/organizations/create', [OrganizationController::class, 'create'])->name('organizations.create');
+    Route::get('/organizations/{organizationId}', [OrganizationController::class, 'show'])->name('organizations.show');
+    Route::get('/teams/create', function (): RedirectResponse {
+        return to_route('organizations.create');
+    })->name('teams.create');
+    Route::get('/teams/{organizationId}', function (string $organizationId): RedirectResponse {
+        return to_route('organizations.show', [$organizationId]);
+    })->name('teams.show');
+    Route::get('/user/profile', [UserProfileController::class, 'show'])->name('profile.show');
 });
 
 Route::get('/team-invitations/{invitation}', [OrganizationInvitationController::class, 'accept'])
@@ -94,5 +105,5 @@ Route::get('/organization-invitations/{invitation}', [OrganizationInvitationCont
     ->name('organization-invitations.accept');
 
 Route::get('/users/{user}/verify-email-change', [UserController::class, 'verifyEmailChange'])
-    ->middleware(['auth:web', config('jetstream.auth_session'), 'signed:relative'])
+    ->middleware(['auth:web', 'signed:relative'])
     ->name('users.verify-email-change');

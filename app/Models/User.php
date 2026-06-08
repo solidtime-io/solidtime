@@ -26,8 +26,6 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Fortify\TwoFactorAuthenticatable;
-use Laravel\Jetstream\HasProfilePhoto;
-use Laravel\Jetstream\HasTeams;
 use Laravel\Passport\AuthCode;
 use Laravel\Passport\Contracts\OAuthenticatable;
 use Laravel\Passport\HasApiTokens;
@@ -46,7 +44,6 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  * @property Weekday $week_start
  * @property string|null $profile_photo_path
  * @property-read Organization|null $currentOrganization
- * @property-read Organization|null $currentTeam
  * @property-read string $profile_photo_url
  * @property-read Collection<int, Token> $tokens
  * @property Carbon|null $created_at
@@ -71,8 +68,6 @@ class User extends Authenticatable implements AuditableContract, FilamentUser, M
     /** @use HasFactory<UserFactory> */
     use HasFactory;
 
-    use HasProfilePhoto;
-    use HasTeams;
     use HasUuids;
     use Notifiable;
     use TwoFactorAuthenticatable;

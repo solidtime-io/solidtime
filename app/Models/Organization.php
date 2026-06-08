@@ -14,6 +14,7 @@ use App\Models\Concerns\HasUuids;
 use Database\Factories\OrganizationFactory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -21,11 +22,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
-use Laravel\Jetstream\Events\TeamCreated;
-use Laravel\Jetstream\Events\TeamDeleted;
-use Laravel\Jetstream\Events\TeamUpdated;
-use Laravel\Jetstream\Team;
-use Laravel\Jetstream\Team as JetstreamTeam;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
@@ -53,7 +49,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  *
  * @method static OrganizationFactory factory()
  */
-class Organization extends JetstreamTeam implements AuditableContract
+class Organization extends Model implements AuditableContract
 {
     use CustomAuditable;
 
@@ -89,17 +85,6 @@ class Organization extends JetstreamTeam implements AuditableContract
     protected $fillable = [
         'name',
         'personal_team',
-    ];
-
-    /**
-     * The event map for the model.
-     *
-     * @var array<string, class-string>
-     */
-    protected $dispatchesEvents = [
-        'created' => TeamCreated::class,
-        'updated' => TeamUpdated::class,
-        'deleted' => TeamDeleted::class,
     ];
 
     /**
@@ -163,12 +148,13 @@ class Organization extends JetstreamTeam implements AuditableContract
     }
 
     /**
-     * This method prevents an unhandled exception when the ID is not a UUID.
-     * Normally this can be fixed with a route pattern, but Jetstream does not use route model binding.
+     * Find a model by its primary key or throw an exception.
      *
-     * @param  array<string>  $columns
+     * @param  array<int, string>  $columns
+     *
+     * @throws ModelNotFoundException<Model>
      */
-    public function findOrFail(string $id, array $columns = ['*']): Team
+    public static function findOrFail(string $id, array $columns = ['*']): Model
     {
         if (! Str::isUuid($id)) {
             throw (new ModelNotFoundException)->setModel(

@@ -12,7 +12,6 @@ use App\Providers\AuthServiceProvider;
 use App\Providers\EventServiceProvider;
 use App\Providers\Filament\AdminPanelProvider;
 use App\Providers\FortifyServiceProvider;
-use App\Providers\JetstreamServiceProvider;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\ServiceProvider;
@@ -203,7 +202,6 @@ return [
         AdminPanelProvider::class,
         RouteServiceProvider::class,
         FortifyServiceProvider::class,
-        JetstreamServiceProvider::class,
         // Warning: Do not add TelescopeServiceProvider here since it is already conditionally registered in AppServiceProvider
         LaravelModulesServiceProvider::class,
     ])->toArray(),
