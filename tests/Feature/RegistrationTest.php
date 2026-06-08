@@ -61,6 +61,7 @@ class RegistrationTest extends TestCaseWithDatabase
         $member = Member::query()->whereBelongsTo($user, 'user')->whereBelongsTo($organization, 'organization')->firstOrFail();
         $this->assertSame(Role::Owner->value, $member->role);
         Event::assertNotDispatched(NewsletterRegistered::class);
+        $this->assertSame($organization->getKey(), $user->current_team_id);
     }
 
     public function test_user_registration_fails_if_registration_is_deactivated(): void
