@@ -1,11 +1,8 @@
 import type { User } from '@/types/models';
 
 export interface Permissions {
-    canAddTeamMembers: boolean;
     canDeleteTeam: boolean;
-    canRemoveTeamMembers: boolean;
     canUpdateTeam: boolean;
-    canUpdateTeamMembers: boolean;
 }
 
 export interface Session {

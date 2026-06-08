@@ -65,14 +65,8 @@ class OrganizationEndpointTest extends EndpointTestAbstract
             ->where('team.owner.name', $data->owner->name)
             ->has('team.owner.profile_photo_url')
             ->has('currencies')
-            ->where('availableRoles', [])
-            ->where('availablePermissions', [])
-            ->where('defaultPermissions', [])
-            ->where('permissions.canAddTeamMembers', true)
             ->where('permissions.canDeleteTeam', true)
-            ->where('permissions.canRemoveTeamMembers', true)
             ->where('permissions.canUpdateTeam', true)
-            ->where('permissions.canUpdateTeamMembers', true)
         );
     }
 
