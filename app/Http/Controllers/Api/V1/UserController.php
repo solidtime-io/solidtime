@@ -6,11 +6,14 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Exceptions\Api\CanNotDeleteUserWhoIsOwnerOfOrganizationWithMultipleMembers;
 use App\Exceptions\Api\UserResendEmailVerificationNoPendingEmailApiException;
+use App\Http\Requests\V1\User\UserUpdateCurrentOrganizationRequest;
 use App\Http\Requests\V1\User\UserUpdateRequest;
 use App\Http\Resources\V1\User\UserResource;
 use App\Mail\VerifyUpdatedEmailMail;
+use App\Models\Organization;
 use App\Models\User;
 use App\Service\DeletionService;
+use App\Service\UserService;
 use App\Support\Base64File;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
@@ -34,6 +37,35 @@ class UserController extends Controller
         $user = $this->user();
 
         return new UserResource($user);
+    }
+
+    /**
+     * Update the current organization of the current user
+     *
+     * Switches the organization that the user is currently working in. The user
+     * must be a member of the given organization. This endpoint is independent of
+     * the organization.
+     *
+     * @operationId updateMyCurrentOrganization
+     *
+     * @throws AuthorizationException
+     */
+    public function updateMyCurrentOrganization(UserUpdateCurrentOrganizationRequest $request, UserService $userService): UserResource
+    {
+        $user = $this->user();
+
+        /** @var Organization|null $organization */
+        $organization = $user->organizations()
+            ->whereKey($request->getOrganizationId())
+            ->first();
+
+        if ($organization === null) {
+            throw new AuthorizationException;
+        }
+
+        $userService->switchCurrentOrganization($user, $organization);
+
+        return new UserResource($user->refresh());
     }
 
     /**

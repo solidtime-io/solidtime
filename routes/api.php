@@ -62,6 +62,7 @@ Route::prefix('v1')->name('v1.')->group(static function (): void {
         // User routes
         Route::name('users.')->group(static function (): void {
             Route::get('/users/me', [UserController::class, 'me'])->name('me');
+            Route::put('/users/me/current-organization', [UserController::class, 'updateMyCurrentOrganization'])->name('update-current-organization');
             Route::put('/users/{user}', [UserController::class, 'update'])->name('update');
             Route::post('/users/{user}/resend-email-verification', [UserController::class, 'resendEmailVerification'])->name('resend-email-verification');
             Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('destroy');
