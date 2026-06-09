@@ -12,7 +12,7 @@ import {
     createRunningTimeEntryWithStartViaApi,
     createTaskViaApi,
     createProjectWithClientViaApi,
-    updateUserProfileViaWeb,
+    updateUserProfileViaApi,
     updateOrganizationSettingViaApi,
 } from './utils/api';
 
@@ -1803,28 +1803,22 @@ test.describe('Click-Drag Selection to Create', () => {
 // =============================================
 
 test.describe('Timezone & Localization', () => {
-    test('week start day: monday shows Mon as first column', async ({ page }) => {
-        // Navigate to calendar first to load Inertia page props
+    test('week start day: monday shows Mon as first column', async ({ page, ctx }) => {
+        await updateUserProfileViaApi(ctx, { week_start: 'monday' });
         await goToCalendar(page);
-        await updateUserProfileViaWeb(page, { week_start: 'monday' });
-        await page.reload();
         await expect(page.locator('.fc')).toBeVisible();
 
         const firstHeader = page.locator('.fc-col-header-cell').first();
         await expect(firstHeader).toContainText('Mon');
     });
 
-    test('week start day: sunday shows Sun as first column', async ({ page }) => {
+    test('week start day: sunday shows Sun as first column', async ({ page, ctx }) => {
+        await updateUserProfileViaApi(ctx, { week_start: 'sunday' });
         await goToCalendar(page);
-        await updateUserProfileViaWeb(page, { week_start: 'sunday' });
-        await page.reload();
         await expect(page.locator('.fc')).toBeVisible();
 
         const firstHeader = page.locator('.fc-col-header-cell').first();
         await expect(firstHeader).toContainText('Sun');
-
-        // Reset to monday for other tests
-        await updateUserProfileViaWeb(page, { week_start: 'monday' });
     });
 
     test('12-hour time format shows AM/PM on slot labels', async ({ page, ctx }) => {
