@@ -804,53 +804,23 @@ export async function getCurrentUserViaApi(ctx: TestContext) {
     };
 }
 
-export async function updateUserProfileViaWeb(
-    page: Page,
+export async function updateUserProfileViaApi(
+    ctx: TestContext,
     settings: { timezone?: string; week_start?: string }
 ) {
-    // Read user info from Inertia's data-page attribute on the root element
-    const userInfo = await page.evaluate(() => {
-        // Try Inertia's data-page attribute (stores initial page props as JSON)
-        const appEl = document.getElementById('app');
-        if (appEl) {
-            const dataPage = appEl.getAttribute('data-page');
-            if (dataPage) {
-                try {
-                    const parsed = JSON.parse(dataPage);
-                    const user = parsed?.props?.auth?.user;
-                    if (user) {
-                        return {
-                            name: user.name,
-                            email: user.email,
-                            timezone: user.timezone,
-                            week_start: user.week_start,
-                        };
-                    }
-                } catch {
-                    // JSON parse failed
-                }
-            }
-        }
-        return null;
-    });
-    if (!userInfo) throw new Error('Could not read user info from Inertia data-page attribute');
+    const user = await getCurrentUserViaApi(ctx);
 
-    const cookies = await page.context().cookies();
-    const xsrfCookie = cookies.find((c) => c.name === 'XSRF-TOKEN');
-    const xsrfToken = xsrfCookie ? decodeURIComponent(xsrfCookie.value) : '';
+    // Only send the fields under test; the endpoint leaves omitted fields untouched.
+    const data: Record<string, string> = {};
+    if (settings.timezone !== undefined) {
+        data.timezone = settings.timezone;
+    }
+    if (settings.week_start !== undefined) {
+        data.week_start = settings.week_start;
+    }
 
-    const response = await page.request.put(`${PLAYWRIGHT_BASE_URL}/user/profile-information`, {
-        headers: {
-            'X-XSRF-TOKEN': xsrfToken,
-            'Content-Type': 'application/json',
-            Accept: 'application/json',
-        },
-        data: {
-            name: userInfo.name,
-            email: userInfo.email,
-            timezone: settings.timezone ?? userInfo.timezone,
-            week_start: settings.week_start ?? userInfo.week_start,
-        },
+    const response = await ctx.request.put(`${PLAYWRIGHT_BASE_URL}/api/v1/users/${user.id}`, {
+        data,
     });
     expect(response.status()).toBe(200);
 }
