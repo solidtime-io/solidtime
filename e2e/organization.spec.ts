@@ -55,6 +55,33 @@ test('test that organization name can be updated', async ({ page }) => {
     );
 });
 
+test('test that organization currency can be updated', async ({ page }) => {
+    await goToOrganizationSettings(page);
+    await page.getByLabel('Currency', { exact: true }).selectOption('USD');
+    await Promise.all([
+        page.waitForRequest(
+            (request) =>
+                request.url().includes('/api/v1/organizations/') &&
+                request.method() === 'PUT' &&
+                request.postDataJSON().currency === 'USD'
+        ),
+        page.waitForResponse(
+            async (response) =>
+                response.url().includes('/api/v1/organizations/') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 200 &&
+                (await response.json()).data.currency === 'USD'
+        ),
+        page
+            .locator('form')
+            .filter({ hasText: 'Organization Name' })
+            .getByRole('button', { name: 'Save' })
+            .click(),
+    ]);
+    await page.reload();
+    await expect(page.getByLabel('Currency', { exact: true })).toHaveValue('USD');
+});
+
 test('test that organization billable rate can be updated with all existing time entries', async ({
     page,
 }) => {

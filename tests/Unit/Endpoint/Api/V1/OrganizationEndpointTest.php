@@ -382,6 +382,58 @@ class OrganizationEndpointTest extends ApiEndpointTestAbstract
         ]);
     }
 
+    public function test_update_endpoint_can_update_the_currency_of_the_organization(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'organizations:update',
+        ]);
+        $this->assertBillableRateServiceIsUnused();
+        $data->organization->currency = 'EUR';
+        $data->organization->save();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.organizations.update', [$data->organization->getKey()]), [
+            'name' => $data->organization->name,
+            'currency' => 'USD',
+        ]);
+
+        // Assert
+        $response->assertStatus(200);
+        $response->assertJsonPath('data.currency', 'USD');
+        $this->assertDatabaseHas(Organization::class, [
+            'id' => $data->organization->getKey(),
+            'currency' => 'USD',
+        ]);
+    }
+
+    public function test_update_endpoint_fails_if_currency_is_invalid(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'organizations:update',
+        ]);
+        $this->assertBillableRateServiceIsUnused();
+        $data->organization->currency = 'EUR';
+        $data->organization->save();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.organizations.update', [$data->organization->getKey()]), [
+            'name' => $data->organization->name,
+            'currency' => 'NOT_A_CURRENCY',
+        ]);
+
+        // Assert
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['currency']);
+        $this->assertDatabaseHas(Organization::class, [
+            'id' => $data->organization->getKey(),
+            'currency' => 'EUR',
+        ]);
+    }
+
     public function test_delete_endpoint_if_user_does_not_have_permission(): void
     {
         // Arrange
