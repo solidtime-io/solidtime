@@ -280,10 +280,15 @@ const page = usePage<{
                                 v-if="canUpdateOrganization()"
                                 title="Settings"
                                 :icon="Cog6ToothIcon"
-                                :href="route('teams.show', page.props.auth.user.current_team.id)"
+                                :href="
+                                    route(
+                                        'organizations.show',
+                                        page.props.auth.user.current_team.id
+                                    )
+                                "
                                 :current="
                                     route().current(
-                                        'teams.show',
+                                        'organizations.show',
                                         page.props.auth.user.current_team.id
                                     )
                                 "></NavigationSidebarItem>

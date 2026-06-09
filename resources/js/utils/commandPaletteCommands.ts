@@ -210,7 +210,7 @@ export function createNavigationCommands(
             icon: Cog6ToothIcon,
             keywords: ['settings', 'organization', 'configuration'],
             group: 'navigation',
-            action: () => navigate('teams.show', { team: currentTeamId() }),
+            action: () => navigate('organizations.show', { organizationId: currentTeamId() }),
             permission: permissions.canUpdateOrganization,
             priority: GROUP_PRIORITIES.navigation - 3,
         },
