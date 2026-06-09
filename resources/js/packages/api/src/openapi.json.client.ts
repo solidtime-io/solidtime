@@ -330,6 +330,7 @@ const OrganizationResource = z
 const OrganizationUpdateRequest = z
     .object({
         name: z.string().max(255),
+        currency: z.string(),
         billable_rate: z.union([z.number(), z.null()]),
         employees_can_see_billable_rates: z.boolean(),
         employees_can_manage_tasks: z.boolean(),

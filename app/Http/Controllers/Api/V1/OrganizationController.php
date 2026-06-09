@@ -50,6 +50,9 @@ class OrganizationController extends Controller
         if ($request->getName() !== null) {
             $organization->name = $request->getName();
         }
+        if ($request->getCurrency() !== null) {
+            $organization->currency = $request->getCurrency();
+        }
         if ($request->getEmployeesCanSeeBillableRates() !== null) {
             $organization->employees_can_see_billable_rates = $request->getEmployeesCanSeeBillableRates();
         }
