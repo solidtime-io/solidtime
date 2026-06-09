@@ -61,7 +61,7 @@ const switchToTeam = (organization: Organization) => {
 
                 <DropdownMenuItem as-child>
                     <Link
-                        :href="route('teams.show', page.props.auth.user.current_team.id)"
+                        :href="route('organizations.show', page.props.auth.user.current_team.id)"
                         class="inline-flex items-center gap-2.5 w-full">
                         <Cog6ToothIcon class="w-5 h-5 text-icon-default" />
                         <span>Organization Settings</span>
@@ -74,7 +74,7 @@ const switchToTeam = (organization: Organization) => {
 
                 <DropdownMenuItem as-child>
                     <Link
-                        :href="route('teams.create')"
+                        :href="route('organizations.create')"
                         class="inline-flex items-center gap-2.5 w-full">
                         <PlusCircleIcon class="w-5 h-5 text-icon-default" />
                         <span>Create new organization</span>

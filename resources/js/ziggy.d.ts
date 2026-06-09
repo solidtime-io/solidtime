@@ -114,6 +114,13 @@ declare module 'ziggy-js' {
         'other-browser-sessions.destroy': [];
         'current-user-photo.destroy': [];
         'current-user.destroy': [];
+        'organizations.create': [];
+        'organizations.show': [
+            {
+                'name': 'organizationId';
+                'required': true;
+            },
+        ];
         'teams.create': [];
         'teams.store': [];
         'teams.show': [

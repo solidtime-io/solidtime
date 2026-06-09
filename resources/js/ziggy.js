@@ -197,6 +197,12 @@ const Ziggy = {
             'methods': ['DELETE'],
         },
         'current-user.destroy': { 'uri': 'user', 'methods': ['DELETE'] },
+        'organizations.create': { 'uri': 'organizations/create', 'methods': ['GET', 'HEAD'] },
+        'organizations.show': {
+            'uri': 'organizations/{organizationId}',
+            'methods': ['GET', 'HEAD'],
+            'parameters': ['organizationId'],
+        },
         'teams.create': { 'uri': 'teams/create', 'methods': ['GET', 'HEAD'] },
         'teams.store': { 'uri': 'teams', 'methods': ['POST'] },
         'teams.show': {

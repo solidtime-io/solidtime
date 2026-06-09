@@ -348,7 +348,7 @@ test.describe('Command Palette', () => {
             const newOrgName = 'TestOrg' + Math.floor(Math.random() * 10000);
 
             // Create a new organization
-            await page.goto(PLAYWRIGHT_BASE_URL + '/teams/create');
+            await page.goto(PLAYWRIGHT_BASE_URL + '/organizations/create');
             await page.getByLabel('Organization Name').fill(newOrgName);
             await page.getByRole('button', { name: 'Create' }).click();
 
@@ -393,7 +393,7 @@ test.describe('Command Palette', () => {
             const newOrgName = 'GroupTestOrg' + Math.floor(Math.random() * 10000);
 
             // Create a new organization to ensure we have multiple
-            await page.goto(PLAYWRIGHT_BASE_URL + '/teams/create');
+            await page.goto(PLAYWRIGHT_BASE_URL + '/organizations/create');
             await page.getByLabel('Organization Name').fill(newOrgName);
             await page.getByRole('button', { name: 'Create' }).click();
             await expect(page.getByTestId('dashboard_view')).toBeVisible({ timeout: 10000 });

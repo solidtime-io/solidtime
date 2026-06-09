@@ -414,7 +414,7 @@ test('test that format settings persist after page reload', async ({ page }) => 
 
 test.describe('Organization Create, Delete & Switch', () => {
     async function createOrganization(page, name: string) {
-        await page.goto(PLAYWRIGHT_BASE_URL + '/teams/create');
+        await page.goto(PLAYWRIGHT_BASE_URL + '/organizations/create');
         await page.getByLabel('Organization Name').fill(name);
         await Promise.all([
             page.waitForResponse(
@@ -440,7 +440,7 @@ test.describe('Organization Create, Delete & Switch', () => {
     });
 
     test('does not create an organization when the name is empty', async ({ page }) => {
-        await page.goto(PLAYWRIGHT_BASE_URL + '/teams/create');
+        await page.goto(PLAYWRIGHT_BASE_URL + '/organizations/create');
 
         // The form posts to the API, which rejects the empty name with a 422.
         await Promise.all([
@@ -454,8 +454,7 @@ test.describe('Organization Create, Delete & Switch', () => {
         ]);
 
         // Validation failed, so we stay on the create form and never reach a
-        // dashboard. ('/teams/create' redirects to '/organizations/create', so
-        // assert on the form rather than the URL.)
+        // dashboard. Assert on the form rather than the URL.
         await expect(page.getByText('Organization Details')).toBeVisible();
         await expect(page.getByRole('alert')).toContainText('The name field is required.');
         await expect(page.getByLabel('Organization Name')).toHaveAttribute('aria-invalid', 'true');
@@ -532,7 +531,7 @@ test.describe('Organization Create, Delete & Switch', () => {
 
 test.describe('Admin Organization Settings Access', () => {
     test('admin can see and edit organization settings', async ({ ctx, admin }) => {
-        await admin.page.goto(PLAYWRIGHT_BASE_URL + '/teams/' + ctx.orgId);
+        await admin.page.goto(PLAYWRIGHT_BASE_URL + '/organizations/' + ctx.orgId);
 
         // Organization Name section is visible
         await expect(
@@ -569,7 +568,7 @@ test.describe('Admin Organization Settings Access', () => {
 
 test.describe('Employee Organization Settings Restrictions', () => {
     test('employee can see org name but not editable settings', async ({ ctx, employee }) => {
-        await employee.page.goto(PLAYWRIGHT_BASE_URL + '/teams/' + ctx.orgId);
+        await employee.page.goto(PLAYWRIGHT_BASE_URL + '/organizations/' + ctx.orgId);
 
         // Organization Name section is visible (but inputs are disabled)
         await expect(

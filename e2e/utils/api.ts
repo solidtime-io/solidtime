@@ -641,10 +641,13 @@ export async function updateOrganizationCurrencyViaWeb(
     const xsrfCookie = cookies.find((c) => c.name === 'XSRF-TOKEN');
     const xsrfToken = xsrfCookie ? decodeURIComponent(xsrfCookie.value) : '';
 
-    const response = await page.request.put(`${PLAYWRIGHT_BASE_URL}/teams/${ctx.orgId}`, {
-        headers: { 'X-XSRF-TOKEN': xsrfToken },
-        data: { name, currency },
-    });
+    const response = await page.request.put(
+        `${PLAYWRIGHT_BASE_URL}/api/v1/organizations/${ctx.orgId}`,
+        {
+            headers: { 'X-XSRF-TOKEN': xsrfToken },
+            data: { name, currency },
+        }
+    );
     expect(response.status()).toBe(200);
 }
 
