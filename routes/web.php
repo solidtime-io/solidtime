@@ -6,6 +6,7 @@ use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\Web\HomeController;
 use App\Http\Controllers\Web\OrganizationController;
 use App\Http\Controllers\Web\OrganizationInvitationController;
+use App\Http\Controllers\Web\OtherBrowserSessionsController;
 use App\Http\Controllers\Web\UserController;
 use App\Http\Controllers\Web\UserProfileController;
 use App\Service\PermissionStore;
@@ -102,6 +103,8 @@ Route::middleware([
         return to_route('organizations.show', [$organizationId]);
     })->name('teams.show');
     Route::get('/user/profile', [UserProfileController::class, 'show'])->name('profile.show');
+    Route::delete('/user/other-browser-sessions', [OtherBrowserSessionsController::class, 'destroy'])
+        ->name('other-browser-sessions.destroy');
 });
 
 Route::get('/team-invitations/{invitation}', [OrganizationInvitationController::class, 'accept'])
