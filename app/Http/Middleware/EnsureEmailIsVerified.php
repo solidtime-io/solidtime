@@ -17,7 +17,7 @@ class EnsureEmailIsVerified
      */
     public function handle(Request $request, Closure $next, ?string $redirectToRoute = null): Response
     {
-        if (! app()->isLocal()) {
+        if (! app()->isLocal() || config('app.local_email_verification')) {
             if ($request->user() === null ||
                 (! $request->user()->hasVerifiedEmail())) {
                 return $request->expectsJson()

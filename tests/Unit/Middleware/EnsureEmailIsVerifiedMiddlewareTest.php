@@ -73,18 +73,51 @@ class EnsureEmailIsVerifiedMiddlewareTest extends MiddlewareTestAbstract
         $response->assertOk();
     }
 
-    public function test_users_with_unverified_email_can_access_route_in_local_environment(): void
+    public function test_users_with_unverified_email_can_access_route_in_local_environment_if_local_email_verification_is_disabled(): void
     {
         // Arrange
         $user = User::factory()->unverified()->create();
         $route = $this->createTestRoute();
         $this->actingAs($user);
         $this->app->detectEnvironment(fn () => 'local');
+        config(['app.local_email_verification' => false]);
 
         // Act
         $response = $this->get($route);
 
         // Assert
         $response->assertOk();
+    }
+
+    public function tests_users_with_unverified_email_are_redirected_in_non_local_environment_even_if_local_email_verification_is_disabled(): void
+    {
+        // Arrange
+        $user = User::factory()->unverified()->create();
+        $route = $this->createTestRoute();
+        $this->actingAs($user);
+        $this->assertSame('testing', config('app.env'));
+        config(['app.local_email_verification' => false]);
+
+        // Act
+        $response = $this->get($route);
+
+        // Assert
+        $response->assertRedirect(route('verification.notice'));
+    }
+
+    public function test_users_with_unverified_email_are_redirected_in_local_environment_if_local_email_verification_is_enabled(): void
+    {
+        // Arrange
+        $user = User::factory()->unverified()->create();
+        $route = $this->createTestRoute();
+        $this->actingAs($user);
+        $this->app->detectEnvironment(fn () => 'local');
+        config(['app.local_email_verification' => true]);
+
+        // Act
+        $response = $this->get($route);
+
+        // Assert
+        $response->assertRedirect(route('verification.notice'));
     }
 }
