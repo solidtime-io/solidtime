@@ -33,6 +33,7 @@ Route::get('/shared-report', function () {
 
 Route::middleware([
     'auth:web',
+    'auth.session',
     'verified',
 ])->group(function (): void {
     Route::get('/dashboard', [DashboardController::class, 'dashboard'])->name('dashboard');
