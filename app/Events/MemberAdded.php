@@ -9,6 +9,9 @@ use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Foundation\Events\Dispatchable;
 
+/**
+ * Replaces legacy TeamMemberAdded event.
+ */
 class MemberAdded
 {
     use Dispatchable;
