@@ -12,6 +12,7 @@ use App\Enums\TimeFormat;
 use App\Http\Requests\V1\BaseFormRequest;
 use App\Models\Organization;
 use App\Rules\CurrencyRule;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Validation\Rule;
 
 /**
@@ -22,7 +23,7 @@ class OrganizationUpdateRequest extends BaseFormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, array<string|\Illuminate\Contracts\Validation\Rule|\Illuminate\Contracts\Validation\ValidationRule>>
+     * @return array<string, array<string|\Illuminate\Contracts\Validation\Rule|ValidationRule>>
      */
     public function rules(): array
     {
