@@ -37,6 +37,7 @@ const ClientStoreRequest = z.object({ name: z.string().min(1).max(255) }).passth
 const ClientUpdateRequest = z
     .object({ name: z.string().min(1).max(255), is_archived: z.boolean().optional() })
     .passthrough();
+const DestroyWithPasswordRequest = z.object({ password: z.string() }).passthrough();
 const ImportRequest = z.object({ type: z.string(), data: z.string() }).passthrough();
 const InvitationResource = z
     .object({ id: z.string(), email: z.string(), role: z.string() })
@@ -917,6 +918,11 @@ const endpoints = makeApi([
         alias: 'deleteOrganization',
         requestFormat: 'json',
         parameters: [
+            {
+                name: 'body',
+                type: 'Body',
+                schema: DestroyWithPasswordRequest,
+            },
             {
                 name: 'organization',
                 type: 'Path',
@@ -4642,6 +4648,11 @@ the organization.`,
         description: `This endpoint is independent of the organization.`,
         requestFormat: 'json',
         parameters: [
+            {
+                name: 'body',
+                type: 'Body',
+                schema: DestroyWithPasswordRequest,
+            },
             {
                 name: 'user',
                 type: 'Path',

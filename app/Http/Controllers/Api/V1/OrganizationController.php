@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Enums\Role;
 use App\Events\AfterCreateOrganization;
+use App\Http\Requests\V1\Organization\OrganizationDestroyRequest;
 use App\Http\Requests\V1\Organization\OrganizationStoreRequest;
 use App\Http\Requests\V1\Organization\OrganizationUpdateRequest;
 use App\Http\Resources\V1\Organization\OrganizationResource;
@@ -124,7 +125,7 @@ class OrganizationController extends Controller
      *
      * @throws AuthorizationException
      */
-    public function destroy(Organization $organization, DeletionService $deletionService): JsonResponse
+    public function destroy(Organization $organization, OrganizationDestroyRequest $request, DeletionService $deletionService): JsonResponse
     {
         $this->checkPermission($organization, 'organizations:delete');
 

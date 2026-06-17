@@ -4,12 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Filament\Resources;
 
+use App\Enums\Role;
+use App\Events\OrganizationInvitationAdding;
 use App\Filament\Resources\OrganizationResource;
+use App\Mail\OrganizationInvitationMail;
 use App\Models\Organization;
 use App\Models\OrganizationInvitation;
 use App\Models\User;
 use App\Service\DeletionService;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Mail;
 use Livewire\Livewire;
 use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\UsesClass;
@@ -111,5 +116,35 @@ class OrganizationResourceTest extends FilamentTestCase
         // Assert
         $response->assertSuccessful();
         $response->assertCanSeeTableRecords($organizationInvitations);
+    }
+
+    public function test_can_create_related_invitation(): void
+    {
+        // Arrange
+        Event::fake([
+            OrganizationInvitationAdding::class,
+        ]);
+        Mail::fake();
+        $organization = Organization::factory()->create();
+
+        // Act
+        $response = Livewire::test(OrganizationResource\RelationManagers\InvitationsRelationManager::class, [
+            'ownerRecord' => $organization,
+            'pageClass' => OrganizationResource\Pages\EditOrganization::class,
+        ])->callTableAction('create', data: [
+            'email' => 'new-user@example.com',
+            'role' => Role::Employee->value,
+        ]);
+
+        // Assert
+        $response->assertSuccessful();
+        $response->assertHasNoTableActionErrors();
+        $this->assertDatabaseHas(OrganizationInvitation::class, [
+            'organization_id' => $organization->getKey(),
+            'email' => 'new-user@example.com',
+            'role' => Role::Employee->value,
+        ]);
+        Event::assertDispatched(OrganizationInvitationAdding::class);
+        Mail::assertQueued(OrganizationInvitationMail::class);
     }
 }

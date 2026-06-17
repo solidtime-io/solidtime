@@ -441,7 +441,9 @@ class OrganizationEndpointTest extends ApiEndpointTestAbstract
         Passport::actingAs($data->user);
 
         // Act
-        $response = $this->deleteJson(route('api.v1.organizations.destroy', [$data->organization->getKey()]));
+        $response = $this->deleteJson(route('api.v1.organizations.destroy', [$data->organization->getKey()]), [
+            'password' => 'password',
+        ]);
 
         // Assert
         $response->assertForbidden();
@@ -456,10 +458,52 @@ class OrganizationEndpointTest extends ApiEndpointTestAbstract
         Passport::actingAs($data->user);
 
         // Act
-        $response = $this->deleteJson(route('api.v1.organizations.destroy', ['not-uuid']));
+        $response = $this->deleteJson(route('api.v1.organizations.destroy', ['not-uuid']), [
+            'password' => 'password',
+        ]);
 
         // Assert
         $response->assertNotFound();
+    }
+
+    public function test_delete_endpoint_fails_without_password(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'organizations:delete',
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->deleteJson(route('api.v1.organizations.destroy', [$data->organization->getKey()]));
+
+        // Assert
+        $response->assertUnprocessable();
+        $response->assertJsonValidationErrors(['password']);
+        $this->assertDatabaseHas(Organization::class, [
+            'id' => $data->organization->getKey(),
+        ]);
+    }
+
+    public function test_delete_endpoint_fails_with_wrong_password(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'organizations:delete',
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->deleteJson(route('api.v1.organizations.destroy', [$data->organization->getKey()]), [
+            'password' => 'wrong-password',
+        ]);
+
+        // Assert
+        $response->assertUnprocessable();
+        $response->assertJsonValidationErrors(['password']);
+        $this->assertDatabaseHas(Organization::class, [
+            'id' => $data->organization->getKey(),
+        ]);
     }
 
     public function test_delete_endpoint_can_delete_organization(): void
@@ -472,7 +516,9 @@ class OrganizationEndpointTest extends ApiEndpointTestAbstract
         Passport::actingAs($data->user);
 
         // Act
-        $response = $this->deleteJson(route('api.v1.organizations.destroy', [$data->organization->getKey()]));
+        $response = $this->deleteJson(route('api.v1.organizations.destroy', [$data->organization->getKey()]), [
+            'password' => 'password',
+        ]);
 
         // Assert
         $response->assertNoContent();

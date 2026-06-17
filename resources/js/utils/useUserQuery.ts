@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query';
 import { computed } from 'vue';
 import axios from 'axios';
-import { api, type UpdateUserBody, type User } from '@/packages/api/src';
+import { api, type DeleteUserBody, type UpdateUserBody, type User } from '@/packages/api/src';
 import { useNotificationsStore } from '@/utils/notification';
 
 const ME_QUERY_KEY = ['me'] as const;
@@ -61,9 +61,9 @@ export function useDeleteUserMutation() {
     const { addNotification } = useNotificationsStore();
 
     return useMutation({
-        mutationFn: async (userId: string) => {
+        mutationFn: async ({ userId, body }: { userId: string; body: DeleteUserBody }) => {
             try {
-                await api.deleteUser(undefined, { params: { user: userId } });
+                await api.deleteUser(body, { params: { user: userId } });
             } catch (error) {
                 if (!axios.isAxiosError(error) || error.response?.status !== 422) {
                     addNotification(
