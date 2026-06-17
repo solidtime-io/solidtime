@@ -342,8 +342,8 @@ test('delete account shows an error when the password is wrong', async ({ page }
     await Promise.all([
         page.waitForResponse(
             (response) =>
-                response.url().includes('/user/confirm-password') &&
-                response.request().method() === 'POST' &&
+                response.url().includes('/api/v1/users/') &&
+                response.request().method() === 'DELETE' &&
                 response.status() === 422
         ),
         dialog.getByRole('button', { name: 'Delete Account' }).click(),

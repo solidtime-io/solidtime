@@ -1,15 +1,14 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import axios from 'axios';
 import ActionSection from '@/Components/ActionSection.vue';
 import DangerButton from '@/packages/ui/src/Buttons/DangerButton.vue';
 import DialogModal from '@/packages/ui/src/DialogModal.vue';
 import { Field, FieldError } from '@/packages/ui/src/field';
 import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
 import TextInput from '@/packages/ui/src/Input/TextInput.vue';
-import { useDeleteUserMutation, useUserQuery } from '@/utils/useUserQuery';
+import { useDeleteUserMutation } from '@/utils/useUserQuery';
+import { getCurrentUserId } from '@/utils/useUser';
 
-const { user } = useUserQuery();
 const deleteUserMutation = useDeleteUserMutation();
 
 const confirmingUserDeletion = ref(false);
@@ -24,26 +23,26 @@ function confirmUserDeletion() {
 }
 
 async function deleteUser() {
-    if (!user.value || processing.value) return;
+    if (processing.value) return;
     processing.value = true;
     passwordError.value = '';
     try {
-        await axios.post(route('password.confirm'), { password: password.value });
-    } catch (error) {
-        processing.value = false;
-        if (axios.isAxiosError(error) && error.response?.status === 422) {
-            passwordError.value = error.response.data?.errors?.password?.[0] ?? 'Invalid password.';
-        } else {
-            passwordError.value = 'Could not confirm password. Please try again.';
-        }
-        passwordInput.value?.focus();
-        return;
-    }
-    try {
-        await deleteUserMutation.mutateAsync(user.value.id);
+        await deleteUserMutation.mutateAsync({
+            userId: getCurrentUserId(),
+            body: { password: password.value },
+        });
         window.location.href = '/';
-    } catch {
+    } catch (error) {
+        if (error && typeof error === 'object' && 'response' in error) {
+            const response = error.response as
+                | { status?: number; data?: { errors?: { password?: string[] } } }
+                | undefined;
+            if (response?.status === 422) {
+                passwordError.value = response.data?.errors?.password?.[0] ?? 'Invalid password.';
+            }
+        }
         processing.value = false;
+        passwordInput.value?.focus();
     }
 }
 

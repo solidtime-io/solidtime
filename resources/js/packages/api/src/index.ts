@@ -126,6 +126,8 @@ export type UpdateInvoiceBody = ZodiosBodyByAlias<SolidTimeApi, 'updateInvoice'>
 
 export type User = ZodiosResponseByAlias<SolidTimeApi, 'getMe'>['data'];
 export type UpdateUserBody = ZodiosBodyByAlias<SolidTimeApi, 'updateUser'>;
+export type DeleteUserBody = ZodiosBodyByAlias<SolidTimeApi, 'deleteUser'>;
+export type DeleteOrganizationBody = ZodiosBodyByAlias<SolidTimeApi, 'deleteOrganization'>;
 
 const api = createApiClient('/api', { validate: 'none' });
 

@@ -2,9 +2,11 @@ import { router } from '@inertiajs/vue3';
 import { initializeStores } from '@/utils/init';
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
+import axios from 'axios';
 import type {
     Organization,
     OrganizationResponse,
+    DeleteOrganizationBody,
     UpdateOrganizationBody,
 } from '@/packages/api/src';
 import { useNotificationsStore } from '@/utils/notification';
@@ -38,7 +40,7 @@ export async function switchOrganization(organizationId: string) {
 
 export const useOrganizationStore = defineStore('organization', () => {
     const organizationResponse = ref<OrganizationResponse | null>(null);
-    const { handleApiRequestNotifications } = useNotificationsStore();
+    const { addNotification, handleApiRequestNotifications } = useNotificationsStore();
 
     async function fetchOrganization() {
         const organization = getCurrentOrganizationId();
@@ -78,17 +80,26 @@ export const useOrganizationStore = defineStore('organization', () => {
         return response?.data ?? null;
     }
 
-    async function deleteOrganization(organizationId: string) {
-        await handleApiRequestNotifications(
-            () =>
-                api.deleteOrganization(undefined, {
-                    params: {
-                        organization: organizationId,
-                    },
-                }),
-            'Organization deleted successfully',
-            'Failed to delete organization'
-        );
+    async function deleteOrganization(organizationId: string, body: DeleteOrganizationBody) {
+        try {
+            await api.deleteOrganization(body, {
+                params: {
+                    organization: organizationId,
+                },
+            });
+            addNotification('success', 'Organization deleted successfully');
+        } catch (error) {
+            if (!axios.isAxiosError(error) || error.response?.status !== 422) {
+                addNotification(
+                    'error',
+                    'Failed to delete organization',
+                    axios.isAxiosError(error)
+                        ? (error.response?.data?.message ?? 'Please try again later.')
+                        : 'Please try again later.'
+                );
+            }
+            throw error;
+        }
     }
 
     const organization = computed<Organization | null>(() => {

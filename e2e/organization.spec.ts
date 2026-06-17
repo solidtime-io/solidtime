@@ -1,5 +1,5 @@
 import { expect, test } from '../playwright/fixtures';
-import { PLAYWRIGHT_BASE_URL } from '../playwright/config';
+import { PLAYWRIGHT_BASE_URL, TEST_USER_PASSWORD } from '../playwright/config';
 
 async function goToOrganizationSettings(page) {
     await page.goto(PLAYWRIGHT_BASE_URL + '/dashboard');
@@ -471,6 +471,7 @@ test.describe('Organization Create, Delete & Switch', () => {
 
         // Open the confirmation modal, then confirm inside the dialog.
         await page.getByRole('button', { name: 'Delete Organization' }).click();
+        await page.getByRole('dialog').getByPlaceholder('Password').fill(TEST_USER_PASSWORD);
         await Promise.all([
             page.waitForResponse(
                 (response) =>
@@ -486,6 +487,28 @@ test.describe('Organization Create, Delete & Switch', () => {
         await expect(
             page.locator('[data-testid="organization_switcher"]:visible')
         ).not.toContainText(orgName);
+    });
+
+    test('delete organization shows an error when the password is wrong', async ({ page }) => {
+        const orgName = 'DeleteOrgWrongPassword' + Math.floor(Math.random() * 100000);
+        await createOrganization(page, orgName);
+        await goToOrganizationSettings(page);
+
+        await page.getByRole('button', { name: 'Delete Organization' }).click();
+        const dialog = page.getByRole('dialog');
+        await dialog.getByPlaceholder('Password').fill('not-the-real-password');
+        await Promise.all([
+            page.waitForResponse(
+                (response) =>
+                    response.url().includes('/api/v1/organizations') &&
+                    response.request().method() === 'DELETE' &&
+                    response.status() === 422
+            ),
+            dialog.getByRole('button', { name: 'Delete Organization' }).click(),
+        ]);
+
+        await expect(dialog.getByRole('alert')).toBeVisible();
+        await expect(dialog).toBeVisible();
     });
 
     test('can switch the current organization via the organization switcher', async ({ page }) => {

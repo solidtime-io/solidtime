@@ -649,7 +649,9 @@ class UserEndpointTest extends ApiEndpointTestAbstract
         Passport::actingAs($otherData->user);
 
         // Act
-        $response = $this->deleteJson(route('api.v1.users.destroy', $data->user->getKey()));
+        $response = $this->deleteJson(route('api.v1.users.destroy', $data->user->getKey()), [
+            'password' => 'password',
+        ]);
 
         // Assert
         $response->assertForbidden();
@@ -674,10 +676,44 @@ class UserEndpointTest extends ApiEndpointTestAbstract
         Passport::actingAs($data->user);
 
         // Act
-        $response = $this->deleteJson(route('api.v1.users.destroy', 'not-valid'));
+        $response = $this->deleteJson(route('api.v1.users.destroy', 'not-valid'), [
+            'password' => 'password',
+        ]);
 
         // Assert
         $response->assertNotFound();
+    }
+
+    public function test_delete_fails_without_password(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->deleteJson(route('api.v1.users.destroy', $data->user->getKey()));
+
+        // Assert
+        $response->assertUnprocessable();
+        $response->assertJsonValidationErrors(['password']);
+        $this->assertDatabaseHas(User::class, ['id' => $data->user->getKey()]);
+    }
+
+    public function test_delete_fails_with_wrong_password(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->deleteJson(route('api.v1.users.destroy', $data->user->getKey()), [
+            'password' => 'wrong-password',
+        ]);
+
+        // Assert
+        $response->assertUnprocessable();
+        $response->assertJsonValidationErrors(['password']);
+        $this->assertDatabaseHas(User::class, ['id' => $data->user->getKey()]);
     }
 
     public function test_delete_removes_user(): void
@@ -687,7 +723,9 @@ class UserEndpointTest extends ApiEndpointTestAbstract
         Passport::actingAs($data->user);
 
         // Act
-        $response = $this->deleteJson(route('api.v1.users.destroy', $data->user->getKey()));
+        $response = $this->deleteJson(route('api.v1.users.destroy', $data->user->getKey()), [
+            'password' => 'password',
+        ]);
 
         // Assert
         $response->assertNoContent();

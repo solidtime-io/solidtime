@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Exceptions\Api\CanNotDeleteUserWhoIsOwnerOfOrganizationWithMultipleMembers;
 use App\Exceptions\Api\UserResendEmailVerificationNoPendingEmailApiException;
+use App\Http\Requests\V1\User\UserDestroyRequest;
 use App\Http\Requests\V1\User\UserUpdateCurrentOrganizationRequest;
 use App\Http\Requests\V1\User\UserUpdateRequest;
 use App\Http\Resources\V1\User\UserResource;
@@ -193,7 +194,7 @@ class UserController extends Controller
      * @throws AuthorizationException Thrown when the authenticated user does not match the user to be deleted.
      * @throws CanNotDeleteUserWhoIsOwnerOfOrganizationWithMultipleMembers Thrown when the user to be deleted is the owner of an organization with multiple members.
      */
-    public function destroy(User $user, DeletionService $deletionService): JsonResponse
+    public function destroy(User $user, UserDestroyRequest $request, DeletionService $deletionService): JsonResponse
     {
         if ($user->getKey() !== $this->user()->getKey()) {
             throw new AuthorizationException;
