@@ -43,17 +43,17 @@ onMounted(async () => {
                 <template v-else>
                     <UpdateTeamNameForm :team="team" :permissions="permissions" />
 
-                    <SectionBorder />
+                    <SectionBorder v-if="permissions.canUpdateTeam" />
                     <OrganizationBillableRate v-if="permissions.canUpdateTeam" :team="team" />
-                    <SectionBorder />
 
+                    <SectionBorder v-if="permissions.canUpdateTeam" />
                     <OrganizationFormatSettings v-if="permissions.canUpdateTeam" :team="team" />
-                    <SectionBorder />
 
+                    <SectionBorder v-if="permissions.canUpdateTeam" />
                     <OrganizationTimeEntrySettings v-if="permissions.canUpdateTeam" />
-                    <SectionBorder />
 
                     <template v-if="permissions.canDeleteTeam">
+                        <SectionBorder />
                         <DeleteTeamForm class="mt-10 sm:mt-0" :team="team" />
                     </template>
                 </template>
