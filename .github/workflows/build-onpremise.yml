@@ -48,7 +48,7 @@ jobs:
         if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
         uses: "WyriHaximus/github-action-get-previous-tag@v2"
         with:
-          prefix: "v*"
+          pattern: "v*[0-9].*[0-9].*[0-9]"
 
       - name: "Get version"
         id: release-version
