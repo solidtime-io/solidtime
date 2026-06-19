@@ -33,9 +33,9 @@ jobs:
       - name: "Get Previous tag (normal push)"
         id: previoustag
         if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
-        uses: "WyriHaximus/github-action-get-previous-tag@v1"
+        uses: "WyriHaximus/github-action-get-previous-tag@v2"
         with:
-          prefix: "v"
+          prefix: "v*"
 
       - name: "Get version"
         id: version
