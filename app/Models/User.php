@@ -145,9 +145,19 @@ class User extends Authenticatable implements AuditableContract, FilamentUser, M
         return 'https://ui-avatars.com/api/?name='.urlencode($name).'&color=7F9CF5&background=EBF4FF';
     }
 
-    public function canAccessPanel(Panel $panel): bool
+    public function isSuperAdmin(): bool
     {
         return in_array($this->email, config('auth.super_admins', []), true) && $this->hasVerifiedEmail();
+    }
+
+    public function hasLocalPassword(): bool
+    {
+        return is_string($this->password) && $this->password !== '';
+    }
+
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return $this->isSuperAdmin();
     }
 
     public function isMemberOfOrganization(Organization $organization): bool
