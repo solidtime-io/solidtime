@@ -41,6 +41,30 @@ class ClockifyTimeEntriesImporterTest extends ImporterTestAbstract
         $this->assertSame(1, $report->clientsCreated);
     }
 
+    public function test_import_of_test_file_without_billable_works_and_defaults_to_non_billable(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $timezone = 'Europe/Vienna';
+        $importer = new ClockifyTimeEntriesImporter;
+        $importer->init($organization);
+        $data = Storage::disk('testfiles')->get('clockify_time_entries_import_test_4.csv');
+
+        // Act
+        $importer->importData($data, $timezone);
+        $report = $importer->getReport();
+
+        // Assert
+        $testScenario = $this->checkTestScenarioAfterImportExcludingTimeEntries(false, true);
+        $this->checkTimeEntries($testScenario, false, true);
+        $this->assertSame(2, $report->timeEntriesCreated);
+        $this->assertSame(2, $report->tagsCreated);
+        $this->assertSame(1, $report->tasksCreated);
+        $this->assertSame(1, $report->usersCreated);
+        $this->assertSame(2, $report->projectsCreated);
+        $this->assertSame(1, $report->clientsCreated);
+    }
+
     public function test_import_of_test_with_special_characters_description_succeeds(): void
     {
         // Arrange
