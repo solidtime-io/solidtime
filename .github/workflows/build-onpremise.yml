@@ -8,6 +8,7 @@ on:
   pull_request:
     paths:
       - '.github/workflows/build-onpremise.yml'
+      - 'extensions/manifest.json'
       - 'docker/prod/**'
   workflow_dispatch:
 
@@ -95,10 +96,19 @@ jobs:
         with:
           node-version: '20.x'
 
+      - name: "Read extension manifest"
+        id: extension-manifest
+        run: |
+          {
+            echo "invoicing_repository=$(jq -r '.Invoicing.repository' extensions/manifest.json)"
+            echo "invoicing_ref=$(jq -r '.Invoicing.ref' extensions/manifest.json)"
+          } >> "$GITHUB_OUTPUT"
+
       - name: "Checkout invoicing extension"
         uses: actions/checkout@v7
         with:
-          repository: solidtime-io/extension-invoicing
+          repository: ${{ steps.extension-manifest.outputs.invoicing_repository }}
+          ref: ${{ steps.extension-manifest.outputs.invoicing_ref }}
           path: extensions/Invoicing
           ssh-key: ${{ secrets.SSH_PRIVATE_KEY_INVOICING_EXTENSION }}
 

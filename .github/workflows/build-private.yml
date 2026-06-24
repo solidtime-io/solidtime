@@ -8,6 +8,7 @@ on:
   pull_request:
     paths:
       - '.github/workflows/build-private.yml'
+      - 'extensions/manifest.json'
       - 'docker/prod/**'
   workflow_dispatch:
 permissions:
@@ -72,10 +73,23 @@ jobs:
         with:
           node-version: '20.x'
 
+      - name: "Read extension manifest"
+        id: extension-manifest
+        run: |
+          {
+            echo "billing_repository=$(jq -r '.Billing.repository' extensions/manifest.json)"
+            echo "billing_ref=$(jq -r '.Billing.ref' extensions/manifest.json)"
+            echo "services_repository=$(jq -r '.Services.repository' extensions/manifest.json)"
+            echo "services_ref=$(jq -r '.Services.ref' extensions/manifest.json)"
+            echo "invoicing_repository=$(jq -r '.Invoicing.repository' extensions/manifest.json)"
+            echo "invoicing_ref=$(jq -r '.Invoicing.ref' extensions/manifest.json)"
+          } >> "$GITHUB_OUTPUT"
+
       - name: "Checkout billing extension"
         uses: actions/checkout@v7
         with:
-          repository: solidtime-io/extension-billing
+          repository: ${{ steps.extension-manifest.outputs.billing_repository }}
+          ref: ${{ steps.extension-manifest.outputs.billing_ref }}
           path: extensions/Billing
           ssh-key: ${{ secrets.SSH_PRIVATE_KEY_BILLING_EXTENSION }}
 
@@ -95,7 +109,8 @@ jobs:
       - name: "Checkout services extension"
         uses: actions/checkout@v7
         with:
-          repository: solidtime-io/extension-services
+          repository: ${{ steps.extension-manifest.outputs.services_repository }}
+          ref: ${{ steps.extension-manifest.outputs.services_ref }}
           path: extensions/Services
           ssh-key: ${{ secrets.SSH_PRIVATE_KEY_SERVICES_EXTENSION }}
 
@@ -113,7 +128,8 @@ jobs:
       - name: "Checkout invoicing extension"
         uses: actions/checkout@v7
         with:
-          repository: solidtime-io/extension-invoicing
+          repository: ${{ steps.extension-manifest.outputs.invoicing_repository }}
+          ref: ${{ steps.extension-manifest.outputs.invoicing_ref }}
           path: extensions/Invoicing
           ssh-key: ${{ secrets.SSH_PRIVATE_KEY_INVOICING_EXTENSION }}
 
