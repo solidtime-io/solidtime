@@ -26,7 +26,7 @@ class ImporterTestAbstract extends TestCase
     /**
      * @return object{user1: User, project1: Project, project2: Project, tag1: Tag, tag2: Tag}
      */
-    protected function checkTestScenarioAfterImportExcludingTimeEntries(bool $detailed = false): object
+    protected function checkTestScenarioAfterImportExcludingTimeEntries(bool $detailed = false, bool $billableDefault = false): object
     {
         $users = User::all();
         $this->assertCount(2, $users);
@@ -80,12 +80,12 @@ class ImporterTestAbstract extends TestCase
             $this->assertSame('#ef5350', $project1->color);
             $this->assertSame(null, $project1->billable_rate);
             // Project for Big Company
-            $this->assertSame(true, $project2->is_billable);
+            $this->assertSame(! $billableDefault, $project2->is_billable);
             $this->assertSame(false, $project2->is_public);
             $this->assertSame('#ec407a', $project2->color);
             $this->assertSame(10001, $project2->billable_rate);
             // Project (Archived)
-            $this->assertSame(true, $project3->is_billable);
+            $this->assertSame(! $billableDefault, $project3->is_billable);
             $this->assertSame(true, $project3->is_public);
             $this->assertSame('#6a407f', $project3->color);
             $this->assertSame(null, $project3->billable_rate);
@@ -176,7 +176,7 @@ class ImporterTestAbstract extends TestCase
     /**
      * @param  object{user1: User, project1: Project, project2: Project, tag1: Tag, tag2: Tag}  $testScenario
      */
-    protected function checkTimeEntries(object $testScenario, bool $secondRun = false): void
+    protected function checkTimeEntries(object $testScenario, bool $secondRun = false, bool $billableDefault = false): void
     {
         $timeEntries = TimeEntry::all();
         if ($secondRun) {
@@ -197,7 +197,7 @@ class ImporterTestAbstract extends TestCase
         $this->assertSame('Working hard', $timeEntry2->description);
         $this->assertSame('2024-03-04 09:23:00', $timeEntry2->start->toDateTimeString());
         $this->assertSame('2024-03-04 10:23:01', $timeEntry2->end->toDateTimeString());
-        $this->assertTrue($timeEntry2->billable);
+        $this->assertSame(! $billableDefault, $timeEntry2->billable);
         $this->assertTrue($timeEntry2->is_imported);
         $this->assertSame([], $timeEntry2->tags);
     }

@@ -116,10 +116,12 @@ class ClockifyTimeEntriesImporter extends DefaultImporter
                     throw new ImportException('Time entry description is too long');
                 }
                 $timeEntry->description = $record['Description'];
-                if (! in_array($record['Billable'], ['Yes', 'No'], true)) {
-                    throw new ImportException('Invalid billable value');
+                if (isset($record['Billable'])) {
+                    if (! in_array($record['Billable'], ['Yes', 'No'], true)) {
+                        throw new ImportException('Invalid billable value');
+                    }
+                    $timeEntry->billable = $record['Billable'] === 'Yes';
                 }
-                $timeEntry->billable = $record['Billable'] === 'Yes';
                 $timeEntry->tags = $this->getTags($record['Tags']);
                 $timeEntry->is_imported = true;
 
@@ -219,7 +221,6 @@ class ClockifyTimeEntriesImporter extends DefaultImporter
             'Group',
             'Email',
             'Tags',
-            'Billable',
             'Start Date',
             'Start Time',
             'End Date',
