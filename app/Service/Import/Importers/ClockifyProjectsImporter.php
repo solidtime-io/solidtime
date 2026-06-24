@@ -25,6 +25,7 @@ class ClockifyProjectsImporter extends DefaultImporter
             $header = $reader->getHeader();
             $this->validateHeader($header);
             $billableRateKey = $this->getBillableRateKey($header);
+            $tasksKey = $this->getTasksKey($header);
             $records = $reader->getRecords();
             foreach ($records as $record) {
                 $clientId = null;
@@ -49,8 +50,8 @@ class ClockifyProjectsImporter extends DefaultImporter
                     ]);
                 }
 
-                if ($record['Task'] !== '') {
-                    $tasks = explode(', ', $record['Task']);
+                if ($record[$tasksKey] !== '') {
+                    $tasks = explode(', ', $record[$tasksKey]);
                     foreach ($tasks as $task) {
                         $this->taskImportHelper->getKey([
                             'name' => $task,
@@ -83,13 +84,26 @@ class ClockifyProjectsImporter extends DefaultImporter
             'Status',
             'Visibility',
             'Billability',
-            'Task',
         ];
         foreach ($requiredFields as $requiredField) {
             if (! in_array($requiredField, $header, true)) {
                 throw new ImportException('Invalid CSV header, missing field: '.$requiredField);
             }
         }
+        // Clockify renamed the "Task" column to "Tasks" in newer exports; accept either.
+        if (! in_array('Task', $header, true) && ! in_array('Tasks', $header, true)) {
+            throw new ImportException('Invalid CSV header, missing field: Tasks');
+        }
+    }
+
+    /**
+     * Clockify renamed the "Task" column to "Tasks" in newer exports.
+     *
+     * @param  array<string>  $header
+     */
+    private function getTasksKey(array $header): string
+    {
+        return in_array('Tasks', $header, true) ? 'Tasks' : 'Task';
     }
 
     /**

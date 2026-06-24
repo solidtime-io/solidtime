@@ -1,3 +1,3 @@
-"Project","Client","Status","Visibility","Billability","Task","Tracked (h)","Estimated (h)","Remaining (h)","Overage (h)","Progress(%)","Billable (h)","Non-billable (h)","Billable Rate (USD)","Amount (USD)","Project members","Project manager","Note"
-"Active Project","Big Company","Active","Public","Yes","Task 1, Task 2","0.00","100.00","","","","0.00","0.00","100.01","0.00","Constantin Graf","",""
-"Archived Project","","Archived","Public","Yes","","0.00","","","","","0.00","0.00","","0.00","Constantin Graf","",""
+"Project","Client","Status","Visibility","Billability","Tasks","Tracked (h)","Estimated (h)","Remaining (h)","Overage (h)","Tracked (USD)","Estimated (USD)","Remaining (USD)","Overage (USD)","Progress(%)","Recurring estimate","Billable (h)","Non-billable (h)","Billable Rate (USD)","Amount (USD)","Cost Rate (USD)","Expenses (USD)","Billable expenses (USD)","Non-billable expenses (USD)","Additional fields","Project members","Project manager","Note"
+"Active Project","Big Company","Active","Public","Yes","Task 1, Task 2","0.00","100.00","","","","","","","","","0.00","0.00","100.01","0.00","","0.00","0.00","0.00","","Constantin Graf","",""
+"Archived Project","","Archived","Public","Yes","","0.00","","","","","","","","","","0.00","0.00","","0.00","","0.00","0.00","0.00","","Constantin Graf","",""

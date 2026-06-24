@@ -6,6 +6,7 @@ namespace Tests\Unit\Service\Import\Importers;
 
 use App\Models\Organization;
 use App\Models\Project;
+use App\Models\Task;
 use App\Service\Import\Importers\ClockifyProjectsImporter;
 use App\Service\Import\Importers\DefaultImporter;
 use App\Service\Import\Importers\ImportException;
@@ -72,5 +73,26 @@ class ClockifyProjectsImporterTest extends ImporterTestAbstract
         $archivedProject = Project::query()->where('organization_id', $organization->id)->where('name', 'Archived Project')->firstOrFail();
         $this->assertNotNull($archivedProject->archived_at);
         $this->assertTrue($archivedProject->is_archived);
+    }
+
+    public function test_import_supports_renamed_tasks_column(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $timezone = 'Europe/Vienna';
+        $importer = new ClockifyProjectsImporter;
+        $importer->init($organization);
+        // Newer Clockify exports rename the "Task" column to "Tasks".
+        $data = Storage::disk('testfiles')->get('clockify_projects_import_test_2.csv');
+
+        // Act
+        $importer->importData($data, $timezone);
+
+        // Assert
+        $activeProject = Project::query()->where('organization_id', $organization->id)->where('name', 'Active Project')->firstOrFail();
+        $this->assertEqualsCanonicalizing(
+            ['Task 1', 'Task 2'],
+            Task::query()->where('project_id', $activeProject->id)->pluck('name')->all(),
+        );
     }
 }
