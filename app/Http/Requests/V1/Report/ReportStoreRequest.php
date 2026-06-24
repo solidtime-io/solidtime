@@ -124,6 +124,11 @@ class ReportStoreRequest extends BaseFormRequest
                     }
                 },
             ],
+            'properties.tag_filter' => [
+                'nullable',
+                'string',
+                'in:'.TimeEntryFilter::TAG_FILTER_CONTAINS.','.TimeEntryFilter::TAG_FILTER_NOT_CONTAINS,
+            ],
             'properties.task_ids' => [
                 'nullable',
                 'array',

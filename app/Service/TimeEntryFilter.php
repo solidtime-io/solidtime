@@ -14,6 +14,10 @@ class TimeEntryFilter
 {
     public const string NONE_VALUE = 'none';
 
+    public const string TAG_FILTER_CONTAINS = 'contains';
+
+    public const string TAG_FILTER_NOT_CONTAINS = 'not_contains';
+
     /**
      * @var Builder<TimeEntry>
      */
@@ -192,15 +196,22 @@ class TimeEntryFilter
     /**
      * @param  array<string>|null  $tagIds
      */
-    public function addTagIdsFilter(?array $tagIds): self
+    public function addTagIdsFilter(?array $tagIds, ?string $tagFilter = self::TAG_FILTER_CONTAINS): self
     {
         if ($tagIds === null) {
             return $this;
         }
+        if ($tagFilter === null) {
+            $tagFilter = self::TAG_FILTER_CONTAINS;
+        }
+        if (! in_array($tagFilter, [self::TAG_FILTER_CONTAINS, self::TAG_FILTER_NOT_CONTAINS], true)) {
+            Log::warning('Invalid tag filter value', ['value' => $tagFilter]);
+            $tagFilter = self::TAG_FILTER_CONTAINS;
+        }
         $includeNone = in_array(self::NONE_VALUE, $tagIds, true);
         $tagIds = array_values(array_filter($tagIds, fn (string $id): bool => $id !== self::NONE_VALUE));
 
-        $this->builder->where(function (Builder $builder) use ($tagIds, $includeNone): void {
+        $tagCondition = function (Builder $builder) use ($tagIds, $includeNone): void {
             foreach ($tagIds as $tagId) {
                 $builder->orWhereJsonContains('tags', $tagId);
             }
@@ -209,7 +220,13 @@ class TimeEntryFilter
                     $query->whereJsonLength('tags', 0)->orWhereNull('tags');
                 });
             }
-        });
+        };
+
+        if ($tagFilter === self::TAG_FILTER_NOT_CONTAINS) {
+            $this->builder->whereNot($tagCondition);
+        } else {
+            $this->builder->where($tagCondition);
+        }
 
         return $this;
     }

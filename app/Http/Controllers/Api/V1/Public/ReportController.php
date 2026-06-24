@@ -59,7 +59,7 @@ class ReportController extends Controller
         $filter->addBillable($properties->billable);
         $filter->addMemberIdsFilter($properties->memberIds?->toArray());
         $filter->addProjectIdsFilter($properties->projectIds?->toArray());
-        $filter->addTagIdsFilter($properties->tagIds?->toArray());
+        $filter->addTagIdsFilter($properties->tagIds?->toArray(), $properties->tagFilter);
         $filter->addTaskIdsFilter($properties->taskIds?->toArray());
         $filter->addClientIdsFilter($properties->clientIds?->toArray());
         $timeEntriesQuery = $filter->get();

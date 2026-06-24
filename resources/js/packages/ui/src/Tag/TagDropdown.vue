@@ -114,6 +114,7 @@ const showCreateTagModal = ref(false);
                         class="w-full rounded-md border border-input-border bg-input-background px-3 py-1.5 text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none"
                         placeholder="Search for a Tag..." />
                 </ComboboxAnchor>
+                <slot name="content-before-list"></slot>
                 <ComboboxContent
                     :dismiss-able="false"
                     position="inline"

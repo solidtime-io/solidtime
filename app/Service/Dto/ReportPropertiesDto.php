@@ -56,6 +56,8 @@ class ReportPropertiesDto implements Castable
      */
     public ?Collection $tagIds = null;
 
+    public ?string $tagFilter = null;
+
     /**
      * @var Collection<int, string>|null
      */
@@ -115,6 +117,7 @@ class ReportPropertiesDto implements Castable
                 $dto->clientIds = $data->clientIds !== null ? ReportPropertiesDto::idArrayToCollection($data->clientIds) : null;
                 $dto->projectIds = $data->projectIds !== null ? ReportPropertiesDto::idArrayToCollection($data->projectIds) : null;
                 $dto->tagIds = $data->tagIds !== null ? ReportPropertiesDto::idArrayToCollection($data->tagIds) : null;
+                $dto->tagFilter = isset($data->tagFilter) ? ReportPropertiesDto::tagFilterValue($data->tagFilter) : null;
                 $dto->taskIds = $data->taskIds ? ReportPropertiesDto::idArrayToCollection($data->taskIds) : null;
                 $dto->group = TimeEntryAggregationType::from($data->group);
                 $dto->subGroup = TimeEntryAggregationType::from($data->subGroup);
@@ -144,6 +147,7 @@ class ReportPropertiesDto implements Castable
                     'clientIds' => $value->clientIds?->toArray(),
                     'projectIds' => $value->projectIds?->toArray(),
                     'tagIds' => $value->tagIds?->toArray(),
+                    'tagFilter' => $value->tagFilter,
                     'taskIds' => $value->taskIds?->toArray(),
                     'group' => $value->group->value,
                     'subGroup' => $value->subGroup->value,
@@ -185,6 +189,24 @@ class ReportPropertiesDto implements Castable
     }
 
     /**
+     * @return 'contains'|'not_contains'|null
+     */
+    public static function tagFilterValue(mixed $tagFilter): ?string
+    {
+        if ($tagFilter === null) {
+            return null;
+        }
+        if (! is_string($tagFilter)) {
+            throw new \InvalidArgumentException('The given tag filter is not a string');
+        }
+        if (! in_array($tagFilter, [TimeEntryFilter::TAG_FILTER_CONTAINS, TimeEntryFilter::TAG_FILTER_NOT_CONTAINS], true)) {
+            throw new \InvalidArgumentException('The given tag filter is not valid');
+        }
+
+        return $tagFilter;
+    }
+
+    /**
      * @param  array<mixed>|null  $memberIds
      */
     public function setMemberIds(?array $memberIds): void
@@ -214,6 +236,11 @@ class ReportPropertiesDto implements Castable
     public function setTagIds(?array $tagIds): void
     {
         $this->tagIds = $tagIds !== null ? ReportPropertiesDto::idArrayToCollection($tagIds) : null;
+    }
+
+    public function setTagFilter(mixed $tagFilter): void
+    {
+        $this->tagFilter = ReportPropertiesDto::tagFilterValue($tagFilter);
     }
 
     /**

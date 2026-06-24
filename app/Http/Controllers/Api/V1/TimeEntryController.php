@@ -203,7 +203,7 @@ class TimeEntryController extends Controller
         $filter->addMemberIdFilter($member);
         $filter->addMemberIdsFilter($request->input('member_ids'));
         $filter->addProjectIdsFilter($request->input('project_ids'));
-        $filter->addTagIdsFilter($request->input('tag_ids'));
+        $filter->addTagIdsFilter($request->input('tag_ids'), $request->input('tag_filter'));
         $filter->addTaskIdsFilter($request->input('task_ids'));
         $filter->addClientIdsFilter($request->input('client_ids'));
         $filter->addBillableFilter($request->input('billable'));
@@ -559,7 +559,7 @@ class TimeEntryController extends Controller
         $filter->addMemberIdFilter($member);
         $filter->addMemberIdsFilter($request->input('member_ids'));
         $filter->addProjectIdsFilter($request->input('project_ids'));
-        $filter->addTagIdsFilter($request->input('tag_ids'));
+        $filter->addTagIdsFilter($request->input('tag_ids'), $request->input('tag_filter'));
         $filter->addTaskIdsFilter($request->input('task_ids'));
         $filter->addClientIdsFilter($request->input('client_ids'));
         $filter->addBillableFilter($request->input('billable'));
