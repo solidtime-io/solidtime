@@ -199,7 +199,7 @@ body {
         --muted-foreground: var(--color-text-tertiary);
         --accent: var(--color-bg-tertiary);
         --accent-foreground: var(--color-text-primary);
-        --destructive: 0 62.8% 30.6%;
+        --destructive: 0 72% 60%;
         --destructive-foreground: var(--color-text-primary);
         --border: var(--color-border-primary);
         --input: var(--color-border-tertiary);
