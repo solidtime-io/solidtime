@@ -110,6 +110,10 @@ class TimeEntryIndexExportRequest extends TimeEntryIndexRequest
                     })->uuid()->validate($attribute, $value, $fail);
                 },
             ],
+            'tag_filter' => [
+                'string',
+                'in:'.TimeEntryFilter::TAG_FILTER_CONTAINS.','.TimeEntryFilter::TAG_FILTER_NOT_CONTAINS,
+            ],
             // Filter by task IDs, task IDs are OR combined
             'task_ids' => [
                 'array',

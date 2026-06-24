@@ -56,6 +56,8 @@ class DetailedReportResource extends BaseResource
                 'project_ids' => $this->resource->properties->projectIds?->toArray(),
                 /** @var array<string>|null $tags_ids Filter by tag IDs, tag IDs are OR combined */
                 'tag_ids' => $this->resource->properties->tagIds?->toArray(),
+                /** @var string|null $tag_filter Tag filter mode */
+                'tag_filter' => $this->resource->properties->tagFilter,
                 /** @var array<string>|null $task_ids Filter by task IDs, task IDs are OR combined */
                 'task_ids' => $this->resource->properties->taskIds?->toArray(),
                 /** @var string|null $rounding_type Rounding type for time entries */

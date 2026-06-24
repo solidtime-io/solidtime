@@ -67,6 +67,7 @@ import ReportingFilterBar from '@/Components/Common/Reporting/ReportingFilterBar
 import { useTimeEntriesReportQuery } from '@/utils/useTimeEntriesReportQuery';
 import { useTimeEntriesMutations } from '@/utils/useTimeEntriesMutations';
 import { useOrganizationQuery } from '@/utils/useOrganizationQuery';
+import type { TagFilter } from '@/types/reporting';
 
 // TimeEntryRoundingType is now defined in ReportingRoundingControls component
 type TimeEntryRoundingType = 'up' | 'down' | 'nearest';
@@ -84,6 +85,7 @@ const selectedProjects = ref<string[]>([]);
 const selectedMembers = ref<string[]>([]);
 const selectedTasks = ref<string[]>([]);
 const selectedClients = ref<string[]>([]);
+const tagFilter = ref<TagFilter>('contains');
 const billable = ref<'true' | 'false' | null>(null);
 const roundingEnabled = ref<boolean>(false);
 const roundingType = ref<TimeEntryRoundingType>('nearest');
@@ -115,6 +117,7 @@ function getFilterAttributes() {
         task_ids: selectedTasks.value.length > 0 ? selectedTasks.value : undefined,
         client_ids: selectedClients.value.length > 0 ? selectedClients.value : undefined,
         tag_ids: selectedTags.value.length > 0 ? selectedTags.value : undefined,
+        tag_filter: selectedTags.value.length > 0 ? tagFilter.value : undefined,
         billable: billable.value !== null ? billable.value : undefined,
         rounding_type: roundingEnabled.value ? roundingType.value : undefined,
         rounding_minutes: roundingEnabled.value ? roundingMinutes.value : undefined,
@@ -337,6 +340,7 @@ async function downloadExport(format: ExportFormat) {
             v-model:selected-tasks="selectedTasks"
             v-model:selected-clients="selectedClients"
             v-model:selected-tags="selectedTags"
+            v-model:tag-filter="tagFilter"
             v-model:billable="billable"
             v-model:rounding-enabled="roundingEnabled"
             v-model:rounding-type="roundingType"
