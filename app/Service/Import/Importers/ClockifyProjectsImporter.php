@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Service\Import\Importers;
 
 use Exception;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use League\Csv\Exception as CsvException;
 use League\Csv\Reader;
@@ -44,6 +45,7 @@ class ClockifyProjectsImporter extends DefaultImporter
                         'is_billable' => $record['Billability'] === 'Yes',
                         'billable_rate' => $billableRateKey !== null && $record[$billableRateKey] !== '' ? (int) (((float) $record[$billableRateKey]) * 100) : null,
                         'estimated_time' => $record['Estimated (h)'] !== '' && is_numeric($record['Estimated (h)']) ? (int) ($record['Estimated (h)'] * 3600) : null,
+                        'archived_at' => $record['Status'] === 'Archived' ? Carbon::now() : null,
                     ]);
                 }
 
