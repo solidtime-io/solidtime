@@ -5,7 +5,8 @@ declare(strict_types=1);
 return [
     'clockify_time_entries' => [
         'name' => 'Clockify Time Entries',
-        'description' => '1. First make sure that you set the Date format to "MM/DD/YYYY" and the Time format to "12-hour" in the user settings.<br>'.
+        'description' => '<strong>Important:</strong> If you also want to import your projects use the "Clockify Projects" importer before this one, since that export contains more details such as billable status, billable rates and estimated time.<br><br>'.
+            '1. First make sure that you set the Date format to "MM/DD/YYYY" and the Time format to "12-hour" in the user settings.<br>'.
             '2. In the same preferences page change the language of Clockfiy to English.<br>'.
             '3. Go to REPORTS -> TIME -> Detailed in the navigation on the left. <br>'.
             '4. Now select the date range that you want to export in the right top. '.
@@ -61,7 +62,8 @@ return [
     ],
     'harvest_time_entries' => [
         'name' => 'Harvest Time Entries',
-        'description' => '1. Go to Settings (right top corner)<br>2. Click on "Import/Export" in the left navigation'.
+        'description' => '<strong>Important:</strong> If you also want to import your projects use the "Harvest Projects" importer before this one, since that export contains more details such as billable status and estimated time.<br><br>'.
+            '1. Go to Settings (right top corner)<br>2. Click on "Import/Export" in the left navigation'.
             '<br>3. Now click on "Export all time" '.
             '<br><br>Before you import make sure that the Timezone settings in Harvest are the same as in solidtime.',
     ],
