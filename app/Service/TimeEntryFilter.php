@@ -14,9 +14,9 @@ class TimeEntryFilter
 {
     public const string NONE_VALUE = 'none';
 
-    public const string TAG_FILTER_CONTAINS = 'contains';
+    public const string TAG_MATCH_TYPE_CONTAINS = 'contains';
 
-    public const string TAG_FILTER_NOT_CONTAINS = 'not_contains';
+    public const string TAG_MATCH_TYPE_NOT_CONTAINS = 'not_contains';
 
     /**
      * @var Builder<TimeEntry>
@@ -196,17 +196,17 @@ class TimeEntryFilter
     /**
      * @param  array<string>|null  $tagIds
      */
-    public function addTagIdsFilter(?array $tagIds, ?string $tagFilter = self::TAG_FILTER_CONTAINS): self
+    public function addTagIdsFilter(?array $tagIds, ?string $tagMatchType = self::TAG_MATCH_TYPE_CONTAINS): self
     {
         if ($tagIds === null) {
             return $this;
         }
-        if ($tagFilter === null) {
-            $tagFilter = self::TAG_FILTER_CONTAINS;
+        if ($tagMatchType === null) {
+            $tagMatchType = self::TAG_MATCH_TYPE_CONTAINS;
         }
-        if (! in_array($tagFilter, [self::TAG_FILTER_CONTAINS, self::TAG_FILTER_NOT_CONTAINS], true)) {
-            Log::warning('Invalid tag filter value', ['value' => $tagFilter]);
-            $tagFilter = self::TAG_FILTER_CONTAINS;
+        if (! in_array($tagMatchType, [self::TAG_MATCH_TYPE_CONTAINS, self::TAG_MATCH_TYPE_NOT_CONTAINS], true)) {
+            Log::warning('Invalid tag match type value', ['value' => $tagMatchType]);
+            $tagMatchType = self::TAG_MATCH_TYPE_CONTAINS;
         }
         $includeNone = in_array(self::NONE_VALUE, $tagIds, true);
         $tagIds = array_values(array_filter($tagIds, fn (string $id): bool => $id !== self::NONE_VALUE));
@@ -227,7 +227,7 @@ class TimeEntryFilter
             }
         };
 
-        if ($tagFilter === self::TAG_FILTER_NOT_CONTAINS) {
+        if ($tagMatchType === self::TAG_MATCH_TYPE_NOT_CONTAINS) {
             $this->builder->where(function (Builder $builder) use ($tagCondition, $includeNone): void {
                 $builder->whereNot($tagCondition);
                 if (! $includeNone) {

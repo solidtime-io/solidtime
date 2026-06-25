@@ -14,7 +14,7 @@ import DateRangePicker from '@/packages/ui/src/Input/DateRangePicker.vue';
 import TagDropdown from '@/packages/ui/src/Tag/TagDropdown.vue';
 import { useTagsQuery } from '@/utils/useTagsQuery';
 import { useTagsStore } from '@/utils/useTags';
-import type { TagFilter } from '@/types/reporting';
+import type { TagMatchType } from '@/types/reporting';
 
 type TimeEntryRoundingType = 'up' | 'down' | 'nearest';
 
@@ -23,7 +23,7 @@ const selectedProjects = defineModel<string[]>('selectedProjects', { required: t
 const selectedTasks = defineModel<string[]>('selectedTasks', { required: true });
 const selectedClients = defineModel<string[]>('selectedClients', { required: true });
 const selectedTags = defineModel<string[]>('selectedTags', { required: true });
-const tagFilter = defineModel<TagFilter>('tagFilter', { required: true });
+const tagMatchType = defineModel<TagMatchType>('tagMatchType', { required: true });
 const billable = defineModel<'true' | 'false' | null>('billable', { required: true });
 const roundingEnabled = defineModel<boolean>('roundingEnabled', { required: true });
 const roundingType = defineModel<TimeEntryRoundingType>('roundingType', { required: true });
@@ -106,12 +106,12 @@ async function createTag(name: string) {
                                     type="button"
                                     class="w-full rounded-md px-2 py-1.5 text-left text-sm font-medium"
                                     :class="
-                                        tagFilter === 'contains'
+                                        tagMatchType === 'contains'
                                             ? 'bg-card-background-active text-text-primary'
                                             : 'text-text-secondary hover:bg-card-background-active'
                                     "
                                     @click="
-                                        tagFilter = 'contains';
+                                        tagMatchType = 'contains';
                                         emit('submit');
                                     ">
                                     Contains
@@ -120,12 +120,12 @@ async function createTag(name: string) {
                                     type="button"
                                     class="w-full rounded-md px-2 py-1.5 text-left text-sm font-medium"
                                     :class="
-                                        tagFilter === 'not_contains'
+                                        tagMatchType === 'not_contains'
                                             ? 'bg-card-background-active text-text-primary'
                                             : 'text-text-secondary hover:bg-card-background-active'
                                     "
                                     @click="
-                                        tagFilter = 'not_contains';
+                                        tagMatchType = 'not_contains';
                                         emit('submit');
                                     ">
                                     Does Not Contain
