@@ -95,6 +95,10 @@ Route::middleware([
         return Inertia::render('Import');
     })->name('import');
 
+    Route::get('/vacations', function () {
+        return Inertia::render('Vacations');
+    })->name('vacations');
+
     Route::get('/organizations/create', [OrganizationController::class, 'create'])->name('organizations.create');
     Route::get('/organizations/{organizationId}', [OrganizationController::class, 'show'])->name('organizations.show');
     Route::get('/teams/create', function (): RedirectResponse {

@@ -22,6 +22,7 @@ use App\Http\Controllers\Api\V1\TimeZoneController;
 use App\Http\Controllers\Api\V1\UserController;
 use App\Http\Controllers\Api\V1\UserMembershipController;
 use App\Http\Controllers\Api\V1\UserTimeEntryController;
+use App\Http\Controllers\Api\V1\VacationRequestController;
 use Illuminate\Support\Facades\Route;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -189,6 +190,14 @@ Route::prefix('v1')->name('v1.')->group(static function (): void {
 
     // Timezone routes
     Route::get('/time-zones', [TimeZoneController::class, 'index'])->name('time-zones.index');
+
+    // Vacation request routes
+    Route::name('vacation-requests.')->prefix('/organizations/{organization}')->group(static function (): void {
+        Route::get('/vacation-requests', [VacationRequestController::class, 'index'])->name('index');
+        Route::post('/vacation-requests', [VacationRequestController::class, 'store'])->name('store');
+        Route::put('/vacation-requests/{vacationRequest}', [VacationRequestController::class, 'update'])->name('update');
+        Route::delete('/vacation-requests/{vacationRequest}', [VacationRequestController::class, 'destroy'])->name('destroy');
+    });
 
     // Public routes
     Route::name('public.')->prefix('/public')->group(static function (): void {

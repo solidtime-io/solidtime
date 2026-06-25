@@ -5,6 +5,7 @@ import OrganizationSwitcher from '@/Components/OrganizationSwitcher.vue';
 import CurrentSidebarTimer from '@/Components/CurrentSidebarTimer.vue';
 import {
     CalendarIcon,
+    CalendarDaysIcon,
     ChartBarIcon,
     ClockIcon,
     Cog6ToothIcon,
@@ -33,6 +34,7 @@ import {
     canViewClients,
     canViewInvoices,
     canViewMembers,
+    canViewOwnVacationRequests,
     canViewProjects,
     canViewReport,
     canViewTags,
@@ -191,6 +193,12 @@ const page = usePage<{
                                 :icon="TableCellsIcon"
                                 :current="route().current('timesheet')"
                                 :href="route('timesheet')"></NavigationSidebarItem>
+                            <NavigationSidebarItem
+                                v-if="canViewOwnVacationRequests()"
+                                title="Vacations"
+                                :icon="CalendarDaysIcon"
+                                :current="route().current('vacations')"
+                                :href="route('vacations')"></NavigationSidebarItem>
                             <NavigationSidebarItem
                                 title="Reporting"
                                 :icon="ChartBarIcon"

@@ -1,0 +1,37 @@
+services:
+    laravel.test:
+        ports:
+            - '8080:80'
+            - '5173:5173'
+        labels: []
+        networks:
+            - sail
+        depends_on:
+            pgsql:
+                condition: service_healthy
+    pgsql:
+        ports:
+            - '${FORWARD_DB_PORT:-5432}:5432'
+    mailpit:
+        ports:
+            - '8025:8025'
+        labels: []
+        networks:
+            - sail
+    minio:
+        ports:
+            - '9000:9000'
+            - '8900:8900'
+        labels: []
+        networks:
+            - sail
+    playwright:
+        extra_hosts:
+            host.docker.internal: host-gateway
+        labels: []
+        profiles:
+            - donotstart
+
+networks:
+    sail:
+        driver: bridge

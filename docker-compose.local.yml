@@ -1,0 +1,55 @@
+services:
+    app:
+        build:
+            context: ./docker/local/8.3
+            dockerfile: Dockerfile
+            args:
+                WWWGROUP: '${WWWGROUP:-20}'
+        image: sail-8.3/app
+        ports:
+            - '8080:80'
+            - '5173:5173'
+        extra_hosts:
+            host.docker.internal: host-gateway
+        environment:
+            XDG_CONFIG_HOME: /var/www/html/config
+            XDG_DATA_HOME: /var/www/html/data
+            WWWUSER: '${WWWUSER:-501}'
+            LARAVEL_SAIL: 1
+            XDEBUG_MODE: 'off'
+            VITE_HOST_NAME: 'localhost'
+        volumes:
+            - '.:/var/www/html'
+        networks:
+            - solidtime-local
+        depends_on:
+            pgsql:
+                condition: service_healthy
+
+    pgsql:
+        image: 'postgres:15'
+        ports:
+            - '54329:5432'
+        environment:
+            PGPASSWORD: 'root'
+            POSTGRES_DB: 'laravel'
+            POSTGRES_USER: 'root'
+            POSTGRES_PASSWORD: 'root'
+        volumes:
+            - 'solidtime-pgsql:/var/lib/postgresql/data'
+            - './docker/local/pgsql/create-testing-database.sql:/docker-entrypoint-initdb.d/10-create-testing-database.sql'
+        networks:
+            - solidtime-local
+        healthcheck:
+            test: ['CMD', 'pg_isready', '-q', '-d', 'laravel', '-U', 'root']
+            retries: 5
+            timeout: 5s
+            interval: 3s
+
+networks:
+    solidtime-local:
+        driver: bridge
+
+volumes:
+    solidtime-pgsql:
+        driver: local

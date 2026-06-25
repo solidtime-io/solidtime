@@ -132,3 +132,19 @@ export function canViewInvoices() {
 export function canCreateReports() {
     return currentUserHasPermission('reports:create');
 }
+
+export function canViewOwnVacationRequests() {
+    return currentUserHasPermission('vacation-requests:view:own');
+}
+
+export function canCreateVacationRequests() {
+    return currentUserHasPermission('vacation-requests:create:own');
+}
+
+export function canViewAllVacationRequests() {
+    return currentUserHasPermission('vacation-requests:view:all');
+}
+
+export function canManageVacationRequests() {
+    return currentUserHasPermission('vacation-requests:manage:all');
+}
