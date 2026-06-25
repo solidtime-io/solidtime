@@ -210,6 +210,11 @@ class TimeEntryFilter
         }
         $includeNone = in_array(self::NONE_VALUE, $tagIds, true);
         $tagIds = array_values(array_filter($tagIds, fn (string $id): bool => $id !== self::NONE_VALUE));
+        // An empty selection (no tag IDs and not filtering for "none") is no constraint, so apply nothing.
+        // This also prevents the not-contains branch from collapsing into "only entries with null tags".
+        if (count($tagIds) === 0 && ! $includeNone) {
+            return $this;
+        }
 
         $tagCondition = function (Builder $builder) use ($tagIds, $includeNone): void {
             foreach ($tagIds as $tagId) {
@@ -223,7 +228,12 @@ class TimeEntryFilter
         };
 
         if ($tagFilter === self::TAG_FILTER_NOT_CONTAINS) {
-            $this->builder->whereNot($tagCondition);
+            $this->builder->where(function (Builder $builder) use ($tagCondition, $includeNone): void {
+                $builder->whereNot($tagCondition);
+                if (! $includeNone) {
+                    $builder->orWhereNull('tags');
+                }
+            });
         } else {
             $this->builder->where($tagCondition);
         }
