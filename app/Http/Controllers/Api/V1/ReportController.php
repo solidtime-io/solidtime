@@ -96,7 +96,7 @@ class ReportController extends Controller
         $properties->setClientIds($request->input('properties.client_ids', null));
         $properties->setProjectIds($request->input('properties.project_ids', null));
         $properties->setTagIds($request->input('properties.tag_ids', null));
-        $properties->setTagFilter($request->input('properties.tag_filter', null));
+        $properties->setTagMatchType($request->input('properties.tag_match_type', null));
         $properties->setTaskIds($request->input('properties.task_ids', null));
         $properties->weekStart = $request->has('properties.week_start') ? Weekday::from($request->input('properties.week_start')) : $user->week_start;
         $timezone = $user->timezone;

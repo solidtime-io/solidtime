@@ -49,7 +49,7 @@ import type { ExportFormat } from '@/types/reporting';
 import { getRandomColorWithSeed } from '@/packages/ui/src/utils/color';
 import { useProjectsQuery } from '@/utils/useProjectsQuery';
 import { useAggregatedTimeEntriesQuery } from '@/utils/useAggregatedTimeEntriesQuery';
-import type { TagFilter } from '@/types/reporting';
+import type { TagMatchType } from '@/types/reporting';
 
 type TimeEntryRoundingType = 'up' | 'down' | 'nearest';
 
@@ -68,7 +68,7 @@ const selectedProjects = ref<string[]>([]);
 const selectedMembers = ref<string[]>([]);
 const selectedTasks = ref<string[]>([]);
 const selectedClients = ref<string[]>([]);
-const tagFilter = ref<TagFilter>('contains');
+const tagMatchType = ref<TagMatchType>('contains');
 
 const billable = ref<'true' | 'false' | null>(null);
 const roundingEnabled = ref<boolean>(false);
@@ -124,7 +124,7 @@ const filterParams = computed<AggregatedTimeEntriesQueryParams>(() => {
         task_ids: selectedTasks.value.length > 0 ? selectedTasks.value : undefined,
         client_ids: selectedClients.value.length > 0 ? selectedClients.value : undefined,
         tag_ids: selectedTags.value.length > 0 ? selectedTags.value : undefined,
-        tag_filter: selectedTags.value.length > 0 ? tagFilter.value : undefined,
+        tag_match_type: selectedTags.value.length > 0 ? tagMatchType.value : undefined,
         billable: billable.value !== null ? billable.value : undefined,
         member_id: getCurrentRole() === 'employee' ? getCurrentMembershipId() : undefined,
         rounding_type: roundingEnabled.value ? roundingType.value : undefined,
@@ -369,7 +369,7 @@ const tableData = computed(() => {
         v-model:selected-tasks="selectedTasks"
         v-model:selected-clients="selectedClients"
         v-model:selected-tags="selectedTags"
-        v-model:tag-filter="tagFilter"
+        v-model:tag-match-type="tagMatchType"
         v-model:billable="billable"
         v-model:rounding-enabled="roundingEnabled"
         v-model:rounding-type="roundingType"

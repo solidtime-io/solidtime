@@ -139,9 +139,9 @@ class TimeEntryAggregateExportRequest extends BaseFormRequest
                     })->uuid()->validate($attribute, $value, $fail);
                 },
             ],
-            'tag_filter' => [
+            'tag_match_type' => [
                 'string',
-                'in:'.TimeEntryFilter::TAG_FILTER_CONTAINS.','.TimeEntryFilter::TAG_FILTER_NOT_CONTAINS,
+                'in:'.TimeEntryFilter::TAG_MATCH_TYPE_CONTAINS.','.TimeEntryFilter::TAG_MATCH_TYPE_NOT_CONTAINS,
             ],
             // Filter by task IDs, task IDs are OR combined
             'task_ids' => [
