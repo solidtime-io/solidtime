@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\Enums\TagMatchType;
 use App\Models\Member;
 use App\Models\TimeEntry;
 use Illuminate\Database\Eloquent\Builder;
@@ -13,10 +14,6 @@ use Illuminate\Support\Facades\Log;
 class TimeEntryFilter
 {
     public const string NONE_VALUE = 'none';
-
-    public const string TAG_MATCH_TYPE_CONTAINS = 'contains';
-
-    public const string TAG_MATCH_TYPE_NOT_CONTAINS = 'not_contains';
 
     /**
      * @var Builder<TimeEntry>
@@ -196,18 +193,12 @@ class TimeEntryFilter
     /**
      * @param  array<string>|null  $tagIds
      */
-    public function addTagIdsFilter(?array $tagIds, ?string $tagMatchType = self::TAG_MATCH_TYPE_CONTAINS): self
+    public function addTagIdsFilter(?array $tagIds, ?TagMatchType $tagMatchType = TagMatchType::Contains): self
     {
         if ($tagIds === null) {
             return $this;
         }
-        if ($tagMatchType === null) {
-            $tagMatchType = self::TAG_MATCH_TYPE_CONTAINS;
-        }
-        if (! in_array($tagMatchType, [self::TAG_MATCH_TYPE_CONTAINS, self::TAG_MATCH_TYPE_NOT_CONTAINS], true)) {
-            Log::warning('Invalid tag match type value', ['value' => $tagMatchType]);
-            $tagMatchType = self::TAG_MATCH_TYPE_CONTAINS;
-        }
+        $tagMatchType ??= TagMatchType::Contains;
         $includeNone = in_array(self::NONE_VALUE, $tagIds, true);
         $tagIds = array_values(array_filter($tagIds, fn (string $id): bool => $id !== self::NONE_VALUE));
         // An empty selection (no tag IDs and not filtering for "none") is no constraint, so apply nothing.
@@ -227,7 +218,7 @@ class TimeEntryFilter
             }
         };
 
-        if ($tagMatchType === self::TAG_MATCH_TYPE_NOT_CONTAINS) {
+        if ($tagMatchType === TagMatchType::NotContains) {
             $this->builder->where(function (Builder $builder) use ($tagCondition, $includeNone): void {
                 $builder->whereNot($tagCondition);
                 if (! $includeNone) {
