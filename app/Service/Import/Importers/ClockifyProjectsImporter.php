@@ -50,7 +50,7 @@ class ClockifyProjectsImporter extends DefaultImporter
                     ]);
                 }
 
-                if ($record[$tasksKey] !== '') {
+                if ($tasksKey !== null && $record[$tasksKey] !== '') {
                     $tasks = explode(', ', $record[$tasksKey]);
                     foreach ($tasks as $task) {
                         $this->taskImportHelper->getKey([
@@ -90,20 +90,27 @@ class ClockifyProjectsImporter extends DefaultImporter
                 throw new ImportException('Invalid CSV header, missing field: '.$requiredField);
             }
         }
-        // Clockify renamed the "Task" column to "Tasks" in newer exports; accept either.
-        if (! in_array('Task', $header, true) && ! in_array('Tasks', $header, true)) {
+        // Clockify names the tasks column "Task", "Tasks" or "Activities" depending on the export; accept any.
+        if ($this->getTasksKey($header) === null) {
             throw new ImportException('Invalid CSV header, missing field: Tasks');
         }
     }
 
     /**
-     * Clockify renamed the "Task" column to "Tasks" in newer exports.
+     * Clockify names the tasks column differently depending on the export
+     * version: "Task" (older), "Tasks" (newer) or "Activities".
      *
      * @param  array<string>  $header
      */
-    private function getTasksKey(array $header): string
+    private function getTasksKey(array $header): ?string
     {
-        return in_array('Tasks', $header, true) ? 'Tasks' : 'Task';
+        foreach (['Tasks', 'Task', 'Activities'] as $field) {
+            if (in_array($field, $header, true)) {
+                return $field;
+            }
+        }
+
+        return null;
     }
 
     /**

@@ -117,6 +117,25 @@ class ClockifyTimeEntriesImporterTest extends ImporterTestAbstract
         $this->assertSame(0, $report->clientsCreated);
     }
 
+    public function test_import_supports_activity_column_alias_for_task(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $timezone = 'Europe/Vienna';
+        $importer = new ClockifyTimeEntriesImporter;
+        $importer->init($organization);
+        // Some Clockify exports name the task column "Activity".
+        $data = Storage::disk('testfiles')->get('clockify_time_entries_import_test_5.csv');
+
+        // Act
+        $importer->importData($data, $timezone);
+        $report = $importer->getReport();
+
+        // Assert
+        $this->assertSame(2, $report->timeEntriesCreated);
+        $this->assertSame(1, $report->tasksCreated);
+    }
+
     public function test_import_fails_if_month_in_date_is_bigger_than_12(): void
     {
         // Arrange

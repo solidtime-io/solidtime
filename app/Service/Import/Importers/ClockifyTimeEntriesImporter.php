@@ -54,6 +54,7 @@ class ClockifyTimeEntriesImporter extends DefaultImporter
             $reader->setEscape('');
             $header = $reader->getHeader();
             $this->validateHeader($header);
+            $taskKey = $this->getTaskKey($header);
             $records = $reader->getRecords();
             foreach ($records as $record) {
                 $userId = $this->userImportHelper->getKey([
@@ -96,9 +97,9 @@ class ClockifyTimeEntriesImporter extends DefaultImporter
                     ]);
                 }
                 $taskId = null;
-                if ($record['Task'] !== '') {
+                if ($taskKey !== null && $record[$taskKey] !== '') {
                     $taskId = $this->taskImportHelper->getKey([
-                        'name' => $record['Task'],
+                        'name' => $record[$taskKey],
                         'project_id' => $projectId,
                         'organization_id' => $this->organization->id,
                     ]);
@@ -216,7 +217,6 @@ class ClockifyTimeEntriesImporter extends DefaultImporter
             'Project',
             'Client',
             'Description',
-            'Task',
             'User',
             'Group',
             'Email',
@@ -231,6 +231,26 @@ class ClockifyTimeEntriesImporter extends DefaultImporter
                 throw new ImportException('Invalid CSV header, missing field: '.$requiredField);
             }
         }
+        // Clockify names the task column "Task" or "Activity" depending on the export; accept either.
+        if ($this->getTaskKey($header) === null) {
+            throw new ImportException('Invalid CSV header, missing field: Task');
+        }
+    }
+
+    /**
+     * Clockify names the task column "Task" or "Activity" depending on the export version.
+     *
+     * @param  array<string>  $header
+     */
+    private function getTaskKey(array $header): ?string
+    {
+        foreach (['Task', 'Activity'] as $field) {
+            if (in_array($field, $header, true)) {
+                return $field;
+            }
+        }
+
+        return null;
     }
 
     #[\Override]

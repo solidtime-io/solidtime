@@ -95,4 +95,25 @@ class ClockifyProjectsImporterTest extends ImporterTestAbstract
             Task::query()->where('project_id', $activeProject->id)->pluck('name')->all(),
         );
     }
+
+    public function test_import_supports_activities_column_alias_for_tasks(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $timezone = 'Europe/Vienna';
+        $importer = new ClockifyProjectsImporter;
+        $importer->init($organization);
+        // Some Clockify exports name the tasks column "Activities".
+        $data = Storage::disk('testfiles')->get('clockify_projects_import_test_3.csv');
+
+        // Act
+        $importer->importData($data, $timezone);
+
+        // Assert
+        $project = Project::query()->where('organization_id', $organization->id)->where('name', 'Project With Activities')->firstOrFail();
+        $this->assertEqualsCanonicalizing(
+            ['Activity A', 'Activity B'],
+            Task::query()->where('project_id', $project->id)->pluck('name')->all(),
+        );
+    }
 }
