@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\V1\TimeEntry;
 
+use App\Enums\TagMatchType;
 use App\Enums\TimeEntryRoundingType;
 use App\Http\Requests\V1\BaseFormRequest;
 use App\Models\Client;
@@ -105,7 +106,7 @@ class TimeEntryIndexRequest extends BaseFormRequest
             ],
             'tag_match_type' => [
                 'string',
-                'in:'.TimeEntryFilter::TAG_MATCH_TYPE_CONTAINS.','.TimeEntryFilter::TAG_MATCH_TYPE_NOT_CONTAINS,
+                Rule::enum(TagMatchType::class),
             ],
             // Filter by task IDs, task IDs are OR combined
             'task_ids' => [
@@ -192,6 +193,15 @@ class TimeEntryIndexRequest extends BaseFormRequest
     public function getOffset(): int
     {
         return $this->has('offset') ? (int) $this->validated('offset', 0) : 0;
+    }
+
+    public function getTagMatchType(): ?TagMatchType
+    {
+        if (! $this->has('tag_match_type') || $this->validated('tag_match_type') === null) {
+            return null;
+        }
+
+        return TagMatchType::from($this->validated('tag_match_type'));
     }
 
     public function getRoundingType(): ?TimeEntryRoundingType

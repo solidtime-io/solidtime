@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\V1\TimeEntry;
 
 use App\Enums\ExportFormat;
+use App\Enums\TagMatchType;
 use App\Enums\TimeEntryAggregationType;
 use App\Enums\TimeEntryAggregationTypeInterval;
 use App\Enums\TimeEntryRoundingType;
@@ -141,7 +142,7 @@ class TimeEntryAggregateExportRequest extends BaseFormRequest
             ],
             'tag_match_type' => [
                 'string',
-                'in:'.TimeEntryFilter::TAG_MATCH_TYPE_CONTAINS.','.TimeEntryFilter::TAG_MATCH_TYPE_NOT_CONTAINS,
+                Rule::enum(TagMatchType::class),
             ],
             // Filter by task IDs, task IDs are OR combined
             'task_ids' => [
@@ -248,6 +249,15 @@ class TimeEntryAggregateExportRequest extends BaseFormRequest
     public function getFormatValue(): ExportFormat
     {
         return ExportFormat::from($this->validated('format'));
+    }
+
+    public function getTagMatchType(): ?TagMatchType
+    {
+        if (! $this->has('tag_match_type') || $this->validated('tag_match_type') === null) {
+            return null;
+        }
+
+        return TagMatchType::from($this->validated('tag_match_type'));
     }
 
     public function getRoundingType(): ?TimeEntryRoundingType

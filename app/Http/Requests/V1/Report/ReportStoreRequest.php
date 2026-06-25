@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\V1\Report;
 
+use App\Enums\TagMatchType;
 use App\Enums\TimeEntryAggregationType;
 use App\Enums\TimeEntryAggregationTypeInterval;
 use App\Enums\TimeEntryRoundingType;
@@ -127,7 +128,7 @@ class ReportStoreRequest extends BaseFormRequest
             'properties.tag_match_type' => [
                 'nullable',
                 'string',
-                'in:'.TimeEntryFilter::TAG_MATCH_TYPE_CONTAINS.','.TimeEntryFilter::TAG_MATCH_TYPE_NOT_CONTAINS,
+                Rule::enum(TagMatchType::class),
             ],
             'properties.task_ids' => [
                 'nullable',
@@ -252,6 +253,15 @@ class ReportStoreRequest extends BaseFormRequest
     public function getPropertyHistoryGroup(): TimeEntryAggregationTypeInterval
     {
         return TimeEntryAggregationTypeInterval::from($this->input('properties.history_group'));
+    }
+
+    public function getPropertyTagMatchType(): ?TagMatchType
+    {
+        if (! $this->has('properties.tag_match_type') || $this->input('properties.tag_match_type') === null) {
+            return null;
+        }
+
+        return TagMatchType::from($this->input('properties.tag_match_type'));
     }
 
     public function getPropertyRoundingType(): ?TimeEntryRoundingType

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\V1\TimeEntry;
 
+use App\Enums\TagMatchType;
 use App\Enums\TimeEntryAggregationType;
 use App\Enums\TimeEntryRoundingType;
 use App\Http\Requests\V1\BaseFormRequest;
@@ -127,7 +128,7 @@ class TimeEntryAggregateRequest extends BaseFormRequest
             ],
             'tag_match_type' => [
                 'string',
-                'in:'.TimeEntryFilter::TAG_MATCH_TYPE_CONTAINS.','.TimeEntryFilter::TAG_MATCH_TYPE_NOT_CONTAINS,
+                Rule::enum(TagMatchType::class),
             ],
             // Filter by task IDs, task IDs are OR combined
             'task_ids' => [
@@ -210,6 +211,15 @@ class TimeEntryAggregateRequest extends BaseFormRequest
     public function getEnd(): ?Carbon
     {
         return $this->input('end') !== null ? Carbon::createFromFormat('Y-m-d\TH:i:s\Z', $this->input('end'), 'UTC') : null;
+    }
+
+    public function getTagMatchType(): ?TagMatchType
+    {
+        if (! $this->has('tag_match_type') || $this->validated('tag_match_type') === null) {
+            return null;
+        }
+
+        return TagMatchType::from($this->validated('tag_match_type'));
     }
 
     public function getRoundingType(): ?TimeEntryRoundingType
