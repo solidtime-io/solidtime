@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Endpoint\Api\V1\Public;
 
+use App\Enums\TagMatchType;
 use App\Enums\TimeEntryAggregationType;
 use App\Enums\TimeEntryAggregationTypeInterval;
 use App\Enums\Weekday;
@@ -663,6 +664,60 @@ class PublicReportEndpointTest extends ApiEndpointTestAbstract
             'data' => [
                 'seconds' => 200,
                 'cost' => 0,
+                'grouped_type' => TimeEntryAggregationType::Project->value,
+            ],
+        ]);
+    }
+
+    public function test_show_applies_not_contains_tag_match_type(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $tagA = Tag::factory()->forOrganization($organization)->create();
+        $tagB = Tag::factory()->forOrganization($organization)->create();
+
+        // Entry with tagA (should be excluded by "does not contain tagA")
+        TimeEntry::factory()->forOrganization($organization)
+            ->startWithDuration(now()->subDay(), 100)
+            ->create([
+                'tags' => [$tagA->getKey()],
+            ]);
+        // Entry with a different tag (should be included)
+        TimeEntry::factory()->forOrganization($organization)
+            ->startWithDuration(now()->subDay(), 200)
+            ->create([
+                'tags' => [$tagB->getKey()],
+            ]);
+        // Entry without tags (should be included)
+        TimeEntry::factory()->forOrganization($organization)
+            ->startWithDuration(now()->subDay(), 50)
+            ->create();
+
+        $reportDto = new ReportPropertiesDto;
+        $reportDto->start = now()->subDays(2);
+        $reportDto->end = now();
+        $reportDto->group = TimeEntryAggregationType::Project;
+        $reportDto->subGroup = TimeEntryAggregationType::Task;
+        $reportDto->historyGroup = TimeEntryAggregationTypeInterval::Day;
+        $reportDto->weekStart = Weekday::Monday;
+        $reportDto->timezone = 'Europe/Vienna';
+        $reportDto->setTagIds([$tagA->getKey()]);
+        $reportDto->setTagMatchType(TagMatchType::NotContains);
+        $report = Report::factory()->forOrganization($organization)->public()->create([
+            'public_until' => null,
+            'properties' => $reportDto,
+        ]);
+
+        // Act
+        $response = $this->getJson(route('api.v1.public.reports.show'), [
+            'X-Api-Key' => $report->share_secret,
+        ]);
+
+        // Assert: tagA entry (100s) excluded; tagB (200s) + untagged (50s) included
+        $response->assertOk();
+        $response->assertJson([
+            'data' => [
+                'seconds' => 250,
                 'grouped_type' => TimeEntryAggregationType::Project->value,
             ],
         ]);
