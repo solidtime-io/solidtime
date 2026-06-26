@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import { CheckCircleIcon, TagIcon, UserGroupIcon } from '@heroicons/vue/20/solid';
 import { FolderIcon } from '@heroicons/vue/16/solid';
+import { Check } from '@lucide/vue';
+import {
+    RadioGroupIndicator,
+    RadioGroupItem,
+    RadioGroupRoot,
+    type AcceptableValue,
+} from 'reka-ui';
 import BillableIcon from '@/packages/ui/src/Icons/BillableIcon.vue';
 import ReportingRoundingControls from '@/Components/Common/Reporting/ReportingRoundingControls.vue';
 import TaskMultiselectDropdown from '@/Components/Common/Task/TaskMultiselectDropdown.vue';
@@ -36,6 +43,16 @@ const emit = defineEmits<{
 }>();
 
 const { tags } = useTagsQuery();
+
+const tagMatchOptions: { value: TagMatchType; label: string }[] = [
+    { value: 'contains', label: 'Contains' },
+    { value: 'not_contains', label: 'Does Not Contain' },
+];
+
+function selectTagMatchType(value: AcceptableValue) {
+    tagMatchType.value = value as TagMatchType;
+    emit('submit');
+}
 
 async function createTag(name: string) {
     return await useTagsStore().createTag(name);
@@ -98,39 +115,29 @@ async function createTag(name: string) {
                     <template #content-before-list>
                         <div class="mt-2 border-b border-card-background-separator pb-2">
                             <div
+                                id="tag-match-type-label"
                                 class="mb-1.5 px-2 text-xs font-medium text-text-tertiary uppercase">
                                 Match
                             </div>
-                            <div class="space-y-1">
-                                <button
-                                    type="button"
-                                    class="w-full rounded-md px-2 py-1.5 text-left text-sm font-medium"
-                                    :class="
-                                        tagMatchType === 'contains'
-                                            ? 'bg-card-background-active text-text-primary'
-                                            : 'text-text-secondary hover:bg-card-background-active'
-                                    "
-                                    @click="
-                                        tagMatchType = 'contains';
-                                        emit('submit');
-                                    ">
-                                    Contains
-                                </button>
-                                <button
-                                    type="button"
-                                    class="w-full rounded-md px-2 py-1.5 text-left text-sm font-medium"
-                                    :class="
-                                        tagMatchType === 'not_contains'
-                                            ? 'bg-card-background-active text-text-primary'
-                                            : 'text-text-secondary hover:bg-card-background-active'
-                                    "
-                                    @click="
-                                        tagMatchType = 'not_contains';
-                                        emit('submit');
-                                    ">
-                                    Does Not Contain
-                                </button>
-                            </div>
+                            <RadioGroupRoot
+                                :model-value="tagMatchType"
+                                aria-labelledby="tag-match-type-label"
+                                class="space-y-1"
+                                @update:model-value="selectTagMatchType">
+                                <RadioGroupItem
+                                    v-for="option in tagMatchOptions"
+                                    :key="option.value"
+                                    :value="option.value"
+                                    class="relative flex w-full items-center rounded-md py-1.5 pl-2 pr-8 text-left text-sm font-medium text-text-secondary hover:bg-card-background-active data-[state=checked]:text-text-primary">
+                                    {{ option.label }}
+                                    <span
+                                        class="absolute right-2 flex h-3.5 w-3.5 items-center justify-center">
+                                        <RadioGroupIndicator>
+                                            <Check class="h-4 w-4" />
+                                        </RadioGroupIndicator>
+                                    </span>
+                                </RadioGroupItem>
+                            </RadioGroupRoot>
                         </div>
                     </template>
                 </TagDropdown>
