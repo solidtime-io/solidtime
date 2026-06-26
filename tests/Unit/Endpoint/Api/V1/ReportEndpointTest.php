@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Endpoint\Api\V1;
 
+use App\Enums\TagMatchType;
 use App\Enums\TimeEntryAggregationType;
 use App\Enums\TimeEntryRoundingType;
 use App\Enums\Weekday;
@@ -684,5 +685,65 @@ class ReportEndpointTest extends ApiEndpointTestAbstract
         $this->assertDatabaseMissing(Report::class, [
             'id' => $report->getKey(),
         ]);
+    }
+
+    public function test_store_endpoint_persists_tag_match_type(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'reports:create',
+        ]);
+        $tag = Tag::factory()->forOrganization($data->organization)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->withoutExceptionHandling()->postJson(route('api.v1.reports.store', [$data->organization->getKey()]), [
+            'name' => 'Report with tag match type',
+            'is_public' => false,
+            'properties' => [
+                'start' => Carbon::now()->subDays(30)->toIso8601ZuluString(),
+                'end' => Carbon::now()->toIso8601ZuluString(),
+                'group' => TimeEntryAggregationType::Project->value,
+                'sub_group' => TimeEntryAggregationType::Task->value,
+                'history_group' => TimeEntryAggregationType::Day->value,
+                'tag_ids' => [$tag->getKey()],
+                'tag_match_type' => TagMatchType::NotContains->value,
+            ],
+        ]);
+
+        // Assert
+        $response->assertStatus(201);
+        /** @var Report $report */
+        $report = Report::query()->findOrFail($response->json('data.id'));
+        $this->assertSame(TagMatchType::NotContains, $report->properties->tagMatchType);
+        // DetailedReportResource exposes the match type in the response
+        $response->assertJsonPath('data.properties.tag_match_type', TagMatchType::NotContains->value);
+    }
+
+    public function test_store_endpoint_rejects_invalid_tag_match_type(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'reports:create',
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.reports.store', [$data->organization->getKey()]), [
+            'name' => 'Report with invalid tag match type',
+            'is_public' => false,
+            'properties' => [
+                'start' => Carbon::now()->subDays(30)->toIso8601ZuluString(),
+                'end' => Carbon::now()->toIso8601ZuluString(),
+                'group' => TimeEntryAggregationType::Project->value,
+                'sub_group' => TimeEntryAggregationType::Task->value,
+                'history_group' => TimeEntryAggregationType::Day->value,
+                'tag_match_type' => 'invalid_value',
+            ],
+        ]);
+
+        // Assert
+        $response->assertStatus(422);
+        $response->assertInvalid(['properties.tag_match_type']);
     }
 }
