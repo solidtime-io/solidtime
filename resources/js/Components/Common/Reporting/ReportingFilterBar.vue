@@ -2,12 +2,7 @@
 import { CheckCircleIcon, TagIcon, UserGroupIcon } from '@heroicons/vue/20/solid';
 import { FolderIcon } from '@heroicons/vue/16/solid';
 import { Check } from '@lucide/vue';
-import {
-    RadioGroupIndicator,
-    RadioGroupItem,
-    RadioGroupRoot,
-    type AcceptableValue,
-} from 'reka-ui';
+import { RadioGroupIndicator, RadioGroupItem, RadioGroupRoot, type AcceptableValue } from 'reka-ui';
 import BillableIcon from '@/packages/ui/src/Icons/BillableIcon.vue';
 import ReportingRoundingControls from '@/Components/Common/Reporting/ReportingRoundingControls.vue';
 import TaskMultiselectDropdown from '@/Components/Common/Task/TaskMultiselectDropdown.vue';

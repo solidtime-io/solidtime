@@ -6,6 +6,7 @@ namespace Tests\Unit\Endpoint\Api\V1;
 
 use App\Enums\ExportFormat;
 use App\Enums\Role;
+use App\Enums\TagMatchType;
 use App\Enums\TimeEntryAggregationType;
 use App\Enums\TimeEntryAggregationTypeInterval;
 use App\Enums\TimeEntryRoundingType;
@@ -4350,5 +4351,154 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         $this->assertResponseCode($response, 200);
         $response->assertJsonCount(1, 'data');
         $response->assertJsonPath('data.0.id', $timeEntryWithoutTag->getKey());
+    }
+
+    public function test_index_endpoint_with_not_contains_tag_match_type_excludes_entries_with_tag(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:view:all',
+        ]);
+        $tag = Tag::factory()->forOrganization($data->organization)->create();
+        $timeEntryWithTag = TimeEntry::factory()
+            ->forOrganization($data->organization)
+            ->forMember($data->member)
+            ->create([
+                'start' => Carbon::now()->subHour(),
+                'tags' => [$tag->getKey()],
+            ]);
+        $timeEntryWithEmptyTags = TimeEntry::factory()
+            ->forOrganization($data->organization)
+            ->forMember($data->member)
+            ->create([
+                'start' => Carbon::now()->subHour(),
+                'tags' => [],
+            ]);
+        $timeEntryWithNullTags = TimeEntry::factory()
+            ->forOrganization($data->organization)
+            ->forMember($data->member)
+            ->create([
+                'start' => Carbon::now()->subHour(),
+                'tags' => null,
+            ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.time-entries.index', [
+            $data->organization->getKey(),
+            'tag_ids' => [$tag->getKey()],
+            'tag_match_type' => TagMatchType::NotContains->value,
+            'start' => Carbon::now()->subDay()->toIso8601ZuluString(),
+            'end' => Carbon::now()->addDay()->toIso8601ZuluString(),
+        ]));
+
+        // Assert: the tagged entry is excluded; the untagged (empty + null) entries remain
+        $response->assertValid();
+        $this->assertResponseCode($response, 200);
+        $response->assertJsonCount(2, 'data');
+        $returnedIds = collect($response->json('data'))->pluck('id');
+        $this->assertTrue($returnedIds->contains($timeEntryWithEmptyTags->getKey()));
+        $this->assertTrue($returnedIds->contains($timeEntryWithNullTags->getKey()));
+        $this->assertFalse($returnedIds->contains($timeEntryWithTag->getKey()));
+    }
+
+    public function test_index_endpoint_with_contains_tag_match_type_returns_only_entries_with_tag(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:view:all',
+        ]);
+        $tag = Tag::factory()->forOrganization($data->organization)->create();
+        $timeEntryWithTag = TimeEntry::factory()
+            ->forOrganization($data->organization)
+            ->forMember($data->member)
+            ->create([
+                'start' => Carbon::now()->subHour(),
+                'tags' => [$tag->getKey()],
+            ]);
+        TimeEntry::factory()
+            ->forOrganization($data->organization)
+            ->forMember($data->member)
+            ->create([
+                'start' => Carbon::now()->subHour(),
+                'tags' => [],
+            ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.time-entries.index', [
+            $data->organization->getKey(),
+            'tag_ids' => [$tag->getKey()],
+            'tag_match_type' => TagMatchType::Contains->value,
+            'start' => Carbon::now()->subDay()->toIso8601ZuluString(),
+            'end' => Carbon::now()->addDay()->toIso8601ZuluString(),
+        ]));
+
+        // Assert: only the entry that has the tag
+        $response->assertValid();
+        $this->assertResponseCode($response, 200);
+        $response->assertJsonCount(1, 'data');
+        $response->assertJsonPath('data.0.id', $timeEntryWithTag->getKey());
+    }
+
+    public function test_index_endpoint_rejects_invalid_tag_match_type(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:view:all',
+        ]);
+        $tag = Tag::factory()->forOrganization($data->organization)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.time-entries.index', [
+            $data->organization->getKey(),
+            'tag_ids' => [$tag->getKey()],
+            'tag_match_type' => 'invalid_value',
+            'start' => Carbon::now()->subDay()->toIso8601ZuluString(),
+            'end' => Carbon::now()->addDay()->toIso8601ZuluString(),
+        ]));
+
+        // Assert
+        $this->assertResponseCode($response, 422);
+        $response->assertInvalid(['tag_match_type']);
+    }
+
+    public function test_aggregate_endpoint_with_not_contains_tag_match_type_excludes_entries_with_tag(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:view:all',
+        ]);
+        $tag = Tag::factory()->forOrganization($data->organization)->create();
+        TimeEntry::factory()
+            ->forOrganization($data->organization)
+            ->forMember($data->member)
+            ->startWithDuration(Carbon::now()->subHour(), 100)
+            ->create([
+                'tags' => [$tag->getKey()],
+            ]);
+        TimeEntry::factory()
+            ->forOrganization($data->organization)
+            ->forMember($data->member)
+            ->startWithDuration(Carbon::now()->subHour(), 200)
+            ->create([
+                'tags' => [],
+            ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.time-entries.aggregate', [
+            $data->organization->getKey(),
+            'tag_ids' => [$tag->getKey()],
+            'tag_match_type' => TagMatchType::NotContains->value,
+            'start' => Carbon::now()->subDay()->toIso8601ZuluString(),
+            'end' => Carbon::now()->addDay()->toIso8601ZuluString(),
+        ]));
+
+        // Assert: only the untagged entry (200s) is aggregated
+        $response->assertValid();
+        $this->assertResponseCode($response, 200);
+        $response->assertJsonPath('data.seconds', 200);
     }
 }
