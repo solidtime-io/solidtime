@@ -2,10 +2,11 @@
 import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
 import { FolderPlusIcon } from '@heroicons/vue/24/solid';
 import { PlusIcon } from '@heroicons/vue/16/solid';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import ProjectCreateModal from '@/packages/ui/src/Project/ProjectCreateModal.vue';
 import ProjectTableHeading from '@/Components/Common/Project/ProjectTableHeading.vue';
 import ProjectTableRow from '@/Components/Common/Project/ProjectTableRow.vue';
+import Pagination from '@/Components/Common/Pagination.vue';
 
 export type SortColumn =
     | 'name'
@@ -143,6 +144,19 @@ const sortedProjects = computed(() => {
     return table.getRowModel().rows.map((row) => row.original);
 });
 
+// Client-side pagination: the full list is in memory, only one page is mounted at a time.
+const PAGE_SIZE = 15;
+const currentPage = ref(1);
+
+watch([() => props.sortColumn, () => props.sortDirection, () => props.projects], () => {
+    currentPage.value = 1;
+});
+
+const paginatedProjects = computed(() => {
+    const start = (currentPage.value - 1) * PAGE_SIZE;
+    return sortedProjects.value.slice(start, start + PAGE_SIZE);
+});
+
 const showCreateProjectModal = ref(false);
 
 async function createProject(project: CreateProjectBody): Promise<Project | undefined> {
@@ -199,7 +213,7 @@ const gridTemplate = computed(() => {
                         >Create your First Project
                     </SecondaryButton>
                 </div>
-                <template v-for="project in sortedProjects" :key="project.id">
+                <template v-for="project in paginatedProjects" :key="project.id">
                     <ProjectTableRow
                         :show-billable-rate="props.showBillableRate"
                         :project="project"></ProjectTableRow>
@@ -207,4 +221,8 @@ const gridTemplate = computed(() => {
             </div>
         </div>
     </div>
+    <Pagination
+        v-model:page="currentPage"
+        :total="sortedProjects.length"
+        :items-per-page="PAGE_SIZE"></Pagination>
 </template>

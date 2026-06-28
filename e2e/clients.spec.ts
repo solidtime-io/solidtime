@@ -246,7 +246,7 @@ test('test that sorting clients by name and status works', async ({ page, ctx })
 
 test('test that sorting clients by project count works', async ({ page, ctx }) => {
     const clientWithMany = await createClientViaApi(ctx, { name: 'ManyProjects Client' });
-    const clientWithNone = await createClientViaApi(ctx, { name: 'NoProjects Client' });
+    await createClientViaApi(ctx, { name: 'NoProjects Client' });
 
     // Create projects for the first client
     await createProjectViaApi(ctx, { name: 'Proj1', client_id: clientWithMany.id });
@@ -372,5 +372,121 @@ test.describe('Employee Clients Restrictions', () => {
 
         // Employee can see the client because they are a member of its private project
         await expect(employee.page.getByText(clientName)).toBeVisible({ timeout: 10000 });
+    });
+});
+
+// ──────────────────────────────────────────────────
+// Pagination Tests
+// ──────────────────────────────────────────────────
+
+test.describe('Clients Pagination', () => {
+    test.describe.configure({ timeout: 30000 });
+
+    test('test that client table paginates when there are more than 15 clients', async ({
+        page,
+        ctx,
+    }) => {
+        // Create 17 clients with zero-padded names so alphabetical sort is predictable.
+        // Page size is 15 → page 1 shows indices 00–14, page 2 shows 15–16.
+        const seed = Math.floor(Math.random() * 100000);
+        const prefix = `PaginationClient ${seed} `;
+        await Promise.all(
+            Array.from({ length: 17 }, (_, i) =>
+                createClientViaApi(ctx, { name: prefix + String(i).padStart(2, '0') })
+            )
+        );
+
+        await goToClientsOverview(page);
+        await clearClientTableState(page);
+        await page.reload();
+
+        // Default sort is name asc; first 15 clients (00–14) on page 1.
+        await expect(page.getByText(prefix + '00')).toBeVisible({ timeout: 10000 });
+        await expect(page.getByRole('button', { name: 'Next Page' })).toBeVisible();
+        // Client 15 should be on page 2, not visible on page 1.
+        await expect(page.getByText(prefix + '15')).not.toBeVisible();
+
+        // Exactly 15 data rows mounted on page 1.
+        await expect(page.getByRole('row')).toHaveCount(15);
+
+        // Navigation to page 2.
+        await page.getByRole('button', { name: 'Next Page' }).click();
+        await expect(page.getByText(prefix + '15')).toBeVisible();
+        await expect(page.getByText(prefix + '00')).not.toBeVisible();
+        // Page 2 contains the remaining 2 clients.
+        await expect(page.getByRole('row')).toHaveCount(2);
+
+        // Back to page 1 via Previous Page.
+        await page.getByRole('button', { name: 'Previous Page' }).click();
+        await expect(page.getByText(prefix + '00')).toBeVisible();
+        await expect(page.getByText(prefix + '15')).not.toBeVisible();
+
+        // First / Last page jumps.
+        await page.getByRole('button', { name: 'Last Page' }).click();
+        await expect(page.getByText(prefix + '15')).toBeVisible();
+        await page.getByRole('button', { name: 'First Page' }).click();
+        await expect(page.getByText(prefix + '00')).toBeVisible();
+        await expect(page.getByText(prefix + '15')).not.toBeVisible();
+
+        // Direct page-number button navigation + selected state.
+        await page.getByRole('button', { name: 'Page 2' }).click();
+        await expect(page.getByText(prefix + '15')).toBeVisible();
+        await expect(page.getByRole('button', { name: 'Page 2' })).toHaveAttribute(
+            'aria-current',
+            'page'
+        );
+    });
+
+    test('test that client pagination is not shown when there are 15 or fewer clients', async ({
+        page,
+        ctx,
+    }) => {
+        await Promise.all(
+            Array.from({ length: 10 }, (_, i) =>
+                createClientViaApi(ctx, {
+                    name: `FewClient ${Math.floor(Math.random() * 100000)} ${i}`,
+                })
+            )
+        );
+
+        await goToClientsOverview(page);
+        await clearClientTableState(page);
+        await page.reload();
+
+        await expect(page.getByTestId('client_table')).toBeVisible();
+        await expect(page.getByRole('button', { name: 'Next Page' })).toHaveCount(0);
+    });
+
+    test('test that changing the sort resets client pagination to page 1', async ({
+        page,
+        ctx,
+    }) => {
+        const seed = Math.floor(Math.random() * 100000);
+        const prefix = `SortPagClient ${seed} `;
+        await Promise.all(
+            Array.from({ length: 17 }, (_, i) =>
+                createClientViaApi(ctx, { name: prefix + String(i).padStart(2, '0') })
+            )
+        );
+
+        await goToClientsOverview(page);
+        await clearClientTableState(page);
+        await page.reload();
+
+        await expect(page.getByText(prefix + '00')).toBeVisible({ timeout: 10000 });
+
+        // Go to page 2.
+        await page.getByRole('button', { name: 'Next Page' }).click();
+        await expect(page.getByText(prefix + '15')).toBeVisible();
+
+        // Sort by name descending.
+        const table = page.getByTestId('client_table');
+        const nameHeader = table.getByText('Name').first();
+        await nameHeader.click();
+
+        // Pagination reset to page 1; desc order → 16, 15 visible, 00 on page 2.
+        await expect(page.getByText(prefix + '16')).toBeVisible();
+        await expect(page.getByText(prefix + '15')).toBeVisible();
+        await expect(page.getByText(prefix + '00')).not.toBeVisible();
     });
 });
