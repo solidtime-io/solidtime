@@ -1054,3 +1054,119 @@ test.describe('Employee Billable Rate Visibility', () => {
         await expect(projectRow).toContainText('200');
     });
 });
+
+// ──────────────────────────────────────────────────
+// Pagination Tests
+// ──────────────────────────────────────────────────
+
+test.describe('Projects Pagination', () => {
+    test.describe.configure({ timeout: 30000 });
+
+    test('test that project table paginates when there are more than 15 projects', async ({
+        page,
+        ctx,
+    }) => {
+        // Create 17 projects with zero-padded names so alphabetical sort is predictable.
+        // Page size is 15 → page 1 shows indices 00–14, page 2 shows 15–16.
+        const seed = Math.floor(Math.random() * 100000);
+        const prefix = `PaginationProj ${seed} `;
+        await Promise.all(
+            Array.from({ length: 17 }, (_, i) =>
+                createProjectViaApi(ctx, { name: prefix + String(i).padStart(2, '0') })
+            )
+        );
+
+        await goToProjectsOverview(page);
+        await clearProjectTableState(page);
+        await page.reload();
+
+        // Default sort is name asc; first 15 projects (00–14) should be on page 1.
+        await expect(page.getByText(prefix + '00')).toBeVisible({ timeout: 10000 });
+        await expect(page.getByRole('button', { name: 'Next Page' })).toBeVisible();
+        // Project 15 should be on page 2, not visible on page 1.
+        await expect(page.getByText(prefix + '15')).not.toBeVisible();
+
+        // Exactly 15 data rows should be mounted on page 1.
+        await expect(page.getByRole('row')).toHaveCount(15);
+
+        // Go to page 2.
+        await page.getByRole('button', { name: 'Next Page' }).click();
+        await expect(page.getByText(prefix + '15')).toBeVisible();
+        await expect(page.getByText(prefix + '00')).not.toBeVisible();
+        // Page 2 contains the remaining 2 projects (15, 16).
+        await expect(page.getByRole('row')).toHaveCount(2);
+
+        // Return to page 1 via Previous Page.
+        await page.getByRole('button', { name: 'Previous Page' }).click();
+        await expect(page.getByText(prefix + '00')).toBeVisible();
+        await expect(page.getByText(prefix + '15')).not.toBeVisible();
+
+        // Jump to last page then back to first page.
+        await page.getByRole('button', { name: 'Last Page' }).click();
+        await expect(page.getByText(prefix + '15')).toBeVisible();
+        await page.getByRole('button', { name: 'First Page' }).click();
+        await expect(page.getByText(prefix + '00')).toBeVisible();
+        await expect(page.getByText(prefix + '15')).not.toBeVisible();
+
+        // Direct page-number button navigation.
+        await page.getByRole('button', { name: 'Page 2' }).click();
+        await expect(page.getByText(prefix + '15')).toBeVisible();
+        // Page 2 button should be marked as selected.
+        await expect(page.getByRole('button', { name: 'Page 2' })).toHaveAttribute(
+            'aria-current',
+            'page'
+        );
+    });
+
+    test('test that project pagination is not shown when there are 15 or fewer projects', async ({
+        page,
+        ctx,
+    }) => {
+        await Promise.all(
+            Array.from({ length: 10 }, (_, i) =>
+                createProjectViaApi(ctx, {
+                    name: `FewProj ${Math.floor(Math.random() * 100000)} ${i}`,
+                })
+            )
+        );
+
+        await goToProjectsOverview(page);
+        await clearProjectTableState(page);
+        await page.reload();
+
+        await expect(page.getByTestId('project_table')).toBeVisible();
+        await expect(page.getByRole('button', { name: 'Next Page' })).toHaveCount(0);
+    });
+
+    test('test that changing the sort resets pagination to page 1', async ({ page, ctx }) => {
+        const seed = Math.floor(Math.random() * 100000);
+        const prefix = `SortPagProj ${seed} `;
+        await Promise.all(
+            Array.from({ length: 17 }, (_, i) =>
+                createProjectViaApi(ctx, { name: prefix + String(i).padStart(2, '0') })
+            )
+        );
+
+        await goToProjectsOverview(page);
+        await clearProjectTableState(page);
+        await page.reload();
+
+        await expect(page.getByText(prefix + '00')).toBeVisible({ timeout: 10000 });
+
+        // Go to page 2.
+        await page.getByRole('button', { name: 'Next Page' }).click();
+        await expect(page.getByText(prefix + '15')).toBeVisible();
+
+        // Sort by name descending: header click toggles asc → desc.
+        const nameHeader = page
+            .locator('[data-testid="project_table"] .select-none', { hasText: 'Name' })
+            .first();
+        await nameHeader.click();
+
+        // After sorting, pagination resets to page 1; desc order → 16, 15, ... 02 visible.
+        await expect(page.getByText(prefix + '16')).toBeVisible();
+        await expect(page.getByText(prefix + '15')).toBeVisible();
+        // Index 00 should now be on page 2 (last in desc order).
+        await expect(page.getByText(prefix + '00')).not.toBeVisible();
+    });
+});
