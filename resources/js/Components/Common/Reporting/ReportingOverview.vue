@@ -132,6 +132,7 @@ const filterParams = computed<AggregatedTimeEntriesQueryParams>(() => {
         member_id: getCurrentRole() === 'employee' ? getCurrentMembershipId() : undefined,
         rounding_type: roundingEnabled.value ? roundingType.value : undefined,
         rounding_minutes: roundingEnabled.value ? roundingMinutes.value : undefined,
+        show_amounts: showAmounts.value,
     };
 });
 
