@@ -93,6 +93,8 @@ class DetailedWithDataReportResource extends BaseResource
             'interval_format' => $this->resource->organization->interval_format->value,
             /** @var TimeFormat $time_format Time format */
             'time_format' => $this->resource->organization->time_format->value,
+            /** @var bool $show_amounts Whether to show amounts in the report */
+            'show_amounts' => $this->resource->properties->showAmounts ?? true,
             'properties' => [
                 /** @var string $group Type of first grouping */
                 'group' => $this->resource->properties->group->value,

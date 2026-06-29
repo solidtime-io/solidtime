@@ -11,6 +11,7 @@ import {
     createTimeEntryWithBillableStatusViaApi,
     createBareTimeEntryViaApi,
     createPublicProjectViaApi,
+    createBillableProjectViaApi,
     updateOrganizationSettingViaApi,
 } from './utils/api';
 
@@ -658,6 +659,76 @@ test('test that rounding can be enabled', async ({ page, ctx }) => {
 
     // Verify button text changed to "on"
     await expect(page.getByRole('button', { name: /Rounding on/ })).toBeVisible();
+});
+
+// ──────────────────────────────────────────────────
+// Show Amount Controls Tests
+// ──────────────────────────────────────────────────
+
+test('test that toggling show amount off hides the Cost column', async ({ page, ctx }) => {
+    const projectName = 'ShowAmountProj ' + Math.floor(Math.random() * 10000);
+
+    const project = await createBillableProjectViaApi(ctx, {
+        name: projectName,
+        billable_rate: 10000, // 100.00 per hour
+    });
+    await createTimeEntryViaApi(ctx, {
+        description: `Entry for ${projectName}`,
+        duration: '1h',
+        projectId: project.id,
+        billable: true,
+    });
+
+    await goToReporting(page);
+    await expect(page.getByRole('button', { name: 'Export' })).toBeVisible();
+
+    // Cost column should be visible by default for admin users with billable projects
+    await expect(page.getByText('Cost', { exact: true })).toBeVisible();
+    await expect(page.getByText(/Show amount: on/)).toBeVisible();
+
+    // Toggle show amount off
+    const reportUpdatePromise = waitForReportingUpdate(page);
+    await page.getByText(/Show amount: on/).click();
+    await page.getByRole('option', { name: 'Off' }).click();
+    await reportUpdatePromise;
+
+    // Cost column should no longer be visible
+    await expect(page.getByText('Cost', { exact: true })).not.toBeVisible();
+    await expect(page.getByText(/Show amount: off/)).toBeVisible();
+});
+
+test('test that toggling show amount back on restores the Cost column', async ({ page, ctx }) => {
+    const projectName = 'ShowAmountToggle ' + Math.floor(Math.random() * 10000);
+
+    const project = await createBillableProjectViaApi(ctx, {
+        name: projectName,
+        billable_rate: 10000,
+    });
+    await createTimeEntryViaApi(ctx, {
+        description: `Entry for ${projectName}`,
+        duration: '1h',
+        projectId: project.id,
+        billable: true,
+    });
+
+    await goToReporting(page);
+    await expect(page.getByRole('button', { name: 'Export' })).toBeVisible();
+
+    // Toggle off
+    let reportUpdatePromise = waitForReportingUpdate(page);
+    await page.getByText(/Show amount: on/).click();
+    await page.getByRole('option', { name: 'Off' }).click();
+    await reportUpdatePromise;
+    await expect(page.getByText('Cost', { exact: true })).not.toBeVisible();
+
+    // Toggle back on
+    reportUpdatePromise = waitForReportingUpdate(page);
+    await page.getByText(/Show amount: off/).click();
+    await page.getByRole('option', { name: 'On' }).click();
+    await reportUpdatePromise;
+
+    // Cost column should be visible again
+    await expect(page.getByText('Cost', { exact: true })).toBeVisible();
 });
 
 // ──────────────────────────────────────────────────

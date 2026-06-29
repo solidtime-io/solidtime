@@ -90,6 +90,7 @@ const billable = ref<'true' | 'false' | null>(null);
 const roundingEnabled = ref<boolean>(false);
 const roundingType = ref<TimeEntryRoundingType>('nearest');
 const roundingMinutes = ref<number>(15);
+const showAmounts = ref<boolean>(true);
 
 const { members } = useMembersQuery();
 const { organization } = useOrganizationQuery(getCurrentOrganizationId()!);
@@ -121,6 +122,7 @@ function getFilterAttributes() {
         billable: billable.value !== null ? billable.value : undefined,
         rounding_type: roundingEnabled.value ? roundingType.value : undefined,
         rounding_minutes: roundingEnabled.value ? roundingMinutes.value : undefined,
+        show_amounts: showAmounts.value,
     };
     return params;
 }
@@ -345,6 +347,7 @@ async function downloadExport(format: ExportFormat) {
             v-model:rounding-enabled="roundingEnabled"
             v-model:rounding-type="roundingType"
             v-model:rounding-minutes="roundingMinutes"
+            v-model:show-amounts="showAmounts"
             v-model:start-date="startDate"
             v-model:end-date="endDate"
             @submit="updateFilteredTimeEntries" />

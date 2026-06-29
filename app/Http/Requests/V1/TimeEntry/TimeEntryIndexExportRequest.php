@@ -182,7 +182,21 @@ class TimeEntryIndexExportRequest extends TimeEntryIndexRequest
                 'numeric',
                 'integer',
             ],
+            'show_amounts' => [
+                'nullable',
+                'string',
+                'in:true,false',
+            ],
         ];
+    }
+
+    public function getShowAmounts(): bool
+    {
+        if (! $this->has('show_amounts') || $this->input('show_amounts') === null) {
+            return true;
+        }
+
+        return $this->input('show_amounts') === 'true';
     }
 
     public function getDebug(): bool

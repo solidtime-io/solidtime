@@ -68,6 +68,8 @@ class ReportPropertiesDto implements Castable
 
     public ?int $roundingMinutes = null;
 
+    public ?bool $showAmounts = null;
+
     /**
      * Get the caster class to use when casting from / to this cast target.
      *
@@ -129,6 +131,8 @@ class ReportPropertiesDto implements Castable
                 $dto->roundingType = isset($data->roundingType) ? TimeEntryRoundingType::from($data->roundingType) : null;
                 // Note: roundingMinutes was added later so it is possible that the value is missing in persisted reports in the DB
                 $dto->roundingMinutes = isset($data->roundingMinutes) ? (int) $data->roundingMinutes : null;
+                // Note: showAmounts was added later so it is possible that the value is missing in persisted reports in the DB
+                $dto->showAmounts = isset($data->showAmounts) ? (bool) $data->showAmounts : null;
 
                 return $dto;
             }
@@ -157,6 +161,7 @@ class ReportPropertiesDto implements Castable
                     'timezone' => $value->timezone,
                     'roundingType' => $value->roundingType?->value,
                     'roundingMinutes' => $value->roundingMinutes,
+                    'showAmounts' => $value->showAmounts,
                 ];
 
                 $jsonString = json_encode($data);
