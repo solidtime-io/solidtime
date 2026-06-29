@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import { useBreaksEnabled } from '@/packages/ui/src/utils/useBreaksEnabled';
-import { CheckCircleIcon, LockClosedIcon, TagIcon, UserGroupIcon } from '@heroicons/vue/20/solid';
+import {
+    CheckCircleIcon,
+    LockClosedIcon,
+    TagIcon,
+    UserGroupIcon,
+    EyeIcon,
+    EyeSlashIcon,
+} from '@heroicons/vue/20/solid';
 import { FolderIcon } from '@heroicons/vue/16/solid';
 import { Check, Coffee } from '@lucide/vue';
 import { RadioGroupIndicator, RadioGroupItem, RadioGroupRoot, type AcceptableValue } from 'reka-ui';
@@ -34,6 +41,7 @@ const entryType = defineModel<'work' | 'break' | null>('entryType', { required: 
 const roundingEnabled = defineModel<boolean>('roundingEnabled', { required: true });
 const roundingType = defineModel<TimeEntryRoundingType>('roundingType', { required: true });
 const roundingMinutes = defineModel<number>('roundingMinutes', { required: true });
+const showAmounts = defineModel<boolean>('showAmounts', { required: true });
 const startDate = defineModel<string>('startDate', { required: true });
 const endDate = defineModel<string>('endDate', { required: true });
 
@@ -217,6 +225,29 @@ async function createTag(name: string) {
                     v-model:type="roundingType"
                     v-model:minutes="roundingMinutes"
                     @change="emit('submit')" />
+                <Select
+                    :model-value="showAmounts ? 'true' : 'false'"
+                    @update:model-value="(v) => (showAmounts = v === 'true')">
+                    <SelectTrigger
+                        size="sm"
+                        variant="outline"
+                        :active="!showAmounts"
+                        :show-chevron="false">
+                        <SelectValue class="flex items-center gap-2">
+                            <EyeSlashIcon
+                                v-if="!showAmounts"
+                                class="h-4 dark:text-accent-300/80 text-accent-400/80" />
+                            <EyeIcon v-else class="h-4 text-text-quaternary" />
+                            <span class="text-text-secondary">
+                                Show amount: {{ showAmounts ? 'on' : 'off' }}
+                            </span>
+                        </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="true">On</SelectItem>
+                        <SelectItem value="false">Off</SelectItem>
+                    </SelectContent>
+                </Select>
             </div>
             <div>
                 <DateRangePicker
