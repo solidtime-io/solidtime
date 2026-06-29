@@ -1560,6 +1560,102 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         $this->assertResponseCode($response, 200);
     }
 
+    public function test_index_export_endpoint_hides_amounts_when_show_amounts_is_false(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:view:all',
+        ]);
+        $timeEntry = TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)->startWithDuration(Carbon::now(), 100)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.time-entries.index-export', [
+            $data->organization->getKey(),
+            'format' => ExportFormat::CSV,
+            'start' => Carbon::now()->startOfYear()->toIso8601ZuluString(),
+            'end' => Carbon::now()->endOfYear()->toIso8601ZuluString(),
+            'show_amounts' => 'false',
+        ]));
+
+        // Assert
+        $this->assertResponseCode($response, 200);
+    }
+
+    public function test_index_export_endpoint_rejects_invalid_show_amounts_value(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:view:all',
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.time-entries.index-export', [
+            $data->organization->getKey(),
+            'format' => ExportFormat::CSV,
+            'start' => Carbon::now()->startOfYear()->toIso8601ZuluString(),
+            'end' => Carbon::now()->endOfYear()->toIso8601ZuluString(),
+            'show_amounts' => 'invalid',
+        ]));
+
+        // Assert
+        $response->assertStatus(422);
+        $response->assertInvalid(['show_amounts']);
+    }
+
+    public function test_aggregate_export_endpoint_hides_amounts_when_show_amounts_is_false(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:view:all',
+        ]);
+        $client = Client::factory()->forOrganization($data->organization)->create();
+        $project = Project::factory()->forOrganization($data->organization)->forClient($client)->create();
+        TimeEntry::factory()->forOrganization($data->organization)->forProject($project)->forMember($data->member)->startWithDuration(Carbon::now(), 100)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.time-entries.aggregate-export', [
+            $data->organization->getKey(),
+            'format' => ExportFormat::CSV,
+            'group' => TimeEntryAggregationType::Client,
+            'sub_group' => TimeEntryAggregationType::Project,
+            'history_group' => TimeEntryAggregationTypeInterval::Month,
+            'start' => Carbon::now()->startOfYear()->toIso8601ZuluString(),
+            'end' => Carbon::now()->endOfYear()->toIso8601ZuluString(),
+            'show_amounts' => 'false',
+        ]));
+
+        // Assert
+        $this->assertResponseCode($response, 200);
+    }
+
+    public function test_aggregate_export_endpoint_rejects_invalid_show_amounts_value(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:view:all',
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.time-entries.aggregate-export', [
+            $data->organization->getKey(),
+            'format' => ExportFormat::CSV,
+            'group' => TimeEntryAggregationType::Client,
+            'sub_group' => TimeEntryAggregationType::Project,
+            'history_group' => TimeEntryAggregationTypeInterval::Month,
+            'start' => Carbon::now()->startOfYear()->toIso8601ZuluString(),
+            'end' => Carbon::now()->endOfYear()->toIso8601ZuluString(),
+            'show_amounts' => 'invalid',
+        ]));
+
+        // Assert
+        $response->assertStatus(422);
+        $response->assertInvalid(['show_amounts']);
+    }
+
     public function test_index_export_endpoint_with_client_ids_filter_returns_filtered_entries(): void
     {
         // Arrange
