@@ -247,7 +247,7 @@ class TimeEntryController extends Controller
         }
         $user = $this->user();
         $timezone = $user->timezone;
-        $showBillableRate = $billableRateService->canSeeBillableRates($organization, $this->member($organization));
+        $showBillableRate = $billableRateService->canSeeBillableRates($organization, $this->member($organization)) && $request->getShowAmounts();
         $roundingType = $canAccessPremiumFeatures ? $request->getRoundingType() : null;
         $roundingMinutes = $canAccessPremiumFeatures ? $request->getRoundingMinutes() : null;
 
@@ -453,7 +453,7 @@ class TimeEntryController extends Controller
         }
         $debug = $request->getDebug();
         $user = $this->user();
-        $showBillableRate = $billableRateService->canSeeBillableRates($organization, $this->member($organization));
+        $showBillableRate = $billableRateService->canSeeBillableRates($organization, $this->member($organization)) && $request->getShowAmounts();
 
         $group = $request->getGroup();
         $subGroup = $request->getSubGroup();

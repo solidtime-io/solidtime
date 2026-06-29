@@ -4898,6 +4898,11 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
                 type: 'Query',
                 schema: z.array(z.string()).min(1).optional(),
             },
+            {
+                name: 'show_amounts',
+                type: 'Query',
+                schema: z.boolean().optional(),
+            },
         ],
         response: z.union([
             z.object({ download_url: z.string() }).passthrough(),
@@ -5035,6 +5040,11 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
                 name: 'task_ids',
                 type: 'Query',
                 schema: z.array(z.string()).min(1).optional(),
+            },
+            {
+                name: 'show_amounts',
+                type: 'Query',
+                schema: z.boolean().optional(),
             },
         ],
         response: z.union([

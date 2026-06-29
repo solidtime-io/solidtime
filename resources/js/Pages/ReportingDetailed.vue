@@ -111,6 +111,7 @@ function getFilterAttributes() {
         type: entryType.value !== null ? entryType.value : undefined,
         rounding_type: roundingEnabled.value ? roundingType.value : undefined,
         rounding_minutes: roundingEnabled.value ? roundingMinutes.value : undefined,
+        show_amounts: showAmounts.value,
     };
     return params;
 }
