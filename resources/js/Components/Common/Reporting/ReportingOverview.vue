@@ -74,6 +74,7 @@ const billable = ref<'true' | 'false' | null>(null);
 const roundingEnabled = ref<boolean>(false);
 const roundingType = ref<TimeEntryRoundingType>('nearest');
 const roundingMinutes = ref<number>(15);
+const showAmounts = useStorage<boolean>('reporting-show-amounts', true);
 
 const group = useStorage<GroupingOption>('reporting-group', 'project');
 const subGroup = useStorage<GroupingOption>('reporting-sub-group', 'task');
@@ -83,11 +84,13 @@ const { groupByOptions, getNameForReportingRowEntry, emptyPlaceholder } = report
 
 const organization = inject<ComputedRef<Organization>>('organization');
 
-const showBillableRate = computed(() => {
+const canSeeBillableRate = computed(() => {
     return !!(
         getCurrentRole() !== 'employee' || organization?.value?.employees_can_see_billable_rates
     );
 });
+
+const showBillableRate = computed(() => canSeeBillableRate.value && showAmounts.value);
 
 // Ensure sub-group falls back when it collides with group
 watch(
@@ -374,6 +377,8 @@ const tableData = computed(() => {
         v-model:rounding-enabled="roundingEnabled"
         v-model:rounding-type="roundingType"
         v-model:rounding-minutes="roundingMinutes"
+        v-model:show-amounts="showAmounts"
+        :can-toggle-amounts="canSeeBillableRate"
         v-model:start-date="startDate"
         v-model:end-date="endDate" />
     <MainContainer>
