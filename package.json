@@ -64,6 +64,7 @@
         "@tanstack/vue-query": "^5.100.10",
         "@tanstack/vue-query-devtools": "^5.91.0",
         "@tanstack/vue-table": "^8.21.3",
+        "@tanstack/vue-virtual": "^3.13.24",
         "@vue/eslint-config-prettier": "^10.2.0",
         "@vue/eslint-config-typescript": "^14.7.0",
         "@vueuse/core": "^14.3.0",
