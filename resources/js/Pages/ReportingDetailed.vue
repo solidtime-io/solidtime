@@ -122,6 +122,7 @@ function getFilterAttributes() {
         billable: billable.value !== null ? billable.value : undefined,
         rounding_type: roundingEnabled.value ? roundingType.value : undefined,
         rounding_minutes: roundingEnabled.value ? roundingMinutes.value : undefined,
+        show_amounts: showAmounts.value,
     };
     return params;
 }
