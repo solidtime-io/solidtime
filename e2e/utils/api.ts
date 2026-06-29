@@ -373,6 +373,20 @@ export async function createTaskViaApi(
     return body.data as { id: string; name: string; project_id: string };
 }
 
+export async function markTaskDoneViaApi(ctx: TestContext, task: { id: string; name: string }) {
+    const response = await ctx.request.put(
+        `${PLAYWRIGHT_BASE_URL}/api/v1/organizations/${ctx.orgId}/tasks/${task.id}`,
+        {
+            data: {
+                name: task.name,
+                is_done: true,
+            },
+        }
+    );
+    expect(response.status()).toBe(200);
+    return (await response.json()).data;
+}
+
 export async function createTagViaApi(ctx: TestContext, data: { name: string }) {
     const response = await ctx.request.post(
         `${PLAYWRIGHT_BASE_URL}/api/v1/organizations/${ctx.orgId}/tags`,
