@@ -554,6 +554,7 @@ const ReportStoreRequest = z
                 timezone: z.union([z.string(), z.null()]).optional(),
                 rounding_type: TimeEntryRoundingType.optional(),
                 rounding_minutes: z.union([z.number(), z.null()]).optional(),
+                show_amounts: z.union([z.boolean(), z.null()]).optional(),
             })
             .passthrough(),
     })
@@ -584,6 +585,7 @@ const DetailedReportResource = z
                 task_ids: z.union([z.array(z.string()), z.null()]),
                 rounding_type: z.union([z.string(), z.null()]),
                 rounding_minutes: z.union([z.number(), z.null()]),
+                show_amounts: z.union([z.boolean(), z.null()]),
             })
             .passthrough(),
         created_at: z.string(),
@@ -611,6 +613,7 @@ const DetailedWithDataReportResource = z
         date_format: DateFormat,
         interval_format: IntervalFormat,
         time_format: TimeFormat,
+        show_amounts: z.boolean(),
         properties: z
             .object({
                 group: z.string(),

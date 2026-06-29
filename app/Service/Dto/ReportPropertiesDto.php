@@ -71,6 +71,8 @@ class ReportPropertiesDto implements Castable
 
     public ?TimeEntryType $timeEntryType = null;
 
+    public ?bool $showAmounts = null;
+
     /**
      * Get the caster class to use when casting from / to this cast target.
      *
@@ -138,6 +140,8 @@ class ReportPropertiesDto implements Castable
                 } else {
                     $dto->timeEntryType = TimeEntryType::Work;
                 }
+                // Note: showAmounts was added later so it is possible that the value is missing in persisted reports in the DB
+                $dto->showAmounts = isset($data->showAmounts) ? (bool) $data->showAmounts : null;
 
                 return $dto;
             }
@@ -167,6 +171,7 @@ class ReportPropertiesDto implements Castable
                     'roundingType' => $value->roundingType?->value,
                     'roundingMinutes' => $value->roundingMinutes,
                     'timeEntryType' => $value->timeEntryType?->value,
+                    'showAmounts' => $value->showAmounts,
                 ];
 
                 $jsonString = json_encode($data);

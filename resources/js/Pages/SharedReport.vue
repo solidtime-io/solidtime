@@ -137,6 +137,10 @@ function resolveLabel(
     );
 }
 
+const showAmounts = computed(() => {
+    return sharedReportResponseData.value?.show_amounts ?? true;
+});
+
 const groupedPieChartData = computed(() => {
     return (
         aggregatedTableTimeEntries.value?.grouped_data?.map((entry) => {
@@ -227,12 +231,16 @@ onMounted(async () => {
                         and
                         <strong class="px-2">{{ getGroupLabel(subGroup) }}</strong>
                     </div>
-                    <div class="grid items-center" style="grid-template-columns: 1fr 100px 150px">
+                    <div
+                        class="grid items-center"
+                        :style="`grid-template-columns: 1fr 100px ${showAmounts ? '150px' : ''}`">
                         <div
                             class="contents [&>*]:border-card-background-separator [&>*]:border-b [&>*]:bg-tertiary [&>*]:pb-1.5 [&>*]:pt-1 text-text-secondary text-sm">
                             <div class="pl-6">Name</div>
-                            <div class="text-right">Duration</div>
-                            <div class="text-right pr-6">Cost</div>
+                            <div class="text-right" :class="!showAmounts ? 'pr-6' : ''">
+                                Duration
+                            </div>
+                            <div v-if="showAmounts" class="text-right pr-6">Cost</div>
                         </div>
                         <template
                             v-if="
@@ -244,14 +252,16 @@ onMounted(async () => {
                                 :key="entry.key ?? 'none'"
                                 :currency="reportCurrency"
                                 :currency-format="reportCurrencyFormat"
-                                :show-cost="true"
+                                :show-cost="showAmounts"
                                 :entry="entry"></ReportingRow>
                             <div
                                 class="contents [&>*]:transition text-text-tertiary [&>*]:h-[50px]">
                                 <div class="flex items-center pl-6 font-medium">
                                     <span>Total</span>
                                 </div>
-                                <div class="justify-end flex items-center font-medium">
+                                <div
+                                    class="justify-end flex items-center font-medium"
+                                    :class="!showAmounts ? 'pr-6' : ''">
                                     {{
                                         formatReportingDuration(
                                             aggregatedTableTimeEntries.seconds,
@@ -260,7 +270,9 @@ onMounted(async () => {
                                         )
                                     }}
                                 </div>
-                                <div class="justify-end pr-6 flex items-center font-medium">
+                                <div
+                                    v-if="showAmounts"
+                                    class="justify-end pr-6 flex items-center font-medium">
                                     {{
                                         aggregatedTableTimeEntries.cost
                                             ? formatCents(

@@ -186,6 +186,11 @@ class ReportStoreRequest extends BaseFormRequest
                 'string',
                 Rule::enum(TimeEntryType::class),
             ],
+            // Whether to show amounts in the report
+            'properties.show_amounts' => [
+                'nullable',
+                'boolean',
+            ],
         ];
     }
 
@@ -298,5 +303,14 @@ class ReportStoreRequest extends BaseFormRequest
         }
 
         return (int) $this->input('properties.rounding_minutes');
+    }
+
+    public function getPropertyShowAmounts(): ?bool
+    {
+        if (! $this->has('properties.show_amounts') || $this->input('properties.show_amounts') === null) {
+            return null;
+        }
+
+        return (bool) $this->input('properties.show_amounts');
     }
 }

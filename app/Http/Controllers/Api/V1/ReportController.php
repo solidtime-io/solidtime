@@ -112,6 +112,7 @@ class ReportController extends Controller
         $properties->roundingType = $request->getPropertyRoundingType();
         $properties->roundingMinutes = $request->getPropertyRoundingMinutes();
         $properties->timeEntryType = $request->getPropertyTimeEntryType();
+        $properties->showAmounts = $request->getPropertyShowAmounts();
         $report->properties = $properties;
         if ($isPublic) {
             $report->share_secret = $reportService->generateSecret();

@@ -66,6 +66,8 @@ class DetailedReportResource extends BaseResource
                 'rounding_type' => $this->resource->properties->roundingType?->value,
                 /** Rounding minutes for time entries */
                 'rounding_minutes' => $this->resource->properties->roundingMinutes,
+                /** @var bool|null $show_amounts Whether to show amounts in the report */
+                'show_amounts' => $this->resource->properties->showAmounts,
             ],
             /** Date when the report was created */
             'created_at' => $this->formatDateTime($this->resource->created_at),

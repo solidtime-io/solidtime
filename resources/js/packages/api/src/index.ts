@@ -87,6 +87,7 @@ export type AggregatedTimeEntriesQueryParams = ZodiosQueryParamsByAlias<
     end: string;
     rounding_type?: string;
     rounding_minutes?: number;
+    show_amounts?: boolean;
 };
 
 export type OrganizationResponse = ZodiosResponseByAlias<SolidTimeApi, 'getOrganization'>;
