@@ -117,6 +117,43 @@ test('test that archiving and unarchiving projects works', async ({ page, ctx })
     await expect(page.getByText(newProjectName)).toBeVisible();
 });
 
+test('test that the client can be changed in the edit project modal', async ({ page, ctx }) => {
+    const projectName = 'Edit Client Project ' + Math.floor(1 + Math.random() * 100000);
+    const clientName = 'Assigned Client ' + Math.floor(1 + Math.random() * 100000);
+    await createProjectViaApi(ctx, { name: projectName });
+    const client = await createClientViaApi(ctx, { name: clientName });
+
+    await page.goto(PLAYWRIGHT_BASE_URL + '/projects');
+    await expect(page.getByText(projectName)).toBeVisible({ timeout: 10000 });
+
+    // Open the project's Edit modal.
+    await page.getByRole('row').first().getByRole('button').click();
+    await page.getByRole('menuitem').getByText('Edit').first().click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+
+    // Open the client dropdown (currently "No Client"), confirm it focuses, and pick the client.
+    await page.getByRole('dialog').getByRole('button', { name: 'No Client' }).click();
+    const clientSearch = page.getByPlaceholder('Search for a client...');
+    await expect(clientSearch).toBeFocused();
+    await clientSearch.fill(clientName);
+    await page.getByRole('option', { name: clientName }).click();
+
+    // The trigger updates to the chosen client.
+    await expect(page.getByRole('dialog').getByRole('button', { name: clientName })).toBeVisible();
+
+    // Saving persists the client assignment.
+    await Promise.all([
+        page.getByRole('button', { name: 'Update Project' }).click(),
+        page.waitForResponse(
+            async (response) =>
+                response.url().includes('/projects/') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 200 &&
+                (await response.json()).data.client_id === client.id
+        ),
+    ]);
+});
+
 test('test that updating billable rate works with existing time entries', async ({ page, ctx }) => {
     const newProjectName = 'New Project ' + Math.floor(1 + Math.random() * 10000);
     const newBillableRate = Math.round(Math.random() * 10000);

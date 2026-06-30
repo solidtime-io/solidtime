@@ -9,10 +9,10 @@ import {
     ComboboxItem,
     ComboboxRoot,
     ComboboxViewport,
-} from 'radix-vue';
+    ComboboxVirtualizer,
+} from 'reka-ui';
 import { Check, Plus } from '@lucide/vue';
 import type { CreateClientBody, CreateProjectBody, Project } from '@/packages/api/src';
-import { UseFocusTrap } from '@vueuse/integrations/useFocusTrap/component';
 import ProjectCreateModal from '@/packages/ui/src/Project/ProjectCreateModal.vue';
 import { useProjectsStore } from '@/utils/useProjects';
 import { useClientsStore } from '@/utils/useClients';
@@ -103,40 +103,45 @@ function updateValue(project: Project) {
         </template>
 
         <template #content>
-            <UseFocusTrap v-if="open" :options="{ immediate: true, allowOutsideClick: true }">
+            <div v-if="open">
                 <ComboboxRoot
-                    v-model:search-term="searchValue"
                     v-model:open="open"
                     :model-value="currentProject"
                     class="relative"
+                    :ignore-filter="true"
                     @update:model-value="updateValue">
                     <ComboboxAnchor>
                         <ComboboxInput
                             ref="searchInput"
+                            v-model="searchValue"
                             class="bg-transparent border-0 placeholder-muted-foreground text-sm text-popover-foreground py-2 px-3 focus:ring-0 border-b border-popover-border focus:border-popover-border w-full"
                             placeholder="Search for a project..." />
                     </ComboboxAnchor>
                     <ComboboxContent>
                         <ComboboxViewport
                             class="w-[--reka-popper-anchor-width] max-h-60 overflow-y-scroll p-1">
-                            <ComboboxItem
-                                v-for="project in shownProjects"
-                                :key="project.id"
-                                :value="project"
-                                class="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground"
-                                :data-project-id="project.id">
-                                <span class="flex items-center gap-2">
+                            <ComboboxVirtualizer
+                                v-slot="{ option: project }"
+                                :options="shownProjects"
+                                :estimate-size="32"
+                                :text-content="(p: Project) => p.name">
+                                <ComboboxItem
+                                    :value="project"
+                                    class="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground"
+                                    :data-project-id="project.id">
+                                    <span class="flex min-w-0 flex-1 items-center gap-2">
+                                        <span
+                                            :style="{ backgroundColor: project.color }"
+                                            class="w-3 h-3 rounded-full shrink-0"></span>
+                                        <span class="truncate">{{ project.name }}</span>
+                                    </span>
                                     <span
-                                        :style="{ backgroundColor: project.color }"
-                                        class="w-3 h-3 rounded-full shrink-0"></span>
-                                    <span>{{ project.name }}</span>
-                                </span>
-                                <span
-                                    v-if="isProjectSelected(project)"
-                                    class="absolute right-2 flex h-3.5 w-3.5 items-center justify-center">
-                                    <Check class="h-4 w-4" />
-                                </span>
-                            </ComboboxItem>
+                                        v-if="isProjectSelected(project)"
+                                        class="absolute right-2 flex h-3.5 w-3.5 items-center justify-center">
+                                        <Check class="h-4 w-4" />
+                                    </span>
+                                </ComboboxItem>
+                            </ComboboxVirtualizer>
                         </ComboboxViewport>
                         <div
                             v-if="canCreateProjects()"
@@ -150,7 +155,7 @@ function updateValue(project: Project) {
                         </div>
                     </ComboboxContent>
                 </ComboboxRoot>
-            </UseFocusTrap>
+            </div>
         </template>
     </Dropdown>
     <ProjectCreateModal
