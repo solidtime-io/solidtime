@@ -30,7 +30,6 @@ const project = defineModel<string | null>('project', {
 const searchInput = ref<HTMLInputElement | null>(null);
 const open = ref(false);
 const dropdownViewport = ref<HTMLElement | null>(null);
-import { UseFocusTrap } from '@vueuse/integrations/useFocusTrap/component';
 
 const searchValue = ref('');
 
@@ -117,15 +116,17 @@ const flatRows = computed<FlatRow[]>(() => {
     return rows;
 });
 
+const ROW_HEIGHT = { client: 28, project: 36, task: 32 } as const;
+
 const rowVirtualizer = useVirtualizer(
     computed(() => ({
         count: flatRows.value.length,
         getScrollElement: () => dropdownViewport.value,
         estimateSize: (index: number) => {
             const row = flatRows.value[index];
-            if (row?.kind === 'client') return 28;
-            if (row?.kind === 'task') return 32;
-            return 38;
+            if (row?.kind === 'client') return ROW_HEIGHT.client;
+            if (row?.kind === 'task') return ROW_HEIGHT.task;
+            return ROW_HEIGHT.project;
         },
         getItemKey: (index: number) => flatRows.value[index]?.key ?? index,
         overscan: 12,
@@ -140,12 +141,6 @@ const visibleRows = computed(() =>
         row: flatRows.value[virtualRow.index]!,
     }))
 );
-
-function measureRow(el: unknown): void {
-    if (el instanceof HTMLElement) {
-        rowVirtualizer.value.measureElement(el);
-    }
-}
 
 // Lookup maps so filtering is O(projects + tasks + clients) instead of
 // O(projects × (tasks + clients)). They are rebuilt only when the underlying task/client
@@ -599,7 +594,7 @@ const showCreateProject = ref(false);
             </slot>
         </template>
         <template #content>
-            <UseFocusTrap v-if="open" :options="{ immediate: true, allowOutsideClick: true }">
+            <div v-if="open">
                 <input
                     ref="searchInput"
                     :value="searchValue"
@@ -621,8 +616,6 @@ const showCreateProject = ref(false);
                         <div
                             v-for="{ virtualRow, row } in visibleRows"
                             :key="row.key"
-                            :ref="measureRow"
-                            :data-index="virtualRow.index"
                             class="absolute left-0 top-0 w-full"
                             :style="{ transform: `translateY(${virtualRow.start}px)` }">
                             <div
@@ -711,7 +704,7 @@ const showCreateProject = ref(false);
                         <span>Create new Project</span>
                     </button>
                 </div>
-            </UseFocusTrap>
+            </div>
         </template>
     </Dropdown>
     <ProjectCreateModal
