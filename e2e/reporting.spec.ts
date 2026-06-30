@@ -96,6 +96,37 @@ test('test that project multiselect search filters the option list', async ({ pa
     await page.keyboard.press('Escape');
 });
 
+test('test that the project filter virtualizes a long list (renders only a window)', async ({
+    page,
+    ctx,
+}) => {
+    // Create many projects so the dropdown must virtualize rather than render all of them.
+    const projectNames = Array.from(
+        { length: 80 },
+        (_, i) => `VirtProj ${String(i).padStart(2, '0')}`
+    );
+    await Promise.all(projectNames.map((name) => createProjectViaApi(ctx, { name })));
+
+    await goToReporting(page);
+    await expect(page.getByRole('button', { name: 'Export' })).toBeVisible();
+    await page.getByRole('button', { name: 'Projects' }).first().click();
+
+    // Only a small window of options is mounted, far fewer than the 80+ projects that exist.
+    await expect(page.getByRole('option').first()).toBeVisible();
+    const renderedCount = await page.getByRole('option').count();
+    expect(renderedCount).toBeGreaterThan(0);
+    expect(renderedCount).toBeLessThan(60);
+
+    // Virtualization must not drop options: searching narrows the list to the one deep match.
+    // Wait for the filtered count to settle to 1 before asserting — checking the option while
+    // the virtualizer is still re-rendering can transiently match a stale row (Firefox CI flake).
+    await page.getByPlaceholder('Search for a Project...').fill('VirtProj 79');
+    await expect(page.getByRole('option')).toHaveCount(1);
+    await expect(page.getByRole('option')).toContainText('VirtProj 79');
+
+    await page.keyboard.press('Escape');
+});
+
 test('test that selecting multiple projects shows correct badge count', async ({ page, ctx }) => {
     const project1Name = 'MultiProj1 ' + Math.floor(Math.random() * 10000);
     const project2Name = 'MultiProj2 ' + Math.floor(Math.random() * 10000);

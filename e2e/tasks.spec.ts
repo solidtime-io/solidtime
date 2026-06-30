@@ -152,6 +152,49 @@ test('test that editing a task name works', async ({ page, ctx }) => {
     await expect(page.getByTestId('task_table')).not.toContainText(originalTaskName);
 });
 
+test('test that the project can be searched and changed in the create task modal', async ({
+    page,
+    ctx,
+}) => {
+    const sourceProject = 'Source Project ' + Math.floor(1 + Math.random() * 100000);
+    const targetProject = 'Target Project ' + Math.floor(1 + Math.random() * 100000);
+    await createProjectViaApi(ctx, { name: sourceProject });
+    const target = await createProjectViaApi(ctx, { name: targetProject });
+
+    await goToProjectsOverview(page);
+    await page.getByText(sourceProject).first().click();
+    await page.getByRole('button', { name: 'Create Task' }).click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+
+    // The project dropdown is pre-filled with the source project; open it.
+    await page.getByRole('dialog').getByRole('button', { name: sourceProject }).click();
+
+    // Opening the dropdown focuses the search input; searching narrows it to the target project.
+    const projectSearch = page.getByPlaceholder('Search for a project...');
+    await expect(projectSearch).toBeFocused();
+    await projectSearch.fill('Target Project');
+    await page.getByRole('option', { name: targetProject }).click();
+
+    // Selecting closes the dropdown and updates the trigger to the chosen project.
+    await expect(
+        page.getByRole('dialog').getByRole('button', { name: targetProject })
+    ).toBeVisible();
+
+    // The new selection is what gets used when the task is created.
+    const taskName = 'Switched Task ' + Math.floor(1 + Math.random() * 100000);
+    await page.getByPlaceholder('Task Name').fill(taskName);
+    await Promise.all([
+        page.getByRole('dialog').getByRole('button', { name: 'Create Task' }).click(),
+        page.waitForResponse(
+            async (response) =>
+                response.url().includes('/tasks') &&
+                response.request().method() === 'POST' &&
+                response.status() === 201 &&
+                (await response.json()).data.project_id === target.id
+        ),
+    ]);
+});
+
 test('test that creating a project with an existing client works', async ({ page, ctx }) => {
     const clientName = 'Existing Client ' + Math.floor(1 + Math.random() * 10000);
     const projectName = 'Project With Client ' + Math.floor(1 + Math.random() * 10000);

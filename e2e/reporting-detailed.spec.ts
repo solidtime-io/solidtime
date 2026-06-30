@@ -717,3 +717,108 @@ test('test that keyboard navigation works in multiselect dropdown', async ({ pag
         page.getByRole('button', { name: 'Projects' }).first().getByText('1')
     ).toBeVisible();
 });
+
+// ──────────────────────────────────────────────────
+// Pagination Tests
+// ──────────────────────────────────────────────────
+
+test.describe('Reporting Detailed Pagination', () => {
+    test('test that detailed reporting paginates when there are more than 15 time entries', async ({
+        page,
+        ctx,
+    }) => {
+        // The detailed report paginates server-side with a page limit of 15.
+        // Create 17 time entries on a single project so we get exactly 2 pages.
+        const seed = Math.floor(Math.random() * 100000);
+        const projectName = `ReportPagProj ${seed}`;
+        const project = await createProjectViaApi(ctx, { name: projectName });
+        const descriptions = Array.from(
+            { length: 17 },
+            (_, i) => `ReportPagEntry ${String(i).padStart(2, '0')} ${seed}`
+        );
+        await Promise.all(
+            descriptions.map((description) =>
+                createTimeEntryViaApi(ctx, {
+                    description,
+                    duration: '30min',
+                    projectId: project.id,
+                })
+            )
+        );
+
+        await goToReportingDetailed(page);
+        await expect(page.getByText(descriptions[0]!).first()).toBeVisible({
+            timeout: 10000,
+        });
+
+        // Pagination nav should be rendered.
+        await expect(page.getByRole('button', { name: 'Next Page' })).toBeVisible();
+
+        // Collect which descriptions are currently visible on page 1.
+        const visiblePage1 = new Set<string>();
+        for (const description of descriptions) {
+            if ((await page.getByText(description).count()) > 0) {
+                visiblePage1.add(description);
+            }
+        }
+        // The page limit is 15 → exactly 15 entries visible on page 1.
+        expect(visiblePage1.size).toBe(15);
+
+        // Go to page 2 and wait for the server fetch.
+        await Promise.all([
+            page.getByRole('button', { name: 'Next Page' }).click(),
+            waitForDetailedReportingUpdate(page),
+        ]);
+
+        const visiblePage2 = new Set<string>();
+        for (const description of descriptions) {
+            if ((await page.getByText(description).count()) > 0) {
+                visiblePage2.add(description);
+            }
+        }
+        // Page 2 should hold the remaining 2 entries, disjoint from page 1.
+        expect(visiblePage2.size).toBe(2);
+        for (const description of visiblePage2) {
+            expect(visiblePage1.has(description)).toBe(false);
+        }
+        // Across both pages, all 17 entries should have been visible.
+        expect(visiblePage1.size + visiblePage2.size).toBe(17);
+
+        // Page 2 button is selected.
+        await expect(page.getByRole('button', { name: 'Page 2' })).toHaveAttribute(
+            'aria-current',
+            'page'
+        );
+
+        // Previous page returns to page 1.
+        await Promise.all([
+            page.getByRole('button', { name: 'Previous Page' }).click(),
+            waitForDetailedReportingUpdate(page),
+        ]);
+        expect((await page.getByText(descriptions[0]!).count()) > 0).toBe(true);
+    });
+
+    test('test that reporting pagination is not shown when there are 15 or fewer time entries', async ({
+        page,
+        ctx,
+    }) => {
+        const seed = Math.floor(Math.random() * 100000);
+        const projectName = `FewEntriesProj ${seed}`;
+        const project = await createProjectViaApi(ctx, { name: projectName });
+        await Promise.all(
+            Array.from({ length: 5 }, (_, i) =>
+                createTimeEntryViaApi(ctx, {
+                    description: `FewEntries ${i} ${seed}`,
+                    duration: '30min',
+                    projectId: project.id,
+                })
+            )
+        );
+
+        await goToReportingDetailed(page);
+        await expect(page.getByText(`FewEntries 0 ${seed}`).first()).toBeVisible({
+            timeout: 10000,
+        });
+        await expect(page.getByRole('button', { name: 'Next Page' })).toHaveCount(0);
+    });
+});

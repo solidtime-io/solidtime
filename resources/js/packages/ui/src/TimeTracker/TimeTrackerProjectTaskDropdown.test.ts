@@ -87,4 +87,32 @@ describe('TimeTrackerProjectTaskDropdown', () => {
 
         expect(wrapper.emitted('changed')?.at(-1)).toEqual(['', null]);
     });
+
+    it("keeps a project's tasks visible when the search term matches the project name", async () => {
+        const project = {
+            id: 'p-dummy',
+            name: 'dummy',
+            color: '#fff',
+            client_id: null,
+            is_archived: false,
+        } as unknown as Project;
+        const tasks = [
+            { id: 't-1', name: 'design', project_id: 'p-dummy', is_done: false },
+            { id: 't-2', name: 'build', project_id: 'p-dummy', is_done: false },
+        ] as unknown as Task[];
+
+        const wrapper = mountDropdown({ projects: [project], tasks });
+        await nextTick();
+        await nextTick();
+
+        const searchInput = wrapper.find('[data-testid="client_dropdown_search"]');
+        await searchInput.setValue('dummy');
+        await nextTick();
+
+        // project itself shows up
+        expect(wrapper.find('[data-project-id="p-dummy"]').exists()).toBe(true);
+        // and its tasks are still available even though they don't match "dummy":
+        // the task expander keeps showing all of the project's tasks
+        expect(wrapper.text()).toContain('2 Tasks');
+    });
 });

@@ -57,6 +57,7 @@
         "@floating-ui/vue": "^1.1.4",
         "@heroicons/vue": "^2.1.5",
         "@vitejs/plugin-vue": "^5.1.2 || ^6.0.0",
+        "@tanstack/vue-virtual": "^3.13.24",
         "@vueuse/core": "^12.5.0 || ^14.0.0",
         "@vueuse/integrations": "^12.5.0 || ^14.0.0",
         "focus-trap": "^7.0.0 || ^8.0.0",
