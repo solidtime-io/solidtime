@@ -251,23 +251,26 @@ function updateFilteredResults() {
 
         const projectTasks = tasksByProject.value.get(filterProject.id) ?? [];
 
-        const filteredTasks = projectTasks.filter((filterTask) => {
-            return (
-                filterTask.name.toLowerCase().includes(searchTerm) &&
-                (!filterTask.is_done || filterTask.id === task.value)
-            );
+        // tasks that should be selectable regardless of the search term
+        // (open tasks, plus the currently selected one even if it's done)
+        const availableTasks = projectTasks.filter((filterTask) => {
+            return !filterTask.is_done || filterTask.id === task.value;
+        });
+
+        const filteredTasks = availableTasks.filter((filterTask) => {
+            return filterTask.name.toLowerCase().includes(searchTerm);
         });
 
         if (
             (projectNameIncludesSearchTerm || clientNameIncludesSearchTerm) &&
             (!filterProject.is_archived || project.value === filterProject.id)
         ) {
-            // search term matches project name
+            // search term matches project (or client) name: show all the tasks
             addProjectToFilterObject(
                 tempFilteredClients,
                 groupIndexByKey,
                 filterProject,
-                filteredTasks,
+                availableTasks,
                 false
             );
         } else if (filteredTasks.length > 0 && !filterProject.is_archived) {
