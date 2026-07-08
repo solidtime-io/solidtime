@@ -45,7 +45,7 @@ class ClientEndpointTest extends ApiEndpointTestAbstract
         // Assert
         $response->assertStatus(200);
         $response->assertJsonCount(4, 'data');
-        $clients = Client::query()->orderBy('created_at', 'desc')->get();
+        $clients = Client::query()->orderBy('created_at', 'desc')->orderBy('id')->get();
         $response->assertJson(fn (AssertableJson $json) => $json
             ->has('data')
             ->has('links')
@@ -84,9 +84,12 @@ class ClientEndpointTest extends ApiEndpointTestAbstract
             ->has('links')
             ->has('meta')
             ->count('data', 2)
-            ->where('data.0.id', $clients->get(0)->getKey())
-            ->where('data.1.id', $clients->get(1)->getKey())
         );
+        // Both clients share the same created_at, so their relative order is not defined.
+        $this->assertEqualsCanonicalizing([
+            $clients->get(0)->getKey(),
+            $clients->get(1)->getKey(),
+        ], $response->json('data.*.id'));
     }
 
     public function test_index_endpoint_without_filter_archived_returns_only_non_archived_clients(): void

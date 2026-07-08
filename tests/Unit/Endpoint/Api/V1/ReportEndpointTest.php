@@ -52,7 +52,7 @@ class ReportEndpointTest extends ApiEndpointTestAbstract
         // Assert
         $response->assertStatus(200);
         $response->assertJsonCount(4, 'data');
-        $reports = Report::query()->orderBy('created_at', 'desc')->get();
+        $reports = Report::query()->orderBy('created_at', 'desc')->orderBy('id')->get();
         $response->assertJson(fn (AssertableJson $json) => $json
             ->has('data')
             ->has('links')

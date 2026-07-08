@@ -44,7 +44,7 @@ class TagEndpointTest extends ApiEndpointTestAbstract
         // Assert
         $response->assertStatus(200);
         $response->assertJsonCount(4, 'data');
-        $tags = Tag::query()->orderBy('created_at', 'desc')->get();
+        $tags = Tag::query()->orderBy('created_at', 'desc')->orderBy('id')->get();
         $response->assertJson(fn (AssertableJson $json) => $json
             ->has('data')
             ->has('links')
