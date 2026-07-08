@@ -123,6 +123,7 @@ class TogglDataImporter extends DefaultImporter
             }
 
             foreach ($projects as $project) {
+                $projectExternalId = $this->guardExternalIdentifier($project->id);
                 $clientId = null;
                 if ($project->client_id !== null) {
                     $clientId = $this->clientImportHelper->getKeyByExternalIdentifier((string) $project->client_id);
@@ -146,16 +147,16 @@ class TogglDataImporter extends DefaultImporter
                     'billable_rate' => $project->rate !== null ? (int) ($project->rate * 100) : null,
                 ], (string) $project->id);
 
-                if (! file_exists($temporaryDirectory->path('projects_users/'.$project->id.'.json'))) {
-                    throw new ImportException('File "projects_users/'.$project->id.'.json" missing in ZIP');
+                if (! file_exists($temporaryDirectory->path('projects_users/'.$projectExternalId.'.json'))) {
+                    throw new ImportException('File "projects_users/'.$projectExternalId.'.json" missing in ZIP');
                 }
-                $projectMembersFileContent = file_get_contents($temporaryDirectory->path('projects_users/'.$project->id.'.json'));
+                $projectMembersFileContent = file_get_contents($temporaryDirectory->path('projects_users/'.$projectExternalId.'.json'));
                 if ($projectMembersFileContent === false) {
-                    throw new ImportException('File "projects_users/'.$project->id.'.json" can not be opened');
+                    throw new ImportException('File "projects_users/'.$projectExternalId.'.json" can not be opened');
                 }
                 $projectMembers = json_decode($projectMembersFileContent);
                 if ($projectMembers === null) {
-                    throw new ImportException('File "projects_users/'.$project->id.'.json" is empty');
+                    throw new ImportException('File "projects_users/'.$projectExternalId.'.json" is empty');
                 }
                 foreach ($projectMembers as $projectMember) {
                     $userId = $this->userImportHelper->getKeyByExternalIdentifier((string) $projectMember->user_id);
@@ -170,6 +171,7 @@ class TogglDataImporter extends DefaultImporter
             }
             $projectIds = $this->projectImportHelper->getExternalIds();
             foreach ($projectIds as $projectIdExternal) {
+                $projectIdExternal = $this->guardExternalIdentifier($projectIdExternal);
                 if (! file_exists($temporaryDirectory->path('tasks/'.$projectIdExternal.'.json'))) {
                     continue;
                 }
@@ -207,6 +209,30 @@ class TogglDataImporter extends DefaultImporter
             $temporaryDirectory?->delete();
             $temporaryDirectoryZip?->delete();
         }
+    }
+
+    /**
+     * Ensure an externally-sourced identifier can be safely used inside a
+     * filesystem path. The identifiers originate from the untrusted uploaded
+     * ZIP, and Spatie's TemporaryDirectory::path() auto-creates any missing
+     * parent directory of the resolved path, so an unfiltered "../" sequence
+     * would escape the import sandbox and create/probe arbitrary paths on the
+     * host (CWE-22). Toggl identifiers are numeric, so restricting them to a
+     * conservative allow-list rejects traversal without affecting real data.
+     *
+     * @throws ImportException
+     */
+    private function guardExternalIdentifier(mixed $id): string
+    {
+        if (! is_string($id) && ! is_int($id)) {
+            throw new ImportException('Invalid identifier in import data');
+        }
+        $id = (string) $id;
+        if (preg_match('/^[A-Za-z0-9_-]+$/', $id) !== 1) {
+            throw new ImportException('Invalid identifier in import data');
+        }
+
+        return $id;
     }
 
     #[Override]
