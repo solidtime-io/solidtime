@@ -47,6 +47,7 @@ class ReportController extends Controller
 
         $reports = Report::query()
             ->orderBy('created_at', 'desc')
+            ->orderBy('id')
             ->whereBelongsTo($organization, 'organization')
             ->paginate(config('app.pagination_per_page_default'));
 

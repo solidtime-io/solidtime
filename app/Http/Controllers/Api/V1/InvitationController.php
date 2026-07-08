@@ -42,6 +42,7 @@ class InvitationController extends Controller
 
         $invitations = $organization->organizationInvitations()
             ->orderBy('created_at', 'desc')
+            ->orderBy('id')
             ->paginate(config('app.pagination_per_page_default'));
 
         return InvitationCollection::make($invitations);

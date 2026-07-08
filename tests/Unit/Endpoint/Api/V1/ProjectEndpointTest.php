@@ -13,6 +13,8 @@ use App\Models\ProjectMember;
 use App\Models\Task;
 use App\Models\TimeEntry;
 use App\Service\BillableRateService;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Laravel\Passport\Passport;
 use Mockery\MockInterface;
@@ -79,6 +81,49 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
         $response->assertStatus(200);
         $ids = collect($response->json('data'))->pluck('id')->values()->toArray();
         $this->assertSame([$projectNewest->getKey(), $projectMiddle->getKey(), $projectOldest->getKey()], $ids);
+    }
+
+    public function test_index_endpoint_pagination_returns_every_project_exactly_once_when_they_share_created_at(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'projects:view',
+            'projects:view:all',
+        ]);
+        config(['app.pagination_per_page_default' => 15]);
+
+        // Bulk import: 300 projects that all share the exact same created_at.
+        $sharedCreatedAt = now()->subDay()->startOfSecond();
+        $rows = [];
+        for ($i = 0; $i < 300; $i++) {
+            $rows[] = [
+                'id' => (string) Str::uuid(),
+                'name' => 'Project '.$i,
+                'color' => '#000000',
+                'is_billable' => false,
+                'is_public' => false,
+                'organization_id' => $data->organization->getKey(),
+                'created_at' => $sharedCreatedAt,
+                'updated_at' => $sharedCreatedAt,
+            ];
+        }
+        DB::table('projects')->insert($rows);
+        Passport::actingAs($data->user);
+
+        // Act - walk every page like resources/js/utils/fetchAllPages.ts does.
+        $orgId = $data->organization->getKey();
+        $first = $this->getJson(route('api.v1.projects.index', [$orgId]).'?page=1');
+        $this->assertResponseCode($first, 200);
+        $lastPage = $first->json('meta.last_page');
+        $collected = collect($first->json('data.*.id'));
+        for ($page = 2; $page <= $lastPage; $page++) {
+            $response = $this->getJson(route('api.v1.projects.index', [$orgId]).'?page='.$page);
+            $this->assertResponseCode($response, 200);
+            $collected = $collected->concat($response->json('data.*.id'));
+        }
+
+        // Assert - every project appears exactly once, none duplicated or missing.
+        $this->assertEqualsCanonicalizing(array_column($rows, 'id'), $collected->all(), 'Some projects were duplicated or missing across pages');
     }
 
     public function test_index_endpoint_without_filter_archived_returns_only_non_archived_projects(): void

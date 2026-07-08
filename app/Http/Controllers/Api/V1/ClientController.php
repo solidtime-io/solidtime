@@ -43,7 +43,8 @@ class ClientController extends Controller
 
         $clientsQuery = Client::query()
             ->whereBelongsTo($organization, 'organization')
-            ->orderBy('created_at', 'desc');
+            ->orderBy('created_at', 'desc')
+            ->orderBy('id');
 
         if (! $canViewAllClients) {
             $clientsQuery->visibleByEmployee($user);

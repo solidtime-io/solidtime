@@ -24,6 +24,7 @@ use App\Models\User;
 use App\Service\TimeEntryFilter;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
@@ -390,6 +391,59 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
             ->where('data.2.id', $timeEntriesBeforeSorted->get(1)->getKey())
             ->where('data.3.id', $timeEntriesBeforeSorted->get(2)->getKey())
         );
+    }
+
+    public function test_index_endpoint_pagination_returns_every_time_entry_exactly_once_with_rounding(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:view:own',
+        ]);
+
+        // Bulk import: 300 time entries that all share the exact same start.
+        $sharedStart = Carbon::createFromFormat('Y-m-d H:i:s', '2020-01-01 00:00:07');
+        $rows = [];
+        for ($i = 0; $i < 300; $i++) {
+            $rows[] = [
+                'id' => (string) Str::uuid(),
+                'description' => 'Entry '.$i,
+                'start' => $sharedStart,
+                'end' => $sharedStart,
+                'billable' => false,
+                'is_imported' => true,
+                'user_id' => $data->member->user_id,
+                'member_id' => $data->member->getKey(),
+                'organization_id' => $data->organization->getKey(),
+                'created_at' => $sharedStart,
+                'updated_at' => $sharedStart,
+            ];
+        }
+        DB::table('time_entries')->insert($rows);
+        $this->actAsOrganizationWithSubscription();
+        Passport::actingAs($data->user);
+
+        // Act - walk every page like the client does (limit/offset), with rounding enabled.
+        $orgId = $data->organization->getKey();
+        $limit = 15;
+        $collected = collect();
+        $offset = 0;
+        do {
+            $response = $this->getJson(route('api.v1.time-entries.index', [
+                $orgId,
+                'member_id' => $data->member->getKey(),
+                'rounding_type' => TimeEntryRoundingType::Nearest,
+                'rounding_minutes' => 6,
+                'limit' => $limit,
+                'offset' => $offset,
+            ]));
+            $this->assertResponseCode($response, 200);
+            $ids = $response->json('data.*.id');
+            $collected = $collected->concat($ids);
+            $offset += $limit;
+        } while (count($ids) === $limit);
+
+        // Assert - every time entry appears exactly once, none duplicated or missing.
+        $this->assertEqualsCanonicalizing(array_column($rows, 'id'), $collected->all(), 'Some time entries were duplicated or missing across pages');
     }
 
     public function test_index_endpoint_can_round_up(): void

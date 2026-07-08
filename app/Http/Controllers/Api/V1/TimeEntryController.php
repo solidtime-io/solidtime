@@ -194,7 +194,8 @@ class TimeEntryController extends Controller
         $timeEntriesQuery = TimeEntry::query()
             ->whereBelongsTo($organization, 'organization')
             ->select($select)
-            ->orderBy('start', 'desc');
+            ->orderBy('time_entries.start', 'desc')
+            ->orderBy('time_entries.id');
 
         $filter = new TimeEntryFilter($timeEntriesQuery);
         $filter->addStartFilter($request->input('start'));

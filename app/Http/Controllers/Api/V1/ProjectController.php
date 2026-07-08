@@ -62,6 +62,7 @@ class ProjectController extends Controller
 
         $projects = $projectsQuery
             ->orderBy('created_at', 'desc')
+            ->orderBy('id')
             ->paginate(config('app.pagination_per_page_default'));
 
         $showBillableRate = $this->member($organization)->role !== Role::Employee->value || $organization->employees_can_see_billable_rates;
