@@ -44,11 +44,14 @@ const projectCountMap = computed(() => {
     return map;
 });
 
+// Name is always the secondary sort so rows with equal values render
+// alphabetically instead of in API (created_at) order.
 const sorting = computed<SortingState>(() => [
     {
         id: props.sortColumn,
         desc: props.sortDirection === 'desc',
     },
+    ...(props.sortColumn !== 'name' ? [{ id: 'name', desc: false }] : []),
 ]);
 
 const columns = computed(() => [
