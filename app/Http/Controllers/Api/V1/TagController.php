@@ -42,6 +42,7 @@ class TagController extends Controller
         $tags = Tag::query()
             ->whereBelongsTo($organization, 'organization')
             ->orderBy('created_at', 'desc')
+            ->orderBy('id')
             ->paginate(config('app.pagination_per_page_default'));
 
         return new TagCollection($tags);
