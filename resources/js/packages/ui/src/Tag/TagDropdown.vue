@@ -37,17 +37,24 @@ const model = defineModel<string[]>({
 
 const open = ref(false);
 const searchValue = ref('');
-const sortedTags = ref<Tag[]>([]);
+// The selection is pinned when the dropdown opens so rows don't re-sort while the user
+// toggles tags, but the tag list itself stays reactive — tags may still be loading
+// when the dropdown opens.
+const pinnedSelection = ref<Set<string>>(new Set());
 
 watch(open, (isOpen) => {
     if (isOpen) {
         searchValue.value = '';
-        sortedTags.value = [...props.tags].sort((a, b) => {
-            const aSelected = model.value.includes(a.id) ? 0 : 1;
-            const bSelected = model.value.includes(b.id) ? 0 : 1;
-            return aSelected - bSelected;
-        });
+        pinnedSelection.value = new Set(model.value);
     }
+});
+
+const sortedTags = computed(() => {
+    return [...props.tags].sort((a, b) => {
+        const aSelected = pinnedSelection.value.has(a.id) ? 0 : 1;
+        const bSelected = pinnedSelection.value.has(b.id) ? 0 : 1;
+        return aSelected - bSelected;
+    });
 });
 
 const filteredTags = computed(() => {

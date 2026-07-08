@@ -37,7 +37,18 @@ const emit = defineEmits(['update:modelValue', 'changed']);
 
 const activeClients = computed(() => clients.value.filter((c) => !c.is_archived));
 
-const sortedProjects = ref<Project[]>([]);
+// The selected project is pinned when the dropdown opens so rows don't re-sort while
+// the user interacts, but the project list itself stays reactive — projects may still
+// be loading (fetchAllPages) when the dropdown opens.
+const pinnedProjectId = ref<string | null>(null);
+
+const sortedProjects = computed(() => {
+    return [...projects.value].sort((a, b) => {
+        const aPinned = pinnedProjectId.value === a.id ? 0 : 1;
+        const bPinned = pinnedProjectId.value === b.id ? 0 : 1;
+        return aPinned - bPinned;
+    });
+});
 
 const shownProjects = computed(() => {
     return sortedProjects.value.filter((project) => {
@@ -65,9 +76,7 @@ watch(open, (isOpen) => {
             searchInput.value?.$el?.focus();
         });
 
-        sortedProjects.value = [...projects.value].sort((iteratingProject) => {
-            return model.value === iteratingProject.id ? -1 : 1;
-        });
+        pinnedProjectId.value = model.value;
     }
 });
 
