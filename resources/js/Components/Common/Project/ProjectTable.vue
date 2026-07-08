@@ -57,12 +57,15 @@ const clientNameMap = computed(() => {
     return map;
 });
 
-// Convert sort props to TanStack Table format
+// Convert sort props to TanStack Table format.
+// Name is always the secondary sort so rows with equal values render
+// alphabetically instead of in API (created_at) order.
 const sorting = computed<SortingState>(() => [
     {
         id: props.sortColumn,
         desc: props.sortDirection === 'desc',
     },
+    ...(props.sortColumn !== 'name' ? [{ id: 'name', desc: false }] : []),
 ]);
 
 // Define column accessors for sorting.
