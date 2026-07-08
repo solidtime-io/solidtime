@@ -1,6 +1,6 @@
 <script setup lang="ts" generic="T">
 import Dropdown from '@/packages/ui/src/Input/Dropdown.vue';
-import { computed, type Ref, ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import Checkbox from '@/packages/ui/src/Input/Checkbox.vue';
 import {
     ComboboxAnchor,
@@ -33,18 +33,25 @@ const props = defineProps<{
 
 const open = ref(false);
 const searchValue = ref('');
-const sortedItems = ref<T[]>([]) as Ref<T[]>;
+// The selection is pinned when the dropdown opens so rows don't re-sort while the user
+// toggles checkboxes, but the item list itself stays reactive — items may still be
+// loading (fetchAllPages) when the dropdown opens.
+const pinnedSelection = ref<Set<string>>(new Set());
 
 watch(open, (isOpen) => {
     if (isOpen) {
         searchValue.value = '';
-        sortedItems.value = [...props.items].sort((a, b) => {
-            const aSelected = model.value.includes(props.getKeyFromItem(a)) ? 0 : 1;
-            const bSelected = model.value.includes(props.getKeyFromItem(b)) ? 0 : 1;
-            if (aSelected !== bSelected) return aSelected - bSelected;
-            return props.getNameForItem(a).localeCompare(props.getNameForItem(b));
-        });
+        pinnedSelection.value = new Set(model.value);
     }
+});
+
+const sortedItems = computed(() => {
+    return [...props.items].sort((a, b) => {
+        const aSelected = pinnedSelection.value.has(props.getKeyFromItem(a)) ? 0 : 1;
+        const bSelected = pinnedSelection.value.has(props.getKeyFromItem(b)) ? 0 : 1;
+        if (aSelected !== bSelected) return aSelected - bSelected;
+        return props.getNameForItem(a).localeCompare(props.getNameForItem(b));
+    });
 });
 
 const filteredItems = computed(() => {
