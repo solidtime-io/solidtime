@@ -527,6 +527,11 @@ const selectedProjectColor = computed(() => {
     return currentProject.value?.color || 'var(--theme-color-icon-default)';
 });
 
+const selectedClientName = computed(() => {
+    const clientId = currentProject.value?.client_id;
+    return clientId ? clientsById.value.get(clientId)?.name : undefined;
+});
+
 // This state prevents the selection to jump to random items when the mouse cursor is
 // over an item and some Item in the Dropdown is selected by keyboard navigation to scroll into view
 const mouseEnterHighlightActivated = ref(true);
@@ -572,14 +577,23 @@ const showCreateProject = ref(false);
                         :size="props.size"
                         :class="twMerge('w-full justify-start overflow-hidden', props.class)">
                         <div
-                            class="w-3 h-3 rounded-full shrink-0"
+                            class="w-2.5 h-2.5 rounded-full shrink-0"
                             :style="{ backgroundColor: selectedProjectColor }"></div>
-                        <span class="truncate shrink-[1] text-text-primary pr-1">{{
+                        <span class="truncate shrink-[1] text-text-primary">{{
                             selectedProjectName
                         }}</span>
                         <template v-if="currentTask">
-                            <ChevronRightIcon class="w-4 h-4 text-text-tertiary shrink-0" />
+                            <ChevronRightIcon class="!size-3 text-text-primary shrink-0 -mx-1" />
                             <span class="truncate shrink-[100]">{{ currentTask.name }}</span>
+                        </template>
+                        <template v-if="selectedClientName">
+                            <span class="dark:text-text-tertiary text-text-quaternary shrink-0"
+                                >•</span
+                            >
+                            <span
+                                class="truncate shrink-[200] dark:text-text-tertiary text-text-quaternary"
+                                >{{ selectedClientName }}</span
+                            >
                         </template>
                     </Button>
                     <button
