@@ -20,6 +20,11 @@ class RecalculateSpentTimeForProject implements ShouldDispatchAfterCommit, Shoul
     use Queueable;
     use SerializesModels;
 
+    /**
+     * Delete the job if its models no longer exist.
+     */
+    public bool $deleteWhenMissingModels = true;
+
     public Project $project;
 
     /**

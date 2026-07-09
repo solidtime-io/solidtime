@@ -20,6 +20,11 @@ class RecalculateSpentTimeForTask implements ShouldDispatchAfterCommit, ShouldQu
     use Queueable;
     use SerializesModels;
 
+    /**
+     * Delete the job if its models no longer exist.
+     */
+    public bool $deleteWhenMissingModels = true;
+
     public Task $task;
 
     /**
