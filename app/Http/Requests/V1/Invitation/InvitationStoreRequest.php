@@ -25,7 +25,7 @@ class InvitationStoreRequest extends BaseFormRequest
         return [
             'email' => [
                 'required',
-                'email',
+                'email:rfc,strict',
             ],
             'role' => [
                 'required',

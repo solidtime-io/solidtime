@@ -41,7 +41,7 @@ class UserUpdateRequest extends BaseFormRequest
                 'max:255',
             ],
             'email' => [
-                'email',
+                'email:rfc,strict',
                 'max:255',
                 UniqueEloquent::make(User::class, 'email')->ignore($this->user->id)->query(function (Builder $query) {
                     /** @var Builder<User> $query */
