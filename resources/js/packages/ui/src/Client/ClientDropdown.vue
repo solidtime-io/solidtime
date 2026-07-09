@@ -85,13 +85,18 @@ function updateValue(client: { id: string | null; name: string }) {
             <slot name="trigger"></slot>
         </template>
         <template #content>
-            <div v-if="open">
+            <div>
                 <ComboboxRoot
-                    v-model:open="open"
+                    :open="true"
                     :model-value="currentClient"
                     class="relative"
                     :ignore-filter="true"
-                    @update:model-value="updateValue">
+                    @update:model-value="updateValue"
+                    @update:open="
+                        (value: boolean) => {
+                            if (!value) open = false;
+                        }
+                    ">
                     <ComboboxAnchor>
                         <ComboboxInput
                             ref="searchInput"

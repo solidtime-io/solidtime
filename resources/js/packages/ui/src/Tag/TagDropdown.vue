@@ -37,9 +37,7 @@ const model = defineModel<string[]>({
 
 const open = ref(false);
 const searchValue = ref('');
-// The selection is pinned when the dropdown opens so rows don't re-sort while the user
-// toggles tags, but the tag list itself stays reactive — tags may still be loading
-// when the dropdown opens.
+// Pinned on open so rows don't re-sort while toggling; the tag list itself stays reactive.
 const pinnedSelection = ref<Set<string>>(new Set());
 
 watch(open, (isOpen) => {

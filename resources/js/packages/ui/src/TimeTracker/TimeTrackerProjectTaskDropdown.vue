@@ -594,7 +594,7 @@ const showCreateProject = ref(false);
             </slot>
         </template>
         <template #content>
-            <div v-if="open">
+            <div>
                 <input
                     ref="searchInput"
                     :value="searchValue"

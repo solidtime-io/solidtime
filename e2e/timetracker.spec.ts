@@ -502,8 +502,10 @@ test.describe('Project Task Dropdown', () => {
         await projectOption.getByText(/Tasks/).click();
         await page.getByText(taskName, { exact: true }).click();
 
-        // The trigger reflects the selected task.
-        await expect(page.getByText(taskName)).toBeVisible();
+        // Scoped to the trigger button: the closing dropdown also contains the name while animating out.
+        await expect(
+            page.getByRole('button', { name: `${projectName} ${taskName}` })
+        ).toBeVisible();
     });
 
     test('test that keyboard navigation selects a project', async ({ page, ctx }) => {
@@ -654,7 +656,10 @@ test.describe('Project Task Dropdown', () => {
         await search.press('ArrowDown');
         await search.press('Enter');
 
-        await expect(page.getByText(taskName)).toBeVisible();
+        // Scoped to the trigger button: the closing dropdown also contains the name while animating out.
+        await expect(
+            page.getByRole('button', { name: `${projectName} ${taskName}` })
+        ).toBeVisible();
     });
 
     test('test that pressing space selects the highlighted project', async ({ page, ctx }) => {
