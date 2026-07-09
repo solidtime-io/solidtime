@@ -136,6 +136,46 @@ class ClockifyTimeEntriesImporterTest extends ImporterTestAbstract
         $this->assertSame(1, $report->tasksCreated);
     }
 
+    public function test_import_of_test_file_without_client_column_succeeds(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $timezone = 'Europe/Vienna';
+        $importer = new ClockifyTimeEntriesImporter;
+        $importer->init($organization);
+        // Newer Clockify exports no longer contain a "Client" column.
+        $data = Storage::disk('testfiles')->get('clockify_time_entries_import_test_6.csv');
+
+        // Act
+        $importer->importData($data, $timezone);
+        $report = $importer->getReport();
+
+        // Assert
+        $this->assertSame(2, $report->timeEntriesCreated);
+        $this->assertSame(2, $report->projectsCreated);
+        $this->assertSame(0, $report->clientsCreated);
+    }
+
+    public function test_import_of_test_file_with_client_column_but_missing_values_succeeds(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $timezone = 'Europe/Vienna';
+        $importer = new ClockifyTimeEntriesImporter;
+        $importer->init($organization);
+        // Rows shorter than the header are padded with null by the CSV reader.
+        $data = Storage::disk('testfiles')->get('clockify_time_entries_import_test_7.csv');
+
+        // Act
+        $importer->importData($data, $timezone);
+        $report = $importer->getReport();
+
+        // Assert
+        $this->assertSame(1, $report->timeEntriesCreated);
+        $this->assertSame(1, $report->projectsCreated);
+        $this->assertSame(0, $report->clientsCreated);
+    }
+
     public function test_import_fails_if_month_in_date_is_bigger_than_12(): void
     {
         // Arrange

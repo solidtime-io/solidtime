@@ -72,7 +72,7 @@ class ClockifyTimeEntriesImporter extends DefaultImporter
                 ]);
                 $member = $this->memberImportHelper->getModelById($memberId);
                 $clientId = null;
-                if ($record['Client'] !== '') {
+                if (($record['Client'] ?? '') !== '') {
                     $clientId = $this->clientImportHelper->getKey([
                         'name' => $record['Client'],
                         'organization_id' => $this->organization->id,
@@ -215,7 +215,6 @@ class ClockifyTimeEntriesImporter extends DefaultImporter
     {
         $requiredFields = [
             'Project',
-            'Client',
             'Description',
             'User',
             'Group',

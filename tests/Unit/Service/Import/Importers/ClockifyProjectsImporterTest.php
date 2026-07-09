@@ -96,6 +96,29 @@ class ClockifyProjectsImporterTest extends ImporterTestAbstract
         );
     }
 
+    public function test_import_of_test_file_without_client_column_succeeds(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $timezone = 'Europe/Vienna';
+        $importer = new ClockifyProjectsImporter;
+        $importer->init($organization);
+        // Newer Clockify exports no longer contain a "Client" column.
+        $data = Storage::disk('testfiles')->get('clockify_projects_import_test_4.csv');
+
+        // Act
+        $importer->importData($data, $timezone);
+
+        // Assert
+        $project = Project::query()->where('organization_id', $organization->id)->where('name', 'Project Without Client Column')->firstOrFail();
+        $this->assertNull($project->client_id);
+        $this->assertSame(100 * 3600, $project->estimated_time);
+        $this->assertEqualsCanonicalizing(
+            ['Task 1', 'Task 2'],
+            Task::query()->where('project_id', $project->id)->pluck('name')->all(),
+        );
+    }
+
     public function test_import_supports_activities_column_alias_for_tasks(): void
     {
         // Arrange

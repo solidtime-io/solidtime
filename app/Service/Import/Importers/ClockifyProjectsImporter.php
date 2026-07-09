@@ -29,7 +29,8 @@ class ClockifyProjectsImporter extends DefaultImporter
             $records = $reader->getRecords();
             foreach ($records as $record) {
                 $clientId = null;
-                if ($record['Client'] !== '') {
+                // Newer Clockify exports no longer contain a "Client" column.
+                if (($record['Client'] ?? '') !== '') {
                     $clientId = $this->clientImportHelper->getKey([
                         'name' => $record['Client'],
                         'organization_id' => $this->organization->id,
@@ -45,7 +46,7 @@ class ClockifyProjectsImporter extends DefaultImporter
                         'color' => $this->colorService->getRandomColor(),
                         'is_billable' => $record['Billability'] === 'Yes',
                         'billable_rate' => $billableRateKey !== null && $record[$billableRateKey] !== '' ? (int) (((float) $record[$billableRateKey]) * 100) : null,
-                        'estimated_time' => $record['Estimated (h)'] !== '' && is_numeric($record['Estimated (h)']) ? (int) ($record['Estimated (h)'] * 3600) : null,
+                        'estimated_time' => isset($record['Estimated (h)']) && is_numeric($record['Estimated (h)']) ? (int) ($record['Estimated (h)'] * 3600) : null,
                         'archived_at' => $record['Status'] === 'Archived' ? Carbon::now() : null,
                     ]);
                 }
@@ -80,7 +81,6 @@ class ClockifyProjectsImporter extends DefaultImporter
     {
         $requiredFields = [
             'Project',
-            'Client',
             'Status',
             'Visibility',
             'Billability',
