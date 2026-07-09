@@ -37,9 +37,7 @@ const emit = defineEmits(['update:modelValue', 'changed']);
 
 const activeClients = computed(() => clients.value.filter((c) => !c.is_archived));
 
-// The selected project is pinned when the dropdown opens so rows don't re-sort while
-// the user interacts, but the project list itself stays reactive — projects may still
-// be loading (fetchAllPages) when the dropdown opens.
+// Pinned on open so rows don't re-sort while interacting; the project list itself stays reactive.
 const pinnedProjectId = ref<string | null>(null);
 
 const sortedProjects = computed(() => {
@@ -112,13 +110,19 @@ function updateValue(project: Project) {
         </template>
 
         <template #content>
-            <div v-if="open">
+            <!-- kept open so the list stays visible during the popover close animation -->
+            <div>
                 <ComboboxRoot
-                    v-model:open="open"
+                    :open="true"
                     :model-value="currentProject"
                     class="relative"
                     :ignore-filter="true"
-                    @update:model-value="updateValue">
+                    @update:model-value="updateValue"
+                    @update:open="
+                        (value: boolean) => {
+                            if (!value) open = false;
+                        }
+                    ">
                     <ComboboxAnchor>
                         <ComboboxInput
                             ref="searchInput"

@@ -89,11 +89,17 @@ function selectMember(member: Member) {
             </Button>
         </template>
         <template #content>
+            <!-- kept open so the list stays visible during the popover close animation -->
             <ComboboxRoot
                 v-model:search-term="searchValue"
-                v-model:open="open"
+                :open="true"
                 class="relative"
-                :filter-function="(val: string[]) => val">
+                :filter-function="(val: string[]) => val"
+                @update:open="
+                    (value: boolean) => {
+                        if (!value) open = false;
+                    }
+                ">
                 <ComboboxAnchor>
                     <ComboboxInput
                         ref="searchInput"

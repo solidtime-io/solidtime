@@ -33,9 +33,7 @@ const props = defineProps<{
 
 const open = ref(false);
 const searchValue = ref('');
-// The selection is pinned when the dropdown opens so rows don't re-sort while the user
-// toggles checkboxes, but the item list itself stays reactive — items may still be
-// loading (fetchAllPages) when the dropdown opens.
+// Pinned on open so rows don't re-sort while toggling; the item list itself stays reactive.
 const pinnedSelection = ref<Set<string>>(new Set());
 
 watch(open, (isOpen) => {
@@ -104,7 +102,16 @@ const emit = defineEmits(['update:modelValue', 'changed', 'submit']);
             <slot name="trigger"></slot>
         </template>
         <template #content>
-            <ComboboxRoot v-model:open="open" class="p-2" :ignore-filter="true">
+            <!-- kept open so the list stays visible during the popover close animation -->
+            <ComboboxRoot
+                :open="true"
+                class="p-2"
+                :ignore-filter="true"
+                @update:open="
+                    (value: boolean) => {
+                        if (!value) open = false;
+                    }
+                ">
                 <ComboboxAnchor>
                     <ComboboxInput
                         v-model="searchValue"
