@@ -171,7 +171,7 @@ abstract class DefaultImporter implements ImporterContract
         }, validate: [
             'email' => [
                 'required',
-                'email',
+                'email:rfc,strict',
                 'max:255',
             ],
         ]);

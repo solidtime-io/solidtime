@@ -66,7 +66,7 @@ class UserResource extends Resource
                             ->ignore($record?->getKey()),
                     ])
                     ->rule([
-                        'email',
+                        'email:rfc,strict',
                     ])
                     ->maxLength(255),
                 Forms\Components\Toggle::make('is_placeholder')
