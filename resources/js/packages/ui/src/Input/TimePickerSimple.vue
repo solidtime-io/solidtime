@@ -91,6 +91,47 @@ const emit = defineEmits(['changed']);
 useFocus(timeInput, { initialValue: props.focus });
 
 const inputValue = ref(model.value ? getLocalizedDayJs(model.value).format('HH:mm') : null);
+
+let selectAllOnMouseUp = false;
+let ignoreNextFocusSelect = props.focus;
+let selectAllOnNextClick = props.focus;
+
+watch(() => props.focus, (newValue) => {
+    if (newValue) {
+        ignoreNextFocusSelect = true;
+        selectAllOnNextClick = true;
+    }
+});
+
+function handleFocus(event: FocusEvent) {
+    if (ignoreNextFocusSelect) {
+        ignoreNextFocusSelect = false;
+        return;
+    }
+    const target = event.target as HTMLInputElement;
+    target.select();
+    selectAllOnMouseUp = true;
+}
+
+function handleMouseUp(event: MouseEvent) {
+    if (selectAllOnNextClick) {
+        const target = event.target as HTMLInputElement;
+        target.select();
+        selectAllOnNextClick = false;
+        selectAllOnMouseUp = false;
+        event.preventDefault();
+        return;
+    }
+    if (selectAllOnMouseUp) {
+        event.preventDefault();
+        selectAllOnMouseUp = false;
+    }
+}
+
+function handleBlur(event: FocusEvent) {
+    selectAllOnNextClick = false;
+    updateTime(event);
+}
 </script>
 
 <template>
@@ -101,12 +142,10 @@ const inputValue = ref(model.value ? getLocalizedDayJs(model.value).format('HH:m
         class="text-center w-full"
         data-testid="time_picker_input"
         type="text"
-        @blur="updateTime"
+        @blur="handleBlur"
         @keydown.enter.prevent="updateTime"
-        @focus="($event.target as HTMLInputElement).select()"
-        @mouseup="($event.target as HTMLInputElement).select()"
-        @click="($event.target as HTMLInputElement).select()"
-        @pointerup="($event.target as HTMLInputElement).select()" />
+        @focus="handleFocus"
+        @mouseup="handleMouseUp" />
 </template>
 
 <style scoped></style>
