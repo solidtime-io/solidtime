@@ -92,6 +92,30 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         $response->assertJsonPath('data.0.id', $timeEntry->getKey());
     }
 
+    public function test_index_endpoint_filters_by_member_id_instead_of_legacy_user_id(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:view:own',
+        ]);
+        $legacyUser = User::factory()->create();
+        $timeEntry = TimeEntry::factory()->forMember($data->member)->create([
+            'user_id' => $legacyUser->getKey(),
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.time-entries.index', [
+            $data->organization->getKey(),
+            'member_id' => $data->member->getKey(),
+        ]));
+
+        // Assert
+        $this->assertResponseCode($response, 200);
+        $response->assertJsonCount(1, 'data');
+        $response->assertJsonPath('data.0.id', $timeEntry->getKey());
+    }
+
     public function test_index_endpoint_fails_if_user_filter_is_from_different_organization(): void
     {
         // Arrange
@@ -126,7 +150,10 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         Passport::actingAs($data->user);
 
         // Act
-        $response = $this->getJson(route('api.v1.time-entries.index', [$data->organization->getKey(), 'user_id' => $user->getKey()]));
+        $response = $this->getJson(route('api.v1.time-entries.index', [
+            $data->organization->getKey(),
+            'member_id' => $member->getKey(),
+        ]));
 
         // Assert
         $this->assertResponseCode($response, 200);
@@ -1772,6 +1799,29 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         ]);
     }
 
+    public function test_aggregate_endpoint_filters_by_member_id_instead_of_legacy_user_id(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:view:own',
+        ]);
+        $legacyUser = User::factory()->create();
+        TimeEntry::factory()->forMember($data->member)->startWithDuration(Carbon::now(), 100)->create([
+            'user_id' => $legacyUser->getKey(),
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.time-entries.aggregate', [
+            $data->organization->getKey(),
+            'member_id' => $data->member->getKey(),
+        ]));
+
+        // Assert
+        $response->assertSuccessful();
+        $response->assertJsonPath('data.seconds', 100);
+    }
+
     public function test_aggregate_endpoint_groups_by_two_groups(): void
     {
         // Arrange
@@ -2819,6 +2869,32 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         ]);
     }
 
+    public function test_update_endpoint_updates_user_id_when_member_id_changes(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:update:all',
+        ]);
+        $otherUser = User::factory()->create();
+        $otherMember = Member::factory()->forOrganization($data->organization)->forUser($otherUser)->role(Role::Employee)->create();
+        $timeEntry = TimeEntry::factory()->forMember($data->member)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.time-entries.update', [$data->organization->getKey(), $timeEntry->getKey()]), [
+            'member_id' => $otherMember->getKey(),
+        ]);
+
+        // Assert
+        $response->assertValid();
+        $this->assertResponseCode($response, 200);
+        $this->assertDatabaseHas(TimeEntry::class, [
+            'id' => $timeEntry->getKey(),
+            'member_id' => $otherMember->getKey(),
+            'user_id' => $otherUser->getKey(),
+        ]);
+    }
+
     public function test_update_endpoint_can_update_project_and_automatically_set_client(): void
     {
         // Arrange
@@ -3152,6 +3228,40 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         ]);
         $this->assertDatabaseHas(TimeEntry::class, [
             'id' => $otherOrganizationTimeEntry->getKey(),
+        ]);
+    }
+
+    public function test_destroy_multiple_uses_member_id_for_own_permission_checks(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:delete:own',
+        ]);
+        $otherUser = User::factory()->create();
+        $otherMember = Member::factory()->forOrganization($data->organization)->forUser($otherUser)->role(Role::Employee)->create();
+        $timeEntry = TimeEntry::factory()->forMember($otherMember)->create([
+            'user_id' => $data->user->getKey(),
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->deleteJson(route('api.v1.time-entries.destroy-multiple', [$data->organization->getKey()]), [
+            'ids' => [
+                $timeEntry->getKey(),
+            ],
+        ]);
+
+        // Assert
+        $response->assertValid();
+        $this->assertResponseCode($response, 200);
+        $response->assertExactJson([
+            'success' => [],
+            'error' => [
+                $timeEntry->getKey(),
+            ],
+        ]);
+        $this->assertDatabaseHas(TimeEntry::class, [
+            'id' => $timeEntry->getKey(),
         ]);
     }
 
@@ -3566,6 +3676,46 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         ]);
     }
 
+    public function test_update_multiple_uses_member_id_for_own_permission_checks(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:update:own',
+            'projects:view:all',
+        ]);
+        $otherUser = User::factory()->create();
+        $otherMember = Member::factory()->forOrganization($data->organization)->forUser($otherUser)->role(Role::Employee)->create();
+        $timeEntry = TimeEntry::factory()->forMember($otherMember)->create([
+            'user_id' => $data->user->getKey(),
+        ]);
+        $timeEntriesFake = TimeEntry::factory()->forOrganization($data->organization)->make();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->patchJson(route('api.v1.time-entries.update-multiple', [$data->organization->getKey()]), [
+            'ids' => [
+                $timeEntry->getKey(),
+            ],
+            'changes' => [
+                'description' => $timeEntriesFake->description,
+            ],
+        ]);
+
+        // Assert
+        $response->assertValid();
+        $this->assertResponseCode($response, 200);
+        $response->assertExactJson([
+            'success' => [],
+            'error' => [
+                $timeEntry->getKey(),
+            ],
+        ]);
+        $this->assertDatabaseHas(TimeEntry::class, [
+            'id' => $timeEntry->getKey(),
+            'description' => $timeEntry->description,
+        ]);
+    }
+
     public function test_update_multiple_updates_sets_description_to_empty_if_the_client_sends_null(): void
     {
         // Arrange
@@ -3609,6 +3759,51 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         $this->assertDatabaseHas(TimeEntry::class, [
             'id' => $timeEntry2->getKey(),
             'description' => '',
+        ]);
+    }
+
+    public function test_update_multiple_updates_user_id_when_member_id_changes(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:update:all',
+        ]);
+        $otherUser = User::factory()->create();
+        $otherMember = Member::factory()->forOrganization($data->organization)->forUser($otherUser)->role(Role::Employee)->create();
+        $timeEntry1 = TimeEntry::factory()->forMember($data->member)->create();
+        $timeEntry2 = TimeEntry::factory()->forMember($data->member)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->patchJson(route('api.v1.time-entries.update-multiple', [$data->organization->getKey()]), [
+            'ids' => [
+                $timeEntry1->getKey(),
+                $timeEntry2->getKey(),
+            ],
+            'changes' => [
+                'member_id' => $otherMember->getKey(),
+            ],
+        ]);
+
+        // Assert
+        $response->assertValid();
+        $response->assertStatus(200);
+        $response->assertExactJson([
+            'success' => [
+                $timeEntry1->getKey(),
+                $timeEntry2->getKey(),
+            ],
+            'error' => [],
+        ]);
+        $this->assertDatabaseHas(TimeEntry::class, [
+            'id' => $timeEntry1->getKey(),
+            'member_id' => $otherMember->getKey(),
+            'user_id' => $otherUser->getKey(),
+        ]);
+        $this->assertDatabaseHas(TimeEntry::class, [
+            'id' => $timeEntry2->getKey(),
+            'member_id' => $otherMember->getKey(),
+            'user_id' => $otherUser->getKey(),
         ]);
     }
 
