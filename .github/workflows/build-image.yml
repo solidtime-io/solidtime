@@ -1,0 +1,147 @@
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  packages: write
+  contents: read
+
+env:
+  DOCKER_REPO: ghcr.io/lipsia/ld-time
+
+name: Build - Docker Image
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+
+    steps:
+      - name: "Check out code"
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          fetch-depth: 0 # Required for WyriHaximus/github-action-get-previous-tag
+
+      - name: "Get build"
+        id: release-build
+        run: echo "build=$(git rev-parse --short=8 HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: "Get Previous tag (normal push)"
+        id: previoustag
+        if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
+        continue-on-error: true
+        uses: WyriHaximus/github-action-get-previous-tag@61819f33034117e6c686e6a31dba995a85afc9de # v2
+        with:
+          pattern: "v*[0-9].*[0-9].*[0-9]"
+
+      - name: "Get version"
+        id: release-version
+        env:
+          GH_REF: ${{ github.ref }}
+          PREVIOUS_TAG: ${{ steps.previoustag.outputs.tag }}
+        run: |
+          if [[ "$GH_REF" == refs/tags/v* ]]; then
+            echo "app_version=${GH_REF#refs/tags/v}" >> "$GITHUB_OUTPUT"
+          elif [[ "$PREVIOUS_TAG" == v* ]]; then
+            echo "app_version=${PREVIOUS_TAG#v}" >> "$GITHUB_OUTPUT"
+          else
+            echo "app_version=0.0.0" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: "Copy .env template for production"
+        run: |
+          cp .env.production .env
+          rm .env.production .env.ci .env.example
+
+      - name: "Add version to .env"
+        env:
+          APP_VERSION: ${{ steps.release-version.outputs.app_version }}
+        run: sed -i "s/APP_VERSION=0.0.0/APP_VERSION=${APP_VERSION}/g" .env
+
+      - name: "Add build to .env"
+        env:
+          APP_BUILD: ${{ steps.release-build.outputs.build }}
+        run: sed -i "s/APP_BUILD=0/APP_BUILD=${APP_BUILD}/g" .env
+
+      - name: "Setup PHP with PECL extension"
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, dom, fileinfo, pgsql
+
+      - name: "Install dependencies"
+        run: composer install --no-dev --no-ansi --no-interaction --prefer-dist --ignore-platform-reqs --classmap-authoritative
+
+      - name: "Use Node.js"
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '20.x'
+
+      - name: "Install npm dependencies"
+        run: npm ci
+
+      - name: "Build"
+        run: npm run build
+
+      - name: "Docker meta"
+        id: "meta"
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6
+        with:
+          images: |
+            ${{ env.DOCKER_REPO }}
+          tags: |
+            type=sha,format=long
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+
+      - name: "Login to GitHub Container Registry"
+        uses: docker/login-action@af1e73f918a031802d376d3c8bbc3fe56130a9b0 # v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Set up Docker Buildx"
+        uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4
+
+      - name: "Build and push"
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
+        with:
+          context: .
+          file: docker/prod/Dockerfile
+          build-args: |
+            DOCKER_FILES_BASE_PATH=docker/prod/
+          platforms: linux/amd64
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          push: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # Opens/updates a deploy PR in lipsia/nix-infra that bumps the image tag.
+  # Merging that PR deploys (nix-infra's deploy workflow runs on push to main).
+  # Requires the NIX_INFRA_DISPATCH_TOKEN secret: a fine-grained PAT with
+  # contents read+write on lipsia/nix-infra only.
+  dispatch-deploy:
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: "Trigger deploy PR in nix-infra"
+        env:
+          GH_TOKEN: ${{ secrets.NIX_INFRA_DISPATCH_TOKEN }}
+          IMAGE_TAG: sha-${{ github.sha }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::warning::NIX_INFRA_DISPATCH_TOKEN is not set — skipping deploy PR dispatch"
+            exit 0
+          fi
+          gh api repos/lipsia/nix-infra/dispatches \
+            -f event_type=ld-time-image \
+            -f "client_payload[image_tag]=${IMAGE_TAG}" \
+            -f "client_payload[source_commit]=${GITHUB_SHA}"
