@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Enums\TagMatchType;
+use App\Enums\TimeEntryType;
 use App\Models\Member;
 use App\Models\TimeEntry;
 use Illuminate\Database\Eloquent\Builder;
@@ -140,6 +141,32 @@ class TimeEntryFilter
             return $this;
         }
         $this->builder->where('billable', '=', $billable);
+
+        return $this;
+    }
+
+    public function addTypeFilter(?string $type): self
+    {
+        if ($type === null) {
+            return $this;
+        }
+        $typeEnum = TimeEntryType::tryFrom($type);
+        if ($typeEnum === null) {
+            Log::warning('Invalid type filter value', ['value' => $type]);
+
+            return $this;
+        }
+        $this->addType($typeEnum);
+
+        return $this;
+    }
+
+    public function addType(?TimeEntryType $type): self
+    {
+        if ($type === null) {
+            return $this;
+        }
+        $this->builder->where('type', '=', $type->value);
 
         return $this;
     }

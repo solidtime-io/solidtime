@@ -26,7 +26,7 @@ interface Interval {
     end: Dayjs;
 }
 
-function localDayBounds(date: string, tz: string): { dayStart: Dayjs; dayEnd: Dayjs } {
+export function localDayBounds(date: string, tz: string): { dayStart: Dayjs; dayEnd: Dayjs } {
     const dayjs = getDayJsInstance();
     // `.add(1, 'day')` on a Dayjs instance advances by a fixed 24h, which is
     // wrong on DST-transition days (the local day is 23h or 25h long). Derive

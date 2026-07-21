@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Service\ReportExport;
 
 use App\Enums\ExportFormat;
+use App\Enums\TimeEntryType;
 use App\Models\TimeEntry;
 use App\Service\LocalizationService;
 use Illuminate\Database\Eloquent\Builder;
@@ -106,6 +107,7 @@ class TimeEntriesDetailedExport implements FromQuery, ShouldAutoSize, WithColumn
             'Duration',
             'Duration (decimal)',
             'Billable',
+            'Break',
             'Tags',
         ];
     }
@@ -130,6 +132,7 @@ class TimeEntriesDetailedExport implements FromQuery, ShouldAutoSize, WithColumn
                 $duration !== null ? $this->localizationService->formatInterval($duration) : null,
                 $duration?->totalHours,
                 $model->billable ? 'Yes' : 'No',
+                $model->type === TimeEntryType::Break ? 'Yes' : 'No',
                 $model->tagsRelation->pluck('name')->implode(', '),
             ];
         } elseif ($this->exportFormat === ExportFormat::ODS) {
@@ -144,6 +147,7 @@ class TimeEntriesDetailedExport implements FromQuery, ShouldAutoSize, WithColumn
                 $duration !== null ? $this->localizationService->formatInterval($duration) : null,
                 $duration?->totalHours,
                 $model->billable ? 'Yes' : 'No',
+                $model->type === TimeEntryType::Break ? 'Yes' : 'No',
                 $model->tagsRelation->pluck('name')->implode(', '),
             ];
         } else {

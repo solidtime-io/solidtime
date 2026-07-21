@@ -54,6 +54,7 @@ function buildRow(key: string, projectId: string | null, entries: TimeEntry[]): 
         taskId: null,
         billable: false,
         tags: [],
+        type: 'work',
         cells,
         totalSeconds,
     };
@@ -177,6 +178,7 @@ describe('useTimesheetRowMutations', () => {
             taskId: null,
             billable: false,
             tags: [],
+            type: 'work',
         });
         expect(removeSlot).not.toHaveBeenCalled();
     });
@@ -207,6 +209,7 @@ describe('useTimesheetRowMutations', () => {
             taskId: null,
             billable: false,
             tags: [],
+            type: 'work',
         });
     });
 
@@ -233,6 +236,7 @@ describe('useTimesheetRowMutations', () => {
             taskId: null,
             billable: true,
             tags: [],
+            type: 'work',
         });
     });
 

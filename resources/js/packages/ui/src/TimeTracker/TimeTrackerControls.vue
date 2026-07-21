@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import TimeTrackerTagDropdown from '@/packages/ui/src/TimeTracker/TimeTrackerTagDropdown.vue';
 import TimeTrackerStartStop from '@/packages/ui/src/TimeTrackerStartStop.vue';
 import TimeTrackerRangeSelector from '@/packages/ui/src/TimeTracker/TimeTrackerRangeSelector.vue';
-import BillableToggleButton from '@/packages/ui/src/Input/BillableToggleButton.vue';
-import TimeTrackerProjectTaskDropdown from '@/packages/ui/src/TimeTracker/TimeTrackerProjectTaskDropdown.vue';
+import TimeTrackerEntryInput from '@/packages/ui/src/TimeTracker/TimeTrackerEntryInput.vue';
+import TimeTrackerProjectControls from '@/packages/ui/src/TimeTracker/TimeTrackerProjectControls.vue';
 import type {
     CreateClientBody,
     CreateProjectBody,
@@ -13,35 +12,45 @@ import type {
     TimeEntry,
     Client,
 } from '@/packages/api/src';
-import { computed, nextTick, ref, watch } from 'vue';
+import { nextTick, ref, watch } from 'vue';
 import type { Dayjs } from 'dayjs';
-import { useFocus } from '@vueuse/core';
-import { autoUpdate, flip, limitShift, offset, shift, useFloating } from '@floating-ui/vue';
-import TimeTrackerRecentlyTrackedEntry from '@/packages/ui/src/TimeTracker/TimeTrackerRecentlyTrackedEntry.vue';
-import { useSelectEvents } from '@/packages/ui/src/utils/select';
+import { Coffee, Play } from '@lucide/vue';
+import type { TimeTrackerMode } from '@/packages/ui/src/TimeTracker/types';
 
 const currentTimeEntry = defineModel<TimeEntry>('currentTimeEntry', {
     required: true,
 });
 const liveTimer = defineModel<Dayjs | null>('liveTimer', { required: true });
 
-const currentTimeEntryDescriptionInput = ref<HTMLInputElement | null>(null);
-
-const props = defineProps<{
-    projects: Project[];
-    tasks: Task[];
-    tags: Tag[];
-    clients: Client[];
-    timeEntries: TimeEntry[];
-    createTag: (name: string) => Promise<Tag | undefined>;
-    createProject: (project: CreateProjectBody) => Promise<Project | undefined>;
-    createClient: (client: CreateClientBody) => Promise<Client | undefined>;
-    isActive: boolean;
-    currency: string;
-    organizationBillableRate: number | null;
-    enableEstimatedTime: boolean;
-    canCreateProject: boolean;
-}>();
+const props = withDefaults(
+    defineProps<{
+        projects: Project[];
+        tasks: Task[];
+        tags: Tag[];
+        clients: Client[];
+        timeEntries: TimeEntry[];
+        createTag: (name: string) => Promise<Tag | undefined>;
+        createProject: (project: CreateProjectBody) => Promise<Project | undefined>;
+        createClient: (client: CreateClientBody) => Promise<Client | undefined>;
+        isActive: boolean;
+        currency: string;
+        organizationBillableRate: number | null;
+        enableEstimatedTime: boolean;
+        canCreateProject: boolean;
+        isOnBreak?: boolean;
+        breaksEnabled?: boolean;
+        canResumeAfterBreak?: boolean;
+        resumeDescription?: string | null;
+        timeTrackerMode?: TimeTrackerMode;
+    }>(),
+    {
+        isOnBreak: false,
+        breaksEnabled: false,
+        canResumeAfterBreak: false,
+        resumeDescription: null,
+        timeTrackerMode: 'project',
+    }
+);
 
 const emit = defineEmits<{
     startTimer: [];
@@ -50,251 +59,136 @@ const emit = defineEmits<{
     startLiveTimer: [];
     stopLiveTimer: [];
     createTimeEntry: [];
+    startBreak: [];
+    resumeAfterBreak: [];
 }>();
 
-function updateProject() {
-    setBillableDefaultForProject();
-    emit('updateTimeEntry');
-}
-
-function setAndStartTimer(timeEntry: TimeEntry) {
-    setCurrentTimeEntry(timeEntry);
-    if (!props.isActive) {
-        emit('startTimer');
-    } else {
-        emit('updateTimeEntry');
-    }
-}
-
-function setCurrentTimeEntry(timeEntry: TimeEntry) {
-    currentTimeEntry.value.description = timeEntry.description;
-    currentTimeEntry.value.project_id = timeEntry.project_id;
-    currentTimeEntry.value.task_id = timeEntry.task_id;
-    currentTimeEntry.value.tags = timeEntry.tags;
-    currentTimeEntry.value.billable = timeEntry.billable;
-}
-
-function startTimerIfNotActive() {
-    if (highlightedDropdownEntryId.value) {
-        const timeEntry = filteredRecentlyTrackedTimeEntries.value.find(
-            (item) => item.id === highlightedDropdownEntryId.value
-        );
-        if (timeEntry) {
-            setCurrentTimeEntry(timeEntry);
-            showDropdown.value = false;
-        }
-    } else {
-        currentTimeEntry.value.description = tempDescription.value;
-    }
-
-    if (!props.isActive) {
-        emit('startTimer');
-    } else {
-        emit('updateTimeEntry');
-    }
-}
-
-function setBillableDefaultForProject() {
-    const project = props.projects.find(
-        (project) => project.id === currentTimeEntry.value.project_id
-    );
-    if (project) {
-        currentTimeEntry.value.billable = project.is_billable;
-    }
-}
-
-const blockRefocus = ref(false);
+const entryInput = ref<InstanceType<typeof TimeTrackerEntryInput> | null>(null);
 
 function onToggleButtonPress(newState: boolean) {
     if (newState) {
         emit('startTimer');
-        if (!blockRefocus.value) {
-            currentTimeEntryDescriptionInput.value?.focus();
-        }
+        entryInput.value?.focusAfterStart();
     } else {
         emit('stopTimer');
     }
 }
 
-const tempDescription = ref(currentTimeEntry.value.description);
-watch(
-    () => currentTimeEntry.value.description,
-    () => {
-        tempDescription.value = currentTimeEntry.value.description;
-    }
-);
-
-function updateTimeEntryDescription() {
-    if (currentTimeEntry.value.description !== tempDescription.value) {
-        currentTimeEntry.value.description = tempDescription.value;
-        emit('updateTimeEntry');
-    }
+// Pressing Enter in the range selector starts the timer, same as in the description input.
+function onRangeEnter() {
+    entryInput.value?.submit();
 }
 
-const filteredRecentlyTrackedTimeEntries = computed(() => {
-    // do not include running time entries
-    const finishedTimeEntries = props.timeEntries.filter((item) => item.end !== null);
-
-    // filter out duplicates based on description, task, project, tags and billable
-    const nonDuplicateTimeEntries = finishedTimeEntries.filter((item, index, self) => {
-        return (
-            index ===
-            self.findIndex(
-                (t) =>
-                    t.description === item.description &&
-                    t.task_id === item.task_id &&
-                    t.project_id === item.project_id &&
-                    t.tags.length === item.tags.length &&
-                    t.tags.every((tag) => item.tags.includes(tag)) &&
-                    t.billable === item.billable
-            )
-        );
-    });
-
-    // filter time entries based on current description
-    return nonDuplicateTimeEntries
-        .filter((item) => {
-            return item.description
-                ?.toLowerCase()
-                ?.includes(tempDescription.value?.toLowerCase()?.trim() || '');
-        })
-        .slice(0, 5);
-});
-
-const showDropdown = ref(false);
-const { focused } = useFocus(currentTimeEntryDescriptionInput);
-
-watch(focused, (focused) => {
-    nextTick(() => {
-        // make sure the click event on the dropdown does not get interrupted
-        showDropdown.value = focused;
-
-        // make sure that the input does not get refocused after the dropdown is closed
-        if (!focused) {
-            blockRefocus.value = true;
-            setTimeout(() => {
-                blockRefocus.value = false;
-            }, 100);
+// After a break ends the tracker returns to the idle input; focus it so a fresh
+// entry is just type + Enter.
+watch(
+    () => props.isOnBreak,
+    async (isOnBreak, wasOnBreak) => {
+        if (wasOnBreak && !isOnBreak) {
+            await nextTick();
+            entryInput.value?.focusAfterStart();
         }
-    });
-});
-
-const floating = ref(null);
-const { floatingStyles } = useFloating(currentTimeEntryDescriptionInput, floating, {
-    placement: 'bottom-start',
-    whileElementsMounted: autoUpdate,
-    middleware: [
-        offset(10),
-        shift({
-            limiter: limitShift({
-                offset: 5,
-            }),
-        }),
-        flip({
-            fallbackAxisSideDirection: 'start',
-        }),
-    ],
-});
-const highlightedDropdownEntryId = ref<string | null>(null);
-
-useSelectEvents(
-    filteredRecentlyTrackedTimeEntries,
-    highlightedDropdownEntryId,
-    (item) => item.id,
-    showDropdown
+    }
 );
 </script>
 
 <template>
     <div class="flex items-center relative @container" data-testid="dashboard_timer">
         <div
-            class="flex flex-col @2xl:flex-row w-full justify-between rounded-lg bg-card-background border-card-border border transition shadow-card">
+            class="flex flex-col @2xl:flex-row w-full justify-between rounded-lg border transition shadow-card"
+            :class="
+                isOnBreak
+                    ? 'bg-amber-500/10 border-amber-500/30'
+                    : 'bg-card-background border-card-border'
+            ">
             <div class="flex flex-1 items-center relative">
-                <input
-                    ref="currentTimeEntryDescriptionInput"
-                    v-model="tempDescription"
-                    placeholder="What are you working on?"
-                    data-testid="time_entry_description"
-                    class="w-full rounded-l-lg py-4 sm:py-2.5 px-3.5 border-b border-b-card-background-separator @2xl:px-4 text-base text-text-primary bg-transparent border-none placeholder-text-secondary focus:ring-0 transition"
-                    type="text"
-                    @keydown.enter="startTimerIfNotActive"
-                    @keydown.esc="showDropdown = false"
-                    @blur="updateTimeEntryDescription" />
-                <div class="@2xl:hidden pr-3 shrink-0">
+                <div
+                    v-if="isOnBreak"
+                    class="flex w-full items-center gap-2 py-4 sm:py-2.5 px-3.5 @2xl:px-4 text-base font-medium text-amber-600 dark:text-amber-400">
+                    <Coffee class="w-5 h-5 shrink-0" />
+                    <span>On break</span>
+                </div>
+                <TimeTrackerEntryInput
+                    v-else
+                    ref="entryInput"
+                    v-model:current-time-entry="currentTimeEntry"
+                    :time-entries="timeEntries"
+                    :projects="projects"
+                    :tasks="tasks"
+                    :is-active="isActive"
+                    @start-timer="emit('startTimer')"
+                    @update-time-entry="emit('updateTimeEntry')"></TimeTrackerEntryInput>
+                <div class="@2xl:hidden pr-3 shrink-0 flex items-center space-x-2">
+                    <button
+                        v-if="breaksEnabled && !isOnBreak && isActive"
+                        type="button"
+                        title="Take a break"
+                        aria-label="Take a break"
+                        class="flex items-center justify-center w-8 h-8 rounded-full bg-quaternary text-text-tertiary hover:text-amber-500 focus:ring-2 focus:ring-border-tertiary transition"
+                        @click="emit('startBreak')">
+                        <Coffee class="w-4 h-4" />
+                    </button>
                     <TimeTrackerStartStop
                         :active="isActive"
+                        :variant="isOnBreak ? 'break' : 'primary'"
                         @changed="onToggleButtonPress"></TimeTrackerStartStop>
-                </div>
-                <div
-                    v-if="showDropdown && filteredRecentlyTrackedTimeEntries.length > 0"
-                    ref="floating"
-                    class="z-50 w-[min(640px,100vw-2rem)]"
-                    :style="floatingStyles">
-                    <div
-                        class="rounded-lg w-full border border-card-border overflow-hidden shadow-dropdown bg-card-background">
-                        <div
-                            class="text-text-tertiary text-xs font-semibold border-b border-border-tertiary px-2 py-1.5">
-                            Recently Tracked Time Entries
-                        </div>
-                        <div class="text-text-secondary py-1 px-1.5">
-                            <TimeTrackerRecentlyTrackedEntry
-                                v-for="timeEntry in filteredRecentlyTrackedTimeEntries"
-                                :key="timeEntry.id"
-                                :time-entry="timeEntry"
-                                :highlighted="highlightedDropdownEntryId === timeEntry.id"
-                                :projects="projects"
-                                :tasks="tasks"
-                                @mousedown="setAndStartTimer(timeEntry)"
-                                @mouseenter="
-                                    highlightedDropdownEntryId = timeEntry.id
-                                "></TimeTrackerRecentlyTrackedEntry>
-                        </div>
-                    </div>
                 </div>
             </div>
             <div class="flex items-center justify-between pl-2 shrink min-w-0">
-                <div class="flex items-center w-[130px] @2xl:w-auto shrink min-w-0">
-                    <TimeTrackerProjectTaskDropdown
-                        v-model:project="currentTimeEntry.project_id"
-                        v-model:task="currentTimeEntry.task_id"
-                        variant="outline"
-                        :create-client
-                        :can-create-project
-                        :clients
-                        :create-project
-                        :currency="currency"
-                        :organization-billable-rate="organizationBillableRate"
-                        :projects="projects"
-                        :tasks="tasks"
-                        :enable-estimated-time="enableEstimatedTime"
-                        @changed="updateProject"></TimeTrackerProjectTaskDropdown>
-                </div>
-                <div class="flex items-center space-x-0 @4xl:space-x-2 px-2 @4xl:px-4 shrink-0">
-                    <TimeTrackerTagDropdown
-                        v-model="currentTimeEntry.tags"
-                        :create-tag
-                        :tags="tags"
-                        @changed="$emit('updateTimeEntry')"></TimeTrackerTagDropdown>
-                    <BillableToggleButton
-                        v-model="currentTimeEntry.billable"
-                        @changed="$emit('updateTimeEntry')"></BillableToggleButton>
-                </div>
-                <div class="border-l border-card-border">
+                <TimeTrackerProjectControls
+                    v-if="!isOnBreak && timeTrackerMode !== 'simple'"
+                    v-model:current-time-entry="currentTimeEntry"
+                    :projects="projects"
+                    :tasks="tasks"
+                    :tags="tags"
+                    :clients="clients"
+                    :create-tag="createTag"
+                    :create-project="createProject"
+                    :create-client="createClient"
+                    :currency="currency"
+                    :organization-billable-rate="organizationBillableRate"
+                    :enable-estimated-time="enableEstimatedTime"
+                    :can-create-project="canCreateProject"
+                    @update-time-entry="emit('updateTimeEntry')"></TimeTrackerProjectControls>
+                <button
+                    v-if="isOnBreak && canResumeAfterBreak"
+                    type="button"
+                    class="mx-2 flex min-w-0 shrink items-center gap-1.5 h-8 px-3 rounded-md bg-transparent border border-amber-500/40 hover:bg-amber-500/15 text-sm font-medium text-amber-600 dark:text-amber-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 transition"
+                    @click="emit('resumeAfterBreak')">
+                    <Play class="w-4 h-4 shrink-0" />
+                    <span class="truncate">{{
+                        resumeDescription ? `Resume "${resumeDescription}"` : 'Resume'
+                    }}</span>
+                </button>
+                <div
+                    class="border-l"
+                    :class="isOnBreak ? 'border-amber-500/40' : 'border-card-border'">
                     <TimeTrackerRangeSelector
                         v-model:current-time-entry="currentTimeEntry"
                         v-model:live-timer="liveTimer"
+                        :is-on-break="isOnBreak"
                         @start-live-timer="emit('startLiveTimer')"
                         @stop-live-timer="emit('stopLiveTimer')"
                         @update-timer="emit('updateTimeEntry')"
                         @start-timer="emit('startTimer')"
                         @create-time-entry="emit('createTimeEntry')"
-                        @keydown.enter="startTimerIfNotActive"></TimeTrackerRangeSelector>
+                        @keydown.enter="onRangeEnter"></TimeTrackerRangeSelector>
                 </div>
             </div>
         </div>
-        <div class="pl-4 @2xl:pl-6 pr-3 hidden @2xl:block">
+        <div class="pl-4 @2xl:pl-6 pr-3 hidden @2xl:flex items-center space-x-3">
+            <button
+                v-if="breaksEnabled && !isOnBreak && isActive"
+                type="button"
+                title="Take a break"
+                aria-label="Take a break"
+                class="flex items-center justify-center w-9 h-9 rounded-full bg-quaternary text-text-tertiary hover:text-amber-500 focus:ring-2 focus:ring-border-tertiary transition"
+                @click="emit('startBreak')">
+                <Coffee class="w-5 h-5" />
+            </button>
             <TimeTrackerStartStop
                 :active="isActive"
+                :variant="isOnBreak ? 'break' : 'primary'"
                 size="large"
                 @changed="onToggleButtonPress"></TimeTrackerStartStop>
         </div>

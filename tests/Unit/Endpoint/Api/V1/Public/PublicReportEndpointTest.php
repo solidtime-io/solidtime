@@ -7,6 +7,7 @@ namespace Tests\Unit\Endpoint\Api\V1\Public;
 use App\Enums\TagMatchType;
 use App\Enums\TimeEntryAggregationType;
 use App\Enums\TimeEntryAggregationTypeInterval;
+use App\Enums\TimeEntryType;
 use App\Enums\Weekday;
 use App\Models\Client;
 use App\Models\Organization;
@@ -648,6 +649,51 @@ class PublicReportEndpointTest extends ApiEndpointTestAbstract
         $reportDto->weekStart = Weekday::Monday;
         $reportDto->timezone = 'Europe/Vienna';
         $reportDto->setTagIds([TimeEntryFilter::NONE_VALUE]);
+        $report = Report::factory()->forOrganization($organization)->public()->create([
+            'public_until' => null,
+            'properties' => $reportDto,
+        ]);
+
+        // Act
+        $response = $this->getJson(route('api.v1.public.reports.show'), [
+            'X-Api-Key' => $report->share_secret,
+        ]);
+
+        // Assert
+        $response->assertOk();
+        $response->assertJson([
+            'data' => [
+                'seconds' => 200,
+                'cost' => 0,
+                'grouped_type' => TimeEntryAggregationType::Project->value,
+            ],
+        ]);
+    }
+
+    public function test_show_returns_only_entries_matching_the_time_entry_type_filter(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+
+        // Work entry (should be excluded)
+        TimeEntry::factory()->forOrganization($organization)
+            ->startWithDuration(now()->subDay(), 100)
+            ->create();
+        // Break entry (should be included)
+        TimeEntry::factory()->forOrganization($organization)
+            ->isBreak()
+            ->startWithDuration(now()->subDay(), 200)
+            ->create();
+
+        $reportDto = new ReportPropertiesDto;
+        $reportDto->start = now()->subDays(2);
+        $reportDto->end = now();
+        $reportDto->group = TimeEntryAggregationType::Project;
+        $reportDto->subGroup = TimeEntryAggregationType::Task;
+        $reportDto->historyGroup = TimeEntryAggregationTypeInterval::Day;
+        $reportDto->weekStart = Weekday::Monday;
+        $reportDto->timezone = 'Europe/Vienna';
+        $reportDto->timeEntryType = TimeEntryType::Break;
         $report = Report::factory()->forOrganization($organization)->public()->create([
             'public_until' => null,
             'properties' => $reportDto,

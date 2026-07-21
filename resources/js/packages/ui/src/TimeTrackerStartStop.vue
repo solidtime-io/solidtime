@@ -11,6 +11,7 @@ const timeTrackerVariants = cva(
                     'text-white ring-accent-200/10 focus-visible:ring-ring focus-visible:ring-2 ring-4 sm:ring-[6px]',
                 secondary:
                     'bg-quaternary text-text-tertiary hover:text-text-primary focus:ring-2 focus:ring-border-tertiary',
+                break: 'text-white ring-amber-200/10 focus-visible:ring-ring focus-visible:ring-2 ring-4 sm:ring-[6px]',
             },
             size: {
                 small: 'w-6 h-6',
@@ -30,6 +31,16 @@ const timeTrackerVariants = cva(
             },
             {
                 variant: 'primary',
+                active: false,
+                class: 'bg-accent-300/70 hover:bg-accent-400/70 focus:bg-accent-700',
+            },
+            {
+                variant: 'break',
+                active: true,
+                class: 'bg-amber-500/80 hover:bg-amber-600/80 focus:bg-amber-600/80',
+            },
+            {
+                variant: 'break',
                 active: false,
                 class: 'bg-accent-300/70 hover:bg-accent-400/70 focus:bg-accent-700',
             },

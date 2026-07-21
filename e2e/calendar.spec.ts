@@ -2874,3 +2874,54 @@ test.describe('Daily Total After Create', () => {
         }).toPass({ timeout: 5000 });
     });
 });
+
+test('test that calendar context menu can add a break that fills the gap between two entries', async ({
+    page,
+    ctx,
+}) => {
+    await updateOrganizationSettingViaApi(ctx, { breaks_enabled: true });
+    // Two work entries today (09:00-10:00 and 11:00-12:00 UTC) with a one hour gap
+    const today = new Date().toISOString().slice(0, 10);
+    const gapStart = `${today}T10:00:00Z`;
+    const gapEnd = `${today}T11:00:00Z`;
+    await createTimeEntryWithTimestampsViaApi(ctx, {
+        start: `${today}T09:00:00Z`,
+        end: gapStart,
+        description: 'Gap work A',
+    });
+    await createTimeEntryWithTimestampsViaApi(ctx, {
+        start: gapEnd,
+        end: `${today}T12:00:00Z`,
+        description: 'Gap work B',
+    });
+
+    await goToCalendar(page);
+    const eventA = page.locator('.fc-event').filter({ hasText: 'Gap work A' }).first();
+    await eventA.scrollIntoViewIfNeeded();
+    await expect(eventA).toBeVisible();
+
+    // Right-click just below entry A (inside the gap, in the same day column)
+    const box = await eventA.boundingBox();
+    expect(box).not.toBeNull();
+    await page.mouse.click(box!.x + box!.width / 2, box!.y + box!.height + 15, {
+        button: 'right',
+    });
+    await expect(page.getByRole('menu')).toBeVisible();
+    await page.getByRole('menuitem', { name: 'Add Break' }).click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+
+    // The break is prefilled to fill the gap exactly
+    const [createResponse] = await Promise.all([
+        page.waitForResponse(
+            async (response) =>
+                response.url().includes('/time-entries') &&
+                response.request().method() === 'POST' &&
+                response.status() === 201 &&
+                (await response.json()).data.type === 'break'
+        ),
+        page.getByRole('button', { name: 'Add Break' }).click(),
+    ]);
+    const body = await createResponse.json();
+    expect(body.data.start).toBe(gapStart);
+    expect(body.data.end).toBe(gapEnd);
+});

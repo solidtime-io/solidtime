@@ -1,7 +1,8 @@
 <script setup lang="ts">
+import { useBreaksEnabled } from '@/packages/ui/src/utils/useBreaksEnabled';
 import { CheckCircleIcon, TagIcon, UserGroupIcon } from '@heroicons/vue/20/solid';
 import { FolderIcon } from '@heroicons/vue/16/solid';
-import { Check } from '@lucide/vue';
+import { Check, Coffee } from '@lucide/vue';
 import { RadioGroupIndicator, RadioGroupItem, RadioGroupRoot, type AcceptableValue } from 'reka-ui';
 import BillableIcon from '@/packages/ui/src/Icons/BillableIcon.vue';
 import ReportingRoundingControls from '@/Components/Common/Reporting/ReportingRoundingControls.vue';
@@ -27,6 +28,7 @@ const selectedClients = defineModel<string[]>('selectedClients', { required: tru
 const selectedTags = defineModel<string[]>('selectedTags', { required: true });
 const tagMatchType = defineModel<TagMatchType>('tagMatchType', { required: true });
 const billable = defineModel<'true' | 'false' | null>('billable', { required: true });
+const entryType = defineModel<'work' | 'break' | null>('entryType', { required: true });
 const roundingEnabled = defineModel<boolean>('roundingEnabled', { required: true });
 const roundingType = defineModel<TimeEntryRoundingType>('roundingType', { required: true });
 const roundingMinutes = defineModel<number>('roundingMinutes', { required: true });
@@ -36,6 +38,8 @@ const endDate = defineModel<string>('endDate', { required: true });
 const emit = defineEmits<{
     submit: [];
 }>();
+
+const breaksEnabled = useBreaksEnabled();
 
 const { tags } = useTagsQuery();
 
@@ -160,6 +164,38 @@ async function createTag(name: string) {
                         <SelectItem :value="null">Both</SelectItem>
                         <SelectItem value="true">Billable</SelectItem>
                         <SelectItem value="false">Non Billable</SelectItem>
+                    </SelectContent>
+                </Select>
+                <Select
+                    v-if="breaksEnabled"
+                    v-model="entryType"
+                    @update:model-value="emit('submit')">
+                    <SelectTrigger
+                        size="sm"
+                        variant="outline"
+                        :active="entryType !== null"
+                        :show-chevron="false">
+                        <SelectValue class="flex items-center gap-2">
+                            <Coffee
+                                class="h-4 w-4"
+                                :class="
+                                    entryType !== null
+                                        ? 'dark:text-accent-300/80 text-accent-400/80'
+                                        : 'text-text-quaternary'
+                                " />
+                            <span class="text-text-secondary">{{
+                                entryType === null
+                                    ? 'Type'
+                                    : entryType === 'break'
+                                      ? 'Breaks'
+                                      : 'Work time'
+                            }}</span>
+                        </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem :value="null">Both</SelectItem>
+                        <SelectItem value="work">Work time</SelectItem>
+                        <SelectItem value="break">Breaks</SelectItem>
                     </SelectContent>
                 </Select>
                 <ReportingRoundingControls

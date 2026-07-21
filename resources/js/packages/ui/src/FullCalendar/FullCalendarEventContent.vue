@@ -2,6 +2,8 @@
 import { computed, inject, type ComputedRef } from 'vue';
 import { formatHumanReadableDuration, getDayJsInstance } from '../utils/time';
 import type { Organization } from '@/packages/api/src';
+import { Coffee } from '@lucide/vue';
+import { ExclamationTriangleIcon } from '@heroicons/vue/20/solid';
 
 const props = defineProps<{
     title: string;
@@ -11,6 +13,8 @@ const props = defineProps<{
     durationSeconds?: number;
     start?: string | Date | null;
     end?: string | Date | null;
+    isBreak?: boolean;
+    isMisplacedBreak?: boolean;
 }>();
 
 const effectiveDurationSeconds = computed(() => {
@@ -41,7 +45,15 @@ const formattedDuration = computed(() =>
 
 <template>
     <div class="text-2xs leading-tight px-0.5 py-1">
-        <div class="font-semibold">{{ title }}</div>
+        <div class="font-semibold flex items-center gap-1">
+            <Coffee v-if="isBreak" class="w-3 h-3 shrink-0" />
+            <span class="truncate">{{ title }}</span>
+            <ExclamationTriangleIcon
+                v-if="isMisplacedBreak"
+                data-testid="calendar_break_placement_hint"
+                title="This break does not align with your work entries"
+                class="w-3 h-3 shrink-0 text-amber-600 dark:text-amber-400" />
+        </div>
         <div v-if="projectName" class="font-medium opacity-90">
             {{ projectName }}
         </div>

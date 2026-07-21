@@ -33,6 +33,7 @@ class OrganizationFactory extends Factory
             'user_id' => User::factory(),
             'personal_team' => true,
             'employees_can_see_billable_rates' => false,
+            'breaks_enabled' => false,
             'number_format' => $this->faker->randomElement(NumberFormat::values()),
             'currency_format' => $this->faker->randomElement(CurrencyFormat::values()),
             'date_format' => $this->faker->randomElement(DateFormat::values()),
@@ -52,6 +53,13 @@ class OrganizationFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'billable_rate' => $this->faker->numberBetween(50, 1000) * 100,
+        ]);
+    }
+
+    public function withBreaksEnabled(): self
+    {
+        return $this->state(fn (array $attributes) => [
+            'breaks_enabled' => true,
         ]);
     }
 

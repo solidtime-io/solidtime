@@ -28,6 +28,7 @@ const {
             },
             queries: {
                 member_id: getCurrentMembershipId(),
+                type: 'work',
             },
         });
     },

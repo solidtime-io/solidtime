@@ -1019,3 +1019,24 @@ test.describe('Employee Reporting Restrictions', () => {
         await expect(employee.page.getByText('100,00 EUR').first()).toBeVisible();
     });
 });
+
+test('test that reporting has a type filter that can show only breaks', async ({ page, ctx }) => {
+    await updateOrganizationSettingViaApi(ctx, { breaks_enabled: true });
+    await createTimeEntryViaApi(ctx, { duration: '1h', description: 'Regular work entry' });
+    await createTimeEntryViaApi(ctx, { duration: '20min', type: 'break' });
+
+    await goToReporting(page);
+    // The type filter defaults to "Work time"; switching it to "Breaks" re-aggregates.
+    const typeFilter = page.getByRole('combobox').filter({ hasText: 'Work time' });
+    await expect(typeFilter).toBeVisible();
+    await typeFilter.click();
+    await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/time-entries/aggregate') &&
+                response.url().includes('type=break') &&
+                response.status() === 200
+        ),
+        page.getByRole('option', { name: 'Breaks' }).click(),
+    ]);
+});

@@ -94,6 +94,7 @@ const emit = defineEmits<{
                     getEventOpacityClass(dayEvent, dayStr),
                     {
                         'running-entry rounded-b-none': dayEvent.event.isRunning,
+                        'fc-event-break': dayEvent.event.isBreak,
                         'fc-event-dragging': isDragging && dragEventId === dayEvent.event.id,
                         'fc-event-resizing': resizeEventId === dayEvent.event.id,
                         'rounded-t-none': dayEvent.isClippedStart,
@@ -121,6 +122,8 @@ const emit = defineEmits<{
                         :project-name="dayEvent.event.project?.name"
                         :task-name="dayEvent.event.task?.name"
                         :client-name="dayEvent.event.client?.name"
+                        :is-break="dayEvent.event.isBreak"
+                        :is-misplaced-break="dayEvent.event.isMisplacedBreak"
                         :duration-seconds="getEventDurationSeconds(dayEvent, dayStr)" />
                 </div>
                 <div
@@ -412,5 +415,16 @@ const emit = defineEmits<{
 
 .fc-events-inset-expanded {
     left: 204px;
+}
+
+/* Breaks get a hatched texture so they can not be confused with a project color */
+.fc-event-break {
+    background-image: repeating-linear-gradient(
+        -45deg,
+        transparent,
+        transparent 5px,
+        rgba(217, 119, 6, 0.15) 5px,
+        rgba(217, 119, 6, 0.15) 7px
+    );
 }
 </style>

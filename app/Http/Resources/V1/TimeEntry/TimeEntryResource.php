@@ -47,6 +47,8 @@ class TimeEntryResource extends BaseResource
             'tags' => $this->resource->tags ?? [],
             /** @var bool $billable Whether time entry is billable */
             'billable' => $this->resource->billable,
+            /** @var string $type Type of the time entry (`work` time or a `break`) */
+            'type' => $this->resource->type->value,
         ];
     }
 }

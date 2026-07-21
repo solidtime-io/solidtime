@@ -12,11 +12,17 @@ import { CalendarIcon } from '@heroicons/vue/20/solid';
 
 const organization = inject<ComputedRef<Organization>>('organization');
 
-defineProps<{
-    date: string;
-    duration: number;
-    checked: boolean;
-}>();
+withDefaults(
+    defineProps<{
+        date: string;
+        duration: number;
+        checked: boolean;
+        breakDuration?: number;
+    }>(),
+    {
+        breakDuration: 0,
+    }
+);
 const emit = defineEmits<{
     selectAll: [];
     unselectAll: [];
@@ -55,6 +61,19 @@ function selectUnselectAll(value: boolean) {
                     </span>
                 </div>
                 <div class="text-text-primary pr-2 @lg:pr-[92px]">
+                    <span
+                        v-if="breakDuration > 0"
+                        data-testid="day_break_duration"
+                        class="text-text-secondary font-normal mr-2">
+                        {{
+                            formatHumanReadableDuration(
+                                breakDuration,
+                                organization?.interval_format,
+                                organization?.number_format
+                            )
+                        }}
+                        break ·
+                    </span>
                     <span class="font-medium">
                         {{
                             formatHumanReadableDuration(

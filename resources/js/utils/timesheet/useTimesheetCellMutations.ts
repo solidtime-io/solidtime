@@ -18,6 +18,7 @@ import {
     workDayStartOn,
     type FreeWindow,
 } from './cellMath';
+import { useBreakPlacement, BreakPlacementDeferred } from './useBreakPlacement';
 
 export type CellSaveStatus = 'saving' | 'saved' | 'error';
 
@@ -64,6 +65,12 @@ export function useTimesheetCellMutations(
     const cellStatus = ref<Record<string, CellSaveStatus>>({});
     const cellPendingSeconds = ref<Record<string, number>>({});
     const statusClearTimers: Record<string, ReturnType<typeof setTimeout>> = {};
+
+    // Break placement (positioning a break relative to work, plus the split/move
+    // modal flow) is its own subsystem — it borrows the generic entry primitives
+    // below (hoisted function declarations, so referenceable here).
+    const { breakPlacementRequest, placeBreak, dismissBreakPlacement, applyBreakPlacement } =
+        useBreakPlacement({ weekDays, timeEntries, requireOrgId, createCell, updateEntry });
 
     function clearStatusTimer(key: string): void {
         clearTimeout(statusClearTimers[key]);
@@ -130,6 +137,14 @@ export function useTimesheetCellMutations(
             }
             markSaved(statusKey);
         } catch (err) {
+            if (err instanceof BreakPlacementDeferred) {
+                // The break needs manual placement — revert the cell to idle (the
+                // modal drives the actual save) instead of showing an error.
+                clearStatusTimer(statusKey);
+                delete cellStatus.value[statusKey];
+                delete cellPendingSeconds.value[statusKey];
+                return;
+            }
             markError(statusKey);
             if (err instanceof NoFreeWindowError) {
                 const friendlyDuration = formatHumanReadableDuration(
@@ -155,11 +170,11 @@ export function useTimesheetCellMutations(
     }
 
     function hasDuplicateIdentitySlot(row: TimesheetRow): boolean {
-        const target = makeRowKey(row.projectId, row.taskId, row.billable, row.tags);
+        const target = makeRowKey(row.projectId, row.taskId, row.billable, row.tags, row.type);
         return rows.value.some(
             (r) =>
                 r.key !== row.key &&
-                makeRowKey(r.projectId, r.taskId, r.billable, r.tags) === target
+                makeRowKey(r.projectId, r.taskId, r.billable, r.tags, r.type) === target
         );
     }
 
@@ -178,7 +193,31 @@ export function useTimesheetCellMutations(
         }
 
         if (!cell || existingSeconds === 0) {
+            // Breaks are placed relative to work (within tolerance), not just in the
+            // first free slot, and may need the placement modal to resolve.
+            if (row.type === 'break' && newTotalSeconds > 0) {
+                await placeBreak(row, dayIndex, newTotalSeconds);
+                return;
+            }
             await createCell(row, dayIndex, newTotalSeconds);
+            return;
+        }
+
+        // Re-place breaks rather than extend/shrink them, which would fragment a break into
+        // a second entry. A day's breaks share one cell: a single break re-places at the new
+        // total; growing a multi-break cell grows the latest-ending break in place (others
+        // become obstacles); shrinking just trims the tail, which can't fragment.
+        if (row.type === 'break') {
+            if (cell.entries.length === 1) {
+                await placeBreak(row, dayIndex, newTotalSeconds, cell.entries[0]!.id);
+                return;
+            }
+            const tail = pickLatestEndedEntry(cell);
+            if (diff > 0 && tail?.end) {
+                await placeBreak(row, dayIndex, (tail.duration ?? 0) + diff, tail.id);
+                return;
+            }
+            await shrinkFromEnd(cell, -diff);
             return;
         }
 
@@ -241,6 +280,7 @@ export function useTimesheetCellMutations(
             start: window.start,
             end: window.end,
             billable: row.billable,
+            type: row.type,
             description: null,
             tags: row.tags,
         };
@@ -371,5 +411,12 @@ export function useTimesheetCellMutations(
         return best;
     }
 
-    return { handleCellUpdate, cellStatus, cellPendingSeconds };
+    return {
+        handleCellUpdate,
+        cellStatus,
+        cellPendingSeconds,
+        breakPlacementRequest,
+        applyBreakPlacement,
+        dismissBreakPlacement,
+    };
 }

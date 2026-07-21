@@ -12,8 +12,10 @@ import {
 } from 'vue';
 import { useLocalStorage } from '@vueuse/core';
 import { useCssVariable } from '../utils/useCssVariable';
-import { getLocalizedDayJs } from '../utils/time';
+import { useBreaksEnabled } from '../utils/useBreaksEnabled';
+import { getLocalizedDayJs, getLocalizedDayJsFromMinutes } from '../utils/time';
 import { LoadingSpinner, TimeEntryCreateModal, TimeEntryEditModal } from '..';
+import BreakCreateModal from '../TimeEntry/BreakCreateModal.vue';
 import FullCalendarDayHeader from './FullCalendarDayHeader.vue';
 import CalendarToolbar from './CalendarToolbar.vue';
 import CalendarDayColumn from './CalendarDayColumn.vue';
@@ -34,6 +36,7 @@ import {
     StopIcon,
     XMarkIcon,
 } from '@heroicons/vue/20/solid';
+import { Coffee } from '@lucide/vue';
 import type { ActivityPeriod } from './activityTypes';
 import { SLOT_HEIGHT, TIME_AXIS_WIDTH, type DayEvent } from './calendarTypes';
 import { useCalendarGrid } from './useCalendarGrid';
@@ -74,6 +77,8 @@ const props = defineProps<{
     currency: string;
     canCreateProject: boolean;
     organizationBillableRate: number | null;
+    // Local date (YYYY-MM-DD) to open the calendar on, e.g. from a "Fix in calendar" deep link
+    initialDate?: string | null;
 
     createTimeEntry: (
         entry: Omit<TimeEntry, 'id' | 'organization_id' | 'user_id'>
@@ -87,6 +92,9 @@ const props = defineProps<{
 
 const newEventStart = ref<Dayjs | null>(null);
 const newEventEnd = ref<Dayjs | null>(null);
+const showCreateBreakModal = ref(false);
+const newBreakStart = ref<Dayjs | null>(null);
+const newBreakEnd = ref<Dayjs | null>(null);
 const showCreateTimeEntryModal = ref<boolean>(false);
 const showEditTimeEntryModal = ref<boolean>(false);
 const selectedTimeEntry = ref<TimeEntry | null>(null);
@@ -114,6 +122,7 @@ const currentTime = ref(getLocalizedDayJs());
 let currentTimeInterval: ReturnType<typeof setInterval> | null = null;
 
 const organization = inject<ComputedRef<Organization>>('organization');
+const breaksEnabled = useBreaksEnabled();
 
 const {
     slots,
@@ -138,23 +147,34 @@ const {
 } = useCalendarNavigation({
     onDatesChange: (payload) => emit('dates-change', payload),
     scrollToCurrentTime: () => scrollToCurrentTime(),
+    // Parse as local midnight in the user's timezone — getLocalizedDayJs would
+    // treat the bare date as UTC midnight, landing on the previous local day
+    // for negative UTC offsets
+    initialDate: props.initialDate ? getLocalizedDayJsFromMinutes(props.initialDate, 0) : null,
 });
 
 const cssBackground = useCssVariable('--color-bg-background');
 
-const { optimisticOverrides, calendarEvents, eventsByDay, dailyTotals, isToday, nowIndicatorTop } =
-    useCalendarEvents({
-        timeEntries: () => props.timeEntries,
-        projects: () => props.projects,
-        clients: () => props.clients,
-        tasks: () => props.tasks,
-        calendarSettings,
-        viewDays,
-        currentTime,
-        cssBackground,
-        minutesToPixels,
-        timeToMinutesFromMidnight,
-    });
+const {
+    optimisticOverrides,
+    calendarEvents,
+    eventsByDay,
+    dailyTotals,
+    dailyBreakTotals,
+    isToday,
+    nowIndicatorTop,
+} = useCalendarEvents({
+    timeEntries: () => props.timeEntries,
+    projects: () => props.projects,
+    clients: () => props.clients,
+    tasks: () => props.tasks,
+    calendarSettings,
+    viewDays,
+    currentTime,
+    cssBackground,
+    minutesToPixels,
+    timeToMinutesFromMidnight,
+});
 
 const {
     activityBoxesForDay,
@@ -244,6 +264,7 @@ const {
     handleContextStop,
     handleContextDiscard,
     handleContextCreate,
+    handleContextCreateBreak,
 } = useContextMenu({
     calendarSettings,
     calendarEvents,
@@ -262,6 +283,11 @@ const {
         newEventEnd.value = end;
         showCreateTimeEntryModal.value = true;
     },
+    onCreateBreak: (start, end) => {
+        newBreakStart.value = start;
+        newBreakEnd.value = end;
+        showCreateBreakModal.value = true;
+    },
     emitRefresh: () => emit('refresh'),
 });
 
@@ -270,6 +296,14 @@ watch(showCreateTimeEntryModal, (value) => {
         newEventStart.value = null;
         newEventEnd.value = null;
         clearSelection();
+        emit('refresh');
+    }
+});
+
+watch(showCreateBreakModal, (value) => {
+    if (!value) {
+        newBreakStart.value = null;
+        newBreakEnd.value = null;
         emit('refresh');
     }
 });
@@ -455,6 +489,12 @@ function getEventDurationSeconds(dayEvent: DayEvent, dayStr: string): number {
             :start="newEventStart ? newEventStart.toISOString() : undefined"
             :end="newEventEnd ? newEventEnd.toISOString() : undefined" />
 
+        <BreakCreateModal
+            v-model:show="showCreateBreakModal"
+            :create-time-entry="createTimeEntry"
+            :start="newBreakStart ? newBreakStart.toISOString() : undefined"
+            :end="newBreakEnd ? newBreakEnd.toISOString() : undefined" />
+
         <TimeEntryEditModal
             v-model:show="showEditTimeEntryModal"
             :time-entry="selectedTimeEntry as any"
@@ -516,8 +556,9 @@ function getEventDurationSeconds(dayEvent: DayEvent, dayStr: string): number {
                                     <FullCalendarDayHeader
                                         :date="day"
                                         :is-today="isToday(day)"
-                                        :total-seconds="
-                                            dailyTotals[day.format('YYYY-MM-DD')] || 0
+                                        :total-seconds="dailyTotals[day.format('YYYY-MM-DD')] || 0"
+                                        :break-seconds="
+                                            dailyBreakTotals[day.format('YYYY-MM-DD')] || 0
                                         " />
                                 </div>
                             </div>
@@ -682,11 +723,19 @@ function getEventDurationSeconds(dayEvent: DayEvent, dayStr: string): number {
                             <PencilIcon class="w-4 h-4 text-icon-default" />
                             <span>Edit</span>
                         </ContextMenuItem>
-                        <ContextMenuItem class="space-x-3" @select="handleContextDuplicate()">
+                        <!-- Duplicate/Split create a new entry of the same type, which the
+                             server rejects for breaks when breaks are disabled -->
+                        <ContextMenuItem
+                            v-if="contextMenuTimeEntry.type !== 'break' || breaksEnabled"
+                            class="space-x-3"
+                            @select="handleContextDuplicate()">
                             <DocumentDuplicateIcon class="w-4 h-4 text-icon-default" />
                             <span>Duplicate</span>
                         </ContextMenuItem>
-                        <ContextMenuItem class="space-x-3" @select="handleContextSplit()">
+                        <ContextMenuItem
+                            v-if="contextMenuTimeEntry.type !== 'break' || breaksEnabled"
+                            class="space-x-3"
+                            @select="handleContextSplit()">
                             <ScissorsIcon class="w-4 h-4 text-icon-default" />
                             <span>Split</span>
                         </ContextMenuItem>
@@ -715,6 +764,13 @@ function getEventDurationSeconds(dayEvent: DayEvent, dayStr: string): number {
                         <ContextMenuItem class="space-x-3" @select="handleContextCreate()">
                             <PlusIcon class="w-4 h-4 text-icon-default" />
                             <span>Create Time Entry</span>
+                        </ContextMenuItem>
+                        <ContextMenuItem
+                            v-if="breaksEnabled"
+                            class="space-x-3"
+                            @select="handleContextCreateBreak()">
+                            <Coffee class="w-4 h-4 text-icon-default" />
+                            <span>Add Break</span>
                         </ContextMenuItem>
                     </template>
                 </ContextMenuContent>

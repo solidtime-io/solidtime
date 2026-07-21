@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service\ReportExport;
 
+use App\Enums\TimeEntryType;
 use App\Models\TimeEntry;
 use App\Service\IntervalService;
 use Illuminate\Database\Eloquent\Builder;
@@ -25,6 +26,7 @@ class TimeEntriesDetailedCsvExport extends CsvExport
         'Duration',
         'Duration (decimal)',
         'Billable',
+        'Break',
         'Tags',
     ];
 
@@ -58,6 +60,7 @@ class TimeEntriesDetailedCsvExport extends CsvExport
             'Duration' => $duration !== null ? $interval->format($model->getDuration()) : null,
             'Duration (decimal)' => $duration?->totalHours,
             'Billable' => $model->billable ? 'Yes' : 'No',
+            'Break' => $model->type === TimeEntryType::Break ? 'Yes' : 'No',
             'Tags' => $model->tagsRelation->pluck('name')->implode(', '),
         ];
     }

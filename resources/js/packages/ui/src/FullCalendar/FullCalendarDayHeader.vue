@@ -7,10 +7,12 @@ import type { Dayjs } from 'dayjs';
 const props = defineProps<{
     date: Dayjs;
     totalSeconds?: number;
+    breakSeconds?: number;
     isToday?: boolean;
 }>();
 
 const totalSecondsValue = computed(() => props.totalSeconds ?? 0);
+const breakSecondsValue = computed(() => props.breakSeconds ?? 0);
 
 const organization = inject('organization') as ComputedRef<Organization | undefined> | undefined;
 const intervalFormat = computed(() => organization?.value?.interval_format);
@@ -24,6 +26,10 @@ const numberFormat = computed(() => organization?.value?.number_format);
         </div>
         <span class="block text-xs text-muted-foreground font-medium mt-0.5">
             {{ formatHumanReadableDuration(totalSecondsValue, intervalFormat, numberFormat) }}
+            <template v-if="breakSecondsValue > 0">
+                · {{ formatHumanReadableDuration(breakSecondsValue, intervalFormat, numberFormat) }}
+                break
+            </template>
         </span>
     </div>
 </template>

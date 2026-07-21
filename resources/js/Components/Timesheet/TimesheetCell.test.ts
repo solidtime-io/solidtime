@@ -93,4 +93,26 @@ describe('TimesheetCell', () => {
 
         expect((wrapper.get('input').element as HTMLInputElement).disabled).toBe(true);
     });
+
+    it('renders read-only and emits nothing when the row is read-only', async () => {
+        const wrapper = mount(TimesheetCell, {
+            props: {
+                cell: buildCell(2 * 3600),
+                dayIndex: 0,
+                date: '2026-04-13',
+                isToday: false,
+                hasRunningEntry: false,
+                readonly: true,
+            },
+        });
+
+        const input = wrapper.get('input');
+        expect((input.element as HTMLInputElement).disabled).toBe(true);
+
+        await input.trigger('focus');
+        await input.setValue('4h');
+        await input.trigger('blur');
+
+        expect(wrapper.emitted('update')).toBeUndefined();
+    });
 });

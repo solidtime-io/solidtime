@@ -1,0 +1,3 @@
+id,name,organization_id,archived_at,created_at,updated_at
+b4187a44-41f4-46d7-8460-f15a25b3aad6,"Big Company",ee5a8cd6-312f-4ae6-b044-e2014f09ecc2,,2024-08-22T10:36:48Z,2024-08-22T10:36:48Z
+e5a4d8f5-81ae-4606-8e84-6ab1ffa58b72,"Other Company (Archived)",ee5a8cd6-312f-4ae6-b044-e2014f09ecc2,2024-08-22T10:36:48Z,2024-08-22T10:36:48Z,2024-08-22T10:36:48Z

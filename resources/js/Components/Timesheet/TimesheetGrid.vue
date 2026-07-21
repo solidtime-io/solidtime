@@ -2,6 +2,9 @@
 import { inject, type ComputedRef } from 'vue';
 import { Button } from '@/packages/ui/src/Buttons';
 import { PlusIcon } from '@heroicons/vue/20/solid';
+import { ExclamationTriangleIcon, ArrowRightIcon } from '@heroicons/vue/16/solid';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/packages/ui/src';
+import { Link } from '@inertiajs/vue3';
 import TimesheetRow from '@/Components/Timesheet/TimesheetRow.vue';
 import TimeTrackerProjectTaskDropdown from '@/packages/ui/src/TimeTracker/TimeTrackerProjectTaskDropdown.vue';
 import { getDayJsInstance } from '@/packages/ui/src/utils/time';
@@ -26,6 +29,8 @@ defineProps<{
     todayDate: string;
     dayTotals: number[];
     weekTotalFormatted: string;
+    breakDayTotals: number[];
+    breakGrandTotal: number;
     projects: Project[];
     tasks: Task[];
     clients: Client[];
@@ -39,6 +44,7 @@ defineProps<{
     formatDuration: (seconds: number) => string;
     cellStatuses: Record<string, CellSaveStatus>;
     cellPendingSeconds: Record<string, number>;
+    misplacedBreakDates?: Set<string>;
 }>();
 
 const emit = defineEmits<{
@@ -74,9 +80,34 @@ const emit = defineEmits<{
                 <div
                     v-for="day in weekDays"
                     :key="day"
+                    data-testid="timesheet_day_header"
                     class="bg-background dark:bg-secondary px-2 py-1 text-center">
-                    <div class="text-xs font-medium text-text-secondary">
-                        {{ dayjs(day).format('ddd D') }}
+                    <div
+                        class="flex items-center justify-center gap-1 text-xs font-medium text-text-secondary">
+                        <span>{{ dayjs(day).format('ddd D') }}</span>
+                        <DropdownMenu v-if="misplacedBreakDates?.has(day)">
+                            <DropdownMenuTrigger as-child>
+                                <button
+                                    type="button"
+                                    title="A break on this day does not align with your work entries"
+                                    class="flex items-center justify-center shrink-0 rounded-full p-0.5 text-amber-500 hover:bg-amber-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                                    <ExclamationTriangleIcon class="w-3.5 h-3.5" />
+                                </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent class="min-w-[240px]" align="start">
+                                <div class="px-3 py-2 space-y-1.5">
+                                    <p class="text-xs text-text-secondary">
+                                        A break on this day is not directly between work entries.
+                                    </p>
+                                    <Link
+                                        :href="`/calendar?date=${day}`"
+                                        class="inline-flex items-center gap-1 text-sm font-medium text-accent-400 hover:underline">
+                                        Fix in calendar
+                                        <ArrowRightIcon class="w-3.5 h-3.5" />
+                                    </Link>
+                                </div>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     </div>
                 </div>
                 <div
@@ -85,7 +116,7 @@ const emit = defineEmits<{
                 </div>
                 <div class="bg-background dark:bg-secondary"></div>
 
-                <!-- Data rows -->
+                <!-- Data rows (break row is pinned last) -->
                 <TimesheetRow
                     v-for="row in rows"
                     :key="row.key"
@@ -140,9 +171,9 @@ const emit = defineEmits<{
                     </TimeTrackerProjectTaskDropdown>
                 </div>
 
-                <!-- Totals row -->
+                <!-- Totals row: worked time, with break time annotated below (calendar-style) -->
                 <div
-                    class="border-t border-default-background-separator bg-background dark:bg-secondary pl-7 pr-3 py-1 text-xs text-text-tertiary md:sticky md:left-0 md:z-10">
+                    class="flex items-center border-t border-default-background-separator bg-background dark:bg-secondary pl-7 pr-3 py-1 text-xs text-text-tertiary md:sticky md:left-0 md:z-10">
                     Total
                 </div>
                 <div
@@ -150,18 +181,24 @@ const emit = defineEmits<{
                     :key="dayIndex"
                     data-testid="timesheet_day_total"
                     :class="[
-                        'flex items-center justify-center border-t border-default-background-separator bg-background dark:bg-secondary px-2 py-1 text-xs font-medium',
+                        'flex flex-col items-center justify-center border-t border-default-background-separator bg-background dark:bg-secondary px-2 py-1 text-xs font-medium leading-tight',
                         weekDays[dayIndex] === todayDate
                             ? 'text-text-primary'
                             : 'text-text-secondary',
                     ]">
-                    <span class="w-[80px] text-center">
-                        {{ total > 0 ? formatDuration(total) : '-' }}
+                    <span>{{ total > 0 ? formatDuration(total) : '-' }}</span>
+                    <span
+                        v-if="(breakDayTotals[dayIndex] ?? 0) > 0"
+                        class="font-normal text-text-tertiary">
+                        +{{ formatDuration(breakDayTotals[dayIndex] ?? 0) }} break
                     </span>
                 </div>
                 <div
-                    class="flex items-center justify-end border-t border-default-background-separator bg-background dark:bg-secondary pl-3 pr-3 py-1 text-xs font-semibold text-text-primary">
-                    {{ weekTotalFormatted }}
+                    class="flex flex-col items-end justify-center border-t border-default-background-separator bg-background dark:bg-secondary pl-3 pr-3 py-1 text-xs font-semibold text-text-primary leading-tight">
+                    <span>{{ weekTotalFormatted }}</span>
+                    <span v-if="breakGrandTotal > 0" class="font-normal text-text-tertiary">
+                        +{{ formatDuration(breakGrandTotal) }} break
+                    </span>
                 </div>
                 <div
                     class="border-t border-default-background-separator bg-background dark:bg-secondary"></div>

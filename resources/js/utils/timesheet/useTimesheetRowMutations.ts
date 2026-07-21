@@ -38,7 +38,8 @@ export function useTimesheetRowMutations(
         projectId: string | null,
         taskId: string | null,
         billable: boolean,
-        tags: string[]
+        tags: string[],
+        type?: 'work' | 'break'
     ) => TimesheetRowKey,
     updateSlot: (key: TimesheetRowKey, identity: TimesheetRowIdentity) => void,
     removeSlot: (key: TimesheetRowKey) => void
@@ -61,7 +62,8 @@ export function useTimesheetRowMutations(
             identity.projectId,
             identity.taskId,
             identity.billable,
-            identity.tags
+            identity.tags,
+            identity.type
         );
 
         return rows.value.some(
@@ -71,7 +73,8 @@ export function useTimesheetRowMutations(
                     candidate.projectId,
                     candidate.taskId,
                     candidate.billable,
-                    candidate.tags
+                    candidate.tags,
+                    candidate.type
                 ) === target
         );
     }
@@ -80,13 +83,24 @@ export function useTimesheetRowMutations(
         row: TimesheetRow,
         partial: Partial<TimesheetRowIdentity>
     ): Promise<void> {
+        // Break rows have a fixed identity (no project/task/billable)
+        if (row.type === 'break' && ('projectId' in partial || 'billable' in partial)) {
+            return;
+        }
         const entryIds = collectEntryIds(row);
-        const currentIdentity = makeRowKey(row.projectId, row.taskId, row.billable, row.tags);
+        const currentIdentity = makeRowKey(
+            row.projectId,
+            row.taskId,
+            row.billable,
+            row.tags,
+            row.type
+        );
         let merged: TimesheetRowIdentity = {
             projectId: row.projectId,
             taskId: row.taskId,
             billable: row.billable,
             tags: row.tags,
+            type: row.type,
             ...partial,
         };
 
@@ -111,7 +125,8 @@ export function useTimesheetRowMutations(
             merged.projectId,
             merged.taskId,
             merged.billable,
-            merged.tags
+            merged.tags,
+            merged.type
         );
         const shouldMergeIntoExistingRow =
             entryIds.length > 0 &&

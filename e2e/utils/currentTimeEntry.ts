@@ -20,7 +20,17 @@ export async function assertThatTimerHasStarted(page: Page) {
 
 export function newTimeEntryResponse(
     page: Page,
-    { description = '', status = 201, tags = [] } = {}
+    {
+        description = '',
+        status = 201,
+        tags = [],
+        type,
+    }: {
+        description?: string;
+        status?: number;
+        tags?: string[];
+        type?: 'work' | 'break';
+    } = {}
 ) {
     return page.waitForResponse(async (response) => {
         return (
@@ -34,6 +44,7 @@ export function newTimeEntryResponse(
             (await response.json()).data.description === description &&
             (await response.json()).data.task_id === null &&
             (await response.json()).data.user_id !== null &&
+            (type === undefined || (await response.json()).data.type === type) &&
             JSON.stringify((await response.json()).data.tags) === JSON.stringify(tags)
         );
     });
@@ -48,7 +59,18 @@ export async function assertThatTimerIsStopped(page: Page) {
     ).toHaveClass(/bg-accent-300\/70/);
 }
 
-export async function stoppedTimeEntryResponse(page: Page, { description = '', tags = [] } = {}) {
+export async function stoppedTimeEntryResponse(
+    page: Page,
+    {
+        description = '',
+        tags = [],
+        type,
+    }: {
+        description?: string;
+        tags?: string[];
+        type?: 'work' | 'break';
+    } = {}
+) {
     return page.waitForResponse(async (response) => {
         return (
             response.status() === 200 &&
@@ -62,6 +84,7 @@ export async function stoppedTimeEntryResponse(page: Page, { description = '', t
             (await response.json()).data.task_id === null &&
             (await response.json()).data.duration !== null &&
             (await response.json()).data.user_id !== null &&
+            (type === undefined || (await response.json()).data.type === type) &&
             JSON.stringify((await response.json()).data.tags) === JSON.stringify(tags)
         );
     });

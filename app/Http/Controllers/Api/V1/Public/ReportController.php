@@ -57,6 +57,7 @@ class ReportController extends Controller
         $filter->addEnd($properties->end);
         $filter->addActive($properties->active);
         $filter->addBillable($properties->billable);
+        $filter->addType($properties->timeEntryType);
         $filter->addMemberIdsFilter($properties->memberIds?->toArray());
         $filter->addProjectIdsFilter($properties->projectIds?->toArray());
         $filter->addTagIdsFilter($properties->tagIds?->toArray(), $properties->tagMatchType);

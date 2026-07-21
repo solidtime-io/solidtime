@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Service\Import\Importers;
 
 use App\Enums\Role;
+use App\Enums\TimeEntryType;
 use App\Jobs\RecalculateSpentTimeForProject;
 use App\Jobs\RecalculateSpentTimeForTask;
 use App\Models\TimeEntry;
@@ -255,6 +256,14 @@ class SolidtimeImporter extends DefaultImporter
                     throw new ImportException('Invalid billable value');
                 }
                 $timeEntry->billable = $timeEntryRow['billable'] === 'true';
+                // The type column does not exist in old exports
+                if (($timeEntryRow['type'] ?? '') !== '') {
+                    $type = TimeEntryType::tryFrom($timeEntryRow['type']);
+                    if ($type === null) {
+                        throw new ImportException('Invalid type value');
+                    }
+                    $timeEntry->type = $type;
+                }
                 $timeEntry->tags = $this->getTags($timeEntryRow['tags']);
                 $timeEntry->is_imported = true;
 

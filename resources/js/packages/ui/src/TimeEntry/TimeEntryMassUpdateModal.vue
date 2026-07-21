@@ -15,7 +15,7 @@ import {
     type UpdateMultipleTimeEntriesChangeset,
 } from '@/packages/api/src';
 import { Checkbox } from '@/packages/ui/src';
-import { TagIcon } from '@heroicons/vue/20/solid';
+import { TagIcon, ExclamationTriangleIcon } from '@heroicons/vue/20/solid';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '..';
 import { Button } from '@/packages/ui/src/Buttons';
 import TagDropdown from '@/packages/ui/src/Tag/TagDropdown.vue';
@@ -129,6 +129,21 @@ watch(removeAllTags, () => {
         selectedTags.value = [];
     }
 });
+
+const selectedBreaksCount = computed(
+    () => props.timeEntries.filter((entry) => entry.type === 'break').length
+);
+
+// Mirrors the server-side skip in TimeEntryController::updateMultiple: a break
+// entry is skipped entirely when the changeset assigns a project, makes it
+// billable, or adds tags (clearing tags via removeAllTags is fine).
+const showBreakWarning = computed(
+    () =>
+        selectedBreaksCount.value > 0 &&
+        ((projectId.value !== null && projectId.value !== '') ||
+            billable.value === true ||
+            selectedTags.value.length > 0)
+);
 </script>
 
 <template>
@@ -141,6 +156,20 @@ watch(removeAllTags, () => {
 
         <template #content>
             <div class="space-y-4">
+                <div
+                    v-if="showBreakWarning"
+                    data-testid="mass_update_break_warning"
+                    class="flex items-start space-x-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-600 dark:text-amber-400">
+                    <ExclamationTriangleIcon class="w-4 h-4 mt-0.5 shrink-0" />
+                    <span>
+                        {{ selectedBreaksCount }}
+                        {{ selectedBreaksCount === 1 ? 'break is' : 'breaks are' }} selected —
+                        breaks can not have a project or tags, or be billable, so
+                        {{ selectedBreaksCount === 1 ? 'this entry' : 'these entries' }} will be
+                        skipped entirely and none of the changes (including the description) will be
+                        applied to {{ selectedBreaksCount === 1 ? 'it' : 'them' }}.
+                    </span>
+                </div>
                 <Field>
                     <FieldLabel for="description">Description</FieldLabel>
                     <TextInput

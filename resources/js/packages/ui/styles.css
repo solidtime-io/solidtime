@@ -88,8 +88,8 @@
     --theme-shadow-card: lch(0 0 0 / 0.022) 0px 3px 6px -2px, lch(0 0 0 / 0.044) 0px 1px 1px;
     --theme-shadow-dropdown: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
 
-    --theme-color-row-background: var(--theme-color-primary);
-    --theme-color-row-heading-background: var(--theme-color-primary);
+    --theme-color-row-background: var(--color-bg-primary);
+    --theme-color-row-heading-background: var(--color-bg-primary);
     --theme-color-row-heading-border: var(--color-border-tertiary);
     --theme-color-icon-default: var(--color-text-quaternary);
 

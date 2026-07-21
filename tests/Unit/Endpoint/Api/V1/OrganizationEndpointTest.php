@@ -353,6 +353,47 @@ class OrganizationEndpointTest extends ApiEndpointTestAbstract
         ]);
     }
 
+    public function test_update_endpoint_can_update_the_setting_breaks_enabled(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'organizations:update',
+        ]);
+        $data->organization->breaks_enabled = true;
+        $data->organization->save();
+        $this->assertBillableRateServiceIsUnused();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.organizations.update', [$data->organization->getKey()]), [
+            'breaks_enabled' => false,
+        ]);
+
+        // Assert
+        $response->assertStatus(200);
+        $response->assertJsonPath('data.breaks_enabled', false);
+        $this->assertDatabaseHas(Organization::class, [
+            'id' => $data->organization->getKey(),
+            'breaks_enabled' => false,
+        ]);
+    }
+
+    public function test_show_endpoint_returns_breaks_enabled_setting_for_members_with_role_employee(): void
+    {
+        // Arrange
+        $data = $this->createUserWithRole(Role::Employee);
+        $data->organization->breaks_enabled = false;
+        $data->organization->save();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.organizations.show', [$data->organization->getKey()]));
+
+        // Assert
+        $response->assertStatus(200);
+        $response->assertJsonPath('data.breaks_enabled', false);
+    }
+
     public function test_update_endpoint_can_update_billable_rate_of_organization_and_update_time_entries(): void
     {
         // Arrange

@@ -16,8 +16,10 @@ use App\Models\TimeEntry;
 use App\Models\User;
 use App\Service\Export\ExportService;
 use Illuminate\Support\Facades\Storage;
+use League\Csv\Reader;
 use PHPUnit\Framework\Attributes\CoversClass;
 use Tests\TestCaseWithDatabase;
+use ZipArchive;
 
 #[CoversClass(ExportService::class)]
 class ExportServiceTest extends TestCaseWithDatabase
@@ -61,5 +63,33 @@ class ExportServiceTest extends TestCaseWithDatabase
 
         // Assert
         Storage::disk(config('filesystems.default'))->assertExists($zip);
+    }
+
+    public function test_export_includes_time_entry_type_in_time_entries_csv(): void
+    {
+        // Arrange
+        $this->mockPrivateStorage();
+        $user = User::factory()->create();
+        $organization = Organization::factory()->withOwner($user)->create();
+        $member = Member::factory()->forUser($user)->forOrganization($organization)->create();
+        $workEntry = TimeEntry::factory()->forMember($member)->create();
+        $breakEntry = TimeEntry::factory()->forMember($member)->isBreak()->create();
+
+        // Act
+        $exportService = app(ExportService::class);
+        $zip = $exportService->export($organization);
+
+        // Assert
+        $zipArchive = new ZipArchive;
+        $zipArchive->open(Storage::disk(config('filesystems.default'))->path($zip));
+        $timeEntriesCsv = $zipArchive->getFromName('time_entries.csv');
+        $zipArchive->close();
+        $this->assertNotFalse($timeEntriesCsv);
+        $reader = Reader::createFromString($timeEntriesCsv);
+        $reader->setHeaderOffset(0);
+        $this->assertContains('type', $reader->getHeader());
+        $typesById = collect($reader)->pluck('type', 'id');
+        $this->assertSame('work', $typesById[$workEntry->getKey()]);
+        $this->assertSame('break', $typesById[$breakEntry->getKey()]);
     }
 }

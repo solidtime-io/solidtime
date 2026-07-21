@@ -16,11 +16,19 @@ import TimeEntryRowTagDropdown from '@/packages/ui/src/TimeEntry/TimeEntryRowTag
 import TimeEntryMoreOptionsDropdown from '@/packages/ui/src/TimeEntry/TimeEntryMoreOptionsDropdown.vue';
 import TimeTrackerProjectTaskDropdown from '@/packages/ui/src/TimeTracker/TimeTrackerProjectTaskDropdown.vue';
 import BillableToggleButton from '@/packages/ui/src/Input/BillableToggleButton.vue';
-import { ref, inject, type ComputedRef } from 'vue';
-import { formatHumanReadableDuration, formatStartEnd } from '@/packages/ui/src/utils/time';
+import { ref, inject, computed, type ComputedRef } from 'vue';
+import {
+    formatHumanReadableDuration,
+    formatStartEnd,
+    getLocalizedDayJs,
+} from '@/packages/ui/src/utils/time';
 import TimeEntryRow from '@/packages/ui/src/TimeEntry/TimeEntryRow.vue';
 import GroupedItemsCountButton from '@/packages/ui/src/GroupedItemsCountButton.vue';
 import type { TimeEntriesGroupedByType } from '@/types/time-entries';
+import {
+    findMisplacedBreak,
+    type BreakPlacementHint,
+} from '@/packages/ui/src/utils/breakPlacement';
 import {
     Checkbox,
     ContextMenu,
@@ -30,6 +38,9 @@ import {
     ContextMenuTrigger,
 } from '@/packages/ui/src';
 import { PlayIcon, TrashIcon } from '@heroicons/vue/20/solid';
+import BreakLabel from '@/packages/ui/src/TimeEntry/BreakLabel.vue';
+import BreakPlacementHintButton from '@/packages/ui/src/TimeEntry/BreakPlacementHintButton.vue';
+import { useBreaksEnabled } from '@/packages/ui/src/utils/useBreaksEnabled';
 import { twMerge } from 'tailwind-merge';
 const props = defineProps<{
     timeEntry: TimeEntriesGroupedByType;
@@ -50,6 +61,8 @@ const props = defineProps<{
     selectedTimeEntries: TimeEntry[];
     enableEstimatedTime: boolean;
     canCreateProject: boolean;
+    breakPlacementHints?: Record<string, BreakPlacementHint | null>;
+    fixInCalendar?: (date: string) => void;
 }>();
 const emit = defineEmits<{
     selected: [TimeEntry[]];
@@ -57,6 +70,26 @@ const emit = defineEmits<{
 }>();
 
 const organization = inject<ComputedRef<Organization>>('organization');
+const breaksEnabled = useBreaksEnabled();
+
+// Continue creates a new entry of the same type, which the server rejects
+// for breaks when breaks are disabled for the organization
+const canRecreate = computed(() => props.timeEntry.type !== 'break' || breaksEnabled.value);
+
+// Grouped breaks collapse into a single summary row, so surface the placement
+// warning if any entry in the group is misplaced. All grouped entries share the
+// same day, so the first misplaced one supplies the calendar navigation date.
+const misplacedBreakEntry = computed<TimeEntry | null>(() =>
+    findMisplacedBreak(props.timeEntry.timeEntries, props.breakPlacementHints ?? {})
+);
+const showPlacementHint = computed(
+    () => props.timeEntry.type === 'break' && misplacedBreakEntry.value !== null
+);
+const breakFixDate = computed(() =>
+    misplacedBreakEntry.value
+        ? getLocalizedDayJs(misplacedBreakEntry.value.start).format('YYYY-MM-DD')
+        : ''
+);
 
 function updateTimeEntryDescription(description: string) {
     props.updateTimeEntries(
@@ -121,12 +154,26 @@ function onSelectChange(checked: boolean) {
                                     {{ timeEntry?.timeEntries?.length }}
                                 </GroupedItemsCountButton>
                                 <TimeEntryDescriptionInput
+                                    v-if="timeEntry.type !== 'break'"
                                     class="min-w-0 mr-4 shrink"
                                     :model-value="timeEntry.description"
                                     @changed="
                                         updateTimeEntryDescription
                                     "></TimeEntryDescriptionInput>
+                                <BreakLabel
+                                    v-if="timeEntry.type === 'break'"
+                                    class="px-2 shrink-0" />
+                                <span
+                                    v-if="timeEntry.type === 'break' && timeEntry.description"
+                                    class="min-w-0 mr-4 shrink truncate text-sm text-text-secondary">
+                                    {{ timeEntry.description }}
+                                </span>
+                                <BreakPlacementHintButton
+                                    v-if="showPlacementHint"
+                                    :fix-date="breakFixDate"
+                                    :fix-in-calendar="fixInCalendar" />
                                 <TimeTrackerProjectTaskDropdown
+                                    v-if="timeEntry.type !== 'break'"
                                     class="min-w-0 shrink"
                                     :clients
                                     :create-project
@@ -147,11 +194,13 @@ function onSelectChange(checked: boolean) {
                         <div
                             class="hidden @lg:flex items-center font-medium space-x-1 @lg:space-x-2 shrink-0">
                             <TimeEntryRowTagDropdown
+                                v-if="timeEntry.type !== 'break'"
                                 :create-tag
                                 :tags="tags"
                                 :model-value="timeEntry.tags"
                                 @changed="updateTimeEntryTags"></TimeEntryRowTagDropdown>
                             <BillableToggleButton
+                                v-if="timeEntry.type !== 'break'"
                                 :model-value="timeEntry.billable"
                                 size="small"
                                 faded
@@ -189,6 +238,7 @@ function onSelectChange(checked: boolean) {
                             </button>
 
                             <TimeTrackerStartStop
+                                v-if="canRecreate"
                                 :active="!!(timeEntry.start && !timeEntry.end)"
                                 variant="secondary"
                                 class="opacity-60 flex group-hover:opacity-100 focus-visible:opacity-100"
@@ -231,7 +281,17 @@ function onSelectChange(checked: boolean) {
                             </div>
                             <!-- Second row: project/task - tags - billable - start - more -->
                             <div class="flex items-center justify-between mt-1">
+                                <div
+                                    v-if="timeEntry.type === 'break'"
+                                    class="flex items-center min-w-0">
+                                    <BreakLabel class="px-2 min-w-0" />
+                                    <BreakPlacementHintButton
+                                        v-if="showPlacementHint"
+                                        :fix-date="breakFixDate"
+                                        :fix-in-calendar="fixInCalendar" />
+                                </div>
                                 <TimeTrackerProjectTaskDropdown
+                                    v-else
                                     class="min-w-0"
                                     :clients
                                     :create-project
@@ -249,16 +309,19 @@ function onSelectChange(checked: boolean) {
                                     "></TimeTrackerProjectTaskDropdown>
                                 <div class="flex items-center shrink-0">
                                     <TimeEntryRowTagDropdown
+                                        v-if="timeEntry.type !== 'break'"
                                         :create-tag
                                         :tags="tags"
                                         :model-value="timeEntry.tags"
                                         compact
                                         @changed="updateTimeEntryTags"></TimeEntryRowTagDropdown>
                                     <BillableToggleButton
+                                        v-if="timeEntry.type !== 'break'"
                                         :model-value="timeEntry.billable"
                                         size="small"
                                         @changed="updateTimeEntryBillable"></BillableToggleButton>
                                     <TimeTrackerStartStop
+                                        v-if="canRecreate"
                                         :active="!!(timeEntry.start && !timeEntry.end)"
                                         variant="secondary"
                                         class="ml-2"
@@ -278,7 +341,7 @@ function onSelectChange(checked: boolean) {
                 </MainContainer>
                 <div
                     v-if="expanded"
-                    class="w-full border-t border-default-background-separator bg-black/15">
+                    class="w-full border-t border-default-background-separator bg-black/5 dark:bg-black/15">
                     <TimeEntryRow
                         v-for="subEntry in timeEntry.timeEntries"
                         :key="subEntry.id"
@@ -303,6 +366,8 @@ function onSelectChange(checked: boolean) {
                         :duplicate-time-entry="() => duplicateTimeEntry(subEntry)"
                         :currency="currency"
                         :create-tag
+                        :placement-hint="breakPlacementHints?.[subEntry.id] ?? null"
+                        :fix-in-calendar="fixInCalendar"
                         :time-entry="subEntry"
                         @selected="emit('selected', [subEntry])"
                         @unselected="emit('unselected', [subEntry])"></TimeEntryRow>
@@ -311,12 +376,13 @@ function onSelectChange(checked: boolean) {
         </ContextMenuTrigger>
         <ContextMenuContent class="min-w-[160px]">
             <ContextMenuItem
+                v-if="canRecreate"
                 class="space-x-3"
                 @select="onStartStopClick(timeEntry.timeEntries[0]!)">
                 <PlayIcon class="w-4 h-4 text-icon-default" />
                 <span>Continue</span>
             </ContextMenuItem>
-            <ContextMenuSeparator />
+            <ContextMenuSeparator v-if="canRecreate" />
             <ContextMenuItem
                 class="space-x-3 text-destructive"
                 @select="deleteTimeEntries(timeEntry?.timeEntries ?? [])">

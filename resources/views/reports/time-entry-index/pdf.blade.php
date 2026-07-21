@@ -158,6 +158,7 @@
                 <th style="text-align: center;">Time</th>
                 <th>Duration</th>
                 <th>Billable</th>
+                <th>Break</th>
                 <th>Tags</th>
             </tr>
             </thead>
@@ -192,6 +193,7 @@
                         {{ $localization->formatIntervalForReporting($timeEntry->getDuration()) }}
                     </td>
                     <td style="overflow-wrap: break-word;">{{ $timeEntry->billable ? 'Yes' : 'No' }}</td>
+                    <td style="overflow-wrap: break-word;">{{ $timeEntry->type === \App\Enums\TimeEntryType::Break ? 'Yes' : 'No' }}</td>
                     <td style="overflow-wrap: break-word; min-width: 75px;">{{ count($timeEntry->tagsRelation) === 0 ? '-' : $timeEntry->tagsRelation->implode('name', ', ') }}</td>
                 </tr>
             @endforeach

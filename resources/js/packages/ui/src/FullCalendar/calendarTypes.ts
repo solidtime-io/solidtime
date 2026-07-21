@@ -13,6 +13,8 @@ export interface CalendarEvent {
     client?: Client;
     task?: Task;
     isRunning: boolean;
+    isBreak: boolean;
+    isMisplacedBreak: boolean;
     durationMinutes: number;
     title: string;
     backgroundColor: string;

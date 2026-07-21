@@ -353,6 +353,13 @@ class TimeEntryAggregationService
                     'color' => null,
                 ];
             }
+        } elseif ($type === TimeEntryAggregationType::Type) {
+            foreach ($keys as $key) {
+                $descriptorMap[$key] = [
+                    'description' => $key === 'break' ? 'Break' : 'Work time',
+                    'color' => null,
+                ];
+            }
         } elseif ($type === TimeEntryAggregationType::Tag) {
             $tags = Tag::query()
                 ->whereIn('id', $keys)
@@ -504,6 +511,8 @@ class TimeEntryAggregationService
             return 'client_id';
         } elseif ($group === TimeEntryAggregationType::Billable) {
             return 'billable';
+        } elseif ($group === TimeEntryAggregationType::Type) {
+            return 'type';
         } elseif ($group === TimeEntryAggregationType::Description) {
             return 'description';
         } elseif ($group === TimeEntryAggregationType::Tag) {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\TimeEntryType;
 use App\Models\Concerns\CustomAuditable;
 use App\Models\Concerns\HasUuids;
 use App\Service\BillableRateService;
@@ -28,6 +29,7 @@ use Staudenmeir\EloquentJsonRelations\Relations\BelongsToJson;
  * @property Carbon|null $end
  * @property int|null $billable_rate Billable rate per hour in cents
  * @property bool $billable
+ * @property TimeEntryType $type
  * @property array<string> $tags
  * @property string $user_id
  * @property string $member_id
@@ -71,10 +73,18 @@ class TimeEntry extends Model implements AuditableContract
         'start' => 'datetime',
         'end' => 'datetime',
         'billable' => 'bool',
+        'type' => TimeEntryType::class,
         'tags' => 'array',
         'billable_rate' => 'int',
         'is_imported' => 'bool',
         'still_active_email_sent_at' => 'datetime',
+    ];
+
+    /**
+     * @var array<string, string>
+     */
+    protected $attributes = [
+        'type' => 'work',
     ];
 
     public const array SELECT_COLUMNS = [
@@ -84,6 +94,7 @@ class TimeEntry extends Model implements AuditableContract
         'end',
         'billable_rate',
         'billable',
+        'type',
         'user_id',
         'organization_id',
         'project_id',
@@ -116,6 +127,21 @@ class TimeEntry extends Model implements AuditableContract
     protected array $auditExclude = [
         'billable_rate',
     ];
+
+    protected static function booted(): void
+    {
+        // Break entries can never be billable, have tags or belong to a project/task.
+        static::saving(function (TimeEntry $timeEntry): void {
+            if ($timeEntry->type === TimeEntryType::Break) {
+                $timeEntry->billable = false;
+                $timeEntry->billable_rate = null;
+                $timeEntry->project_id = null;
+                $timeEntry->task_id = null;
+                $timeEntry->client_id = null;
+                $timeEntry->tags = [];
+            }
+        });
+    }
 
     public function getBillableRateComputed(): ?int
     {
@@ -171,6 +197,16 @@ class TimeEntry extends Model implements AuditableContract
     public function scopeHasTag(Builder $builder, Tag $tag): void
     {
         $builder->whereJsonContains('tags', $tag->getKey());
+    }
+
+    /**
+     * Only work entries — breaks do not count toward tracked/billable time.
+     *
+     * @param  Builder<TimeEntry>  $builder
+     */
+    public function scopeWorkTime(Builder $builder): void
+    {
+        $builder->where('type', '=', TimeEntryType::Work);
     }
 
     /**

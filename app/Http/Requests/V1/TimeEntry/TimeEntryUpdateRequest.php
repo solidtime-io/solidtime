@@ -4,16 +4,21 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\V1\TimeEntry;
 
+use App\Enums\TimeEntryType;
 use App\Http\Requests\V1\BaseFormRequest;
 use App\Models\Member;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Models\Tag;
 use App\Models\Task;
+use App\Models\TimeEntry;
 use App\Service\PermissionStore;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ConditionalRules;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\ProhibitedIf;
 use Korridor\LaravelModelValidationRules\Rules\ExistsEloquent;
 
 /**
@@ -24,10 +29,19 @@ class TimeEntryUpdateRequest extends BaseFormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, array<string|ValidationRule>>
+     * @return array<string, array<string|\Closure|ValidationRule|\Illuminate\Contracts\Validation\Rule|ProhibitedIf|ConditionalRules>>
      */
     public function rules(): array
     {
+        // Break restrictions need to apply based on the type the entry will have after the
+        // update, not only when the payload itself contains type=break.
+        $timeEntry = $this->route('timeEntry');
+        $timeEntry = $timeEntry instanceof TimeEntry ? $timeEntry : null;
+        $resultingType = $this->has('type')
+            ? TimeEntryType::tryFrom((string) $this->input('type'))
+            : $timeEntry?->type;
+        $isBreak = $resultingType === TimeEntryType::Break;
+
         return [
             // ID of the organization member that the time entry should belong to
             'member_id' => [
@@ -42,6 +56,7 @@ class TimeEntryUpdateRequest extends BaseFormRequest
                 'nullable',
                 'string',
                 'required_with:task_id',
+                Rule::prohibitedIf($isBreak),
                 ExistsEloquent::make(Project::class, null, function (Builder $builder): Builder {
                     /** @var Builder<Project> $builder */
                     $builder = $builder->whereBelongsTo($this->organization, 'organization');
@@ -60,6 +75,7 @@ class TimeEntryUpdateRequest extends BaseFormRequest
             'task_id' => [
                 'nullable',
                 'string',
+                Rule::prohibitedIf($isBreak),
                 ExistsEloquent::make(Task::class, null, function (Builder $builder): Builder {
                     /** @var Builder<Task> $builder */
                     return $builder->whereBelongsTo($this->organization, 'organization');
@@ -82,7 +98,22 @@ class TimeEntryUpdateRequest extends BaseFormRequest
             ],
             // Whether time entry is billable
             'billable' => [
+                'sometimes',
                 'boolean',
+                Rule::when($isBreak, ['declined']),
+            ],
+            // Type of the time entry (work time or a break)
+            'type' => [
+                Rule::enum(TimeEntryType::class),
+                function (string $attribute, mixed $value, \Closure $fail) use ($timeEntry): void {
+                    // While breaks are disabled, entries that already are breaks may stay
+                    // breaks, but converting a work entry to a break is not allowed.
+                    if ($value === TimeEntryType::Break->value
+                        && ! $this->organization->breaks_enabled
+                        && $timeEntry?->type !== TimeEntryType::Break) {
+                        $fail('Breaks are disabled for this organization.');
+                    }
+                },
             ],
             // Description of time entry
             'description' => [
@@ -94,6 +125,7 @@ class TimeEntryUpdateRequest extends BaseFormRequest
             'tags' => [
                 'nullable',
                 'array',
+                Rule::prohibitedIf($isBreak),
             ],
             'tags.*' => [
                 'string',

@@ -2303,3 +2303,19 @@ test('test that aggregate row context menu delete removes all grouped entries', 
         page.locator('[data-testid="time_entry_row"]').filter({ hasText: description })
     ).not.toBeVisible();
 });
+
+test('test that break entries show a break badge and split day total on the time page', async ({
+    page,
+    ctx,
+}) => {
+    await updateOrganizationSettingViaApi(ctx, { breaks_enabled: true });
+    await createTimeEntryViaApi(ctx, { duration: '2h', description: 'Some work' });
+    await createTimeEntryViaApi(ctx, { duration: '30min', type: 'break', description: '' });
+
+    await page.goto(PLAYWRIGHT_BASE_URL + '/time');
+    await expect(page.getByTestId('break_badge').first()).toBeVisible();
+    await expect(page.getByTestId('break_badge').first()).toContainText('Break');
+    // Day heading shows the break portion separately from worked time
+    await expect(page.getByTestId('day_break_duration').first()).toBeVisible();
+    await expect(page.getByTestId('day_break_duration').first()).toContainText('break');
+});

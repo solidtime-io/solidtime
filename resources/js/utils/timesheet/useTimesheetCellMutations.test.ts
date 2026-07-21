@@ -79,6 +79,7 @@ function buildRow(
         taskId: null,
         billable: false,
         tags: [],
+        type: 'work',
         cells: new Map([[0, cell]]),
         totalSeconds: cell.totalSeconds,
     };
@@ -91,6 +92,7 @@ function buildEmptyRow(projectId: string | null, key = `${projectId}:null`): Tim
         taskId: null,
         billable: false,
         tags: [],
+        type: 'work',
         cells: new Map(),
         totalSeconds: 0,
     };
@@ -308,6 +310,144 @@ describe('useTimesheetCellMutations.handleCellUpdate', () => {
         });
     });
 
+    describe('break placement', () => {
+        it('updates an existing break in place when moving it into a valid gap', async () => {
+            const morning = entry('2026-04-10T09:00:00Z', '2026-04-10T12:00:00Z', {
+                id: 'morning',
+                type: 'work',
+            });
+            const afternoon = entry('2026-04-10T13:00:00Z', '2026-04-10T17:00:00Z', {
+                id: 'afternoon',
+                type: 'work',
+            });
+            const existingBreak = entry('2026-04-10T08:00:00Z', '2026-04-10T08:30:00Z', {
+                id: 'break-1',
+                project_id: null,
+                type: 'break',
+            });
+            const row = buildRow(null, [existingBreak], 'break-row');
+            row.type = 'break';
+            const { cellMutations } = setup([morning, afternoon, existingBreak]);
+
+            await cellMutations.handleCellUpdate(row, 0, HOUR);
+
+            expect(apiMocks.updateTimeEntry).toHaveBeenCalledTimes(1);
+            expect(firstArg(apiMocks.updateTimeEntry)).toEqual(
+                expect.objectContaining({
+                    id: 'break-1',
+                    start: '2026-04-10T12:00:00Z',
+                    end: '2026-04-10T13:00:00Z',
+                })
+            );
+            expect(apiMocks.deleteTimeEntry).not.toHaveBeenCalled();
+            expect(apiMocks.createTimeEntry).not.toHaveBeenCalled();
+        });
+
+        it('keeps an edited break anchored to its position instead of recentering', async () => {
+            // 09-10 and 11:30-12:30 leave a 90-min gap; a resized 1h break has a valid
+            // window of 10:00-10:30. The break already starts at 10:00, so it must stay
+            // there (10:00-11:00) rather than jump to the centered 10:15-11:15.
+            const morning = entry('2026-04-10T09:00:00Z', '2026-04-10T10:00:00Z', {
+                id: 'morning',
+                type: 'work',
+            });
+            const afternoon = entry('2026-04-10T11:30:00Z', '2026-04-10T12:30:00Z', {
+                id: 'afternoon',
+                type: 'work',
+            });
+            const existingBreak = entry('2026-04-10T10:00:00Z', '2026-04-10T10:30:00Z', {
+                id: 'break-1',
+                project_id: null,
+                type: 'break',
+            });
+            const row = buildRow(null, [existingBreak], 'break-row');
+            row.type = 'break';
+            const { cellMutations } = setup([morning, afternoon, existingBreak]);
+
+            await cellMutations.handleCellUpdate(row, 0, HOUR);
+
+            expect(apiMocks.updateTimeEntry).toHaveBeenCalledTimes(1);
+            expect(firstArg(apiMocks.updateTimeEntry)).toEqual(
+                expect.objectContaining({
+                    id: 'break-1',
+                    start: '2026-04-10T10:00:00Z',
+                    end: '2026-04-10T11:00:00Z',
+                })
+            );
+            expect(apiMocks.createTimeEntry).not.toHaveBeenCalled();
+        });
+
+        it('grows a multi-break cell by re-placing the latest break, not fragmenting', async () => {
+            // Two breaks share the break cell. Growing the cell total must extend the
+            // latest-ending break (break-b) in place — never create a third break entry.
+            const w1 = entry('2026-04-10T12:00:00Z', '2026-04-10T14:00:00Z', {
+                id: 'w1',
+                type: 'work',
+            });
+            const w2 = entry('2026-04-10T15:00:00Z', '2026-04-10T17:00:00Z', {
+                id: 'w2',
+                type: 'work',
+            });
+            const breakA = entry('2026-04-10T10:00:00Z', '2026-04-10T10:30:00Z', {
+                id: 'break-a',
+                project_id: null,
+                type: 'break',
+            });
+            const breakB = entry('2026-04-10T14:00:00Z', '2026-04-10T14:30:00Z', {
+                id: 'break-b',
+                project_id: null,
+                type: 'break',
+            });
+            const row = buildRow(null, [breakA, breakB], 'break-row');
+            row.type = 'break';
+            const { cellMutations } = setup([w1, w2, breakA, breakB]);
+
+            // Cell total 60m → 90m (the extra 30m lands on break-b, taking it to 60m,
+            // which fills the 14:00-15:00 gap).
+            await cellMutations.handleCellUpdate(row, 0, 90 * 60);
+
+            expect(apiMocks.updateTimeEntry).toHaveBeenCalledTimes(1);
+            expect(firstArg(apiMocks.updateTimeEntry)).toEqual(
+                expect.objectContaining({
+                    id: 'break-b',
+                    start: '2026-04-10T14:00:00Z',
+                    end: '2026-04-10T15:00:00Z',
+                })
+            );
+            expect(apiMocks.createTimeEntry).not.toHaveBeenCalled();
+            expect(apiMocks.deleteTimeEntry).not.toHaveBeenCalled();
+        });
+
+        it('shrinks a multi-break cell by trimming the tail break, not fragmenting', async () => {
+            const breakA = entry('2026-04-10T10:00:00Z', '2026-04-10T10:30:00Z', {
+                id: 'break-a',
+                project_id: null,
+                type: 'break',
+            });
+            const breakB = entry('2026-04-10T14:00:00Z', '2026-04-10T14:30:00Z', {
+                id: 'break-b',
+                project_id: null,
+                type: 'break',
+            });
+            const row = buildRow(null, [breakA, breakB], 'break-row');
+            row.type = 'break';
+            const { cellMutations } = setup([breakA, breakB]);
+
+            // Cell total 60m → 40m: trim 20m off the latest break (break-b → 14:00-14:10).
+            await cellMutations.handleCellUpdate(row, 0, 40 * 60);
+
+            expect(apiMocks.updateTimeEntry).toHaveBeenCalledTimes(1);
+            expect(firstArg(apiMocks.updateTimeEntry)).toEqual(
+                expect.objectContaining({
+                    id: 'break-b',
+                    end: '2026-04-10T14:10:00Z',
+                })
+            );
+            expect(apiMocks.createTimeEntry).not.toHaveBeenCalled();
+            expect(apiMocks.deleteTimeEntry).not.toHaveBeenCalled();
+        });
+    });
+
     // ── Extend cell (Phase 2) ──────────────────────────────────────
 
     describe('extendCell', () => {
@@ -426,6 +566,7 @@ describe('useTimesheetCellMutations.handleCellUpdate', () => {
                 taskId: null,
                 billable: false,
                 tags: [],
+                type: 'work',
                 cells: new Map([[0, cell]]),
                 totalSeconds: HOUR,
             };

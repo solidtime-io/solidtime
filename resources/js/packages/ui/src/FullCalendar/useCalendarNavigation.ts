@@ -6,9 +6,10 @@ import { getWeekStartDayNumber } from '../utils/settings';
 export function useCalendarNavigation(callbacks: {
     onDatesChange: (payload: { start: Dayjs; end: Dayjs }) => void;
     scrollToCurrentTime: () => void;
+    initialDate?: Dayjs | null;
 }) {
     const activeView = ref('timeGridWeek');
-    const currentDate = ref(getLocalizedDayJs());
+    const currentDate = ref(callbacks.initialDate ?? getLocalizedDayJs());
 
     function getFirstDay(): number {
         return getWeekStartDayNumber();

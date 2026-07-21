@@ -17,15 +17,18 @@ const queryClient = useQueryClient();
 const form = ref<{
     prevent_overlapping_time_entries: boolean;
     employees_can_manage_tasks: boolean;
+    breaks_enabled: boolean;
 }>({
     prevent_overlapping_time_entries: false,
     employees_can_manage_tasks: false,
+    breaks_enabled: false,
 });
 
 onMounted(async () => {
     form.value.prevent_overlapping_time_entries =
         organization.value?.prevent_overlapping_time_entries ?? false;
     form.value.employees_can_manage_tasks = organization.value?.employees_can_manage_tasks ?? false;
+    form.value.breaks_enabled = organization.value?.breaks_enabled ?? false;
 });
 
 const mutation = useMutation({
@@ -39,6 +42,7 @@ async function submit() {
     await mutation.mutateAsync({
         prevent_overlapping_time_entries: form.value.prevent_overlapping_time_entries,
         employees_can_manage_tasks: form.value.employees_can_manage_tasks,
+        breaks_enabled: form.value.breaks_enabled,
     });
 }
 </script>
@@ -68,6 +72,10 @@ async function submit() {
                     <FieldLabel for="employeesCanManageTasks"
                         >Allow Employees to manage tasks</FieldLabel
                     >
+                </Field>
+                <Field orientation="horizontal">
+                    <Checkbox id="breaksEnabled" v-model:checked="form.breaks_enabled" />
+                    <FieldLabel for="breaksEnabled">Allow tracking breaks</FieldLabel>
                 </Field>
             </div>
         </template>
