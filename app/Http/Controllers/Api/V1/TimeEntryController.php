@@ -236,7 +236,7 @@ class TimeEntryController extends Controller
         }
         $user = $this->user();
         $timezone = $user->timezone;
-        $showBillableRate = $this->member($organization)->role !== Role::Employee->value || $organization->employees_can_see_billable_rates;
+        $showBillableRate = ($this->member($organization)->role !== Role::Employee->value || $organization->employees_can_see_billable_rates) && $request->getShowAmounts();
         $roundingType = $canAccessPremiumFeatures ? $request->getRoundingType() : null;
         $roundingMinutes = $canAccessPremiumFeatures ? $request->getRoundingMinutes() : null;
 
@@ -433,7 +433,7 @@ class TimeEntryController extends Controller
         }
         $debug = $request->getDebug();
         $user = $this->user();
-        $showBillableRate = $this->member($organization)->role !== Role::Employee->value || $organization->employees_can_see_billable_rates;
+        $showBillableRate = ($this->member($organization)->role !== Role::Employee->value || $organization->employees_can_see_billable_rates) && $request->getShowAmounts();
 
         $group = $request->getGroup();
         $subGroup = $request->getSubGroup();
