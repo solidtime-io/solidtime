@@ -26,7 +26,7 @@ class UserService
     public function createUser(
         string $name,
         string $email,
-        string $password,
+        ?string $password,
         string $timezone,
         Weekday $weekStart,
         ?string $currency,
@@ -40,7 +40,7 @@ class UserService
         $user = new User;
         $user->name = $name;
         $user->email = strtolower($email);
-        $user->password = Hash::make($password);
+        $user->password = $password === null ? null : Hash::make($password);
         $user->timezone = $timezone;
         $user->week_start = $weekStart;
         if ($verifyEmail) {

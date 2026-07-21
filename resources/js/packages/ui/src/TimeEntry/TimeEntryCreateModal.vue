@@ -41,6 +41,7 @@ const props = defineProps<{
     clients: Client[];
     start?: string;
     end?: string;
+    defaultDescription?: string;
     currency: string;
     organizationBillableRate: number | null;
     canCreateProject: boolean;
@@ -84,6 +85,14 @@ watch(
     (value) => {
         if (value) {
             localEnd.value = getLocalizedDayJs(value).format();
+        }
+    }
+);
+watch(
+    () => props.defaultDescription,
+    (value) => {
+        if (value !== undefined) {
+            timeEntry.value.description = value;
         }
     }
 );

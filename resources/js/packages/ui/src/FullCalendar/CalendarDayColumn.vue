@@ -3,6 +3,7 @@ import FullCalendarEventContent from './FullCalendarEventContent.vue';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '..';
 import type { DayEvent, ActivityBox } from './calendarTypes';
 import type { WindowActivityInPeriod } from './activityTypes';
+import type { ExternalEventBox } from './useExternalEvents';
 
 const props = defineProps<{
     dayStr: string;
@@ -27,6 +28,9 @@ const props = defineProps<{
     // Now indicator
     showNowIndicator: boolean;
     nowIndicatorTop: number;
+
+    // External calendar events (e.g. Google Calendar meetings)
+    externalEvents?: ExternalEventBox[];
 
     // Activity boxes
     activityBoxes: ActivityBox[];
@@ -68,6 +72,7 @@ const emit = defineEmits<{
         edge: 'start' | 'end'
     ): void;
     (e: 'activity-pointerdown', event: PointerEvent): void;
+    (e: 'external-event-click', box: ExternalEventBox): void;
 }>();
 </script>
 
@@ -129,6 +134,28 @@ const emit = defineEmits<{
                     @pointerdown.stop.prevent="
                         emit('resizer-pointerdown', $event, dayEvent, 'end')
                     "></div>
+            </div>
+        </div>
+
+        <div
+            v-for="box in externalEvents ?? []"
+            :key="'external-' + box.event.id"
+            class="fc-external-event pointer-events-auto absolute rounded-sm text-xs cursor-pointer border border-dashed overflow-hidden"
+            :style="{ top: box.top + 'px', height: box.height + 'px' }"
+            :title="`${box.event.title} (${box.timeLabel}) — click to create a time entry`"
+            :aria-label="`Create time entry from ${box.event.title}`"
+            role="button"
+            tabindex="0"
+            @pointerdown.stop
+            @click="emit('external-event-click', box)"
+            @keydown.enter.prevent="emit('external-event-click', box)">
+            <div class="px-1 py-0.5 h-full overflow-hidden">
+                <div class="fc-external-event-title">
+                    {{ box.event.title }}
+                </div>
+                <div v-if="box.height >= 30" class="fc-external-event-time">
+                    {{ box.timeLabel }}
+                </div>
             </div>
         </div>
 
@@ -404,6 +431,37 @@ const emit = defineEmits<{
     overflow: hidden;
     text-overflow: ellipsis;
     opacity: 0.8;
+}
+
+.fc-external-event {
+    left: 55%;
+    width: calc(45% - 3px);
+    z-index: 3;
+    background-color: rgba(168, 85, 247, 0.12);
+    border-color: rgba(168, 85, 247, 0.55);
+    transition: background-color 0.15s ease;
+}
+.fc-external-event:hover {
+    background-color: rgba(168, 85, 247, 0.25);
+}
+
+.fc-external-event-title {
+    font-size: 10px;
+    line-height: 1.2;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    opacity: 0.9;
+}
+
+.fc-external-event-time {
+    font-size: 9px;
+    line-height: 1.2;
+    opacity: 0.7;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .fc-events-inset {

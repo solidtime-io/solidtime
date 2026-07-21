@@ -3,6 +3,7 @@ import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import AuthenticationCard from '@/Components/AuthenticationCard.vue';
 import AuthenticationCardLogo from '@/Components/AuthenticationCardLogo.vue';
 import Banner from '@/Components/Banner.vue';
+import GoogleSignInButton from '@/Components/GoogleSignInButton.vue';
 import { Field, FieldLabel, FieldError } from '@/packages/ui/src/field';
 import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import TextInput from '@/packages/ui/src/Input/TextInput.vue';
@@ -10,6 +11,7 @@ import TextInput from '@/packages/ui/src/Input/TextInput.vue';
 defineProps({
     canResetPassword: Boolean,
     status: String,
+    googleSsoEnabled: Boolean,
 });
 
 const form = useForm({
@@ -103,5 +105,7 @@ const page = usePage<{
                 </PrimaryButton>
             </div>
         </form>
+
+        <GoogleSignInButton v-if="googleSsoEnabled" />
     </AuthenticationCard>
 </template>

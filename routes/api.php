@@ -20,6 +20,7 @@ use App\Http\Controllers\Api\V1\TaskController;
 use App\Http\Controllers\Api\V1\TimeEntryController;
 use App\Http\Controllers\Api\V1\TimeZoneController;
 use App\Http\Controllers\Api\V1\UserController;
+use App\Http\Controllers\Api\V1\UserGoogleCalendarController;
 use App\Http\Controllers\Api\V1\UserMembershipController;
 use App\Http\Controllers\Api\V1\UserTimeEntryController;
 use Illuminate\Support\Facades\Route;
@@ -75,6 +76,12 @@ Route::prefix('v1')->name('v1.')->group(static function (): void {
             Route::post('/users/me/api-tokens', [ApiTokenController::class, 'store'])->name('store');
             Route::post('/users/me/api-tokens/{apiToken}/revoke', [ApiTokenController::class, 'revoke'])->name('revoke');
             Route::delete('/users/me/api-tokens/{apiToken}', [ApiTokenController::class, 'destroy'])->name('destroy');
+        });
+
+        // Google Calendar routes
+        Route::name('users.google-calendar.')->group(static function (): void {
+            Route::get('/users/me/google-calendar', [UserGoogleCalendarController::class, 'show'])->name('show');
+            Route::get('/users/me/google-calendar/events', [UserGoogleCalendarController::class, 'events'])->name('events');
         });
 
         // User Member routes

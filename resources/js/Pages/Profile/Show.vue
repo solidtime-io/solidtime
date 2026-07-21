@@ -9,10 +9,16 @@ import UpdateProfileInformationForm from '@/Pages/Profile/Partials/UpdateProfile
 import type { Session } from '@/types/jetstream';
 import ApiTokensForm from '@/Pages/Profile/Partials/ApiTokensForm.vue';
 import ThemeForm from '@/Pages/Profile/Partials/ThemeForm.vue';
+import GoogleCalendarForm from '@/Pages/Profile/Partials/GoogleCalendarForm.vue';
 
 defineProps<{
     confirmsTwoFactorAuthentication: boolean;
     sessions: Session[];
+    googleCalendar: {
+        available: boolean;
+        connected: boolean;
+        googleEmail: string | null;
+    };
 }>();
 </script>
 
@@ -56,6 +62,15 @@ defineProps<{
                 <ApiTokensForm></ApiTokensForm>
 
                 <SectionBorder />
+
+                <template v-if="googleCalendar.available">
+                    <GoogleCalendarForm
+                        :connected="googleCalendar.connected"
+                        :google-email="googleCalendar.googleEmail"
+                        class="mt-10 sm:mt-0" />
+
+                    <SectionBorder />
+                </template>
 
                 <DeleteUserForm class="mt-10 sm:mt-0" />
             </div>

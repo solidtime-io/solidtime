@@ -43,18 +43,22 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::updateUserPasswordsUsing(UpdateUserPassword::class);
         Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
 
-        Fortify::registerView(function () {
+        $googleSsoEnabled = (bool) config('services.google.sso_enabled') && config('services.google.client_id') !== null;
+
+        Fortify::registerView(function () use ($googleSsoEnabled) {
             return Inertia::render('Auth/Register', [
                 'terms_url' => config('auth.terms_url'),
                 'privacy_policy_url' => config('auth.privacy_policy_url'),
                 'newsletter_consent' => config('auth.newsletter_consent'),
+                'googleSsoEnabled' => $googleSsoEnabled,
             ]);
         });
 
-        Fortify::loginView(function () {
+        Fortify::loginView(function () use ($googleSsoEnabled) {
             return Inertia::render('Auth/Login', [
                 'canResetPassword' => Route::has('password.request'),
                 'status' => session('status'),
+                'googleSsoEnabled' => $googleSsoEnabled,
             ]);
         });
 
@@ -92,7 +96,7 @@ class FortifyServiceProvider extends ServiceProvider
                 ->where('is_placeholder', '=', false)
                 ->first();
 
-            if ($user !== null && Hash::check($request->password, $user->password)) {
+            if ($user !== null && $user->password !== null && Hash::check($request->password, $user->password)) {
                 return $user;
             }
 

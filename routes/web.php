@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Web\DashboardController;
+use App\Http\Controllers\Web\GoogleAuthController;
+use App\Http\Controllers\Web\GoogleCalendarConnectionController;
 use App\Http\Controllers\Web\HomeController;
 use App\Http\Controllers\Web\OrganizationController;
 use App\Http\Controllers\Web\OrganizationInvitationController;
@@ -26,6 +28,11 @@ use Inertia\Inertia;
 */
 
 Route::get('/', [HomeController::class, 'index']);
+
+Route::middleware(['guest'])->group(function (): void {
+    Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirect'])->name('auth.google.redirect');
+    Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])->name('auth.google.callback');
+});
 
 Route::get('/shared-report', function () {
     return Inertia::render('SharedReport');
@@ -104,6 +111,9 @@ Route::middleware([
         return to_route('organizations.show', [$organizationId]);
     })->name('teams.show');
     Route::get('/user/profile', [UserProfileController::class, 'show'])->name('profile.show');
+    Route::get('/settings/google-calendar/connect', [GoogleCalendarConnectionController::class, 'connect'])->name('google-calendar.connect');
+    Route::get('/settings/google-calendar/callback', [GoogleCalendarConnectionController::class, 'callback'])->name('google-calendar.callback');
+    Route::delete('/settings/google-calendar', [GoogleCalendarConnectionController::class, 'disconnect'])->name('google-calendar.disconnect');
     Route::delete('/user/other-browser-sessions', [OtherBrowserSessionsController::class, 'destroy'])
         ->name('other-browser-sessions.destroy');
 });

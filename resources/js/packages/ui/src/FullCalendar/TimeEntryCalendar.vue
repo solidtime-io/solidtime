@@ -40,6 +40,11 @@ import { useCalendarGrid } from './useCalendarGrid';
 import { useCalendarNavigation } from './useCalendarNavigation';
 import { useCalendarEvents } from './useCalendarEvents';
 import { useActivityBoxes } from './useActivityBoxes';
+import {
+    useExternalEvents,
+    type ExternalCalendarEvent,
+    type ExternalEventBox,
+} from './useExternalEvents';
 import { useEventDrag } from './useEventDrag';
 import { useEventResize } from './useEventResize';
 import { useSlotSelection } from './useSlotSelection';
@@ -68,6 +73,7 @@ const props = defineProps<{
     clients: Client[];
     tags: Tag[];
     activityPeriods?: ActivityPeriod[];
+    externalEvents?: ExternalCalendarEvent[];
     loading?: boolean;
 
     enableEstimatedTime: boolean;
@@ -87,6 +93,7 @@ const props = defineProps<{
 
 const newEventStart = ref<Dayjs | null>(null);
 const newEventEnd = ref<Dayjs | null>(null);
+const newEventDescription = ref<string>('');
 const showCreateTimeEntryModal = ref<boolean>(false);
 const showEditTimeEntryModal = ref<boolean>(false);
 const selectedTimeEntry = ref<TimeEntry | null>(null);
@@ -170,6 +177,20 @@ const {
     calendarSettings,
     minutesToPixels,
 });
+
+const { externalEventsForDay } = useExternalEvents({
+    externalEvents: () => props.externalEvents,
+    viewDays,
+    calendarSettings,
+    minutesToPixels,
+});
+
+function onExternalEventClick(box: ExternalEventBox) {
+    newEventStart.value = getLocalizedDayJs(box.event.start);
+    newEventEnd.value = getLocalizedDayJs(box.event.end);
+    newEventDescription.value = box.event.title;
+    showCreateTimeEntryModal.value = true;
+}
 
 const { isDragging, dragEventId, dragPreviewsByDay, onEventPointerDown } = useEventDrag({
     calendarSettings,
@@ -269,6 +290,7 @@ watch(showCreateTimeEntryModal, (value) => {
     if (!value) {
         newEventStart.value = null;
         newEventEnd.value = null;
+        newEventDescription.value = '';
         clearSelection();
         emit('refresh');
     }
@@ -453,7 +475,8 @@ function getEventDurationSeconds(dayEvent: DayEvent, dayStr: string): number {
             :tasks="tasks"
             :clients="clients"
             :start="newEventStart ? newEventStart.toISOString() : undefined"
-            :end="newEventEnd ? newEventEnd.toISOString() : undefined" />
+            :end="newEventEnd ? newEventEnd.toISOString() : undefined"
+            :default-description="newEventDescription" />
 
         <TimeEntryEditModal
             v-model:show="showEditTimeEntryModal"
@@ -624,6 +647,9 @@ function getEventDurationSeconds(dayEvent: DayEvent, dayStr: string): number {
                                             :activity-boxes="
                                                 activityBoxesForDay(day.format('YYYY-MM-DD'))
                                             "
+                                            :external-events="
+                                                externalEventsForDay(day.format('YYYY-MM-DD'))
+                                            "
                                             :get-activity-box-label="getActivityBoxLabel"
                                             :get-activity-box-activities="getActivityBoxActivities"
                                             :get-activity-percentage="getActivityPercentage"
@@ -649,6 +675,7 @@ function getEventDurationSeconds(dayEvent: DayEvent, dayStr: string): number {
                                             :selection-end-top="selectionEndTop"
                                             :selection-end-height="selectionEndHeight"
                                             @activity-pointerdown="guardedSlotPointerDown"
+                                            @external-event-click="onExternalEventClick"
                                             @event-pointerdown="
                                                 (e, dayEvent) =>
                                                     onEventPointerDown(e, dayEvent.event, dayEvent)

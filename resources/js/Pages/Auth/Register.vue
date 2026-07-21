@@ -3,6 +3,7 @@ import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import AuthenticationCard from '@/Components/AuthenticationCard.vue';
 import AuthenticationCardLogo from '@/Components/AuthenticationCardLogo.vue';
 import Banner from '@/Components/Banner.vue';
+import GoogleSignInButton from '@/Components/GoogleSignInButton.vue';
 import Checkbox from '@/packages/ui/src/Input/Checkbox.vue';
 import { Field, FieldLabel, FieldError } from '@/packages/ui/src/field';
 import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
@@ -30,6 +31,7 @@ const page = usePage<{
     terms_url: string | null;
     privacy_policy_url: string | null;
     newsletter_consent: boolean;
+    googleSsoEnabled: boolean;
     flash: {
         message: string;
     };
@@ -168,5 +170,7 @@ const page = usePage<{
                 </PrimaryButton>
             </div>
         </form>
+
+        <GoogleSignInButton v-if="page.props.googleSsoEnabled" />
     </AuthenticationCard>
 </template>

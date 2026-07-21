@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Web;
 
 use App\Enums\Weekday;
+use App\Models\GoogleCalendarConnection;
 use App\Service\Dto\UserAgentDto;
 use App\Service\TimezoneService;
 use Illuminate\Http\Request;
@@ -92,11 +93,20 @@ class UserProfileController extends Controller
     {
         $this->validateTwoFactorAuthenticationState($request);
 
+        $googleCalendarConnection = GoogleCalendarConnection::query()
+            ->where('user_id', '=', $request->user()->getAuthIdentifier())
+            ->first();
+
         return Inertia::render('Profile/Show', [
             'timezones' => app(TimezoneService::class)->getSelectOptions(),
             'weekdays' => Weekday::toSelectArray(),
             'confirmsTwoFactorAuthentication' => Features::optionEnabled(Features::twoFactorAuthentication(), 'confirm'),
             'sessions' => $this->sessions($request),
+            'googleCalendar' => [
+                'available' => config('services.google.client_id') !== null,
+                'connected' => $googleCalendarConnection !== null,
+                'googleEmail' => $googleCalendarConnection?->google_email,
+            ],
         ]);
     }
 

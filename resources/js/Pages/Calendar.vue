@@ -26,6 +26,13 @@ import { canCreateProjects } from '@/utils/permissions';
 import { useCurrentTimeEntryStore } from '@/utils/useCurrentTimeEntry';
 import { useOrganizationQuery } from '@/utils/useOrganizationQuery';
 import { getCurrentOrganizationId } from '@/utils/useUser';
+import {
+    useGoogleCalendarEventsQuery,
+    useGoogleCalendarStatusQuery,
+} from '@/utils/useGoogleCalendarQuery';
+import type { ExternalCalendarEvent } from '@/packages/ui/src/FullCalendar/useExternalEvents';
+import { useLocalStorage } from '@vueuse/core';
+import { XMarkIcon } from '@heroicons/vue/20/solid';
 
 const { organization } = useOrganizationQuery(getCurrentOrganizationId()!);
 const calendarStart = ref<Dayjs | undefined>(undefined);
@@ -55,6 +62,44 @@ const { data: timeEntryResponse, isLoading: timeEntriesLoading } = useTimeEntrie
     calendarStart,
     calendarEnd
 );
+
+const { data: googleCalendarStatus } = useGoogleCalendarStatusQuery();
+const googleCalendarConnected = computed(() => googleCalendarStatus.value?.connected === true);
+const {
+    data: googleCalendarEvents,
+    error: googleCalendarEventsError,
+    refetch: refetchGoogleCalendarEvents,
+} = useGoogleCalendarEventsQuery(calendarStart, calendarEnd, googleCalendarConnected);
+
+const externalEvents = computed<ExternalCalendarEvent[]>(() => {
+    return (googleCalendarEvents.value ?? []).map((event) => ({
+        id: event.id,
+        title: event.summary || '(No title)',
+        start: event.start,
+        end: event.end,
+        allDay: event.all_day,
+        htmlLink: event.html_link,
+    }));
+});
+
+const googleCalendarConnectionBroken = computed(() => {
+    const error = googleCalendarEventsError.value as {
+        response?: { data?: { key?: string } };
+    } | null;
+    return error?.response?.data?.key === 'google_calendar_connection_broken';
+});
+
+const googleCalendarHintDismissed = useLocalStorage(
+    'solidtime:google-calendar-hint-dismissed',
+    false
+);
+const showGoogleCalendarConnectHint = computed(() => {
+    return (
+        googleCalendarStatus.value?.available === true &&
+        !googleCalendarConnected.value &&
+        !googleCalendarHintDismissed.value
+    );
+});
 
 const currentTimeEntries = computed(() => {
     return timeEntryResponse?.value?.data || [];
@@ -110,6 +155,9 @@ function onRefresh() {
         queryKey: ['timeEntries'],
     });
     useCurrentTimeEntryStore().fetchCurrentTimeEntry();
+    if (googleCalendarConnected.value) {
+        refetchGoogleCalendarEvents();
+    }
 }
 </script>
 
@@ -118,6 +166,37 @@ function onRefresh() {
         title="Calendar"
         data-testid="calendar_view"
         main-class="p-0 min-h-0 overflow-hidden">
+        <div
+            v-if="showGoogleCalendarConnectHint"
+            class="flex items-center justify-between px-4 py-2 text-sm border-b border-border bg-secondary text-text-secondary">
+            <span>
+                See your meetings next to your time entries —
+                <a
+                    href="/settings/google-calendar/connect"
+                    class="underline text-text-primary hover:opacity-80">
+                    connect your Google Calendar</a
+                >.
+            </span>
+            <button
+                type="button"
+                aria-label="Dismiss"
+                class="p-1 hover:opacity-70"
+                @click="googleCalendarHintDismissed = true">
+                <XMarkIcon class="w-4 h-4" />
+            </button>
+        </div>
+        <div
+            v-if="googleCalendarConnectionBroken"
+            class="flex items-center px-4 py-2 text-sm border-b border-border bg-secondary text-text-secondary">
+            <span>
+                Your Google Calendar connection is no longer valid —
+                <a
+                    href="/settings/google-calendar/connect"
+                    class="underline text-text-primary hover:opacity-80">
+                    reconnect your Google Calendar</a
+                >.
+            </span>
+        </div>
         <TimeEntryCalendar
             :time-entries="currentTimeEntries"
             :projects="projects"
@@ -136,6 +215,7 @@ function onRefresh() {
             :create-project="createProject"
             :create-tag="createTag"
             :activity-periods="testActivityPeriods"
+            :external-events="externalEvents"
             @dates-change="onDatesChange"
             @refresh="onRefresh" />
     </AppLayout>
