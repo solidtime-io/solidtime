@@ -23,8 +23,14 @@ import DatePicker from '@/packages/ui/src/Input/DatePicker.vue';
 import DurationHumanInput from '@/packages/ui/src/Input/DurationHumanInput.vue';
 
 import { InformationCircleIcon } from '@heroicons/vue/20/solid';
+import { Coffee } from '@lucide/vue';
 import type { Tag, Task } from '@/packages/api/src';
 import TimePickerSimple from '@/packages/ui/src/Input/TimePickerSimple.vue';
+import { useBreaksEnabled } from '@/packages/ui/src/utils/useBreaksEnabled';
+
+// Breaks may have been disabled after this entry was created, so an existing break can still be
+// edited (and converted back), but a work entry may only offer the break option when enabled.
+const breaksEnabled = useBreaksEnabled();
 
 const show = defineModel('show', { default: false });
 const saving = ref(false);
@@ -137,6 +143,24 @@ const billableProxy = computed({
         }
     },
 });
+
+const isBreak = computed(() => editableTimeEntry.value?.type === 'break');
+
+const typeProxy = computed({
+    get: () => editableTimeEntry.value?.type ?? 'work',
+    set: (value: string) => {
+        if (editableTimeEntry.value) {
+            editableTimeEntry.value.type = value as TimeEntry['type'];
+            if (value === 'break') {
+                // Breaks can not be billable, have tags or belong to a project/task
+                editableTimeEntry.value.project_id = null;
+                editableTimeEntry.value.task_id = null;
+                editableTimeEntry.value.billable = false;
+                editableTimeEntry.value.tags = [];
+            }
+        }
+    },
+});
 </script>
 
 <template>
@@ -162,7 +186,7 @@ const billableProxy = computed({
                     </div>
                 </div>
                 <div class="flex flex-col sm:flex-row sm:items-end gap-2">
-                    <div class="flex-1 min-w-0">
+                    <div v-if="!isBreak" class="flex-1 min-w-0">
                         <TimeTrackerProjectTaskDropdown
                             v-model:project="editableTimeEntry.project_id"
                             v-model:task="editableTimeEntry.task_id"
@@ -178,8 +202,24 @@ const billableProxy = computed({
                             :tasks="tasks"
                             :enable-estimated-time="enableEstimatedTime" />
                     </div>
+                    <div v-else class="flex-1 min-w-0"></div>
                     <div class="flex items-center gap-2 shrink-0">
+                        <Select v-if="breaksEnabled || isBreak" v-model="typeProxy">
+                            <SelectTrigger :show-chevron="false">
+                                <SelectValue class="flex items-center gap-2">
+                                    <Coffee
+                                        class="h-4 w-4"
+                                        :class="isBreak ? 'text-amber-500' : 'text-icon-default'" />
+                                    <span>{{ isBreak ? 'Break' : 'Work time' }}</span>
+                                </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="work">Work time</SelectItem>
+                                <SelectItem value="break">Break</SelectItem>
+                            </SelectContent>
+                        </Select>
                         <TagDropdown
+                            v-if="!isBreak"
                             v-model="editableTimeEntry.tags"
                             :create-tag
                             :tags="tags"
@@ -195,7 +235,7 @@ const billableProxy = computed({
                                 </Button>
                             </template>
                         </TagDropdown>
-                        <Select v-model="billableProxy">
+                        <Select v-if="!isBreak" v-model="billableProxy">
                             <SelectTrigger :show-chevron="false">
                                 <SelectValue class="flex items-center gap-2">
                                     <BillableIcon class="h-4 text-icon-default" />

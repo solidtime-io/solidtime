@@ -8,6 +8,7 @@ use App\Enums\TagMatchType;
 use App\Enums\TimeEntryAggregationType;
 use App\Enums\TimeEntryAggregationTypeInterval;
 use App\Enums\TimeEntryRoundingType;
+use App\Enums\TimeEntryType;
 use App\Enums\Weekday;
 use App\Http\Requests\V1\BaseFormRequest;
 use App\Models\Organization;
@@ -177,6 +178,12 @@ class ReportStoreRequest extends BaseFormRequest
                 'numeric',
                 'integer',
             ],
+            // Filter by time entry type
+            'properties.time_entry_type' => [
+                'nullable',
+                'string',
+                Rule::enum(TimeEntryType::class),
+            ],
         ];
     }
 
@@ -238,6 +245,15 @@ class ReportStoreRequest extends BaseFormRequest
         }
 
         return null;
+    }
+
+    public function getPropertyTimeEntryType(): ?TimeEntryType
+    {
+        if (! $this->has('properties.time_entry_type') || $this->input('properties.time_entry_type') === null) {
+            return null;
+        }
+
+        return TimeEntryType::from($this->input('properties.time_entry_type'));
     }
 
     public function getPropertyGroup(): TimeEntryAggregationType

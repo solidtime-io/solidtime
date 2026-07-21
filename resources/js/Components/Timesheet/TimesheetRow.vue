@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, inject, type ComputedRef } from 'vue';
+import { useBreaksEnabled } from '@/packages/ui/src/utils/useBreaksEnabled';
 import { XMarkIcon } from '@heroicons/vue/16/solid';
+import { Coffee } from '@lucide/vue';
 import TimesheetCell from './TimesheetCell.vue';
 import TimeTrackerProjectTaskDropdown from '@/packages/ui/src/TimeTracker/TimeTrackerProjectTaskDropdown.vue';
 import TimeEntryRowTagDropdown from '@/packages/ui/src/TimeEntry/TimeEntryRowTagDropdown.vue';
@@ -22,6 +24,7 @@ import {
 import { Button } from '@/packages/ui/src/Buttons';
 
 const organization = inject<ComputedRef<Organization>>('organization');
+const breaksEnabled = useBreaksEnabled();
 
 const props = defineProps<{
     row: TimesheetRow;
@@ -62,6 +65,11 @@ const selectedTask = computed({
 
 const rowTotalFormatted = computed(() => props.formatDuration(props.row.totalSeconds));
 
+// A break row can survive after breaks are disabled (its entries are
+// grandfathered). Those cells become read-only — creating/editing break time is
+// rejected server-side — leaving the remove button as the only action.
+const cellsReadonly = computed(() => props.row.type === 'break' && !breaksEnabled.value);
+
 function hasRunningEntry(dayIndex: number): boolean {
     const cell = props.row.cells.get(dayIndex);
     if (!cell) return false;
@@ -74,7 +82,13 @@ function hasRunningEntry(dayIndex: number): boolean {
         <!-- Project/Task column -->
         <div
             class="flex items-center gap-1 border-t border-default-background-separator bg-default-background pl-4 pr-3 py-2 md:sticky md:left-0 md:z-10">
-            <div class="flex-1 min-w-0">
+            <div
+                v-if="row.type === 'break'"
+                class="flex flex-1 items-center gap-1.5 min-w-0 px-2 py-1 text-sm text-text-secondary">
+                <Coffee class="w-4 h-4" />
+                <span>Break</span>
+            </div>
+            <div v-else class="flex-1 min-w-0">
                 <TimeTrackerProjectTaskDropdown
                     v-model:project="selectedProject"
                     v-model:task="selectedTask"
@@ -94,11 +108,13 @@ function hasRunningEntry(dayIndex: number): boolean {
             </div>
             <div class="flex items-center gap-1 flex-shrink-0 ml-auto">
                 <TimeEntryRowTagDropdown
+                    v-if="row.type !== 'break'"
                     :create-tag="createTag"
                     :tags="tags"
                     :model-value="row.tags"
                     @changed="emit('tagsChange', $event)" />
                 <BillableToggleButton
+                    v-if="row.type !== 'break'"
                     :model-value="row.billable"
                     size="small"
                     faded
@@ -115,6 +131,7 @@ function hasRunningEntry(dayIndex: number): boolean {
             :date="day"
             :is-today="day === todayDate"
             :has-running-entry="hasRunningEntry(dayIndex)"
+            :readonly="cellsReadonly"
             :save-status="cellStatuses[makeCellStatusKey(row.key, dayIndex)]"
             :pending-seconds="cellPendingSeconds[makeCellStatusKey(row.key, dayIndex)]"
             @update="(seconds) => emit('cellUpdate', dayIndex, seconds)" />
@@ -126,10 +143,11 @@ function hasRunningEntry(dayIndex: number): boolean {
             {{ rowTotalFormatted }}
         </div>
 
-        <!-- Remove action -->
+        <!-- Remove action (the break row is permanent while breaks are enabled) -->
         <div
             class="flex items-center justify-center border-t border-default-background-separator pr-4 py-3">
             <Button
+                v-if="!(row.type === 'break' && breaksEnabled)"
                 variant="ghost"
                 size="icon"
                 aria-label="Remove row"

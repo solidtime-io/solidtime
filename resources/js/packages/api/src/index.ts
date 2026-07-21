@@ -16,6 +16,7 @@ export type Invitation = InvitationsIndexResponse['data'][0];
 
 export type TimeEntryResponse = ZodiosResponseByAlias<SolidTimeApi, 'getTimeEntries'>;
 export type TimeEntry = TimeEntryResponse['data'][0];
+export type TimeEntryType = TimeEntry['type'];
 
 export type CreateTimeEntryBody = ZodiosBodyByAlias<SolidTimeApi, 'createTimeEntry'>;
 

@@ -55,8 +55,11 @@ export function useTimesheetQuery(
     const dateRange = computed(() => {
         if (!weekStart.value || !weekEnd.value) return { start: null, end: null };
         return {
-            start: localDateToUtc(weekStart.value),
-            end: localDateToUtc(weekEnd.value),
+            // One padding day on each side so entries crossing midnight at the
+            // week edges are loaded — break placement treats them as walls that
+            // shrink the usable day window. The grid filters back to the week.
+            start: localDateToUtc(weekStart.value.subtract(1, 'day')),
+            end: localDateToUtc(weekEnd.value.add(1, 'day')),
         };
     });
 
@@ -83,8 +86,9 @@ export function useTimesheetQuery(
 }
 
 export function prefetchTimesheetWeek(queryClient: QueryClient, weekStart: Dayjs, weekEnd: Dayjs) {
-    const start = localDateToUtc(weekStart);
-    const end = localDateToUtc(weekEnd);
+    // Same one-day padding as useTimesheetQuery so the prefetched key matches.
+    const start = localDateToUtc(weekStart.subtract(1, 'day'));
+    const end = localDateToUtc(weekEnd.add(1, 'day'));
     const organizationId = getCurrentOrganizationId();
     const memberId = getCurrentMembershipId();
 

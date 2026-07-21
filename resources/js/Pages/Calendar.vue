@@ -31,6 +31,9 @@ const { organization } = useOrganizationQuery(getCurrentOrganizationId()!);
 const calendarStart = ref<Dayjs | undefined>(undefined);
 const calendarEnd = ref<Dayjs | undefined>(undefined);
 
+// Optional deep link (e.g. "Fix in calendar") that opens the calendar on a specific day
+const initialDate = new URLSearchParams(window.location.search).get('date');
+
 // Test-injectable activity periods (for E2E testing).
 // These hooks are no-ops in production — they only take effect when test code
 // explicitly sets window globals, so they are safe to ship.
@@ -128,6 +131,7 @@ function onRefresh() {
             :enable-estimated-time="isAllowedToPerformPremiumAction()"
             :currency="getOrganizationCurrencyString()"
             :can-create-project="canCreateProjects()"
+            :initial-date="initialDate"
             :organization-billable-rate="organization?.billable_rate ?? null"
             :create-time-entry="createTimeEntry"
             :update-time-entry="updateTimeEntry"

@@ -18,6 +18,7 @@ const props = defineProps<{
     date: string;
     isToday: boolean;
     hasRunningEntry: boolean;
+    readonly?: boolean;
     saveStatus?: CellSaveStatus;
     pendingSeconds?: number;
 }>();
@@ -29,6 +30,16 @@ const emit = defineEmits<{
 // Show the optimistic value while saving; `??` (not `||`) so a pending 0 (delete) wins.
 const displaySeconds = computed(() => props.pendingSeconds ?? props.cell?.totalSeconds ?? 0);
 const isSaving = computed(() => props.saveStatus === 'saving');
+
+// A cell is non-editable while its entry is running or when the row itself is
+// read-only (e.g. a leftover break row after breaks were disabled). Both render
+// the same disabled input, differing only in the tooltip explanation.
+const isReadonly = computed(() => props.hasRunningEntry || props.readonly === true);
+const readonlyTooltip = computed(() =>
+    props.hasRunningEntry
+        ? 'Stop the running time entry to edit the timesheet'
+        : 'Breaks are disabled for this organization'
+);
 
 // Swap the border color (don't layer) to avoid same-specificity fights.
 const inputClass = computed(() => {
@@ -51,7 +62,7 @@ const inputClass = computed(() => {
         data-testid="timesheet_cell"
         class="flex items-center justify-center border-t border-default-background-separator"
         :class="{ 'bg-default-background': isToday }">
-        <TooltipProvider v-if="hasRunningEntry" :delay-duration="100">
+        <TooltipProvider v-if="isReadonly" :delay-duration="100">
             <Tooltip>
                 <TooltipTrigger as-child>
                     <span class="inline-block cursor-not-allowed">
@@ -68,7 +79,7 @@ const inputClass = computed(() => {
                                 disabled:opacity-50 disabled:cursor-not-allowed" />
                     </span>
                 </TooltipTrigger>
-                <TooltipContent> Stop the running time entry to edit the timesheet </TooltipContent>
+                <TooltipContent>{{ readonlyTooltip }}</TooltipContent>
             </Tooltip>
         </TooltipProvider>
         <template v-else>

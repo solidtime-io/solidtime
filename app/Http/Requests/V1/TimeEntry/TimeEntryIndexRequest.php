@@ -6,6 +6,7 @@ namespace App\Http\Requests\V1\TimeEntry;
 
 use App\Enums\TagMatchType;
 use App\Enums\TimeEntryRoundingType;
+use App\Enums\TimeEntryType;
 use App\Http\Requests\V1\BaseFormRequest;
 use App\Models\Client;
 use App\Models\Member;
@@ -147,6 +148,11 @@ class TimeEntryIndexRequest extends BaseFormRequest
             'billable' => [
                 'string',
                 'in:true,false',
+            ],
+            // Filter by time entry type
+            'type' => [
+                'string',
+                Rule::enum(TimeEntryType::class),
             ],
             // Limit the number of returned time entries (default: 150)
             'limit' => [

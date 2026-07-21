@@ -11,6 +11,10 @@ import type {
     Client,
 } from '@/packages/api/src';
 import { getDayJsInstance, getLocalizedDateFromTimestamp } from '@/packages/ui/src/utils/time';
+import {
+    getBreakPlacementHint,
+    type BreakPlacementHint,
+} from '@/packages/ui/src/utils/breakPlacement';
 import TimeEntryAggregateRow from '@/packages/ui/src/TimeEntry/TimeEntryAggregateRow.vue';
 import TimeEntryRowHeading from '@/packages/ui/src/TimeEntry/TimeEntryRowHeading.vue';
 import TimeEntryRow from '@/packages/ui/src/TimeEntry/TimeEntryRow.vue';
@@ -39,11 +43,23 @@ const props = withDefaults(
         enableEstimatedTime: boolean;
         canCreateProject: boolean;
         groupSimilarTimeEntries?: boolean;
+        // Host-provided navigation to the calendar for a break's day (YYYY-MM-DD)
+        fixInCalendar?: (date: string) => void;
     }>(),
     {
         groupSimilarTimeEntries: true,
     }
 );
+
+const breakPlacementHints = computed<Record<string, BreakPlacementHint | null>>(() => {
+    const hints: Record<string, BreakPlacementHint | null> = {};
+    for (const entry of props.timeEntries) {
+        if (entry.type === 'break') {
+            hints[entry.id] = getBreakPlacementHint(entry, props.timeEntries);
+        }
+    }
+    return hints;
+});
 
 const groupedTimeEntries = computed(() => {
     const groupedEntriesByDay: Record<string, TimeEntry[]> = {};
@@ -75,6 +91,7 @@ const groupedTimeEntries = computed(() => {
                     e.project_id === entry.project_id &&
                     e.task_id === entry.task_id &&
                     e.billable === entry.billable &&
+                    e.type === entry.type &&
                     e.description === entry.description
             );
             if (oldEntriesIndex !== -1 && newDailyEntries[oldEntriesIndex]) {
@@ -113,13 +130,24 @@ function startTimeEntryFromExisting(entry: TimeEntry) {
         start: getDayJsInstance().utc().format(),
         end: null,
         billable: entry.billable,
+        type: entry.type,
         description: entry.description,
         tags: [...entry.tags],
     });
 }
 
 function sumDuration(timeEntries: TimeEntry[]) {
-    return timeEntries.reduce((acc, entry) => acc + (entry?.duration ?? 0), 0);
+    // Breaks are not working time: the day total only sums work entries,
+    // the break portion is shown separately in the heading
+    return timeEntries
+        .filter((entry) => entry.type !== 'break')
+        .reduce((acc, entry) => acc + (entry?.duration ?? 0), 0);
+}
+
+function sumBreakDuration(timeEntries: TimeEntry[]) {
+    return timeEntries
+        .filter((entry) => entry.type === 'break')
+        .reduce((acc, entry) => acc + (entry?.duration ?? 0), 0);
 }
 function selectAllTimeEntries(value: TimeEntriesGroupedByType[]) {
     for (const timeEntry of value) {
@@ -151,6 +179,7 @@ function unselectAllTimeEntries(value: TimeEntriesGroupedByType[]) {
             <TimeEntryRowHeading
                 :date="String(key)"
                 :duration="sumDuration(value)"
+                :break-duration="sumBreakDuration(value)"
                 :checked="
                     value.every((timeEntry: TimeEntry) => selectedTimeEntries.includes(timeEntry))
                 "
@@ -176,6 +205,8 @@ function unselectAllTimeEntries(value: TimeEntriesGroupedByType[]) {
                     :create-tag
                     :currency="currency"
                     :organization-billable-rate="organizationBillableRate"
+                    :break-placement-hints="breakPlacementHints"
+                    :fix-in-calendar="fixInCalendar"
                     :time-entry="entry"
                     @selected="
                         (timeEntries: TimeEntry[]) => {
@@ -213,6 +244,9 @@ function unselectAllTimeEntries(value: TimeEntriesGroupedByType[]) {
                     :on-start-stop-click="() => startTimeEntryFromExisting(entry)"
                     :delete-time-entry="() => deleteTimeEntries([entry])"
                     :duplicate-time-entry="() => createTimeEntry(entry)"
+                    :create-time-entry="createTimeEntry"
+                    :placement-hint="breakPlacementHints[entry.timeEntries[0]!.id] ?? null"
+                    :fix-in-calendar="fixInCalendar"
                     :currency="currency"
                     :time-entry="entry.timeEntries[0]!"
                     @selected="selectedTimeEntries.push(entry)"

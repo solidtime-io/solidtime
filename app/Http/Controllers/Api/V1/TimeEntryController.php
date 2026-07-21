@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Enums\ExportFormat;
 use App\Enums\Role;
+use App\Enums\TimeEntryType;
 use App\Exceptions\Api\FeatureIsNotAvailableInFreePlanApiException;
 use App\Exceptions\Api\OverlappingTimeEntryApiException;
 use App\Exceptions\Api\PdfRendererIsNotConfiguredException;
@@ -208,6 +209,7 @@ class TimeEntryController extends Controller
         $filter->addTaskIdsFilter($request->input('task_ids'));
         $filter->addClientIdsFilter($request->input('client_ids'));
         $filter->addBillableFilter($request->input('billable'));
+        $filter->addTypeFilter($request->input('type'));
 
         return $filter->get();
     }
@@ -564,6 +566,7 @@ class TimeEntryController extends Controller
         $filter->addTaskIdsFilter($request->input('task_ids'));
         $filter->addClientIdsFilter($request->input('client_ids'));
         $filter->addBillableFilter($request->input('billable'));
+        $filter->addTypeFilter($request->input('type'));
 
         return $filter->get();
     }
@@ -745,6 +748,19 @@ class TimeEntryController extends Controller
 
                 continue;
 
+            }
+            // Changing time entries to Break entries is only allowed when breaks are enabled in the org settings
+            $resultingType = isset($changes['type']) ? TimeEntryType::from($changes['type']) : $timeEntry->type;
+            if ($resultingType === TimeEntryType::Break && $timeEntry->type !== TimeEntryType::Break && ! $organization->breaks_enabled) {
+                $error->push($id);
+
+                continue;
+            }
+            // Break entries can not be billable, have tags or belong to a project/task (see TimeEntry::booted)
+            if ($resultingType === TimeEntryType::Break && ($project !== null || $task !== null || $request->boolean('changes.billable') || count($changes['tags'] ?? []) > 0)) {
+                $error->push($id);
+
+                continue;
             }
             $oldProject = $timeEntry->project;
             $oldTask = $timeEntry->task;

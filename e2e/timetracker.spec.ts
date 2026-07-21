@@ -13,6 +13,7 @@ import {
     createProjectViaApi,
     createTaskViaApi,
     createClientViaApi,
+    createTimeEntryViaApi,
     archiveProjectViaApi,
     markTaskDoneViaApi,
     updateOrganizationCurrencyViaWeb,
@@ -375,6 +376,66 @@ test('test that timer started on dashboard is visible on time page', async ({ pa
     await assertThatTimerIsStopped(page);
 });
 
+test('test that picking a recently tracked entry starts a timer with its fields', async ({
+    page,
+    ctx,
+}) => {
+    const project = await createProjectViaApi(ctx, {
+        name: `RecentProj ${Math.floor(Math.random() * 100000)}`,
+        is_billable: false,
+    });
+    await createTimeEntryViaApi(ctx, {
+        description: 'Recent work item',
+        duration: '1h',
+        projectId: project.id,
+    });
+
+    await goToDashboard(page);
+    const description = page.getByTestId('time_entry_description');
+    await expect(description).toBeEditable();
+
+    // Focusing the description opens the "Recently Tracked" dropdown listing the finished entry.
+    await description.click();
+    const recentEntry = page.getByText('Recent work item').first();
+    await expect(recentEntry).toBeVisible();
+
+    // Clicking it (mousedown) copies its fields — including the project — into a new running entry.
+    await Promise.all([
+        page.waitForResponse(async (response) => {
+            if (
+                !response.url().includes('/time-entries') ||
+                response.request().method() !== 'POST' ||
+                response.status() !== 201
+            ) {
+                return false;
+            }
+            const body = await response.json();
+            return (
+                body.data.description === 'Recent work item' &&
+                body.data.project_id === project.id &&
+                body.data.end === null
+            );
+        }),
+        recentEntry.click(),
+    ]);
+    await assertThatTimerHasStarted(page);
+    await expect(description).toHaveValue('Recent work item');
+    await expect(page.getByRole('button', { name: project.name })).toBeVisible();
+
+    // Cleanup: stop the running (project-bearing) entry
+    await Promise.all([
+        page.waitForResponse(async (response) => {
+            if (response.status() !== 200 || !response.url().includes('/time-entries/')) {
+                return false;
+            }
+            const body = await response.json();
+            return body.data.description === 'Recent work item' && body.data.end !== null;
+        }),
+        startOrStopTimerWithButton(page),
+    ]);
+    await assertThatTimerIsStopped(page);
+});
+
 test('test that creating a new project from the time tracker dropdown prefills the search text', async ({
     page,
     ctx,
@@ -680,4 +741,40 @@ test.describe('Project Task Dropdown', () => {
 
         await expect(page.getByRole('button', { name: projectName })).toBeVisible();
     });
+});
+
+test('test that simple mode hides the project, tag and billable controls', async ({ page }) => {
+    await goToDashboard(page);
+    await expect(page.getByTestId('time_entry_description')).toBeEditable();
+    // Project mode shows the project and billable controls
+    await expect(page.getByRole('button', { name: 'No Project' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Non Billable' }).first()).toBeVisible();
+
+    // Switch to simple mode via the more options dropdown (client-side preference, no request)
+    await page.getByRole('button', { name: 'Time entry actions' }).click();
+    await page.getByRole('menuitem', { name: 'Switch to simple mode' }).click();
+
+    // Simple mode is the project tracker without the project/tag/billable selectors; the
+    // description input and clock-in/out stay.
+    await expect(page.getByTestId('time_entry_description')).toBeEditable();
+    await expect(page.getByRole('button', { name: 'No Project' })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Non Billable' })).toHaveCount(0);
+
+    // Clock in and out
+    await Promise.all([
+        newTimeEntryResponse(page, { type: 'work' }),
+        startOrStopTimerWithButton(page),
+    ]);
+    await assertThatTimerHasStarted(page);
+    await page.waitForTimeout(1500);
+    await Promise.all([
+        stoppedTimeEntryResponse(page, { type: 'work' }),
+        startOrStopTimerWithButton(page),
+    ]);
+    await assertThatTimerIsStopped(page);
+
+    // Switch back to project mode: the controls return
+    await page.getByRole('button', { name: 'Time entry actions' }).click();
+    await page.getByRole('menuitem', { name: 'Switch to project mode' }).click();
+    await expect(page.getByRole('button', { name: 'No Project' })).toBeVisible();
 });

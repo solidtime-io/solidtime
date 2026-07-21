@@ -274,4 +274,108 @@ describe('useTimesheetGrid', () => {
         expect(dayTotals.value[4]).toBe(9000);
         expect(grandTotal.value).toBe(9000);
     });
+
+    it('always seeds a break row pinned below all other rows when breaks are enabled', async () => {
+        const timeEntries = ref([
+            entry('2026-04-10T09:00:00Z', '2026-04-10T10:00:00Z', {
+                id: 'work-1',
+                project_id: 'p-1',
+                type: 'work',
+            }),
+        ]);
+        const projects = ref([project('p-1', 'Alpha')]);
+
+        const { rows, addSlot } = useTimesheetGrid(
+            timeEntries,
+            ref(WEEK_DAYS),
+            projects,
+            ref<Task[]>([]),
+            ref<Dayjs | null>(null),
+            ref(true)
+        );
+
+        expect(rows.value).toHaveLength(2);
+        expect(rows.value[1]?.type).toBe('break');
+        expect(rows.value[1]?.totalSeconds).toBe(0);
+
+        // User-added work rows stay above the break row
+        addSlot('p-1', null, true, []);
+        timeEntries.value = [...timeEntries.value];
+        await nextTick();
+
+        expect(rows.value).toHaveLength(3);
+        expect(rows.value[2]?.type).toBe('break');
+    });
+
+    it('claims break entries for the seeded break row and does not duplicate it', () => {
+        const breakEntry = entry('2026-04-10T12:00:00Z', '2026-04-10T12:30:00Z', {
+            id: 'break-1',
+            project_id: null,
+            type: 'break',
+        } as Partial<TimeEntry>);
+
+        const { rows } = useTimesheetGrid(
+            ref([breakEntry]),
+            ref(WEEK_DAYS),
+            ref<Project[]>([]),
+            ref<Task[]>([]),
+            ref<Dayjs | null>(null),
+            ref(true)
+        );
+
+        expect(rows.value).toHaveLength(1);
+        expect(rows.value[0]?.type).toBe('break');
+        expect(rows.value[0]?.totalSeconds).toBe(1800);
+    });
+
+    it('sums break time into break totals and keeps it out of the worked totals', () => {
+        const work = entry('2026-04-10T09:00:00Z', '2026-04-10T10:00:00Z', {
+            id: 'work-1',
+            project_id: 'p-1',
+            type: 'work',
+        });
+        const brk = entry('2026-04-10T12:00:00Z', '2026-04-10T12:30:00Z', {
+            id: 'break-1',
+            project_id: null,
+            type: 'break',
+        } as Partial<TimeEntry>);
+
+        const { dayTotals, grandTotal, breakDayTotals, breakGrandTotal } = useTimesheetGrid(
+            ref([work, brk]),
+            ref(WEEK_DAYS),
+            ref([project('p-1', 'Alpha')]),
+            ref<Task[]>([]),
+            ref<Dayjs | null>(null),
+            ref(true)
+        );
+
+        // 2026-04-10 is dayIndex 4. Worked totals see only the 1h work entry.
+        expect(dayTotals.value[4]).toBe(3600);
+        expect(grandTotal.value).toBe(3600);
+        // Break time is tallied separately, per day and for the week.
+        expect(breakDayTotals.value[4]).toBe(1800);
+        expect(breakGrandTotal.value).toBe(1800);
+        // Days without a break contribute nothing.
+        expect(breakDayTotals.value[0]).toBe(0);
+    });
+
+    it('does not seed a break row when breaks are disabled', () => {
+        const { rows } = useTimesheetGrid(
+            ref([
+                entry('2026-04-10T09:00:00Z', '2026-04-10T10:00:00Z', {
+                    id: 'work-1',
+                    project_id: 'p-1',
+                    type: 'work',
+                }),
+            ]),
+            ref(WEEK_DAYS),
+            ref([project('p-1', 'Alpha')]),
+            ref<Task[]>([]),
+            ref<Dayjs | null>(null),
+            ref(false)
+        );
+
+        expect(rows.value).toHaveLength(1);
+        expect(rows.value[0]?.type).toBe('work');
+    });
 });

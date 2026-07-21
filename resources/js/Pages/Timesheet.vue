@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue';
 import { storeToRefs } from 'pinia';
+import { useBreaksEnabled } from '@/packages/ui/src/utils/useBreaksEnabled';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import LoadingSpinner from '@/packages/ui/src/LoadingSpinner.vue';
 import TimesheetHeader from '@/Components/Timesheet/TimesheetHeader.vue';
 import TimesheetGrid from '@/Components/Timesheet/TimesheetGrid.vue';
 import TimesheetFooterActions from '@/Components/Timesheet/TimesheetFooterActions.vue';
 import RemoveRowDialog from '@/Components/Timesheet/RemoveRowDialog.vue';
+import BreakPlacementModal from '@/Components/Timesheet/BreakPlacementModal.vue';
 import { useTimesheetQuery } from '@/utils/useTimesheetQuery';
 import { useTimesheetGrid } from '@/utils/useTimesheetGrid';
 import { useTimeEntriesMutations } from '@/utils/useTimeEntriesMutations';
@@ -22,7 +24,12 @@ import { getCurrentOrganizationId } from '@/utils/useUser';
 import { getOrganizationCurrencyString } from '@/utils/money';
 import { isAllowedToPerformPremiumAction } from '@/utils/billing';
 import { canCreateProjects } from '@/utils/permissions';
-import { formatHumanReadableDuration } from '@/packages/ui/src/utils/time';
+import {
+    formatHumanReadableDuration,
+    getLocalizedDateFromTimestamp,
+    getLocalizedDayJs,
+} from '@/packages/ui/src/utils/time';
+import { getBreakPlacementHint } from '@/packages/ui/src/utils/breakPlacement';
 import { useTimesheetWeek } from '@/utils/timesheet/useTimesheetWeek';
 import { useTimesheetCellMutations } from '@/utils/timesheet/useTimesheetCellMutations';
 import { useTimesheetRowMutations } from '@/utils/timesheet/useTimesheetRowMutations';
@@ -45,8 +52,17 @@ const {
 } = useTimesheetWeek();
 
 // ── Data fetching ─────────────────────────────────────────────────
+// The query fetches one padding day on each side of the week so that entries
+// crossing midnight at the week edges are known to the break-placement solver.
 const { data, isPending } = useTimesheetQuery(weekStart, weekEnd);
-const timeEntries = computed(() => data.value?.data ?? []);
+const allTimeEntries = computed(() => data.value?.data ?? []);
+// The grid and week-scoped features only see entries starting in the visible week.
+const timeEntries = computed(() => {
+    const weekDaySet = new Set(weekDays.value);
+    return allTimeEntries.value.filter((entry) =>
+        weekDaySet.has(getLocalizedDateFromTimestamp(entry.start))
+    );
+});
 
 const { projects } = useProjectsQuery();
 const { tasks } = useTasksQuery();
@@ -56,19 +72,31 @@ const { now: currentTimerNow } = storeToRefs(useCurrentTimeEntryStore());
 
 const mutations = useTimeEntriesMutations();
 
+const { organization } = useOrganizationQuery(getCurrentOrganizationId()!);
+const breaksEnabled = useBreaksEnabled(organization);
+
 // ── Grid computation ──────────────────────────────────────────────
-const { rows, dayTotals, grandTotal, addSlot, removeSlot, updateSlot, clearSlots } =
-    useTimesheetGrid(timeEntries, weekDays, projects, tasks, currentTimerNow);
+const {
+    rows,
+    dayTotals,
+    grandTotal,
+    breakDayTotals,
+    breakGrandTotal,
+    addSlot,
+    removeSlot,
+    updateSlot,
+    clearSlots,
+} = useTimesheetGrid(timeEntries, weekDays, projects, tasks, currentTimerNow, breaksEnabled);
 
 // Wipe slots on week navigation so the new week starts fresh — the
 // grid's watcher will reseed from the newly fetched entries.
-watch(weekStart, () => clearSlots());
+// flush: 'sync' so the wipe happens the moment weekStart is assigned, BEFORE
+// the same flush recomputes `timeEntries` (it depends on weekDays) and lets
+// the grid seed the new week — otherwise a cached (prefetched) week seeds
+// first, gets wiped here, and nothing re-triggers the seeding afterwards.
+watch(weekStart, () => clearSlots(), { flush: 'sync' });
 
 // ── Formatters ────────────────────────────────────────────────────
-// Pull number/interval format off the org via its query rather than
-// inject('organization'), which is undefined during the page's setup
-// (AppLayout provides it later in the lifecycle).
-const { organization } = useOrganizationQuery(getCurrentOrganizationId()!);
 const intervalFormat = computed(() => organization.value?.interval_format ?? 'hours-minutes');
 const numberFormat = computed(() => organization.value?.number_format ?? 'point');
 
@@ -90,12 +118,28 @@ const weekRangeDisplay = computed(() => {
 });
 
 // ── Cell / row mutation handlers ──────────────────────────────────
-const { handleCellUpdate, cellStatus, cellPendingSeconds } = useTimesheetCellMutations(
-    weekDays,
-    timeEntries,
-    rows,
-    removeSlot
-);
+const {
+    handleCellUpdate,
+    cellStatus,
+    cellPendingSeconds,
+    breakPlacementRequest,
+    applyBreakPlacement,
+    dismissBreakPlacement,
+} = useTimesheetCellMutations(weekDays, allTimeEntries, rows, removeSlot);
+
+// Local dates (YYYY-MM-DD) that have a misplaced break. There is only one break
+// row, so a flat set is enough — its cells show a warning for dates in the set.
+const misplacedBreakDates = computed<Set<string>>(() => {
+    const dates = new Set<string>();
+    for (const entry of timeEntries.value) {
+        if (entry.type !== 'break') continue;
+        // Hint against the padded list so work just across midnight counts.
+        if (getBreakPlacementHint(entry, allTimeEntries.value)?.misplaced) {
+            dates.add(getLocalizedDayJs(entry.start).format('YYYY-MM-DD'));
+        }
+    }
+    return dates;
+});
 
 const { handleRowIdentityChange, handleAddRow } = useTimesheetRowMutations(
     mutations,
@@ -125,7 +169,8 @@ const { isCopyingLastWeek, copyLastWeekRows, copyLastWeekWithTime } = useCopyLas
     weekDays,
     rows,
     timeEntries,
-    addSlot
+    addSlot,
+    breaksEnabled
 );
 
 // ── Inline creation helpers (passed to TimesheetRow) ──────────────
@@ -161,6 +206,8 @@ async function createTag(name: string): Promise<Tag | undefined> {
                 :today-date="todayDate"
                 :day-totals="dayTotals"
                 :week-total-formatted="weekTotalFormatted"
+                :break-day-totals="breakDayTotals"
+                :break-grand-total="breakGrandTotal"
                 :projects="projects"
                 :tasks="tasks"
                 :clients="clients"
@@ -174,6 +221,7 @@ async function createTag(name: string): Promise<Tag | undefined> {
                 :format-duration="formatDuration"
                 :cell-statuses="cellStatus"
                 :cell-pending-seconds="cellPendingSeconds"
+                :misplaced-break-dates="misplacedBreakDates"
                 @remove-row="handleRemoveRow"
                 @cell-update="handleCellUpdate"
                 @project-task-change="
@@ -199,5 +247,10 @@ async function createTag(name: string): Promise<Tag | undefined> {
             :entry-count="deleteRowEntryCount"
             :project-name="deleteRowProjectName"
             @confirm="confirmDeleteRow" />
+
+        <BreakPlacementModal
+            :request="breakPlacementRequest"
+            :apply="applyBreakPlacement"
+            @cancel="dismissBreakPlacement" />
     </AppLayout>
 </template>

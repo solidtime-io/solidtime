@@ -41,14 +41,24 @@ export function useCopyLastWeek(
         projectId: string | null,
         taskId: string | null,
         billable: boolean,
-        tags: string[]
-    ) => string
+        tags: string[],
+        type?: 'work' | 'break'
+    ) => string,
+    breaksEnabled: Ref<boolean>
 ) {
     const dayjs = getDayJsInstance();
     const queryClient = useQueryClient();
     const { addNotification } = useNotificationsStore();
 
     const isCopyingLastWeek = ref(false);
+
+    // The server rejects creating break entries while breaks are disabled,
+    // so leave last week's breaks out of the copy in that case
+    function copyableEntries(response: TimeEntryResponse): TimeEntry[] {
+        return breaksEnabled.value
+            ? response.data
+            : response.data.filter((entry) => entry.type !== 'break');
+    }
 
     async function fetchLastWeekEntries(): Promise<TimeEntryResponse | null> {
         const prevStart = weekStart.value.subtract(7, 'day');
@@ -73,16 +83,22 @@ export function useCopyLastWeek(
      */
     function addMissingRowsFromPreviousWeek(prevEntries: TimeEntry[]): void {
         const existingIdentities = new Set(
-            rows.value.map((r) => makeRowKey(r.projectId, r.taskId, r.billable, r.tags))
+            rows.value.map((r) => makeRowKey(r.projectId, r.taskId, r.billable, r.tags, r.type))
         );
         const addedIdentities = new Set<string>();
 
         for (const entry of prevEntries) {
             const tags = entry.tags ?? [];
-            const identity = makeRowKey(entry.project_id, entry.task_id, entry.billable, tags);
+            const identity = makeRowKey(
+                entry.project_id,
+                entry.task_id,
+                entry.billable,
+                tags,
+                entry.type
+            );
             if (!existingIdentities.has(identity) && !addedIdentities.has(identity)) {
                 addedIdentities.add(identity);
-                addSlot(entry.project_id, entry.task_id, entry.billable, tags);
+                addSlot(entry.project_id, entry.task_id, entry.billable, tags, entry.type);
             }
         }
     }
@@ -92,7 +108,7 @@ export function useCopyLastWeek(
         try {
             const prev = await fetchLastWeekEntries();
             if (!prev) return;
-            addMissingRowsFromPreviousWeek(prev.data);
+            addMissingRowsFromPreviousWeek(copyableEntries(prev));
         } finally {
             isCopyingLastWeek.value = false;
         }
@@ -110,7 +126,8 @@ export function useCopyLastWeek(
 
             const tz = getUserTimezone();
 
-            addMissingRowsFromPreviousWeek(prev.data);
+            const prevEntries = copyableEntries(prev);
+            addMissingRowsFromPreviousWeek(prevEntries);
 
             const prevWeekStart = weekStart.value.subtract(7, 'day');
 
@@ -125,7 +142,7 @@ export function useCopyLastWeek(
             let overlapFailures = 0;
             let otherFailures = 0;
 
-            for (const entry of prev.data) {
+            for (const entry of prevEntries) {
                 if (!entry.end || !entry.duration) continue;
 
                 // Map previous-week date → same day-of-week in current week.
@@ -174,6 +191,7 @@ export function useCopyLastWeek(
                     start: window.start,
                     end: window.end,
                     billable: entry.billable,
+                    type: entry.type,
                     description: entry.description ?? null,
                     tags: entry.tags ?? [],
                 };

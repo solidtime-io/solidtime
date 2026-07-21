@@ -57,6 +57,8 @@ class OrganizationResource extends BaseResource
             'employees_can_manage_tasks' => $this->resource->employees_can_manage_tasks,
             /** @var bool $prevent_overlapping_time_entries Prevent creating overlapping time entries (only new entries) */
             'prevent_overlapping_time_entries' => $this->resource->prevent_overlapping_time_entries,
+            /** @var bool $breaks_enabled Whether members of the organization can track breaks */
+            'breaks_enabled' => $this->resource->breaks_enabled,
             /** @var string $currency Currency code (ISO 4217) */
             'currency' => $this->resource->currency,
             /** @var string $currency_symbol Currency symbol */

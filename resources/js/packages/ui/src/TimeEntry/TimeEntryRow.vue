@@ -18,6 +18,8 @@ import TimeEntryRowDurationInput from '@/packages/ui/src/TimeEntry/TimeEntryRowD
 import TimeEntryMoreOptionsDropdown from '@/packages/ui/src/TimeEntry/TimeEntryMoreOptionsDropdown.vue';
 import { TimeEntryEditModal } from '@/packages/ui/src';
 import BillableToggleButton from '@/packages/ui/src/Input/BillableToggleButton.vue';
+import { getLocalizedDayJs } from '@/packages/ui/src/utils/time';
+import { useBreaksEnabled } from '@/packages/ui/src/utils/useBreaksEnabled';
 import { computed, ref } from 'vue';
 import TimeTrackerProjectTaskDropdown from '@/packages/ui/src/TimeTracker/TimeTrackerProjectTaskDropdown.vue';
 import {
@@ -29,6 +31,10 @@ import {
     ContextMenuTrigger,
 } from '@/packages/ui/src';
 import { PlayIcon, PencilIcon, DocumentDuplicateIcon, TrashIcon } from '@heroicons/vue/20/solid';
+import BreakLabel from '@/packages/ui/src/TimeEntry/BreakLabel.vue';
+import BreakPlacementHintButton from '@/packages/ui/src/TimeEntry/BreakPlacementHintButton.vue';
+import type { BreakPlacementHint } from '@/packages/ui/src/utils/breakPlacement';
+import type { CreateTimeEntryBody } from '@/packages/api/src';
 
 const props = defineProps<{
     timeEntry: TimeEntry;
@@ -45,6 +51,9 @@ const props = defineProps<{
     deleteTimeEntry: () => void;
     duplicateTimeEntry?: () => void;
     updateTimeEntry: (timeEntry: TimeEntry) => void;
+    createTimeEntry?: (entry: Omit<CreateTimeEntryBody, 'member_id'>) => void;
+    placementHint?: BreakPlacementHint | null;
+    fixInCalendar?: (date: string) => void;
     currency: string;
     organizationBillableRate: number | null;
     showMember?: boolean;
@@ -58,6 +67,20 @@ const props = defineProps<{
 const emit = defineEmits<{ selected: []; unselected: [] }>();
 
 const showEditModal = ref(false);
+
+const breaksEnabled = useBreaksEnabled();
+
+const isBreak = computed(() => props.timeEntry.type === 'break');
+
+// Continue/Duplicate create a new entry of the same type, which the server
+// rejects for breaks when breaks are disabled for the organization
+const canRecreate = computed(() => !isBreak.value || breaksEnabled.value);
+
+const showPlacementHint = computed(
+    () => isBreak.value && props.placementHint != null && props.placementHint.misplaced
+);
+
+const breakFixDate = computed(() => getLocalizedDayJs(props.timeEntry.start).format('YYYY-MM-DD'));
 
 function updateTimeEntryDescription(description: string) {
     props.updateTimeEntry({ ...props.timeEntry, description });
@@ -131,10 +154,22 @@ async function handleDeleteTimeEntry() {
                             <Checkbox :checked="selected" @update:checked="onSelectChange" />
                             <div v-if="indent === true" class="w-10 h-7"></div>
                             <TimeEntryDescriptionInput
+                                v-if="!isBreak"
                                 class="min-w-0 mr-4 shrink"
                                 :model-value="timeEntry.description"
                                 @changed="updateTimeEntryDescription"></TimeEntryDescriptionInput>
+                            <BreakLabel v-if="isBreak" class="pl-1.5 @lg:pl-3 pr-2 shrink-0" />
+                            <span
+                                v-if="isBreak && timeEntry.description"
+                                class="min-w-0 mr-4 shrink truncate text-sm text-text-secondary">
+                                {{ timeEntry.description }}
+                            </span>
+                            <BreakPlacementHintButton
+                                v-if="showPlacementHint"
+                                :fix-date="breakFixDate"
+                                :fix-in-calendar="fixInCalendar" />
                             <TimeTrackerProjectTaskDropdown
+                                v-if="!isBreak"
                                 class="min-w-0 shrink"
                                 :create-project
                                 :create-client
@@ -154,11 +189,13 @@ async function handleDeleteTimeEntry() {
                                 {{ memberName }}
                             </div>
                             <TimeEntryRowTagDropdown
+                                v-if="!isBreak"
                                 :create-tag
                                 :tags="tags"
                                 :model-value="timeEntry.tags"
                                 @changed="updateTimeEntryTags"></TimeEntryRowTagDropdown>
                             <BillableToggleButton
+                                v-if="!isBreak"
                                 :model-value="timeEntry.billable"
                                 size="small"
                                 faded
@@ -176,11 +213,13 @@ async function handleDeleteTimeEntry() {
                                 :is-report="props.isReport"
                                 @changed="updateStartEndTime"></TimeEntryRowDurationInput>
                             <TimeTrackerStartStop
+                                v-if="canRecreate"
                                 :active="!!(timeEntry.start && !timeEntry.end)"
                                 variant="secondary"
                                 class="opacity-60 flex focus-visible:opacity-100 group-hover:opacity-100"
                                 @changed="onStartStopClick"></TimeTrackerStartStop>
                             <TimeEntryMoreOptionsDropdown
+                                :show-duplicate="canRecreate"
                                 @edit="handleEdit"
                                 @duplicate="duplicateTimeEntry"
                                 @delete="deleteTimeEntry"></TimeEntryMoreOptionsDropdown>
@@ -190,11 +229,17 @@ async function handleDeleteTimeEntry() {
                             <!-- First row: description + duration -->
                             <div class="flex items-center justify-between min-w-0">
                                 <TimeEntryDescriptionInput
+                                    v-if="!isBreak"
                                     class="min-w-0 flex-1"
                                     :model-value="timeEntry.description"
                                     @changed="
                                         updateTimeEntryDescription
                                     "></TimeEntryDescriptionInput>
+                                <span
+                                    v-else
+                                    class="min-w-0 flex-1 truncate text-sm text-text-secondary pl-1.5">
+                                    {{ timeEntry.description }}
+                                </span>
                                 <TimeEntryRowDurationInput
                                     :start="timeEntry.start"
                                     :end="timeEntry.end"
@@ -203,7 +248,9 @@ async function handleDeleteTimeEntry() {
                             </div>
                             <!-- Second row: project/task - tags - billable - start - more -->
                             <div class="flex items-center justify-between mt-1">
+                                <BreakLabel v-if="isBreak" class="pl-1.5 pr-2 min-w-0" />
                                 <TimeTrackerProjectTaskDropdown
+                                    v-else
                                     class="min-w-0"
                                     :create-project
                                     :create-client
@@ -221,21 +268,25 @@ async function handleDeleteTimeEntry() {
                                     "></TimeTrackerProjectTaskDropdown>
                                 <div class="flex items-center shrink-0">
                                     <TimeEntryRowTagDropdown
+                                        v-if="!isBreak"
                                         :create-tag
                                         :tags="tags"
                                         :model-value="timeEntry.tags"
                                         compact
                                         @changed="updateTimeEntryTags"></TimeEntryRowTagDropdown>
                                     <BillableToggleButton
+                                        v-if="!isBreak"
                                         :model-value="timeEntry.billable"
                                         size="small"
                                         @changed="updateTimeEntryBillable"></BillableToggleButton>
                                     <TimeTrackerStartStop
+                                        v-if="canRecreate"
                                         :active="!!(timeEntry.start && !timeEntry.end)"
                                         variant="secondary"
                                         class="ml-2"
                                         @changed="onStartStopClick"></TimeTrackerStartStop>
                                     <TimeEntryMoreOptionsDropdown
+                                        :show-duplicate="canRecreate"
                                         @edit="handleEdit"
                                         @duplicate="duplicateTimeEntry"
                                         @delete="deleteTimeEntry"></TimeEntryMoreOptionsDropdown>
@@ -247,7 +298,7 @@ async function handleDeleteTimeEntry() {
             </div>
         </ContextMenuTrigger>
         <ContextMenuContent class="min-w-[160px]">
-            <ContextMenuItem class="space-x-3" @select="onStartStopClick()">
+            <ContextMenuItem v-if="canRecreate" class="space-x-3" @select="onStartStopClick()">
                 <PlayIcon class="w-4 h-4 text-icon-default" />
                 <span>Continue</span>
             </ContextMenuItem>
@@ -255,7 +306,7 @@ async function handleDeleteTimeEntry() {
                 <PencilIcon class="w-4 h-4 text-icon-default" />
                 <span>Edit</span>
             </ContextMenuItem>
-            <ContextMenuItem class="space-x-3" @select="duplicateTimeEntry?.()">
+            <ContextMenuItem v-if="canRecreate" class="space-x-3" @select="duplicateTimeEntry?.()">
                 <DocumentDuplicateIcon class="w-4 h-4 text-icon-default" />
                 <span>Duplicate</span>
             </ContextMenuItem>
