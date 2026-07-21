@@ -43,3 +43,7 @@ yarn-error.log
 /config/caddy
 /config/composer
 /AGENTS.md
+
+# local self-host test
+docker/selfhost-test/.env.selfhost-test
+docker/selfhost-test/keys/

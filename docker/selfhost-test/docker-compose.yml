@@ -1,0 +1,59 @@
+name: ldtime-selfhost-test
+
+# Local smoke test for the production image (see docker/selfhost-test/README.md).
+# Build the image first, then: docker compose up -d
+
+x-app: &app
+    image: ld-time:local-test
+    env_file: .env.selfhost-test
+    volumes:
+        - ./keys/oauth-private.key:/var/www/html/storage/oauth-private.key:ro
+        - ./keys/oauth-public.key:/var/www/html/storage/oauth-public.key:ro
+    depends_on:
+        db:
+            condition: service_healthy
+
+services:
+    db:
+        image: postgres:15
+        environment:
+            POSTGRES_DB: ldtime
+            POSTGRES_USER: ldtime
+            POSTGRES_PASSWORD: ldtime
+        volumes:
+            - dbdata:/var/lib/postgresql/data
+        healthcheck:
+            test: ['CMD', 'pg_isready', '-q', '-d', 'ldtime', '-U', 'ldtime']
+            interval: 5s
+            retries: 10
+
+    app:
+        <<: *app
+        environment:
+            CONTAINER_MODE: http
+            AUTO_DB_MIGRATE: 'true'
+        ports:
+            - '8085:8000'
+
+    # The FrankenPHP base image's default HEALTHCHECK probes Caddy's admin port
+    # 2019, which only exists in http mode — use the image's own healthcheck
+    # script for the other container modes.
+    scheduler:
+        <<: *app
+        environment:
+            CONTAINER_MODE: scheduler
+        healthcheck:
+            test: ['CMD', 'healthcheck']
+            interval: 30s
+
+    queue:
+        <<: *app
+        environment:
+            CONTAINER_MODE: worker
+            WORKER_COMMAND: php /var/www/html/artisan queue:work
+        healthcheck:
+            test: ['CMD', 'healthcheck']
+            interval: 30s
+
+volumes:
+    dbdata:
