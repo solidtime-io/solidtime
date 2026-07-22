@@ -189,7 +189,9 @@ ENV WITH_HORIZON=false \
     WITH_SCHEDULER=false \
     WITH_REVERB=false
 
-COPY --link --chown=${WWWUSER}:${WWWUSER} . .
+COPY --link --chown=${WWWUSER}:${WWWUSER} . ./
+
+RUN test -z "$(find . -name .git -print -quit)"
 #COPY --link --chown=${WWWUSER}:${WWWUSER} --from=build ${ROOT}/public public
 
 RUN mkdir -p \

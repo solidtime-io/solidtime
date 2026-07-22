@@ -1,5 +1,7 @@
 .git
+**/.git
 .gitmodules
+**/.gitmodules
 .github
 .DS_Store
 .fleet
@@ -8,6 +10,13 @@
 *.log
 npm-debug.log
 yarn-error.log
+k8s
+docs
+e2e
+tests
+
+docker-compose.yml
+docker/local
 
 .phpunit.cache
 .phpunit.result.cache
@@ -16,6 +25,18 @@ test-results
 playwright-report
 blob-report
 playwright/.cache
+openapi.json
+playwright
+playwright.config.ts
+vitest.config.ts
+phpunit.xml
+phpstan.neon
+pint.json
+eslint.config.mjs
+tsconfig.json
+jsconfig.json
+postcss.config.js
+tailwind.config.js
 
 node_modules
 extensions/*/node_modules
@@ -30,3 +51,4 @@ _ide_helper.php
 .phpstorm.meta.php
 
 storage/logs/*
+storage/*.key

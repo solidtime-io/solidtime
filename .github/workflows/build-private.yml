@@ -8,6 +8,7 @@ on:
   pull_request:
     paths:
       - '.github/workflows/build-private.yml'
+      - '.dockerignore'
       - 'extensions/manifest.json'
       - 'docker/prod/**'
   workflow_dispatch:
