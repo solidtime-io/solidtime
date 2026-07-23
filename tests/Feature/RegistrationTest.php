@@ -380,6 +380,40 @@ class RegistrationTest extends TestCaseWithDatabase
         $this->assertSame($user->organization->id, $organizations->first()->id);
     }
 
+    public function test_registration_joins_invited_organization_even_if_invitation_email_casing_differs(): void
+    {
+        // Arrange: invitation stored with a different casing than the registration email
+        $user = $this->createUserWithPermission();
+        OrganizationInvitation::factory()
+            ->forOrganization($user->organization)
+            ->role(Role::Employee)
+            ->accepted()
+            ->create([
+                'email' => 'Invited.User@example.com',
+            ]);
+
+        // Act
+        $response = $this->post('/register', [
+            'name' => 'Invited User',
+            'email' => 'invited.user@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+            'terms' => true,
+        ]);
+
+        // Assert: joined the inviting organization, no extra personal organization, invitation consumed
+        $this->assertAuthenticated();
+        $response->assertRedirect(RouteServiceProvider::HOME);
+        $newUser = User::where('email', 'invited.user@example.com')->first();
+        $this->assertNotNull($newUser);
+        $this->assertDatabaseMissing(OrganizationInvitation::class, [
+            'email' => 'Invited.User@example.com',
+        ]);
+        $organizations = $newUser->organizations;
+        $this->assertCount(1, $organizations);
+        $this->assertSame($user->organization->id, $organizations->first()->id);
+    }
+
     public function test_registration_logs_and_skips_accepted_invitation_with_invalid_role(): void
     {
         // Arrange
