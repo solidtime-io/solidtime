@@ -1,7 +1,7 @@
 {
     "Billing": {
         "repository": "solidtime-io/extension-billing",
-        "ref": "v0.0.3"
+        "ref": "v0.0.4"
     },
     "Services": {
         "repository": "solidtime-io/extension-services",
@@ -9,6 +9,6 @@
     },
     "Invoicing": {
         "repository": "solidtime-io/extension-invoicing",
-        "ref": "v0.0.1"
+        "ref": "feature/recipients"
     }
 }

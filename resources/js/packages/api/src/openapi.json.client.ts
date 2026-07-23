@@ -45,14 +45,54 @@ const InvitationResource = z
 const InvitationStoreRequest = z
     .object({ email: z.string().email(), role: z.enum(['admin', 'manager', 'employee']) })
     .passthrough();
+const InvoiceRecipientResource = z
+    .object({
+        id: z.string(),
+        organization_id: z.string(),
+        name: z.string(),
+        vatin: z.union([z.string(), z.null()]),
+        address_line_1: z.union([z.string(), z.null()]),
+        address_line_2: z.union([z.string(), z.null()]),
+        address_line_3: z.union([z.string(), z.null()]),
+        address_post_code: z.union([z.string(), z.null()]),
+        address_city: z.union([z.string(), z.null()]),
+        address_country: z.union([z.string(), z.null()]),
+        phone: z.union([z.string(), z.null()]),
+        email: z.union([z.string(), z.null()]),
+        is_archived: z.boolean(),
+        archived_at: z.union([z.string(), z.null()]),
+        invoices_count: z.number().int(),
+        has_non_draft_invoices: z.boolean(),
+        created_at: z.union([z.string(), z.null()]),
+        updated_at: z.union([z.string(), z.null()]),
+    })
+    .passthrough();
+const InvoiceRecipientCollection = z.array(InvoiceRecipientResource);
+const InvoiceRecipientRequest = z
+    .object({
+        name: z.string(),
+        vatin: z.union([z.string(), z.null()]).optional(),
+        address_line_1: z.union([z.string(), z.null()]).optional(),
+        address_line_2: z.union([z.string(), z.null()]).optional(),
+        address_line_3: z.union([z.string(), z.null()]).optional(),
+        address_post_code: z.union([z.string(), z.null()]).optional(),
+        address_city: z.union([z.string(), z.null()]).optional(),
+        address_country: z.union([z.string(), z.null()]).optional(),
+        phone: z.union([z.string(), z.null()]).optional(),
+        email: z.union([z.string(), z.null()]).optional(),
+        is_archived: z.boolean().optional(),
+    })
+    .passthrough();
 const InvoiceResource = z
     .object({
         id: z.string(),
         organization_id: z.string(),
+        invoice_recipient_id: z.string(),
         reference: z.string(),
         seller_name: z.string(),
-        buyer_name: z.string(),
+        recipient: z.string(),
         status: z.string(),
+        status_label: z.string(),
         date: z.string(),
         due_at: z.string(),
         paid_date: z.string(),
@@ -76,16 +116,7 @@ const InvoiceStoreRequest = z
         seller_address_country: z.union([z.string(), z.null()]).optional(),
         seller_phone: z.union([z.string(), z.null()]).optional(),
         seller_email: z.union([z.string(), z.null()]).optional(),
-        buyer_name: z.string(),
-        buyer_vatin: z.union([z.string(), z.null()]).optional(),
-        buyer_address_line_1: z.union([z.string(), z.null()]).optional(),
-        buyer_address_line_2: z.union([z.string(), z.null()]).optional(),
-        buyer_address_line_3: z.union([z.string(), z.null()]).optional(),
-        buyer_address_post_code: z.union([z.string(), z.null()]).optional(),
-        buyer_address_city: z.union([z.string(), z.null()]).optional(),
-        buyer_address_country: z.union([z.string(), z.null()]).optional(),
-        buyer_phone: z.union([z.string(), z.null()]).optional(),
-        buyer_email: z.union([z.string(), z.null()]).optional(),
+        invoice_recipient_id: z.string(),
         date: z.string(),
         billing_period_start: z.union([z.string(), z.null()]).optional(),
         billing_period_end: z.union([z.string(), z.null()]).optional(),
@@ -130,6 +161,7 @@ const DetailedInvoiceResource = z
     .object({
         id: z.string(),
         organization_id: z.string(),
+        invoice_recipient_id: z.string(),
         reference: z.string(),
         seller_name: z.string(),
         seller_vatin: z.string(),
@@ -141,16 +173,7 @@ const DetailedInvoiceResource = z
         seller_address_country: z.string(),
         seller_phone: z.string(),
         seller_email: z.string(),
-        buyer_name: z.string(),
-        buyer_vatin: z.string(),
-        buyer_address_line_1: z.string(),
-        buyer_address_line_2: z.string(),
-        buyer_address_line_3: z.string(),
-        buyer_address_post_code: z.string(),
-        buyer_address_city: z.string(),
-        buyer_address_country: z.string(),
-        buyer_phone: z.string(),
-        buyer_email: z.string(),
+        recipient: InvoiceRecipientResource,
         paid_date: z.string(),
         due_at: z.string(),
         discount_type: z.string(),
@@ -171,12 +194,13 @@ const DetailedInvoiceResource = z
         entries: z.array(InvoiceEntryResource),
     })
     .passthrough();
-const InvoiceStatus = z.enum(['draft', 'sent', 'cancelled']);
+const InvoiceStatus = z.enum(['draft', 'sent', 'paid', 'cancelled']);
 const InvoiceUpdateRequest = z
     .object({
         status: InvoiceStatus,
         due_at: z.union([z.string(), z.null()]),
         paid_date: z.union([z.string(), z.null()]),
+        paid_at: z.union([z.string(), z.null()]),
         seller_name: z.string(),
         seller_vatin: z.union([z.string(), z.null()]),
         seller_address_line_1: z.union([z.string(), z.null()]),
@@ -187,16 +211,7 @@ const InvoiceUpdateRequest = z
         seller_address_country: z.union([z.string(), z.null()]),
         seller_phone: z.union([z.string(), z.null()]),
         seller_email: z.union([z.string(), z.null()]),
-        buyer_name: z.string(),
-        buyer_vatin: z.union([z.string(), z.null()]),
-        buyer_address_line_1: z.union([z.string(), z.null()]),
-        buyer_address_line_2: z.union([z.string(), z.null()]),
-        buyer_address_line_3: z.union([z.string(), z.null()]),
-        buyer_address_post_code: z.union([z.string(), z.null()]),
-        buyer_address_city: z.union([z.string(), z.null()]),
-        buyer_address_country: z.union([z.string(), z.null()]),
-        buyer_phone: z.union([z.string(), z.null()]),
-        buyer_email: z.union([z.string(), z.null()]),
+        invoice_recipient_id: z.string(),
         date: z.string(),
         billing_period_start: z.union([z.string(), z.null()]),
         billing_period_end: z.union([z.string(), z.null()]),
@@ -1884,6 +1899,125 @@ const endpoints = makeApi([
                     .passthrough(),
             },
         ],
+    },
+    {
+        method: 'get',
+        path: '/v1/organizations/:organization/invoice-recipients',
+        alias: 'getInvoiceRecipients',
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'organization',
+                type: 'Path',
+                schema: z.string(),
+            },
+        ],
+        response: z.object({ data: InvoiceRecipientCollection }).passthrough(),
+    },
+    {
+        method: 'post',
+        path: '/v1/organizations/:organization/invoice-recipients',
+        alias: 'createInvoiceRecipient',
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'body',
+                type: 'Body',
+                schema: InvoiceRecipientRequest,
+            },
+            {
+                name: 'organization',
+                type: 'Path',
+                schema: z.string(),
+            },
+        ],
+        response: z.object({ data: InvoiceRecipientResource }).passthrough(),
+    },
+    {
+        method: 'get',
+        path: '/v1/organizations/:organization/invoice-recipients/:invoiceRecipient',
+        alias: 'getInvoiceRecipient',
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'organization',
+                type: 'Path',
+                schema: z.string(),
+            },
+            {
+                name: 'invoiceRecipient',
+                type: 'Path',
+                schema: z.string(),
+            },
+        ],
+        response: z.object({ data: InvoiceRecipientResource }).passthrough(),
+    },
+    {
+        method: 'put',
+        path: '/v1/organizations/:organization/invoice-recipients/:invoiceRecipient',
+        alias: 'updateInvoiceRecipient',
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'body',
+                type: 'Body',
+                schema: InvoiceRecipientRequest,
+            },
+            {
+                name: 'organization',
+                type: 'Path',
+                schema: z.string(),
+            },
+            {
+                name: 'invoiceRecipient',
+                type: 'Path',
+                schema: z.string(),
+            },
+        ],
+        response: z.object({ data: InvoiceRecipientResource }).passthrough(),
+    },
+    {
+        method: 'post',
+        path: '/v1/organizations/:organization/invoice-recipients/:invoiceRecipient/duplicate',
+        alias: 'duplicateInvoiceRecipient',
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'body',
+                type: 'Body',
+                schema: InvoiceRecipientRequest,
+            },
+            {
+                name: 'organization',
+                type: 'Path',
+                schema: z.string(),
+            },
+            {
+                name: 'invoiceRecipient',
+                type: 'Path',
+                schema: z.string(),
+            },
+        ],
+        response: z.object({ data: InvoiceRecipientResource }).passthrough(),
+    },
+    {
+        method: 'delete',
+        path: '/v1/organizations/:organization/invoice-recipients/:invoiceRecipient',
+        alias: 'deleteInvoiceRecipient',
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'organization',
+                type: 'Path',
+                schema: z.string(),
+            },
+            {
+                name: 'invoiceRecipient',
+                type: 'Path',
+                schema: z.string(),
+            },
+        ],
+        response: z.void(),
     },
     {
         method: 'get',
