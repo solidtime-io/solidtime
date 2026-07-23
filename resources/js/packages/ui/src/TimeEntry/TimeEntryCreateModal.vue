@@ -5,7 +5,6 @@ import DialogModal from '@/packages/ui/src/DialogModal.vue';
 import { computed, nextTick, ref, watch } from 'vue';
 import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import TimeTrackerProjectTaskDropdown from '@/packages/ui/src/TimeTracker/TimeTrackerProjectTaskDropdown.vue';
-import { Field, FieldLabel } from '../field';
 import { TagIcon } from '@heroicons/vue/20/solid';
 import { getDayJsInstance, getLocalizedDayJs } from '@/packages/ui/src/utils/time';
 import type {
@@ -19,12 +18,8 @@ import TagDropdown from '@/packages/ui/src/Tag/TagDropdown.vue';
 import BillableIcon from '@/packages/ui/src/Icons/BillableIcon.vue';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '..';
 import { Button } from '@/packages/ui/src/Buttons';
-import DatePicker from '@/packages/ui/src/Input/DatePicker.vue';
-import DurationHumanInput from '@/packages/ui/src/Input/DurationHumanInput.vue';
-
-import { InformationCircleIcon } from '@heroicons/vue/20/solid';
+import TimeRangeFields from '@/packages/ui/src/TimeEntry/TimeRangeFields.vue';
 import type { Tag, Task } from '@/packages/api/src';
-import TimePickerSimple from '@/packages/ui/src/Input/TimePickerSimple.vue';
 
 const show = defineModel('show', { default: false });
 const saving = ref(false);
@@ -62,6 +57,7 @@ const timeEntryDefaultValues = {
     task_id: null,
     tags: [],
     billable: false,
+    type: 'work' as CreateTimeEntryBody['type'],
     start: getDayJsInstance().utc().subtract(1, 'h').second(0).format(),
     end: getDayJsInstance().utc().second(0).format(),
 };
@@ -107,9 +103,6 @@ const localEnd = ref(getLocalizedDayJs(timeEntryDefaultValues.end).format());
 
 watch(localStart, (value) => {
     timeEntry.value.start = getLocalizedDayJs(value).utc().format();
-    if (getLocalizedDayJs(localEnd.value).isBefore(getLocalizedDayJs(value))) {
-        localEnd.value = value;
-    }
 });
 
 watch(localEnd, (value) => {
@@ -202,39 +195,11 @@ const billableProxy = computed({
                     </Select>
                 </div>
             </div>
-            <div class="grid grid-cols-2 sm:grid-cols-5 gap-4 pt-4">
-                <Field class="col-span-2 sm:col-span-3">
-                    <FieldLabel>Duration</FieldLabel>
-                    <div class="space-y-2 flex flex-col">
-                        <DurationHumanInput
-                            v-model:start="localStart"
-                            v-model:end="localEnd"
-                            name="Duration"></DurationHumanInput>
-                        <div class="text-sm flex space-x-1">
-                            <InformationCircleIcon
-                                class="w-4 shrink-0 text-text-quaternary"></InformationCircleIcon>
-                            <span class="text-text-secondary text-xs">
-                                You can type natural language like
-                                <span class="font-semibold"> 2h 30m</span>
-                            </span>
-                        </div>
-                    </div>
-                </Field>
-                <Field>
-                    <FieldLabel>Start</FieldLabel>
-                    <div class="flex flex-col gap-2">
-                        <TimePickerSimple v-model="localStart" class="w-full"></TimePickerSimple>
-                        <DatePicker v-model="localStart" class="w-full" tabindex="1"></DatePicker>
-                    </div>
-                </Field>
-                <Field>
-                    <FieldLabel>End</FieldLabel>
-                    <div class="flex flex-col gap-2">
-                        <TimePickerSimple v-model="localEnd" class="w-full"></TimePickerSimple>
-                        <DatePicker v-model="localEnd" class="w-full" tabindex="1"></DatePicker>
-                    </div>
-                </Field>
-            </div>
+            <TimeRangeFields
+                v-model:start="localStart"
+                v-model:end="localEnd"
+                show-hint
+                class="pt-4"></TimeRangeFields>
         </template>
         <template #footer>
             <SecondaryButton tabindex="2" @click="show = false"> Cancel</SecondaryButton>

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\V1\TimeEntry;
 
+use App\Enums\TimeEntryType;
 use App\Http\Requests\V1\BaseFormRequest;
 use App\Models\Member;
 use App\Models\Organization;
@@ -14,6 +15,7 @@ use App\Service\PermissionStore;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Korridor\LaravelModelValidationRules\Rules\ExistsEloquent;
 
 /**
@@ -24,7 +26,7 @@ class TimeEntryStoreRequest extends BaseFormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, array<string|ValidationRule>>
+     * @return array<string, array<string|\Closure|ValidationRule|\Illuminate\Contracts\Validation\Rule>>
      */
     public function rules(): array
     {
@@ -42,6 +44,7 @@ class TimeEntryStoreRequest extends BaseFormRequest
                 'nullable',
                 'string',
                 'required_with:task_id',
+                'prohibited_if:type,break',
                 ExistsEloquent::make(Project::class, null, function (Builder $builder): Builder {
                     /** @var Builder<Project> $builder */
                     $builder = $builder->whereBelongsTo($this->organization, 'organization');
@@ -60,6 +63,7 @@ class TimeEntryStoreRequest extends BaseFormRequest
             'task_id' => [
                 'nullable',
                 'string',
+                'prohibited_if:type,break',
                 ExistsEloquent::make(Task::class, null, function (Builder $builder): Builder {
                     /** @var Builder<Task> $builder */
                     return $builder->whereBelongsTo($this->organization, 'organization');
@@ -85,6 +89,16 @@ class TimeEntryStoreRequest extends BaseFormRequest
             'billable' => [
                 'required',
                 'boolean',
+                'declined_if:type,break',
+            ],
+            // Type of the time entry (work time or a break)
+            'type' => [
+                Rule::enum(TimeEntryType::class),
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    if ($value === TimeEntryType::Break->value && ! $this->organization->breaks_enabled) {
+                        $fail('Breaks are disabled for this organization.');
+                    }
+                },
             ],
             // Description of time entry
             'description' => [
@@ -96,6 +110,7 @@ class TimeEntryStoreRequest extends BaseFormRequest
             'tags' => [
                 'nullable',
                 'array',
+                'prohibited_if:type,break',
             ],
             'tags.*' => [
                 ExistsEloquent::make(Tag::class, null, function (Builder $builder): Builder {

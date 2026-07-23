@@ -71,6 +71,7 @@ const selectedClients = ref<string[]>([]);
 const tagMatchType = ref<TagMatchType>('contains');
 
 const billable = ref<'true' | 'false' | null>(null);
+const entryType = ref<'work' | 'break' | null>('work');
 const roundingEnabled = ref<boolean>(false);
 const roundingType = ref<TimeEntryRoundingType>('nearest');
 const roundingMinutes = ref<number>(15);
@@ -126,6 +127,7 @@ const filterParams = computed<AggregatedTimeEntriesQueryParams>(() => {
         tag_ids: selectedTags.value.length > 0 ? selectedTags.value : undefined,
         tag_match_type: selectedTags.value.length > 0 ? tagMatchType.value : undefined,
         billable: billable.value !== null ? billable.value : undefined,
+        type: entryType.value !== null ? entryType.value : undefined,
         member_id: getCurrentRole() === 'employee' ? getCurrentMembershipId() : undefined,
         rounding_type: roundingEnabled.value ? roundingType.value : undefined,
         rounding_minutes: roundingEnabled.value ? roundingMinutes.value : undefined,
@@ -160,7 +162,7 @@ const aggregatedTableTimeEntries = computed<AggregatedTimeEntries | undefined>((
 });
 
 const reportProperties = computed(() => {
-    const { billable: billableFilter, ...rest } = filterParams.value;
+    const { billable: billableFilter, type: typeFilter, ...rest } = filterParams.value;
 
     let billableValue: boolean | null = null;
     if (billableFilter === 'true') {
@@ -172,6 +174,7 @@ const reportProperties = computed(() => {
     return {
         ...rest,
         billable: billableValue,
+        time_entry_type: typeFilter ?? null,
         group: group.value,
         sub_group: subGroup.value,
         history_group: getOptimalGroupingOption(startDate.value, endDate.value),
@@ -371,6 +374,7 @@ const tableData = computed(() => {
         v-model:selected-tags="selectedTags"
         v-model:tag-match-type="tagMatchType"
         v-model:billable="billable"
+        v-model:entry-type="entryType"
         v-model:rounding-enabled="roundingEnabled"
         v-model:rounding-type="roundingType"
         v-model:rounding-minutes="roundingMinutes"

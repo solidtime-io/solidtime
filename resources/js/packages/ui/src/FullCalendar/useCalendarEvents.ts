@@ -2,6 +2,7 @@ import { computed, ref, type Ref, type ComputedRef } from 'vue';
 import chroma from 'chroma-js';
 import type { Dayjs } from 'dayjs';
 import type { TimeEntry, Project, Client, Task } from '@/packages/api/src';
+import { getBreakPlacementHint } from '../utils/breakPlacement';
 import { getDayJsInstance, getLocalizedDayJs } from '../utils/time';
 import type { CalendarSettings } from './calendarSettings';
 import type { CalendarEvent, DayEvent } from './calendarTypes';
@@ -181,7 +182,8 @@ export function useCalendarEvents(params: {
 
     const calendarEvents = computed<CalendarEvent[]>(() => {
         const themeBackground = params.cssBackground.value?.trim();
-        return params.timeEntries().map((rawEntry) => {
+        const allEntries = params.timeEntries();
+        return allEntries.map((rawEntry) => {
             const timeEntry = optimisticOverrides.value.get(rawEntry.id) || rawEntry;
             const isRunning = timeEntry.end === null;
             const project = params.projects().find((p) => p.id === timeEntry.project_id);
@@ -196,9 +198,20 @@ export function useCalendarEvents(params: {
                 'minutes'
             );
 
-            const title = timeEntry.description || 'No description';
-            const baseColor = project?.color || '#6B7280';
-            const backgroundColor = chroma.mix(baseColor, themeBackground, 0.65, 'lab').hex();
+            const isBreak = timeEntry.type === 'break';
+            const isMisplacedBreak = isBreak
+                ? (getBreakPlacementHint(timeEntry, allEntries)?.misplaced ?? false)
+                : false;
+            let title: string;
+            if (isBreak) {
+                title = timeEntry.description ? `Break · ${timeEntry.description}` : 'Break';
+            } else {
+                title = timeEntry.description || 'No description';
+            }
+            const baseColor = isBreak ? '#F59E0B' : project?.color || '#6B7280';
+            const backgroundColor = chroma
+                .mix(baseColor, themeBackground, isBreak ? 0.75 : 0.65, 'lab')
+                .hex();
             const borderColor = chroma.mix(baseColor, themeBackground, 0.5, 'lab').hex();
 
             const startTime = getLocalizedDayJs(timeEntry.start);
@@ -215,6 +228,8 @@ export function useCalendarEvents(params: {
                 client,
                 task,
                 isRunning,
+                isBreak,
+                isMisplacedBreak,
                 durationMinutes,
                 title,
                 backgroundColor,
@@ -253,28 +268,37 @@ export function useCalendarEvents(params: {
         return result;
     });
 
-    const dailyTotals = computed(() => {
+    function computeDailyTotals(filter: (entry: TimeEntry) => boolean): Record<string, number> {
         const totals: Record<string, number> = {};
-        params.timeEntries().forEach((entry) => {
-            const date = getLocalizedDayJs(entry.start).format('YYYY-MM-DD');
-            let durationSeconds: number;
+        params
+            .timeEntries()
+            .filter(filter)
+            .forEach((entry) => {
+                const date = getLocalizedDayJs(entry.start).format('YYYY-MM-DD');
+                let durationSeconds: number;
 
-            if (entry.end !== null) {
-                durationSeconds = getDayJsInstance()(entry.end).diff(
-                    getDayJsInstance()(entry.start),
-                    'seconds'
-                );
-            } else {
-                durationSeconds = Math.max(
-                    0,
-                    params.currentTime.value.diff(getDayJsInstance()(entry.start), 'seconds')
-                );
-            }
+                if (entry.end !== null) {
+                    durationSeconds = getDayJsInstance()(entry.end).diff(
+                        getDayJsInstance()(entry.start),
+                        'seconds'
+                    );
+                } else {
+                    durationSeconds = Math.max(
+                        0,
+                        params.currentTime.value.diff(getDayJsInstance()(entry.start), 'seconds')
+                    );
+                }
 
-            totals[date] = (totals[date] || 0) + durationSeconds;
-        });
+                totals[date] = (totals[date] || 0) + durationSeconds;
+            });
         return totals;
-    });
+    }
+
+    // Breaks are not working time: the day total only sums work entries,
+    // the break portion is exposed separately
+    const dailyTotals = computed(() => computeDailyTotals((entry) => entry.type !== 'break'));
+
+    const dailyBreakTotals = computed(() => computeDailyTotals((entry) => entry.type === 'break'));
 
     function isToday(day: Dayjs): boolean {
         return day.isSame(getLocalizedDayJs(), 'day');
@@ -294,6 +318,7 @@ export function useCalendarEvents(params: {
         calendarEvents,
         eventsByDay,
         dailyTotals,
+        dailyBreakTotals,
         isToday,
         nowIndicatorTop,
     };

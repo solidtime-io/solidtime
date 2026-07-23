@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import AppLayout from '@/Layouts/AppLayout.vue';
 import TimeTracker from '@/Components/TimeTracker.vue';
+import { router } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 import MainContainer from '@/packages/ui/src/MainContainer.vue';
 import { storeToRefs } from 'pinia';
@@ -102,6 +103,11 @@ function deleteSelected() {
     deleteTimeEntries(selectedTimeEntries.value);
     selectedTimeEntries.value = [];
 }
+
+// SPA-navigate the calendar to a break's day so its placement can be fixed there.
+function goToCalendarDay(date: string) {
+    router.visit(`/calendar?date=${date}`);
+}
 </script>
 
 <template>
@@ -153,6 +159,7 @@ function deleteSelected() {
             :currency="getOrganizationCurrencyString()"
             :time-entries="timeEntries"
             :group-similar-time-entries="groupSimilarTimeEntriesSetting"
+            :fix-in-calendar="goToCalendarDay"
             :tags="tags"></TimeEntryGroupedTable>
         <div v-if="isPending" class="flex justify-center items-center py-12">
             <LoadingSpinner></LoadingSpinner>

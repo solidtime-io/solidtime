@@ -8,6 +8,7 @@ import { useClientsQuery } from '@/utils/useClientsQuery';
 import { useTagsQuery } from '@/utils/useTagsQuery';
 import { CheckCircleIcon, UserCircleIcon, UserGroupIcon } from '@heroicons/vue/20/solid';
 import { DocumentTextIcon, FolderIcon } from '@heroicons/vue/16/solid';
+import { Coffee } from '@lucide/vue';
 import BillableIcon from '@/packages/ui/src/Icons/BillableIcon.vue';
 
 export type GroupingOption =
@@ -17,7 +18,8 @@ export type GroupingOption =
     | 'billable'
     | 'client'
     | 'description'
-    | 'tag';
+    | 'tag'
+    | 'type';
 
 export const useReportingStore = defineStore('reporting', () => {
     // Cache query composables to avoid creating new subscriptions on every call
@@ -35,6 +37,7 @@ export const useReportingStore = defineStore('reporting', () => {
         client: 'No Client',
         description: 'No Description',
         tag: 'No Tag',
+        type: 'Work time',
     } as Record<string, string>;
 
     function getNameForReportingRowEntry(key: string | null, type: string | null) {
@@ -70,6 +73,9 @@ export const useReportingStore = defineStore('reporting', () => {
                 return 'Billable';
             }
         }
+        if (type === 'type') {
+            return key === 'break' ? 'Break' : 'Work time';
+        }
         return key;
     }
 
@@ -102,6 +108,11 @@ export const useReportingStore = defineStore('reporting', () => {
             label: 'Billable',
             value: 'billable',
             icon: BillableIcon,
+        },
+        {
+            label: 'Type',
+            value: 'type',
+            icon: Coffee,
         },
         {
             label: 'Description',

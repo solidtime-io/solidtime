@@ -62,6 +62,8 @@ const queryParams = computed<AggregatedTimeEntriesQueryParams>(() => {
         group: group.value,
         sub_group: subGroup.value,
         member_id: getCurrentRole() === 'employee' ? getCurrentMembershipId() : undefined,
+        // Breaks are excluded from all dashboard stats (see DashboardService workTime())
+        type: 'work',
     };
 });
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\V1\TimeEntry;
 
+use App\Enums\TimeEntryType;
 use App\Http\Requests\V1\BaseFormRequest;
 use App\Models\Member;
 use App\Models\Organization;
@@ -14,6 +15,7 @@ use App\Service\PermissionStore;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Korridor\LaravelModelValidationRules\Rules\ExistsEloquent;
 
 /**
@@ -24,7 +26,7 @@ class TimeEntryUpdateMultipleRequest extends BaseFormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, array<string|ValidationRule>>
+     * @return array<string, array<string|ValidationRule|\Illuminate\Contracts\Validation\Rule>>
      */
     public function rules(): array
     {
@@ -54,6 +56,7 @@ class TimeEntryUpdateMultipleRequest extends BaseFormRequest
                 'nullable',
                 'string',
                 'required_with:task_id',
+                'prohibited_if:changes.type,break',
                 ExistsEloquent::make(Project::class, null, function (Builder $builder): Builder {
                     /** @var Builder<Project> $builder */
                     $builder = $builder->whereBelongsTo($this->organization, 'organization');
@@ -72,6 +75,7 @@ class TimeEntryUpdateMultipleRequest extends BaseFormRequest
             'changes.task_id' => [
                 'nullable',
                 'string',
+                'prohibited_if:changes.type,break',
                 ExistsEloquent::make(Task::class, null, function (Builder $builder): Builder {
                     /** @var Builder<Task> $builder */
                     return $builder->whereBelongsTo($this->organization, 'organization');
@@ -84,7 +88,13 @@ class TimeEntryUpdateMultipleRequest extends BaseFormRequest
             ],
             // Whether time entry is billable
             'changes.billable' => [
+                'sometimes',
                 'boolean',
+                'declined_if:changes.type,break',
+            ],
+            // Type of the time entry (work time or a break)
+            'changes.type' => [
+                Rule::enum(TimeEntryType::class),
             ],
             // Description of time entry
             'changes.description' => [
@@ -96,6 +106,7 @@ class TimeEntryUpdateMultipleRequest extends BaseFormRequest
             'changes.tags' => [
                 'nullable',
                 'array',
+                'prohibited_if:changes.type,break',
             ],
             'changes.tags.*' => [
                 'string',

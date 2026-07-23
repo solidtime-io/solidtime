@@ -2,7 +2,14 @@ import { PLAYWRIGHT_BASE_URL } from '../playwright/config';
 import { test } from '../playwright/fixtures';
 import { expect } from '@playwright/test';
 import type { Page } from '@playwright/test';
-import { createProjectViaApi, createTaskViaApi, createTimeEntryOnDateViaApi } from './utils/api';
+import {
+    createProjectViaApi,
+    createTaskViaApi,
+    createTimeEntryOnDateViaApi,
+    createTimeEntryWithTimestampsViaApi,
+    getTimeEntriesViaApi,
+    updateOrganizationSettingViaApi,
+} from './utils/api';
 
 // ──────────────────────────────────────────────────
 // Helpers
@@ -638,4 +645,280 @@ test('cell accepts various duration input formats', async ({ page, ctx }) => {
 
     // 1.5 hours = 1h 30min
     await expect(mondayInput).toHaveValue('1h 30min');
+});
+
+test('test that adding a timesheet break to a full day splits the work entry via the placement modal', async ({
+    page,
+    ctx,
+}) => {
+    // A single work entry filling the day leaves no gap for a break, so the placement
+    // modal must offer to split it (the only entry) and drop the break in the middle.
+    await updateOrganizationSettingViaApi(ctx, { breaks_enabled: true });
+    const day = getCurrentWeekMonday().toISOString().slice(0, 10);
+    await createTimeEntryWithTimestampsViaApi(ctx, {
+        start: `${day}T09:00:00Z`,
+        end: `${day}T17:00:00Z`,
+        description: 'Split me',
+    });
+
+    await goToTimesheet(page);
+    await expect(page.getByTestId('timesheet_view')).toBeVisible();
+
+    // The break row is always present — enter a 30m break on Monday
+    const breakRow = page
+        .locator('[data-testid="timesheet_row"]')
+        .filter({ has: page.getByText('Break', { exact: true }) });
+    const breakCell = breakRow.locator('[data-testid="timesheet_cell"]').nth(0).locator('input');
+    await breakCell.click();
+    await breakCell.fill('0.5');
+    await breakCell.press('Enter');
+
+    // The placement modal opens with the split preview
+    await expect(page.getByTestId('break_placement_summary')).toBeVisible();
+    await Promise.all([
+        page.waitForResponse(
+            async (resp) =>
+                resp.url().includes('/time-entries') &&
+                resp.request().method() === 'POST' &&
+                resp.status() === 201 &&
+                (await resp.json()).data.type === 'break'
+        ),
+        page.getByRole('button', { name: 'Add break' }).click(),
+    ]);
+
+    // The day now has two work halves and one break, none overlapping
+    const entries = await getTimeEntriesViaApi(ctx);
+    const dayEntries = entries
+        .filter((e) => e.start.startsWith(day))
+        .sort((a, b) => a.start.localeCompare(b.start));
+    expect(dayEntries).toHaveLength(3);
+    expect(dayEntries.map((e) => e.type)).toEqual(['work', 'break', 'work']);
+    // The break sits flush between the two halves
+    expect(dayEntries[0].end).toBe(dayEntries[1].start);
+    expect(dayEntries[1].end).toBe(dayEntries[2].start);
+});
+
+test('test that adding a break into an oversized gap places it without moving other entries', async ({
+    page,
+    ctx,
+}) => {
+    // 09-12 and 15-17 leave a 3h gap — wider than the placement tolerance allows,
+    // but easily big enough to hold the break. Such a gap is deliberate (the app
+    // itself never creates one), so the break goes flush after the morning entry
+    // and nothing else moves — no placement modal.
+    await updateOrganizationSettingViaApi(ctx, { breaks_enabled: true });
+    const day = getCurrentWeekMonday().toISOString().slice(0, 10);
+    await createTimeEntryWithTimestampsViaApi(ctx, {
+        start: `${day}T09:00:00Z`,
+        end: `${day}T12:00:00Z`,
+        description: 'Morning',
+    });
+    await createTimeEntryWithTimestampsViaApi(ctx, {
+        start: `${day}T15:00:00Z`,
+        end: `${day}T17:00:00Z`,
+        description: 'Afternoon',
+    });
+
+    await goToTimesheet(page);
+    await expect(page.getByTestId('timesheet_view')).toBeVisible();
+
+    const breakRow = page
+        .locator('[data-testid="timesheet_row"]')
+        .filter({ has: page.getByText('Break', { exact: true }) });
+    const breakCell = breakRow.locator('[data-testid="timesheet_cell"]').nth(0).locator('input');
+    await breakCell.click();
+    await breakCell.fill('0.5');
+    await Promise.all([
+        page.waitForResponse(
+            async (resp) =>
+                resp.url().includes('/time-entries') &&
+                resp.request().method() === 'POST' &&
+                resp.status() === 201 &&
+                (await resp.json()).data.type === 'break'
+        ),
+        breakCell.press('Enter'),
+    ]);
+
+    await expect(page.getByTestId('break_placement_summary')).not.toBeVisible();
+    const entries = await getTimeEntriesViaApi(ctx);
+    const dayEntries = entries
+        .filter((e) => e.start.startsWith(day))
+        .sort((a, b) => a.start.localeCompare(b.start));
+    expect(dayEntries.map((e) => [e.type, e.start, e.end])).toEqual([
+        ['work', `${day}T09:00:00Z`, `${day}T12:00:00Z`],
+        ['break', `${day}T12:00:00Z`, `${day}T12:30:00Z`],
+        ['work', `${day}T15:00:00Z`, `${day}T17:00:00Z`],
+    ]);
+});
+
+test('test that the placement modal warns when the chosen time would leave the break misaligned', async ({
+    page,
+    ctx,
+}) => {
+    // Back-to-back 09-12 and 12-17 leave no gap, so the placement modal opens.
+    // The suggested slot (flush at 12:00) is aligned — no warning. Moving the
+    // break to 07:00, before any work, keeps the plan feasible but the result
+    // would immediately carry the misaligned hint, so the modal warns upfront.
+    await updateOrganizationSettingViaApi(ctx, { breaks_enabled: true });
+    const day = getCurrentWeekMonday().toISOString().slice(0, 10);
+    await createTimeEntryWithTimestampsViaApi(ctx, {
+        start: `${day}T09:00:00Z`,
+        end: `${day}T12:00:00Z`,
+        description: 'Morning',
+    });
+    await createTimeEntryWithTimestampsViaApi(ctx, {
+        start: `${day}T12:00:00Z`,
+        end: `${day}T17:00:00Z`,
+        description: 'Afternoon',
+    });
+
+    await goToTimesheet(page);
+    await expect(page.getByTestId('timesheet_view')).toBeVisible();
+
+    const breakRow = page
+        .locator('[data-testid="timesheet_row"]')
+        .filter({ has: page.getByText('Break', { exact: true }) });
+    const breakCell = breakRow.locator('[data-testid="timesheet_cell"]').nth(0).locator('input');
+    await breakCell.click();
+    await breakCell.fill('0.5');
+    await breakCell.press('Enter');
+
+    // Default suggestion sits flush between work → no warning
+    await expect(page.getByTestId('break_placement_summary')).toBeVisible();
+    await expect(page.getByTestId('break_placement_misaligned_warning')).not.toBeVisible();
+
+    // Move the break to 07:00-07:30, before all work
+    const modal = page.getByRole('dialog');
+    const startTimeInput = modal.getByTestId('time_picker_input').first();
+    await startTimeInput.fill('07:00');
+    await startTimeInput.press('Tab');
+    const endTimeInput = modal.getByTestId('time_picker_input').nth(1);
+    await endTimeInput.fill('07:30');
+    await endTimeInput.press('Tab');
+
+    // Feasible (nothing has to move), but flagged as misaligned beforehand
+    await expect(page.getByTestId('break_placement_misaligned_warning')).toBeVisible();
+    await expect(page.getByTestId('break_placement_summary')).toContainText(
+        'No entries need to move.'
+    );
+
+    // The warning is non-blocking: the break can still be added as chosen
+    await Promise.all([
+        page.waitForResponse(
+            async (resp) =>
+                resp.url().includes('/time-entries') &&
+                resp.request().method() === 'POST' &&
+                resp.status() === 201 &&
+                (await resp.json()).data.type === 'break'
+        ),
+        page.getByRole('button', { name: 'Add break' }).click(),
+    ]);
+
+    const entries = await getTimeEntriesViaApi(ctx);
+    const dayEntries = entries
+        .filter((e) => e.start.startsWith(day))
+        .sort((a, b) => a.start.localeCompare(b.start));
+    expect(dayEntries.map((e) => [e.type, e.start, e.end])).toEqual([
+        ['break', `${day}T07:00:00Z`, `${day}T07:30:00Z`],
+        ['work', `${day}T09:00:00Z`, `${day}T12:00:00Z`],
+        ['work', `${day}T12:00:00Z`, `${day}T17:00:00Z`],
+    ]);
+    // ...and the timesheet now shows the misaligned-break hint for that day
+    await expect(
+        page.getByRole('button', { name: 'does not align with your work entries' })
+    ).toBeVisible();
+});
+
+test('test that a misplaced break shows a warning on its timesheet day cell', async ({
+    page,
+    ctx,
+}) => {
+    // Work ends at 10:00 and the break starts hours later with no work after it,
+    // so it is misplaced and its day header should carry the warning hint.
+    await updateOrganizationSettingViaApi(ctx, { breaks_enabled: true });
+    const day = getCurrentWeekMonday().toISOString().slice(0, 10);
+    await createTimeEntryWithTimestampsViaApi(ctx, {
+        start: `${day}T09:00:00Z`,
+        end: `${day}T10:00:00Z`,
+    });
+    await createTimeEntryWithTimestampsViaApi(ctx, {
+        start: `${day}T14:00:00Z`,
+        end: `${day}T14:30:00Z`,
+        type: 'break',
+    });
+
+    await goToTimesheet(page);
+    await expect(page.getByTestId('timesheet_view')).toBeVisible();
+
+    // Exactly one warning, sitting in Monday's day header
+    const hint = page.getByRole('button', {
+        name: 'does not align with your work entries',
+    });
+    await expect(hint).toHaveCount(1);
+    await expect(
+        page.getByTestId('timesheet_day_header').first().getByRole('button', {
+            name: 'does not align with your work entries',
+        })
+    ).toBeVisible();
+
+    // The hint links to the calendar on the affected date
+    await hint.click();
+    await expect(page.getByRole('link', { name: 'Fix in calendar' })).toHaveAttribute(
+        'href',
+        `/calendar?date=${day}`
+    );
+});
+
+test('test that editing a timesheet break re-places it as one entry instead of fragmenting it', async ({
+    page,
+    ctx,
+}) => {
+    // Two work entries with a 1h gap, and a 30m break created directly inside it (12:15–12:45).
+    await updateOrganizationSettingViaApi(ctx, { breaks_enabled: true });
+    const day = getCurrentWeekMonday().toISOString().slice(0, 10);
+    await createTimeEntryWithTimestampsViaApi(ctx, {
+        start: `${day}T09:00:00Z`,
+        end: `${day}T12:00:00Z`,
+        description: 'Work',
+    });
+    await createTimeEntryWithTimestampsViaApi(ctx, {
+        start: `${day}T13:00:00Z`,
+        end: `${day}T17:00:00Z`,
+        description: 'Work',
+    });
+    const breakEntry = await createTimeEntryWithTimestampsViaApi(ctx, {
+        start: `${day}T12:15:00Z`,
+        end: `${day}T12:45:00Z`,
+        type: 'break',
+    });
+
+    await goToTimesheet(page);
+    await expect(page.getByTestId('timesheet_view')).toBeVisible();
+    const breakRow = page
+        .locator('[data-testid="timesheet_row"]')
+        .filter({ has: page.getByText('Break', { exact: true }) });
+    const breakCell = breakRow.locator('[data-testid="timesheet_cell"]').nth(0).locator('input');
+    await breakCell.click();
+    await breakCell.fill('0.75'); // 45 minutes — still fits the 1h gap, so it stays anchored
+    await Promise.all([
+        // A break that still fits its gap is re-placed in place (PUT on the same entry),
+        // not deleted and recreated — that's what keeps it a single entry.
+        page.waitForResponse(
+            async (resp) =>
+                resp.url().includes(`/time-entries/${breakEntry.id}`) &&
+                resp.request().method() === 'PUT' &&
+                resp.status() === 200 &&
+                (await resp.json()).data.type === 'break'
+        ),
+        breakCell.press('Enter'),
+    ]);
+
+    // Still exactly one break on the day (not fragmented). It stays anchored at its current
+    // start (12:15) rather than re-centering, growing its end to 13:00 to reach 45 minutes.
+    const after = await getTimeEntriesViaApi(ctx);
+    const breaks = after.filter((e) => e.start.startsWith(day) && e.type === 'break');
+    expect(breaks).toHaveLength(1);
+    expect(breaks[0].duration).toBe(2700);
+    expect(breaks[0].start).toBe(`${day}T12:15:00Z`);
+    expect(breaks[0].end).toBe(`${day}T13:00:00Z`);
 });

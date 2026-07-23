@@ -406,6 +406,7 @@ export async function createTimeEntryViaApi(
         taskId?: string | null;
         tags?: string[];
         billable?: boolean;
+        type?: 'work' | 'break';
     }
 ) {
     const { start, end } = createTimestamps(data.duration);
@@ -421,6 +422,7 @@ export async function createTimeEntryViaApi(
                 task_id: data.taskId ?? null,
                 tags: data.tags ?? [],
                 billable: data.billable ?? false,
+                type: data.type ?? 'work',
             },
         }
     );
@@ -754,6 +756,7 @@ export async function getTimeEntriesViaApi(
         project_id: string | null;
         task_id: string | null;
         description: string;
+        type: 'work' | 'break';
     }>
 > {
     const params = new URLSearchParams();
@@ -779,6 +782,7 @@ export async function createTimeEntryWithTimestampsViaApi(
         taskId?: string | null;
         tags?: string[];
         billable?: boolean;
+        type?: 'work' | 'break';
     }
 ) {
     const response = await ctx.request.post(
@@ -793,12 +797,19 @@ export async function createTimeEntryWithTimestampsViaApi(
                 task_id: data.taskId ?? null,
                 tags: data.tags ?? [],
                 billable: data.billable ?? false,
+                type: data.type ?? 'work',
             },
         }
     );
     expect(response.status()).toBe(201);
     const body = await response.json();
-    return body.data as { id: string; start: string; end: string; description: string };
+    return body.data as {
+        id: string;
+        start: string;
+        end: string;
+        description: string;
+        type: 'work' | 'break';
+    };
 }
 
 // ──────────────────────────────────────────────────
@@ -902,4 +913,72 @@ export async function createReportViaApi(
         is_public: boolean;
         public_until: string | null;
     };
+}
+
+// ──────────────────────────────────────────────────
+// Invoices
+// ──────────────────────────────────────────────────
+
+export async function createInvoiceViaApi(
+    ctx: TestContext,
+    data: {
+        reference: string;
+        buyer_name?: string;
+        seller_name?: string;
+        currency?: string;
+        date?: string;
+        tax_rate?: number;
+    }
+) {
+    const response = await ctx.request.post(
+        `${PLAYWRIGHT_BASE_URL}/api/v1/organizations/${ctx.orgId}/invoices`,
+        {
+            data: {
+                seller_name: data.seller_name ?? 'Test Seller',
+                buyer_name: data.buyer_name ?? 'Test Buyer',
+                reference: data.reference,
+                currency: data.currency ?? 'EUR',
+                date: data.date ?? new Date().toISOString().split('T')[0],
+                // Mirror the UI create form, which always sends a tax rate (default 0).
+                // Invoices with a null tax_rate currently crash PDF rendering.
+                tax_rate: data.tax_rate ?? 0,
+            },
+        }
+    );
+    expect(response.status()).toBe(201);
+    const body = await response.json();
+    return body.data as { id: string; reference: string; buyer_name: string };
+}
+
+export async function updateInvoiceSettingsViaApi(ctx: TestContext, data: Record<string, unknown>) {
+    const response = await ctx.request.put(
+        `${PLAYWRIGHT_BASE_URL}/api/v1/organizations/${ctx.orgId}/invoice-settings`,
+        { data }
+    );
+    expect(response.status()).toBe(200);
+    const body = await response.json();
+    return body.data as Record<string, unknown>;
+}
+
+export async function getInvoiceSettingsViaApi(ctx: TestContext) {
+    const response = await ctx.request.get(
+        `${PLAYWRIGHT_BASE_URL}/api/v1/organizations/${ctx.orgId}/invoice-settings`
+    );
+    expect(response.status()).toBe(200);
+    const body = await response.json();
+    return body.data as Record<string, unknown>;
+}
+
+export async function getInvoicesViaApi(ctx: TestContext) {
+    const response = await ctx.request.get(
+        `${PLAYWRIGHT_BASE_URL}/api/v1/organizations/${ctx.orgId}/invoices`
+    );
+    expect(response.status()).toBe(200);
+    const body = await response.json();
+    return body.data as Array<{
+        id: string;
+        reference: string;
+        buyer_name: string;
+        paid_date: string | null;
+    }>;
 }

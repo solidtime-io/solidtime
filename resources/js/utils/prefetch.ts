@@ -91,12 +91,13 @@ function prefetchDashboard(queryClient: QueryClient) {
     prefetchTasks(queryClient);
 
     // Prefetch all dashboard card data
+    // Must match the query in RecentlyTrackedTasksCard exactly — same key, same params
     queryClient.prefetchQuery({
         queryKey: ['timeEntries', organizationId],
         queryFn: () =>
             api.getTimeEntries({
                 params: { organization: organizationId },
-                queries: { limit: 10, offset: 0, only_full_dates: 'true' },
+                queries: { member_id: getCurrentMembershipId(), type: 'work' },
             }),
         staleTime: 30000,
     });

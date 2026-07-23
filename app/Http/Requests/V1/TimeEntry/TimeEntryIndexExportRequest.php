@@ -7,6 +7,7 @@ namespace App\Http\Requests\V1\TimeEntry;
 use App\Enums\ExportFormat;
 use App\Enums\TagMatchType;
 use App\Enums\TimeEntryRoundingType;
+use App\Enums\TimeEntryType;
 use App\Models\Client;
 use App\Models\Member;
 use App\Models\Organization;
@@ -154,6 +155,11 @@ class TimeEntryIndexExportRequest extends TimeEntryIndexRequest
             'billable' => [
                 'string',
                 'in:true,false',
+            ],
+            // Filter by time entry type
+            'type' => [
+                'string',
+                Rule::enum(TimeEntryType::class),
             ],
             // Limit the number of returned time entries (default: 150)
             'limit' => [

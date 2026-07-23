@@ -10,7 +10,7 @@ import { useNotificationsStore } from '@/utils/notification';
 
 export function useTimeEntriesMutations() {
     const queryClient = useQueryClient();
-    const { handleApiRequestNotifications } = useNotificationsStore();
+    const { handleApiRequestNotifications, addNotification } = useNotificationsStore();
 
     const { mutateAsync: createTimeEntry } = useMutation({
         mutationFn: async (timeEntry: Omit<CreateTimeEntryBody, 'member_id'>) => {
@@ -71,7 +71,7 @@ export function useTimeEntriesMutations() {
         }) => {
             const organizationId = getCurrentOrganizationId();
             if (organizationId) {
-                return await handleApiRequestNotifications(
+                const response = await handleApiRequestNotifications(
                     () =>
                         api.updateMultipleTimeEntries(
                             {
@@ -84,9 +84,23 @@ export function useTimeEntriesMutations() {
                                 },
                             }
                         ),
-                    'Time entries updated successfully',
+                    undefined,
                     'Failed to update time entries'
                 );
+                // The endpoint applies the changeset per entry and skips entries it can't
+                // apply it to (e.g. breaks with a project/tags/billable change) — a 200
+                // with their ids in `error`. Surface that instead of claiming success.
+                const skippedCount = response?.error.length ?? 0;
+                if (skippedCount > 0) {
+                    addNotification(
+                        'error',
+                        `${skippedCount} of ${ids.length} time entries ${skippedCount === 1 ? 'was' : 'were'} skipped`,
+                        'No changes were applied to the skipped entries — break entries can not have a project or tags, or be billable.'
+                    );
+                } else {
+                    addNotification('success', 'Time entries updated successfully');
+                }
+                return response;
             }
         },
         onSuccess: () => {

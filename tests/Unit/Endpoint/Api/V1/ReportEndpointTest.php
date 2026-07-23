@@ -7,6 +7,7 @@ namespace Tests\Unit\Endpoint\Api\V1;
 use App\Enums\TagMatchType;
 use App\Enums\TimeEntryAggregationType;
 use App\Enums\TimeEntryRoundingType;
+use App\Enums\TimeEntryType;
 use App\Enums\Weekday;
 use App\Http\Controllers\Api\V1\ReportController;
 use App\Models\Client;
@@ -222,6 +223,66 @@ class ReportEndpointTest extends ApiEndpointTestAbstract
         // Also verify the properties are saved in the database
         $this->assertSame(TimeEntryRoundingType::Nearest, $report->properties->roundingType);
         $this->assertSame(15, $report->properties->roundingMinutes);
+    }
+
+    public function test_store_endpoint_creates_new_report_with_time_entry_type_filter(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'reports:create',
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->withoutExceptionHandling()->postJson(route('api.v1.reports.store', [$data->organization->getKey()]), [
+            'name' => 'Test Report',
+            'is_public' => false,
+            'properties' => [
+                'group' => TimeEntryAggregationType::Project->value,
+                'sub_group' => TimeEntryAggregationType::Task->value,
+                'history_group' => TimeEntryAggregationType::Day->value,
+                'start' => Carbon::now()->subDays(30)->toIso8601ZuluString(),
+                'end' => Carbon::now()->toIso8601ZuluString(),
+                'time_entry_type' => TimeEntryType::Break->value,
+            ],
+        ]);
+
+        // Assert
+        $response->assertStatus(201);
+        $response->assertJsonPath(
+            'data.properties.time_entry_type',
+            TimeEntryType::Break->value
+        );
+        /** @var Report $report */
+        $report = Report::query()->findOrFail($response->json('data.id'));
+        $this->assertSame(TimeEntryType::Break, $report->properties->timeEntryType);
+    }
+
+    public function test_store_endpoint_fails_if_time_entry_type_is_invalid(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'reports:create',
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.reports.store', [$data->organization->getKey()]), [
+            'name' => 'Test Report',
+            'is_public' => false,
+            'properties' => [
+                'group' => TimeEntryAggregationType::Project->value,
+                'sub_group' => TimeEntryAggregationType::Task->value,
+                'history_group' => TimeEntryAggregationType::Day->value,
+                'start' => Carbon::now()->subDays(30)->toIso8601ZuluString(),
+                'end' => Carbon::now()->toIso8601ZuluString(),
+                'time_entry_type' => 'invalid-type',
+            ],
+        ]);
+
+        // Assert
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['properties.time_entry_type']);
     }
 
     public function test_update_endpoint_fails_if_user_has_no_permission_to_update_report(): void

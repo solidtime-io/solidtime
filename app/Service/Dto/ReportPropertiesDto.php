@@ -8,6 +8,7 @@ use App\Enums\TagMatchType;
 use App\Enums\TimeEntryAggregationType;
 use App\Enums\TimeEntryAggregationTypeInterval;
 use App\Enums\TimeEntryRoundingType;
+use App\Enums\TimeEntryType;
 use App\Enums\Weekday;
 use App\Service\TimeEntryFilter;
 use Illuminate\Contracts\Database\Eloquent\Castable;
@@ -67,6 +68,8 @@ class ReportPropertiesDto implements Castable
     public ?TimeEntryRoundingType $roundingType = null;
 
     public ?int $roundingMinutes = null;
+
+    public ?TimeEntryType $timeEntryType = null;
 
     /**
      * Get the caster class to use when casting from / to this cast target.
@@ -129,6 +132,8 @@ class ReportPropertiesDto implements Castable
                 $dto->roundingType = isset($data->roundingType) ? TimeEntryRoundingType::from($data->roundingType) : null;
                 // Note: roundingMinutes was added later so it is possible that the value is missing in persisted reports in the DB
                 $dto->roundingMinutes = isset($data->roundingMinutes) ? (int) $data->roundingMinutes : null;
+                // Note: timeEntryType was added later so it is possible that the value is missing in persisted reports in the DB
+                $dto->timeEntryType = isset($data->timeEntryType) ? TimeEntryType::from($data->timeEntryType) : null;
 
                 return $dto;
             }
@@ -157,6 +162,7 @@ class ReportPropertiesDto implements Castable
                     'timezone' => $value->timezone,
                     'roundingType' => $value->roundingType?->value,
                     'roundingMinutes' => $value->roundingMinutes,
+                    'timeEntryType' => $value->timeEntryType?->value,
                 ];
 
                 $jsonString = json_encode($data);

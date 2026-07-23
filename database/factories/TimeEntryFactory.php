@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Enums\TimeEntryType;
 use App\Models\Member;
 use App\Models\Organization;
 use App\Models\Project;
@@ -33,6 +34,7 @@ class TimeEntryFactory extends Factory
             'start' => $start,
             'end' => $this->faker->dateTimeBetween($start, 'now'),
             'billable' => $this->faker->boolean(),
+            'type' => TimeEntryType::Work,
             'is_imported' => false,
             'tags' => [],
             'user_id' => User::factory(),
@@ -42,6 +44,18 @@ class TimeEntryFactory extends Factory
             'organization_id' => Organization::factory(),
             'billable_rate' => null,
         ];
+    }
+
+    public function isBreak(): self
+    {
+        return $this->state(function (array $attributes): array {
+            return [
+                'type' => TimeEntryType::Break,
+                'billable' => false,
+                'project_id' => null,
+                'task_id' => null,
+            ];
+        });
     }
 
     public function notBillable(): self

@@ -1,14 +1,28 @@
 <script setup lang="ts">
-import { PlusIcon, XMarkIcon } from '@heroicons/vue/20/solid';
+import { PlusIcon, XMarkIcon, ClockIcon } from '@heroicons/vue/20/solid';
+import { Coffee } from '@lucide/vue';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '..';
+import type { TimeTrackerMode } from '@/packages/ui/src/TimeTracker/types';
 
-const props = defineProps<{
-    hasActiveTimer: boolean;
-}>();
+const props = withDefaults(
+    defineProps<{
+        hasActiveTimer: boolean;
+        timeTrackerMode?: TimeTrackerMode;
+        breaksEnabled?: boolean;
+        isOnBreak?: boolean;
+    }>(),
+    {
+        timeTrackerMode: 'project',
+        breaksEnabled: false,
+        isOnBreak: false,
+    }
+);
 
 const emit = defineEmits<{
     manualEntry: [];
+    startBreak: [];
     discard: [];
+    toggleTimeTrackerMode: [];
 }>();
 </script>
 
@@ -38,6 +52,23 @@ const emit = defineEmits<{
                 @click="emit('manualEntry')">
                 <PlusIcon class="w-5" />
                 <span>Manual time entry</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+                v-if="props.breaksEnabled && !props.isOnBreak"
+                class="flex items-center space-x-3 cursor-pointer"
+                @click="emit('startBreak')">
+                <Coffee class="w-5" />
+                <span>Start Break</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+                class="flex items-center space-x-3 cursor-pointer"
+                @click="emit('toggleTimeTrackerMode')">
+                <ClockIcon class="w-5" />
+                <span>{{
+                    props.timeTrackerMode === 'simple'
+                        ? 'Switch to project mode'
+                        : 'Switch to simple mode'
+                }}</span>
             </DropdownMenuItem>
             <DropdownMenuItem
                 v-if="props.hasActiveTimer"

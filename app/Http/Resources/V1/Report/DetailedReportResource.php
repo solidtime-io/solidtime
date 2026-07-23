@@ -50,6 +50,8 @@ class DetailedReportResource extends BaseResource
                 'member_ids' => $this->resource->properties->memberIds?->toArray(),
                 /** @var bool|null $billable Filter by billable status */
                 'billable' => $this->resource->properties->billable,
+                /** @var string|null $time_entry_type Filter by time entry type */
+                'time_entry_type' => $this->resource->properties->timeEntryType?->value,
                 /** @var array<string>|null $client_ids Filter by client IDs, client IDs are OR combined */
                 'client_ids' => $this->resource->properties->clientIds?->toArray(),
                 /** @var array<string>|null $project_ids Filter by project IDs, project IDs are OR combined */

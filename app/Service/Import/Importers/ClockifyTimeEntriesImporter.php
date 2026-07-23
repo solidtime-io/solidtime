@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Service\Import\Importers;
 
 use App\Enums\Role;
+use App\Enums\TimeEntryType;
 use App\Jobs\RecalculateSpentTimeForProject;
 use App\Jobs\RecalculateSpentTimeForTask;
 use App\Models\TimeEntry;
@@ -71,8 +72,12 @@ class ClockifyTimeEntriesImporter extends DefaultImporter
                     'role' => Role::Placeholder->value,
                 ]);
                 $member = $this->memberImportHelper->getModelById($memberId);
+                // Clockify allows a project/task/client/tags/billable on breaks, but those are
+                // meaningless for non-work time. Detect breaks up front and skip creating any of
+                // that so a break can't spawn an orphan project/tag or inflate the import counts.
+                $isBreak = isset($record['Type']) && strtolower($record['Type']) === 'break';
                 $clientId = null;
-                if (($record['Client'] ?? '') !== '') {
+                if (! $isBreak && ($record['Client'] ?? '') !== '') {
                     $clientId = $this->clientImportHelper->getKey([
                         'name' => $record['Client'],
                         'organization_id' => $this->organization->id,
@@ -81,7 +86,7 @@ class ClockifyTimeEntriesImporter extends DefaultImporter
                 $projectId = null;
                 $project = null;
                 $projectMember = null;
-                if ($record['Project'] !== '') {
+                if (! $isBreak && $record['Project'] !== '') {
                     $projectId = $this->projectImportHelper->getKey([
                         'name' => $record['Project'],
                         'client_id' => $clientId,
@@ -97,7 +102,7 @@ class ClockifyTimeEntriesImporter extends DefaultImporter
                     ]);
                 }
                 $taskId = null;
-                if ($taskKey !== null && $record[$taskKey] !== '') {
+                if (! $isBreak && $taskKey !== null && $record[$taskKey] !== '') {
                     $taskId = $this->taskImportHelper->getKey([
                         'name' => $record[$taskKey],
                         'project_id' => $projectId,
@@ -123,7 +128,12 @@ class ClockifyTimeEntriesImporter extends DefaultImporter
                     }
                     $timeEntry->billable = $record['Billable'] === 'Yes';
                 }
-                $timeEntry->tags = $this->getTags($record['Tags']);
+                if ($isBreak) {
+                    // Breaks can not be billable or belong to a project/task (already skipped above)
+                    $timeEntry->type = TimeEntryType::Break;
+                    $timeEntry->billable = false;
+                }
+                $timeEntry->tags = $isBreak ? [] : $this->getTags($record['Tags']);
                 $timeEntry->is_imported = true;
 
                 // Start
