@@ -50,7 +50,7 @@ async function goToTimeOverview(page: Page) {
 async function goToOrganizationSettings(page: Page) {
     await page.goto(PLAYWRIGHT_BASE_URL + '/dashboard');
     await page.locator('[data-testid="organization_switcher"]:visible').click();
-    await page.getByText('Organization Settings').click();
+    await page.getByRole('menuitem', { name: 'Organization Settings' }).click();
 }
 
 async function createEmptyTimeEntry(page: Page) {
