@@ -2,10 +2,17 @@
 import { BellAlertIcon, XMarkIcon } from '@heroicons/vue/20/solid';
 import { SecondaryButton } from '@/packages/ui/src';
 import { useStorage } from '@vueuse/core';
-const showReleaseInfo = useStorage('showReleaseInfo-desktop', true);
+import { router } from '@inertiajs/vue3';
+import { getCurrentOrganizationId } from '@/utils/useUser';
+import { canUpdateOrganization } from '@/utils/permissions';
+const showReleaseInfo = useStorage('showReleaseInfo-breaks', true);
 
-function openDesktopGithubRepo() {
-    window.open('https://github.com/solidtime-io/solidtime-desktop', '_blank')?.focus();
+function openOrganizationSettings() {
+    router.visit(route('organizations.show', getCurrentOrganizationId()));
+}
+
+function openBreaksDocs() {
+    window.open('https://docs.solidtime.io/user-guide/breaks', '_blank')?.focus();
 }
 </script>
 
@@ -16,7 +23,7 @@ function openDesktopGithubRepo() {
                 <div
                     class="text-xs pb-1.5 font-semibold text-text-tertiary flex items-center space-x-1">
                     <BellAlertIcon class="w-3.5"></BellAlertIcon>
-                    <span> New Update </span>
+                    <span> New Feature </span>
                 </div>
                 <button>
                     <XMarkIcon
@@ -26,14 +33,22 @@ function openDesktopGithubRepo() {
             </div>
 
             <p class="text-xs">
-                <span class="font-semibold">Solidtime Desktop Beta</span> is here! Test our brand
-                new clients for Windows, macOS and Linux now.
+                <span class="font-semibold">Breaks</span> are here! Enable them in the organization
+                settings to track break time in the time tracker and timesheet.
             </p>
             <SecondaryButton
+                v-if="canUpdateOrganization()"
                 size="small"
                 class="w-full text-center justify-center mt-1.5"
-                @click="openDesktopGithubRepo"
-                >Download now</SecondaryButton
+                @click="openOrganizationSettings"
+                >Enable now</SecondaryButton
+            >
+            <SecondaryButton
+                v-else
+                size="small"
+                class="w-full text-center justify-center mt-1.5"
+                @click="openBreaksDocs"
+                >Learn more</SecondaryButton
             >
         </div>
     </div>
