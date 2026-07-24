@@ -132,8 +132,12 @@ class ReportPropertiesDto implements Castable
                 $dto->roundingType = isset($data->roundingType) ? TimeEntryRoundingType::from($data->roundingType) : null;
                 // Note: roundingMinutes was added later so it is possible that the value is missing in persisted reports in the DB
                 $dto->roundingMinutes = isset($data->roundingMinutes) ? (int) $data->roundingMinutes : null;
-                // Note: timeEntryType was added later so it is possible that the value is missing in persisted reports in the DB
-                $dto->timeEntryType = isset($data->timeEntryType) ? TimeEntryType::from($data->timeEntryType) : null;
+                // Note: timeEntryType was added later, reports persisted before that are missing the value and default to "work"
+                if (property_exists($data, 'timeEntryType')) {
+                    $dto->timeEntryType = $data->timeEntryType !== null ? TimeEntryType::from($data->timeEntryType) : null;
+                } else {
+                    $dto->timeEntryType = TimeEntryType::Work;
+                }
 
                 return $dto;
             }
