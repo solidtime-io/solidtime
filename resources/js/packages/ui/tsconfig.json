@@ -26,6 +26,7 @@
         "./dist",
         "./node_modules",
         "./__tests__",
-        "./coverage"
+        "./coverage",
+        "src/**/*.test.ts"
     ],
 }
