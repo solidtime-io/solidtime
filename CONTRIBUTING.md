@@ -12,6 +12,22 @@ In order to keep the issues of the repository clean we decided to only use them 
 
 To respect your time and help us manage contributions effectively, please open an issue or start a discussion and wait for approval before submitting a pull request (PR). This does not apply to tiny fixes or changes however, please keep in mind that we might not merge PRs for various reasons. 
 
+### Vouched contributors
+
+Pull requests from authors who are not vouched are closed automatically. This lets us keep up with the volume of AI slop pull requests without a maintainer having to triage every one of them by hand.
+
+Your pull request is not affected if any of the following applies:
+
+- You have write access to this repository.
+- Someone with write access has vouched for you. The list lives in [.github/VOUCHED.td](.github/VOUCHED.td).
+- Your pull request changes 50 lines or fewer. Test files and lockfiles do not count towards that number, so a small fix that comes with tests still qualifies.
+
+To get vouched, open an issue or discussion before you start and explain how you intend to implement the change. We will discuss the approach with you, and only once we have agreed on the implementation does a maintainer comment `vouch @your-handle`, which puts you on the list from then on.
+
+Being vouched only stops your pull requests from being closed automatically. [Only work on approved issues](#only-work-on-approved-issues) still applies to every pull request you send.
+
+Contributors who abuse this are denounced, and their pull requests are closed regardless of size. 
+
 ### Contributor License Agreement
 
 You'll also notice that we’ve set up a [Contributor License Agreement (CLA)](https://cla-assistant.io/solidtime-io/solidtime), which must be signed before any PR can be merged. Don’t worry - the process is quick and only takes a few clicks.
