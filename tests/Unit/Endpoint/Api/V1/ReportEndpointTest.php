@@ -746,4 +746,93 @@ class ReportEndpointTest extends ApiEndpointTestAbstract
         $response->assertStatus(422);
         $response->assertInvalid(['properties.tag_match_type']);
     }
+
+    public function test_store_endpoint_returns_null_for_show_amounts_when_not_set(): void
+    {
+        // Arrange — simulates a report created before show_amounts existed (backward compatibility)
+        $data = $this->createUserWithPermission([
+            'reports:create',
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->withoutExceptionHandling()->postJson(route('api.v1.reports.store', [$data->organization->getKey()]), [
+            'name' => 'Report without show amounts',
+            'is_public' => false,
+            'properties' => [
+                'start' => Carbon::now()->subDays(30)->toIso8601ZuluString(),
+                'end' => Carbon::now()->toIso8601ZuluString(),
+                'group' => TimeEntryAggregationType::Project->value,
+                'sub_group' => TimeEntryAggregationType::Task->value,
+                'history_group' => TimeEntryAggregationType::Day->value,
+            ],
+        ]);
+
+        // Assert
+        $response->assertStatus(201);
+        /** @var Report $report */
+        $report = Report::query()->findOrFail($response->json('data.id'));
+        $this->assertNull($report->properties->showAmounts);
+        $response->assertJsonPath('data.properties.show_amounts', null);
+    }
+
+    public function test_store_endpoint_persists_show_amounts_property(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'reports:create',
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->withoutExceptionHandling()->postJson(route('api.v1.reports.store', [$data->organization->getKey()]), [
+            'name' => 'Report with show amounts',
+            'is_public' => false,
+            'properties' => [
+                'start' => Carbon::now()->subDays(30)->toIso8601ZuluString(),
+                'end' => Carbon::now()->toIso8601ZuluString(),
+                'group' => TimeEntryAggregationType::Project->value,
+                'sub_group' => TimeEntryAggregationType::Task->value,
+                'history_group' => TimeEntryAggregationType::Day->value,
+                'show_amounts' => false,
+            ],
+        ]);
+
+        // Assert
+        $response->assertStatus(201);
+        /** @var Report $report */
+        $report = Report::query()->findOrFail($response->json('data.id'));
+        $this->assertFalse($report->properties->showAmounts);
+        $response->assertJsonPath('data.properties.show_amounts', false);
+    }
+
+    public function test_store_endpoint_persists_show_amounts_true(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'reports:create',
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->withoutExceptionHandling()->postJson(route('api.v1.reports.store', [$data->organization->getKey()]), [
+            'name' => 'Report with show amounts true',
+            'is_public' => false,
+            'properties' => [
+                'start' => Carbon::now()->subDays(30)->toIso8601ZuluString(),
+                'end' => Carbon::now()->toIso8601ZuluString(),
+                'group' => TimeEntryAggregationType::Project->value,
+                'sub_group' => TimeEntryAggregationType::Task->value,
+                'history_group' => TimeEntryAggregationType::Day->value,
+                'show_amounts' => true,
+            ],
+        ]);
+
+        // Assert
+        $response->assertStatus(201);
+        /** @var Report $report */
+        $report = Report::query()->findOrFail($response->json('data.id'));
+        $this->assertTrue($report->properties->showAmounts);
+        $response->assertJsonPath('data.properties.show_amounts', true);
+    }
 }

@@ -122,6 +122,7 @@ class PublicReportEndpointTest extends ApiEndpointTestAbstract
             'name' => $report->name,
             'description' => $report->description,
             'public_until' => $report->public_until?->toIso8601ZuluString(),
+            'show_amounts' => true,
             'currency' => $organization->currency,
             'number_format' => $organization->number_format,
             'interval_format' => $organization->interval_format,
@@ -667,6 +668,90 @@ class PublicReportEndpointTest extends ApiEndpointTestAbstract
                 'grouped_type' => TimeEntryAggregationType::Project->value,
             ],
         ]);
+    }
+
+    public function test_show_returns_show_amounts_false_when_report_has_it_set(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $reportDto = new ReportPropertiesDto;
+        $reportDto->start = now()->subDays(2);
+        $reportDto->end = now();
+        $reportDto->group = TimeEntryAggregationType::Project;
+        $reportDto->subGroup = TimeEntryAggregationType::Task;
+        $reportDto->historyGroup = TimeEntryAggregationTypeInterval::Day;
+        $reportDto->weekStart = Weekday::Monday;
+        $reportDto->timezone = 'Europe/Vienna';
+        $reportDto->showAmounts = false;
+        $report = Report::factory()->forOrganization($organization)->public()->create([
+            'public_until' => null,
+            'properties' => $reportDto,
+        ]);
+
+        // Act
+        $response = $this->getJson(route('api.v1.public.reports.show'), [
+            'X-Api-Key' => $report->share_secret,
+        ]);
+
+        // Assert
+        $response->assertOk();
+        $response->assertJsonPath('show_amounts', false);
+    }
+
+    public function test_show_returns_show_amounts_true_when_report_has_it_set(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $reportDto = new ReportPropertiesDto;
+        $reportDto->start = now()->subDays(2);
+        $reportDto->end = now();
+        $reportDto->group = TimeEntryAggregationType::Project;
+        $reportDto->subGroup = TimeEntryAggregationType::Task;
+        $reportDto->historyGroup = TimeEntryAggregationTypeInterval::Day;
+        $reportDto->weekStart = Weekday::Monday;
+        $reportDto->timezone = 'Europe/Vienna';
+        $reportDto->showAmounts = true;
+        $report = Report::factory()->forOrganization($organization)->public()->create([
+            'public_until' => null,
+            'properties' => $reportDto,
+        ]);
+
+        // Act
+        $response = $this->getJson(route('api.v1.public.reports.show'), [
+            'X-Api-Key' => $report->share_secret,
+        ]);
+
+        // Assert
+        $response->assertOk();
+        $response->assertJsonPath('show_amounts', true);
+    }
+
+    public function test_show_returns_show_amounts_true_when_report_has_no_preference_set(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $reportDto = new ReportPropertiesDto;
+        $reportDto->start = now()->subDays(2);
+        $reportDto->end = now();
+        $reportDto->group = TimeEntryAggregationType::Project;
+        $reportDto->subGroup = TimeEntryAggregationType::Task;
+        $reportDto->historyGroup = TimeEntryAggregationTypeInterval::Day;
+        $reportDto->weekStart = Weekday::Monday;
+        $reportDto->timezone = 'Europe/Vienna';
+        // showAmounts intentionally left null (not set)
+        $report = Report::factory()->forOrganization($organization)->public()->create([
+            'public_until' => null,
+            'properties' => $reportDto,
+        ]);
+
+        // Act
+        $response = $this->getJson(route('api.v1.public.reports.show'), [
+            'X-Api-Key' => $report->share_secret,
+        ]);
+
+        // Assert: defaults to true when not set
+        $response->assertOk();
+        $response->assertJsonPath('show_amounts', true);
     }
 
     public function test_show_applies_not_contains_tag_match_type(): void

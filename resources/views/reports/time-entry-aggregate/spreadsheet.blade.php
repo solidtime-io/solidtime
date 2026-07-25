@@ -20,9 +20,11 @@
         <th style="border: 1px solid black; font-weight: bold;" data-type="{{ DataType::TYPE_STRING }}">
             Duration (decimal)
         </th>
+        @if($showBillableRate)
         <th style="border: 1px solid black; font-weight: bold;" data-type="{{ DataType::TYPE_STRING }}">
             Amount ({{ Str::upper($currency) }})
         </th>
+        @endif
     </tr>
     </thead>
     <tbody>
@@ -148,6 +150,7 @@
                     =0
                 @endif
             </td>
+            @if($showBillableRate)
             <td style="border: 1px solid black; font-weight: bold;" data-type="{{ DataType::TYPE_FORMULA }}"
                 data-format="{{ NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1 }}">
                 @if($counter > 1)
@@ -156,6 +159,7 @@
                     =0
                 @endif
             </td>
+            @endif
         @endif
     </tr>
     </tbody>

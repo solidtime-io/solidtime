@@ -916,3 +916,47 @@ test('test that shared report displays cost column correctly aligned with data r
     const costValues = table.getByText(/100/);
     await expect(costValues).toHaveCount(2);
 });
+
+test('test that shared report hides Cost column when saved with show amounts off', async ({
+    page,
+    ctx,
+}) => {
+    const projectName = 'HideAmountProj ' + Math.floor(Math.random() * 10000);
+    const reportName = 'HideAmountReport ' + Math.floor(Math.random() * 10000);
+
+    const project = await createBillableProjectViaApi(ctx, {
+        name: projectName,
+        billable_rate: 10000, // 100.00 per hour
+    });
+    await createTimeEntryViaApi(ctx, {
+        description: `Entry for ${projectName}`,
+        duration: '1h',
+        projectId: project.id,
+        billable: true,
+    });
+
+    await goToReporting(page);
+    await expect(page.getByTestId('reporting_view').getByText(projectName)).toBeVisible();
+
+    // Toggle show amounts off before saving the report
+    const reportUpdatePromise = waitForReportingUpdate(page);
+    await page.getByText(/Show amount: on/).click();
+    await page.getByRole('option', { name: 'Off' }).click();
+    await reportUpdatePromise;
+
+    // Cost column should be hidden in the overview before saving
+    await expect(page.getByText('Cost', { exact: true })).not.toBeVisible();
+
+    // Save the report with show_amounts = false
+    const { shareableLink } = await saveAsSharedReport(page, reportName);
+
+    // Navigate to the shared report
+    await page.goto(shareableLink);
+    await expect(page.getByText('Reporting')).toBeVisible();
+    await expect(page.getByText(projectName)).toBeVisible();
+
+    // Cost column should NOT be visible since show_amounts was off when the report was saved
+    await expect(page.getByText('Cost', { exact: true })).not.toBeVisible();
+    // Duration column should still be visible
+    await expect(page.getByText('Duration', { exact: true })).toBeVisible();
+});

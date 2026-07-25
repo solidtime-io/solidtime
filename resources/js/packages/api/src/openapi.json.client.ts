@@ -457,6 +457,7 @@ const ReportStoreRequest = z
                 timezone: z.union([z.string(), z.null()]).optional(),
                 rounding_type: TimeEntryRoundingType.optional(),
                 rounding_minutes: z.union([z.number(), z.null()]).optional(),
+                show_amounts: z.union([z.boolean(), z.null()]).optional(),
             })
             .passthrough(),
     })
@@ -486,6 +487,7 @@ const DetailedReportResource = z
                 task_ids: z.union([z.array(z.string()), z.null()]),
                 rounding_type: z.union([z.string(), z.null()]),
                 rounding_minutes: z.union([z.number(), z.null()]),
+                show_amounts: z.union([z.boolean(), z.null()]),
             })
             .passthrough(),
         created_at: z.string(),
@@ -513,6 +515,7 @@ const DetailedWithDataReportResource = z
         date_format: DateFormat,
         interval_format: IntervalFormat,
         time_format: TimeFormat,
+        show_amounts: z.boolean(),
         properties: z
             .object({
                 group: z.string(),
@@ -4381,6 +4384,11 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
                 type: 'Query',
                 schema: z.array(z.string()).min(1).optional(),
             },
+            {
+                name: 'show_amounts',
+                type: 'Query',
+                schema: z.boolean().optional(),
+            },
         ],
         response: z.union([
             z.object({ download_url: z.string() }).passthrough(),
@@ -4513,6 +4521,11 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
                 name: 'task_ids',
                 type: 'Query',
                 schema: z.array(z.string()).min(1).optional(),
+            },
+            {
+                name: 'show_amounts',
+                type: 'Query',
+                schema: z.boolean().optional(),
             },
         ],
         response: z.union([
