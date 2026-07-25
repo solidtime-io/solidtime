@@ -1,0 +1,35 @@
+name: Vouch (manage by issue)
+
+# Maintainers comment "vouch @user", "unvouch @user" or "denounce @user <reason>"
+# on any issue or pull request, and this workflow updates .github/VOUCHED.td.
+
+on:
+  issue_comment:
+    types: [created]
+
+concurrency:
+  group: vouch-manage
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  manage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: "Checkout code"
+        uses: actions/checkout@v7
+
+      - name: "Apply vouch command"
+        uses: mitchellh/vouch/action/manage-by-issue@v1.5.0
+        with:
+          issue-id: ${{ github.event.issue.number }}
+          comment-id: ${{ github.event.comment.id }}
+          roles: admin,maintain,write
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

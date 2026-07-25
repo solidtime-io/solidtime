@@ -39,6 +39,8 @@ Please open an issue or start a discussion and wait for approval before submitti
 
 **If you submit an AI slop pull request (especially without following the proper procedure), you will be banned from future contributions to solidtime.**
 
+To keep that manageable, pull requests from authors who are not vouched are closed automatically, unless they change 50 lines or fewer. To get vouched, open an issue or discussion first and explain how you intend to implement the change. Once we have agreed on the approach, we vouch for you. See [Vouched contributors](./CONTRIBUTING.md#vouched-contributors).
+
 Please read the [CONTRIBUTING.md](./CONTRIBUTING.md) before sumbitting a Pull Request.
 
 We do accept contributions in the [documentation repository](https://github.com/solidtime-io/docs) f.e. to add new self-hosting guides.

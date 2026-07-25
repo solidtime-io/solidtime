@@ -1,0 +1,75 @@
+name: Vouch (check PR)
+
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize]
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: >-
+      github.event_name == 'pull_request_target' ||
+      (github.event_name == 'issue_comment' &&
+       github.event.issue.pull_request &&
+       contains(github.event.comment.body, '/recheck'))
+
+    steps:
+      # Pull requests of 50 changed lines or fewer skip the vouch requirement.
+      - name: "Measure diff size"
+        id: size
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number || github.event.issue.number }}
+
+          # Changes to these files do not count towards the 50-line limit.
+          # One extended regex per line, matched against the whole repo-relative
+          # path, so use a leading .* to match a file in any directory.
+          IGNORED: |
+            package-lock\.json
+            composer\.lock
+            tests/.*
+            e2e/.*
+            .*\.(test|spec)\.(ts|js|vue)
+
+        run: |
+          set -euo pipefail
+          # An empty list yields "^()$", which matches no filename. grep exits
+          # 1 on an empty list, so swallow that rather than fail the step.
+          join() { { grep -vE '^[[:space:]]*$' || true; } | paste -sd'|' -; }
+          ignored="^($(join <<<"$IGNORED"))$"
+
+          total=$(gh api --paginate "repos/$REPO/pulls/$PR/files" \
+            --jq '.[] | [.filename, .additions + .deletions] | @tsv' |
+            awk -F'\t' -v ignored="$ignored" '
+              $1 ~ ignored { next }
+                           { n += $2 }
+              END { print n+0 }')
+          echo "total=$total" >> "$GITHUB_OUTPUT"
+          echo "Countable diff size: $total line(s)"
+
+      - name: "Small patch (denounced users still blocked)"
+        if: fromJSON(steps.size.outputs.total) <= 50
+        uses: mitchellh/vouch/action/check-pr@v1.5.0
+        with:
+          pr-number: ${{ github.event.pull_request.number || github.event.issue.number }}
+          auto-close: true
+          require-vouch: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Full vouch required"
+        if: fromJSON(steps.size.outputs.total) > 50
+        uses: mitchellh/vouch/action/check-pr@v1.5.0
+        with:
+          pr-number: ${{ github.event.pull_request.number || github.event.issue.number }}
+          auto-close: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
