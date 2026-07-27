@@ -1,0 +1,149 @@
+name: Playwright Tests - On Premise
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - feature/support_extension_e2e_tests
+    tags:
+      - '*'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        shardIndex: [1, 2, 3, 4, 5, 6, 7, 8]
+        shardTotal: [8]
+
+    services:
+      mailpit:
+        image: 'axllent/mailpit:latest'
+        ports:
+          - 1025:1025
+          - 8025:8025
+      pgsql_test:
+        image: postgres:15
+        env:
+          PGPASSWORD: 'root'
+          POSTGRES_DB: 'laravel'
+          POSTGRES_USER: 'root'
+          POSTGRES_PASSWORD: 'root'
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      # Renders the invoice PDFs.
+      gotenberg:
+        image: gotenberg/gotenberg:8
+        ports:
+          - 3000:3000
+        options: >-
+          --health-cmd "curl --silent --fail http://localhost:3000/health"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: "Checkout code"
+        uses: actions/checkout@v7
+
+      - name: "Setup node"
+        uses: actions/setup-node@v7
+        with:
+          node-version: '20.x'
+
+      - name: "Setup PHP"
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv
+          coverage: none
+
+      - name: "Run composer install"
+        run: composer install -n --prefer-dist
+
+      - name: "Read extension manifest"
+        id: extension-manifest
+        run: |
+          {
+            echo "invoicing_repository=$(jq -r '.Invoicing.repository' extensions/manifest.json)"
+            echo "invoicing_ref=$(jq -r '.Invoicing.ref' extensions/manifest.json)"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: "Checkout invoicing extension"
+        uses: actions/checkout@v7
+        with:
+          repository: ${{ steps.extension-manifest.outputs.invoicing_repository }}
+          ref: ${{ steps.extension-manifest.outputs.invoicing_ref }}
+          path: extensions/Invoicing
+          ssh-key: ${{ secrets.SSH_PRIVATE_KEY_INVOICING_EXTENSION }}
+
+      - name: "Install composer dependencies in invoicing extension"
+        run: cd extensions/Invoicing && composer install --no-dev --no-ansi --no-interaction --prefer-dist --ignore-platform-reqs --classmap-authoritative
+
+      - name: "Install npm dependencies in invoicing extension"
+        run: cd extensions/Invoicing && npm ci
+
+      - name: "Prepare Laravel Application"
+        run: |
+          cp .env.ci .env
+          php artisan key:generate
+          php artisan passport:keys
+
+      # Must run before `migrate` so the extension's migrations are applied, and
+      # before the frontend build so vite collects the extension's assets.
+      - name: "Activate invoicing extension"
+        run: php artisan module:enable Invoicing
+
+      - name: "Migrate and seed"
+        run: php artisan migrate --seed
+
+      - name: "Install dependencies"
+        run: npm ci
+
+      - name: "Build Frontend"
+        run: npm run build
+
+      - name: "Install FrankenPHP"
+        run: |
+          ARCH="$(uname -m)"
+          curl -fsSL "https://github.com/dunglas/frankenphp/releases/latest/download/frankenphp-linux-${ARCH}" -o /usr/local/bin/frankenphp
+          chmod +x /usr/local/bin/frankenphp
+
+      - name: "Run Laravel Octane Server"
+        run: php artisan octane:start --server=frankenphp --host=127.0.0.1 --port=8000 --workers=4 --max-requests=500 > /dev/null 2>&1 &
+        env:
+          OCTANE_SERVER: frankenphp
+
+      - name: "Install Playwright Browsers"
+        run: npx playwright install --with-deps
+
+      - name: "Run Playwright tests"
+        run: npx playwright test --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
+        env:
+          PLAYWRIGHT_BASE_URL: 'http://127.0.0.1:8000'
+          MAILPIT_BASE_URL: 'http://localhost:8025'
+
+      # No artifacts are uploaded on purpose. This repository is public, so
+      # every artifact is downloadable by anyone - and Playwright's reports
+      # carry the source of the specs that produced them: traces embed whole
+      # source files under resources/src@*, and each error-context.md attachment
+      # embeds a ~200 line window of the spec plus a page snapshot. Those specs
+      # live in the private extension repository, so uploading them would
+      # publish private source on any failing or flaky run.
+      #
+      # Failures are diagnosed from the job log, which still shows the error and
+      # a short code frame. To inspect a trace, reproduce the failure locally
+      # with the extension checked out.
+      #
+      # This is a mitigation, not a fix: the code frame in the log is itself a
+      # handful of lines of private source. Only running this workflow from a
+      # private repository removes that exposure.

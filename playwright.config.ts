@@ -10,7 +10,20 @@ import { defineConfig, devices } from '@playwright/test';
  * See https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig({
-    testDir: './e2e',
+    testDir: '.',
+    testMatch: ['e2e/**/*.spec.ts', 'extensions/*/tests/e2e/**/*.spec.ts'],
+    testIgnore: [
+        '**/node_modules/**',
+        '**/vendor/**',
+        '.git/**',
+        '.claude/**',
+        'public/**',
+        'storage/**',
+        'test-results/**',
+        'playwright-report/**',
+        'blob-report/**',
+    ],
+    tsconfig: './tsconfig.json',
     /* Run tests in files in parallel */
     fullyParallel: true,
     /* Fail the build on CI if you accidentally left test.only in the source code. */
