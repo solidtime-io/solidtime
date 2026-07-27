@@ -186,19 +186,27 @@ const emit = defineEmits<{
                             ? 'text-text-primary'
                             : 'text-text-secondary',
                     ]">
-                    <span>{{ total > 0 ? formatDuration(total) : '-' }}</span>
+                    <span
+                        >{{ formatDuration(total)
+                        }}<template v-if="total > 0 && (breakDayTotals[dayIndex] ?? 0) > 0">
+                            work</template
+                        ></span
+                    >
                     <span
                         v-if="(breakDayTotals[dayIndex] ?? 0) > 0"
-                        class="font-normal text-text-tertiary">
-                        +{{ formatDuration(breakDayTotals[dayIndex] ?? 0) }} break
-                    </span>
+                        class="font-normal text-text-tertiary"
+                        >{{ formatDuration(breakDayTotals[dayIndex] ?? 0) }} break</span
+                    >
                 </div>
                 <div
                     class="flex flex-col items-end justify-center border-t border-default-background-separator bg-background dark:bg-secondary pl-3 pr-3 py-1 text-xs font-semibold text-text-primary leading-tight">
-                    <span>{{ weekTotalFormatted }}</span>
-                    <span v-if="breakGrandTotal > 0" class="font-normal text-text-tertiary">
-                        +{{ formatDuration(breakGrandTotal) }} break
-                    </span>
+                    <span
+                        >{{ weekTotalFormatted
+                        }}<template v-if="breakGrandTotal > 0"> work</template></span
+                    >
+                    <span v-if="breakGrandTotal > 0" class="font-normal text-text-tertiary"
+                        >{{ formatDuration(breakGrandTotal) }} break</span
+                    >
                 </div>
                 <div
                     class="border-t border-default-background-separator bg-background dark:bg-secondary"></div>

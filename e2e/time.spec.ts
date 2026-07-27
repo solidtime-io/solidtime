@@ -2315,7 +2315,9 @@ test('test that break entries show a break badge and split day total on the time
     await page.goto(PLAYWRIGHT_BASE_URL + '/time');
     await expect(page.getByTestId('break_badge').first()).toBeVisible();
     await expect(page.getByTestId('break_badge').first()).toContainText('Break');
-    // Day heading shows the break portion separately from worked time
+    // Day heading shows worked time first, then the break portion
     await expect(page.getByTestId('day_break_duration').first()).toBeVisible();
-    await expect(page.getByTestId('day_break_duration').first()).toContainText('break');
+    await expect(page.getByTestId('day_break_duration').first().locator('..')).toContainText(
+        '2h 00min work · 0h 30min break'
+    );
 });
