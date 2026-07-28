@@ -13,12 +13,14 @@ import {
     planMoveInsert,
     planSplitEntry,
     type BreakPlacementRequest,
+    type Interval,
 } from '@/utils/timesheet/breakPlacementMath';
 import { BREAK_GAP_TOLERANCE_MINUTES } from '@/packages/ui/src/utils/breakPlacement';
 
 const props = defineProps<{
     request: BreakPlacementRequest | null;
     apply: (breakStart: string, durationSeconds: number) => Promise<void>;
+    entryLabel: (id: string) => string;
 }>();
 
 const emit = defineEmits<{ cancel: [] }>();
@@ -124,30 +126,39 @@ const explanation = computed(() => {
         : "There's no free gap that fits this break, so the surrounding entries will be shifted to make room.";
 });
 
-const changeSummary = computed<string[]>(() => {
+interface PlanLine {
+    times: string;
+    label: string;
+}
+
+const changeSummary = computed<PlanLine[]>(() => {
+    const req = props.request;
+    if (!req) return [];
+    const range = (interval: Interval) => `${fmt(interval.start)}–${fmt(interval.end)}`;
+    const moved = (from: Interval, to: Interval) => `${range(from)} → ${range(to)}`;
+
     if (mode.value === 'split') {
         const plan = splitPlan.value;
         if (!plan) return [];
+        const workLabel = props.entryLabel(req.workEntries[0]!.id);
         return [
-            `${fmt(plan.firstHalf.start)}–${fmt(plan.firstHalf.end)} (work)`,
-            `${fmt(plan.breakSlot.start)}–${fmt(plan.breakSlot.end)} (break)`,
-            `${fmt(plan.secondHalf.start)}–${fmt(plan.secondHalf.end)} (work)`,
-            ...plan.shifted.map((shift) => {
-                const original = props.request!.otherEntries.find((e) => e.id === shift.id)!;
-                return `${fmt(original.start)}–${fmt(original.end)} → ${fmt(shift.start)}–${fmt(shift.end)} (break)`;
-            }),
+            { times: range(plan.firstHalf), label: workLabel },
+            { times: range(plan.breakSlot), label: 'Break' },
+            { times: range(plan.secondHalf), label: workLabel },
+            ...plan.shifted.map((shift) => ({
+                times: moved(req.otherEntries.find((e) => e.id === shift.id)!, shift),
+                label: props.entryLabel(shift.id),
+            })),
         ];
     }
     const plan = movePlan.value;
     if (!plan) return [];
-    if (plan.shifted.length === 0) return ['No entries need to move.'];
+    if (plan.shifted.length === 0) return [{ times: 'No entries need to move.', label: '' }];
     return plan.shifted.map((shift) => {
-        const isBreak = props.request!.otherEntries.some((e) => e.id === shift.id);
         const original =
-            props.request!.workEntries.find((e) => e.id === shift.id) ??
-            props.request!.otherEntries.find((e) => e.id === shift.id)!;
-        const label = `${fmt(original.start)}–${fmt(original.end)} → ${fmt(shift.start)}–${fmt(shift.end)}`;
-        return isBreak ? `${label} (break)` : label;
+            req.workEntries.find((e) => e.id === shift.id) ??
+            req.otherEntries.find((e) => e.id === shift.id)!;
+        return { times: moved(original, shift), label: props.entryLabel(shift.id) };
     });
 });
 
@@ -189,8 +200,14 @@ async function submit() {
                     <div class="text-xs uppercase tracking-wide text-text-tertiary">
                         {{ mode === 'split' ? 'Result' : 'Entries that move' }}
                     </div>
-                    <div v-for="(line, index) in changeSummary" :key="index" class="tabular-nums">
-                        {{ line }}
+                    <div
+                        v-for="(line, index) in changeSummary"
+                        :key="index"
+                        class="flex items-baseline gap-2">
+                        <span class="tabular-nums whitespace-nowrap">{{ line.times }}</span>
+                        <span v-if="line.label" class="text-text-tertiary truncate">
+                            {{ line.label }}
+                        </span>
                     </div>
                 </div>
                 <div

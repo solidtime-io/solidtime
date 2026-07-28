@@ -697,8 +697,12 @@ test('test that adding a timesheet break to a full day splits the work entry via
     const breakCell = await fillBreakCell(page, '0.5');
     await breakCell.press('Enter');
 
-    // The placement modal opens with the split preview
+    // The placement modal opens with the split preview, naming the entry that
+    // will be split so the user can recognize it.
     await expect(page.getByTestId('break_placement_summary')).toBeVisible();
+    await expect(page.getByTestId('break_placement_summary')).toContainText(
+        'No Project · Split me'
+    );
     await Promise.all([
         waitForBreakCreated(page),
         page.getByRole('button', { name: 'Add break' }).click(),
