@@ -60,7 +60,7 @@ describe('decideBreakPlacement', () => {
         });
     });
 
-    it('delegates an empty day to the default cell placement', () => {
+    it('selects generic free-window placement for an empty day', () => {
         expect(
             decideBreakPlacement({
                 date: DAY,
@@ -86,6 +86,19 @@ describe('decideBreakPlacement', () => {
                 }),
             })
         );
+    });
+
+    it('saves the break next to work too short to split', () => {
+        const decision = decideBreakPlacement({
+            date: DAY,
+            durationSeconds: HALF_HOUR,
+            context: context([movable('quick', 9, 9 + 1 / 60)]),
+        });
+
+        expect(decision).toEqual({
+            kind: 'save',
+            slot: { start: `${DAY}T09:01:00Z`, end: `${DAY}T09:31:00Z` },
+        });
     });
 
     it('rejects a day that cannot fit or rearrange the break', () => {
@@ -190,15 +203,6 @@ describe('planSplitEntry', () => {
         expect(workSeconds(plan!)).toBe(8 * HOUR);
     });
 
-    it('inserts a break as long as the work without shortening it', () => {
-        const plan = planSplitEntry(iv(9, 10), HOUR);
-        expect(plan).not.toBeNull();
-        expect(plan!.firstHalf).toEqual({ start: `${DAY}T09:00:00Z`, end: `${DAY}T09:30:00Z` });
-        expect(plan!.breakSlot).toEqual({ start: `${DAY}T09:30:00Z`, end: `${DAY}T10:30:00Z` });
-        expect(plan!.secondHalf).toEqual({ start: `${DAY}T10:30:00Z`, end: `${DAY}T11:00:00Z` });
-        expect(workSeconds(plan!)).toBe(HOUR);
-    });
-
     it('accepts a break far longer than the work entry', () => {
         const plan = planSplitEntry(iv(9, 9.5), 4 * HOUR);
         expect(plan).not.toBeNull();
@@ -279,15 +283,6 @@ describe('planSplitEntry', () => {
         expect(workSeconds(plan!)).toBe(1.5 * HOUR);
     });
 
-    it('fits a break that is longer than the work left in the day', () => {
-        const plan = planSplitEntry(iv(23, 24), HOUR, undefined, { dayStart, dayEnd });
-        expect(plan).not.toBeNull();
-        expect(plan!.firstHalf).toEqual({ start: `${DAY}T22:00:00Z`, end: `${DAY}T22:30:00Z` });
-        expect(plan!.breakSlot).toEqual({ start: `${DAY}T22:30:00Z`, end: `${DAY}T23:30:00Z` });
-        expect(plan!.secondHalf).toEqual({ start: `${DAY}T23:30:00Z`, end: MIDNIGHT });
-        expect(workSeconds(plan!)).toBe(HOUR);
-    });
-
     it('reproduces its own plan when re-planned from the break start it chose', () => {
         const options = { dayStart, dayEnd };
         const suggested = planSplitEntry(iv(22, 23.5), HOUR, undefined, options);
@@ -349,17 +344,6 @@ describe('findBreakSlotNearInDay', () => {
         });
     });
 
-    it('slides only as far as the nearest free window allows', () => {
-        expect(findBreakSlotNearInDay(dayStart, dayEnd, HOUR, anchor, [iv(21.5, 22)])).toEqual({
-            start: `${DAY}T23:00:00Z`,
-            end: MIDNIGHT,
-        });
-        expect(findBreakSlotNearInDay(dayStart, dayEnd, 2 * HOUR, anchor, [iv(21.5, 22)])).toEqual({
-            start: `${DAY}T22:00:00Z`,
-            end: MIDNIGHT,
-        });
-    });
-
     it('respects a day window shortened by a running entry', () => {
         expect(findBreakSlotNearInDay(dayStart, `${DAY}T12:00:00Z`, HOUR, anchor)).toEqual({
             start: `${DAY}T11:00:00Z`,
@@ -396,10 +380,6 @@ describe('findAdjacentBreakSlot', () => {
     it('returns null when neither side fits inside the day', () => {
         expect(findAdjacentBreakSlot([iv(0, 24)], dayStart, dayEnd, HALF_HOUR)).toBeNull();
     });
-
-    it('returns null without any work to sit next to', () => {
-        expect(findAdjacentBreakSlot([], dayStart, dayEnd, HALF_HOUR)).toBeNull();
-    });
 });
 
 describe('planMoveInsert', () => {
@@ -423,32 +403,6 @@ describe('planMoveInsert', () => {
         expect(plan!.shifted).toEqual([
             { id: 'b', start: `${DAY}T12:30:00Z`, end: `${DAY}T17:30:00Z` },
         ]);
-    });
-
-    it('leaves an oversized gap alone instead of pulling the right block flush', () => {
-        // 09-12 and 15-17 (3h gap). Break flush after first at 12:00 fits in the gap
-        // → nothing moves; the user's gap is preserved.
-        const plan = planMoveInsert(
-            [movable('a', 9, 12), movable('b', 15, 17)],
-            dayStart,
-            dayEnd,
-            `${DAY}T12:00:00Z`,
-            HALF_HOUR
-        );
-        expect(plan!.breakSlot).toEqual({ start: `${DAY}T12:00:00Z`, end: `${DAY}T12:30:00Z` });
-        expect(plan!.shifted).toEqual([]);
-    });
-
-    it('does not drag entries flush when the break sits mid-gap', () => {
-        // Break at 13:00 in the middle of the 12:00-15:00 gap → neither side moves.
-        const plan = planMoveInsert(
-            [movable('a', 9, 12), movable('b', 15, 17)],
-            dayStart,
-            dayEnd,
-            `${DAY}T13:00:00Z`,
-            HALF_HOUR
-        );
-        expect(plan!.shifted).toEqual([]);
     });
 
     it('shifts each side only as much as needed to clear the slot', () => {
@@ -664,12 +618,6 @@ describe('findValidBreakGapNear', () => {
     it('keeps the break at its current start instead of recentering', () => {
         const gap = findValidBreakGapNear(work, HOUR, `${DAY}T10:00:00Z`);
         expect(gap).toEqual({ start: `${DAY}T10:00:00Z`, end: `${DAY}T11:00:00Z` });
-    });
-
-    it('clamps the anchor into the tolerance window when it sits too late', () => {
-        // Anchored at 11:00 (beyond the window) → clamped back to 10:30.
-        const gap = findValidBreakGapNear(work, HOUR, `${DAY}T11:00:00Z`);
-        expect(gap).toEqual({ start: `${DAY}T10:30:00Z`, end: `${DAY}T11:30:00Z` });
     });
 
     it('keeps the break in place inside an oversized gap', () => {

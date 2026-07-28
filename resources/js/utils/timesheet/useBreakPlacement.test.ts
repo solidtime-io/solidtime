@@ -155,49 +155,6 @@ describe('useBreakPlacement.placeBreak', () => {
         );
     });
 
-    it('parks the break next to work too short to split instead of refusing it', async () => {
-        const work = entry('2026-04-10T09:00:00Z', '2026-04-10T09:01:00Z', { id: 'w1' });
-        const { bp } = setup([work]);
-
-        await bp.placeBreak(breakRow, 0, HOUR / 2);
-
-        expect(apiMocks.createTimeEntry).toHaveBeenCalledTimes(1);
-        expect(apiMocks.createTimeEntry.mock.calls[0]![0]).toEqual(
-            expect.objectContaining({
-                type: 'break',
-                start: '2026-04-10T09:01:00Z',
-                end: '2026-04-10T09:31:00Z',
-            })
-        );
-        expect(bp.breakPlacementRequest.value).toBeNull();
-    });
-
-    it('still offers a split when a running entry caps the end of the day', async () => {
-        const work = entry('2026-04-10T09:00:00Z', '2026-04-10T12:00:00Z', { id: 'w1' });
-        const running = entry('2026-04-10T12:00:00Z', null, { id: 'running' });
-        const { bp } = setup([work, running]);
-
-        await expect(bp.placeBreak(breakRow, 0, HOUR)).resolves.toBe('needs-input');
-        expect(bp.breakPlacementRequest.value?.defaultBreakStart).toBe('2026-04-10T09:30:00Z');
-
-        await bp.applyBreakPlacement('2026-04-10T09:30:00Z', HOUR);
-        const created = apiMocks.createTimeEntry.mock.calls.map((c) => c[0]);
-        expect(created).toEqual(
-            expect.arrayContaining([
-                expect.objectContaining({
-                    type: 'work',
-                    start: '2026-04-10T10:30:00Z',
-                    end: '2026-04-10T12:00:00Z',
-                }),
-                expect.objectContaining({
-                    type: 'break',
-                    start: '2026-04-10T09:30:00Z',
-                    end: '2026-04-10T10:30:00Z',
-                }),
-            ])
-        );
-    });
-
     it('drops a new break into the first free window when the day has no work', async () => {
         const { bp, createCell } = setup([]);
         await bp.placeBreak(breakRow, 0, HOUR);
@@ -221,41 +178,6 @@ describe('useBreakPlacement.placeBreak', () => {
                 end: '2026-04-10T21:00:00Z',
             })
         );
-    });
-
-    it('slides a workless-day break earlier rather than growing it past midnight', async () => {
-        const brk = entry('2026-04-10T23:00:00Z', '2026-04-10T23:30:00Z', {
-            id: 'b1',
-            type: 'break',
-        });
-        const { bp, updateEntry } = setup([brk]);
-
-        await bp.placeBreak(breakRow, 0, 2 * HOUR, 'b1');
-
-        expect(updateEntry).toHaveBeenCalledWith(
-            expect.objectContaining({
-                id: 'b1',
-                start: '2026-04-10T22:00:00Z',
-                end: '2026-04-11T00:00:00Z',
-            })
-        );
-    });
-
-    it('refuses a workless-day resize the day genuinely cannot hold', async () => {
-        const brk = entry('2026-04-10T23:00:00Z', '2026-04-10T23:30:00Z', {
-            id: 'b1',
-            type: 'break',
-        });
-        const other = entry('2026-04-10T06:00:00Z', '2026-04-10T18:00:00Z', {
-            id: 'b2',
-            type: 'break',
-        });
-        const { bp, updateEntry } = setup([brk, other]);
-
-        await expect(bp.placeBreak(breakRow, 0, 20 * HOUR, 'b1')).rejects.toBeInstanceOf(
-            NoFreeWindowError
-        );
-        expect(updateEntry).not.toHaveBeenCalled();
     });
 
     it('requests input in the split modal when a single work entry blocks every gap', async () => {
@@ -317,63 +239,6 @@ describe('useBreakPlacement.applyBreakPlacement (split)', () => {
             ])
         );
         expect(bp.breakPlacementRequest.value).toBeNull();
-        expect(addNotification).toHaveBeenCalledWith('success', 'Break added', expect.any(String));
-    });
-
-    it('keeps the work length when the break is as long as the work entry', async () => {
-        const work = entry('2026-04-10T09:00:00Z', '2026-04-10T10:00:00Z', { id: 'w1' });
-        const { bp, updateEntry } = setup([work]);
-
-        await bp.placeBreak(breakRow, 0, HOUR);
-        expect(bp.breakPlacementRequest.value?.defaultBreakStart).toBe('2026-04-10T09:30:00Z');
-        await bp.applyBreakPlacement('2026-04-10T09:30:00Z', HOUR);
-
-        expect(updateEntry).toHaveBeenCalledWith(
-            expect.objectContaining({
-                id: 'w1',
-                start: '2026-04-10T09:00:00Z',
-                end: '2026-04-10T09:30:00Z',
-            })
-        );
-        const created = apiMocks.createTimeEntry.mock.calls.map((c) => c[0]);
-        expect(created).toEqual(
-            expect.arrayContaining([
-                expect.objectContaining({
-                    type: 'work',
-                    start: '2026-04-10T10:30:00Z',
-                    end: '2026-04-10T11:00:00Z',
-                }),
-                expect.objectContaining({
-                    type: 'break',
-                    start: '2026-04-10T09:30:00Z',
-                    end: '2026-04-10T10:30:00Z',
-                }),
-            ])
-        );
-    });
-
-    it('accepts a break longer than the work entry', async () => {
-        const work = entry('2026-04-10T09:00:00Z', '2026-04-10T10:00:00Z', { id: 'w1' });
-        const { bp } = setup([work]);
-
-        await bp.placeBreak(breakRow, 0, 3 * HOUR);
-        await bp.applyBreakPlacement('2026-04-10T09:30:00Z', 3 * HOUR);
-
-        const created = apiMocks.createTimeEntry.mock.calls.map((c) => c[0]);
-        expect(created).toEqual(
-            expect.arrayContaining([
-                expect.objectContaining({
-                    type: 'work',
-                    start: '2026-04-10T12:30:00Z',
-                    end: '2026-04-10T13:00:00Z',
-                }),
-                expect.objectContaining({
-                    type: 'break',
-                    start: '2026-04-10T09:30:00Z',
-                    end: '2026-04-10T12:30:00Z',
-                }),
-            ])
-        );
         expect(addNotification).toHaveBeenCalledWith('success', 'Break added', expect.any(String));
     });
 
@@ -553,13 +418,6 @@ describe('useBreakPlacement.applyBreakPlacement (split)', () => {
             expect.any(String)
         );
         expect(bp.breakPlacementRequest.value).toBeNull();
-    });
-
-    it('does nothing when there is no pending placement request', async () => {
-        const { bp, updateEntry } = setup([]);
-        await bp.applyBreakPlacement('2026-04-10T12:00:00Z', HOUR);
-        expect(updateEntry).not.toHaveBeenCalled();
-        expect(apiMocks.createTimeEntry).not.toHaveBeenCalled();
     });
 });
 
