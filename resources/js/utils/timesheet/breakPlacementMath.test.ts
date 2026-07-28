@@ -4,6 +4,9 @@ import { describe, expect, it } from 'vitest';
 import {
     BREAK_GAP_TOLERANCE_SECONDS,
     buildDayPlacementContext,
+    decideBreakPlacement,
+    findAdjacentBreakSlot,
+    findBreakSlotNearInDay,
     findValidBreakGap,
     findValidBreakGapNear,
     planMoveInsert,
@@ -19,6 +22,7 @@ const HOUR = 3600;
 const DAY = '2026-07-14';
 const dayStart = `${DAY}T00:00:00Z`;
 const dayEnd = `${DAY}T24:00:00Z`;
+const MIDNIGHT = '2026-07-15T00:00:00Z';
 
 function iv(startH: number, endH: number) {
     const h = (n: number) => {
@@ -29,6 +33,71 @@ function iv(startH: number, endH: number) {
     };
     return { start: h(startH), end: h(endH) };
 }
+
+describe('decideBreakPlacement', () => {
+    const context = (work: MovableInterval[] = []) => ({
+        work,
+        breaks: [],
+        blocked: [],
+        dayStart,
+        dayEnd: MIDNIGHT,
+    });
+    const movable = (id: string, startH: number, endH: number): MovableInterval => ({
+        id,
+        ...iv(startH, endH),
+    });
+
+    it('returns a direct save when an existing gap fits', () => {
+        const decision = decideBreakPlacement({
+            date: DAY,
+            durationSeconds: HOUR,
+            context: context([movable('morning', 9, 12), movable('afternoon', 13, 17)]),
+        });
+
+        expect(decision).toEqual({
+            kind: 'save',
+            slot: { start: `${DAY}T12:00:00Z`, end: `${DAY}T13:00:00Z` },
+        });
+    });
+
+    it('delegates an empty day to the default cell placement', () => {
+        expect(
+            decideBreakPlacement({
+                date: DAY,
+                durationSeconds: HOUR,
+                context: context(),
+            })
+        ).toEqual({ kind: 'place-in-free-window' });
+    });
+
+    it('returns a modal request when work must be rearranged', () => {
+        const decision = decideBreakPlacement({
+            date: DAY,
+            durationSeconds: HOUR,
+            context: context([movable('work', 9, 17)]),
+        });
+
+        expect(decision).toEqual(
+            expect.objectContaining({
+                kind: 'needs-input',
+                request: expect.objectContaining({
+                    date: DAY,
+                    defaultBreakStart: `${DAY}T13:00:00Z`,
+                }),
+            })
+        );
+    });
+
+    it('rejects a day that cannot fit or rearrange the break', () => {
+        expect(
+            decideBreakPlacement({
+                date: DAY,
+                durationSeconds: HOUR,
+                context: context([movable('all-day', 0, 24)]),
+            })
+        ).toEqual({ kind: 'reject' });
+    });
+});
 
 describe('findValidBreakGap', () => {
     it('centers the break in a gap that fits within tolerance', () => {
@@ -106,53 +175,230 @@ describe('findValidBreakGap', () => {
 });
 
 describe('planSplitEntry', () => {
-    it('splits a single entry and centers the break', () => {
+    const workSeconds = (plan: NonNullable<ReturnType<typeof planSplitEntry>>) =>
+        dayjs.utc(plan.firstHalf.end).diff(dayjs.utc(plan.firstHalf.start), 'second') +
+        dayjs.utc(plan.secondHalf.end).diff(dayjs.utc(plan.secondHalf.start), 'second');
+
+    it('splits a single entry in the middle and keeps the work length', () => {
         const plan = planSplitEntry(iv(9, 17), HALF_HOUR);
         expect(plan).not.toBeNull();
         expect(plan!.firstHalf.start).toBe(`${DAY}T09:00:00Z`);
         expect(plan!.breakSlot.start).toBe(plan!.firstHalf.end);
         expect(plan!.secondHalf.start).toBe(plan!.breakSlot.end);
-        expect(plan!.secondHalf.end).toBe(`${DAY}T17:00:00Z`);
-        // break is 30m and centered → 12:45-13:15
-        expect(plan!.breakSlot).toEqual({ start: `${DAY}T12:45:00Z`, end: `${DAY}T13:15:00Z` });
+        expect(plan!.breakSlot).toEqual({ start: `${DAY}T13:00:00Z`, end: `${DAY}T13:30:00Z` });
+        expect(plan!.secondHalf.end).toBe(`${DAY}T17:30:00Z`);
+        expect(workSeconds(plan!)).toBe(8 * HOUR);
+    });
+
+    it('inserts a break as long as the work without shortening it', () => {
+        const plan = planSplitEntry(iv(9, 10), HOUR);
+        expect(plan).not.toBeNull();
+        expect(plan!.firstHalf).toEqual({ start: `${DAY}T09:00:00Z`, end: `${DAY}T09:30:00Z` });
+        expect(plan!.breakSlot).toEqual({ start: `${DAY}T09:30:00Z`, end: `${DAY}T10:30:00Z` });
+        expect(plan!.secondHalf).toEqual({ start: `${DAY}T10:30:00Z`, end: `${DAY}T11:00:00Z` });
+        expect(workSeconds(plan!)).toBe(HOUR);
+    });
+
+    it('accepts a break far longer than the work entry', () => {
+        const plan = planSplitEntry(iv(9, 9.5), 4 * HOUR);
+        expect(plan).not.toBeNull();
+        expect(plan!.firstHalf).toEqual({ start: `${DAY}T09:00:00Z`, end: `${DAY}T09:15:00Z` });
+        expect(plan!.breakSlot).toEqual({ start: `${DAY}T09:15:00Z`, end: `${DAY}T13:15:00Z` });
+        expect(plan!.secondHalf).toEqual({ start: `${DAY}T13:15:00Z`, end: `${DAY}T13:30:00Z` });
+        expect(workSeconds(plan!)).toBe(HALF_HOUR);
     });
 
     it('honors an explicit break start', () => {
         const plan = planSplitEntry(iv(9, 17), HALF_HOUR, `${DAY}T10:00:00Z`);
         expect(plan!.firstHalf).toEqual({ start: `${DAY}T09:00:00Z`, end: `${DAY}T10:00:00Z` });
-        expect(plan!.secondHalf.start).toBe(`${DAY}T10:30:00Z`);
+        expect(plan!.breakSlot).toEqual({ start: `${DAY}T10:00:00Z`, end: `${DAY}T10:30:00Z` });
+        expect(plan!.secondHalf).toEqual({ start: `${DAY}T10:30:00Z`, end: `${DAY}T17:30:00Z` });
+        expect(workSeconds(plan!)).toBe(8 * HOUR);
     });
 
     it('returns null when the entry is too short to leave work on both sides', () => {
-        expect(planSplitEntry(iv(9, 9.25), HALF_HOUR)).toBeNull();
+        expect(
+            planSplitEntry({ start: `${DAY}T09:00:00Z`, end: `${DAY}T09:01:30Z` }, HALF_HOUR)
+        ).toBeNull();
     });
 
     it('rejects an explicit break start before the entry instead of clamping it', () => {
-        // 07:00 lies before the 09:00-17:00 entry — relocating it silently would
-        // leave a hair-thin first fragment at a time the user never picked.
         expect(planSplitEntry(iv(9, 17), HALF_HOUR, `${DAY}T07:00:00Z`)).toBeNull();
     });
 
-    it('rejects an explicit break start whose break would reach past the entry end', () => {
-        expect(planSplitEntry(iv(9, 17), HALF_HOUR, `${DAY}T16:45:00Z`)).toBeNull();
+    it('rejects an explicit break start at or after the end of the entry', () => {
+        expect(planSplitEntry(iv(9, 17), HALF_HOUR, `${DAY}T17:00:00Z`)).toBeNull();
+        expect(planSplitEntry(iv(9, 17), HALF_HOUR, `${DAY}T18:00:00Z`)).toBeNull();
     });
 
     it('rejects an explicit break start that leaves less than the minimum fragment', () => {
-        // 09:00:30 would leave only 30s of work before the break.
         expect(planSplitEntry(iv(9, 17), HALF_HOUR, `${DAY}T09:00:30Z`)).toBeNull();
+        expect(planSplitEntry(iv(9, 17), HALF_HOUR, `${DAY}T16:59:30Z`)).toBeNull();
     });
 
     it('accepts an explicit break start leaving exactly the minimum fragment on each side', () => {
-        // 09:01 leaves 60s before; on a 09:00-09:32 entry a 30m break also leaves 60s after.
-        const plan = planSplitEntry(iv(9, 9 + 32 / 60), HALF_HOUR, `${DAY}T09:01:00Z`);
+        const plan = planSplitEntry(iv(9, 9 + 2 / 60), HALF_HOUR, `${DAY}T09:01:00Z`);
         expect(plan).not.toBeNull();
         expect(plan!.firstHalf).toEqual({ start: `${DAY}T09:00:00Z`, end: `${DAY}T09:01:00Z` });
         expect(plan!.secondHalf).toEqual({ start: `${DAY}T09:31:00Z`, end: `${DAY}T09:32:00Z` });
     });
 
-    it('returns null when the entry cannot hold the break plus a minimum fragment per side', () => {
-        // 31 minutes of work cannot hold a 30m break with 60s of work on each side.
-        expect(planSplitEntry(iv(9, 9 + 31 / 60), HALF_HOUR)).toBeNull();
+    it('leaves later entries alone when the extended work does not reach them', () => {
+        const plan = planSplitEntry(iv(9, 17), HALF_HOUR, `${DAY}T12:00:00Z`, {
+            otherEntries: [
+                { id: 'early', ...iv(8, 8.5) },
+                { id: 'later', ...iv(18, 19) },
+            ],
+        });
+        expect(plan!.secondHalf).toEqual({ start: `${DAY}T12:30:00Z`, end: `${DAY}T17:30:00Z` });
+        expect(plan!.shifted).toEqual([]);
+    });
+
+    it('pushes only the collision chain and preserves later entry times', () => {
+        const plan = planSplitEntry(iv(9, 17), HALF_HOUR, `${DAY}T12:00:00Z`, {
+            otherEntries: [
+                { id: 'first', ...iv(17.25, 17.5) },
+                { id: 'second', ...iv(17.6, 17.9) },
+                { id: 'distant', ...iv(20, 21) },
+            ],
+        });
+
+        // Moving the first break also collides with the second.
+        expect(plan!.shifted).toEqual([
+            { id: 'first', ...iv(17.5, 17.75) },
+            { id: 'second', ...iv(17.75, 18.05) },
+        ]);
+    });
+
+    it('starts the work earlier when pushing it later would leave the day', () => {
+        const plan = planSplitEntry(iv(22, 23.5), HOUR, undefined, { dayStart, dayEnd });
+        expect(plan).not.toBeNull();
+        expect(plan!.firstHalf).toEqual({ start: `${DAY}T21:30:00Z`, end: `${DAY}T22:15:00Z` });
+        expect(plan!.breakSlot).toEqual({ start: `${DAY}T22:15:00Z`, end: `${DAY}T23:15:00Z` });
+        expect(plan!.secondHalf).toEqual({ start: `${DAY}T23:15:00Z`, end: MIDNIGHT });
+        expect(workSeconds(plan!)).toBe(1.5 * HOUR);
+    });
+
+    it('fits a break that is longer than the work left in the day', () => {
+        const plan = planSplitEntry(iv(23, 24), HOUR, undefined, { dayStart, dayEnd });
+        expect(plan).not.toBeNull();
+        expect(plan!.firstHalf).toEqual({ start: `${DAY}T22:00:00Z`, end: `${DAY}T22:30:00Z` });
+        expect(plan!.breakSlot).toEqual({ start: `${DAY}T22:30:00Z`, end: `${DAY}T23:30:00Z` });
+        expect(plan!.secondHalf).toEqual({ start: `${DAY}T23:30:00Z`, end: MIDNIGHT });
+        expect(workSeconds(plan!)).toBe(HOUR);
+    });
+
+    it('reproduces its own plan when re-planned from the break start it chose', () => {
+        const options = { dayStart, dayEnd };
+        const suggested = planSplitEntry(iv(22, 23.5), HOUR, undefined, options);
+        const replanned = planSplitEntry(iv(22, 23.5), HOUR, suggested!.breakSlot.start, options);
+        expect(replanned).toEqual(suggested);
+    });
+
+    it('returns null when the block cannot fit in the day at all', () => {
+        expect(planSplitEntry(iv(0, 23), 2 * HOUR, undefined, { dayStart, dayEnd })).toBeNull();
+    });
+
+    it('returns null when starting earlier would run into an entry that stays put', () => {
+        expect(
+            planSplitEntry(iv(22, 23.75), HOUR, undefined, {
+                dayStart,
+                dayEnd,
+                otherEntries: [{ id: 'earlier', ...iv(21, 21.5) }],
+            })
+        ).toBeNull();
+    });
+
+    it('returns null when the actual collision chain would leave the day', () => {
+        expect(
+            planSplitEntry(iv(22, 23.5), HOUR, undefined, {
+                dayStart,
+                dayEnd,
+                otherEntries: [{ id: 'late', ...iv(23.75, 24) }],
+            })
+        ).toBeNull();
+    });
+
+    it('does not reject a valid split because of an unrelated late entry', () => {
+        const plan = planSplitEntry(iv(9, 10), HOUR, `${DAY}T09:30:00Z`, {
+            dayStart,
+            dayEnd,
+            otherEntries: [{ id: 'late', ...iv(23.5, 24) }],
+        });
+
+        expect(plan).not.toBeNull();
+        expect(plan!.secondHalf.end).toBe(`${DAY}T11:00:00Z`);
+        expect(plan!.shifted).toEqual([]);
+    });
+});
+
+describe('findBreakSlotNearInDay', () => {
+    const anchor = `${DAY}T23:00:00Z`;
+
+    it('keeps the break where it is when the new duration still fits', () => {
+        expect(findBreakSlotNearInDay(dayStart, dayEnd, HALF_HOUR, anchor)).toEqual({
+            start: anchor,
+            end: `${DAY}T23:30:00Z`,
+        });
+    });
+
+    it('slides the break earlier instead of growing past midnight', () => {
+        expect(findBreakSlotNearInDay(dayStart, dayEnd, 2 * HOUR, anchor)).toEqual({
+            start: `${DAY}T22:00:00Z`,
+            end: MIDNIGHT,
+        });
+    });
+
+    it('slides only as far as the nearest free window allows', () => {
+        expect(findBreakSlotNearInDay(dayStart, dayEnd, HOUR, anchor, [iv(21.5, 22)])).toEqual({
+            start: `${DAY}T23:00:00Z`,
+            end: MIDNIGHT,
+        });
+        expect(findBreakSlotNearInDay(dayStart, dayEnd, 2 * HOUR, anchor, [iv(21.5, 22)])).toEqual({
+            start: `${DAY}T22:00:00Z`,
+            end: MIDNIGHT,
+        });
+    });
+
+    it('respects a day window shortened by a running entry', () => {
+        expect(findBreakSlotNearInDay(dayStart, `${DAY}T12:00:00Z`, HOUR, anchor)).toEqual({
+            start: `${DAY}T11:00:00Z`,
+            end: `${DAY}T12:00:00Z`,
+        });
+    });
+
+    it('returns null when the day has no free window big enough', () => {
+        expect(findBreakSlotNearInDay(dayStart, dayEnd, 20 * HOUR, anchor, [iv(6, 18)])).toBeNull();
+    });
+});
+
+describe('findAdjacentBreakSlot', () => {
+    it('parks the break flush after the last work entry', () => {
+        expect(findAdjacentBreakSlot([iv(9, 9.5)], dayStart, dayEnd, HALF_HOUR)).toEqual({
+            start: `${DAY}T09:30:00Z`,
+            end: `${DAY}T10:00:00Z`,
+        });
+    });
+
+    it('falls back to flush before the first work entry', () => {
+        expect(findAdjacentBreakSlot([iv(9, 24)], dayStart, dayEnd, HALF_HOUR)).toEqual({
+            start: `${DAY}T08:30:00Z`,
+            end: `${DAY}T09:00:00Z`,
+        });
+    });
+
+    it('skips a candidate blocked by an existing break', () => {
+        expect(
+            findAdjacentBreakSlot([iv(9, 24)], dayStart, dayEnd, HALF_HOUR, [iv(8.75, 9)])
+        ).toBeNull();
+    });
+
+    it('returns null when neither side fits inside the day', () => {
+        expect(findAdjacentBreakSlot([iv(0, 24)], dayStart, dayEnd, HALF_HOUR)).toBeNull();
+    });
+
+    it('returns null without any work to sit next to', () => {
+        expect(findAdjacentBreakSlot([], dayStart, dayEnd, HALF_HOUR)).toBeNull();
     });
 });
 

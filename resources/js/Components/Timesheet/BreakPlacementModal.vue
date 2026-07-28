@@ -54,7 +54,11 @@ const durationSeconds = computed(() =>
 
 const splitPlan = computed(() => {
     if (!props.request || mode.value !== 'split' || durationSeconds.value <= 0) return null;
-    return planSplitEntry(props.request.workEntries[0]!, durationSeconds.value, utcStart.value);
+    return planSplitEntry(props.request.workEntries[0]!, durationSeconds.value, utcStart.value, {
+        dayStart: props.request.dayStart,
+        dayEnd: props.request.dayEnd,
+        otherEntries: props.request.otherEntries,
+    });
 });
 
 const movePlan = computed(() => {
@@ -116,11 +120,10 @@ function fmt(iso: string): string {
 const explanation = computed(() => {
     if (!props.request) return '';
     return mode.value === 'split'
-        ? "There's no free gap that fits this break, so the work entry will be split and the break placed inside it."
+        ? "There's no free gap that fits this break, so the work entry will be split around it. The work moves to make room and keeps its full length."
         : "There's no free gap that fits this break, so the surrounding entries will be shifted to make room.";
 });
 
-// Human-readable summary of what will change, so the user can confirm the edit.
 const changeSummary = computed<string[]>(() => {
     if (mode.value === 'split') {
         const plan = splitPlan.value;
@@ -129,6 +132,10 @@ const changeSummary = computed<string[]>(() => {
             `${fmt(plan.firstHalf.start)}–${fmt(plan.firstHalf.end)} (work)`,
             `${fmt(plan.breakSlot.start)}–${fmt(plan.breakSlot.end)} (break)`,
             `${fmt(plan.secondHalf.start)}–${fmt(plan.secondHalf.end)} (work)`,
+            ...plan.shifted.map((shift) => {
+                const original = props.request!.otherEntries.find((e) => e.id === shift.id)!;
+                return `${fmt(original.start)}–${fmt(original.end)} → ${fmt(shift.start)}–${fmt(shift.end)} (break)`;
+            }),
         ];
     }
     const plan = movePlan.value;
@@ -202,7 +209,7 @@ async function submit() {
                     class="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-600 dark:text-red-400">
                     {{
                         mode === 'split'
-                            ? "This break doesn't fit there — it must lie inside the work entry, leaving at least a minute of work on each side."
+                            ? "This break doesn't fit there. It has to sit inside the work, leaving at least a minute of work on each side, and the work around it has to stay inside the day."
                             : "This break doesn't fit at that time without pushing an entry outside the day. Try a shorter break or a different time."
                     }}
                 </div>

@@ -125,7 +125,13 @@ const {
     breakPlacementRequest,
     applyBreakPlacement,
     dismissBreakPlacement,
-} = useTimesheetCellMutations(weekDays, allTimeEntries, rows, removeSlot);
+} = useTimesheetCellMutations(
+    weekDays,
+    allTimeEntries,
+    rows,
+    removeSlot,
+    () => organization.value?.prevent_overlapping_time_entries ?? false
+);
 
 // Local dates (YYYY-MM-DD) that have a misplaced break. There is only one break
 // row, so a flat set is enough — its cells show a warning for dates in the set.

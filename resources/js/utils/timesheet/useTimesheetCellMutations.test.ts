@@ -17,6 +17,25 @@ vi.mock('@tanstack/vue-query', () => ({
     useQueryClient: () => ({
         invalidateQueries: vi.fn(),
     }),
+    useMutation: (options: {
+        mutationFn: (variables: unknown) => Promise<unknown>;
+        onSuccess?: (data: unknown, variables: unknown) => void | Promise<void>;
+        onError?: (error: unknown, variables: unknown) => void | Promise<void>;
+        onSettled?: () => void | Promise<void>;
+    }) => ({
+        mutateAsync: async (variables: unknown) => {
+            try {
+                const data = await options.mutationFn(variables);
+                await options.onSuccess?.(data, variables);
+                return data;
+            } catch (error) {
+                await options.onError?.(error, variables);
+                throw error;
+            } finally {
+                await options.onSettled?.();
+            }
+        },
+    }),
 }));
 
 vi.mock('@/utils/notification', () => ({

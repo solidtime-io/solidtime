@@ -1,7 +1,6 @@
 import { ref, type Ref } from 'vue';
-import { useQueryClient } from '@tanstack/vue-query';
-import { api, type TimeEntry } from '@/packages/api/src';
-import { getDayJsInstance } from '@/packages/ui/src/utils/time';
+import { useMutation, useQueryClient } from '@tanstack/vue-query';
+import { api, type CreateTimeEntryBody, type TimeEntry } from '@/packages/api/src';
 import { getUserTimezone } from '@/packages/ui/src/utils/settings';
 import { getCurrentMembershipId } from '@/utils/useUser';
 import type { TimesheetRow } from '@/utils/useTimesheetGrid';
@@ -9,23 +8,14 @@ import { useNotificationsStore } from '@/utils/notification';
 import { localDayBounds, NoFreeWindowError } from './cellMath';
 import {
     buildDayPlacementContext,
-    findValidBreakGap,
-    findValidBreakGapNear,
+    decideBreakPlacement,
     placementMode,
     planMoveInsert,
     planSplitEntry,
-    suggestMovePlan,
     type BreakPlacementRequest,
     type DayPlacementContext,
+    type MovableInterval,
 } from './breakPlacementMath';
-
-/** Signals the caller that a break create/edit is waiting on the placement modal. */
-export class BreakPlacementDeferred extends Error {
-    constructor() {
-        super('Break placement deferred to modal');
-        this.name = 'BreakPlacementDeferred';
-    }
-}
 
 /**
  * Generic entry primitives the break subsystem borrows from the cell-mutation
@@ -45,17 +35,51 @@ export interface BreakPlacementDeps {
         afterCursor?: string
     ) => Promise<void>;
     updateEntry: (entry: TimeEntry) => Promise<void>;
+    deleteEntry: (id: string) => Promise<void>;
+    preventOverlappingTimeEntries?: () => boolean;
+}
+
+interface EntryChange {
+    original: TimeEntry;
+    next: TimeEntry;
+}
+
+interface PlacementCommit {
+    updates: EntryChange[];
+    creates: CreateTimeEntryBody[];
+    entriesAdjusted: boolean;
+}
+
+export type PlaceBreakResult = 'committed' | 'needs-input';
+
+type UndoOperation = () => Promise<void>;
+
+export class BreakPlacementSagaError extends Error {
+    constructor(
+        public readonly operationError: unknown,
+        public readonly rollbackErrors: unknown[]
+    ) {
+        super(operationError instanceof Error ? operationError.message : 'Break placement failed');
+        this.name = 'BreakPlacementSagaError';
+    }
 }
 
 /**
  * Break-placement subsystem for the timesheet. Owns the placement-modal request
  * state and everything that positions a break relative to work — auto-placing it
- * into a valid gap when one exists, or deferring to the split/move modal when the
+ * into a valid gap when one exists, or asking for input in the split/move modal when the
  * day has to be rearranged.
  */
 export function useBreakPlacement(deps: BreakPlacementDeps) {
-    const { weekDays, timeEntries, requireOrgId, createCell, updateEntry } = deps;
-    const dayjs = getDayJsInstance();
+    const {
+        weekDays,
+        timeEntries,
+        requireOrgId,
+        createCell,
+        updateEntry,
+        deleteEntry,
+        preventOverlappingTimeEntries = () => false,
+    } = deps;
     const queryClient = useQueryClient();
     const notifications = useNotificationsStore();
 
@@ -82,24 +106,35 @@ export function useBreakPlacement(deps: BreakPlacementDeps) {
         );
     }
 
-    async function createBreakEntry(start: string, end: string, memberId?: string): Promise<void> {
-        const orgId = requireOrgId();
+    function breakEntryBody(start: string, end: string, memberId?: string): CreateTimeEntryBody {
         const member = memberId ?? getCurrentMembershipId();
         if (!member) throw new Error('No member context');
-        await api.createTimeEntry(
-            {
-                member_id: member,
-                project_id: null,
-                task_id: null,
-                start,
-                end,
-                billable: false,
-                type: 'break',
-                description: null,
-                tags: [],
-            },
-            { params: { organization: orgId } }
-        );
+        return {
+            member_id: member,
+            project_id: null,
+            task_id: null,
+            start,
+            end,
+            billable: false,
+            type: 'break',
+            description: null,
+            tags: [],
+        };
+    }
+
+    async function createEntry(body: CreateTimeEntryBody): Promise<string> {
+        const response = await api.createTimeEntry(body, {
+            params: { organization: requireOrgId() },
+        });
+        return response.data.id;
+    }
+
+    async function createBreakEntry(
+        start: string,
+        end: string,
+        memberId?: string
+    ): Promise<string> {
+        return createEntry(breakEntryBody(start, end, memberId));
     }
 
     async function saveBreakEntry(
@@ -119,116 +154,169 @@ export function useBreakPlacement(deps: BreakPlacementDeps) {
         await createBreakEntry(start, end, memberId);
     }
 
-    /**
-     * Place a break on the day (new, or re-placing an existing one when `replaceBreakId`
-     * is given). Prefers a gap that already satisfies the placement tolerance; otherwise
-     * raises BreakPlacementDeferred so the page opens the modal. With no work to anchor to,
-     * the break is just dropped in / resized in the first free window.
-     */
+    /** Place or resize a break directly when possible, otherwise open the placement modal. */
     async function placeBreak(
         row: TimesheetRow,
         dayIndex: number,
         durationSeconds: number,
         replaceBreakId?: string
-    ): Promise<void> {
+    ): Promise<PlaceBreakResult> {
         const date = weekDays.value[dayIndex]!;
         const tz = getUserTimezone();
-        const { work, breaks, blocked, dayStart, dayEnd } = dayPlacementContext(
-            date,
-            tz,
-            replaceBreakId
-        );
-        // Existing breaks block auto-placement into a gap (obstacles), but move
-        // along with the surrounding work when a move plan shifts entries.
-        // Running entries block everything from their start (never movable).
-        const obstacles = [...breaks, ...blocked];
-
-        // On edit, keep the break where it is when its current gap still fits it; only
-        // fall back to the first-gap-centered placement when it can't stay put.
+        const context = dayPlacementContext(date, tz, replaceBreakId);
         const anchorStart = replaceBreakId
             ? (timeEntries.value.find((e) => e.id === replaceBreakId)?.start ?? null)
             : null;
-        const validGap =
-            (anchorStart !== null
-                ? findValidBreakGapNear(work, durationSeconds, anchorStart, obstacles)
-                : null) ?? findValidBreakGap(work, durationSeconds, obstacles);
-        if (validGap) {
-            await saveBreakEntry(validGap.start, validGap.end, replaceBreakId);
-            return;
-        }
-
-        if (work.length === 0) {
-            // No work to sit between: for an edit, resize the break in place; for a new
-            // break, drop it in the first free window. Nothing to align to either way.
-            if (replaceBreakId) {
-                const existing = timeEntries.value.find((e) => e.id === replaceBreakId);
-                if (existing) {
-                    const newEnd = dayjs
-                        .utc(existing.start)
-                        .add(durationSeconds, 'second')
-                        .format();
-                    await updateEntry({ ...existing, end: newEnd });
-                    return;
-                }
-            }
-            await createCell(row, dayIndex, durationSeconds);
-            return;
-        }
-
-        const mode: 'split' | 'move' = work.length === 1 ? 'split' : 'move';
-        const defaultBreakStart =
-            mode === 'split'
-                ? (planSplitEntry(work[0]!, durationSeconds)?.breakSlot.start ?? null)
-                : (suggestMovePlan(work, dayStart, dayEnd, durationSeconds, breaks)?.breakSlot
-                      .start ?? null);
-
-        if (!defaultBreakStart) {
-            // Even splitting/moving can't open a slot on this day.
-            throw new NoFreeWindowError(date, durationSeconds);
-        }
-
-        breakPlacementRequest.value = {
+        const decision = decideBreakPlacement({
             date,
             durationSeconds,
-            dayStart,
-            dayEnd,
-            workEntries: work,
-            otherEntries: breaks,
-            defaultBreakStart,
-            replaceBreakId: replaceBreakId ?? null,
-        };
-        throw new BreakPlacementDeferred();
+            context,
+            anchorStart,
+            replaceBreakId,
+        });
+
+        switch (decision.kind) {
+            case 'save':
+                await saveBreakEntry(decision.slot.start, decision.slot.end, replaceBreakId);
+                return 'committed';
+            case 'place-in-free-window':
+                await createCell(row, dayIndex, durationSeconds);
+                return 'committed';
+            case 'needs-input':
+                breakPlacementRequest.value = decision.request;
+                return 'needs-input';
+            case 'reject':
+                throw new NoFreeWindowError(date, durationSeconds);
+        }
     }
 
     function dismissBreakPlacement(): void {
         breakPlacementRequest.value = null;
     }
 
-    /**
-     * Commit a break at `breakStart` by executing the split or move plan. Shifts
-     * happen before the break is saved so its target slot is free first.
-     */
-    async function applyBreakPlacement(breakStart: string, durationSeconds: number): Promise<void> {
-        const req = breakPlacementRequest.value;
-        if (!req) return;
+    function shiftChanges(shifted: MovableInterval[]): EntryChange[] {
+        return shifted.map((shift) => {
+            const original = timeEntries.value.find((e) => e.id === shift.id);
+            if (!original) throw new Error('An entry to move no longer exists');
+            return {
+                original,
+                next: { ...original, start: shift.start, end: shift.end },
+            };
+        });
+    }
 
-        // The timesheet is the current member's own, so all created/edited entries stay with them.
-        const memberId = getCurrentMembershipId();
-        if (!memberId) throw new Error('No member context');
+    function intervalsOverlap(
+        left: Pick<TimeEntry, 'start' | 'end'>,
+        right: Pick<TimeEntry, 'start' | 'end'>
+    ): boolean {
+        const leftEndMs = left.end === null ? Infinity : Date.parse(left.end);
+        const rightEndMs = right.end === null ? Infinity : Date.parse(right.end);
+        return Date.parse(left.start) < rightEndMs && Date.parse(right.start) < leftEndMs;
+    }
 
-        let entriesAdjusted = true;
+    /** Order updates so each target is free when overlap prevention is enabled. */
+    function nonOverlappingUpdateOrder(
+        changes: EntryChange[],
+        memberId: string
+    ): EntryChange[] | null {
+        if (!preventOverlappingTimeEntries()) return changes;
+
+        const current = new Map(
+            timeEntries.value
+                .filter((entry) => entry.member_id === memberId)
+                .map((entry) => [entry.id, entry] as const)
+        );
+        const pending = [...changes];
+        const ordered: EntryChange[] = [];
+
+        while (pending.length > 0) {
+            const index = pending.findIndex((change) =>
+                [...current.values()].every(
+                    (entry) =>
+                        entry.id === change.original.id || !intervalsOverlap(change.next, entry)
+                )
+            );
+            if (index === -1) return null;
+
+            const [change] = pending.splice(index, 1);
+            ordered.push(change!);
+            current.set(change!.original.id, change!.next);
+        }
+        return ordered;
+    }
+
+    async function applyUpdates(changes: EntryChange[], undo: UndoOperation[]): Promise<void> {
+        for (const change of changes) {
+            await updateEntry(change.next);
+            undo.push(() => updateEntry(change.original));
+        }
+    }
+
+    async function withCompensation<T>(
+        operation: (undo: UndoOperation[]) => Promise<T>
+    ): Promise<T> {
+        const undo: UndoOperation[] = [];
         try {
-            if (placementMode(req) === 'split') {
-                const original = timeEntries.value.find((e) => e.id === req.workEntries[0]!.id);
-                const plan = planSplitEntry(req.workEntries[0]!, durationSeconds, breakStart);
-                if (!original || !plan) throw new NoFreeWindowError(req.date, durationSeconds);
-                // Shrink the original to the first half, then add the second half + break.
-                await updateEntry({
-                    ...original,
-                    start: plan.firstHalf.start,
-                    end: plan.firstHalf.end,
-                });
-                await api.createTimeEntry(
+            return await operation(undo);
+        } catch (operationError) {
+            const rollbackErrors: unknown[] = [];
+            for (const rollback of [...undo].reverse()) {
+                try {
+                    await rollback();
+                } catch (rollbackError) {
+                    rollbackErrors.push(rollbackError);
+                }
+            }
+            throw new BreakPlacementSagaError(operationError, rollbackErrors);
+        }
+    }
+
+    function replacementChange(
+        req: BreakPlacementRequest,
+        start: string,
+        end: string
+    ): EntryChange | null {
+        if (!req.replaceBreakId) return null;
+        const original = timeEntries.value.find((entry) => entry.id === req.replaceBreakId);
+        if (!original) throw new Error('Break to update no longer exists');
+        return { original, next: { ...original, start, end } };
+    }
+
+    function buildPlacementCommit({
+        req,
+        breakStart,
+        durationSeconds,
+        memberId,
+    }: {
+        req: BreakPlacementRequest;
+        breakStart: string;
+        durationSeconds: number;
+        memberId: string;
+    }): PlacementCommit {
+        if (placementMode(req) === 'split') {
+            const original = timeEntries.value.find((e) => e.id === req.workEntries[0]!.id);
+            const plan = planSplitEntry(req.workEntries[0]!, durationSeconds, breakStart, {
+                dayStart: req.dayStart,
+                dayEnd: req.dayEnd,
+                otherEntries: req.otherEntries,
+            });
+            if (!original || !plan) throw new NoFreeWindowError(req.date, durationSeconds);
+
+            const replacement = replacementChange(req, plan.breakSlot.start, plan.breakSlot.end);
+            return {
+                updates: [
+                    {
+                        original,
+                        next: {
+                            ...original,
+                            start: plan.firstHalf.start,
+                            end: plan.firstHalf.end,
+                        },
+                    },
+                    ...(replacement ? [replacement] : []),
+                    ...shiftChanges(plan.shifted),
+                ],
+                creates: [
                     {
                         member_id: memberId,
                         project_id: original.project_id,
@@ -240,52 +328,65 @@ export function useBreakPlacement(deps: BreakPlacementDeps) {
                         description: original.description ?? null,
                         tags: original.tags ?? [],
                     },
-                    { params: { organization: requireOrgId() } }
-                );
-                await saveBreakEntry(
-                    plan.breakSlot.start,
-                    plan.breakSlot.end,
-                    req.replaceBreakId ?? undefined,
-                    memberId
-                );
-            } else {
-                const plan = planMoveInsert(
-                    [...req.workEntries, ...req.otherEntries],
-                    req.dayStart,
-                    req.dayEnd,
-                    breakStart,
-                    durationSeconds
-                );
-                if (!plan) throw new NoFreeWindowError(req.date, durationSeconds);
-                entriesAdjusted = plan.shifted.length > 0;
-                // Order the shifts so no intermediate step overlaps (matters when the org
-                // prevents overlapping entries): entries moving earlier are updated left-to-right,
-                // entries moving later right-to-left, so each one vacates before its neighbour moves.
-                const shifts = plan.shifted
-                    .map((shift) => ({
-                        shift,
-                        original: timeEntries.value.find((e) => e.id === shift.id),
-                    }))
-                    .filter(
-                        (x): x is { shift: (typeof plan.shifted)[number]; original: TimeEntry } =>
-                            !!x.original
-                    );
-                const movingEarlier = shifts
-                    .filter((x) => x.shift.start < x.original.start)
-                    .sort((a, b) => a.original.start.localeCompare(b.original.start));
-                const movingLater = shifts
-                    .filter((x) => x.shift.start >= x.original.start)
-                    .sort((a, b) => b.original.start.localeCompare(a.original.start));
-                for (const { shift, original } of [...movingEarlier, ...movingLater]) {
-                    await updateEntry({ ...original, start: shift.start, end: shift.end });
-                }
-                await saveBreakEntry(
-                    plan.breakSlot.start,
-                    plan.breakSlot.end,
-                    req.replaceBreakId ?? undefined,
-                    memberId
-                );
+                    ...(!replacement
+                        ? [breakEntryBody(plan.breakSlot.start, plan.breakSlot.end, memberId)]
+                        : []),
+                ],
+                entriesAdjusted: true,
+            };
+        }
+
+        const plan = planMoveInsert(
+            [...req.workEntries, ...req.otherEntries],
+            req.dayStart,
+            req.dayEnd,
+            breakStart,
+            durationSeconds
+        );
+        if (!plan) throw new NoFreeWindowError(req.date, durationSeconds);
+
+        const replacement = replacementChange(req, plan.breakSlot.start, plan.breakSlot.end);
+        return {
+            updates: [...shiftChanges(plan.shifted), ...(replacement ? [replacement] : [])],
+            creates: replacement
+                ? []
+                : [breakEntryBody(plan.breakSlot.start, plan.breakSlot.end, memberId)],
+            entriesAdjusted: plan.shifted.length > 0,
+        };
+    }
+
+    /** Apply a declarative commit with reverse-order compensation if a later write fails. */
+    async function executePlacement({
+        req,
+        breakStart,
+        durationSeconds,
+        memberId,
+    }: {
+        req: BreakPlacementRequest;
+        breakStart: string;
+        durationSeconds: number;
+        memberId: string;
+    }): Promise<{ entriesAdjusted: boolean }> {
+        const commit = buildPlacementCommit({ req, breakStart, durationSeconds, memberId });
+        const updates = nonOverlappingUpdateOrder(commit.updates, memberId);
+        if (!updates) throw new NoFreeWindowError(req.date, durationSeconds);
+
+        return withCompensation(async (undo) => {
+            await applyUpdates(updates, undo);
+            for (const body of commit.creates) {
+                const id = await createEntry(body);
+                undo.push(() => deleteEntry(id));
             }
+            return { entriesAdjusted: commit.entriesAdjusted };
+        });
+    }
+
+    const { mutateAsync: commitPlacement } = useMutation({
+        mutationKey: ['timesheet', 'break-placement'],
+        scope: { id: 'timesheet-break-placement' },
+        retry: false,
+        mutationFn: executePlacement,
+        onSuccess: ({ entriesAdjusted }, { req }) => {
             notifications.addNotification(
                 'success',
                 req.replaceBreakId ? 'Break updated' : 'Break added',
@@ -293,8 +394,19 @@ export function useBreakPlacement(deps: BreakPlacementDeps) {
                     ? 'Your entries were adjusted to make room for the break.'
                     : 'The break was added at the selected time.'
             );
-        } catch (err) {
-            if (err instanceof NoFreeWindowError) {
+            if (breakPlacementRequest.value === req) breakPlacementRequest.value = null;
+        },
+        onError: (error, { req }) => {
+            const operationError =
+                error instanceof BreakPlacementSagaError ? error.operationError : error;
+            if (error instanceof BreakPlacementSagaError && error.rollbackErrors.length > 0) {
+                notifications.addNotification(
+                    'error',
+                    'Break placement needs attention',
+                    'Some entries could not be restored. The timesheet has been refreshed.'
+                );
+                if (breakPlacementRequest.value === req) breakPlacementRequest.value = null;
+            } else if (operationError instanceof NoFreeWindowError) {
                 notifications.addNotification(
                     'error',
                     "This day can't fit the break",
@@ -303,15 +415,23 @@ export function useBreakPlacement(deps: BreakPlacementDeps) {
             } else {
                 notifications.addNotification(
                     'error',
-                    'Failed to add break',
+                    req.replaceBreakId ? 'Failed to update break' : 'Failed to add break',
                     'Please try again later.'
                 );
             }
-            throw err;
-        } finally {
-            breakPlacementRequest.value = null;
+        },
+        onSettled: () => {
             queryClient.invalidateQueries({ queryKey: ['timeEntries'] });
-        }
+        },
+    });
+
+    async function applyBreakPlacement(breakStart: string, durationSeconds: number): Promise<void> {
+        const req = breakPlacementRequest.value;
+        if (!req) return;
+        const memberId = getCurrentMembershipId();
+        if (!memberId) throw new Error('No member context');
+
+        await commitPlacement({ req, breakStart, durationSeconds, memberId });
     }
 
     return {
