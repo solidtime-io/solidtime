@@ -40,6 +40,8 @@ export interface SplitPlan {
     firstHalf: Interval;
     breakSlot: Interval;
     secondHalf: Interval;
+    // Entries pushed later to clear the extended second half.
+    shifted: MovableInterval[];
 }
 
 /**
@@ -94,6 +96,79 @@ export interface DayPlacementContext {
     blocked: Interval[];
     dayStart: string;
     dayEnd: string;
+}
+
+export type BreakPlacementDecision =
+    | { kind: 'save'; slot: Interval }
+    | { kind: 'place-in-free-window' }
+    | { kind: 'needs-input'; request: BreakPlacementRequest }
+    | { kind: 'reject' };
+
+/**
+ * Decide how a requested break should be placed without performing any writes.
+ * Keeping this policy pure lets the composable focus on UI state and persistence.
+ */
+export function decideBreakPlacement({
+    date,
+    durationSeconds,
+    context,
+    anchorStart = null,
+    replaceBreakId = null,
+}: {
+    date: string;
+    durationSeconds: number;
+    context: DayPlacementContext;
+    anchorStart?: string | null;
+    replaceBreakId?: string | null;
+}): BreakPlacementDecision {
+    const { work, breaks, blocked, dayStart, dayEnd } = context;
+    const obstacles = [...breaks, ...blocked];
+    const gap =
+        (anchorStart !== null
+            ? findValidBreakGapNear(work, durationSeconds, anchorStart, obstacles)
+            : null) ?? findValidBreakGap(work, durationSeconds, obstacles);
+
+    if (gap) return { kind: 'save', slot: gap };
+
+    if (work.length === 0) {
+        if (anchorStart === null) return { kind: 'place-in-free-window' };
+        const slot = findBreakSlotNearInDay(
+            dayStart,
+            dayEnd,
+            durationSeconds,
+            anchorStart,
+            obstacles
+        );
+        return slot ? { kind: 'save', slot } : { kind: 'reject' };
+    }
+
+    const defaultPlan =
+        work.length === 1
+            ? planSplitEntry(work[0]!, durationSeconds, undefined, {
+                  dayStart,
+                  dayEnd,
+                  otherEntries: breaks,
+              })
+            : suggestMovePlan(work, dayStart, dayEnd, durationSeconds, breaks);
+
+    if (!defaultPlan) {
+        const adjacent = findAdjacentBreakSlot(work, dayStart, dayEnd, durationSeconds, obstacles);
+        return adjacent ? { kind: 'save', slot: adjacent } : { kind: 'reject' };
+    }
+
+    return {
+        kind: 'needs-input',
+        request: {
+            date,
+            durationSeconds,
+            dayStart,
+            dayEnd,
+            workEntries: work,
+            otherEntries: breaks,
+            defaultBreakStart: defaultPlan.breakSlot.start,
+            replaceBreakId,
+        },
+    };
 }
 
 export function buildDayPlacementContext(
@@ -169,6 +244,14 @@ function toIntervalMs(interval: Interval): IntervalMs {
     };
 }
 
+function slotAt(startMs: number, durationMs: number): Interval {
+    const dayjs = getDayJsInstance();
+    return {
+        start: dayjs.utc(startMs).format(),
+        end: dayjs.utc(startMs + durationMs).format(),
+    };
+}
+
 /**
  * Merge overlapping/touching work intervals so the space between two
  * consecutive merged intervals is genuinely work-free. Without this, an entry
@@ -218,17 +301,12 @@ export function findValidBreakGap(
     toleranceSeconds: number = BREAK_GAP_TOLERANCE_SECONDS
 ): Interval | null {
     if (durationSeconds <= 0) return null;
-    const dayjs = getDayJsInstance();
     const durationMs = durationSeconds * 1000;
     const gaps = workFreeGapsMs(work);
     const obstaclesMs = obstacles.map(toIntervalMs);
 
     const blockers = (startMs: number): IntervalMs[] =>
         obstaclesMs.filter((o) => startMs < o.endMs && o.startMs < startMs + durationMs);
-    const slot = (startMs: number): Interval => ({
-        start: dayjs.utc(startMs).format(),
-        end: dayjs.utc(startMs + durationMs).format(),
-    });
 
     // Pass 1: a gap where the centered break keeps both sides within tolerance.
     for (const gap of gaps) {
@@ -236,7 +314,7 @@ export function findValidBreakGap(
         if (gapMs < durationMs || gapMs > durationMs + 2 * toleranceSeconds * 1000) continue;
         const startMs = gap.startMs + Math.floor((gapMs - durationMs) / 2000) * 1000;
         if (blockers(startMs).length > 0) continue;
-        return slot(startMs);
+        return slotAt(startMs, durationMs);
     }
 
     // Pass 2: any gap that can physically hold the break. Start flush after the
@@ -245,7 +323,7 @@ export function findValidBreakGap(
         let startMs = gap.startMs;
         while (startMs + durationMs <= gap.endMs) {
             const blocking = blockers(startMs);
-            if (blocking.length === 0) return slot(startMs);
+            if (blocking.length === 0) return slotAt(startMs, durationMs);
             startMs = Math.max(...blocking.map((o) => o.endMs));
         }
     }
@@ -274,98 +352,198 @@ export function findValidBreakGapNear(
     const dayjs = getDayJsInstance();
     const durationMs = durationSeconds * 1000;
     const anchorMs = dayjs.utc(anchorStart).valueOf();
+    const obstaclesMs = obstacles.map(toIntervalMs);
 
     for (const gap of workFreeGapsMs(work)) {
         // The anchor must fall inside this gap for it to be "where the break is".
         if (anchorMs < gap.startMs || anchorMs >= gap.endMs) continue;
-        if (gap.endMs - gap.startMs < durationMs) return null;
-
-        // Walk the gap's free windows around obstacles and pick the start
-        // closest to the anchor, so the break moves as little as possible
-        // from where the user left it.
-        const blockers = obstacles
-            .map(toIntervalMs)
-            .filter((o) => o.startMs < gap.endMs && o.endMs > gap.startMs)
-            .sort((a, b) => a.startMs - b.startMs);
-        let best: number | null = null;
-        const consider = (winStartMs: number, winEndMs: number) => {
-            if (winEndMs - winStartMs < durationMs) return;
-            const candidate = Math.min(Math.max(anchorMs, winStartMs), winEndMs - durationMs);
-            if (best === null || Math.abs(candidate - anchorMs) < Math.abs(best - anchorMs)) {
-                best = candidate;
-            }
-        };
-        let cursor = gap.startMs;
-        for (const blocker of blockers) {
-            consider(cursor, blocker.startMs);
-            cursor = Math.max(cursor, blocker.endMs);
-        }
-        consider(cursor, gap.endMs);
-
+        const best = closestFreeStartMs(gap, durationMs, anchorMs, obstaclesMs);
         if (best === null) return null;
-        return { start: dayjs.utc(best).format(), end: dayjs.utc(best + durationMs).format() };
+        return slotAt(best, durationMs);
     }
     return null;
 }
 
-// A split must leave a meaningful chunk of work on each side of the break;
-// hair-thin fragments would only exist to make a bad placement "fit".
+/** Closest obstacle-free start to `anchorMs` that fits inside `range`. */
+function closestFreeStartMs(
+    range: IntervalMs,
+    durationMs: number,
+    anchorMs: number,
+    obstaclesMs: IntervalMs[]
+): number | null {
+    if (range.endMs - range.startMs < durationMs) return null;
+    const blockers = obstaclesMs
+        .filter((o) => o.startMs < range.endMs && o.endMs > range.startMs)
+        .sort((a, b) => a.startMs - b.startMs);
+
+    let best: number | null = null;
+    const consider = (winStartMs: number, winEndMs: number) => {
+        if (winEndMs - winStartMs < durationMs) return;
+        const candidate = Math.min(Math.max(anchorMs, winStartMs), winEndMs - durationMs);
+        if (best === null || Math.abs(candidate - anchorMs) < Math.abs(best - anchorMs)) {
+            best = candidate;
+        }
+    };
+    let cursor = range.startMs;
+    for (const blocker of blockers) {
+        consider(cursor, blocker.startMs);
+        cursor = Math.max(cursor, blocker.endMs);
+    }
+    consider(cursor, range.endMs);
+    return best;
+}
+
+/** Keep a workless-day break near its current start without leaving the day. */
+export function findBreakSlotNearInDay(
+    dayStart: string,
+    dayEnd: string,
+    durationSeconds: number,
+    anchorStart: string,
+    obstacles: Interval[] = []
+): Interval | null {
+    if (durationSeconds <= 0) return null;
+    const dayjs = getDayJsInstance();
+    const durationMs = durationSeconds * 1000;
+    const range = {
+        startMs: dayjs.utc(dayStart).valueOf(),
+        endMs: dayjs.utc(dayEnd).valueOf(),
+    };
+    const best = closestFreeStartMs(
+        range,
+        durationMs,
+        dayjs.utc(anchorStart).valueOf(),
+        obstacles.map(toIntervalMs)
+    );
+    if (best === null) return null;
+    return slotAt(best, durationMs);
+}
+
 export const MIN_SPLIT_FRAGMENT_SECONDS = 60;
 
-/**
- * Split a single work entry to insert a break. `breakStart` (UTC ISO) lets the
- * caller position it; without one the break is centered. Returns null when the
- * entry is too short to leave at least MIN_SPLIT_FRAGMENT_SECONDS of work on
- * both sides of the break, or when an explicit `breakStart` would not — an
- * out-of-range request is rejected rather than clamped, because silently
- * relocating the break would contradict the time the user picked.
- */
+export interface SplitOptions {
+    // Omitted bounds are unbounded.
+    dayStart?: string;
+    dayEnd?: string;
+    // Existing breaks that may block or move with the split.
+    otherEntries?: MovableInterval[];
+}
+
+/** Insert a break while preserving work duration and respecting the supplied bounds. */
 export function planSplitEntry(
     entry: Interval,
     durationSeconds: number,
-    breakStart?: string
+    breakStart?: string,
+    options: SplitOptions = {}
 ): SplitPlan | null {
     if (durationSeconds <= 0) return null;
     const dayjs = getDayJsInstance();
-    const entryStart = dayjs.utc(entry.start);
-    const entryEnd = dayjs.utc(entry.end);
-    const total = entryEnd.diff(entryStart, 'second');
-    if (total < durationSeconds + 2 * MIN_SPLIT_FRAGMENT_SECONDS) return null;
+    const toMs = (iso: string) => dayjs.utc(iso).valueOf();
+    const iso = (ms: number) => dayjs.utc(ms).format();
 
-    const earliest = entryStart.add(MIN_SPLIT_FRAGMENT_SECONDS, 'second');
-    const latest = entryEnd.subtract(durationSeconds + MIN_SPLIT_FRAGMENT_SECONDS, 'second');
+    const entryStartMs = toMs(entry.start);
+    const totalMs = toMs(entry.end) - entryStartMs;
+    const minMs = MIN_SPLIT_FRAGMENT_SECONDS * 1000;
+    if (totalMs < 2 * minMs) return null;
+    const durationMs = durationSeconds * 1000;
+    const dayEndMs = options.dayEnd !== undefined ? toMs(options.dayEnd) : Infinity;
 
-    let bStart = breakStart
-        ? dayjs.utc(breakStart)
-        : entryStart.add(Math.floor((total - durationSeconds) / 2), 'second');
+    // Pull the block earlier only enough to keep it inside the day.
+    const blockStartMs = Math.min(entryStartMs, dayEndMs - totalMs - durationMs);
 
+    let bStartMs = breakStart ? toMs(breakStart) : blockStartMs + Math.floor(totalMs / 2000) * 1000;
     if (breakStart) {
-        if (bStart.isBefore(earliest) || bStart.isAfter(latest)) return null;
+        if (bStartMs < blockStartMs + minMs || bStartMs > blockStartMs + totalMs - minMs) {
+            return null;
+        }
     } else {
         // Safety net for rounding of the centered position only.
-        if (bStart.isBefore(earliest)) bStart = earliest;
-        if (bStart.isAfter(latest)) bStart = latest;
+        bStartMs = Math.min(
+            Math.max(bStartMs, blockStartMs + minMs),
+            blockStartMs + totalMs - minMs
+        );
+    }
+    const bEndMs = bStartMs + durationMs;
+    const firstHalfMs = bStartMs - blockStartMs;
+
+    const secondHalfEndMs = bEndMs + totalMs - firstHalfMs;
+
+    // Carry the occupied end through the collision chain; stop at the first gap.
+    const others = options.otherEntries ?? [];
+    const later = others
+        .filter((other) => toMs(other.start) >= bStartMs)
+        .sort((a, b) => toMs(a.start) - toMs(b.start));
+    const shifted: MovableInterval[] = [];
+    let occupiedEndMs = secondHalfEndMs;
+    for (const other of later) {
+        const otherStartMs = toMs(other.start);
+        if (otherStartMs >= occupiedEndMs) break;
+
+        const otherEndMs = toMs(other.end);
+        const shiftMs = occupiedEndMs - otherStartMs;
+        const shiftedEndMs = otherEndMs + shiftMs;
+        if (shiftedEndMs > dayEndMs) return null;
+        shifted.push({
+            id: other.id,
+            start: iso(otherStartMs + shiftMs),
+            end: iso(shiftedEndMs),
+        });
+        occupiedEndMs = shiftedEndMs;
     }
 
-    const bEnd = bStart.add(durationSeconds, 'second');
-    if (!bStart.isAfter(entryStart) || !bEnd.isBefore(entryEnd)) return null;
+    // Earlier breaks constrain how far the block may move back.
+    let earliestStartMs = options.dayStart !== undefined ? toMs(options.dayStart) : -Infinity;
+    for (const other of others) {
+        const otherEndMs = toMs(other.end);
+        if (
+            toMs(other.start) < bStartMs &&
+            otherEndMs <= bStartMs &&
+            otherEndMs > earliestStartMs
+        ) {
+            earliestStartMs = otherEndMs;
+        }
+    }
+    if (blockStartMs < earliestStartMs) return null;
 
     return {
-        firstHalf: { start: entryStart.format(), end: bStart.format() },
-        breakSlot: { start: bStart.format(), end: bEnd.format() },
-        secondHalf: { start: bEnd.format(), end: entryEnd.format() },
+        firstHalf: { start: iso(blockStartMs), end: iso(bStartMs) },
+        breakSlot: { start: iso(bStartMs), end: iso(bEndMs) },
+        secondHalf: { start: iso(bEndMs), end: iso(secondHalfEndMs) },
+        shifted,
     };
 }
 
+/** Last resort: place the break after the last work entry or before the first. */
+export function findAdjacentBreakSlot(
+    work: Interval[],
+    dayStart: string,
+    dayEnd: string,
+    durationSeconds: number,
+    obstacles: Interval[] = []
+): Interval | null {
+    if (durationSeconds <= 0 || work.length === 0) return null;
+    const dayjs = getDayJsInstance();
+    const durationMs = durationSeconds * 1000;
+    const dayStartMs = dayjs.utc(dayStart).valueOf();
+    const dayEndMs = dayjs.utc(dayEnd).valueOf();
+
+    const merged = mergedWorkMs(work);
+    const blockers = [...merged, ...obstacles.map(toIntervalMs)];
+    const candidates = [merged[merged.length - 1]!.endMs, merged[0]!.startMs - durationMs];
+
+    for (const startMs of candidates) {
+        if (startMs < dayStartMs || startMs + durationMs > dayEndMs) continue;
+        const clear = blockers.every(
+            (blocker) => blocker.endMs <= startMs || blocker.startMs >= startMs + durationMs
+        );
+        if (clear) return slotAt(startMs, durationMs);
+    }
+    return null;
+}
+
 /**
- * Insert a break at `breakStart`, shifting the surrounding entries only as much
- * as needed to clear the slot. Entries starting before the break form the left
- * block: when it reaches into the slot it is translated earlier so its latest
- * end meets the break start. The rest form the right block: when the slot
- * reaches into it, it is translated later so its earliest start meets the break
- * end. Blocks that already clear the slot are left untouched — existing gaps
- * are preserved, never tightened. Returns null if a required shift would push
- * an entry outside `[dayStart, dayEnd]`.
+ * Insert a break by translating overlapping entries on either side just enough
+ * to clear it. Existing gaps remain unchanged. Returns null if a shift would
+ * leave the day.
  */
 export function planMoveInsert(
     entries: MovableInterval[],
