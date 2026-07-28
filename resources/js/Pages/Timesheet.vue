@@ -133,6 +133,17 @@ const {
     () => organization.value?.prevent_overlapping_time_entries ?? false
 );
 
+function breakPlanEntryLabel(id: string): string {
+    const entry = allTimeEntries.value.find((e) => e.id === id);
+    if (!entry) return '';
+    if (entry.type === 'break') return 'Break';
+    const project = projects.value.find((p) => p.id === entry.project_id);
+    const task = tasks.value.find((t) => t.id === entry.task_id);
+    return [project?.name ?? 'No Project', task?.name, entry.description]
+        .filter((part): part is string => !!part)
+        .join(' · ');
+}
+
 // Local dates (YYYY-MM-DD) that have a misplaced break. There is only one break
 // row, so a flat set is enough — its cells show a warning for dates in the set.
 const misplacedBreakDates = computed<Set<string>>(() => {
@@ -257,6 +268,7 @@ async function createTag(name: string): Promise<Tag | undefined> {
         <BreakPlacementModal
             :request="breakPlacementRequest"
             :apply="applyBreakPlacement"
+            :entry-label="breakPlanEntryLabel"
             @cancel="dismissBreakPlacement" />
     </AppLayout>
 </template>
