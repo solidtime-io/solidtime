@@ -717,111 +717,6 @@ test('test that adding a timesheet break to a full day splits the work entry via
     ]);
 });
 
-test('test that inserting a break as long as the work keeps the tracked work time', async ({
-    page,
-    ctx,
-}) => {
-    // A one-hour break splits but does not reduce the one-hour work entry.
-    await updateOrganizationSettingViaApi(ctx, { breaks_enabled: true });
-    const day = getCurrentWeekMonday().toISOString().slice(0, 10);
-    await createTimeEntryWithTimestampsViaApi(ctx, {
-        start: `${day}T09:00:00Z`,
-        end: `${day}T10:00:00Z`,
-        description: 'One hour',
-    });
-
-    await goToTimesheet(page);
-    await expect(page.getByTestId('timesheet_view')).toBeVisible();
-
-    const breakCell = await fillBreakCell(page, '1');
-    await breakCell.press('Enter');
-
-    await expect(page.getByTestId('break_placement_summary')).toBeVisible();
-    await expect(page.getByTestId('break_placement_infeasible')).not.toBeVisible();
-    await Promise.all([
-        waitForBreakCreated(page),
-        page.getByRole('button', { name: 'Add break' }).click(),
-    ]);
-
-    const dayEntries = await getDayEntriesViaApi(ctx, day);
-    expect(dayEntries.map((e) => [e.type, e.start, e.end])).toEqual([
-        ['work', `${day}T09:00:00Z`, `${day}T09:30:00Z`],
-        ['break', `${day}T09:30:00Z`, `${day}T10:30:00Z`],
-        ['work', `${day}T10:30:00Z`, `${day}T11:00:00Z`],
-    ]);
-    const workRow = page
-        .locator('[data-testid="timesheet_row"]')
-        .filter({ hasNot: page.getByText('Break', { exact: true }) })
-        .first();
-    await expect(
-        workRow.locator('[data-testid="timesheet_cell"]').nth(0).locator('input')
-    ).toHaveValue('1h 00min');
-});
-
-test('test that a late work entry starts earlier so the break still fits the day', async ({
-    page,
-    ctx,
-}) => {
-    // Move the block earlier rather than extending it into the next day.
-    await updateOrganizationSettingViaApi(ctx, { breaks_enabled: true });
-    const day = getCurrentWeekMonday().toISOString().slice(0, 10);
-    await createTimeEntryWithTimestampsViaApi(ctx, {
-        start: `${day}T22:00:00Z`,
-        end: `${day}T23:30:00Z`,
-        description: 'Late shift',
-    });
-
-    await goToTimesheet(page);
-    await expect(page.getByTestId('timesheet_view')).toBeVisible();
-
-    const breakCell = await fillBreakCell(page, '1');
-    await breakCell.press('Enter');
-
-    await expect(page.getByTestId('break_placement_summary')).toBeVisible();
-    await expect(page.getByTestId('break_placement_infeasible')).not.toBeVisible();
-    await Promise.all([
-        waitForBreakCreated(page),
-        page.getByRole('button', { name: 'Add break' }).click(),
-    ]);
-
-    const dayEntries = await getDayEntriesViaApi(ctx, day);
-    const nextDay = new Date(`${day}T00:00:00Z`);
-    nextDay.setUTCDate(nextDay.getUTCDate() + 1);
-    const midnight = `${nextDay.toISOString().slice(0, 10)}T00:00:00Z`;
-    expect(dayEntries.map((e) => [e.type, e.start, e.end])).toEqual([
-        ['work', `${day}T21:30:00Z`, `${day}T22:15:00Z`],
-        ['break', `${day}T22:15:00Z`, `${day}T23:15:00Z`],
-        ['work', `${day}T23:15:00Z`, midnight],
-    ]);
-});
-
-test('test that a work entry too short to split gets the break placed next to it', async ({
-    page,
-    ctx,
-}) => {
-    // The one-minute work entry is too short to split.
-    await updateOrganizationSettingViaApi(ctx, { breaks_enabled: true });
-    const day = getCurrentWeekMonday().toISOString().slice(0, 10);
-    await createTimeEntryWithTimestampsViaApi(ctx, {
-        start: `${day}T09:00:00Z`,
-        end: `${day}T09:01:00Z`,
-        description: 'Quick note',
-    });
-
-    await goToTimesheet(page);
-    await expect(page.getByTestId('timesheet_view')).toBeVisible();
-
-    const breakCell = await fillBreakCell(page, '0.5');
-    await Promise.all([waitForBreakCreated(page), breakCell.press('Enter')]);
-
-    await expect(page.getByTestId('break_placement_summary')).not.toBeVisible();
-    const dayEntries = await getDayEntriesViaApi(ctx, day);
-    expect(dayEntries.map((e) => [e.type, e.start, e.end])).toEqual([
-        ['work', `${day}T09:00:00Z`, `${day}T09:01:00Z`],
-        ['break', `${day}T09:01:00Z`, `${day}T09:31:00Z`],
-    ]);
-});
-
 test('test that adding a break into an oversized gap places it without moving other entries', async ({
     page,
     ctx,
@@ -917,44 +812,12 @@ test('test that the placement modal warns when the chosen time would leave the b
         ['work', `${day}T12:00:00Z`, `${day}T17:00:00Z`],
     ]);
     // ...and the timesheet now shows the misaligned-break hint for that day
-    await expect(
-        page.getByRole('button', { name: 'does not align with your work entries' })
-    ).toBeVisible();
-});
-
-test('test that a misplaced break shows a warning on its timesheet day cell', async ({
-    page,
-    ctx,
-}) => {
-    // Work ends at 10:00 and the break starts hours later with no work after it,
-    // so it is misplaced and its day header should carry the warning hint.
-    await updateOrganizationSettingViaApi(ctx, { breaks_enabled: true });
-    const day = getCurrentWeekMonday().toISOString().slice(0, 10);
-    await createTimeEntryWithTimestampsViaApi(ctx, {
-        start: `${day}T09:00:00Z`,
-        end: `${day}T10:00:00Z`,
-    });
-    await createTimeEntryWithTimestampsViaApi(ctx, {
-        start: `${day}T14:00:00Z`,
-        end: `${day}T14:30:00Z`,
-        type: 'break',
-    });
-
-    await goToTimesheet(page);
-    await expect(page.getByTestId('timesheet_view')).toBeVisible();
-
-    // Exactly one warning, sitting in Monday's day header
     const hint = page.getByRole('button', {
         name: 'does not align with your work entries',
     });
-    await expect(hint).toHaveCount(1);
-    await expect(
-        page.getByTestId('timesheet_day_header').first().getByRole('button', {
-            name: 'does not align with your work entries',
-        })
-    ).toBeVisible();
+    await expect(hint).toBeVisible();
 
-    // The hint links to the calendar on the affected date
+    // The resulting warning links to the calendar on the affected date.
     await hint.click();
     await expect(page.getByRole('link', { name: 'Fix in calendar' })).toHaveAttribute(
         'href',

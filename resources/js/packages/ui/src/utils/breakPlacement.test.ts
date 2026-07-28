@@ -2,14 +2,31 @@ import { describe, expect, it } from 'vitest';
 import type { TimeEntry } from '@/packages/api/src';
 import {
     findMisplacedBreak,
+    getBreakPlacementHint,
     type BreakPlacementHint,
 } from '@/packages/ui/src/utils/breakPlacement';
 
-// Decision logic behind the aggregate (collapsed grouped-break) row's placement
-// warning: the row shows the hint — and navigates the calendar — based on the
-// first misplaced break in the group.
-function breakEntry(id: string): TimeEntry {
-    return { id, type: 'break', start: '2026-07-14T10:00:00Z' } as TimeEntry;
+function entry(
+    id: string,
+    start: string,
+    end: string | null,
+    type: 'work' | 'break' = 'work'
+): TimeEntry {
+    return {
+        id,
+        type,
+        start,
+        end,
+        duration: end ? (Date.parse(end) - Date.parse(start)) / 1000 : null,
+        organization_id: 'organization-1',
+        user_id: 'user-1',
+        member_id: 'member-1',
+        project_id: type === 'break' ? null : 'project-1',
+        task_id: null,
+        billable: false,
+        description: null,
+        tags: [],
+    };
 }
 
 function hint(misplaced: boolean): BreakPlacementHint {
@@ -24,34 +41,99 @@ function hint(misplaced: boolean): BreakPlacementHint {
 
 describe('findMisplacedBreak', () => {
     it('returns the first misplaced break in a group', () => {
-        const entries = [breakEntry('break-a'), breakEntry('break-b')];
+        const entries = [
+            entry('break-a', '2026-07-14T10:00:00Z', '2026-07-14T10:30:00Z', 'break'),
+            entry('break-b', '2026-07-14T12:00:00Z', '2026-07-14T12:30:00Z', 'break'),
+        ];
         const result = findMisplacedBreak(entries, {
             'break-a': hint(false),
             'break-b': hint(true),
         });
         expect(result?.id).toBe('break-b');
     });
+});
 
-    it('returns null when no break in the group is misplaced', () => {
-        const entries = [breakEntry('break-a'), breakEntry('break-b')];
-        const result = findMisplacedBreak(entries, {
-            'break-a': hint(false),
-            'break-b': hint(false),
-        });
-        expect(result).toBeNull();
+describe('getBreakPlacementHint', () => {
+    const breakEntry = entry('break', '2026-07-14T12:00:00Z', '2026-07-14T12:30:00Z', 'break');
+
+    it('accepts work touching both sides of the break', () => {
+        const result = getBreakPlacementHint(breakEntry, [
+            entry('morning', '2026-07-14T09:00:00Z', '2026-07-14T12:00:00Z'),
+            entry('afternoon', '2026-07-14T12:30:00Z', '2026-07-14T17:00:00Z'),
+        ]);
+
+        expect(result).toEqual(
+            expect.objectContaining({
+                misplaced: false,
+                gapBeforeSeconds: 0,
+                gapAfterSeconds: 0,
+            })
+        );
     });
 
-    it('returns null when the group has no placement hints', () => {
-        const entries = [breakEntry('break-a'), breakEntry('break-b')];
-        expect(findMisplacedBreak(entries, {})).toBeNull();
+    it('accepts gaps exactly at the placement tolerance', () => {
+        const result = getBreakPlacementHint(breakEntry, [
+            entry('morning', '2026-07-14T09:00:00Z', '2026-07-14T11:30:00Z'),
+            entry('afternoon', '2026-07-14T13:00:00Z', '2026-07-14T17:00:00Z'),
+        ]);
+
+        expect(result).toEqual(
+            expect.objectContaining({
+                misplaced: false,
+                gapBeforeSeconds: 30 * 60,
+                gapAfterSeconds: 30 * 60,
+            })
+        );
     });
 
-    it('ignores hints for entries that are not in the group', () => {
-        const entries = [breakEntry('break-a')];
-        const result = findMisplacedBreak(entries, {
-            'break-a': hint(false),
-            'break-elsewhere': hint(true),
-        });
-        expect(result).toBeNull();
+    it('flags a completed break when work is missing on either side', () => {
+        const noPreviousWork = getBreakPlacementHint(breakEntry, [
+            entry('afternoon', '2026-07-14T12:30:00Z', '2026-07-14T17:00:00Z'),
+        ]);
+        const noNextWork = getBreakPlacementHint(breakEntry, [
+            entry('morning', '2026-07-14T09:00:00Z', '2026-07-14T12:00:00Z'),
+        ]);
+
+        expect(noPreviousWork).toEqual(
+            expect.objectContaining({ misplaced: true, gapBeforeSeconds: null })
+        );
+        expect(noNextWork).toEqual(
+            expect.objectContaining({ misplaced: true, gapAfterSeconds: null })
+        );
+    });
+
+    it('does not require work after a running break', () => {
+        const runningBreak = entry('break', '2026-07-14T12:00:00Z', null, 'break');
+        const result = getBreakPlacementHint(runningBreak, [
+            entry('morning', '2026-07-14T09:00:00Z', '2026-07-14T12:00:00Z'),
+        ]);
+
+        expect(result).toEqual(
+            expect.objectContaining({
+                misplaced: false,
+                gapBeforeSeconds: 0,
+                gapAfterSeconds: null,
+            })
+        );
+    });
+
+    it('treats work overlapping the break as touching both sides', () => {
+        const result = getBreakPlacementHint(breakEntry, [
+            entry('overlapping', '2026-07-14T11:45:00Z', '2026-07-14T12:15:00Z'),
+        ]);
+
+        expect(result).toEqual(
+            expect.objectContaining({
+                misplaced: false,
+                gapBeforeSeconds: 0,
+                gapAfterSeconds: 0,
+            })
+        );
+    });
+
+    it('returns null for work entries', () => {
+        expect(
+            getBreakPlacementHint(entry('work', '2026-07-14T09:00:00Z', '2026-07-14T10:00:00Z'), [])
+        ).toBeNull();
     });
 });

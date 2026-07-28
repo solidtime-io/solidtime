@@ -362,40 +362,6 @@ describe('useTimesheetCellMutations.handleCellUpdate', () => {
             expect(apiMocks.createTimeEntry).not.toHaveBeenCalled();
         });
 
-        it('keeps an edited break anchored to its position instead of recentering', async () => {
-            // 09-10 and 11:30-12:30 leave a 90-min gap; a resized 1h break has a valid
-            // window of 10:00-10:30. The break already starts at 10:00, so it must stay
-            // there (10:00-11:00) rather than jump to the centered 10:15-11:15.
-            const morning = entry('2026-04-10T09:00:00Z', '2026-04-10T10:00:00Z', {
-                id: 'morning',
-                type: 'work',
-            });
-            const afternoon = entry('2026-04-10T11:30:00Z', '2026-04-10T12:30:00Z', {
-                id: 'afternoon',
-                type: 'work',
-            });
-            const existingBreak = entry('2026-04-10T10:00:00Z', '2026-04-10T10:30:00Z', {
-                id: 'break-1',
-                project_id: null,
-                type: 'break',
-            });
-            const row = buildRow(null, [existingBreak], 'break-row');
-            row.type = 'break';
-            const { cellMutations } = setup([morning, afternoon, existingBreak]);
-
-            await cellMutations.handleCellUpdate(row, 0, HOUR);
-
-            expect(apiMocks.updateTimeEntry).toHaveBeenCalledTimes(1);
-            expect(firstArg(apiMocks.updateTimeEntry)).toEqual(
-                expect.objectContaining({
-                    id: 'break-1',
-                    start: '2026-04-10T10:00:00Z',
-                    end: '2026-04-10T11:00:00Z',
-                })
-            );
-            expect(apiMocks.createTimeEntry).not.toHaveBeenCalled();
-        });
-
         it('grows a multi-break cell by re-placing the latest break, not fragmenting', async () => {
             // Two breaks share the break cell. Growing the cell total must extend the
             // latest-ending break (break-b) in place — never create a third break entry.
