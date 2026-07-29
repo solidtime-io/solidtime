@@ -141,7 +141,12 @@ const emit = defineEmits<{
             v-for="box in externalEvents ?? []"
             :key="'external-' + box.event.id"
             class="fc-external-event pointer-events-auto absolute rounded-sm text-xs cursor-pointer border border-dashed overflow-hidden"
-            :style="{ top: box.top + 'px', height: box.height + 'px' }"
+            :style="{
+                top: box.top + 'px',
+                height: box.height + 'px',
+                left: box.left,
+                width: box.width,
+            }"
             :title="`${box.event.title} (${box.timeLabel}) — click to create a time entry`"
             :aria-label="`Create time entry from ${box.event.title}`"
             role="button"
@@ -434,8 +439,6 @@ const emit = defineEmits<{
 }
 
 .fc-external-event {
-    left: 55%;
-    width: calc(45% - 3px);
     z-index: 3;
     background-color: rgba(168, 85, 247, 0.12);
     border-color: rgba(168, 85, 247, 0.55);

@@ -16,8 +16,61 @@ export interface ExternalEventBox {
     dateStr: string;
     top: number;
     height: number;
+    left: string;
+    width: string;
     timeLabel: string;
     event: ExternalCalendarEvent;
+}
+
+interface PositionedExternalEvent {
+    box: Omit<ExternalEventBox, 'left' | 'width'>;
+    startMin: number;
+    endMin: number;
+    col: number;
+}
+
+function assignColumns(events: Omit<PositionedExternalEvent, 'col'>[]): PositionedExternalEvent[] {
+    const sorted = [...events].sort((a, b) => {
+        if (a.startMin !== b.startMin) return a.startMin - b.startMin;
+        return b.endMin - b.startMin - (a.endMin - a.startMin);
+    });
+    const columnEndMinutes: number[] = [];
+    const positioned: PositionedExternalEvent[] = [];
+
+    for (const event of sorted) {
+        let col = 0;
+        while (col < columnEndMinutes.length && columnEndMinutes[col]! > event.startMin) {
+            col++;
+        }
+        columnEndMinutes[col] = event.endMin;
+        positioned.push({ ...event, col });
+    }
+
+    return positioned;
+}
+
+function groupByOverlaps(events: PositionedExternalEvent[]): PositionedExternalEvent[][] {
+    if (events.length === 0) return [];
+
+    const sorted = [...events].sort((a, b) => a.startMin - b.startMin);
+    const groups: PositionedExternalEvent[][] = [];
+    let currentGroup: PositionedExternalEvent[] = [sorted[0]!];
+    let currentGroupEnd = sorted[0]!.endMin;
+
+    for (let i = 1; i < sorted.length; i++) {
+        const event = sorted[i]!;
+        if (event.startMin < currentGroupEnd) {
+            currentGroup.push(event);
+            currentGroupEnd = Math.max(currentGroupEnd, event.endMin);
+        } else {
+            groups.push(currentGroup);
+            currentGroup = [event];
+            currentGroupEnd = event.endMin;
+        }
+    }
+
+    groups.push(currentGroup);
+    return groups;
 }
 
 /**
@@ -39,11 +92,14 @@ export function useExternalEvents(params: {
         const startMin = s.startHour * 60;
         const endMin = s.endHour * 60;
         const boxes: ExternalEventBox[] = [];
+        const externalLeftPct = 55;
+        const externalWidthPct = 45;
 
         for (const day of params.viewDays.value) {
             const dateStr = day.format('YYYY-MM-DD');
             const dayStart = day.startOf('day');
             const dayEnd = day.endOf('day');
+            const dayBoxes: Omit<PositionedExternalEvent, 'col'>[] = [];
 
             for (const event of events) {
                 if (event.allDay) continue;
@@ -68,12 +124,31 @@ export function useExternalEvents(params: {
                 const height = params.minutesToPixels(clampedEnd - clampedStart);
 
                 if (height > 0) {
+                    dayBoxes.push({
+                        box: {
+                            dateStr,
+                            top,
+                            height,
+                            timeLabel: `${eventStart.format('HH:mm')} - ${eventEnd.format('HH:mm')}`,
+                            event,
+                        },
+                        startMin: clampedStart,
+                        endMin: clampedEnd,
+                    });
+                }
+            }
+
+            const withColumns = assignColumns(dayBoxes);
+            const groups = groupByOverlaps(withColumns);
+            for (const group of groups) {
+                const totalCols = Math.max(...group.map((item) => item.col)) + 1;
+                for (const item of group) {
+                    const left = externalLeftPct + (item.col / totalCols) * externalWidthPct;
+                    const width = externalWidthPct / totalCols;
                     boxes.push({
-                        dateStr,
-                        top,
-                        height,
-                        timeLabel: `${eventStart.format('HH:mm')} - ${eventEnd.format('HH:mm')}`,
-                        event,
+                        ...item.box,
+                        left: `${left}%`,
+                        width: `${width}%`,
                     });
                 }
             }
