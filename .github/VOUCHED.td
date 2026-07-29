@@ -14,10 +14,11 @@
 # Seeded 2026-07-25 from the authors of every merged pull request.
 
 agross
+bufferhead-code
 candideu
-KasparRosin
+kasparrosin
 korridor
-Onatcer
-ShrootBuck
-smileBeda
+onatcer
+shrootbuck
+smilebeda
 utlark
