@@ -24,6 +24,7 @@ import ProjectVisibilityFilterBadge from '@/Components/Common/Project/ProjectVis
 import ProjectClientFilterBadge from '@/Components/Common/Project/ProjectClientFilterBadge.vue';
 import { NO_CLIENT_ID } from '@/Components/Common/Project/constants';
 import type { SortColumn, SortDirection } from '@/Components/Common/Project/ProjectTable.vue';
+import TextInput from '@/packages/ui/src/Input/TextInput.vue';
 
 // Fetch data using TanStack Query
 const { projects } = useProjectsQuery();
@@ -38,6 +39,7 @@ interface ProjectTableState {
         clientIds: string[];
         status: 'active' | 'archived' | 'all';
         visibility: 'public' | 'private' | 'all';
+        name: string;
     };
 }
 
@@ -50,6 +52,7 @@ const tableState = useStorage<ProjectTableState>(
             clientIds: [],
             status: 'all',
             visibility: 'all',
+            name: '',
         },
     },
     undefined,
@@ -97,6 +100,12 @@ const filteredProjects = computed(() => {
             if (!matchesNoClient && !matchesClientId) {
                 return false;
             }
+        }
+
+        // Name filter
+        const searchName = tableState.value.filters.name.trim().toLowerCase();
+        if (searchName && !project.name.toLowerCase().includes(searchName)) {
+            return false;
         }
 
         return true;
@@ -162,6 +171,11 @@ const showBillableRate = computed(() => {
                     :filters="tableState.filters"
                     :clients="clients"
                     @update:filters="tableState.filters = $event" />
+                <TextInput
+                    v-model="tableState.filters.name"
+                    data-testid="project-name-filter-input"
+                    placeholder="Search projects..."
+                    class="w-64" />
 
                 <!-- Active Filters -->
                 <ProjectStatusFilterBadge
