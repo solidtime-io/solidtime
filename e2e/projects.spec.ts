@@ -638,6 +638,25 @@ test('test that filtering projects by status works', async ({ page, ctx }) => {
     await expect(page.getByText(newProjectName)).not.toBeVisible();
 });
 
+test('test that projects can be filtered by project name', async ({ page, ctx }) => {
+    const seed = Math.floor(Math.random() * 100000);
+    const alphaProjectName = `NameSearch Alpha ${seed}`;
+    const betaProjectName = `NameSearch Beta ${seed}`;
+
+    await createProjectViaApi(ctx, { name: alphaProjectName });
+    await createProjectViaApi(ctx, { name: betaProjectName });
+
+    await goToProjectsOverview(page);
+    await clearProjectTableState(page);
+    await page.reload();
+
+    const nameSearchInput = page.getByPlaceholder('Search projects...');
+    await nameSearchInput.fill(`NameSearch Alpha ${seed}`);
+
+    await expect(page.getByText(alphaProjectName)).toBeVisible();
+    await expect(page.getByText(betaProjectName)).not.toBeVisible();
+});
+
 test('test that filter state persists after page reload', async ({ page }) => {
     await goToProjectsOverview(page);
     await clearProjectTableState(page);
