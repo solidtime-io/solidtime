@@ -19,6 +19,7 @@ import { useOrganizationQuery } from '@/utils/useOrganizationQuery';
 import { isAllowedToPerformPremiumAction } from '@/utils/billing';
 import { useStorage } from '@vueuse/core';
 import ProjectsFilterDropdown from '@/Components/Common/Project/ProjectsFilterDropdown.vue';
+import type { ProjectFilters } from '@/Components/Common/Project/ProjectsFilterDropdown.vue';
 import ProjectStatusFilterBadge from '@/Components/Common/Project/ProjectStatusFilterBadge.vue';
 import ProjectVisibilityFilterBadge from '@/Components/Common/Project/ProjectVisibilityFilterBadge.vue';
 import ProjectClientFilterBadge from '@/Components/Common/Project/ProjectClientFilterBadge.vue';
@@ -35,12 +36,7 @@ const { organization } = useOrganizationQuery(getCurrentOrganizationId()!);
 interface ProjectTableState {
     sortColumn: SortColumn;
     sortDirection: SortDirection;
-    filters: {
-        clientIds: string[];
-        status: 'active' | 'archived' | 'all';
-        visibility: 'public' | 'private' | 'all';
-        name: string;
-    };
+    filters: ProjectFilters;
 }
 
 const tableState = useStorage<ProjectTableState>(

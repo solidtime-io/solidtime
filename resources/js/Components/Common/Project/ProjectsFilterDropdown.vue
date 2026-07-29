@@ -21,6 +21,7 @@ export interface ProjectFilters {
     status: 'active' | 'archived' | 'all';
     visibility: 'public' | 'private' | 'all';
     clientIds: string[];
+    name: string;
 }
 
 const props = defineProps<{
