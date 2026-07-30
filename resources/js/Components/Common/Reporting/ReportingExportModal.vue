@@ -9,7 +9,7 @@ const showExportModal = defineModel('show', { default: false });
 
 function downloadCurrentExport() {
     if (props.exportUrl) {
-        window.open(props.exportUrl, '_blank')?.focus();
+        window.open(props.exportUrl, '_self');
     }
 }
 </script>
