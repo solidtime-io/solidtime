@@ -24,10 +24,12 @@ const props = defineProps<{
     clients: Client[];
     sortColumn: SortColumn;
     sortDirection: SortDirection;
+    selectedClientId?: string | null;
 }>();
 
 const emit = defineEmits<{
     sort: [column: SortColumn, direction: SortDirection];
+    select: [client: Client];
 }>();
 
 const createClient = ref(false);
@@ -144,7 +146,10 @@ const paginatedClients = computed(() => {
                     </SecondaryButton>
                 </div>
                 <template v-for="client in paginatedClients" :key="client.id">
-                    <ClientTableRow :client="client"></ClientTableRow>
+                    <ClientTableRow
+                        :client="client"
+                        :selected="client.id === props.selectedClientId"
+                        @select="emit('select', $event)"></ClientTableRow>
                 </template>
             </div>
         </div>

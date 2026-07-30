@@ -25,6 +25,11 @@ const { projects } = useProjectsQuery();
 
 const props = defineProps<{
     client: Client;
+    selected?: boolean;
+}>();
+
+const emit = defineEmits<{
+    select: [client: Client];
 }>();
 
 function deleteClient() {
@@ -48,7 +53,12 @@ const showEditModal = ref(false);
 <template>
     <ContextMenu>
         <ContextMenuTrigger as-child>
-            <TableRow>
+            <TableRow
+                :class="[
+                    '[&>*]:cursor-pointer',
+                    selected ? '[&>*]:!bg-card-background' : '[&>*]:hover:bg-white/5',
+                ]"
+                @click="emit('select', client)">
                 <ClientEditModal v-model:show="showEditModal" :client="client"></ClientEditModal>
                 <div
                     class="whitespace-nowrap flex items-center space-x-5 py-4 pr-3 text-sm font-medium text-text-primary pl-4 sm:pl-6 lg:pl-8 3xl:pl-12">
@@ -72,7 +82,8 @@ const showEditModal = ref(false);
                     </template>
                 </div>
                 <div
-                    class="relative whitespace-nowrap flex items-center pl-3 text-right text-sm font-medium sm:pr-0 pr-4 sm:pr-6 lg:pr-8 3xl:pr-12">
+                    class="relative whitespace-nowrap flex items-center pl-3 text-right text-sm font-medium sm:pr-0 pr-4 sm:pr-6 lg:pr-8 3xl:pr-12"
+                    @click.stop>
                     <ClientMoreOptionsDropdown
                         :client="client"
                         @edit="showEditModal = true"

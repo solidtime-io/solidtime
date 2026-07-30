@@ -16,7 +16,7 @@ class ClientResource extends BaseResource
     /**
      * Transform the resource into an array.
      *
-     * @return array<string, string|bool|int|null>
+     * @return array<string, string|bool|int|array<string, string>|null>
      */
     public function toArray(Request $request): array
     {
@@ -27,6 +27,8 @@ class ClientResource extends BaseResource
             'name' => $this->resource->name,
             /** @var bool $is_archived Whether the client is archived */
             'is_archived' => $this->resource->is_archived,
+            /** @var array<string, string> $metadata Custom metadata key-value pairs (f.e. external references like Stripe IDs) */
+            'metadata' => $this->resource->metadata ?? [],
             /** @var string $created_at When the tag was created */
             'created_at' => $this->formatDateTime($this->resource->created_at),
             /** @var string $updated_at When the tag was last updated */

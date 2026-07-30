@@ -25,7 +25,7 @@ class ProjectResource extends BaseResource
     /**
      * Transform the resource into an array.
      *
-     * @return array<string, string|bool|int|null>
+     * @return array<string, string|bool|int|array<string, string>|null>
      */
     public function toArray(Request $request): array
     {
@@ -50,6 +50,8 @@ class ProjectResource extends BaseResource
             'spent_time' => $this->resource->spent_time,
             /** @var bool $is_public Whether the project is public */
             'is_public' => $this->resource->is_public,
+            /** @var array<string, string> $metadata Custom metadata key-value pairs (f.e. external references like Stripe IDs) */
+            'metadata' => $this->resource->metadata ?? [],
         ];
     }
 }

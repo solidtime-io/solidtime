@@ -23,7 +23,7 @@ class ClientStoreRequest extends BaseFormRequest
      */
     public function rules(): array
     {
-        return [
+        return array_merge([
             'name' => [
                 'required',
                 'string',
@@ -34,6 +34,6 @@ class ClientStoreRequest extends BaseFormRequest
                     return $builder->whereBelongsTo($this->organization, 'organization');
                 })->withCustomTranslation('validation.client_name_already_exists'),
             ],
-        ];
+        ], $this->metadataRules());
     }
 }

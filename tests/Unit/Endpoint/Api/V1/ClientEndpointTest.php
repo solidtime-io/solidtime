@@ -260,6 +260,35 @@ class ClientEndpointTest extends ApiEndpointTestAbstract
         );
     }
 
+    public function test_store_endpoint_creates_new_client_with_metadata(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'clients:create',
+        ]);
+        $clientFake = Client::factory()->make();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.clients.store', [$data->organization->getKey()]), [
+            'name' => $clientFake->name,
+            'metadata' => [
+                'stripe_customer_id' => 'cus_123456789',
+            ],
+        ]);
+
+        // Assert
+        $response->assertStatus(201);
+        $response->assertJson(fn (AssertableJson $json) => $json
+            ->has('data')
+            ->where('data.metadata.stripe_customer_id', 'cus_123456789')
+        );
+        $this->assertDatabaseHas(Client::class, [
+            'name' => $clientFake->name,
+            'organization_id' => $data->organization->getKey(),
+        ]);
+    }
+
     public function test_update_endpoint_fails_if_user_has_no_permission_to_update_clients(): void
     {
         // Arrange
@@ -431,6 +460,105 @@ class ClientEndpointTest extends ApiEndpointTestAbstract
         );
         $client->refresh();
         $this->assertFalse($client->is_archived);
+    }
+
+    public function test_update_endpoint_can_update_metadata(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'clients:update',
+        ]);
+        $client = Client::factory()->forOrganization($data->organization)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.clients.update', [$data->organization->getKey(), $client->getKey()]), [
+            'name' => $client->name,
+            'metadata' => [
+                'stripe_customer_id' => 'cus_123456789',
+            ],
+        ]);
+
+        // Assert
+        $response->assertStatus(200);
+        $response->assertJson(fn (AssertableJson $json) => $json
+            ->has('data')
+            ->where('data.metadata.stripe_customer_id', 'cus_123456789')
+        );
+        $client->refresh();
+        $this->assertSame(['stripe_customer_id' => 'cus_123456789'], $client->metadata);
+    }
+
+    public function test_update_endpoint_can_remove_metadata_with_null(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'clients:update',
+        ]);
+        $client = Client::factory()->forOrganization($data->organization)->create();
+        $client->metadata = ['stripe_customer_id' => 'cus_123456789'];
+        $client->save();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.clients.update', [$data->organization->getKey(), $client->getKey()]), [
+            'name' => $client->name,
+            'metadata' => null,
+        ]);
+
+        // Assert
+        $response->assertStatus(200);
+        $response->assertJson(fn (AssertableJson $json) => $json
+            ->has('data')
+            ->where('data.metadata', [])
+        );
+        $client->refresh();
+        $this->assertNull($client->metadata);
+    }
+
+    public function test_update_endpoint_does_not_change_metadata_if_not_sent(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'clients:update',
+        ]);
+        $client = Client::factory()->forOrganization($data->organization)->create();
+        $client->metadata = ['stripe_customer_id' => 'cus_123456789'];
+        $client->save();
+        $clientFake = Client::factory()->make();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.clients.update', [$data->organization->getKey(), $client->getKey()]), [
+            'name' => $clientFake->name,
+        ]);
+
+        // Assert
+        $response->assertStatus(200);
+        $client->refresh();
+        $this->assertSame(['stripe_customer_id' => 'cus_123456789'], $client->metadata);
+    }
+
+    public function test_update_endpoint_fails_if_metadata_value_is_not_a_string(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'clients:update',
+        ]);
+        $client = Client::factory()->forOrganization($data->organization)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.clients.update', [$data->organization->getKey(), $client->getKey()]), [
+            'name' => $client->name,
+            'metadata' => [
+                'nested' => ['not' => 'allowed'],
+            ],
+        ]);
+
+        // Assert
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['metadata.nested']);
     }
 
     public function test_destroy_endpoint_fails_if_user_has_no_permission_to_delete_clients(): void

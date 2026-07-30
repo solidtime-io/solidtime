@@ -27,7 +27,7 @@ class ProjectStoreRequest extends BaseFormRequest
      */
     public function rules(): array
     {
-        return [
+        return array_merge([
             // Name of the project, the name needs to be unique per client and organization
             'name' => [
                 'required',
@@ -81,7 +81,7 @@ class ProjectStoreRequest extends BaseFormRequest
             'is_public' => [
                 'boolean',
             ],
-        ];
+        ], $this->metadataRules());
     }
 
     public function getIsPublic(): bool

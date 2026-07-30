@@ -8,6 +8,8 @@ import { computed, ref } from 'vue';
 import { useClientsQuery } from '@/utils/useClientsQuery';
 import ClientTable from '@/Components/Common/Client/ClientTable.vue';
 import ClientCreateModal from '@/Components/Common/Client/ClientCreateModal.vue';
+import ClientDetailPane from '@/Components/Common/Client/ClientDetailPane.vue';
+import type { Client } from '@/packages/api/src';
 import PageTitle from '@/Components/Common/PageTitle.vue';
 import { canCreateClients } from '@/utils/permissions';
 import { TabBar, TabBarItem } from '@/packages/ui/src';
@@ -48,6 +50,18 @@ const shownClients = computed(() => {
         return client.is_archived;
     });
 });
+
+const selectedClientId = ref<string | null>(null);
+
+// Resolve against the full client list so the pane stays open (with fresh data)
+// when an archive/unarchive moves the client to the other tab.
+const selectedClient = computed(() => {
+    return clients.value.find((client) => client.id === selectedClientId.value);
+});
+
+function handleSelect(client: Client) {
+    selectedClientId.value = selectedClientId.value === client.id ? null : client.id;
+}
 </script>
 
 <template>
@@ -66,10 +80,20 @@ const shownClients = computed(() => {
             >
             <ClientCreateModal v-model:show="createClient"></ClientCreateModal>
         </MainContainer>
-        <ClientTable
-            :clients="shownClients"
-            :sort-column="tableState.sortColumn"
-            :sort-direction="tableState.sortDirection"
-            @sort="handleSort"></ClientTable>
+        <div class="flex items-stretch">
+            <div class="flex-1 min-w-0">
+                <ClientTable
+                    :clients="shownClients"
+                    :sort-column="tableState.sortColumn"
+                    :sort-direction="tableState.sortDirection"
+                    :selected-client-id="selectedClientId"
+                    @sort="handleSort"
+                    @select="handleSelect"></ClientTable>
+            </div>
+            <ClientDetailPane
+                v-if="selectedClient"
+                :client="selectedClient"
+                @close="selectedClientId = null"></ClientDetailPane>
+        </div>
     </AppLayout>
 </template>

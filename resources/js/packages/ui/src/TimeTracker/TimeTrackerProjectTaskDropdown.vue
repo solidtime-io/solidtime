@@ -196,6 +196,7 @@ function addProjectToFilterObject(
             updated_at: '',
             value: '',
             is_archived: false,
+            metadata: {},
             projects: [newProject],
         });
     }
@@ -213,6 +214,7 @@ function updateFilteredResults() {
             updated_at: '',
             value: '',
             is_archived: false,
+            metadata: {},
             projects: [
                 {
                     id: NO_PROJECT_ID,
@@ -228,6 +230,7 @@ function updateFilteredResults() {
                     estimated_time: null,
                     spent_time: 0,
                     is_public: false,
+                    metadata: {},
                 },
             ],
         });

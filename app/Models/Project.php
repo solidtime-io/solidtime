@@ -31,6 +31,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  * @property-read bool $is_archived
  * @property int|null $estimated_time
  * @property int $spent_time
+ * @property array<string, string>|null $metadata
  * @property Carbon|null $archived_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -63,6 +64,7 @@ class Project extends Model implements AuditableContract
         'archived_at' => 'datetime',
         'estimated_time' => 'integer',
         'spent_time' => 'integer',
+        'metadata' => 'array',
     ];
 
     /**

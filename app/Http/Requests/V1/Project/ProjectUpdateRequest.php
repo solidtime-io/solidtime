@@ -28,7 +28,7 @@ class ProjectUpdateRequest extends BaseFormRequest
      */
     public function rules(): array
     {
-        return [
+        return array_merge([
             'name' => [
                 'required',
                 'string',
@@ -80,7 +80,7 @@ class ProjectUpdateRequest extends BaseFormRequest
                 'min:0',
                 'max:2147483647',
             ],
-        ];
+        ], $this->metadataRules());
     }
 
     public function getIsArchived(): bool

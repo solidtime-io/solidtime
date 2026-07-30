@@ -1183,6 +1183,37 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
         $this->assertFalse($project->is_archived);
     }
 
+    public function test_update_endpoint_can_update_metadata(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'projects:update',
+        ]);
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        $this->assertBillableRateServiceIsUnused();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.projects.update', [$data->organization->getKey(), $project->getKey()]), [
+            'name' => $project->name,
+            'color' => $project->color,
+            'is_billable' => $project->is_billable,
+            'client_id' => null,
+            'metadata' => [
+                'stripe_product_id' => 'prod_123456789',
+            ],
+        ]);
+
+        // Assert
+        $response->assertStatus(200);
+        $response->assertJson(fn (AssertableJson $json) => $json
+            ->has('data')
+            ->where('data.metadata.stripe_product_id', 'prod_123456789')
+        );
+        $project->refresh();
+        $this->assertSame(['stripe_product_id' => 'prod_123456789'], $project->metadata);
+    }
+
     public function test_update_endpoint_can_make_a_private_project_public(): void
     {
         // Arrange

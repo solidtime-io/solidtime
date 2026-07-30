@@ -29,13 +29,23 @@ const ClientResource = z
         id: z.string(),
         name: z.string(),
         is_archived: z.boolean(),
+        metadata: z.record(z.string()),
         created_at: z.string(),
         updated_at: z.string(),
     })
     .passthrough();
-const ClientStoreRequest = z.object({ name: z.string().min(1).max(255) }).passthrough();
+const ClientStoreRequest = z
+    .object({
+        name: z.string().min(1).max(255),
+        metadata: z.union([z.record(z.string().max(500)), z.null()]).optional(),
+    })
+    .passthrough();
 const ClientUpdateRequest = z
-    .object({ name: z.string().min(1).max(255), is_archived: z.boolean().optional() })
+    .object({
+        name: z.string().min(1).max(255),
+        is_archived: z.boolean().optional(),
+        metadata: z.union([z.record(z.string().max(500)), z.null()]).optional(),
+    })
     .passthrough();
 const DestroyWithPasswordRequest = z.object({ password: z.string() }).passthrough();
 const ImportRequest = z.object({ type: z.string(), data: z.string() }).passthrough();
@@ -358,6 +368,7 @@ const ProjectResource = z
         estimated_time: z.union([z.number(), z.null()]),
         spent_time: z.number().int(),
         is_public: z.boolean(),
+        metadata: z.record(z.string()),
     })
     .passthrough();
 const ProjectStoreRequest = z
@@ -369,6 +380,7 @@ const ProjectStoreRequest = z
         client_id: z.union([z.string(), z.null()]).optional(),
         estimated_time: z.union([z.number(), z.null()]).optional(),
         is_public: z.boolean().optional(),
+        metadata: z.union([z.record(z.string().max(500)), z.null()]).optional(),
     })
     .passthrough();
 const ProjectUpdateRequest = z
@@ -381,6 +393,7 @@ const ProjectUpdateRequest = z
         client_id: z.union([z.string(), z.null()]).optional(),
         billable_rate: z.union([z.number(), z.null()]).optional(),
         estimated_time: z.union([z.number(), z.null()]).optional(),
+        metadata: z.union([z.record(z.string().max(500)), z.null()]).optional(),
     })
     .passthrough();
 const ProjectMemberResource = z

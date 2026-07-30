@@ -75,6 +75,9 @@ class ClientController extends Controller
 
         $client = new Client;
         $client->name = $request->input('name');
+        if ($request->has('metadata')) {
+            $client->metadata = $request->getMetadata();
+        }
         $client->organization()->associate($organization);
         $client->save();
 
@@ -95,6 +98,9 @@ class ClientController extends Controller
         $client->name = $request->input('name');
         if ($request->has('is_archived')) {
             $client->archived_at = $request->getIsArchived() ? Carbon::now() : null;
+        }
+        if ($request->has('metadata')) {
+            $client->metadata = $request->getMetadata();
         }
         $client->save();
 

@@ -21,6 +21,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  * @property string $name
  * @property string $organization_id
  * @property-read bool $is_archived
+ * @property array<string, string>|null $metadata
  * @property Carbon|null $archived_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -45,6 +46,7 @@ class Client extends Model implements AuditableContract
     protected $casts = [
         'name' => 'string',
         'archived_at' => 'datetime',
+        'metadata' => 'array',
     ];
 
     /**

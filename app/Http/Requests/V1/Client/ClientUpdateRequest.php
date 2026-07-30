@@ -24,7 +24,7 @@ class ClientUpdateRequest extends BaseFormRequest
      */
     public function rules(): array
     {
-        return [
+        return array_merge([
             // Name of the client
             'name' => [
                 'required',
@@ -39,7 +39,7 @@ class ClientUpdateRequest extends BaseFormRequest
             'is_archived' => [
                 'boolean',
             ],
-        ];
+        ], $this->metadataRules());
     }
 
     public function getIsArchived(): bool

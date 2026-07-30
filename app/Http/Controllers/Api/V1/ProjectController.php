@@ -109,6 +109,9 @@ class ProjectController extends Controller
         if ($this->canAccessPremiumFeatures($organization) && $request->has('estimated_time')) {
             $project->estimated_time = $request->getEstimatedTime();
         }
+        if ($request->has('metadata')) {
+            $project->metadata = $request->getMetadata();
+        }
         $project->organization()->associate($organization);
         $project->save();
 
@@ -136,6 +139,9 @@ class ProjectController extends Controller
         }
         if ($this->canAccessPremiumFeatures($organization) && $request->has('estimated_time')) {
             $project->estimated_time = $request->getEstimatedTime();
+        }
+        if ($request->has('metadata')) {
+            $project->metadata = $request->getMetadata();
         }
         $oldBillableRate = $project->billable_rate;
         $clientIdChanged = false;
