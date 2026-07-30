@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Endpoint\Api\V1;
 
+use App\Enums\DateFormat;
 use App\Enums\ExportFormat;
 use App\Enums\Role;
 use App\Enums\TagMatchType;
@@ -1639,6 +1640,106 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
 
         // Assert
         $this->assertResponseCode($response, 200);
+    }
+
+    public function test_aggregate_export_endpoints_can_create_a_pdf_report_grouped_by_date(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:view:all',
+        ]);
+        $client = Client::factory()->forOrganization($data->organization)->create();
+        $project = Project::factory()->forOrganization($data->organization)->forClient($client)->create();
+        $timeEntry1 = TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)->startWithDuration(Carbon::now(), 100)->create();
+        $timeEntry2 = TimeEntry::factory()->forOrganization($data->organization)->forProject($project)->forMember($data->member)->startWithDuration(Carbon::now(), 100)->create();
+        Passport::actingAs($data->user);
+        $this->actAsOrganizationWithSubscription();
+
+        // Act
+        $response = $this->getJson(route('api.v1.time-entries.aggregate-export', [
+            $data->organization->getKey(),
+            'format' => ExportFormat::PDF,
+            'group' => TimeEntryAggregationType::Day,
+            'sub_group' => TimeEntryAggregationType::Project,
+            'history_group' => TimeEntryAggregationTypeInterval::Day,
+            'start' => Carbon::now()->startOfYear()->toIso8601ZuluString(),
+            'end' => Carbon::now()->endOfYear()->toIso8601ZuluString(),
+        ]));
+
+        // Assert
+        $this->assertResponseCode($response, 200);
+    }
+
+    public function test_aggregate_export_pdf_renders_date_group_labels_in_organization_date_format(): void
+    {
+        // Arrange
+        $this->travelTo(Carbon::create(2024, 3, 15, 12, 0, 0, 'UTC'));
+        $data = $this->createUserWithPermission([
+            'time-entries:view:all',
+        ]);
+        // Note: the organization factory randomizes the date format, so pin it
+        $data->organization->update(['date_format' => DateFormat::SlashSeparatedDDMMYYYY]);
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        TimeEntry::factory()->forOrganization($data->organization)->forProject($project)->forMember($data->member)
+            ->startWithDuration(Carbon::now()->subDay(), 3600)->create();
+        Passport::actingAs($data->user);
+        $this->actAsOrganizationWithSubscription();
+
+        // Act
+        // Note: debug=true returns the rendered HTML instead of handing it to the PDF renderer.
+        $response = $this->getJson(route('api.v1.time-entries.aggregate-export', [
+            $data->organization->getKey(),
+            'format' => ExportFormat::PDF,
+            'group' => TimeEntryAggregationType::Day,
+            'sub_group' => TimeEntryAggregationType::Project,
+            'history_group' => TimeEntryAggregationTypeInterval::Day,
+            'start' => Carbon::now()->subDays(7)->toIso8601ZuluString(),
+            'end' => Carbon::now()->toIso8601ZuluString(),
+            'debug' => 'true',
+        ]));
+
+        // Assert
+        $this->assertResponseCode($response, 200);
+        $html = $response->json('html');
+        $this->assertIsString($html);
+        $this->assertStringContainsString('14/03/2024', $html);
+        $this->assertStringNotContainsString('2024-03-14', $html);
+    }
+
+    public function test_aggregate_export_csv_renders_date_group_labels_in_organization_date_format(): void
+    {
+        // Arrange
+        $this->travelTo(Carbon::create(2024, 3, 15, 12, 0, 0, 'UTC'));
+        $data = $this->createUserWithPermission([
+            'time-entries:view:all',
+        ]);
+        // Note: the organization factory randomizes the date format, so pin it
+        $data->organization->update(['date_format' => DateFormat::SlashSeparatedDDMMYYYY]);
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        TimeEntry::factory()->forOrganization($data->organization)->forProject($project)->forMember($data->member)
+            ->startWithDuration(Carbon::now()->subDay(), 3600)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.time-entries.aggregate-export', [
+            $data->organization->getKey(),
+            'format' => ExportFormat::CSV,
+            'group' => TimeEntryAggregationType::Day,
+            'sub_group' => TimeEntryAggregationType::Project,
+            'history_group' => TimeEntryAggregationTypeInterval::Day,
+            'start' => Carbon::now()->subDays(7)->toIso8601ZuluString(),
+            'end' => Carbon::now()->toIso8601ZuluString(),
+        ]));
+
+        // Assert
+        $this->assertResponseCode($response, 200);
+        $disk = Storage::disk(config('filesystems.private'));
+        $files = $disk->files('exports');
+        $this->assertCount(1, $files);
+        $csv = $disk->get($files[0]);
+        $this->assertIsString($csv);
+        $this->assertStringContainsString('14/03/2024', $csv);
+        $this->assertStringNotContainsString('2024-03-14', $csv);
     }
 
     public function test_index_export_endpoint_with_client_ids_filter_returns_filtered_entries(): void

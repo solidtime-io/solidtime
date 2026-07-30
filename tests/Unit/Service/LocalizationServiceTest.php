@@ -8,6 +8,7 @@ use App\Enums\CurrencyFormat;
 use App\Enums\DateFormat;
 use App\Enums\IntervalFormat;
 use App\Enums\NumberFormat;
+use App\Enums\TimeEntryAggregationType;
 use App\Enums\TimeFormat;
 use App\Service\LocalizationService;
 use Brick\Money\Currency;
@@ -302,5 +303,40 @@ class LocalizationServiceTest extends TestCaseWithDatabase
 
         // Assert
         $this->assertSame('14:09', $formatted);
+    }
+
+    public function test_format_time_group_key_formats_a_day_key_with_the_date_format(): void
+    {
+        // Arrange
+        $this->localizationService->setDateFormat(DateFormat::SlashSeparatedDDMMYYYY);
+
+        // Act
+        $formatted = $this->localizationService->formatTimeGroupKey('2001-02-03', TimeEntryAggregationType::Day);
+
+        // Assert
+        $this->assertSame('03/02/2001', $formatted);
+    }
+
+    public function test_format_time_group_key_returns_null_for_a_null_key(): void
+    {
+        // Act
+        $formatted = $this->localizationService->formatTimeGroupKey(null, TimeEntryAggregationType::Day);
+
+        // Assert
+        $this->assertNull($formatted);
+    }
+
+    public function test_format_time_group_key_returns_the_key_unchanged_for_non_day_group_types(): void
+    {
+        // Arrange
+        $this->localizationService->setDateFormat(DateFormat::SlashSeparatedDDMMYYYY);
+
+        // Act & Assert
+        // Week/month/year are not offered as a grouping in the reporting UI and their keys have
+        // different shapes, so they are passed through rather than formatted as a date.
+        $this->assertSame('2001-02-03', $this->localizationService->formatTimeGroupKey('2001-02-03', TimeEntryAggregationType::Week));
+        $this->assertSame('2001-02', $this->localizationService->formatTimeGroupKey('2001-02', TimeEntryAggregationType::Month));
+        $this->assertSame('2001', $this->localizationService->formatTimeGroupKey('2001', TimeEntryAggregationType::Year));
+        $this->assertSame('some-uuid', $this->localizationService->formatTimeGroupKey('some-uuid', TimeEntryAggregationType::Project));
     }
 }
