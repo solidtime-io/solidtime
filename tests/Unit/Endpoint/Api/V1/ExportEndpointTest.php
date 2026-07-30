@@ -90,4 +90,35 @@ class ExportEndpointTest extends ApiEndpointTestAbstract
         $response->assertJsonPath('success', true);
         $this->assertStringContainsString($filepath, $response->json('download_url'));
     }
+
+    public function test_export_requests_the_download_url_as_an_attachment(): void
+    {
+        // Arrange
+        $user = $this->createUserWithPermission([
+            'export',
+        ]);
+        $filepath = 'exports/export_test.zip';
+        $this->mock(ExportService::class, function (MockInterface $mock) use (&$user, $filepath): void {
+            $mock->shouldReceive('export')
+                ->withArgs(function (Organization $organization) use (&$user): bool {
+                    return $organization->is($user->organization);
+                })
+                ->andReturn($filepath)
+                ->once();
+        });
+        Passport::actingAs($user->user);
+        $capturedOptions = $this->captureTemporaryUrlOptions();
+
+        // Act
+        $response = $this->postJson(route('api.v1.export.export', [
+            'organization' => $user->organization->getKey(),
+        ]));
+
+        // Assert
+        $response->assertStatus(200);
+        $options = $capturedOptions();
+        $this->assertIsArray($options);
+        $this->assertSame('attachment; filename="export_test.zip"', $options['ResponseContentDisposition'] ?? null);
+        $this->assertSame('https://storage.fake/'.$filepath, $response->json('download_url'));
+    }
 }

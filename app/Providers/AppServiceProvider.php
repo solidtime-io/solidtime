@@ -20,6 +20,7 @@ use App\Service\BillingContract;
 use App\Service\IpLookup\IpLookupServiceContract;
 use App\Service\IpLookup\NoIpLookupService;
 use App\Service\PermissionStore;
+use DateTimeInterface;
 use Dedoc\Scramble\Scramble;
 use Dedoc\Scramble\Support\Generator\OpenApi;
 use Dedoc\Scramble\Support\Generator\SecurityScheme;
@@ -29,8 +30,13 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Foundation\Application;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -97,6 +103,27 @@ class AppServiceProvider extends ServiceProvider
         // Extensions
         $this->app->bind(IpLookupServiceContract::class, NoIpLookupService::class);
         $this->app->bind(BillingContract::class);
+
+        // Storage
+        // The local driver ignores the ResponseContentDisposition option of temporaryUrl,
+        // so mirror it through the signed query parameters of the storage route.
+        $privateDisk = config('filesystems.private');
+        if (config('filesystems.disks.'.$privateDisk.'.driver') === 'local') {
+            $disk = Storage::disk($privateDisk);
+            $disk->serveUsing(function (Request $request, string $path, array $headers) use ($disk): StreamedResponse {
+                return $disk->response($path, null, $headers, $request->query('disposition', 'inline'));
+            });
+            $disk->buildTemporaryUrlsUsing(function (string $path, DateTimeInterface $expiration, array $options) use ($privateDisk): string {
+                $parameters = array_filter([
+                    'path' => $path,
+                    'disposition' => isset($options['ResponseContentDisposition'])
+                        ? Str::before($options['ResponseContentDisposition'], ';')
+                        : null,
+                ]);
+
+                return url(URL::temporarySignedRoute('storage.'.$privateDisk, $expiration, $parameters, absolute: false));
+            });
+        }
 
         // Routing
         Route::model('member', Member::class);
