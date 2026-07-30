@@ -8,12 +8,14 @@ use App\Enums\CurrencyFormat;
 use App\Enums\DateFormat;
 use App\Enums\IntervalFormat;
 use App\Enums\NumberFormat;
+use App\Enums\TimeEntryAggregationType;
 use App\Enums\TimeFormat;
 use App\Models\Organization;
 use Brick\Math\BigDecimal;
 use Brick\Money\Money;
 use Carbon\CarbonInterface;
 use Carbon\CarbonInterval;
+use Illuminate\Support\Carbon;
 
 class LocalizationService
 {
@@ -150,6 +152,29 @@ class LocalizationService
     public function formatDate(CarbonInterface $date): string
     {
         return $date->format($this->dateFormat->toCarbonFormat());
+    }
+
+    /**
+     * Time group types have no server-side descriptor, so reports fall back to rendering the raw
+     * aggregation key. For the Day type that key is an ISO date (Y-m-d), which is formatted here
+     * so exports match the rest of the UI instead of leaking the key.
+     *
+     * Week, month and year keys have different shapes ('Y-m-d' for the week start, 'Y-m' and 'Y'),
+     * and are not offered as a grouping in the reporting UI, so they are returned unchanged.
+     * Presenting those needs its own decision: a week rendered as its start date reads as a single
+     * day, and a month rendered with a full date format reads as a specific day.
+     */
+    public function formatTimeGroupKey(?string $key, TimeEntryAggregationType $groupType): ?string
+    {
+        if ($key === null) {
+            return null;
+        }
+
+        if ($groupType !== TimeEntryAggregationType::Day) {
+            return $key;
+        }
+
+        return $this->formatDate(Carbon::parse($key));
     }
 
     public function setDateFormat(DateFormat $dateFormat): void

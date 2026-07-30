@@ -194,7 +194,7 @@
                                 @if($group->is(\App\Enums\TimeEntryAggregationType::Billable))
                                     {{ $group1Entry['key'] === '1' ? 'Billable' : 'Non-billable' }}
                                 @else
-                                    {{ $group1Entry['description'] ?? $group1Entry['key'] ?? 'No '.Str::lower($group->description()) }}
+                                    {{ $group1Entry['description'] ?? $localization->formatTimeGroupKey($group1Entry['key'], $group) ?? 'No '.Str::lower($group->description()) }}
                                 @endif
                             </span>
                         </td>
@@ -239,7 +239,7 @@
                 <span style="color: #a1a1aa;">
                     {{ $group->description() }}:
                     </span>
-                {{ $group1Entry['description'] ?? $group1Entry['key'] ?? 'No '.Str::lower($group->description()) }}
+                {{ $group1Entry['description'] ?? $localization->formatTimeGroupKey($group1Entry['key'], $group) ?? 'No '.Str::lower($group->description()) }}
             @endif
         </h2>
 
@@ -278,7 +278,7 @@
                             @if($subGroup->is(\App\Enums\TimeEntryAggregationType::Billable))
                                 {{ $group2Entry['key'] === '1' ? 'Billable' : 'Non-billable' }}
                             @else
-                                {{ $group2Entry['description'] ?? $group2Entry['key'] ?? '-' }}
+                                {{ $group2Entry['description'] ?? $localization->formatTimeGroupKey($group2Entry['key'], $subGroup) ?? '-' }}
                             @endif
                         </td>
                         <td>
@@ -318,7 +318,7 @@
 
         series: [
             {
-                data: {!! json_encode(collect($aggregatedData['grouped_data'])->map(function (array $data) use (&$colorService, $group): object {
+                data: {!! json_encode(collect($aggregatedData['grouped_data'])->map(function (array $data) use (&$colorService, $group, $localization): object {
                     $color = $data['color'];
                     if ($color === null) {
                         $color = $colorService->getRandomColor($data['key']);
@@ -328,7 +328,7 @@
                     }
                     return (object)[
                         'value' => $data['seconds'],
-                        'name' => $data['description'] ?? $data['key'] ?? 'No '.Str::lower($group->description()),
+                        'name' => $data['description'] ?? $localization->formatTimeGroupKey($data['key'], $group) ?? 'No '.Str::lower($group->description()),
                         'color' => $color,
                         'itemStyle' => (object) [
                             'color' => $color,

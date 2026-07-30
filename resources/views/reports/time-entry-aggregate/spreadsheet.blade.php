@@ -44,7 +44,7 @@
                         </td>
                     @else
                         <td style="border: 1px solid black;" data-type="{{ DataType::TYPE_STRING }}">
-                            {{ $group1Entry['description'] ?? $group1Entry['key'] ?? '-' }}
+                            {{ $group1Entry['description'] ?? $localization->formatTimeGroupKey($group1Entry['key'], $group) ?? '-' }}
                         </td>
                     @endif
                     @if ($subGroup === TimeEntryAggregationType::Billable)
@@ -53,7 +53,7 @@
                         </td>
                     @else
                         <td style="border: 1px solid black;" data-type="{{ DataType::TYPE_STRING }}">
-                            {{ $group2Entry['description'] ?? $group2Entry['key'] ?? '-' }}
+                            {{ $group2Entry['description'] ?? $localization->formatTimeGroupKey($group2Entry['key'], $subGroup) ?? '-' }}
                         </td>
                     @endif
                     <td style="border: 1px solid black;" data-type="{{ DataType::TYPE_STRING }}">
@@ -74,7 +74,7 @@
                         </td>
                     @else
                         <td style="border: 1px solid black;" data-type="{{ DataType::TYPE_STRING }}">
-                            {{ $group1Entry['description'] ?? $group1Entry['key'] ?? '-' }}
+                            {{ $group1Entry['description'] ?? $localization->formatTimeGroupKey($group1Entry['key'], $group) ?? '-' }}
                         </td>
                     @endif
                     @if ($subGroup === TimeEntryAggregationType::Billable)
@@ -83,7 +83,7 @@
                         </td>
                     @else
                         <td style="border: 1px solid black;" data-type="{{ DataType::TYPE_STRING }}">
-                            {{ $group2Entry['description'] ?? $group2Entry['key'] ?? '-' }}
+                            {{ $group2Entry['description'] ?? $localization->formatTimeGroupKey($group2Entry['key'], $subGroup) ?? '-' }}
                         </td>
                     @endif
                     <td style="border: 1px solid black;" data-type="{{ DataType::TYPE_NUMERIC }}"

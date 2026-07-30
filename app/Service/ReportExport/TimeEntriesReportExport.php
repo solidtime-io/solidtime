@@ -6,6 +6,7 @@ namespace App\Service\ReportExport;
 
 use App\Enums\ExportFormat;
 use App\Enums\TimeEntryAggregationType;
+use App\Service\LocalizationService;
 use Illuminate\View\View;
 use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\FromView;
@@ -48,6 +49,8 @@ class TimeEntriesReportExport implements FromView, ShouldAutoSize, WithCustomCsv
 
     private bool $showBillableRate;
 
+    private LocalizationService $localization;
+
     /**
      * @param array{
      *         grouped_type: string|null,
@@ -68,7 +71,7 @@ class TimeEntriesReportExport implements FromView, ShouldAutoSize, WithCustomCsv
      *         cost: int|null
      *   } $data
      */
-    public function __construct(array $data, ExportFormat $exportFormat, string $currency, TimeEntryAggregationType $group, TimeEntryAggregationType $subGroup, bool $showBillableRate)
+    public function __construct(array $data, ExportFormat $exportFormat, string $currency, TimeEntryAggregationType $group, TimeEntryAggregationType $subGroup, bool $showBillableRate, LocalizationService $localization)
     {
         $this->data = $data;
         $this->exportFormat = $exportFormat;
@@ -76,6 +79,7 @@ class TimeEntriesReportExport implements FromView, ShouldAutoSize, WithCustomCsv
         $this->group = $group;
         $this->subGroup = $subGroup;
         $this->showBillableRate = $showBillableRate;
+        $this->localization = $localization;
     }
 
     public function view(): View
@@ -87,6 +91,7 @@ class TimeEntriesReportExport implements FromView, ShouldAutoSize, WithCustomCsv
             'subGroup' => $this->subGroup,
             'exportFormat' => $this->exportFormat,
             'showBillableRate' => $this->showBillableRate,
+            'localization' => $this->localization,
         ]);
     }
 
