@@ -841,6 +841,50 @@ test('test that setting group by to current sub group triggers sub group fallbac
     await expect(groupBySelects.filter({ hasText: 'Members' }).first()).toBeVisible();
 });
 
+test('test that group by date groups the report by day and formats the date labels with organization settings', async ({
+    page,
+    ctx,
+}) => {
+    await updateOrganizationSettingViaApi(ctx, { date_format: 'point-separated-d-m-yyyy' });
+
+    await createTimeEntryViaApi(ctx, {
+        description: 'Entry for group by date',
+        duration: '1h',
+    });
+
+    // Go to reporting page
+    await goToReporting(page);
+    await expect(page.getByRole('button', { name: 'Export' })).toBeVisible();
+
+    // Find the "Group by" selects within the reporting table
+    const groupBySelects = page.locator('[data-testid="reporting_view"]').getByRole('combobox');
+
+    // Default state: group=Project
+    await groupBySelects.filter({ hasText: 'Project' }).first().click();
+
+    const [aggregateResponse] = await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/time-entries/aggregate') &&
+                response.url().includes('group=day') &&
+                response.status() === 200
+        ),
+        page.getByRole('option', { name: 'Date', exact: true }).click(),
+    ]);
+
+    // Verify the API request contains the correct group parameter
+    const requestUrl = new URL(aggregateResponse.url());
+    expect(requestUrl.searchParams.get('group')).toBe('day');
+
+    // The row label is rendered in the organization date format (D.M.YYYY)
+    await expect(
+        page.getByTestId('reporting_view').getByText(/^\d{1,2}\.\d{1,2}\.\d{4}$/)
+    ).toBeVisible();
+    await expect(page.getByTestId('reporting_view').getByText(/^\d{4}-\d{2}-\d{2}$/)).toHaveCount(
+        0
+    );
+});
+
 // ──────────────────────────────────────────────────
 // Export Tests
 // ──────────────────────────────────────────────────

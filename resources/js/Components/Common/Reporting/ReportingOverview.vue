@@ -240,7 +240,8 @@ const groupedPieChartData = computed(() => {
         aggregatedTableTimeEntries.value?.grouped_data?.map((entry) => {
             const name = getNameForReportingRowEntry(
                 entry.key,
-                aggregatedTableTimeEntries.value?.grouped_type ?? null
+                aggregatedTableTimeEntries.value?.grouped_type ?? null,
+                organization?.value?.date_format
             );
             let color = getRandomColorWithSeed(entry.key ?? 'none');
             if (
@@ -255,11 +256,7 @@ const groupedPieChartData = computed(() => {
             }
             return {
                 value: entry.seconds,
-                name:
-                    getNameForReportingRowEntry(
-                        entry.key,
-                        aggregatedTableTimeEntries.value?.grouped_type ?? null
-                    ) ?? '',
+                name: name ?? '',
                 color: color,
             };
         }) ?? []
@@ -269,18 +266,25 @@ const groupedPieChartData = computed(() => {
 const tableData = computed(() => {
     return aggregatedTableTimeEntries.value?.grouped_data?.map((entry) => {
         return {
+            key: entry.key,
             seconds: entry.seconds,
             cost: entry.cost,
             description: getNameForReportingRowEntry(
                 entry.key,
-                aggregatedTableTimeEntries.value?.grouped_type ?? null
+                aggregatedTableTimeEntries.value?.grouped_type ?? null,
+                organization?.value?.date_format
             ),
             grouped_data:
                 entry.grouped_data?.map((el) => {
                     return {
+                        key: el.key,
                         seconds: el.seconds,
                         cost: el.cost,
-                        description: getNameForReportingRowEntry(el.key, entry.grouped_type),
+                        description: getNameForReportingRowEntry(
+                            el.key,
+                            entry.grouped_type,
+                            organization?.value?.date_format
+                        ),
                     };
                 }) ?? [],
         };
@@ -421,9 +425,8 @@ const tableData = computed(() => {
                         ">
                         <ReportingRow
                             v-for="entry in tableData"
-                            :key="entry.description ?? 'none'"
+                            :key="entry.key ?? 'none'"
                             :currency="getOrganizationCurrencyString()"
-                            :type="aggregatedTableTimeEntries.grouped_type"
                             :show-cost="showBillableRate"
                             :entry="entry"></ReportingRow>
                         <div class="contents [&>*]:transition text-text-tertiary [&>*]:h-[50px]">

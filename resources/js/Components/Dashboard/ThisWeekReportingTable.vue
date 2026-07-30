@@ -95,20 +95,24 @@ const tableData = computed(() => {
     return (
         aggregatedTableTimeEntries.value?.grouped_data?.map((entry) => {
             return {
+                key: entry.key,
                 seconds: entry.seconds,
                 cost: entry.cost,
                 description: getNameForReportingRowEntry(
                     entry.key,
-                    aggregatedTableTimeEntries.value?.grouped_type ?? null
+                    aggregatedTableTimeEntries.value?.grouped_type ?? null,
+                    organization?.value?.date_format
                 ),
                 grouped_data:
                     entry.grouped_data?.map((el) => {
                         return {
+                            key: el.key,
                             seconds: el.seconds,
                             cost: el.cost,
                             description: getNameForReportingRowEntry(
                                 el.key,
-                                entry.grouped_type ?? null
+                                entry.grouped_type ?? null,
+                                organization?.value?.date_format
                             ),
                         };
                     }) ?? [],
@@ -164,7 +168,7 @@ const showBillableRate = computed(() => {
                 ">
                 <ReportingRow
                     v-for="entry in tableData"
-                    :key="entry.description ?? 'none'"
+                    :key="entry.key ?? 'none'"
                     :currency="getOrganizationCurrencyString()"
                     :show-cost="showBillableRate"
                     :entry="entry"></ReportingRow>

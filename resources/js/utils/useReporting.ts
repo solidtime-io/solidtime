@@ -7,9 +7,10 @@ import { useTasksQuery } from '@/utils/useTasksQuery';
 import { useClientsQuery } from '@/utils/useClientsQuery';
 import { useTagsQuery } from '@/utils/useTagsQuery';
 import { CheckCircleIcon, UserCircleIcon, UserGroupIcon } from '@heroicons/vue/20/solid';
-import { DocumentTextIcon, FolderIcon } from '@heroicons/vue/16/solid';
+import { CalendarIcon, DocumentTextIcon, FolderIcon } from '@heroicons/vue/16/solid';
 import { Coffee } from '@lucide/vue';
 import BillableIcon from '@/packages/ui/src/Icons/BillableIcon.vue';
+import { type DateFormat, formatDate } from '@/packages/ui/src/utils/time';
 
 export type GroupingOption =
     | 'project'
@@ -19,7 +20,8 @@ export type GroupingOption =
     | 'client'
     | 'description'
     | 'tag'
-    | 'type';
+    | 'type'
+    | 'day';
 
 export const useReportingStore = defineStore('reporting', () => {
     // Cache query composables to avoid creating new subscriptions on every call
@@ -40,7 +42,11 @@ export const useReportingStore = defineStore('reporting', () => {
         type: 'Work time',
     } as Record<string, string>;
 
-    function getNameForReportingRowEntry(key: string | null, type: string | null) {
+    function getNameForReportingRowEntry(
+        key: string | null,
+        type: string | null,
+        dateFormat?: DateFormat
+    ) {
         if (type === null) {
             return null;
         }
@@ -75,6 +81,9 @@ export const useReportingStore = defineStore('reporting', () => {
         }
         if (type === 'type') {
             return key === 'break' ? 'Break' : 'Work time';
+        }
+        if (type === 'day') {
+            return formatDate(key, dateFormat);
         }
         return key;
     }
@@ -123,6 +132,11 @@ export const useReportingStore = defineStore('reporting', () => {
             label: 'Tags',
             value: 'tag',
             icon: DocumentTextIcon,
+        },
+        {
+            label: 'Date',
+            value: 'day',
+            icon: CalendarIcon,
         },
     ];
 

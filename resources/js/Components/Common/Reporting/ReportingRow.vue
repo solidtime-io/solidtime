@@ -11,6 +11,7 @@ type AggregatedGroupedData = GroupedData & {
 };
 
 type GroupedData = {
+    key: string | null;
     seconds: number;
     cost: number | null;
     description: string | null | undefined;
@@ -72,7 +73,7 @@ const organization = inject<ComputedRef<Organization>>('organization');
         :style="`grid-template-columns: 1fr 150px ${showCost ? '150px' : ''}`">
         <ReportingRow
             v-for="subEntry in entry.grouped_data"
-            :key="subEntry.description ?? 'none'"
+            :key="subEntry.key ?? 'none'"
             :currency="props.currency"
             :show-cost="showCost"
             indent

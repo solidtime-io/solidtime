@@ -16,6 +16,7 @@ import {
     createTimeEntryWithBillableStatusViaApi,
     createTagViaApi,
     createReportViaApi,
+    updateOrganizationSettingViaApi,
 } from './utils/api';
 import {
     goToReporting,
@@ -66,6 +67,42 @@ test('test that saving a report creates a shared report and its shareable link s
     await expect(page.getByText('Reporting')).toBeVisible();
     await expect(page.getByText(projectName)).toBeVisible();
     await expect(page.getByText('Total')).toBeVisible();
+});
+
+test('test that a shared report grouped by date shows date labels formatted by the organization setting', async ({
+    page,
+    ctx,
+}) => {
+    const reportName = 'DateGroupReport ' + Math.floor(Math.random() * 10000);
+
+    await updateOrganizationSettingViaApi(ctx, { date_format: 'point-separated-d-m-yyyy' });
+    await createTimeEntryViaApi(ctx, {
+        description: 'Entry for date grouping',
+        duration: '1h',
+    });
+
+    await goToReporting(page);
+
+    // Switch the grouping to "Date"
+    const groupBySelects = page.locator('[data-testid="reporting_view"]').getByRole('combobox');
+    await groupBySelects.filter({ hasText: 'Project' }).first().click();
+    await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/time-entries/aggregate') &&
+                response.url().includes('group=day') &&
+                response.status() === 200
+        ),
+        page.getByRole('option', { name: 'Date', exact: true }).click(),
+    ]);
+
+    const { shareableLink } = await saveAsSharedReport(page, reportName);
+
+    // Verify row labels are formatted correctly
+    await page.goto(shareableLink);
+    await expect(page.getByText('Total')).toBeVisible();
+    await expect(page.getByText(/^\d{1,2}\.\d{1,2}\.\d{4}$/)).toBeVisible();
+    await expect(page.getByText(/^\d{4}-\d{2}-\d{2}$/)).toHaveCount(0);
 });
 
 test('test that shared report with invalid secret shows no data', async ({ page }) => {
