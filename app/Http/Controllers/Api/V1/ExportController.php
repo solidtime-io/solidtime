@@ -28,7 +28,9 @@ class ExportController extends Controller
 
         $filepath = $exportService->export($organization);
         $downloadUrl = Storage::disk(config('filesystems.private'))
-            ->temporaryUrl($filepath, Carbon::now()->addMinutes(10));
+            ->temporaryUrl($filepath, Carbon::now()->addMinutes(10), [
+                'ResponseContentDisposition' => 'attachment; filename="'.basename($filepath).'"',
+            ]);
 
         return new JsonResponse([
             'success' => true,

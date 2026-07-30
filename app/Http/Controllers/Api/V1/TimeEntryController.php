@@ -336,7 +336,9 @@ class TimeEntryController extends Controller
 
         return response()->json([
             'download_url' => Storage::disk(config('filesystems.private'))
-                ->temporaryUrl($path, now()->addMinutes(5)),
+                ->temporaryUrl($path, now()->addMinutes(5), [
+                    'ResponseContentDisposition' => 'attachment; filename="'.$filename.'"',
+                ]),
         ]);
     }
 
@@ -547,7 +549,9 @@ class TimeEntryController extends Controller
 
         return response()->json([
             'download_url' => Storage::disk(config('filesystems.private'))
-                ->temporaryUrl($path, now()->addMinutes(5)),
+                ->temporaryUrl($path, now()->addMinutes(5), [
+                    'ResponseContentDisposition' => 'attachment; filename="'.$filename.'"',
+                ]),
         ]);
     }
 
