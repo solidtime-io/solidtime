@@ -75,6 +75,27 @@ return [
 
     'url' => env('APP_URL', 'http://localhost'),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Trusted Hosts
+    |--------------------------------------------------------------------------
+    |
+    | Additional hostnames (besides the APP_URL host and its subdomains) that
+    | the application is allowed to respond on. This is needed for multi-host
+    | setups, e.g. reaching the instance over both a public domain and a
+    | Tailscale name. A request arriving on any host that is neither APP_URL
+    | (nor a subdomain of it) nor listed here is rejected, which prevents
+    | Host-header poisoning of password reset and other out-of-band links.
+    |
+    | See App\Http\Middleware\TrustHosts.
+    |
+    */
+
+    'trusted_hosts' => array_values(array_filter(array_map(
+        'trim',
+        explode(',', (string) env('TRUSTED_HOSTS', ''))
+    ))),
+
     'asset_url' => env('ASSET_URL'),
 
     'force_https' => (bool) env('APP_FORCE_HTTPS', false),
