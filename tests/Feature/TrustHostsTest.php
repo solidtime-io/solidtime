@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Http\Middleware\TrustHosts;
+use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Exception\SuspiciousOperationException;
+use Symfony\Component\HttpFoundation\Response;
 use Tests\TestCase;
 
 class TrustHostsTest extends TestCase
@@ -42,7 +45,7 @@ class TrustHostsTest extends TestCase
 
     private function accepts(Request $request): bool
     {
-        $this->middleware()->handle($request, fn (): string => 'passed');
+        $this->middleware()->handle($request, fn (Request $request): Response => new Response('passed'));
 
         try {
             $request->getHost();
@@ -120,5 +123,41 @@ class TrustHostsTest extends TestCase
         // Probed on internal hosts/IPs; must not be rejected.
         $this->assertTrue($this->accepts(Request::create('https://0.0.0.0/health-check/up')));
         $this->assertTrue($this->accepts(Request::create('http://localhost/health-check/up')));
+    }
+
+    public function test_health_check_endpoint_clears_state_before_other_middleware_reads_the_host(): void
+    {
+        // Simulate trusted-host state left by a previous request in an Octane worker.
+        Request::setTrustedHosts(['^app\.example\.com$']);
+
+        $this->get(self::CANONICAL.'/health-check/up', ['Host' => '0.0.0.0'])
+            ->assertSuccessful()
+            ->assertExactJson(['success' => true]);
+    }
+
+    public function test_untrusted_host_renders_a_helpful_error(): void
+    {
+        $handler = app(ExceptionHandler::class);
+        $exception = new SuspiciousOperationException('Untrusted Host "evil.example.com".');
+
+        $response = $handler->render(Request::create('https://evil.example.com/login'), $exception);
+
+        $this->assertSame(400, $response->getStatusCode());
+        $this->assertStringContainsString('TRUSTED_HOSTS', (string) $response->getContent());
+    }
+
+    public function test_untrusted_host_returns_json_for_api_clients(): void
+    {
+        $handler = app(ExceptionHandler::class);
+        $exception = new SuspiciousOperationException('Untrusted Host "evil.example.com".');
+
+        $request = Request::create('https://evil.example.com/api/v1/users');
+        $request->headers->set('Accept', 'application/json');
+
+        $response = $handler->render($request, $exception);
+
+        $this->assertSame(400, $response->getStatusCode());
+        $this->assertJson((string) $response->getContent());
+        $this->assertStringContainsString('TRUSTED_HOSTS', (string) $response->getContent());
     }
 }

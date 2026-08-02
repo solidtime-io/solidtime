@@ -48,8 +48,8 @@ class Kernel extends HttpKernel
      */
     protected $middleware = [
         ForceHttps::class,
-        TrustProxies::class,
         TrustHosts::class,
+        TrustProxies::class,
         HandleCors::class,
         PreventRequestsDuringMaintenance::class,
         ValidatePostSize::class,
