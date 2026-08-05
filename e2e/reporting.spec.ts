@@ -10,6 +10,7 @@ import {
     createTimeEntryWithTagViaApi,
     createTimeEntryWithBillableStatusViaApi,
     createBareTimeEntryViaApi,
+    createTimeEntryOnDateViaApi,
     createPublicProjectViaApi,
     updateOrganizationSettingViaApi,
 } from './utils/api';
@@ -883,6 +884,83 @@ test('test that group by date groups the report by day and formats the date labe
     await expect(page.getByTestId('reporting_view').getByText(/^\d{4}-\d{2}-\d{2}$/)).toHaveCount(
         0
     );
+});
+
+test('test that group by week requests week grouping and does not leak the raw group key', async ({
+    page,
+    ctx,
+}) => {
+    await createTimeEntryViaApi(ctx, {
+        description: 'Entry for group by week',
+        duration: '1h',
+    });
+
+    await goToReporting(page);
+    await expect(page.getByRole('button', { name: 'Export' })).toBeVisible();
+
+    const groupBySelects = page.locator('[data-testid="reporting_view"]').getByRole('combobox');
+    await groupBySelects.filter({ hasText: 'Project' }).first().click();
+
+    const [aggregateResponse] = await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/time-entries/aggregate') &&
+                response.url().includes('group=week') &&
+                response.status() === 200
+        ),
+        page.getByRole('option', { name: 'Week', exact: true }).click(),
+    ]);
+
+    const requestUrl = new URL(aggregateResponse.url());
+    expect(requestUrl.searchParams.get('group')).toBe('week');
+
+    // The raw group key is the first day of the week and must not leak through.
+    await expect(page.getByTestId('reporting_view').getByText(/^\d{4}-\d{2}-\d{2}$/)).toHaveCount(
+        0
+    );
+});
+
+test('test that group by week labels a week spanning new year with a range crossing the year', async ({
+    page,
+    ctx,
+}) => {
+    await updateOrganizationSettingViaApi(ctx, { date_format: 'slash-separated-dd-mm-yyyy' });
+
+    for (const day of ['2025-12-22', '2025-12-29', '2026-01-05']) {
+        await createTimeEntryOnDateViaApi(ctx, {
+            date: new Date(`${day}T09:00:00Z`),
+            duration: '1h',
+            description: `Entry for ${day}`,
+        });
+    }
+
+    // The reporting page keeps its range in session storage, so seed a range spanning new year
+    // rather than driving the date picker.
+    await page.addInitScript(() => {
+        window.sessionStorage.setItem('reporting-start-date', '2025-12-15');
+        window.sessionStorage.setItem('reporting-end-date', '2026-01-15');
+    });
+
+    await goToReporting(page);
+    await expect(page.getByRole('button', { name: 'Export' })).toBeVisible();
+
+    const groupBySelects = page.locator('[data-testid="reporting_view"]').getByRole('combobox');
+    await groupBySelects.filter({ hasText: 'Project' }).first().click();
+    await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/time-entries/aggregate') &&
+                response.url().includes('group=week') &&
+                response.status() === 200
+        ),
+        page.getByRole('option', { name: 'Week', exact: true }).click(),
+    ]);
+
+    const reportingView = page.getByTestId('reporting_view');
+    await expect(reportingView.getByText('22/12/2025 - 28/12/2025', { exact: true })).toBeVisible();
+    await expect(reportingView.getByText('29/12/2025 - 04/01/2026', { exact: true })).toBeVisible();
+    await expect(reportingView.getByText('05/01/2026 - 11/01/2026', { exact: true })).toBeVisible();
+    await expect(reportingView.getByText(/^\d{4}-\d{2}-\d{2}$/)).toHaveCount(0);
 });
 
 // ──────────────────────────────────────────────────

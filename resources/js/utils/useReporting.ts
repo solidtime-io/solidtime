@@ -7,10 +7,15 @@ import { useTasksQuery } from '@/utils/useTasksQuery';
 import { useClientsQuery } from '@/utils/useClientsQuery';
 import { useTagsQuery } from '@/utils/useTagsQuery';
 import { CheckCircleIcon, UserCircleIcon, UserGroupIcon } from '@heroicons/vue/20/solid';
-import { CalendarIcon, DocumentTextIcon, FolderIcon } from '@heroicons/vue/16/solid';
+import {
+    CalendarDaysIcon,
+    CalendarIcon,
+    DocumentTextIcon,
+    FolderIcon,
+} from '@heroicons/vue/16/solid';
 import { Coffee } from '@lucide/vue';
 import BillableIcon from '@/packages/ui/src/Icons/BillableIcon.vue';
-import { type DateFormat, formatDate } from '@/packages/ui/src/utils/time';
+import { type DateFormat, formatDate, formatWeekRange } from '@/packages/ui/src/utils/time';
 
 export type GroupingOption =
     | 'project'
@@ -21,7 +26,8 @@ export type GroupingOption =
     | 'description'
     | 'tag'
     | 'type'
-    | 'day';
+    | 'day'
+    | 'week';
 
 export const useReportingStore = defineStore('reporting', () => {
     // Cache query composables to avoid creating new subscriptions on every call
@@ -85,6 +91,9 @@ export const useReportingStore = defineStore('reporting', () => {
         if (type === 'day') {
             return formatDate(key, dateFormat);
         }
+        if (type === 'week') {
+            return formatWeekRange(key, dateFormat);
+        }
         return key;
     }
 
@@ -137,6 +146,11 @@ export const useReportingStore = defineStore('reporting', () => {
             label: 'Date',
             value: 'day',
             icon: CalendarIcon,
+        },
+        {
+            label: 'Week',
+            value: 'week',
+            icon: CalendarDaysIcon,
         },
     ];
 

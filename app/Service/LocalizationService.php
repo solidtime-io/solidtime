@@ -155,14 +155,9 @@ class LocalizationService
     }
 
     /**
-     * Time group types have no server-side descriptor, so reports fall back to rendering the raw
-     * aggregation key. For the Day type that key is an ISO date (Y-m-d), which is formatted here
-     * so exports match the rest of the UI instead of leaking the key.
-     *
-     * Week, month and year keys have different shapes ('Y-m-d' for the week start, 'Y-m' and 'Y'),
-     * and are not offered as a grouping in the reporting UI, so they are returned unchanged.
-     * Presenting those needs its own decision: a week rendered as its start date reads as a single
-     * day, and a month rendered with a full date format reads as a specific day.
+     * Time group types have no server-side descriptor; Day and Week keys are ISO dates and
+     * formatted here instead. A Week key is the first day of that week, so it renders as the
+     * range it covers.
      */
     public function formatTimeGroupKey(?string $key, TimeEntryAggregationType $groupType): ?string
     {
@@ -170,11 +165,17 @@ class LocalizationService
             return null;
         }
 
-        if ($groupType !== TimeEntryAggregationType::Day) {
-            return $key;
+        if ($groupType === TimeEntryAggregationType::Day) {
+            return $this->formatDate(Carbon::parse($key));
         }
 
-        return $this->formatDate(Carbon::parse($key));
+        if ($groupType === TimeEntryAggregationType::Week) {
+            $weekStart = Carbon::parse($key);
+
+            return $this->formatDate($weekStart).' - '.$this->formatDate($weekStart->copy()->addDays(6));
+        }
+
+        return $key;
     }
 
     public function setDateFormat(DateFormat $dateFormat): void
