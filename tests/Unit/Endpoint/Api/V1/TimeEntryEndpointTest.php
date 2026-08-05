@@ -17,6 +17,7 @@ use App\Jobs\RecalculateSpentTimeForProject;
 use App\Jobs\RecalculateSpentTimeForTask;
 use App\Models\Client;
 use App\Models\Member;
+use App\Models\Organization;
 use App\Models\Project;
 use App\Models\Tag;
 use App\Models\Task;
@@ -1740,6 +1741,112 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         $this->assertIsString($csv);
         $this->assertStringContainsString('14/03/2024', $csv);
         $this->assertStringNotContainsString('2024-03-14', $csv);
+    }
+
+    /**
+     * @return array{0: Organization, 1: Member, 2: User}
+     */
+    private function createWeeksSpanningNewYear(): array
+    {
+        $data = $this->createUserWithPermission([
+            'time-entries:view:all',
+        ]);
+        // Note: the organization factory randomizes the date format, so pin it
+        $data->organization->update(['date_format' => DateFormat::SlashSeparatedDDMMYYYY]);
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        // Note: the user factory pins the week start to Monday, so these land in predictable buckets
+        foreach (['2025-12-22', '2025-12-29', '2026-01-05'] as $day) {
+            TimeEntry::factory()->forOrganization($data->organization)->forProject($project)->forMember($data->member)
+                ->startWithDuration(Carbon::parse($day.' 09:00:00', 'UTC'), 3600)->create();
+        }
+
+        return [$data->organization, $data->member, $data->user];
+    }
+
+    public function test_aggregate_export_csv_labels_a_week_group_with_its_date_range(): void
+    {
+        // Arrange
+        $this->travelTo(Carbon::create(2026, 1, 15, 12, 0, 0, 'UTC'));
+        [$organization, , $user] = $this->createWeeksSpanningNewYear();
+        Passport::actingAs($user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.time-entries.aggregate-export', [
+            $organization->getKey(),
+            'format' => ExportFormat::CSV,
+            'group' => TimeEntryAggregationType::Week,
+            'sub_group' => TimeEntryAggregationType::Project,
+            'history_group' => TimeEntryAggregationTypeInterval::Week,
+            'start' => Carbon::parse('2025-12-15 00:00:00', 'UTC')->toIso8601ZuluString(),
+            'end' => Carbon::parse('2026-01-15 23:59:59', 'UTC')->toIso8601ZuluString(),
+        ]));
+
+        // Assert
+        $this->assertResponseCode($response, 200);
+        $disk = Storage::disk(config('filesystems.private'));
+        $files = $disk->files('exports');
+        $this->assertCount(1, $files);
+        $csv = $disk->get($files[0]);
+        $this->assertIsString($csv);
+        $this->assertStringContainsString('22/12/2025 - 28/12/2025', $csv);
+        $this->assertStringContainsString('29/12/2025 - 04/01/2026', $csv);
+        $this->assertStringContainsString('05/01/2026 - 11/01/2026', $csv);
+        $this->assertStringNotContainsString('2025-12-29', $csv);
+        $this->assertStringNotContainsString('2025-12-22', $csv);
+    }
+
+    public function test_aggregate_export_endpoints_can_create_a_pdf_report_grouped_by_week_spanning_new_year(): void
+    {
+        // Arrange
+        $this->travelTo(Carbon::create(2026, 1, 15, 12, 0, 0, 'UTC'));
+        [$organization, , $user] = $this->createWeeksSpanningNewYear();
+        Passport::actingAs($user);
+        $this->actAsOrganizationWithSubscription();
+
+        // Act
+        // Note: a week 1 label carries a comma and reaches the echarts series in a <script> tag
+        $response = $this->getJson(route('api.v1.time-entries.aggregate-export', [
+            $organization->getKey(),
+            'format' => ExportFormat::PDF,
+            'group' => TimeEntryAggregationType::Week,
+            'sub_group' => TimeEntryAggregationType::Project,
+            'history_group' => TimeEntryAggregationTypeInterval::Week,
+            'start' => Carbon::parse('2025-12-15 00:00:00', 'UTC')->toIso8601ZuluString(),
+            'end' => Carbon::parse('2026-01-15 23:59:59', 'UTC')->toIso8601ZuluString(),
+        ]));
+
+        // Assert
+        $this->assertResponseCode($response, 200);
+    }
+
+    public function test_aggregate_export_pdf_labels_a_week_group_with_its_date_range(): void
+    {
+        // Arrange
+        $this->travelTo(Carbon::create(2026, 1, 15, 12, 0, 0, 'UTC'));
+        [$organization, , $user] = $this->createWeeksSpanningNewYear();
+        Passport::actingAs($user);
+        $this->actAsOrganizationWithSubscription();
+
+        // Act
+        // Note: debug=true returns the rendered HTML instead of handing it to the PDF renderer.
+        $response = $this->getJson(route('api.v1.time-entries.aggregate-export', [
+            $organization->getKey(),
+            'format' => ExportFormat::PDF,
+            'group' => TimeEntryAggregationType::Week,
+            'sub_group' => TimeEntryAggregationType::Project,
+            'history_group' => TimeEntryAggregationTypeInterval::Week,
+            'start' => Carbon::parse('2025-12-15 00:00:00', 'UTC')->toIso8601ZuluString(),
+            'end' => Carbon::parse('2026-01-15 23:59:59', 'UTC')->toIso8601ZuluString(),
+            'debug' => 'true',
+        ]));
+
+        // Assert
+        $this->assertResponseCode($response, 200);
+        $html = $response->json('html');
+        $this->assertIsString($html);
+        $this->assertStringContainsString('22/12/2025 - 28/12/2025', $html);
+        $this->assertStringContainsString('29/12/2025 - 04/01/2026', $html);
+        $this->assertStringNotContainsString('2025-12-29', $html);
     }
 
     public function test_index_export_endpoint_with_client_ids_filter_returns_filtered_entries(): void
