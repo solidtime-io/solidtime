@@ -6,7 +6,7 @@ namespace App\Http\Middleware;
 
 use Illuminate\Http\Middleware\TrustHosts as BaseTrustHosts;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Http\Response;
 
 /**
  * Rejects requests whose Host is not trusted, preventing Host-header poisoning of
