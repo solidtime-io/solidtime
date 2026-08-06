@@ -19,7 +19,7 @@ class TrustHosts extends BaseTrustHosts
     /**
      * @return array<int, string|null>
      */
-    public function hosts()
+    public function hosts(): array
     {
         /** @var array<int, string> $configured */
         $configured = config('app.trusted_hosts', []);
@@ -40,9 +40,8 @@ class TrustHosts extends BaseTrustHosts
 
     /**
      * @param  \Closure(Request): Response  $next
-     * @return Response
      */
-    public function handle(Request $request, $next)
+    public function handle(Request $request, $next): Response
     {
         // Exempt health checks (probed by IP). Also reset the trusted hosts,
         // since Octane leaks the static state across requests.
