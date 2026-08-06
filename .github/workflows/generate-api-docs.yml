@@ -8,7 +8,7 @@ permissions:
 
 jobs:
   api_docs:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     timeout-minutes: 10
 
     services:

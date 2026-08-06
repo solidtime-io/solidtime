@@ -28,7 +28,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - runs-on: "ubuntu-24.04-arm"
+          - runs-on: "blacksmith-4vcpu-ubuntu-2404-arm"
             platform: "linux/arm64"
           - runs-on: "ubuntu-24.04"
             platform: "linux/amd64"
@@ -164,7 +164,7 @@ jobs:
           retention-days: 1
 
   merge:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     timeout-minutes: 90
     needs:
       - build

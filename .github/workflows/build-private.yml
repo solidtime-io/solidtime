@@ -18,7 +18,7 @@ permissions:
 name: Build - Private
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     timeout-minutes: 20
 
 
