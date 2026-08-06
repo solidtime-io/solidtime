@@ -41,7 +41,7 @@ class TrustHosts extends BaseTrustHosts
     /**
      * @param  \Closure(Request): Response  $next
      */
-    public function handle(Request $request, $next): Response
+    public function handle(Request $request, $next)
     {
         // Exempt health checks (probed by IP). Also reset the trusted hosts,
         // since Octane leaks the static state across requests.
