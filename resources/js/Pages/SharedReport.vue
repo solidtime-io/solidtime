@@ -3,7 +3,7 @@ import MainContainer from '@/packages/ui/src/MainContainer.vue';
 import PageTitle from '@/Components/Common/PageTitle.vue';
 import { ChartBarIcon } from '@heroicons/vue/20/solid';
 import ReportingChart from '@/Components/Common/Reporting/ReportingChart.vue';
-import { formatReportingDuration } from '@/packages/ui/src/utils/time';
+import { formatDate, formatReportingDuration, formatWeek } from '@/packages/ui/src/utils/time';
 import ReportingRow from '@/Components/Common/Reporting/ReportingRow.vue';
 import ReportingPieChart from '@/Components/Common/Reporting/ReportingPieChart.vue';
 import { formatCents } from '@/packages/ui/src/utils/money';
@@ -118,46 +118,47 @@ const subGroup = computed(() => {
 });
 const { emptyPlaceholder } = useReportingStore();
 
+function getEntryName(key: string | null, description: string | null, type?: string | null) {
+    if (key !== null && type && ['day', 'week', 'month', 'year'].includes(type)) {
+        return type === 'week' ? formatWeek(key) : formatDate(key, reportDateFormat.value);
+    }
+    return description ?? emptyPlaceholder[type ?? 'project'] ?? '';
+}
+
 const groupedPieChartData = computed(() => {
+    const groupedType = aggregatedTableTimeEntries.value?.grouped_type;
     return (
         aggregatedTableTimeEntries.value?.grouped_data?.map((entry) => {
-            if (entry.description === null) {
+            const name = getEntryName(entry.key, entry.description, groupedType);
+            if (entry.key === null) {
                 return {
                     value: entry.seconds,
-                    name:
-                        emptyPlaceholder[
-                            aggregatedTableTimeEntries.value?.grouped_type ?? 'project'
-                        ] ?? '',
+                    name,
                     color: '#CCCCCC',
                 };
             }
             return {
                 value: entry.seconds,
-                name: entry.description,
-                color: entry.color ?? getRandomColorWithSeed(entry.description ?? 'none'),
+                name,
+                color: entry.color ?? getRandomColorWithSeed(name),
             };
         }) ?? []
     );
 });
 
 const tableData = computed(() => {
+    const groupedType = aggregatedTableTimeEntries.value?.grouped_type;
     return aggregatedTableTimeEntries.value?.grouped_data?.map((entry) => {
         return {
             seconds: entry.seconds,
             cost: entry.cost,
-            description:
-                entry.description ??
-                emptyPlaceholder[aggregatedTableTimeEntries.value?.grouped_type ?? 'project'] ??
-                '',
+            description: getEntryName(entry.key, entry.description, groupedType),
             grouped_data:
                 entry.grouped_data?.map((el) => {
                     return {
                         seconds: el.seconds,
                         cost: el.cost,
-                        description:
-                            el.description ??
-                            emptyPlaceholder[entry.grouped_type ?? 'project'] ??
-                            '',
+                        description: getEntryName(el.key, el.description, entry.grouped_type),
                     };
                 }) ?? [],
         };
@@ -166,10 +167,21 @@ const tableData = computed(() => {
 
 const { groupByOptions } = useReportingStore();
 
+const dateGroupLabels: Record<string, string> = {
+    day: 'Days',
+    week: 'Weeks',
+    month: 'Months',
+    year: 'Years',
+};
+
 function getGroupLabel(key: string) {
-    return groupByOptions.find((option) => {
-        return option.value === key;
-    })?.label;
+    return (
+        dateGroupLabels[key] ??
+        groupByOptions.find((option) => {
+            return option.value === key;
+        })?.label ??
+        key
+    );
 }
 
 onMounted(async () => {
