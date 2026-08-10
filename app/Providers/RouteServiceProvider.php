@@ -33,8 +33,8 @@ class RouteServiceProvider extends ServiceProvider
             }
 
             return $request->user()
-                ? Limit::perMinute(config('rate-limiting.api.authenticated'))->by($request->user()->id)
-                : Limit::perMinute(config('rate-limiting.api.guest'))->by($request->ip());
+                ? Limit::perMinute(config('services.api.authenticated'))->by($request->user()->id)
+                : Limit::perMinute(config('services.api.guest'))->by($request->ip());
         });
 
         $this->routes(function (): void {
