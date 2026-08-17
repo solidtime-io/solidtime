@@ -57,6 +57,16 @@ import {
     CalendarNextButton,
     CalendarPrevButton,
 } from './calendar/index';
+import {
+    Combobox,
+    ComboboxAnchor,
+    ComboboxInput,
+    ComboboxItem,
+    ComboboxList,
+    ComboboxSeparator,
+    ComboboxTrigger,
+    ComboboxViewport,
+} from './combobox/index';
 import { CommandPalette } from './CommandPalette/index';
 import {
     ContextMenu,
@@ -176,6 +186,14 @@ export {
     CardTitle,
     Checkbox,
     color,
+    Combobox,
+    ComboboxAnchor,
+    ComboboxInput,
+    ComboboxItem,
+    ComboboxList,
+    ComboboxSeparator,
+    ComboboxTrigger,
+    ComboboxViewport,
     CommandPalette,
     ContextMenu,
     ContextMenuCheckboxItem,
