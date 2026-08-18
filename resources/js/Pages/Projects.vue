@@ -4,7 +4,7 @@ import AppLayout from '@/Layouts/AppLayout.vue';
 import { FolderIcon, PlusIcon } from '@heroicons/vue/20/solid';
 import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
 import ProjectTable from '@/Components/Common/Project/ProjectTable.vue';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useProjectsQuery } from '@/utils/useProjectsQuery';
 import { useProjectsStore } from '@/utils/useProjects';
 import ProjectCreateModal from '@/packages/ui/src/Project/ProjectCreateModal.vue';
@@ -62,9 +62,20 @@ const { tableState, handleSort } = useTableSortState<SortColumn, ProjectTableSta
     })
 );
 
+// Search is intentionally not persisted in tableState, so a reload never leaves
+// the table silently filtered by a term the user has forgotten about.
+const search = ref('');
+
 // Filter projects based on current filters
 const filteredProjects = computed(() => {
+    const searchTerm = search.value.trim().toLowerCase();
+
     return projects.value.filter((project) => {
+        // Name search
+        if (searchTerm && !project.name.toLowerCase().includes(searchTerm)) {
+            return false;
+        }
+
         // Status filter
         if (tableState.value.filters.status === 'active' && project.is_archived) {
             return false;
@@ -157,6 +168,14 @@ const showBillableRate = computed(() => {
                     :filters="tableState.filters"
                     :clients="clients"
                     @update:filters="tableState.filters = $event" />
+
+                <!-- Same style as the dropdown search inputs, see MultiselectDropdown.vue -->
+                <input
+                    v-model="search"
+                    type="search"
+                    data-testid="project_search"
+                    placeholder="Search for a Project..."
+                    class="w-60 h-8 rounded-md border border-input-border bg-input-background px-3 text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none" />
 
                 <!-- Active Filters -->
                 <ProjectStatusFilterBadge
