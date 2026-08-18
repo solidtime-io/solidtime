@@ -253,7 +253,9 @@ const page = usePage<{
                                 v-if="isInvoicingActivated() && canViewInvoices()"
                                 title="Invoices"
                                 :icon="DocumentTextIcon"
-                                :current="route().current('invoices')"
+                                :current="
+                                    route().current('invoices') || route().current('invoices.*')
+                                "
                                 href="/invoices"></NavigationSidebarItem>
                         </ul>
                     </nav>
