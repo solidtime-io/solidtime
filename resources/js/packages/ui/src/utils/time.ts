@@ -246,6 +246,15 @@ export function formatWeekRange(date: string, format?: DateFormat): string {
 }
 
 /*
+ * Returns the month that the given key falls in. There is no `DateFormat` variant for a
+ * month, so this is not affected by the organization date format.
+ * @param date - a month, in the format of 'YYYY-MM'
+ */
+export function formatMonth(date: string): string {
+    return getDayJsInstance()(date).format('MMMM YYYY');
+}
+
+/*
  * Returns a human readable date format.
  * @param date - date in the format of 'YYYY-MM-DD'
  */

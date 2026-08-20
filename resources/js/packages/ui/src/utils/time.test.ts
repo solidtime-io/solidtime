@@ -1,5 +1,10 @@
 import { describe, expect, test } from 'vitest';
-import { formatHumanReadableDuration, formatReportingDuration, formatWeekRange } from './time';
+import {
+    formatHumanReadableDuration,
+    formatMonth,
+    formatReportingDuration,
+    formatWeekRange,
+} from './time';
 
 const seconds = 14 * 3600 + 45 * 60 + 6; // 14h 45m 06s
 
@@ -58,5 +63,11 @@ describe('formatWeekRange', () => {
         expect(formatWeekRange('2025-12-29', 'slash-separated-dd-mm-yyyy')).toBe(
             '29/12/2025 - 04/01/2026'
         );
+    });
+});
+
+describe('formatMonth', () => {
+    test('renders the name of the month that the key covers', () => {
+        expect(formatMonth('2001-02')).toBe('February 2001');
     });
 });
