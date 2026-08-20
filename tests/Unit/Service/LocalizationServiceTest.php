@@ -364,14 +364,27 @@ class LocalizationServiceTest extends TestCaseWithDatabase
         $this->assertSame('29/12/2025 - 04/01/2026', $formatted);
     }
 
-    public function test_format_time_group_key_does_not_change_month_year_and_entity_group_types(): void
+    public function test_format_time_group_key_formats_a_month_key_and_does_not_change_year_and_entity_group_types(): void
     {
         // Arrange
         $this->localizationService->setDateFormat(DateFormat::SlashSeparatedDDMMYYYY);
 
         // Act & Assert
-        $this->assertSame('2001-02', $this->localizationService->formatTimeGroupKey('2001-02', TimeEntryAggregationType::Month));
+        $this->assertSame('February 2001', $this->localizationService->formatTimeGroupKey('2001-02', TimeEntryAggregationType::Month));
         $this->assertSame('2001', $this->localizationService->formatTimeGroupKey('2001', TimeEntryAggregationType::Year));
         $this->assertSame('some-uuid', $this->localizationService->formatTimeGroupKey('some-uuid', TimeEntryAggregationType::Project));
+    }
+
+    public function test_format_time_group_key_formats_a_month_key_independently_of_the_current_day_of_month(): void
+    {
+        // Arrange
+        // Note: the current day of the month must not leak into the parsed month. The 31st does
+        // not exist in April, so a leaked day overflows the date into the following month.
+        $this->travelTo(Carbon::create(2026, 8, 31, 12, 0, 0, 'UTC'));
+
+        // Act & Assert
+        $this->assertSame('February 2001', $this->localizationService->formatTimeGroupKey('2001-02', TimeEntryAggregationType::Month));
+        $this->assertSame('April 2026', $this->localizationService->formatTimeGroupKey('2026-04', TimeEntryAggregationType::Month));
+        $this->assertSame('December 2026', $this->localizationService->formatTimeGroupKey('2026-12', TimeEntryAggregationType::Month));
     }
 }

@@ -155,9 +155,10 @@ class LocalizationService
     }
 
     /**
-     * Time group types have no server-side descriptor; Day and Week keys are ISO dates and
+     * Time group types have no server-side descriptor; their keys are ISO dates and are
      * formatted here instead. A Week key is the first day of that week, so it renders as the
-     * range it covers.
+     * range it covers. A Year key is already a bare year, so it is returned unchanged - it must
+     * not be parsed, Carbon reads a four digit string as a time of day.
      */
     public function formatTimeGroupKey(?string $key, TimeEntryAggregationType $groupType): ?string
     {
@@ -173,6 +174,13 @@ class LocalizationService
             $weekStart = Carbon::parse($key);
 
             return $this->formatDate($weekStart).' - '.$this->formatDate($weekStart->copy()->addDays(6));
+        }
+
+        if ($groupType === TimeEntryAggregationType::Month) {
+            // Note: the leading "!" resets all fields the format does not name. Without it the
+            // day of the month is taken from today, and a day that the parsed month does not
+            // have overflows the date into the next month.
+            return Carbon::createFromFormat('!Y-m', $key)->format('F Y');
         }
 
         return $key;

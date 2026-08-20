@@ -15,7 +15,12 @@ import {
 } from '@heroicons/vue/16/solid';
 import { Coffee } from '@lucide/vue';
 import BillableIcon from '@/packages/ui/src/Icons/BillableIcon.vue';
-import { type DateFormat, formatDate, formatWeekRange } from '@/packages/ui/src/utils/time';
+import {
+    type DateFormat,
+    formatDate,
+    formatMonth,
+    formatWeekRange,
+} from '@/packages/ui/src/utils/time';
 
 export type GroupingOption =
     | 'project'
@@ -27,7 +32,9 @@ export type GroupingOption =
     | 'tag'
     | 'type'
     | 'day'
-    | 'week';
+    | 'week'
+    | 'month'
+    | 'year';
 
 export const useReportingStore = defineStore('reporting', () => {
     // Cache query composables to avoid creating new subscriptions on every call
@@ -94,6 +101,10 @@ export const useReportingStore = defineStore('reporting', () => {
         if (type === 'week') {
             return formatWeekRange(key, dateFormat);
         }
+        if (type === 'month') {
+            return formatMonth(key);
+        }
+        // A `year` key is already a bare year, so it falls through unchanged.
         return key;
     }
 
