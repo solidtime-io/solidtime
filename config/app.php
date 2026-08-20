@@ -160,6 +160,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | API Rate Limiting
+    |--------------------------------------------------------------------------
+    |
+    | The number of API requests allowed per minute, counted per user for
+    | authenticated requests and per IP address for guest requests. These
+    | limits are only enforced when the application runs in production.
+    |
+    */
+
+    'api_rate_limit_authenticated_per_minute' => (int) (env('API_RATE_LIMIT_AUTH_PER_MINUTE') ?: 200),
+
+    'api_rate_limit_guest_per_minute' => (int) (env('API_RATE_LIMIT_GUEST_PER_MINUTE') ?: 60),
+
+    /*
+    |--------------------------------------------------------------------------
     | Encryption Key
     |--------------------------------------------------------------------------
     |
