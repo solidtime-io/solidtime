@@ -18,6 +18,7 @@ bufferhead-code
 candideu
 kasparrosin
 korridor
+nikbucher tasks table sorting
 onatcer
 shrootbuck
 smilebeda
