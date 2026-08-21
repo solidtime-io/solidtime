@@ -357,7 +357,7 @@ export async function createProjectWithClientViaApi(
 
 export async function createTaskViaApi(
     ctx: TestContext,
-    data: { name: string; project_id: string }
+    data: { name: string; project_id: string; estimated_time?: number }
 ) {
     const response = await ctx.request.post(
         `${PLAYWRIGHT_BASE_URL}/api/v1/organizations/${ctx.orgId}/tasks`,
@@ -365,12 +365,20 @@ export async function createTaskViaApi(
             data: {
                 name: data.name,
                 project_id: data.project_id,
+                ...(data.estimated_time !== undefined
+                    ? { estimated_time: data.estimated_time }
+                    : {}),
             },
         }
     );
     expect(response.status()).toBe(201);
     const body = await response.json();
-    return body.data as { id: string; name: string; project_id: string };
+    return body.data as {
+        id: string;
+        name: string;
+        project_id: string;
+        estimated_time: number | null;
+    };
 }
 
 export async function markTaskDoneViaApi(ctx: TestContext, task: { id: string; name: string }) {
