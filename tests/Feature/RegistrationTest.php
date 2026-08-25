@@ -89,6 +89,75 @@ class RegistrationTest extends TestCaseWithDatabase
         Event::assertNotDispatched(NewsletterRegistered::class);
     }
 
+    public function test_user_registration_fails_without_an_invitation_if_registration_is_invite_only(): void
+    {
+        Config::set('app.enable_registration', 'invite-only');
+
+        $response = $this->post('/register', [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+            'terms' => true,
+        ]);
+
+        $response->assertInvalid([
+            'email' => 'Registration is only available to invited users.',
+        ]);
+        $this->assertFalse(User::query()->where('email', 'test@example.com')->exists());
+    }
+
+    public function test_invited_user_can_register_if_registration_is_invite_only(): void
+    {
+        Config::set('app.enable_registration', 'invite');
+        $user = $this->createUserWithPermission();
+        OrganizationInvitation::factory()
+            ->forOrganization($user->organization)
+            ->role(Role::Employee)
+            ->accepted()
+            ->create([
+                'email' => 'Invited.User@example.com',
+            ]);
+
+        $response = $this->post('/register', [
+            'name' => 'Invited User',
+            'email' => 'invited.user@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+            'terms' => true,
+        ]);
+
+        $response->assertValid();
+        $this->assertAuthenticated();
+        $response->assertRedirect(RouteServiceProvider::HOME);
+        $newUser = User::query()->where('email', 'invited.user@example.com')->firstOrFail();
+        $this->assertSame($user->organization->getKey(), $newUser->organizations()->firstOrFail()->getKey());
+    }
+
+    public function test_pending_invitation_allows_registration_if_registration_is_invite_only(): void
+    {
+        Config::set('app.enable_registration', 'invite-only');
+        $user = $this->createUserWithPermission();
+        OrganizationInvitation::factory()
+            ->forOrganization($user->organization)
+            ->role(Role::Employee)
+            ->create([
+                'email' => 'test@example.com',
+            ]);
+
+        $response = $this->post('/register', [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+            'terms' => true,
+        ]);
+
+        $response->assertValid();
+        $this->assertAuthenticated();
+        $response->assertRedirect(RouteServiceProvider::HOME);
+    }
+
     public function test_new_user_can_not_register_with_likely_invalid_domain(): void
     {
         // Act
