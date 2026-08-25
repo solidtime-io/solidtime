@@ -100,7 +100,7 @@ return [
 
     'force_https' => (bool) env('APP_FORCE_HTTPS', false),
 
-    'enable_registration' => (bool) env('APP_ENABLE_REGISTRATION', false),
+    'enable_registration' => env('APP_ENABLE_REGISTRATION', false),
 
     'local_email_verification' => (bool) env('APP_LOCAL_EMAIL_VERIFICATION', false),
 

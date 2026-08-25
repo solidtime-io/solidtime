@@ -18,6 +18,13 @@ use Illuminate\Support\Facades\Mail;
 
 class InvitationService
 {
+    public function hasInvitationForEmail(string $email): bool
+    {
+        return OrganizationInvitation::query()
+            ->whereRaw('lower(email) = ?', [strtolower($email)])
+            ->exists();
+    }
+
     /**
      * @throws UserIsAlreadyMemberOfOrganizationApiException|InvitationForTheEmailAlreadyExistsApiException
      */

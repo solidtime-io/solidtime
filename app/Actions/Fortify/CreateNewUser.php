@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Actions\Fortify;
 
+use App\Enums\RegistrationMode;
 use App\Enums\Weekday;
 use App\Events\NewsletterRegistered;
 use App\Models\User;
+use App\Service\InvitationService;
 use App\Service\IpLookup\IpLookupServiceContract;
 use App\Service\TimezoneService;
 use App\Service\UserService;
@@ -31,13 +33,14 @@ class CreateNewUser implements CreatesNewUsers
      */
     public function create(array $input): User
     {
-        if (! config('app.enable_registration')) {
+        $registrationMode = RegistrationMode::fromConfig(config('app.enable_registration'));
+        if ($registrationMode === RegistrationMode::Off) {
             throw ValidationException::withMessages([
                 'email' => [__('Registration is disabled.')],
             ]);
         }
 
-        Validator::make($input, [
+        $validated = Validator::make($input, [
             'name' => [
                 'required',
                 'string',
@@ -59,6 +62,13 @@ class CreateNewUser implements CreatesNewUsers
                 'boolean',
             ],
         ])->validate();
+
+        if ($registrationMode === RegistrationMode::InviteOnly
+            && ! app(InvitationService::class)->hasInvitationForEmail((string) $validated['email'])) {
+            throw ValidationException::withMessages([
+                'email' => [__('Registration is only available to invited users.')],
+            ]);
+        }
 
         $timezone = null;
         if (array_key_exists('timezone', $input) && is_string($input['timezone'])) {
