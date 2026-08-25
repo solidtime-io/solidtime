@@ -1,7 +1,7 @@
 {
     "Billing": {
         "repository": "solidtime-io/extension-billing",
-        "ref": "v0.0.5"
+        "ref": "feature/cancel-trial-filament-action"
     },
     "Services": {
         "repository": "solidtime-io/extension-services",
