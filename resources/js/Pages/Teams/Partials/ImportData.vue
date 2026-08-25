@@ -198,7 +198,7 @@ const showResultModal = ref(false);
                                 for="file-upload"
                                 class="relative cursor-pointer rounded-md font-semibold text-text-primary focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2 focus-within:ring-offset-gray-900 hover:text-indigo-500">
                                 <span v-if="files">{{ filenames }}</span>
-                                <span v-else>Upload a Toggl/Clockify Export</span>
+                                <span v-else>Upload the Export file</span>
                                 <input
                                     id="file-upload"
                                     ref="importFile"
