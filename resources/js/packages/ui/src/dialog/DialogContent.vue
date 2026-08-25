@@ -27,7 +27,8 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits);
         <DialogOverlay
             class="fixed top-0 left-0 z-50 w-screen h-screen [height:100dvh] backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0">
             <div class="absolute inset-0 bg-default-background opacity-30" />
-            <div class="absolute inset-0 overflow-y-auto overscroll-contain flex items-start justify-center px-2">
+            <div
+                class="absolute inset-0 overflow-y-auto overscroll-contain flex items-start justify-center px-2">
                 <DialogContent
                     v-bind="forwarded"
                     :class="
