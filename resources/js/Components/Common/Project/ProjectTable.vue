@@ -87,7 +87,7 @@ const columns = computed<SortableColumnDef<Project, SortColumn>[]>(() => [
     {
         id: 'billable_rate',
         sortDescFirst: true,
-        accessorFn: (row: Project) => row.billable_rate ?? 0,
+        accessorFn: (row: Project) => row.billable_rate,
     },
     {
         id: 'status',

@@ -13,7 +13,7 @@ import {
     archiveProjectViaApi,
     updateOrganizationSettingViaApi,
 } from './utils/api';
-import { clearTableState, getTableRowNames } from './utils/table';
+import { clearTableState, getSeededRowOrder } from './utils/table';
 
 async function goToProjectsOverview(page: Page) {
     await page.goto(PLAYWRIGHT_BASE_URL + '/projects');
@@ -654,13 +654,11 @@ test('test that projects without a client or estimate are ordered by name at the
     page,
     ctx,
 }) => {
-    // The seeding below has to cross two second boundaries, which eats into the default
-    // per-test budget.
-    test.slow();
-
+    // Seeded a second apart: created_at only has second precision and same-second rows
+    // fall back to a random UUID order. The spacing makes the API order of the clientless
+    // rows (created_at desc: ZZZ, AAA) deterministic and different from the alphabetical
+    // order the name tie-break should produce.
     await createProjectViaApi(ctx, { name: 'AAA Tiebreak Project' });
-    await page.waitForTimeout(1100);
-    await createProjectViaApi(ctx, { name: 'BBB Tiebreak Project' });
     await page.waitForTimeout(1100);
     await createProjectViaApi(ctx, { name: 'ZZZ Tiebreak Project' });
 
@@ -688,17 +686,11 @@ test('test that projects without a client or estimate are ordered by name at the
 
     const seeded = [
         'AAA Tiebreak Project',
-        'BBB Tiebreak Project',
         'MMM Tiebreak Project',
         'NNN Tiebreak Project',
         'ZZZ Tiebreak Project',
     ];
-    const getOrder = async () => {
-        const rowNames = await getTableRowNames(table);
-        return rowNames
-            .map((rowName) => seeded.find((name) => rowName.includes(name)))
-            .filter((name): name is string => Boolean(name));
-    };
+    const getOrder = () => getSeededRowOrder(table, seeded);
 
     // -- Client: empty rows last in both directions, alphabetical among themselves --
     const clientHeader = table.locator('.select-none', { hasText: 'Client' }).first();
@@ -709,7 +701,6 @@ test('test that projects without a client or estimate are ordered by name at the
             'MMM Tiebreak Project',
             'NNN Tiebreak Project',
             'AAA Tiebreak Project',
-            'BBB Tiebreak Project',
             'ZZZ Tiebreak Project',
         ]);
 
@@ -720,7 +711,6 @@ test('test that projects without a client or estimate are ordered by name at the
             'NNN Tiebreak Project',
             'MMM Tiebreak Project',
             'AAA Tiebreak Project',
-            'BBB Tiebreak Project',
             'ZZZ Tiebreak Project',
         ]);
 
@@ -733,7 +723,6 @@ test('test that projects without a client or estimate are ordered by name at the
             'NNN Tiebreak Project',
             'MMM Tiebreak Project',
             'AAA Tiebreak Project',
-            'BBB Tiebreak Project',
             'ZZZ Tiebreak Project',
         ]);
 
@@ -744,7 +733,6 @@ test('test that projects without a client or estimate are ordered by name at the
             'MMM Tiebreak Project',
             'NNN Tiebreak Project',
             'AAA Tiebreak Project',
-            'BBB Tiebreak Project',
             'ZZZ Tiebreak Project',
         ]);
 });

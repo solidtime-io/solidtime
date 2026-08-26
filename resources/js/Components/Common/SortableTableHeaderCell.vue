@@ -1,6 +1,7 @@
 <script setup lang="ts" generic="TColumn extends string">
 import { computed, useAttrs } from 'vue';
-import { twMerge } from 'tailwind-merge';
+import type { ClassValue } from 'clsx';
+import { cn } from '@/lib/utils';
 import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/vue/16/solid';
 import type { SortDirection } from '@/utils/useSortableTable';
 
@@ -29,24 +30,15 @@ const isChevronDown = computed(() => {
 });
 
 const cellClass = computed(() =>
-    twMerge(
+    cn(
         'px-3 py-1.5 text-left text-text-tertiary cursor-pointer hover:bg-secondary hover:text-text-primary transition-colors select-none flex items-center gap-1',
-        attrs.class as string | undefined
+        attrs.class as ClassValue
     )
 );
-
-const passthroughAttrs = computed(() => {
-    const { class: _class, ...rest } = attrs;
-    return rest;
-});
 </script>
 
 <template>
-    <button
-        v-bind="passthroughAttrs"
-        type="button"
-        :class="cellClass"
-        @click="emit('sort', column)">
+    <button type="button" :class="cellClass" @click="emit('sort', column)">
         <slot></slot>
         <span class="sr-only">
             {{
