@@ -16,6 +16,16 @@ export async function getTableRowNames(table: Locator): Promise<string[]> {
 }
 
 /**
+ * The visual order of the given seeded names within the table, ignoring any other rows.
+ */
+export async function getSeededRowOrder(table: Locator, seeded: string[]): Promise<string[]> {
+    const rowNames = await getTableRowNames(table);
+    return rowNames
+        .map((rowName) => seeded.find((name) => rowName.includes(name)))
+        .filter((name): name is string => Boolean(name));
+}
+
+/**
  * Drop a table's persisted sort/filter state so a test starts from the defaults.
  */
 export async function clearTableState(page: Page, key: string) {
