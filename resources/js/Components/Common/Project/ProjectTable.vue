@@ -16,7 +16,7 @@ export type SortColumn =
     | 'billable_rate'
     | 'status'
     | 'visibility';
-export type SortDirection = 'asc' | 'desc';
+export type { SortDirection } from '@/utils/useSortableTable';
 import { canCreateProjects } from '@/utils/permissions';
 import type { CreateProjectBody, Project, Client, CreateClientBody } from '@/packages/api/src';
 import { useProjectsStore } from '@/utils/useProjects';
@@ -27,11 +27,10 @@ import { isAllowedToPerformPremiumAction } from '@/utils/billing';
 import { useOrganizationQuery } from '@/utils/useOrganizationQuery';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import {
-    useVueTable,
-    getCoreRowModel,
-    getSortedRowModel,
-    type SortingState,
-} from '@tanstack/vue-table';
+    useSortableTable,
+    type SortableColumnDef,
+    type SortDirection,
+} from '@/utils/useSortableTable';
 
 const { organization } = useOrganizationQuery(getCurrentOrganizationId()!);
 
@@ -57,28 +56,16 @@ const clientNameMap = computed(() => {
     return map;
 });
 
-// Convert sort props to TanStack Table format.
-// Name is always the secondary sort so rows with equal values render
-// alphabetically instead of in API (created_at) order.
-const sorting = computed<SortingState>(() => [
-    {
-        id: props.sortColumn,
-        desc: props.sortDirection === 'desc',
-    },
-    ...(props.sortColumn !== 'name' ? [{ id: 'name', desc: false }] : []),
-]);
-
 // Define column accessors for sorting.
 // Numeric columns use sortDescFirst so that the first click (chevron down) sorts highest-first,
 // while text columns default to ascending (A-Z) on first click (chevron down).
-const columns = computed(() => [
+const columns = computed<SortableColumnDef<Project, SortColumn>[]>(() => [
     {
         id: 'name',
         accessorFn: (row: Project) => row.name.toLowerCase(),
     },
     {
         id: 'client_name',
-        sortUndefined: 'last' as const,
         accessorFn: (row: Project) => {
             if (!row.client_id) return undefined;
             return (clientNameMap.value.get(row.client_id) ?? '').toLowerCase();
@@ -87,12 +74,11 @@ const columns = computed(() => [
     {
         id: 'spent_time',
         sortDescFirst: true,
-        accessorFn: (row: Project) => row.spent_time ?? 0,
+        accessorFn: (row: Project) => row.spent_time,
     },
     {
         id: 'progress',
         sortDescFirst: true,
-        sortUndefined: 'last' as const,
         accessorFn: (row: Project) => {
             if (!row.estimated_time) return undefined;
             return (row.spent_time / row.estimated_time) * 100;
@@ -113,39 +99,21 @@ const columns = computed(() => [
     },
 ]);
 
-// Columns with sortDescFirst get desc as default direction on first click.
-const descFirstColumns = new Set<SortColumn>(
-    columns.value.filter((c) => c.sortDescFirst).map((c) => c.id as SortColumn)
-);
+const {
+    sortedRows: sortedProjects,
+    descFirstColumns,
+    nextDirection,
+} = useSortableTable({
+    data: () => props.projects,
+    columns: () => columns.value,
+    sortColumn: () => props.sortColumn,
+    sortDirection: () => props.sortDirection,
+    tieBreakColumn: 'name',
+});
 
 function handleSort(column: SortColumn) {
-    if (props.sortColumn === column) {
-        emit('sort', column, props.sortDirection === 'asc' ? 'desc' : 'asc');
-    } else {
-        emit('sort', column, descFirstColumns.has(column) ? 'desc' : 'asc');
-    }
+    emit('sort', column, nextDirection(column));
 }
-
-const table = useVueTable({
-    get data() {
-        return props.projects;
-    },
-    get columns() {
-        return columns.value;
-    },
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    state: {
-        get sorting() {
-            return sorting.value;
-        },
-    },
-    manualSorting: false,
-});
-
-const sortedProjects = computed(() => {
-    return table.getRowModel().rows.map((row) => row.original);
-});
 
 // Client-side pagination: the full list is in memory, only one page is mounted at a time.
 const PAGE_SIZE = 15;

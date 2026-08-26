@@ -9,30 +9,15 @@ import TagCreateModal from '@/packages/ui/src/Tag/TagCreateModal.vue';
 import PageTitle from '@/Components/Common/PageTitle.vue';
 import { canCreateTags } from '@/utils/permissions';
 import { useTagsStore } from '@/utils/useTags';
-import { useStorage } from '@vueuse/core';
-import type { SortColumn, SortDirection } from '@/Components/Common/Tag/TagTable.vue';
+import { useTableSortState } from '@/utils/useTableSortState';
+import type { SortColumn } from '@/Components/Common/Tag/TagTable.vue';
 
 const showCreateTagModal = ref(false);
 
-interface TagTableState {
-    sortColumn: SortColumn;
-    sortDirection: SortDirection;
-}
-
-const tableState = useStorage<TagTableState>(
-    'tag-table-state',
-    {
-        sortColumn: 'name',
-        sortDirection: 'asc',
-    },
-    undefined,
-    { mergeDefaults: true }
-);
-
-function handleSort(column: SortColumn, direction: SortDirection) {
-    tableState.value.sortColumn = column;
-    tableState.value.sortDirection = direction;
-}
+const { tableState, handleSort } = useTableSortState<SortColumn>('tag-table-state', {
+    sortColumn: 'name',
+    sortDirection: 'asc',
+});
 
 async function createTag(tag: string) {
     return await useTagsStore().createTag(tag);

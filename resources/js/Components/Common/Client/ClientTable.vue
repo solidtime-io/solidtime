@@ -11,14 +11,13 @@ import Pagination from '@/Components/Common/Pagination.vue';
 import { canCreateClients } from '@/utils/permissions';
 import { useProjectsQuery } from '@/utils/useProjectsQuery';
 import {
-    useVueTable,
-    getCoreRowModel,
-    getSortedRowModel,
-    type SortingState,
-} from '@tanstack/vue-table';
+    useSortableTable,
+    type SortableColumnDef,
+    type SortDirection,
+} from '@/utils/useSortableTable';
 
 export type SortColumn = 'name' | 'projects_count' | 'status';
-export type SortDirection = 'asc' | 'desc';
+export type { SortDirection } from '@/utils/useSortableTable';
 
 const props = defineProps<{
     clients: Client[];
@@ -44,17 +43,7 @@ const projectCountMap = computed(() => {
     return map;
 });
 
-// Name is always the secondary sort so rows with equal values render
-// alphabetically instead of in API (created_at) order.
-const sorting = computed<SortingState>(() => [
-    {
-        id: props.sortColumn,
-        desc: props.sortDirection === 'desc',
-    },
-    ...(props.sortColumn !== 'name' ? [{ id: 'name', desc: false }] : []),
-]);
-
-const columns = computed(() => [
+const columns = computed<SortableColumnDef<Client, SortColumn>[]>(() => [
     {
         id: 'name',
         accessorFn: (row: Client) => row.name.toLowerCase(),
@@ -70,40 +59,21 @@ const columns = computed(() => [
     },
 ]);
 
-const descFirstColumns = new Set<SortColumn>(
-    columns.value
-        .filter((c) => 'sortDescFirst' in c && c.sortDescFirst)
-        .map((c) => c.id as SortColumn)
-);
+const {
+    sortedRows: sortedClients,
+    descFirstColumns,
+    nextDirection,
+} = useSortableTable({
+    data: () => props.clients,
+    columns: () => columns.value,
+    sortColumn: () => props.sortColumn,
+    sortDirection: () => props.sortDirection,
+    tieBreakColumn: 'name',
+});
 
 function handleSort(column: SortColumn) {
-    if (props.sortColumn === column) {
-        emit('sort', column, props.sortDirection === 'asc' ? 'desc' : 'asc');
-    } else {
-        emit('sort', column, descFirstColumns.has(column) ? 'desc' : 'asc');
-    }
+    emit('sort', column, nextDirection(column));
 }
-
-const table = useVueTable({
-    get data() {
-        return props.clients;
-    },
-    get columns() {
-        return columns.value;
-    },
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    state: {
-        get sorting() {
-            return sorting.value;
-        },
-    },
-    manualSorting: false,
-});
-
-const sortedClients = computed(() => {
-    return table.getRowModel().rows.map((row) => row.original);
-});
 
 // Client-side pagination: the full list is in memory, only one page is mounted at a time.
 const PAGE_SIZE = 15;

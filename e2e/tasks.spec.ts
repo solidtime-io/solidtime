@@ -11,16 +11,10 @@ import {
     updateOrganizationSettingViaApi,
     type TestContext,
 } from './utils/api';
-import { getTableRowNames } from './utils/table';
+import { clearTableState, getTableRowNames } from './utils/table';
 
 async function goToProjectsOverview(page: Page) {
     await page.goto(PLAYWRIGHT_BASE_URL + '/projects');
-}
-
-async function clearTaskTableState(page: Page) {
-    await page.evaluate(() => {
-        localStorage.removeItem('task-table-state');
-    });
 }
 
 async function createSortableTasks(ctx: TestContext) {
@@ -357,7 +351,7 @@ test('test that creating a new project from the task create modal project dropdo
 test('test that sorting tasks by name, total time and progress works', async ({ page, ctx }) => {
     const { project, taskA, taskB, taskC } = await createSortableTasks(ctx);
     await goToProjectsOverview(page);
-    await clearTaskTableState(page);
+    await clearTableState(page, 'task-table-state');
     await page.goto(PLAYWRIGHT_BASE_URL + '/projects/' + project.id);
     const table = page.getByTestId('task_table');
     await expect(table).toBeVisible();
@@ -390,7 +384,7 @@ test('test that sorting tasks by name, total time and progress works', async ({ 
 test('test that task sort state persists after page reload', async ({ page, ctx }) => {
     const { project, taskA, taskB, taskC } = await createSortableTasks(ctx);
     await goToProjectsOverview(page);
-    await clearTaskTableState(page);
+    await clearTableState(page, 'task-table-state');
     await page.goto(PLAYWRIGHT_BASE_URL + '/projects/' + project.id);
     const table = page.getByTestId('task_table');
     await expect(table).toBeVisible();

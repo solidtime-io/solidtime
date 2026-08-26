@@ -3,7 +3,7 @@ import type { Page } from '@playwright/test';
 import { PLAYWRIGHT_BASE_URL } from '../playwright/config';
 import { test } from '../playwright/fixtures';
 import { createTagViaApi } from './utils/api';
-import { getTableRowNames } from './utils/table';
+import { clearTableState, getTableRowNames } from './utils/table';
 
 async function goToTagsOverview(page: Page) {
     await page.goto(PLAYWRIGHT_BASE_URL + '/tags');
@@ -147,18 +147,12 @@ test('test that tag context menu delete deletes the tag', async ({ page, ctx }) 
 // Sorting Tests
 // =============================================
 
-async function clearTagTableState(page: Page) {
-    await page.evaluate(() => {
-        localStorage.removeItem('tag-table-state');
-    });
-}
-
 test('test that sorting tags by name works', async ({ page, ctx }) => {
     await createTagViaApi(ctx, { name: 'AAA SortTag' });
     await createTagViaApi(ctx, { name: 'ZZZ SortTag' });
 
     await goToTagsOverview(page);
-    await clearTagTableState(page);
+    await clearTableState(page, 'tag-table-state');
     await page.reload();
 
     const table = page.getByTestId('tag_table');
@@ -176,7 +170,7 @@ test('test that sorting tags by name works', async ({ page, ctx }) => {
 
 test('test that tag sort state persists after page reload', async ({ page }) => {
     await goToTagsOverview(page);
-    await clearTagTableState(page);
+    await clearTableState(page, 'tag-table-state');
     await page.reload();
 
     const table = page.getByTestId('tag_table');
