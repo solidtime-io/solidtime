@@ -73,6 +73,7 @@ const createTask = ref(false);
         <div class="inline-block min-w-full align-middle">
             <div
                 data-testid="task_table"
+                role="table"
                 class="grid min-w-full"
                 style="
                     grid-template-columns:
