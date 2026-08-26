@@ -3,16 +3,14 @@ import MemberTableHeading from '@/Components/Common/Member/MemberTableHeading.vu
 import MemberTableRow from '@/Components/Common/Member/MemberTableRow.vue';
 import { useMembersQuery } from '@/utils/useMembersQuery';
 import type { Member } from '@/packages/api/src';
-import { computed } from 'vue';
 import {
-    useVueTable,
-    getCoreRowModel,
-    getSortedRowModel,
-    type SortingState,
-} from '@tanstack/vue-table';
+    useSortableTable,
+    type SortableColumnDef,
+    type SortDirection,
+} from '@/utils/useSortableTable';
 
 export type SortColumn = 'name' | 'email' | 'role' | 'billable_rate' | 'status';
-export type SortDirection = 'asc' | 'desc';
+export type { SortDirection } from '@/utils/useSortableTable';
 
 const props = defineProps<{
     sortColumn: SortColumn;
@@ -33,14 +31,7 @@ const roleOrder: Record<string, number> = {
     placeholder: 4,
 };
 
-const sorting = computed<SortingState>(() => [
-    {
-        id: props.sortColumn,
-        desc: props.sortDirection === 'desc',
-    },
-]);
-
-const columns = [
+const columns: SortableColumnDef<Member, SortColumn>[] = [
     {
         id: 'name',
         accessorFn: (row: Member) => row.name.toLowerCase(),
@@ -56,7 +47,6 @@ const columns = [
     {
         id: 'billable_rate',
         sortDescFirst: true,
-        sortUndefined: 'last' as const,
         accessorFn: (row: Member) => {
             if (row.billable_rate === null) return undefined;
             return row.billable_rate;
@@ -68,36 +58,21 @@ const columns = [
     },
 ];
 
-const descFirstColumns = new Set<SortColumn>(
-    columns.filter((c) => c.sortDescFirst).map((c) => c.id as SortColumn)
-);
+const {
+    sortedRows: sortedMembers,
+    descFirstColumns,
+    nextDirection,
+} = useSortableTable({
+    data: () => members.value,
+    columns: () => columns,
+    sortColumn: () => props.sortColumn,
+    sortDirection: () => props.sortDirection,
+    tieBreakColumn: 'name',
+});
 
 function handleSort(column: SortColumn) {
-    if (props.sortColumn === column) {
-        emit('sort', column, props.sortDirection === 'asc' ? 'desc' : 'asc');
-    } else {
-        emit('sort', column, descFirstColumns.has(column) ? 'desc' : 'asc');
-    }
+    emit('sort', column, nextDirection(column));
 }
-
-const table = useVueTable({
-    get data() {
-        return members.value;
-    },
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    state: {
-        get sorting() {
-            return sorting.value;
-        },
-    },
-    manualSorting: false,
-});
-
-const sortedMembers = computed(() => {
-    return table.getRowModel().rows.map((row) => row.original);
-});
 </script>
 
 <template>

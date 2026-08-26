@@ -11,7 +11,7 @@ import {
     updateMemberBillableRateViaApi,
     updateOrganizationSettingViaApi,
 } from './utils/api';
-import { getTableRowNames } from './utils/table';
+import { clearTableState, getTableRowNames } from './utils/table';
 
 // Tests that invite + accept members need more time
 test.describe.configure({ timeout: 45000 });
@@ -779,20 +779,18 @@ test('test that accepted invitation disappears from invitations tab', async ({ p
 // Sorting Tests
 // =============================================
 
-// Helper to clear localStorage before tests that check sorting
-async function clearMemberTableState(page: Page) {
-    await page.evaluate(() => {
-        localStorage.removeItem('member-table-state');
-    });
-}
-
 test('test that sorting members by name, role, and status works', async ({ page, ctx }) => {
-    // Create two placeholder members with names that sort predictably around "John Doe"
+    // Create two placeholder members with names that sort predictably around "John Doe".
+    // Seeded alphabetically a second apart: created_at only has second precision and
+    // same-second rows fall back to a random UUID order. The spacing is what makes the
+    // API order (created_at desc: ZZZ, AAA, John) deterministic, so the tie-break
+    // assertions below are testing the tie-break rather than a coin flip.
     await createPlaceholderMemberViaImportApi(ctx, 'AAA SortFirst');
+    await page.waitForTimeout(1100);
     await createPlaceholderMemberViaImportApi(ctx, 'ZZZ SortLast');
 
     await goToMembersPage(page);
-    await clearMemberTableState(page);
+    await clearTableState(page, 'member-table-state');
     await page.reload();
 
     const table = page.getByTestId('member_table');
@@ -814,20 +812,24 @@ test('test that sorting members by name, role, and status works', async ({ page,
     const ownerIdx = names.indexOf('John Doe');
     const placeholderIdx = names.indexOf('AAA SortFirst');
     expect(ownerIdx).toBeLessThan(placeholderIdx);
+    expect(names.indexOf('AAA SortFirst')).toBeLessThan(names.indexOf('ZZZ SortLast'));
 
     await roleHeader.click(); // desc: Placeholder first
     names = await getTableRowNames(table);
     expect(names.indexOf('AAA SortFirst')).toBeLessThan(names.indexOf('John Doe'));
+    expect(names.indexOf('AAA SortFirst')).toBeLessThan(names.indexOf('ZZZ SortLast'));
 
     // -- Status sorting --
     const statusHeader = table.getByText('Status').first();
     await statusHeader.click(); // asc: Active(0) < Inactive(1)
     names = await getTableRowNames(table);
     expect(names.indexOf('John Doe')).toBeLessThan(names.indexOf('AAA SortFirst'));
+    expect(names.indexOf('AAA SortFirst')).toBeLessThan(names.indexOf('ZZZ SortLast'));
 
     await statusHeader.click(); // desc: Inactive first
     names = await getTableRowNames(table);
     expect(names.indexOf('AAA SortFirst')).toBeLessThan(names.indexOf('John Doe'));
+    expect(names.indexOf('AAA SortFirst')).toBeLessThan(names.indexOf('ZZZ SortLast'));
 
     // -- Email: just verify sort indicator appears --
     const emailHeader = table.getByText('Email').first();
@@ -837,7 +839,7 @@ test('test that sorting members by name, role, and status works', async ({ page,
 
 test('test that member sort state persists after page reload', async ({ page }) => {
     await goToMembersPage(page);
-    await clearMemberTableState(page);
+    await clearTableState(page, 'member-table-state');
     await page.reload();
 
     const table = page.getByTestId('member_table');
@@ -875,7 +877,7 @@ test('test that sorting members by billable rate works', async ({ page, ctx }) =
     await updateMemberBillableRateViaApi(ctx, lowRateMember!.id, 5000);
 
     await goToMembersPage(page);
-    await clearMemberTableState(page);
+    await clearTableState(page, 'member-table-state');
     await page.reload();
 
     const table = page.getByTestId('member_table');

@@ -2,21 +2,20 @@
 import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
 import { PlusCircleIcon } from '@heroicons/vue/24/solid';
 import { PlusIcon } from '@heroicons/vue/16/solid';
-import { computed, ref } from 'vue';
+import { ref } from 'vue';
 import TaskTableRow from '@/Components/Common/Task/TaskTableRow.vue';
 import TaskTableHeading from '@/Components/Common/Task/TaskTableHeading.vue';
 import TaskCreateModal from '@/Components/Common/Task/TaskCreateModal.vue';
 import { canCreateTasks } from '@/utils/permissions';
 import type { Task } from '@/packages/api/src';
 import {
-    getCoreRowModel,
-    getSortedRowModel,
-    type SortingState,
-    useVueTable,
-} from '@tanstack/vue-table';
+    useSortableTable,
+    type SortableColumnDef,
+    type SortDirection,
+} from '@/utils/useSortableTable';
 
 export type SortColumn = 'name' | 'spent_time' | 'progress';
-export type SortDirection = 'asc' | 'desc';
+export type { SortDirection } from '@/utils/useSortableTable';
 
 const props = defineProps<{
     projectId: string;
@@ -29,15 +28,7 @@ const emit = defineEmits<{
     sort: [column: SortColumn, direction: SortDirection];
 }>();
 
-const sorting = computed<SortingState>(() => [
-    {
-        id: props.sortColumn,
-        desc: props.sortDirection === 'desc',
-    },
-    ...(props.sortColumn !== 'name' ? [{ id: 'name', desc: false }] : []),
-]);
-
-const columns = computed(() => [
+const columns: SortableColumnDef<Task, SortColumn>[] = [
     {
         id: 'name',
         accessorFn: (row: Task) => row.name.toLowerCase(),
@@ -45,49 +36,33 @@ const columns = computed(() => [
     {
         id: 'spent_time',
         sortDescFirst: true,
-        accessorFn: (row: Task) => row.spent_time ?? 0,
+        accessorFn: (row: Task) => row.spent_time,
     },
     {
         id: 'progress',
         sortDescFirst: true,
-        sortUndefined: 'last' as const,
         accessorFn: (row: Task) => {
             if (!row.estimated_time) return undefined;
             return (row.spent_time / row.estimated_time) * 100;
         },
     },
-]);
+];
 
-const descFirstColumns = new Set<SortColumn>(
-    columns.value.filter((column) => column.sortDescFirst).map((column) => column.id as SortColumn)
-);
-
-function handleSort(column: SortColumn) {
-    if (props.sortColumn === column) {
-        emit('sort', column, props.sortDirection === 'asc' ? 'desc' : 'asc');
-    } else {
-        emit('sort', column, descFirstColumns.has(column) ? 'desc' : 'asc');
-    }
-}
-
-const table = useVueTable({
-    get data() {
-        return props.tasks;
-    },
-    get columns() {
-        return columns.value;
-    },
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    state: {
-        get sorting() {
-            return sorting.value;
-        },
-    },
-    manualSorting: false,
+const {
+    sortedRows: sortedTasks,
+    descFirstColumns,
+    nextDirection,
+} = useSortableTable({
+    data: () => props.tasks,
+    columns: () => columns,
+    sortColumn: () => props.sortColumn,
+    sortDirection: () => props.sortDirection,
+    tieBreakColumn: 'name',
 });
 
-const sortedTasks = computed(() => table.getRowModel().rows.map((row) => row.original));
+function handleSort(column: SortColumn) {
+    emit('sort', column, nextDirection(column));
+}
 
 const createTask = ref(false);
 </script>
@@ -98,7 +73,6 @@ const createTask = ref(false);
         <div class="inline-block min-w-full align-middle">
             <div
                 data-testid="task_table"
-                role="table"
                 class="grid min-w-full"
                 style="
                     grid-template-columns:

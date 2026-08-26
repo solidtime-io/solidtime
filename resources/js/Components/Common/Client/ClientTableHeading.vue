@@ -1,6 +1,7 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import TableHeading from '@/Components/Common/TableHeading.vue';
-import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/vue/16/solid';
+import SortableTableHeaderCell from '@/Components/Common/SortableTableHeaderCell.vue';
 import type { SortColumn, SortDirection } from '@/Components/Common/Client/ClientTable.vue';
 
 const props = defineProps<{
@@ -13,53 +14,33 @@ const emit = defineEmits<{
     sort: [column: SortColumn];
 }>();
 
+// Bound once per cell instead of repeating the three sort props on every column.
+const sortState = computed(() => ({
+    sortColumn: props.sortColumn,
+    sortDirection: props.sortDirection,
+    descFirstColumns: props.descFirstColumns,
+}));
+
 function handleSort(column: SortColumn) {
     emit('sort', column);
-}
-
-function isSorted(column: SortColumn): boolean {
-    return props.sortColumn === column;
-}
-
-function isChevronDown(column: SortColumn): boolean {
-    if (!isSorted(column)) return false;
-    return props.descFirstColumns.has(column)
-        ? props.sortDirection === 'desc'
-        : props.sortDirection === 'asc';
-}
-
-function isChevronUp(column: SortColumn): boolean {
-    if (!isSorted(column)) return false;
-    return !isChevronDown(column);
 }
 </script>
 
 <template>
     <TableHeading>
-        <div
-            class="py-1.5 pr-3 text-left text-text-tertiary pl-4 sm:pl-6 lg:pl-8 3xl:pl-12 cursor-pointer hover:bg-secondary hover:text-text-primary transition-colors select-none flex items-center gap-1"
-            @click="handleSort('name')">
+        <SortableTableHeaderCell
+            class="pr-3 pl-4 sm:pl-6 lg:pl-8 3xl:pl-12"
+            column="name"
+            v-bind="sortState"
+            @sort="handleSort">
             Name
-            <ChevronDownIcon v-if="isChevronDown('name')" class="w-4 h-4" />
-            <ChevronUpIcon v-else-if="isChevronUp('name')" class="w-4 h-4" />
-            <span v-else class="w-4 h-4"></span>
-        </div>
-        <div
-            class="px-3 py-1.5 text-left text-text-tertiary cursor-pointer hover:bg-secondary hover:text-text-primary transition-colors select-none flex items-center gap-1"
-            @click="handleSort('projects_count')">
+        </SortableTableHeaderCell>
+        <SortableTableHeaderCell column="projects_count" v-bind="sortState" @sort="handleSort">
             Projects
-            <ChevronDownIcon v-if="isChevronDown('projects_count')" class="w-4 h-4" />
-            <ChevronUpIcon v-else-if="isChevronUp('projects_count')" class="w-4 h-4" />
-            <span v-else class="w-4 h-4"></span>
-        </div>
-        <div
-            class="px-3 py-1.5 text-left text-text-tertiary cursor-pointer hover:bg-secondary hover:text-text-primary transition-colors select-none flex items-center gap-1"
-            @click="handleSort('status')">
+        </SortableTableHeaderCell>
+        <SortableTableHeaderCell column="status" v-bind="sortState" @sort="handleSort">
             Status
-            <ChevronDownIcon v-if="isChevronDown('status')" class="w-4 h-4" />
-            <ChevronUpIcon v-else-if="isChevronUp('status')" class="w-4 h-4" />
-            <span v-else class="w-4 h-4"></span>
-        </div>
+        </SortableTableHeaderCell>
         <div class="relative py-1.5 pl-3 pr-4 sm:pr-6 lg:pr-8 3xl:pr-12">
             <span class="sr-only">Edit</span>
         </div>

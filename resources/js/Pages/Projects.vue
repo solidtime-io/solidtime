@@ -18,6 +18,7 @@ import { getCurrentOrganizationId, getCurrentRole } from '@/utils/useUser';
 import { useOrganizationQuery } from '@/utils/useOrganizationQuery';
 import { isAllowedToPerformPremiumAction } from '@/utils/billing';
 import { useStorage } from '@vueuse/core';
+import { useTableSortState } from '@/utils/useTableSortState';
 import ProjectsFilterDropdown from '@/Components/Common/Project/ProjectsFilterDropdown.vue';
 import ProjectStatusFilterBadge from '@/Components/Common/Project/ProjectStatusFilterBadge.vue';
 import ProjectVisibilityFilterBadge from '@/Components/Common/Project/ProjectVisibilityFilterBadge.vue';
@@ -41,7 +42,7 @@ interface ProjectTableState {
     };
 }
 
-const tableState = useStorage<ProjectTableState>(
+const { tableState, handleSort } = useTableSortState<SortColumn, ProjectTableState>(
     'project-table-state',
     {
         sortColumn: 'name',
@@ -52,20 +53,14 @@ const tableState = useStorage<ProjectTableState>(
             visibility: 'all',
         },
     },
-    undefined,
-    {
-        mergeDefaults: (storage, defaults) => ({
-            ...defaults,
-            ...storage,
-            filters: { ...defaults.filters, ...storage.filters },
-        }),
-    }
+    // The filters are merged key by key so a stored value missing a newer filter still
+    // picks up its default instead of the whole object falling back.
+    (storage, defaults) => ({
+        ...defaults,
+        ...storage,
+        filters: { ...defaults.filters, ...storage.filters },
+    })
 );
-
-function handleSort(column: SortColumn, direction: SortDirection) {
-    tableState.value.sortColumn = column;
-    tableState.value.sortDirection = direction;
-}
 
 // Filter projects based on current filters
 const filteredProjects = computed(() => {

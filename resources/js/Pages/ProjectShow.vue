@@ -15,7 +15,7 @@ import {
 import { Link } from '@inertiajs/vue3';
 import TaskCreateModal from '@/Components/Common/Task/TaskCreateModal.vue';
 import TaskTable from '@/Components/Common/Task/TaskTable.vue';
-import type { SortColumn, SortDirection } from '@/Components/Common/Task/TaskTable.vue';
+import type { SortColumn } from '@/Components/Common/Task/TaskTable.vue';
 import CardTitle from '@/packages/ui/src/CardTitle.vue';
 import Card from '@/Components/Common/Card.vue';
 import ProjectMemberTable from '@/Components/Common/ProjectMember/ProjectMemberTable.vue';
@@ -30,7 +30,7 @@ import { formatCents } from '../packages/ui/src/utils/money';
 import { getOrganizationCurrencyString } from '../utils/money';
 import { useOrganizationQuery } from '@/utils/useOrganizationQuery';
 import { getCurrentOrganizationId } from '@/utils/useUser';
-import { useStorage } from '@vueuse/core';
+import { useTableSortState } from '@/utils/useTableSortState';
 
 const { projects } = useProjectsQuery();
 
@@ -67,25 +67,10 @@ const activeTab = ref<'active' | 'done'>('active');
 
 const { tasks } = useTasksQuery();
 
-interface TaskTableState {
-    sortColumn: SortColumn;
-    sortDirection: SortDirection;
-}
-
-const tableState = useStorage<TaskTableState>(
-    'task-table-state',
-    {
-        sortColumn: 'name',
-        sortDirection: 'asc',
-    },
-    undefined,
-    { mergeDefaults: true }
-);
-
-function handleSort(column: SortColumn, direction: SortDirection) {
-    tableState.value.sortColumn = column;
-    tableState.value.sortDirection = direction;
-}
+const { tableState, handleSort } = useTableSortState<SortColumn>('task-table-state', {
+    sortColumn: 'name',
+    sortDirection: 'asc',
+});
 
 const shownTasks = computed(() => {
     return tasks.value.filter((task) => {
