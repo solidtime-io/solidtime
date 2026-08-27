@@ -88,13 +88,13 @@ const showEditProjectModal = ref(false);
         <ContextMenuTrigger as-child>
             <TableRow :href="route('projects.show', { project: project.id })">
                 <div
-                    class="whitespace-nowrap min-w-0 flex items-center space-x-5 3xl:pl-12 py-4 pr-3 text-sm font-medium text-text-primary pl-4 sm:pl-6 lg:pl-8 3xl:pl-12">
+                    class="whitespace-nowrap min-w-0 flex items-center space-x-5 py-4 pr-3 text-sm font-medium text-text-primary pl-2 sm:pl-4 lg:pl-6">
                     <div
                         :style="{
                             backgroundColor: project.color,
                             boxShadow: `var(--tw-ring-inset) 0 0 0 calc(4px + var(--tw-ring-offset-width)) ${project.color}30`,
                         }"
-                        class="w-3 h-3 rounded-full"></div>
+                        class="w-3 h-3 ml-1 rounded-full"></div>
                     <span class="overflow-ellipsis overflow-hidden">
                         {{ project.name }}
                     </span>
@@ -155,7 +155,7 @@ const showEditProjectModal = ref(false);
                     </template>
                 </div>
                 <div
-                    class="relative whitespace-nowrap flex items-center pl-3 text-right text-sm font-medium pr-4 sm:pr-6 lg:pr-8 3xl:pr-12">
+                    class="relative whitespace-nowrap flex items-center pl-3 text-right text-sm font-medium pr-2 sm:pr-4 lg:pr-6">
                     <ProjectMoreOptionsDropdown
                         :project="project"
                         @edit="showEditProjectModal = true"

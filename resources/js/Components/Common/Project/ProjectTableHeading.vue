@@ -30,7 +30,7 @@ function handleSort(column: SortColumn) {
 <template>
     <TableHeading>
         <SortableTableHeaderCell
-            class="pr-3 pl-4 sm:pl-6 lg:pl-8 3xl:pl-12"
+            class="pr-3 pl-2 sm:pl-4 lg:pl-6"
             column="name"
             v-bind="sortState"
             @sort="handleSort">
@@ -58,7 +58,7 @@ function handleSort(column: SortColumn) {
         <SortableTableHeaderCell column="visibility" v-bind="sortState" @sort="handleSort">
             Visibility
         </SortableTableHeaderCell>
-        <div class="relative py-1.5 pl-3 pr-4 sm:pr-6 lg:pr-8 3xl:pr-12">
+        <div class="relative py-1.5 pl-3 pr-2 sm:pr-4 lg:pr-6">
             <span class="sr-only">Edit</span>
         </div>
     </TableHeading>

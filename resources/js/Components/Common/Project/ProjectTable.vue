@@ -7,6 +7,7 @@ import ProjectCreateModal from '@/packages/ui/src/Project/ProjectCreateModal.vue
 import ProjectTableHeading from '@/Components/Common/Project/ProjectTableHeading.vue';
 import ProjectTableRow from '@/Components/Common/Project/ProjectTableRow.vue';
 import Pagination from '@/Components/Common/Pagination.vue';
+import LoadingSpinner from '@/packages/ui/src/LoadingSpinner.vue';
 
 export type SortColumn =
     | 'name'
@@ -34,12 +35,17 @@ import {
 
 const { organization } = useOrganizationQuery(getCurrentOrganizationId()!);
 
-const props = defineProps<{
-    projects: Project[];
-    showBillableRate: boolean;
-    sortColumn: SortColumn;
-    sortDirection: SortDirection;
-}>();
+const props = withDefaults(
+    defineProps<{
+        projects: Project[];
+        showBillableRate: boolean;
+        sortColumn: SortColumn;
+        sortDirection: SortDirection;
+        isFiltered?: boolean;
+        isLoading?: boolean;
+    }>(),
+    { isFiltered: false, isLoading: false }
+);
 
 const emit = defineEmits<{
     sort: [column: SortColumn, direction: SortDirection];
@@ -128,6 +134,28 @@ const paginatedProjects = computed(() => {
     return sortedProjects.value.slice(start, start + PAGE_SIZE);
 });
 
+const emptyState = computed(() => {
+    if (props.isFiltered) {
+        return {
+            title: 'No matching projects',
+            description: 'Try a different search term or adjust your filters.',
+            showCreateButton: false,
+        };
+    }
+    if (!canCreateProjects()) {
+        return {
+            title: 'You are not a member of any projects',
+            description: 'Ask your manager to add you to a project as a team member.',
+            showCreateButton: false,
+        };
+    }
+    return {
+        title: 'No projects found',
+        description: 'Create your first project now!',
+        showCreateButton: true,
+    };
+});
+
 const showCreateProjectModal = ref(false);
 
 async function createProject(project: CreateProjectBody): Promise<Project | undefined> {
@@ -161,24 +189,21 @@ const gridTemplate = computed(() => {
                     :sort-direction="props.sortDirection"
                     :desc-first-columns="descFirstColumns"
                     @sort="handleSort"></ProjectTableHeading>
-                <div v-if="sortedProjects.length === 0" class="col-span-full py-24 text-center">
+                <div
+                    v-if="props.isLoading"
+                    class="col-span-full flex justify-center items-center py-24">
+                    <LoadingSpinner></LoadingSpinner>
+                </div>
+                <div
+                    v-else-if="sortedProjects.length === 0"
+                    class="col-span-full py-24 text-center">
                     <FolderPlusIcon class="w-8 text-icon-default inline pb-2"></FolderPlusIcon>
-                    <h3 class="text-text-primary font-semibold">
-                        {{
-                            canCreateProjects()
-                                ? 'No projects found'
-                                : 'You are not a member of any projects'
-                        }}
-                    </h3>
+                    <h3 class="text-text-primary font-semibold">{{ emptyState.title }}</h3>
                     <p class="pb-5 max-w-md mx-auto text-sm pt-1">
-                        {{
-                            canCreateProjects()
-                                ? 'Create your first project now!'
-                                : 'Ask your manager to add you to a project as a team member.'
-                        }}
+                        {{ emptyState.description }}
                     </p>
                     <SecondaryButton
-                        v-if="canCreateProjects()"
+                        v-if="emptyState.showCreateButton"
                         :icon="PlusIcon"
                         @click="showCreateProjectModal = true"
                         >Create your First Project
