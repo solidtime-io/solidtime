@@ -15,6 +15,7 @@ use App\Models\User;
 use App\Service\DashboardService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\CoversClass;
 use Tests\TestCase;
 
@@ -137,6 +138,29 @@ class DashboardServiceTest extends TestCase
                 'duration' => 0,
             ],
         ], $result);
+    }
+
+    public function test_weekly_history_calculates_running_entry_duration_without_timezone_coercion(): void
+    {
+        DB::statement("SET LOCAL TIME ZONE INTERVAL '-01:00' HOUR TO MINUTE");
+        $now = Carbon::parse((string) DB::scalar("SELECT now() AT TIME ZONE 'UTC'"), 'UTC');
+        $this->travelTo($now);
+        $start = $now->copy()->subHour();
+
+        $organization = Organization::factory()->create();
+        $user = User::factory()->create([
+            'timezone' => 'UTC',
+            'week_start' => Weekday::from(strtolower($start->format('l'))),
+        ]);
+        $member = Member::factory()->forUser($user)->forOrganization($organization)->create();
+        TimeEntry::factory()->forMember($member)->forOrganization($organization)->active()->create([
+            'start' => $start,
+        ]);
+
+        $result = $this->dashboardService->getWeeklyHistory($user, $organization);
+        $entryDay = collect($result)->firstWhere('date', $start->toDateString());
+
+        $this->assertEqualsWithDelta(3600, $entryDay['duration'], 1);
     }
 
     public function test_total_weekly_time_returns_correct_value(): void

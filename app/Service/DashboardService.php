@@ -152,7 +152,7 @@ class DashboardService
         $possibleDays = $this->lastDays($days, $timezone);
 
         $query = TimeEntry::query()
-            ->select(DB::raw('DATE('.$dateWithTimeZone.') as date, round(sum(extract(epoch from (coalesce("end", now()) - start)))) as aggregate'))
+            ->select(DB::raw('DATE('.$dateWithTimeZone.') as date, round(sum(extract(epoch from (coalesce("end", now() AT TIME ZONE \'UTC\') - start)))) as aggregate'))
             ->where('user_id', '=', $user->getKey())
             ->where('organization_id', '=', $organization->getKey())
             ->workTime()
@@ -194,7 +194,7 @@ class DashboardService
         $possibleDays = $this->daysOfThisWeek($timezone, $user->week_start);
 
         $query = TimeEntry::query()
-            ->select(DB::raw('DATE('.$dateWithTimeZone.') as date, round(sum(extract(epoch from (coalesce("end", now()) - start)))) as aggregate'))
+            ->select(DB::raw('DATE('.$dateWithTimeZone.') as date, round(sum(extract(epoch from (coalesce("end", now() AT TIME ZONE \'UTC\') - start)))) as aggregate'))
             ->where('user_id', '=', $user->getKey())
             ->where('organization_id', '=', $organization->getKey())
             ->workTime()
@@ -223,7 +223,7 @@ class DashboardService
         $possibleDays = $this->daysOfThisWeek($timezone, $user->week_start);
 
         $query = TimeEntry::query()
-            ->select(DB::raw('round(sum(extract(epoch from (coalesce("end", now()) - start)))) as aggregate'))
+            ->select(DB::raw('round(sum(extract(epoch from (coalesce("end", now() AT TIME ZONE \'UTC\') - start)))) as aggregate'))
             ->where('user_id', '=', $user->getKey())
             ->where('organization_id', '=', $organization->getKey())
             ->workTime();
@@ -241,7 +241,7 @@ class DashboardService
         $possibleDays = $this->daysOfThisWeek($timezone, $user->week_start);
 
         $query = TimeEntry::query()
-            ->select(DB::raw('round(sum(extract(epoch from (coalesce("end", now()) - start)))) as aggregate'))
+            ->select(DB::raw('round(sum(extract(epoch from (coalesce("end", now() AT TIME ZONE \'UTC\') - start)))) as aggregate'))
             ->where('billable', '=', true)
             ->where('user_id', '=', $user->getKey())
             ->where('organization_id', '=', $organization->getKey());
@@ -265,7 +265,7 @@ class DashboardService
             ->select(DB::raw('
                round(
                     sum(
-                        extract(epoch from (coalesce("end", now()) - start)) * (billable_rate::float/60/60)
+                        extract(epoch from (coalesce("end", now() AT TIME ZONE \'UTC\') - start)) * (billable_rate::float/60/60)
                     )
                ) as aggregate'))
             ->where('billable', '=', true)
@@ -291,7 +291,7 @@ class DashboardService
         $timezone = $this->timezoneService->getTimezoneFromUser($user);
 
         $query = TimeEntry::query()
-            ->select(DB::raw('project_id, round(sum(extract(epoch from (coalesce("end", now()) - start)))) as aggregate'))
+            ->select(DB::raw('project_id, round(sum(extract(epoch from (coalesce("end", now() AT TIME ZONE \'UTC\') - start)))) as aggregate'))
             ->where('user_id', '=', $user->getKey())
             ->where('organization_id', '=', $organization->getKey())
             ->workTime()
