@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { ref } from 'vue';
 import { UserGroupIcon, CheckCircleIcon, GlobeAltIcon } from '@heroicons/vue/16/solid';
 import ListFilterIcon from '@/packages/ui/src/Icons/ListFilterIcon.vue';
 import {
@@ -81,23 +81,18 @@ function toggleNoClient() {
         clientIds,
     });
 }
-
-const hasActiveFilters = computed(() => {
-    return (
-        props.filters.status !== 'all' ||
-        props.filters.visibility !== 'all' ||
-        props.filters.clientIds.length > 0
-    );
-});
 </script>
 
 <template>
     <DropdownMenu v-model:open="open">
         <DropdownMenuTrigger as-child>
-            <Button variant="ghost" size="xs" aria-label="Filter projects">
-                <ListFilterIcon
-                    :class="[hasActiveFilters ? '' : '-ml-0.5', 'h-4 w-4 text-icon-default']" />
-                <span v-if="!hasActiveFilters" class="text-nowrap">Filter</span>
+            <!-- -ml-1.5 cancels the icon's inset inside the button so it sits flush with the toolbar's left padding -->
+            <Button
+                variant="ghost"
+                size="icon"
+                class="-ml-1.5 h-7 w-7 flex-shrink-0"
+                aria-label="Filter projects">
+                <ListFilterIcon class="h-4 w-4 text-icon-default" />
             </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" class="w-56">

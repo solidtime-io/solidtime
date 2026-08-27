@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import MainContainer from '@/packages/ui/src/MainContainer.vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
+import MainContainer from '@/packages/ui/src/MainContainer.vue';
 import { FolderIcon, PlusIcon } from '@heroicons/vue/20/solid';
+import { Search } from '@lucide/vue';
 import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
 import ProjectTable from '@/Components/Common/Project/ProjectTable.vue';
+import TextInput from '@/packages/ui/src/Input/TextInput.vue';
 import { computed, ref } from 'vue';
 import { useProjectsQuery } from '@/utils/useProjectsQuery';
 import { useProjectsStore } from '@/utils/useProjects';
@@ -27,7 +29,7 @@ import { NO_CLIENT_ID } from '@/Components/Common/Project/constants';
 import type { SortColumn, SortDirection } from '@/Components/Common/Project/ProjectTable.vue';
 
 // Fetch data using TanStack Query
-const { projects } = useProjectsQuery();
+const { projects, isLoading: projectsLoading } = useProjectsQuery();
 const { clients } = useClientsQuery();
 const { organization } = useOrganizationQuery(getCurrentOrganizationId()!);
 
@@ -62,8 +64,7 @@ const { tableState, handleSort } = useTableSortState<SortColumn, ProjectTableSta
     })
 );
 
-// Search is intentionally not persisted in tableState, so a reload never leaves
-// the table silently filtered by a term the user has forgotten about.
+// Not persisted, so a reload never starts silently filtered
 const search = ref('');
 
 // Filter projects based on current filters
@@ -109,6 +110,15 @@ const filteredProjects = computed(() => {
     });
 });
 
+const hasActiveFilters = computed(() => {
+    return (
+        search.value.trim() !== '' ||
+        tableState.value.filters.status !== 'all' ||
+        tableState.value.filters.visibility !== 'all' ||
+        tableState.value.filters.clientIds.length > 0
+    );
+});
+
 // Helper functions for active filters
 function removeStatusFilter() {
     tableState.value.filters.status = 'all';
@@ -141,8 +151,7 @@ const showBillableRate = computed(() => {
 
 <template>
     <AppLayout title="Projects" data-testid="projects_view">
-        <MainContainer
-            class="py-3 sm:pt-5 border-b border-default-background-separator flex justify-between items-center">
+        <MainContainer class="py-3 sm:pt-5 flex justify-between items-center">
             <div class="flex items-center space-x-3 sm:space-x-6">
                 <PageTitle :icon="FolderIcon" title="Projects"></PageTitle>
             </div>
@@ -168,14 +177,6 @@ const showBillableRate = computed(() => {
                     :filters="tableState.filters"
                     :clients="clients"
                     @update:filters="tableState.filters = $event" />
-
-                <!-- Same style as the dropdown search inputs, see MultiselectDropdown.vue -->
-                <input
-                    v-model="search"
-                    type="search"
-                    data-testid="project_search"
-                    placeholder="Search for a Project..."
-                    class="w-60 h-8 rounded-md border border-input-border bg-input-background px-3 text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none" />
 
                 <!-- Active Filters -->
                 <ProjectStatusFilterBadge
@@ -203,11 +204,25 @@ const showBillableRate = computed(() => {
                     :clients="clients"
                     @remove="removeClientFilter"
                     @update:value="tableState.filters.clientIds = $event as string[]" />
+
+                <div class="relative">
+                    <Search
+                        class="pointer-events-none absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-icon-default" />
+                    <TextInput
+                        v-model="search"
+                        size="sm"
+                        type="search"
+                        aria-label="Search projects"
+                        placeholder="Search projects..."
+                        class="w-60 border-transparent bg-transparent pl-7 shadow-none placeholder:text-text-tertiary hover:bg-black/5 focus-visible:bg-input-background dark:hover:bg-white/5 [&::-webkit-search-cancel-button]:hidden" />
+                </div>
             </div>
         </MainContainer>
 
         <ProjectTable
             :show-billable-rate="showBillableRate"
+            :is-filtered="hasActiveFilters"
+            :is-loading="projectsLoading"
             :projects="filteredProjects"
             :sort-column="tableState.sortColumn"
             :sort-direction="tableState.sortDirection"
