@@ -1297,7 +1297,7 @@ test('test that searching projects by name works', async ({ page, ctx }) => {
     await createProjectViaApi(ctx, { name: otherProjectName });
 
     await goToProjectsOverview(page);
-    await clearProjectTableState(page);
+    await clearTableState(page, 'project-table-state');
     await page.reload();
     await expect(page.getByText(matchingProjectName)).toBeVisible({ timeout: 10000 });
     await expect(page.getByText(otherProjectName)).toBeVisible();
