@@ -53,8 +53,11 @@ import { Button } from '@/packages/ui/src/Buttons';
 import { openFeedback } from '@/utils/feedback';
 import { CommandPaletteProvider } from '@/Components/CommandPalette';
 import { useCommandPalette } from '@/utils/useCommandPalette';
+import { useTabTimerIndicator } from '@/utils/useTabTimerIndicator';
 
 const { openPalette } = useCommandPalette();
+
+useTabTimerIndicator();
 
 defineProps({
     title: String,
