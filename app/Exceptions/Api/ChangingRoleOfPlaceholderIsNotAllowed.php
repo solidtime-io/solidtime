@@ -7,4 +7,9 @@ namespace App\Exceptions\Api;
 class ChangingRoleOfPlaceholderIsNotAllowed extends ApiException
 {
     public const string KEY = 'changing_role_of_placeholder_is_not_allowed';
+
+    public function report(): bool
+    {
+        return true;
+    }
 }

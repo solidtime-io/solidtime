@@ -60,7 +60,6 @@ abstract class ApiException extends Exception
      */
     public function report(): bool
     {
-        // TODO: temporary activated
         return false;
     }
 }
