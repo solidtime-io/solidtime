@@ -22,7 +22,7 @@ enum RegistrationMode: string
 
         return match (strtolower(trim((string) $value))) {
             '1', 'on', 'true' => self::On,
-            'invite', 'invite-only' => self::InviteOnly,
+            'invite-only' => self::InviteOnly,
             default => self::Off,
         };
     }

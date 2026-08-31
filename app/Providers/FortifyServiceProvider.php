@@ -45,6 +45,7 @@ class FortifyServiceProvider extends ServiceProvider
 
         Fortify::registerView(function () {
             return Inertia::render('Auth/Register', [
+                'email' => session('registration_email', ''),
                 'terms_url' => config('auth.terms_url'),
                 'privacy_policy_url' => config('auth.privacy_policy_url'),
                 'newsletter_consent' => config('auth.newsletter_consent'),
