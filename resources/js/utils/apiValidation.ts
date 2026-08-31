@@ -23,6 +23,21 @@ export function getApiValidationFieldErrors(error: unknown): Record<string, stri
     return fieldErrors;
 }
 
+/*
+ * Like getApiValidationFieldErrors, but with Laravel's dot-notation array
+ * indices (entries.0.unit_price) converted to the bracket notation of
+ * TanStack Form field names (entries[0].unit_price), so that the errors
+ * attach to the mounted fields.
+ */
+export function getApiValidationFormFieldErrors(error: unknown): Record<string, string> {
+    return Object.fromEntries(
+        Object.entries(getApiValidationFieldErrors(error)).map(([field, message]) => [
+            field.replace(/\.(\d+)(?=\.|$)/g, '[$1]'),
+            message,
+        ])
+    );
+}
+
 export function getApiValidationMessage(error: unknown, fallback: string): string {
     if (!isApiValidationError(error)) {
         return fallback;
