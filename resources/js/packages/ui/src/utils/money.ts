@@ -43,6 +43,13 @@ export function formatCents(
     return formatMoney(amount / 100, currency, format, currencySymbol, numberFormat);
 }
 
+/*
+ * Converts a major-unit amount (e.g. 19.99) to integer hundredths (i.e. cents)
+ */
+export function toCents(value: number | undefined | null): number {
+    return Math.round((value || 0) * 100);
+}
+
 export function getOrganizationCurrencySymbol(currency: string) {
     return (0)
         .toLocaleString('de-DE', {
