@@ -76,6 +76,7 @@ export interface User {
     two_factor_confirmed_at: string | null;
     timezone: string;
     week_start: string;
+    send_time_entry_still_running_email: boolean;
     profile_photo_url: string;
     organizations: Organization[];
     clients: Client[];

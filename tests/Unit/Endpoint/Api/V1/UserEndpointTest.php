@@ -45,6 +45,7 @@ class UserEndpointTest extends ApiEndpointTestAbstract
                 'profile_photo_url' => $data->user->profile_photo_url,
                 'timezone' => $data->user->timezone,
                 'week_start' => $data->user->week_start->value,
+                'send_time_entry_still_running_email' => true,
             ],
         ]);
     }
@@ -131,7 +132,7 @@ class UserEndpointTest extends ApiEndpointTestAbstract
         $response->assertJsonValidationErrors('organization_id');
     }
 
-    public function test_update_changes_user_name_timezone_and_week_start(): void
+    public function test_update_changes_user_profile_settings(): void
     {
         // Arrange
         $data = $this->createUserWithPermission();
@@ -142,6 +143,7 @@ class UserEndpointTest extends ApiEndpointTestAbstract
             'name' => 'Updated Name',
             'timezone' => 'America/New_York',
             'week_start' => Weekday::Sunday->value,
+            'send_time_entry_still_running_email' => false,
         ]);
 
         // Assert
@@ -152,6 +154,7 @@ class UserEndpointTest extends ApiEndpointTestAbstract
                 'name' => 'Updated Name',
                 'timezone' => 'America/New_York',
                 'week_start' => Weekday::Sunday->value,
+                'send_time_entry_still_running_email' => false,
             ],
         ]);
 
@@ -159,6 +162,7 @@ class UserEndpointTest extends ApiEndpointTestAbstract
         $this->assertSame('Updated Name', $user->name);
         $this->assertSame('America/New_York', $user->timezone);
         $this->assertSame(Weekday::Sunday, $user->week_start);
+        $this->assertFalse($user->send_time_entry_still_running_email);
     }
 
     public function test_update_does_not_change_user_fields_that_are_not_given(): void
@@ -501,6 +505,22 @@ class UserEndpointTest extends ApiEndpointTestAbstract
         // Assert
         $response->assertUnprocessable();
         $response->assertJsonValidationErrors(['week_start']);
+    }
+
+    public function test_update_fails_if_send_time_entry_still_running_email_is_not_boolean(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.users.update', $data->user->getKey()), [
+            'send_time_entry_still_running_email' => 'not-a-boolean',
+        ]);
+
+        // Assert
+        $response->assertUnprocessable();
+        $response->assertJsonValidationErrors(['send_time_entry_still_running_email']);
     }
 
     public function test_update_fails_if_photo_is_not_a_string(): void

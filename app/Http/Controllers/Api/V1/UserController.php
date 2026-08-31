@@ -124,6 +124,10 @@ class UserController extends Controller
             $user->week_start = $request->getWeekStart();
         }
 
+        if ($request->getSendTimeEntryStillRunningEmail() !== null) {
+            $user->send_time_entry_still_running_email = $request->getSendTimeEntryStillRunningEmail();
+        }
+
         $user->save();
 
         if ($emailToVerify !== null) {

@@ -36,6 +36,8 @@ class UserResource extends BaseResource
             'timezone' => $this->resource->timezone,
             /** @var Weekday $week_start Starting day of the week */
             'week_start' => $this->resource->week_start->value,
+            /** @var bool $send_time_entry_still_running_email Whether to email the user when a time entry has been running for more than 8 hours */
+            'send_time_entry_still_running_email' => $this->resource->send_time_entry_still_running_email,
         ];
     }
 }

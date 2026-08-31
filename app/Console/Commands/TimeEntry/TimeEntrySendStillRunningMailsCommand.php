@@ -51,7 +51,8 @@ class TimeEntrySendStillRunningMailsCommand extends Command
             ])
             ->whereHas('user', function (Builder $query): void {
                 /** @var Builder<User> $query */
-                $query->where('is_placeholder', '=', false);
+                $query->where('is_placeholder', '=', false)
+                    ->where('send_time_entry_still_running_email', '=', true);
             })
             ->orderBy('created_at', 'asc')
             ->chunk(500, function (Collection $timeEntries) use ($dryRun, &$sentMails): void {

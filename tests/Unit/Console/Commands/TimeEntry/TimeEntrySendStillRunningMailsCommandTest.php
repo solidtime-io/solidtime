@@ -159,4 +159,26 @@ class TimeEntrySendStillRunningMailsCommandTest extends TestCaseWithDatabase
         $this->assertSame("Sending still running time entry emails...\n".
             "Finished sending 0 still running time entry emails...\n", $output);
     }
+
+    public function test_does_not_send_emails_to_users_who_disabled_them(): void
+    {
+        // Arrange
+        $user = $this->createUserWithPermission();
+        $user->user->send_time_entry_still_running_email = false;
+        $user->user->save();
+        $timeEntry = TimeEntry::factory()->forMember($user->member)->create([
+            'start' => Carbon::now()->subHours(8)->subSecond(),
+            'end' => null,
+        ]);
+
+        // Act
+        $exitCode = $this->withoutMockingConsoleOutput()->artisan('time-entry:send-still-running-mails');
+
+        // Assert
+        Mail::assertNothingOutgoing();
+        $this->assertNull($timeEntry->fresh()->still_active_email_sent_at);
+        $this->assertSame(Command::SUCCESS, $exitCode);
+        $this->assertSame("Sending still running time entry emails...\n".
+            "Finished sending 0 still running time entry emails...\n", Artisan::output());
+    }
 }

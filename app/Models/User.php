@@ -42,6 +42,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  * @property string $timezone
  * @property bool $is_placeholder
  * @property Weekday $week_start
+ * @property bool $send_time_entry_still_running_email
  * @property string|null $profile_photo_path
  * @property-read Organization|null $currentOrganization
  * @property-read string $profile_photo_url
@@ -108,6 +109,7 @@ class User extends Authenticatable implements AuditableContract, FilamentUser, M
         'is_admin' => 'boolean',
         'is_placeholder' => 'boolean',
         'week_start' => Weekday::class,
+        'send_time_entry_still_running_email' => 'boolean',
     ];
 
     /**
@@ -117,6 +119,7 @@ class User extends Authenticatable implements AuditableContract, FilamentUser, M
      */
     protected $attributes = [
         'week_start' => Weekday::Monday,
+        'send_time_entry_still_running_email' => true,
     ];
 
     /**
