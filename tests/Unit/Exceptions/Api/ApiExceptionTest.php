@@ -63,7 +63,13 @@ class ApiExceptionTest extends TestCase
     #[DataProvider('expectedApiExceptionProvider')]
     public function test_expected_api_exceptions_are_not_reported(ApiException $exception): void
     {
-        $this->assertTrue($exception->report());
+        // Arrange: exception supplied by the data provider
+
+        // Act
+        $reportingHandled = $exception->report();
+
+        // Assert
+        $this->assertTrue($reportingHandled);
     }
 
     /**
@@ -79,6 +85,12 @@ class ApiExceptionTest extends TestCase
     #[DataProvider('operationalApiExceptionProvider')]
     public function test_operational_api_exceptions_are_reported(ApiException $exception): void
     {
-        $this->assertFalse($exception->report());
+        // Arrange: exception supplied by the data provider
+
+        // Act
+        $reportingHandled = $exception->report();
+
+        // Assert
+        $this->assertFalse($reportingHandled);
     }
 }

@@ -7,6 +7,7 @@ namespace App\Exceptions;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use League\OAuth2\Server\Exception\OAuthServerException;
 use Symfony\Component\HttpFoundation\Exception\SuspiciousOperationException;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -33,6 +34,10 @@ class Handler extends ExceptionHandler
         $this->reportable(function (Throwable $e): void {
             //
         });
+
+        $this->dontReportWhen(fn (Throwable $e): bool => $e instanceof OAuthServerException
+            && $e->getErrorType() === 'access_denied'
+            && $e->getHttpStatusCode() === 401);
 
         // A request on an untrusted host (see App\Http\Middleware\TrustHosts)
         // otherwise renders as a bare "Bad request." 400. Show a message that
