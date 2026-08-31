@@ -9,6 +9,6 @@
     },
     "Invoicing": {
         "repository": "solidtime-io/extension-invoicing",
-        "ref": "feature/recipients"
+        "ref": "v0.0.4"
     }
 }
