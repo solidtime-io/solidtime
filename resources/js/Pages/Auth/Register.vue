@@ -8,9 +8,13 @@ import { Field, FieldLabel, FieldError } from '@/packages/ui/src/field';
 import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import TextInput from '@/packages/ui/src/Input/TextInput.vue';
 
+const props = defineProps<{
+    email: string;
+}>();
+
 const form = useForm({
     name: '',
-    email: '',
+    email: props.email,
     password: '',
     password_confirmation: '',
     terms: false,

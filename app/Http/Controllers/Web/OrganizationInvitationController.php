@@ -36,6 +36,7 @@ class OrganizationInvitationController extends Controller
             }
 
             return redirect(route('register'))
+                ->with('registration_email', $email)
                 ->with('bannerText', __('Please create an account to finish joining the :organization organization.', [
                     'organization' => $organization->name,
                 ]))

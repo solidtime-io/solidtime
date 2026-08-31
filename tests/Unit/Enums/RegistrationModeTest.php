@@ -21,11 +21,11 @@ class RegistrationModeTest extends TestCase
             'boolean true' => [true, RegistrationMode::On],
             'on' => ['on', RegistrationMode::On],
             'true' => ['true', RegistrationMode::On],
-            'invite' => ['invite', RegistrationMode::InviteOnly],
             'invite-only' => ['invite-only', RegistrationMode::InviteOnly],
             'boolean false' => [false, RegistrationMode::Off],
             'off' => ['off', RegistrationMode::Off],
             'false' => ['false', RegistrationMode::Off],
+            'unsupported invite alias' => ['invite', RegistrationMode::Off],
             'unknown' => ['unknown', RegistrationMode::Off],
         ];
     }

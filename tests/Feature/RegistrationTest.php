@@ -22,6 +22,13 @@ use TiMacDonald\Log\LogEntry;
 
 class RegistrationTest extends TestCaseWithDatabase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Config::set('app.enable_registration', 'on');
+    }
+
     public function test_registration_screen_can_be_rendered(): void
     {
         if (! Features::enabled(Features::registration())) {
@@ -109,7 +116,7 @@ class RegistrationTest extends TestCaseWithDatabase
 
     public function test_invited_user_can_register_if_registration_is_invite_only(): void
     {
-        Config::set('app.enable_registration', 'invite');
+        Config::set('app.enable_registration', 'invite-only');
         $user = $this->createUserWithPermission();
         OrganizationInvitation::factory()
             ->forOrganization($user->organization)
@@ -134,7 +141,7 @@ class RegistrationTest extends TestCaseWithDatabase
         $this->assertSame($user->organization->getKey(), $newUser->organizations()->firstOrFail()->getKey());
     }
 
-    public function test_pending_invitation_allows_registration_if_registration_is_invite_only(): void
+    public function test_user_must_accept_pending_invitation_before_registration_if_registration_is_invite_only(): void
     {
         Config::set('app.enable_registration', 'invite-only');
         $user = $this->createUserWithPermission();
@@ -153,9 +160,11 @@ class RegistrationTest extends TestCaseWithDatabase
             'terms' => true,
         ]);
 
-        $response->assertValid();
-        $this->assertAuthenticated();
-        $response->assertRedirect(RouteServiceProvider::HOME);
+        $response->assertInvalid([
+            'email' => 'Please accept the organization invitation sent to your email address before registering.',
+        ]);
+        $this->assertGuest();
+        $this->assertFalse(User::query()->where('email', 'test@example.com')->exists());
     }
 
     public function test_new_user_can_not_register_with_likely_invalid_domain(): void

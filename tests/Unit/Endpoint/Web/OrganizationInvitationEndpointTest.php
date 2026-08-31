@@ -38,6 +38,7 @@ class OrganizationInvitationEndpointTest extends EndpointTestAbstract
         $response->assertRedirect(route('register'));
         $response->assertSessionHas('bannerText', 'Please create an account to finish joining the '.$user->organization->name.' organization.');
         $response->assertSessionHas('bannerStyle', 'info');
+        $response->assertSessionHas('registration_email', strtolower($invitation->email));
         $invitation->refresh();
         $this->assertNotNull($invitation->accepted_at);
     }
@@ -64,6 +65,7 @@ class OrganizationInvitationEndpointTest extends EndpointTestAbstract
         $response->assertRedirect(route('register'));
         $response->assertSessionHas('bannerText', 'Please create an account to finish joining the '.$user->organization->name.' organization.');
         $response->assertSessionHas('bannerStyle', 'info');
+        $response->assertSessionHas('registration_email', strtolower($invitation->email));
         $invitation->refresh();
         $this->assertNotNull($invitation->accepted_at);
     }

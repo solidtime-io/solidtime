@@ -63,11 +63,18 @@ class CreateNewUser implements CreatesNewUsers
             ],
         ])->validate();
 
-        if ($registrationMode === RegistrationMode::InviteOnly
-            && ! app(InvitationService::class)->hasInvitationForEmail((string) $validated['email'])) {
-            throw ValidationException::withMessages([
-                'email' => [__('Registration is only available to invited users.')],
-            ]);
+        if ($registrationMode === RegistrationMode::InviteOnly) {
+            $invitationService = app(InvitationService::class);
+            $email = (string) $validated['email'];
+            if (! $invitationService->hasAcceptedInvitationForEmail($email)) {
+                $message = $invitationService->hasPendingInvitationForEmail($email)
+                    ? __('Please accept the organization invitation sent to your email address before registering.')
+                    : __('Registration is only available to invited users.');
+
+                throw ValidationException::withMessages([
+                    'email' => [$message],
+                ]);
+            }
         }
 
         $timezone = null;
