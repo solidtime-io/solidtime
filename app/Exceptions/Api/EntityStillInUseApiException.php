@@ -20,6 +20,16 @@ class EntityStillInUseApiException extends ApiException
     public const string KEY = 'entity_still_in_use';
 
     /**
+     * Report the exception.
+     *
+     * @return bool true means the exception handler will not report it again
+     */
+    public function report(): bool
+    {
+        return true;
+    }
+
+    /**
      * Get the translated message for the exception.
      */
     #[\Override]

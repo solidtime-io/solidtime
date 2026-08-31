@@ -7,4 +7,9 @@ namespace App\Exceptions\Api;
 class UserResendEmailVerificationNoPendingEmailApiException extends ApiException
 {
     public const string KEY = 'user_resend_email_verification_no_pending_email';
+
+    public function report(): bool
+    {
+        return true;
+    }
 }
