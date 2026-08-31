@@ -20,6 +20,12 @@ function profileInformationForm(page: Page) {
         .locator('xpath=ancestor::*[descendant::form][1]');
 }
 
+function notificationSettingsForm(page: Page) {
+    return page
+        .getByRole('heading', { name: 'Notifications', exact: true })
+        .locator('xpath=ancestor::*[descendant::form][1]');
+}
+
 async function saveProfileForm(page: Page): Promise<void> {
     const form = profileInformationForm(page);
     await form.getByRole('button', { name: 'Save' }).click();
@@ -48,6 +54,22 @@ test('week-start change persists across reload', async ({ page }) => {
     await saveProfileForm(page);
     await page.reload();
     await expect(page.getByLabel('Start of the week')).toHaveValue('sunday');
+});
+
+test('still-running email notification setting persists across reload', async ({ page }) => {
+    await goToProfilePage(page);
+    const form = notificationSettingsForm(page);
+    const checkbox = form.getByLabel('Still-running time entry reminders');
+
+    await expect(checkbox).toBeChecked();
+    await checkbox.uncheck();
+    await form.getByRole('button', { name: 'Save' }).click();
+    await expect(form.getByText('Saved.', { exact: true })).toBeVisible();
+
+    await page.reload();
+    await expect(
+        notificationSettingsForm(page).getByLabel('Still-running time entry reminders')
+    ).not.toBeChecked();
 });
 
 test('profile photo can be uploaded, persists across reload, and can be removed', async ({
