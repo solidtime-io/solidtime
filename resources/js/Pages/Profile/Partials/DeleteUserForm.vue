@@ -35,8 +35,7 @@ async function deleteUser() {
     } catch (error) {
         if (error && typeof error === 'object' && 'response' in error) {
             const response = error.response as
-                | { status?: number; data?: { errors?: { password?: string[] } } }
-                | undefined;
+                { status?: number; data?: { errors?: { password?: string[] } } } | undefined;
             if (response?.status === 422) {
                 passwordError.value = response.data?.errors?.password?.[0] ?? 'Invalid password.';
             }

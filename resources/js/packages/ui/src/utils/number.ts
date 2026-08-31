@@ -1,9 +1,5 @@
 export type NumberFormat =
-    | 'point-comma'
-    | 'comma-point'
-    | 'space-comma'
-    | 'space-point'
-    | 'apostrophe-point';
+    'point-comma' | 'comma-point' | 'space-comma' | 'space-point' | 'apostrophe-point';
 
 /**
  * Formats a number according to the specified format

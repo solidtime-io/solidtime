@@ -8,7 +8,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from '@/packages/ui/src/tooltip';
-const active = defineModel({ default: false });
+const active = defineModel<boolean>({ default: false });
 const emit = defineEmits(['changed']);
 function toggleBillable() {
     active.value = !active.value;

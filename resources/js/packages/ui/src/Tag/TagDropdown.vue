@@ -32,7 +32,7 @@ const props = withDefaults(
 );
 
 const model = defineModel<string[]>({
-    default: [],
+    default: () => [],
 });
 
 const open = ref(false);

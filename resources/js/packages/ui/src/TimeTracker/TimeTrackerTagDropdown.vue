@@ -10,7 +10,7 @@ const emit = defineEmits<{
 }>();
 
 const model = defineModel<string[]>({
-    default: [],
+    default: () => [],
 });
 const iconColorClasses = computed(() => {
     if (model.value.length > 0) {

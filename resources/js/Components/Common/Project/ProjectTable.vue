@@ -10,13 +10,7 @@ import Pagination from '@/Components/Common/Pagination.vue';
 import LoadingSpinner from '@/packages/ui/src/LoadingSpinner.vue';
 
 export type SortColumn =
-    | 'name'
-    | 'client_name'
-    | 'spent_time'
-    | 'progress'
-    | 'billable_rate'
-    | 'status'
-    | 'visibility';
+    'name' | 'client_name' | 'spent_time' | 'progress' | 'billable_rate' | 'status' | 'visibility';
 export type { SortDirection } from '@/utils/useSortableTable';
 import { canCreateProjects } from '@/utils/permissions';
 import type { CreateProjectBody, Project, Client, CreateClientBody } from '@/packages/api/src';

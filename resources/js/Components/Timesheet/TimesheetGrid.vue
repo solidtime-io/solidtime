@@ -161,7 +161,7 @@ const emit = defineEmits<{
                         :organization-billable-rate="organization?.billable_rate ?? null"
                         :no-project-value="null"
                         align="start"
-                        @changed="(p, t) => emit('add-row', p, t)">
+                        @changed="(p: string | null, t: string | null) => emit('add-row', p, t)">
                         <template #trigger>
                             <Button variant="ghost" size="sm" class="text-text-secondary">
                                 <PlusIcon class="h-4 w-4 mr-1 text-icon-default" />

@@ -20,7 +20,7 @@ const emit = defineEmits<{
 }>();
 
 const model = defineModel<string[]>({
-    default: [],
+    default: () => [],
 });
 
 const timeEntryTags = computed<Tag[]>(() => {
