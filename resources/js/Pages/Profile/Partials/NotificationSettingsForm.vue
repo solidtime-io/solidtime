@@ -24,8 +24,7 @@ watch(
     user,
     (currentUser, previousUser) => {
         if (currentUser && previousUser === undefined) {
-            sendTimeEntryStillRunningEmail.value =
-                currentUser.send_time_entry_still_running_email;
+            sendTimeEntryStillRunningEmail.value = currentUser.send_time_entry_still_running_email;
         }
     },
     { immediate: true }
@@ -40,9 +39,7 @@ const fieldErrors = computed<Record<string, string>>(() =>
 async function save() {
     if (isSaveDisabled.value || !user.value) return;
 
-    if (
-        sendTimeEntryStillRunningEmail.value === user.value.send_time_entry_still_running_email
-    ) {
+    if (sendTimeEntryStillRunningEmail.value === user.value.send_time_entry_still_running_email) {
         flashSaved();
         return;
     }
