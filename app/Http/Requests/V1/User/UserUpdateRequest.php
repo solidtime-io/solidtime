@@ -58,6 +58,9 @@ class UserUpdateRequest extends BaseFormRequest
             'week_start' => [
                 Rule::enum(Weekday::class),
             ],
+            'send_time_entry_still_running_email' => [
+                'boolean',
+            ],
         ];
     }
 
@@ -79,6 +82,13 @@ class UserUpdateRequest extends BaseFormRequest
     public function getWeekStart(): ?Weekday
     {
         return $this->has('week_start') ? Weekday::from($this->input('week_start')) : null;
+    }
+
+    public function getSendTimeEntryStillRunningEmail(): ?bool
+    {
+        return $this->has('send_time_entry_still_running_email')
+            ? $this->boolean('send_time_entry_still_running_email')
+            : null;
     }
 
     public function hasPhotoKey(): bool

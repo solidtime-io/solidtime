@@ -705,6 +705,7 @@ const UserResource = z
         profile_photo_url: z.string(),
         timezone: z.string(),
         week_start: Weekday,
+        send_time_entry_still_running_email: z.boolean(),
     })
     .passthrough();
 const UserUpdateRequest = z
@@ -714,6 +715,7 @@ const UserUpdateRequest = z
         photo: z.union([z.string(), z.null()]),
         timezone: z.string(),
         week_start: Weekday,
+        send_time_entry_still_running_email: z.boolean(),
     })
     .partial()
     .passthrough();

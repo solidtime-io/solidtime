@@ -8,6 +8,7 @@ import { Button } from '@/packages/ui/src/Buttons';
 import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
 import TextInput from '@/packages/ui/src/Input/TextInput.vue';
+import { Checkbox } from '@/packages/ui/src';
 import {
     useResendUserEmailVerificationMutation,
     useResetUserPendingEmailMutation,
@@ -26,6 +27,7 @@ const name = ref('');
 const email = ref('');
 const timezone = ref('');
 const weekStart = ref('');
+const sendTimeEntryStillRunningEmail = ref(true);
 
 const photoBase64 = ref<string | null>(null);
 const photoPreview = ref<string | null>(null);
@@ -40,6 +42,7 @@ function seedForm(u: User) {
     email.value = u.email;
     timezone.value = u.timezone;
     weekStart.value = u.week_start;
+    sendTimeEntryStillRunningEmail.value = u.send_time_entry_still_running_email;
 }
 
 watch(
@@ -77,6 +80,11 @@ function buildPayload(): UpdateUserBody {
     if (timezone.value !== user.value.timezone) body.timezone = timezone.value;
     if (weekStart.value !== user.value.week_start) {
         body.week_start = weekStart.value as UpdateUserBody['week_start'];
+    }
+    if (
+        sendTimeEntryStillRunningEmail.value !== user.value.send_time_entry_still_running_email
+    ) {
+        body.send_time_entry_still_running_email = sendTimeEntryStillRunningEmail.value;
     }
     if (photoBase64.value !== null) body.photo = photoBase64.value;
     return body;
@@ -330,6 +338,21 @@ const page = usePage<{
                 </select>
                 <FieldError v-if="fieldErrors.week_start">{{ fieldErrors.week_start }}</FieldError>
             </Field>
+
+            <div class="col-span-6 sm:col-span-4">
+                <Field orientation="horizontal">
+                    <Checkbox
+                        id="send_time_entry_still_running_email"
+                        v-model:checked="sendTimeEntryStillRunningEmail"
+                        :disabled="!isUserLoaded" />
+                    <FieldLabel for="send_time_entry_still_running_email">
+                        Email me when a time entry has been running for more than 8 hours
+                    </FieldLabel>
+                </Field>
+                <FieldError v-if="fieldErrors.send_time_entry_still_running_email">
+                    {{ fieldErrors.send_time_entry_still_running_email }}
+                </FieldError>
+            </div>
         </template>
 
         <template #actions>
