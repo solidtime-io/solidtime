@@ -13,11 +13,11 @@ import { type ComputedRef } from 'vue';
 
 const temporaryCustomTimerEntry = ref<string>('');
 
-const start = defineModel('start', {
+const start = defineModel<string>('start', {
     default: '',
 });
 
-const end = defineModel('end', {
+const end = defineModel<string>('end', {
     default: '',
 });
 

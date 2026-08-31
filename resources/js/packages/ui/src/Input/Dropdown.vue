@@ -16,7 +16,7 @@ const props = withDefaults(
 );
 
 const emit = defineEmits(['open', 'submit']);
-const open = defineModel({ default: false });
+const open = defineModel<boolean>({ default: false });
 
 function handleAutofocus(event: Event) {
     if (props.autoFocus === false) {

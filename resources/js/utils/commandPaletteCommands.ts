@@ -27,13 +27,7 @@ import BillableIcon from '@/packages/ui/src/Icons/BillableIcon.vue';
 import type { Organization } from '@/types/models';
 
 export type CommandGroup =
-    | 'timer'
-    | 'active-timer'
-    | 'navigation'
-    | 'create'
-    | 'theme'
-    | 'organization'
-    | 'entity';
+    'timer' | 'active-timer' | 'navigation' | 'create' | 'theme' | 'organization' | 'entity';
 
 export interface Command {
     id: string;

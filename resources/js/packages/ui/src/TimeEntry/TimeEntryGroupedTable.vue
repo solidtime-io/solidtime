@@ -21,7 +21,7 @@ import TimeEntryRow from '@/packages/ui/src/TimeEntry/TimeEntryRow.vue';
 import type { TimeEntriesGroupedByType } from '@/types/time-entries';
 
 const selectedTimeEntries = defineModel<TimeEntry[]>('selected', {
-    default: [],
+    default: () => [],
 });
 
 const props = withDefaults(

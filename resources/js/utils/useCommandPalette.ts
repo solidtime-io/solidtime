@@ -385,21 +385,19 @@ export function useCommandPalette() {
             const matching = projects.value
                 .filter((p: Project) => p.name.toLowerCase().includes(query))
                 .slice(0, maxPerType)
-                .map(
-                    (p: Project): EntitySearchResult => ({
-                        id: `entity-project-${p.id}`,
-                        label: p.name,
-                        icon: ENTITY_ICONS.project,
-                        keywords: ['project'],
-                        action: () => {
-                            closePaletteAfterAction();
-                            router.visit(route('projects.show', { project: p.id }));
-                        },
-                        entityType: 'project',
-                        color: p.color,
-                        badgeClass: ENTITY_BADGE_CLASSES.project,
-                    })
-                );
+                .map((p: Project): EntitySearchResult => ({
+                    id: `entity-project-${p.id}`,
+                    label: p.name,
+                    icon: ENTITY_ICONS.project,
+                    keywords: ['project'],
+                    action: () => {
+                        closePaletteAfterAction();
+                        router.visit(route('projects.show', { project: p.id }));
+                    },
+                    entityType: 'project',
+                    color: p.color,
+                    badgeClass: ENTITY_BADGE_CLASSES.project,
+                }));
             results.push(...matching);
         }
 
@@ -407,20 +405,18 @@ export function useCommandPalette() {
             const matching = clients.value
                 .filter((c: Client) => c.name.toLowerCase().includes(query))
                 .slice(0, maxPerType)
-                .map(
-                    (c: Client): EntitySearchResult => ({
-                        id: `entity-client-${c.id}`,
-                        label: c.name,
-                        icon: ENTITY_ICONS.client,
-                        keywords: ['client'],
-                        action: () => {
-                            closePaletteAfterAction();
-                            router.visit(route('clients'));
-                        },
-                        entityType: 'client',
-                        badgeClass: ENTITY_BADGE_CLASSES.client,
-                    })
-                );
+                .map((c: Client): EntitySearchResult => ({
+                    id: `entity-client-${c.id}`,
+                    label: c.name,
+                    icon: ENTITY_ICONS.client,
+                    keywords: ['client'],
+                    action: () => {
+                        closePaletteAfterAction();
+                        router.visit(route('clients'));
+                    },
+                    entityType: 'client',
+                    badgeClass: ENTITY_BADGE_CLASSES.client,
+                }));
             results.push(...matching);
         }
 
@@ -428,22 +424,20 @@ export function useCommandPalette() {
             const matching = tasks.value
                 .filter((t: Task) => t.name.toLowerCase().includes(query))
                 .slice(0, maxPerType)
-                .map(
-                    (t: Task): EntitySearchResult => ({
-                        id: `entity-task-${t.id}`,
-                        label: t.name,
-                        icon: ENTITY_ICONS.task,
-                        keywords: ['task'],
-                        action: () => {
-                            closePaletteAfterAction();
-                            if (t.project_id) {
-                                router.visit(route('projects.show', { project: t.project_id }));
-                            }
-                        },
-                        entityType: 'task',
-                        badgeClass: ENTITY_BADGE_CLASSES.task,
-                    })
-                );
+                .map((t: Task): EntitySearchResult => ({
+                    id: `entity-task-${t.id}`,
+                    label: t.name,
+                    icon: ENTITY_ICONS.task,
+                    keywords: ['task'],
+                    action: () => {
+                        closePaletteAfterAction();
+                        if (t.project_id) {
+                            router.visit(route('projects.show', { project: t.project_id }));
+                        }
+                    },
+                    entityType: 'task',
+                    badgeClass: ENTITY_BADGE_CLASSES.task,
+                }));
             results.push(...matching);
         }
 
@@ -451,20 +445,18 @@ export function useCommandPalette() {
             const matching = tags.value
                 .filter((t: Tag) => t.name.toLowerCase().includes(query))
                 .slice(0, maxPerType)
-                .map(
-                    (t: Tag): EntitySearchResult => ({
-                        id: `entity-tag-${t.id}`,
-                        label: t.name,
-                        icon: ENTITY_ICONS.tag,
-                        keywords: ['tag'],
-                        action: () => {
-                            closePaletteAfterAction();
-                            router.visit(route('tags'));
-                        },
-                        entityType: 'tag',
-                        badgeClass: ENTITY_BADGE_CLASSES.tag,
-                    })
-                );
+                .map((t: Tag): EntitySearchResult => ({
+                    id: `entity-tag-${t.id}`,
+                    label: t.name,
+                    icon: ENTITY_ICONS.tag,
+                    keywords: ['tag'],
+                    action: () => {
+                        closePaletteAfterAction();
+                        router.visit(route('tags'));
+                    },
+                    entityType: 'tag',
+                    badgeClass: ENTITY_BADGE_CLASSES.tag,
+                }));
             results.push(...matching);
         }
 
@@ -472,20 +464,18 @@ export function useCommandPalette() {
             const matching = members.value
                 .filter((m: Member) => m.name.toLowerCase().includes(query))
                 .slice(0, maxPerType)
-                .map(
-                    (m: Member): EntitySearchResult => ({
-                        id: `entity-member-${m.id}`,
-                        label: m.name,
-                        icon: ENTITY_ICONS.member,
-                        keywords: ['member'],
-                        action: () => {
-                            closePaletteAfterAction();
-                            router.visit(route('members'));
-                        },
-                        entityType: 'member',
-                        badgeClass: ENTITY_BADGE_CLASSES.member,
-                    })
-                );
+                .map((m: Member): EntitySearchResult => ({
+                    id: `entity-member-${m.id}`,
+                    label: m.name,
+                    icon: ENTITY_ICONS.member,
+                    keywords: ['member'],
+                    action: () => {
+                        closePaletteAfterAction();
+                        router.visit(route('members'));
+                    },
+                    entityType: 'member',
+                    badgeClass: ENTITY_BADGE_CLASSES.member,
+                }));
             results.push(...matching);
         }
 

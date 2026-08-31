@@ -7,7 +7,7 @@ import { getUserTimezone } from './utils/settings';
 import { getDayJsInstance } from './utils/time';
 import { useSessionStorage } from '@vueuse/core';
 
-const show = defineModel('show', { default: false });
+const show = defineModel<boolean>('show', { default: false });
 
 const emit = defineEmits<{
     update: [timezone: string];

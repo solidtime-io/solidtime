@@ -146,7 +146,10 @@ const changeSummary = computed<PlanLine[]>(() => {
             { times: range(plan.breakSlot), label: 'Break' },
             { times: range(plan.secondHalf), label: workLabel },
             ...plan.shifted.map((shift) => ({
-                times: moved(req.otherEntries.find((e) => e.id === shift.id)!, shift),
+                times: moved(
+                    req.otherEntries.find((e) => e.id === shift.id)!,
+                    shift
+                ),
                 label: props.entryLabel(shift.id),
             })),
         ];
