@@ -330,7 +330,6 @@ const page = usePage<{
                 </select>
                 <FieldError v-if="fieldErrors.week_start">{{ fieldErrors.week_start }}</FieldError>
             </Field>
-
         </template>
 
         <template #actions>
