@@ -63,7 +63,7 @@ const max = computed(() => {
 });
 
 const backgroundColor = useCssVariable('--theme-color-card-background');
-const borderColor = useCssVariable('--color-border');
+const borderColor = useCssVariable('--color-border-secondary');
 const labelColor = useCssVariable('--color-text-secondary');
 const chartColorRaw = useCssVariable('--theme-color-chart');
 
