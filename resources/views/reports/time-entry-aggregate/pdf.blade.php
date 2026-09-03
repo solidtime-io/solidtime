@@ -160,7 +160,9 @@
         </div>
         @endif
     </div>
+    @if($showHistoryChart)
     <div id="main-chart" style="width: 700px; height: 300px; margin: 20px auto;"></div>
+    @endif
 
 </div>
 
@@ -351,12 +353,17 @@
     };
     pieChart.on("finished", () => {
         window.pieChartFinished = true;
+        @if($showHistoryChart)
         if (window.mainChartFinished && window.pieChartFinished) {
             window.status = "ready";
         }
+        @else
+        window.status = "ready";
+        @endif
     });
     pieChart.setOption(pieChartOptions);
 
+    @if($showHistoryChart)
     let elementMainChart = document.getElementById("main-chart");
     let mainChart = echarts.init(elementMainChart, null, {
         renderer: "svg"
@@ -431,6 +438,7 @@
         }
     });
     mainChart.setOption(mainChartOptions);
+    @endif
 </script>
 </body>
 </html>

@@ -4523,6 +4523,11 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
                 schema: rounding_minutes,
             },
             {
+                name: 'show_history_chart',
+                type: 'Query',
+                schema: z.enum(['true', 'false']).optional(),
+            },
+            {
                 name: 'member_ids',
                 type: 'Query',
                 schema: z.array(z.string()).min(1).optional(),

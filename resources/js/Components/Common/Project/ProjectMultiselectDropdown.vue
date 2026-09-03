@@ -1,9 +1,21 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import MultiselectDropdown from '@/packages/ui/src/Input/MultiselectDropdown.vue';
 import { useProjectsQuery } from '@/utils/useProjectsQuery';
 import type { Project } from '@/packages/api/src';
 
-const { projects } = useProjectsQuery();
+// ponytail: filter by client_id here instead of a new "filtered projects" query, list is already in memory
+const props = defineProps<{
+    clientIds?: string[];
+}>();
+
+const { projects: allProjects } = useProjectsQuery();
+
+const projects = computed(() =>
+    props.clientIds?.length
+        ? allProjects.value.filter((project) => props.clientIds!.includes(project.client_id ?? ''))
+        : allProjects.value
+);
 
 function getKeyFromItem(item: Project) {
     return item.id;

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { watch } from 'vue';
 import { useBreaksEnabled } from '@/packages/ui/src/utils/useBreaksEnabled';
 import { CheckCircleIcon, TagIcon, UserGroupIcon } from '@heroicons/vue/20/solid';
 import { FolderIcon } from '@heroicons/vue/16/solid';
@@ -56,6 +57,15 @@ function selectTagMatchType(value: AcceptableValue) {
 async function createTag(name: string) {
     return await useTagsStore().createTag(name);
 }
+
+// clear child filters when their parent filter changes so hidden/invalid selections don't linger
+watch(selectedClients, () => {
+    selectedProjects.value = [];
+    selectedTasks.value = [];
+});
+watch(selectedProjects, () => {
+    selectedTasks.value = [];
+});
 </script>
 
 <template>
@@ -72,7 +82,10 @@ async function createTag(name: string) {
                             :icon="UserGroupIcon" />
                     </template>
                 </MemberMultiselectDropdown>
-                <ProjectMultiselectDropdown v-model="selectedProjects" @submit="emit('submit')">
+                <ProjectMultiselectDropdown
+                    v-model="selectedProjects"
+                    :client-ids="selectedClients"
+                    @submit="emit('submit')">
                     <template #trigger>
                         <ReportingFilterBadge
                             :count="selectedProjects.length"
@@ -81,7 +94,11 @@ async function createTag(name: string) {
                             :icon="FolderIcon" />
                     </template>
                 </ProjectMultiselectDropdown>
-                <TaskMultiselectDropdown v-model="selectedTasks" @submit="emit('submit')">
+                <TaskMultiselectDropdown
+                    v-model="selectedTasks"
+                    :project-ids="selectedProjects"
+                    :client-ids="selectedClients"
+                    @submit="emit('submit')">
                     <template #trigger>
                         <ReportingFilterBadge
                             :count="selectedTasks.length"
