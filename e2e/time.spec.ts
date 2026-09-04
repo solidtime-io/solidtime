@@ -1579,6 +1579,47 @@ test('test that project selection works in create modal', async ({ page, ctx }) 
     expect(createBody.data.project_id).not.toBeNull();
 });
 
+test('test that ctrl+enter submits the create modal after selecting a project via keyboard', async ({
+    page,
+    ctx,
+}) => {
+    // Regression test for https://github.com/solidtime-io/solidtime/issues/1238
+    const projectName = 'Keyboard Submit Project ' + Math.floor(1 + Math.random() * 10000);
+    await createProjectViaApi(ctx, { name: projectName });
+
+    await goToTimeOverview(page);
+
+    await page.getByRole('button', { name: 'Time entry actions' }).click();
+    await page.getByRole('menuitem', { name: 'Manual time entry' }).click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+
+    // Fill the description, then move to the project dropdown and select a project purely via keyboard
+    const description = page.getByRole('dialog').getByRole('textbox', { name: 'Description' });
+    await description.fill('Keyboard submit test');
+    await description.press('Tab');
+    await expect(
+        page.getByRole('dialog').getByRole('button', { name: 'No Project' })
+    ).toBeFocused();
+    await page.keyboard.press('Enter');
+    await page.getByTestId('client_dropdown_search').fill(projectName);
+    await expect(page.getByRole('option', { name: projectName })).toBeVisible();
+    await page.keyboard.press('Enter');
+    await expect(page.getByRole('dialog').getByRole('button', { name: projectName })).toBeVisible();
+
+    // Ctrl+Enter must submit even though focus is no longer on the description input
+    const [createResponse] = await Promise.all([
+        page.waitForResponse(
+            (response) => response.url().includes('/time-entries') && response.status() === 201
+        ),
+        page.keyboard.press('Control+Enter'),
+    ]);
+    const createBody = await createResponse.json();
+    expect(createBody.data.description).toBe('Keyboard submit test');
+    expect(createBody.data.project_id).not.toBeNull();
+    await expect(page.getByRole('dialog')).toBeHidden();
+    await expect(page.getByText('Keyboard submit test')).toBeVisible();
+});
+
 test('test that tag selection works in create modal', async ({ page }) => {
     await goToTimeOverview(page);
 

@@ -179,7 +179,7 @@ async function submit() {
 </script>
 
 <template>
-    <DialogModal closeable :show="show" @close="emit('cancel')">
+    <DialogModal closeable :show="show" @close="emit('cancel')" @submit="submit">
         <template #title>
             <div class="flex items-center space-x-2">
                 <Coffee class="w-5 h-5 text-text-secondary" />
