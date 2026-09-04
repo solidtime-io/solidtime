@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { cn } from '../utils/cn';
+import { useDialogFocusRestore } from '../utils/useDialogFocusRestore';
 import { X } from '@lucide/vue';
 import {
     DialogClose,
@@ -22,6 +23,10 @@ const delegatedProps = computed(() => {
 });
 
 const forwarded = useForwardPropsEmits(delegatedProps, emits);
+
+// Forwarded consumer listeners run first, so a consumer can still take over
+// by calling preventDefault() on close-auto-focus.
+const { onOpenAutoFocus, onCloseAutoFocus } = useDialogFocusRestore();
 </script>
 
 <template>
@@ -36,6 +41,8 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits);
                     )
                 "
                 v-bind="forwarded"
+                @open-auto-focus="onOpenAutoFocus"
+                @close-auto-focus="onCloseAutoFocus"
                 @pointer-down-outside="
                     (event) => {
                         const originalEvent = event.detail.originalEvent;

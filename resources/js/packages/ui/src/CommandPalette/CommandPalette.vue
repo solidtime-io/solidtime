@@ -11,6 +11,7 @@ import {
     CommandShortcut,
 } from '../command';
 import { cn } from '../utils/cn';
+import { useDialogFocusRestore } from '../utils/useDialogFocusRestore';
 import type {
     CommandPaletteCommand,
     CommandPaletteGroup,
@@ -35,6 +36,8 @@ const props = withDefaults(
 const emit = defineEmits<{
     select: [command: CommandPaletteCommand | EntitySearchResult];
 }>();
+
+const { onOpenAutoFocus, onCloseAutoFocus } = useDialogFocusRestore();
 
 // Non-empty groups for rendering
 const nonEmptyGroups = computed(() => props.groups.filter((g) => g.commands.length > 0));
@@ -71,7 +74,9 @@ watch(open, (isOpen) => {
                     )
                 ">
                 <DialogContent
-                    class="pointer-events-auto bg-default-background w-full max-w-lg border border-border-tertiary shadow-lg sm:rounded-lg outline-none overflow-hidden p-0 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95">
+                    class="pointer-events-auto bg-default-background w-full max-w-lg border border-border-tertiary shadow-lg sm:rounded-lg outline-none overflow-hidden p-0 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95"
+                    @open-auto-focus="onOpenAutoFocus"
+                    @close-auto-focus="onCloseAutoFocus">
                     <CommandRoot
                         v-model:search-term="searchTerm"
                         class="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted-foreground [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-group]]:px-2 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-3 [&_[cmdk-item]_svg]:h-5 [&_[cmdk-item]_svg]:w-5">

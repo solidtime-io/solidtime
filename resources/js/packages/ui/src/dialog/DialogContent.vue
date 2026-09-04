@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { cn } from '../utils/cn';
+import { useDialogFocusRestore } from '../utils/useDialogFocusRestore';
 import {
     DialogContent,
     type DialogContentEmits,
@@ -20,6 +21,10 @@ const delegatedProps = computed(() => {
 });
 
 const forwarded = useForwardPropsEmits(delegatedProps, emits);
+
+// Forwarded consumer listeners run first, so a consumer can still take over
+// by calling preventDefault() on close-auto-focus.
+const { onOpenAutoFocus, onCloseAutoFocus } = useDialogFocusRestore();
 </script>
 
 <template>
@@ -36,7 +41,9 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits);
                             'my-3 md:my-14 xl:my-24 bg-default-background grid w-full max-w-lg border border-border-tertiary shadow-lg duration-200 rounded-lg outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
                             props.class
                         )
-                    ">
+                    "
+                    @open-auto-focus="onOpenAutoFocus"
+                    @close-auto-focus="onCloseAutoFocus">
                     <slot />
                 </DialogContent>
             </div>
