@@ -68,6 +68,7 @@ RUN apt-get update; \
     wget \
     vim \
     git \
+    gosu \
     ncdu \
     procps \
     unzip \
@@ -195,9 +196,20 @@ RUN test -z "$(find . -name .git -print -quit)"
 #COPY --link --chown=${WWWUSER}:${WWWUSER} --from=build ${ROOT}/public public
 
 RUN mkdir -p \
-    storage/framework/{sessions,views,cache,testing} \
+    storage/framework/{sessions,views,cache/data,testing} \
     storage/logs \
-    bootstrap/cache && chmod -R a+rw storage
+    storage/app/public \
+    storage/app/private \
+    bootstrap/cache && \
+    ln -s ../storage/app/public public/storage && \
+    chmod -R a+rw storage bootstrap/cache
+
+# OpenShift / arbitrary-UID compatibility: group 0 (root group) gets read+write+execute
+# on writable paths. Any UID can run the container if it joins the root group.
+# https://docs.openshift.com/container-platform/latest/openshift_images/create-images.html
+USER root
+RUN chgrp -R 0 storage bootstrap/cache && \
+    chmod -R g+rwX storage bootstrap/cache
 
 #RUN composer install \
 #    --classmap-authoritative \
