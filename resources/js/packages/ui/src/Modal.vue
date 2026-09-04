@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Dialog, DialogContent, DialogFooter } from './dialog/index';
-import { computed } from 'vue';
+import { computed, nextTick } from 'vue';
 
 const props = defineProps({
     show: {
@@ -17,13 +17,32 @@ const props = defineProps({
     },
 });
 
-const emit = defineEmits(['close']);
+const emit = defineEmits(['close', 'submit']);
 
 const close = () => {
     if (props.closeable) {
         emit('close');
     }
 };
+
+// Ctrl+Enter (Cmd+Enter on macOS) submits the modal from any focused element inside it.
+// Handled in the capture phase so child elements (buttons, dropdown triggers, inputs with
+// their own Enter handlers) never see the keystroke and cannot open or double-submit.
+async function onKeydownCapture(event: KeyboardEvent) {
+    if (event.key !== 'Enter' || !(event.ctrlKey || event.metaKey) || event.isComposing) {
+        return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    // Inputs like the time and duration fields commit their value on blur, so blur first
+    // and let the resulting model updates settle before submitting.
+    const active = document.activeElement;
+    if (active instanceof HTMLElement) {
+        active.blur();
+    }
+    await nextTick();
+    emit('submit');
+}
 
 const maxWidthClass = computed(() => {
     return {
@@ -39,7 +58,7 @@ const maxWidthClass = computed(() => {
 <template>
     <Dialog :open="show" @update:open="close">
         <DialogContent :class="maxWidthClass">
-            <div class="min-w-0">
+            <div class="min-w-0" @keydown.capture="onKeydownCapture">
                 <slot />
             </div>
 
