@@ -9,7 +9,7 @@ import {
     ArrowDownTrayIcon,
     LockClosedIcon,
 } from '@heroicons/vue/20/solid';
-import Pagination from '@/Components/Common/Pagination.vue';
+import Pagination from '@/packages/ui/src/Pagination.vue';
 import {
     DropdownMenu,
     DropdownMenuContent,

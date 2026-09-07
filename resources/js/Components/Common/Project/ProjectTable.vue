@@ -6,7 +6,7 @@ import { computed, ref, watch } from 'vue';
 import ProjectCreateModal from '@/packages/ui/src/Project/ProjectCreateModal.vue';
 import ProjectTableHeading from '@/Components/Common/Project/ProjectTableHeading.vue';
 import ProjectTableRow from '@/Components/Common/Project/ProjectTableRow.vue';
-import Pagination from '@/Components/Common/Pagination.vue';
+import Pagination from '@/packages/ui/src/Pagination.vue';
 import LoadingSpinner from '@/packages/ui/src/LoadingSpinner.vue';
 
 export type SortColumn =
