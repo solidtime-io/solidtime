@@ -78,7 +78,7 @@ async function submit() {
 </script>
 
 <template>
-    <DialogModal closeable :show="show" @close="show = false">
+    <DialogModal closeable :show="show" @close="show = false" @submit="submit">
         <template #title>
             <div class="flex items-center space-x-2 text-amber-600 dark:text-amber-400">
                 <Coffee class="w-5 h-5" />

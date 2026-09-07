@@ -35,7 +35,7 @@ useFocus(taskNameInput, { initialValue: true });
 </script>
 
 <template>
-    <DialogModal closeable :show="show" @close="show = false">
+    <DialogModal closeable :show="show" @close="show = false" @submit="submit">
         <template #title>
             <div class="flex space-x-2">
                 <span> Update Task </span>
