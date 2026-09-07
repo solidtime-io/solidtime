@@ -32,6 +32,7 @@ import InputLabel from './Input/InputLabel.vue';
 import TextInput from './Input/TextInput.vue';
 import LoadingSpinner from './LoadingSpinner.vue';
 import Modal from './Modal.vue';
+import Pagination from './Pagination.vue';
 import ProjectBadge from './Project/ProjectBadge.vue';
 import TimeEntryCreateModal from './TimeEntry/TimeEntryCreateModal.vue';
 import TimeEntryEditModal from './TimeEntry/TimeEntryEditModal.vue';
@@ -257,6 +258,7 @@ export {
     NumberFieldDecrement,
     NumberFieldIncrement,
     NumberFieldInput,
+    Pagination,
     Popover,
     PopoverAnchor,
     PopoverContent,
