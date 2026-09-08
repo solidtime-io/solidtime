@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { api } from '@/packages/api/src';
 import type { TimeEntry } from '@/packages/api/src';
 import dayjs, { Dayjs } from 'dayjs';
@@ -57,7 +57,6 @@ export const useCurrentTimeEntryStore = defineStore('currentTimeEntry', () => {
     const currentTimeEntry = ref<TimeEntry>({ ...emptyTimeEntry });
     const { handleApiRequestNotifications } = useNotificationsStore();
     const queryClient = useQueryClient();
-
     useLocalStorage('solidtime/current-time-entry', currentTimeEntry, {
         deep: true,
     });
@@ -89,23 +88,12 @@ export const useCurrentTimeEntryStore = defineStore('currentTimeEntry', () => {
             try {
                 const timeEntriesResponse = await api.getMyActiveTimeEntry({});
                 if (timeEntriesResponse?.data) {
-                    if (timeEntriesResponse.data) {
-                        currentTimeEntry.value = timeEntriesResponse.data;
-                        if (
-                            currentTimeEntry.value.start !== '' &&
-                            currentTimeEntry.value.end === null
-                        ) {
-                            startLiveTimer();
-                        }
-                    } else {
-                        // No active time entry on server
-                        // Only reset if we had a previously started timer (has an ID)
-                        // Don't reset if user is preparing a new time entry (no ID yet)
-                        if (currentTimeEntry.value.id !== '') {
-                            currentTimeEntry.value = { ...emptyTimeEntry };
-                            stopLiveTimer();
-                        }
-                    }
+                    currentTimeEntry.value = timeEntriesResponse.data;
+                } else if (currentTimeEntry.value.id !== '') {
+                    // No active time entry on server
+                    // Only reset if we had a previously started timer (has an ID)
+                    // Don't reset if user is preparing a new time entry (no ID yet)
+                    currentTimeEntry.value = { ...emptyTimeEntry };
                 }
             } catch {
                 // API error (e.g., 404 when no active time entry)
@@ -113,7 +101,6 @@ export const useCurrentTimeEntryStore = defineStore('currentTimeEntry', () => {
                 // Don't reset if user is preparing a new time entry (no ID yet)
                 if (currentTimeEntry.value.id !== '') {
                     currentTimeEntry.value = { ...emptyTimeEntry };
-                    stopLiveTimer();
                 }
             }
         } else {
@@ -293,6 +280,18 @@ export const useCurrentTimeEntryStore = defineStore('currentTimeEntry', () => {
     const isOnBreak = computed(() => {
         return isActive.value && currentTimeEntry.value.type === 'break';
     });
+
+    watch(
+        isActive,
+        (active) => {
+            if (active) {
+                startLiveTimer();
+            } else {
+                stopLiveTimer();
+            }
+        },
+        { immediate: true }
+    );
 
     async function setActiveState(newState: boolean) {
         if (newState) {
