@@ -10,35 +10,73 @@ import { QueryClient, VueQueryPlugin } from '@tanstack/vue-query';
 import { type DefineComponent } from 'vue';
 import { setupPrefetching } from '@/utils/prefetch';
 
+interface ExtensionManifest {
+    name?: string;
+    alias?: string;
+}
+
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 const pinia = createPinia();
 const queryClient = new QueryClient();
+const extensionManifests = import.meta.glob('../../extensions/**/module.json', {
+    eager: true,
+    import: 'default',
+}) as Record<string, ExtensionManifest>;
+// BillingPortal is a Vue 2 component and must not be bundled into the Vue 3 app.
+const extensionPages = import.meta.glob<DefineComponent>([
+    '../../extensions/**/resources/js/Pages/**/*.vue',
+    '!**/BillingPortal.vue',
+]);
+const extensionDirectories = Object.entries(extensionManifests).reduce<Record<string, string>>(
+    (directories, [path, manifest]) => {
+        const match = path.match(/^\.\.\/\.\.\/extensions\/([^/]+)\/module\.json$/);
+        const extensionDirectory = match?.[1];
+
+        if (extensionDirectory === undefined) {
+            return directories;
+        }
+
+        for (const key of [manifest.name, manifest.alias, extensionDirectory]) {
+            if (typeof key !== 'string' || key === '') {
+                continue;
+            }
+
+            directories[key] = extensionDirectory;
+            directories[key.toLowerCase()] = extensionDirectory;
+        }
+
+        return directories;
+    },
+    {}
+);
+
+function resolveExtensionDirectory(moduleName: string): string {
+    return (
+        extensionDirectories[moduleName] ??
+        extensionDirectories[moduleName.toLowerCase()] ??
+        moduleName
+    );
+}
 
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,
     resolve: (name) => {
-        if (name.includes('Invoicing::')) {
-            const [module, page] = name.split('::');
+        // "Module::Page" (both halves present) resolves to that extension's page
+        // directory; everything else is a host page under resources/js/Pages.
+        const [module, ...pageSegments] = name.split('::');
+        const page = pageSegments.join('::');
 
-            const pagePath = module
-                ? `../../extensions/${module}/resources/js/Pages/${page}.vue`
-                : `./Pages/${page}.vue`;
+        if (module && page) {
+            const extensionDirectory = resolveExtensionDirectory(module);
+            const pagePath = `../../extensions/${extensionDirectory}/resources/js/Pages/${page}.vue`;
 
-            // BillingPortal is a Vue 2 Component and therefore should not be imported
-            const pages = module
-                ? import.meta.glob<DefineComponent>([
-                      '../../extensions/**/resources/js/Pages/*.vue',
-                      '!**/BillingPortal.vue',
-                  ])
-                : import.meta.glob<DefineComponent>('./Pages/**/*.vue');
-
-            return resolvePageComponent(pagePath, pages);
-        } else {
-            return resolvePageComponent(
-                `./Pages/${name}.vue`,
-                import.meta.glob<DefineComponent>('./Pages/**/*.vue')
-            );
+            return resolvePageComponent(pagePath, extensionPages);
         }
+
+        return resolvePageComponent(
+            `./Pages/${name}.vue`,
+            import.meta.glob<DefineComponent>('./Pages/**/*.vue')
+        );
     },
     setup({ el, App, props, plugin }) {
         const app = createApp({ render: () => h(App, props) });
