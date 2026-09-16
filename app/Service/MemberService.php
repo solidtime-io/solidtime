@@ -218,7 +218,16 @@ class MemberService
 
         $placeholderUser = $user->replicate();
         $placeholderUser->is_placeholder = true;
-        $placeholderUser->current_team_id = $member->organization_id;
+        // Reset authentication relevant properties on the placeholder user
+        $placeholderUser->password = null;
+        $placeholderUser->remember_token = null;
+        $placeholderUser->two_factor_secret = null;
+        $placeholderUser->two_factor_recovery_codes = null;
+        $placeholderUser->two_factor_confirmed_at = null;
+        $placeholderUser->email_verified_at = null;
+        $placeholderUser->pending_email = null;
+        $placeholderUser->current_team_id = null;
+        $placeholderUser->profile_photo_path = null;
         $placeholderUser->save();
 
         $member->user()->associate($placeholderUser);

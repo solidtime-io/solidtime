@@ -38,7 +38,10 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  * @property string|null $pending_email
  * @property Carbon|null $email_verified_at
  * @property string|null $password
+ * @property string|null $remember_token
  * @property string|null $two_factor_secret
+ * @property string|null $two_factor_recovery_codes
+ * @property Carbon|null $two_factor_confirmed_at
  * @property string $timezone
  * @property bool $is_placeholder
  * @property Weekday $week_start
@@ -150,7 +153,9 @@ class User extends Authenticatable implements AuditableContract, FilamentUser, M
 
     public function canAccessPanel(Panel $panel): bool
     {
-        return in_array($this->email, config('auth.super_admins', []), true) && $this->hasVerifiedEmail();
+        return $this->is_placeholder === false
+            && in_array($this->email, config('auth.super_admins', []), true)
+            && $this->hasVerifiedEmail();
     }
 
     public function isMemberOfOrganization(Organization $organization): bool

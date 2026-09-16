@@ -53,6 +53,23 @@ class UserModelTest extends ModelTestAbstract
         $this->assertTrue($canAccess);
     }
 
+    public function test_placeholder_user_with_a_super_admin_email_can_not_access_admin_panel(): void
+    {
+        // Arrange
+        Config::set('auth.super_admins', ['some@email.test', 'other@email.test']);
+        $user = User::factory()->placeholder()->create([
+            'email' => 'some@email.test',
+        ]);
+        $panelProvider = new AdminPanelProvider(app());
+        $mainPanel = $panelProvider->panel(Panel::make());
+
+        // Act
+        $canAccess = $user->canAccessPanel($mainPanel);
+
+        // Assert
+        $this->assertFalse($canAccess);
+    }
+
     public function test_scope_belongs_to_organization_returns_only_users_of_organization_including_owners(): void
     {
         // Arrange

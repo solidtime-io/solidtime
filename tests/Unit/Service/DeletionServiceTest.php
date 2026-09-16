@@ -412,10 +412,11 @@ class DeletionServiceTest extends TestCaseWithDatabase
         $this->assertDatabaseHas(Organization::class, [
             'id' => $organizationOfA->getKey(),
         ]);
-        // The placeholder user should exist with current_team_id set to the org where they are a placeholder
+        // The placeholder user should exist and must not reference the deleted organization,
+        // which is what caused the foreign key violation in #989
         $placeholderUser = User::query()->where('is_placeholder', true)->first();
         $this->assertNotNull($placeholderUser);
-        $this->assertSame($organizationOfA->getKey(), $placeholderUser->current_team_id);
+        $this->assertNull($placeholderUser->current_team_id);
         $this->assertDatabaseHas(Member::class, [
             'id' => $memberBInOrgA->getKey(),
             'user_id' => $placeholderUser->getKey(),

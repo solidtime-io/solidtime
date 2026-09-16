@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Auth\ActiveUserProvider;
 use App\Models\Passport\AuthCode;
 use App\Models\Passport\Client;
 use App\Models\Passport\RefreshToken;
 use App\Models\Passport\Token;
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
+use Illuminate\Support\Facades\Auth;
 use Laravel\Passport\Passport;
 
 class AuthServiceProvider extends ServiceProvider
@@ -26,6 +29,13 @@ class AuthServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Replaces the built-in eloquent user provider, so that no authentication flow can
+        // resolve a placeholder user. The driver name is kept, because Passport recognizes
+        // only providers that are configured with the driver "eloquent".
+        Auth::provider('eloquent', function (Application $app, array $config): ActiveUserProvider {
+            return new ActiveUserProvider($app->make('hash'), $config['model']);
+        });
+
         // define scopes for passport tokens
         Passport::tokensCan([
             'create' => 'Create resources',

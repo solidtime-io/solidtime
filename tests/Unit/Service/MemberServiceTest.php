@@ -13,6 +13,7 @@ use App\Models\TimeEntry;
 use App\Models\User;
 use App\Service\MemberService;
 use App\Service\UserService;
+use Illuminate\Support\Facades\Hash;
 use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use Tests\TestCaseWithDatabase;
@@ -62,6 +63,48 @@ class MemberServiceTest extends TestCaseWithDatabase
         $this->assertSame($newOwner->getKey(), $organization->refresh()->user_id);
         $this->assertSame(Role::Owner->value, $newOwnerMember->refresh()->role);
         $this->assertSame(Role::Admin->value, $oldOwnerMember->refresh()->role);
+    }
+
+    public function test_make_member_to_placeholder_does_not_copy_the_credentials_and_account_state_of_the_user(): void
+    {
+        // Arrange
+        $user = User::factory()->create([
+            'password' => Hash::make('secret-password'),
+            'remember_token' => 'remember-me-token',
+            'two_factor_secret' => 'two-factor-secret',
+            'two_factor_recovery_codes' => 'two-factor-recovery-codes',
+            'two_factor_confirmed_at' => '2026-09-16 10:00:00',
+            'email_verified_at' => '2026-09-16 09:00:00',
+            'pending_email' => 'pending@example.com',
+            'profile_photo_path' => 'profile-photos/photo.png',
+        ]);
+        $organization = Organization::factory()->create();
+        $member = Member::factory()->forOrganization($organization)->forUser($user)->role(Role::Employee)->create();
+
+        // Act
+        $this->memberService->makeMemberToPlaceholder($member);
+
+        // Assert
+        $member->refresh();
+        $placeholderUser = $member->user;
+        $this->assertTrue($placeholderUser->is_placeholder);
+        $this->assertSame($user->email, $placeholderUser->email);
+        $this->assertNull($placeholderUser->password);
+        $this->assertNull($placeholderUser->remember_token);
+        $this->assertNull($placeholderUser->two_factor_secret);
+        $this->assertNull($placeholderUser->two_factor_recovery_codes);
+        $this->assertNull($placeholderUser->two_factor_confirmed_at);
+        $this->assertNull($placeholderUser->email_verified_at);
+        $this->assertNull($placeholderUser->pending_email);
+        $this->assertNull($placeholderUser->current_team_id);
+        $this->assertNull($placeholderUser->profile_photo_path);
+        // the user the placeholder was created from keeps their own credentials and state
+        $user->refresh();
+        $this->assertTrue(Hash::check('secret-password', (string) $user->password));
+        $this->assertSame('two-factor-secret', $user->two_factor_secret);
+        $this->assertNotNull($user->email_verified_at);
+        $this->assertSame('pending@example.com', $user->pending_email);
+        $this->assertSame('profile-photos/photo.png', $user->profile_photo_path);
     }
 
     public function test_make_member_to_placeholder_creates_new_user_based_on_member_and_changes_member_to_placeholder(): void

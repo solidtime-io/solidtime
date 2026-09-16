@@ -105,6 +105,9 @@ class OrganizationInvitationEndpointTest extends EndpointTestAbstract
         $this->assertDatabaseMissing(OrganizationInvitation::class, [
             'id' => $invitation->getKey(),
         ]);
+        // Joining sets the organization as the current one for the user, independently of the
+        // placeholders that were merged into them
+        $this->assertSame($user->organization->getKey(), $user2->user->fresh()->current_team_id);
     }
 
     public function test_accepting_invitation_while_logged_out_redirects_to_login(): void
