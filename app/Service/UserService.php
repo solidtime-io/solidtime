@@ -48,6 +48,56 @@ class UserService
         }
         $user->save();
 
+        $this->createDefaultOrganizationForUser(
+            $user,
+            $currency,
+            $numberFormat,
+            $currencyFormat,
+            $dateFormat,
+            $intervalFormat,
+            $timeFormat,
+        );
+
+        return $user;
+    }
+
+    /**
+     * Create a user without a password (e.g. provisioned via SSO). Such users
+     * can only authenticate through a linked identity provider.
+     */
+    public function createPasswordlessUser(
+        string $name,
+        string $email,
+        string $timezone,
+        Weekday $weekStart,
+        ?string $currency,
+        bool $verifyEmail = false
+    ): User {
+        $user = new User;
+        $user->name = $name;
+        $user->email = strtolower($email);
+        $user->password = null;
+        $user->timezone = $timezone;
+        $user->week_start = $weekStart;
+        if ($verifyEmail) {
+            $user->email_verified_at = Carbon::now();
+        }
+        $user->save();
+
+        $this->createDefaultOrganizationForUser($user, $currency);
+
+        return $user;
+    }
+
+    private function createDefaultOrganizationForUser(
+        User $user,
+        ?string $currency,
+        ?NumberFormat $numberFormat = null,
+        ?CurrencyFormat $currencyFormat = null,
+        ?DateFormat $dateFormat = null,
+        ?IntervalFormat $intervalFormat = null,
+        ?TimeFormat $timeFormat = null,
+    ): void {
         $organizations = app(InvitationService::class)->processAcceptedInvitations($user);
 
         if ($organizations->isEmpty()) {
@@ -64,8 +114,6 @@ class UserService
             );
             $this->switchCurrentOrganization($user, $organization);
         }
-
-        return $user;
     }
 
     /**
