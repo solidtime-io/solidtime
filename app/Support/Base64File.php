@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use finfo;
 use Symfony\Component\Mime\MimeTypes;
 
 class Base64File
@@ -27,7 +28,7 @@ class Base64File
             return null;
         }
 
-        $mimeType = (new \finfo(FILEINFO_MIME_TYPE))->buffer($decoded);
+        $mimeType = (new finfo(FILEINFO_MIME_TYPE))->buffer($decoded);
         if ($mimeType === false) {
             return null;
         }

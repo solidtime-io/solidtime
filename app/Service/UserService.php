@@ -20,6 +20,7 @@ use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use InvalidArgumentException;
 
 class UserService
 {
@@ -148,7 +149,7 @@ class UserService
             ->whereBelongsTo($newOwner, 'user')
             ->first();
         if ($userMembership === null) {
-            throw new \InvalidArgumentException('User is not a member of the organization');
+            throw new InvalidArgumentException('User is not a member of the organization');
         }
         $userMembership->role = Role::Owner->value;
         $userMembership->save();

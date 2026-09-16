@@ -4,12 +4,18 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\TokenResource\Pages;
+use App\Filament\Resources\TokenResource\Pages\ListTokens;
+use App\Filament\Resources\TokenResource\Pages\ViewToken;
 use App\Models\Passport\Token;
-use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Actions\ViewAction;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -18,48 +24,48 @@ class TokenResource extends Resource
 {
     protected static ?string $model = Token::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-key';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-key';
 
-    protected static ?string $navigationGroup = 'Auth';
+    protected static string|\UnitEnum|null $navigationGroup = 'Auth';
 
     protected static ?int $navigationSort = 6;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
+        return $schema
             ->columns(1)
-            ->schema([
-                Forms\Components\TextInput::make('id')
+            ->components([
+                TextInput::make('id')
                     ->label('ID')
                     ->disabled()
                     ->visibleOn(['update', 'show'])
                     ->readOnly()
                     ->maxLength(255),
-                Forms\Components\TextInput::make('name')
+                TextInput::make('name')
                     ->label('Name')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\Select::make('owner_id')
+                Select::make('owner_id')
                     ->label('User')
                     ->relationship(name: 'user', titleAttribute: 'name')
                     ->searchable(['name'])
                     ->disabled()
                     ->required(),
-                Forms\Components\Select::make('client_id')
+                Select::make('client_id')
                     ->label('Client')
                     ->relationship(name: 'client', titleAttribute: 'name')
                     ->searchable(['name'])
                     ->required(),
-                Forms\Components\Toggle::make('revoked')
+                Toggle::make('revoked')
                     ->label('Revoked')
                     ->required(),
-                Forms\Components\DateTimePicker::make('expires_at')
+                DateTimePicker::make('expires_at')
                     ->label('Expires At')
                     ->disabled(),
-                Forms\Components\DateTimePicker::make('created_at')
+                DateTimePicker::make('created_at')
                     ->label('Created At')
                     ->disabled(),
-                Forms\Components\DateTimePicker::make('updated_at')
+                DateTimePicker::make('updated_at')
                     ->label('Updated At')
                     ->disabled(),
             ]);
@@ -69,32 +75,32 @@ class TokenResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('user.name')
+                TextColumn::make('user.name')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('client.name')
+                TextColumn::make('client.name')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\IconColumn::make('personal_access_client')
+                IconColumn::make('personal_access_client')
                     ->state(function (Token $token): bool {
                         return in_array('personal_access', $token->client->grant_types ?? [], true);
                     })
                     ->boolean()
                     ->label('API token?'),
-                Tables\Columns\IconColumn::make('revoked')
+                IconColumn::make('revoked')
                     ->boolean()
                     ->label('Revoked?')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('expires_at')
+                TextColumn::make('expires_at')
                     ->dateTime()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('updated_at')
+                TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -120,10 +126,10 @@ class TokenResource extends Resource
                 TernaryFilter::make('revoked')
                     ->label('Revoked?'),
             ])
-            ->actions([
-                Tables\Actions\ViewAction::make(),
+            ->recordActions([
+                ViewAction::make(),
             ])
-            ->bulkActions([
+            ->toolbarActions([
             ]);
     }
 
@@ -136,8 +142,8 @@ class TokenResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListTokens::route('/'),
-            'view' => Pages\ViewToken::route('/{record}'),
+            'index' => ListTokens::route('/'),
+            'view' => ViewToken::route('/{record}'),
         ];
     }
 }

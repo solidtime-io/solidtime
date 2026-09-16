@@ -10,6 +10,7 @@ use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use stdClass;
 
 class SelfHostDatabaseConsistency extends Command
 {
@@ -101,7 +102,7 @@ class SelfHostDatabaseConsistency extends Command
     }
 
     /**
-     * @param  Collection<int, \stdClass>  $problems
+     * @param  Collection<int, stdClass>  $problems
      */
     private function logProblems(Collection $problems, string $message, bool &$hadAProblem): void
     {

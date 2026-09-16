@@ -9,12 +9,17 @@ use App\Filament\Resources\OrganizationInvitationResource;
 use App\Models\Organization;
 use App\Models\OrganizationInvitation;
 use App\Service\InvitationService;
+use Filament\Actions\Action;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\CreateAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DetachBulkAction;
+use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
-use Filament\Tables;
-use Filament\Tables\Actions\Action;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\Rule;
@@ -25,10 +30,10 @@ class InvitationsRelationManager extends RelationManager
 
     protected static ?string $title = 'Invitations';
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 TextInput::make('email')
                     ->label('Email')
                     ->disabledOn(['edit'])
@@ -53,33 +58,33 @@ class InvitationsRelationManager extends RelationManager
             ->modelLabel('Invitation')
             ->pluralModelLabel('Invitations')
             ->columns([
-                Tables\Columns\TextColumn::make('email'),
-                Tables\Columns\TextColumn::make('role'),
+                TextColumn::make('email'),
+                TextColumn::make('role'),
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make()
+                CreateAction::make()
                     ->icon('heroicon-s-plus')
                     ->using(function (array $data, string $model): Model {
                         /** @var Organization $ownerRecord */
                         $ownerRecord = $this->getOwnerRecord();
 
                         return app(InvitationService::class)
-                            ->inviteUser($ownerRecord, $data['email'], Role::from($data['role']), auth()->user());
+                            ->inviteUser($ownerRecord, $data['email'], ($data['role'] instanceof Role ? $data['role'] : Role::from($data['role'])), auth()->user());
                     }),
             ])
-            ->actions([
+            ->recordActions([
                 Action::make('view')
                     ->icon('heroicon-o-eye')
                     ->color('gray')
                     ->url(fn (OrganizationInvitation $record): string => OrganizationInvitationResource::getUrl('view', [
                         'record' => $record->getKey(),
                     ])),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                EditAction::make(),
+                DeleteAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DetachBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DetachBulkAction::make(),
                 ]),
             ]);
     }

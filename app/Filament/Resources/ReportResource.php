@@ -4,16 +4,21 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\ReportResource\Pages;
+use App\Filament\Resources\ReportResource\Pages\EditReport;
+use App\Filament\Resources\ReportResource\Pages\ListReports;
+use App\Filament\Resources\ReportResource\Pages\ViewReport;
 use App\Models\Report;
 use App\Service\Dto\ReportPropertiesDto;
-use Filament\Forms;
+use Filament\Actions\Action;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
-use Filament\Tables;
-use Filament\Tables\Actions\Action;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -24,22 +29,22 @@ class ReportResource extends Resource
 {
     protected static ?string $model = Report::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-document-chart-bar';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-document-chart-bar';
 
-    protected static ?string $navigationGroup = 'Timetracking';
+    protected static string|\UnitEnum|null $navigationGroup = 'Timetracking';
 
     protected static ?int $navigationSort = 7;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
+        return $schema
             ->columns(1)
-            ->schema([
-                Forms\Components\TextInput::make('name')
+            ->components([
+                TextInput::make('name')
                     ->label('Name')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\TextInput::make('description')
+                TextInput::make('description')
                     ->label('Description')
                     ->nullable()
                     ->maxLength(255),
@@ -49,13 +54,13 @@ class ReportResource extends Resource
                 DateTimePicker::make('public_until')
                     ->label('Public until')
                     ->nullable(),
-                Forms\Components\Select::make('organization_id')
+                Select::make('organization_id')
                     ->label('Organization')
                     ->relationship(name: 'organization', titleAttribute: 'name')
                     ->searchable(['name'])
                     ->disabled()
                     ->required(),
-                Forms\Components\TextInput::make('share_secret')
+                TextInput::make('share_secret')
                     ->label('Share Secret')
                     ->nullable(),
                 PrettyJsonField::make('properties')
@@ -109,18 +114,18 @@ class ReportResource extends Resource
                     ->relationship('organization', 'id')
                     ->searchable(),
             ])
-            ->actions([
+            ->recordActions([
                 Action::make('public-view')
                     ->label('Public')
                     ->icon('heroicon-o-eye')
                     ->color('gray')
                     ->hidden(fn (Report $record): bool => $record->getShareableLink() === null)
                     ->url(fn (Report $record): string => $record->getShareableLink(), true),
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                ViewAction::make(),
+                EditAction::make(),
+                DeleteAction::make(),
             ])
-            ->bulkActions([
+            ->toolbarActions([
             ]);
     }
 
@@ -133,9 +138,9 @@ class ReportResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListReports::route('/'),
-            'edit' => Pages\EditReport::route('/{record}/edit'),
-            'view' => Pages\ViewReport::route('/{record}'),
+            'index' => ListReports::route('/'),
+            'edit' => EditReport::route('/{record}/edit'),
+            'view' => ViewReport::route('/{record}'),
         ];
     }
 }
