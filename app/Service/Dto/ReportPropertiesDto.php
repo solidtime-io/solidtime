@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
+use InvalidArgumentException;
 
 class ReportPropertiesDto implements Castable
 {
@@ -101,15 +102,15 @@ class ReportPropertiesDto implements Castable
             public function get(Model $model, string $key, mixed $value, array $attributes): ReportPropertiesDto
             {
                 if (! is_string($value)) {
-                    throw new \InvalidArgumentException('The given value is not a string');
+                    throw new InvalidArgumentException('The given value is not a string');
                 }
                 $data = json_decode($value, false);
                 if ($data === null) {
-                    throw new \InvalidArgumentException('The given value is not a JSON string');
+                    throw new InvalidArgumentException('The given value is not a JSON string');
                 }
                 foreach (self::REQUIRED_PROPERTIES as $property) {
                     if (! property_exists($data, $property)) {
-                        throw new \InvalidArgumentException('The given JSON string does not contain the required property "'.$property.'"');
+                        throw new InvalidArgumentException('The given JSON string does not contain the required property "'.$property.'"');
                     }
                 }
                 $dto = new ReportPropertiesDto;
@@ -145,7 +146,7 @@ class ReportPropertiesDto implements Castable
             public function set(Model $model, string $key, mixed $value, array $attributes): string
             {
                 if (! ($value instanceof ReportPropertiesDto)) {
-                    throw new \InvalidArgumentException('The given value is not an instance of ReportPropertiesDto');
+                    throw new InvalidArgumentException('The given value is not an instance of ReportPropertiesDto');
                 }
 
                 $data = (object) [
@@ -171,7 +172,7 @@ class ReportPropertiesDto implements Castable
 
                 $jsonString = json_encode($data);
                 if ($jsonString === false) {
-                    throw new \InvalidArgumentException('Could not encode the given data to a JSON string');
+                    throw new InvalidArgumentException('Could not encode the given data to a JSON string');
                 }
 
                 return $jsonString;
@@ -188,10 +189,10 @@ class ReportPropertiesDto implements Castable
         $collection = new Collection;
         foreach ($ids as $id) {
             if (! is_string($id)) {
-                throw new \InvalidArgumentException('The given ID is not a string');
+                throw new InvalidArgumentException('The given ID is not a string');
             }
             if ($id !== TimeEntryFilter::NONE_VALUE && ! Str::isUuid($id)) {
-                throw new \InvalidArgumentException('The given ID is not a valid UUID');
+                throw new InvalidArgumentException('The given ID is not a valid UUID');
             }
             $collection->push($id);
         }

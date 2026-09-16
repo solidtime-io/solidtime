@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Exceptions\Api;
 
+use Override;
+
 class EntityStillInUseApiException extends ApiException
 {
     private string $modelToDelete;
@@ -32,7 +34,7 @@ class EntityStillInUseApiException extends ApiException
     /**
      * Get the translated message for the exception.
      */
-    #[\Override]
+    #[Override]
     public function getTranslatedMessage(): string
     {
         return __('exceptions.api.'.$this->getKey(), [

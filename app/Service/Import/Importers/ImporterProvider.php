@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Service\Import\Importers;
 
+use InvalidArgumentException;
+
 class ImporterProvider
 {
     /**
@@ -49,7 +51,7 @@ class ImporterProvider
     public function getImporter(string $type): ImporterContract
     {
         if (! array_key_exists($type, $this->importers)) {
-            throw new \InvalidArgumentException('Invalid importer type');
+            throw new InvalidArgumentException('Invalid importer type');
         }
 
         return new $this->importers[$type];

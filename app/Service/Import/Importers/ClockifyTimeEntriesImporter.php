@@ -15,6 +15,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use League\Csv\Exception as CsvException;
 use League\Csv\Reader;
+use Override;
 
 class ClockifyTimeEntriesImporter extends DefaultImporter
 {
@@ -44,7 +45,7 @@ class ClockifyTimeEntriesImporter extends DefaultImporter
     /**
      * @throws ImportException
      */
-    #[\Override]
+    #[Override]
     public function importData(string $data, string $timezone): void
     {
         try {
@@ -263,13 +264,13 @@ class ClockifyTimeEntriesImporter extends DefaultImporter
         return null;
     }
 
-    #[\Override]
+    #[Override]
     public function getName(): string
     {
         return __('importer.clockify_time_entries.name');
     }
 
-    #[\Override]
+    #[Override]
     public function getDescription(): string
     {
         return __('importer.clockify_time_entries.description');

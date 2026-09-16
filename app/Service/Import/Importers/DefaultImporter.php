@@ -18,6 +18,7 @@ use App\Service\ColorService;
 use App\Service\Import\ImportDatabaseHelper;
 use App\Service\TimezoneService;
 use Illuminate\Database\Eloquent\Builder;
+use Override;
 
 abstract class DefaultImporter implements ImporterContract
 {
@@ -193,7 +194,7 @@ abstract class DefaultImporter implements ImporterContract
         }
     }
 
-    #[\Override]
+    #[Override]
     public function getReport(): ReportDto
     {
         return new ReportDto(

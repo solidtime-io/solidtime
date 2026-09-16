@@ -6,7 +6,10 @@ namespace App\Filament\Resources;
 
 use App\Enums\Weekday;
 use App\Exceptions\Api\ApiException;
-use App\Filament\Resources\UserResource\Pages;
+use App\Filament\Resources\UserResource\Pages\CreateUser;
+use App\Filament\Resources\UserResource\Pages\EditUser;
+use App\Filament\Resources\UserResource\Pages\ListUsers;
+use App\Filament\Resources\UserResource\Pages\ViewUser;
 use App\Filament\Resources\UserResource\RelationManagers\OrganizationsRelationManager;
 use App\Filament\Resources\UserResource\RelationManagers\OwnedOrganizationsRelationManager;
 use App\Models\User;
@@ -15,12 +18,18 @@ use App\Service\TimezoneService;
 use App\Service\UserService;
 use Brick\Money\ISOCurrencyProvider;
 use Exception;
-use Filament\Forms;
+use Filament\Actions\BulkAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\EditAction;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
+use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -28,26 +37,26 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Korridor\LaravelModelValidationRules\Rules\UniqueEloquent;
-use STS\FilamentImpersonate\Tables\Actions\Impersonate;
+use STS\FilamentImpersonate\Actions\Impersonate;
 
 class UserResource extends Resource
 {
     protected static ?string $model = User::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-user';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-user';
 
-    protected static ?string $navigationGroup = 'Users';
+    protected static string|\UnitEnum|null $navigationGroup = 'Users';
 
     protected static ?int $navigationSort = 6;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
         /** @var User|null $record */
-        $record = $form->getRecord();
+        $record = $schema->getRecord();
 
-        return $form
+        return $schema
             ->columns(1)
-            ->schema([
+            ->components([
                 TextInput::make('id')
                     ->label('ID')
                     ->disabled()
@@ -69,23 +78,23 @@ class UserResource extends Resource
                         'email:rfc,strict',
                     ])
                     ->maxLength(255),
-                Forms\Components\Toggle::make('is_placeholder')
+                Toggle::make('is_placeholder')
                     ->label('Is Placeholder?')
                     ->hiddenOn(['create'])
                     ->disabledOn(['edit']),
-                Forms\Components\DateTimePicker::make('email_verified_at')
+                DateTimePicker::make('email_verified_at')
                     ->label('Email Verified At')
                     ->hiddenOn(['create'])
                     ->nullable(),
-                Forms\Components\Toggle::make('is_email_verified')
+                Toggle::make('is_email_verified')
                     ->label('Email Verified?')
                     ->visibleOn(['create']),
-                Forms\Components\Select::make('timezone')
+                Select::make('timezone')
                     ->label('Timezone')
                     ->options(fn (): array => app(TimezoneService::class)->getSelectOptions())
                     ->searchable()
                     ->required(),
-                Forms\Components\Select::make('week_start')
+                Select::make('week_start')
                     ->label('Week Start')
                     ->options(Weekday::class)
                     ->required(),
@@ -103,7 +112,7 @@ class UserResource extends Resource
                     ->visibleOn(['create'])
                     ->required(fn (string $context): bool => $context === 'create')
                     ->maxLength(255),
-                Forms\Components\Select::make('currency')
+                Select::make('currency')
                     ->label('Currency (Personal Organization)')
                     ->options(function (): array {
                         $currencies = ISOCurrencyProvider::getInstance()->getAvailableCurrencies();
@@ -117,11 +126,11 @@ class UserResource extends Resource
                     ->required()
                     ->visibleOn(['create'])
                     ->searchable(),
-                Forms\Components\DateTimePicker::make('created_at')
+                DateTimePicker::make('created_at')
                     ->label('Created At')
                     ->hiddenOn(['create'])
                     ->disabled(),
-                Forms\Components\DateTimePicker::make('updated_at')
+                DateTimePicker::make('updated_at')
                     ->label('Updated At')
                     ->hiddenOn(['create'])
                     ->disabled(),
@@ -132,25 +141,25 @@ class UserResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('email')
+                TextColumn::make('email')
                     ->icon('heroicon-m-envelope')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\IconColumn::make('is_real_user')
+                IconColumn::make('is_real_user')
                     ->getStateUsing(fn (User $record): bool => ! $record->is_placeholder)
                     ->label('Real user?')
                     ->boolean(),
-                Tables\Columns\IconColumn::make('email_verified')
+                IconColumn::make('email_verified')
                     ->getStateUsing(fn (User $record): bool => $record->email_verified_at !== null)
                     ->label('Email verified?')
                     ->boolean(),
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('updated_at')
+                TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -178,7 +187,7 @@ class UserResource extends Resource
                     ->attribute('email_verified_at')
                     ->nullable(),
             ])
-            ->actions([
+            ->recordActions([
                 Impersonate::make()->before(function (User $record): void {
                     if ($record->currentOrganization === null) {
                         $organization = $record->organizations()->where('personal_team', '=', true)->first();
@@ -191,8 +200,8 @@ class UserResource extends Resource
                         app(UserService::class)->switchCurrentOrganization($record, $organization);
                     }
                 }),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make()
+                EditAction::make(),
+                DeleteAction::make()
                     ->hidden(fn (User $record) => $record->is(Auth::user()))
                     ->using(function (User $record): void {
                         try {
@@ -207,8 +216,8 @@ class UserResource extends Resource
                         }
                     }),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkAction::make('Resend verification email')
+            ->toolbarActions([
+                BulkAction::make('Resend verification email')
                     ->icon('heroicon-o-paper-airplane')
                     ->action(function (Collection $records): void {
                         foreach ($records as $user) {
@@ -230,10 +239,10 @@ class UserResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListUsers::route('/'),
-            'create' => Pages\CreateUser::route('/create'),
-            'edit' => Pages\EditUser::route('/{record}/edit'),
-            'view' => Pages\ViewUser::route('/{record}'),
+            'index' => ListUsers::route('/'),
+            'create' => CreateUser::route('/create'),
+            'edit' => EditUser::route('/{record}/edit'),
+            'view' => ViewUser::route('/{record}'),
         ];
     }
 }

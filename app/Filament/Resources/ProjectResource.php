@@ -4,14 +4,19 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\ProjectResource\Pages;
+use App\Filament\Resources\ProjectResource\Pages\CreateProject;
+use App\Filament\Resources\ProjectResource\Pages\EditProject;
+use App\Filament\Resources\ProjectResource\Pages\ListProjects;
 use App\Filament\Resources\ProjectResource\RelationManagers\ProjectMembersRelationManager;
 use App\Models\Project;
-use Filament\Forms;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
 use Filament\Forms\Components\ColorPicker;
-use Filament\Forms\Form;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\ColorColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -21,24 +26,24 @@ class ProjectResource extends Resource
 {
     protected static ?string $model = Project::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-folder';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-folder';
 
-    protected static ?string $navigationGroup = 'Timetracking';
+    protected static string|\UnitEnum|null $navigationGroup = 'Timetracking';
 
     protected static ?int $navigationSort = 2;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\TextInput::make('name')
+        return $schema
+            ->components([
+                TextInput::make('name')
                     ->label('Name')
                     ->required()
                     ->maxLength(255),
                 ColorPicker::make('color')
                     ->label('Color')
                     ->required(),
-                Forms\Components\TextInput::make('billable_rate')
+                TextInput::make('billable_rate')
                     ->label('Billable rate (in Cents)')
                     ->nullable()
                     ->rules([
@@ -48,7 +53,7 @@ class ProjectResource extends Resource
                         'max:2147483647',
                     ])
                     ->numeric(),
-                Forms\Components\Select::make('organization_id')
+                Select::make('organization_id')
                     ->relationship(name: 'organization', titleAttribute: 'name')
                     ->searchable(['name'])
                     ->required(),
@@ -81,12 +86,12 @@ class ProjectResource extends Resource
                     ->searchable(),
             ])
             ->defaultSort('created_at', 'desc')
-            ->actions([
-                Tables\Actions\EditAction::make(),
+            ->recordActions([
+                EditAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }
@@ -101,9 +106,9 @@ class ProjectResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListProjects::route('/'),
-            'create' => Pages\CreateProject::route('/create'),
-            'edit' => Pages\EditProject::route('/{record}/edit'),
+            'index' => ListProjects::route('/'),
+            'create' => CreateProject::route('/create'),
+            'edit' => EditProject::route('/{record}/edit'),
         ];
     }
 }

@@ -22,7 +22,7 @@ class CreateUser extends CreateRecord
             $data['email'],
             $data['password_create'],
             $data['timezone'],
-            Weekday::from($data['week_start']),
+            $data['week_start'] instanceof Weekday ? $data['week_start'] : Weekday::from($data['week_start']),
             $data['currency'],
             verifyEmail: (bool) $data['is_email_verified']
         );

@@ -14,6 +14,7 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Str;
+use RuntimeException;
 
 class ApiTokenController extends Controller
 {
@@ -62,7 +63,7 @@ class ApiTokenController extends Controller
             $tokenModel = $token->getToken();
 
             return new ApiTokenWithAccessTokenResource($tokenModel, $token->accessToken);
-        } catch (\RuntimeException $exception) {
+        } catch (RuntimeException $exception) {
             report($exception);
             if (Str::contains($exception->getMessage(), ['Personal access client not found'])) {
                 throw new PersonalAccessClientIsNotConfiguredException;

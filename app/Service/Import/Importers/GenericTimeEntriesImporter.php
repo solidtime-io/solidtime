@@ -14,6 +14,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use League\Csv\Exception as CsvException;
 use League\Csv\Reader;
+use Override;
 
 class GenericTimeEntriesImporter extends DefaultImporter
 {
@@ -59,7 +60,7 @@ class GenericTimeEntriesImporter extends DefaultImporter
     /**
      * @throws ImportException
      */
-    #[\Override]
+    #[Override]
     public function importData(string $data, string $timezone): void
     {
         try {
@@ -195,13 +196,13 @@ class GenericTimeEntriesImporter extends DefaultImporter
         }
     }
 
-    #[\Override]
+    #[Override]
     public function getName(): string
     {
         return __('importer.generic_time_entries.name');
     }
 
-    #[\Override]
+    #[Override]
     public function getDescription(): string
     {
         return __('importer.generic_time_entries.description');

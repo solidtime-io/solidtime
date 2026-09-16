@@ -9,7 +9,10 @@ use App\Enums\DateFormat;
 use App\Enums\IntervalFormat;
 use App\Enums\NumberFormat;
 use App\Enums\TimeFormat;
-use App\Filament\Resources\OrganizationResource\Pages;
+use App\Filament\Resources\OrganizationResource\Pages\CreateOrganization;
+use App\Filament\Resources\OrganizationResource\Pages\EditOrganization;
+use App\Filament\Resources\OrganizationResource\Pages\ListOrganizations;
+use App\Filament\Resources\OrganizationResource\Pages\ViewOrganization;
 use App\Filament\Resources\OrganizationResource\RelationManagers\InvitationsRelationManager;
 use App\Filament\Resources\OrganizationResource\RelationManagers\UsersRelationManager;
 use App\Models\Organization;
@@ -21,13 +24,19 @@ use App\Service\Import\Importers\ReportDto;
 use App\Service\Import\ImportService;
 use App\Service\TimezoneService;
 use Brick\Money\ISOCurrencyProvider;
-use Filament\Forms;
+use Exception;
+use Filament\Actions\Action;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\EditAction;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Form;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
-use Filament\Tables;
-use Filament\Tables\Actions\Action;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Storage;
@@ -36,22 +45,22 @@ class OrganizationResource extends Resource
 {
     protected static ?string $model = Organization::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-building-office-2';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-building-office-2';
 
-    protected static ?string $navigationGroup = 'Users';
+    protected static string|\UnitEnum|null $navigationGroup = 'Users';
 
     protected static ?int $navigationSort = 7;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
+        return $schema
             ->columns(1)
-            ->schema([
-                Forms\Components\TextInput::make('name')
+            ->components([
+                TextInput::make('name')
                     ->label('Name')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\Toggle::make('personal_team')
+                Toggle::make('personal_team')
                     ->label('Is personal?')
                     ->hiddenOn(['create'])
                     ->required(),
@@ -89,7 +98,7 @@ class OrganizationResource extends Resource
                     })
                     ->required()
                     ->searchable(),
-                Forms\Components\TextInput::make('billable_rate')
+                TextInput::make('billable_rate')
                     ->label('Billable rate (in Cents)')
                     ->nullable()
                     ->rules([
@@ -99,11 +108,11 @@ class OrganizationResource extends Resource
                         'max:2147483647',
                     ])
                     ->numeric(),
-                Forms\Components\DateTimePicker::make('created_at')
+                DateTimePicker::make('created_at')
                     ->label('Created At')
                     ->hiddenOn(['create'])
                     ->disabled(),
-                Forms\Components\DateTimePicker::make('updated_at')
+                DateTimePicker::make('updated_at')
                     ->label('Updated At')
                     ->hiddenOn(['create'])
                     ->disabled(),
@@ -117,7 +126,7 @@ class OrganizationResource extends Resource
                 TextColumn::make('name')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\IconColumn::make('personal_team')
+                IconColumn::make('personal_team')
                     ->boolean()
                     ->label('Is personal?')
                     ->sortable(),
@@ -138,9 +147,9 @@ class OrganizationResource extends Resource
             ->filters([
                 //
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make()
+            ->recordActions([
+                EditAction::make(),
+                DeleteAction::make()
                     ->using(function (Organization $record): void {
                         app(DeletionService::class)->deleteOrganization($record);
                     }),
@@ -158,7 +167,7 @@ class OrganizationResource extends Resource
                             return response()->streamDownload(function () use ($file): void {
                                 echo Storage::disk(config('filesystems.private'))->get($file);
                             }, 'export.zip');
-                        } catch (\Exception $exception) {
+                        } catch (Exception $exception) {
                             report($exception);
                             Notification::make()
                                 ->title('Export failed')
@@ -174,7 +183,7 @@ class OrganizationResource extends Resource
                         try {
                             $file = Storage::disk(config('filament.default_filesystem_disk'))->get($data['file']);
                             if ($file === null) {
-                                throw new \Exception('File not found');
+                                throw new Exception('File not found');
                             }
                             /** @var string $timezone */
                             $timezone = $data['timezone'];
@@ -209,8 +218,8 @@ class OrganizationResource extends Resource
                         }
                     })
                     ->tooltip(fn (Organization $record): string => 'Import into '.$record->name)
-                    ->form([
-                        Forms\Components\FileUpload::make('file')
+                    ->schema([
+                        FileUpload::make('file')
                             ->label('File')
                             ->required(),
                         Select::make('type')
@@ -230,7 +239,7 @@ class OrganizationResource extends Resource
                             ->required(),
                     ]),
             ])
-            ->bulkActions([
+            ->toolbarActions([
             ]);
     }
 
@@ -245,10 +254,10 @@ class OrganizationResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListOrganizations::route('/'),
-            'create' => Pages\CreateOrganization::route('/create'),
-            'edit' => Pages\EditOrganization::route('/{record}/edit'),
-            'view' => Pages\ViewOrganization::route('/{record}'),
+            'index' => ListOrganizations::route('/'),
+            'create' => CreateOrganization::route('/create'),
+            'edit' => EditOrganization::route('/{record}/edit'),
+            'view' => ViewOrganization::route('/{record}'),
         ];
     }
 }

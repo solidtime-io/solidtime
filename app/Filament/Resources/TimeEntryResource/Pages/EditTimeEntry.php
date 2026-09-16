@@ -6,7 +6,7 @@ namespace App\Filament\Resources\TimeEntryResource\Pages;
 
 use App\Filament\Resources\TimeEntryResource;
 use App\Models\Member;
-use Filament\Actions;
+use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 
 class EditTimeEntry extends EditRecord
@@ -16,7 +16,7 @@ class EditTimeEntry extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make()
+            DeleteAction::make()
                 ->icon('heroicon-m-trash'),
         ];
     }

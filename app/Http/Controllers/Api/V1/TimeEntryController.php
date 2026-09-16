@@ -55,6 +55,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use LogicException;
 use Maatwebsite\Excel\Facades\Excel;
 use Spatie\TemporaryDirectory\TemporaryDirectory;
 
@@ -265,7 +266,7 @@ class TimeEntryController extends Controller
             }
             $viewFile = file_get_contents(resource_path('views/reports/time-entry-index/pdf.blade.php'));
             if ($viewFile === false) {
-                throw new \LogicException('View file not found');
+                throw new LogicException('View file not found');
             }
             $timeEntriesAggregateQuery = $this->getTimeEntriesAggregateQuery($organization, $request, $memberFilter);
             $aggregatedData = $timeEntryAggregationService->getAggregatedTimeEntries(
@@ -293,7 +294,7 @@ class TimeEntryController extends Controller
             ]);
             $footerViewFile = file_get_contents(resource_path('views/reports/time-entry-index/pdf-footer.blade.php'));
             if ($footerViewFile === false) {
-                throw new \LogicException('View file not found');
+                throw new LogicException('View file not found');
             }
             $footerHtml = Blade::render($footerViewFile);
             if ($debug) {
@@ -495,7 +496,7 @@ class TimeEntryController extends Controller
             ]);
             $viewFile = file_get_contents(resource_path('views/reports/time-entry-aggregate/pdf.blade.php'));
             if ($viewFile === false) {
-                throw new \LogicException('View file not found');
+                throw new LogicException('View file not found');
             }
             $html = Blade::render($viewFile, [
                 'aggregatedData' => $aggregatedData,
@@ -512,7 +513,7 @@ class TimeEntryController extends Controller
             ]);
             $footerViewFile = file_get_contents(resource_path('views/reports/time-entry-aggregate/pdf-footer.blade.php'));
             if ($footerViewFile === false) {
-                throw new \LogicException('View file not found');
+                throw new LogicException('View file not found');
             }
             $footerHtml = Blade::render($footerViewFile);
             if ($debug) {
