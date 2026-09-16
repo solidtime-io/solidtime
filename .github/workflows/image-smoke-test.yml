@@ -1,0 +1,258 @@
+name: Image Smoke Tests
+
+on:
+  pull_request:
+    paths:
+      - 'docker/prod/**'
+      - '.github/workflows/image-smoke-test.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    name: Smoke (${{ matrix.mode }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        mode:
+          - default
+          - puid-pgid
+          - openshift
+          - drop-never
+          - diagnostic
+          - puid-mismatch-warning
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Copy .env template
+        run: |
+          cp .env.production .env
+          rm .env.production .env.ci .env.example
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, dom, fileinfo, pgsql
+
+      - name: Composer install
+        run: composer install --no-dev --no-ansi --no-interaction --prefer-dist --ignore-platform-reqs --classmap-authoritative
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: NPM ci
+        run: npm ci
+
+      - name: NPM build
+        run: npm run build
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build smoke image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/prod/Dockerfile
+          build-args: |
+            DOCKER_FILES_BASE_PATH=docker/prod/
+          load: true
+          tags: solidtime-smoke:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: "Smoke: default (image config + fresh deploy with empty bind mounts)"
+        if: matrix.mode == 'default'
+        run: |
+          echo "[smoke] image's default USER is root (entrypoint needs root to drop privs)"
+          user=$(docker inspect --format '{{.Config.User}}' solidtime-smoke:test)
+          if [ "$user" != "root" ]; then
+            echo "Expected 'root', got '$user'. The Dockerfile must end with USER root so the entrypoint can chown/usermod and drop privileges."
+            exit 1
+          fi
+
+          echo "[smoke] storage tree is group-0 owned (OpenShift / arbitrary-UID compat)"
+          group=$(docker run --rm --entrypoint stat solidtime-smoke:test -c '%g' /var/www/html/storage)
+          if [ "$group" != "0" ]; then
+            echo "Expected group 0, got '$group'. The Dockerfile must chgrp -R 0 storage bootstrap/cache so arbitrary-UID containers can write."
+            exit 1
+          fi
+
+          mkdir -p test-storage test-cache
+          docker run --rm \
+            -v "$(pwd)/test-storage:/var/www/html/storage" \
+            -v "$(pwd)/test-cache:/var/www/html/bootstrap/cache" \
+            solidtime-smoke:test \
+            sh -c '
+              set -e
+              echo "[smoke] framework subdirs exist"
+              test -d /var/www/html/storage/framework/cache/data
+              test -d /var/www/html/storage/framework/sessions
+              test -d /var/www/html/storage/framework/views
+              test -d /var/www/html/storage/framework/testing
+              test -d /var/www/html/storage/logs
+              test -d /var/www/html/storage/app/public
+              test -d /var/www/html/storage/app/private
+              test -d /var/www/html/bootstrap/cache
+              echo "[smoke] storage is writable"
+              touch /var/www/html/storage/framework/cache/data/test-file
+              echo "[smoke] running as octane (UID 1000)"
+              [ "$(id -u)" = "1000" ]
+              echo "[smoke] PASS"
+            '
+
+      - name: "Smoke: PUID/PGID remap"
+        if: matrix.mode == 'puid-pgid'
+        run: |
+          mkdir -p test-storage test-cache
+          sudo chown -R 1501:1501 test-storage test-cache
+          docker run --rm \
+            -e PUID=1501 -e PGID=1501 \
+            -v "$(pwd)/test-storage:/var/www/html/storage" \
+            -v "$(pwd)/test-cache:/var/www/html/bootstrap/cache" \
+            solidtime-smoke:test \
+            sh -c '
+              set -e
+              echo "[smoke] running as remapped UID/GID 1501"
+              [ "$(id -u)" = "1501" ]
+              [ "$(id -g)" = "1501" ]
+              echo "[smoke] storage is writable as 1501"
+              touch /var/www/html/storage/framework/cache/data/test-file
+              echo "[smoke] PASS"
+            '
+
+      - name: "Smoke: OpenShift / arbitrary UID + group 0"
+        if: matrix.mode == 'openshift'
+        run: |
+          mkdir -p test-storage test-cache
+          sudo chown -R 2000:0 test-storage test-cache
+          sudo chmod -R g+rwX test-storage test-cache
+          docker run --rm --user 2000:0 \
+            -v "$(pwd)/test-storage:/var/www/html/storage" \
+            -v "$(pwd)/test-cache:/var/www/html/bootstrap/cache" \
+            solidtime-smoke:test \
+            sh -c '
+              set -e
+              echo "[smoke] running as arbitrary UID 2000, group 0"
+              [ "$(id -u)" = "2000" ]
+              [ "$(id -g)" = "0" ]
+              echo "[smoke] storage is writable via group 0"
+              touch /var/www/html/storage/framework/cache/data/test-file
+              echo "[smoke] PASS"
+            '
+
+      - name: "Smoke: SOLIDTIME_DROP_PRIVILEGES=never (run as root)"
+        if: matrix.mode == 'drop-never'
+        run: |
+          mkdir -p test-storage test-cache
+          docker run --rm \
+            -e SOLIDTIME_DROP_PRIVILEGES=never \
+            -v "$(pwd)/test-storage:/var/www/html/storage" \
+            -v "$(pwd)/test-cache:/var/www/html/bootstrap/cache" \
+            solidtime-smoke:test \
+            sh -c '
+              set -e
+              echo "[smoke] running as root (privilege drop disabled)"
+              [ "$(id -u)" = "0" ]
+              echo "[smoke] bootstrap still ran"
+              test -d /var/www/html/storage/framework/cache/data
+              echo "[smoke] storage writable as root"
+              touch /var/www/html/storage/framework/cache/data/test-file
+              echo "[smoke] PASS"
+            '
+
+      - name: "Smoke: PUID set + started non-root prints a warning but continues"
+        if: matrix.mode == 'puid-mismatch-warning'
+        run: |
+          mkdir -p test-storage test-cache
+          sudo chown -R 1500:1500 test-storage test-cache
+
+          set +e
+          docker run --rm \
+            --user 1500:1500 \
+            -e PUID=1500 -e PGID=1500 \
+            -v "$(pwd)/test-storage:/var/www/html/storage" \
+            -v "$(pwd)/test-cache:/var/www/html/bootstrap/cache" \
+            solidtime-smoke:test \
+            sh -c '
+              set -e
+              echo "[smoke] running as 1500 (user: directive wins)"
+              [ "$(id -u)" = "1500" ]
+              echo "[smoke] storage is writable as 1500"
+              touch /var/www/html/storage/framework/cache/data/test-file
+              echo "[smoke] container completed successfully"
+            ' \
+            >stdout.log 2>stderr.log
+          exit_code=$?
+          set -e
+
+          echo "[smoke] exit code: $exit_code"
+          echo "--- stderr ---"
+          cat stderr.log
+          echo "--- end stderr ---"
+
+          if [ "$exit_code" -ne 0 ]; then
+            echo "Expected the entrypoint to continue (warning is non-fatal)."
+            exit 1
+          fi
+
+          for needle in "PUID/PGID is set but the container started as UID" "remove any 'user:' directive" "Continuing as UID"; do
+            if ! grep -q "$needle" stderr.log; then
+              echo "Missing warning fragment: $needle"
+              exit 1
+            fi
+          done
+          echo "[smoke] PASS"
+
+      - name: "Smoke: diagnostic error path (read-only storage mount)"
+        if: matrix.mode == 'diagnostic'
+        run: |
+          # Pre-create the full storage tree on the host so the entrypoint's
+          # bootstrap_storage_tree() is a no-op (mkdir -p on existing dirs
+          # returns 0 even on a read-only mount). The write test then fires
+          # against the RO mount and triggers our diagnostic.
+          mkdir -p test-storage/framework/cache/data \
+                   test-storage/framework/sessions \
+                   test-storage/framework/views \
+                   test-storage/framework/testing \
+                   test-storage/logs \
+                   test-storage/app/public \
+                   test-storage/app/private \
+                   test-cache
+
+          set +e
+          docker run --rm \
+            -v "$(pwd)/test-storage:/var/www/html/storage:ro" \
+            -v "$(pwd)/test-cache:/var/www/html/bootstrap/cache:ro" \
+            solidtime-smoke:test \
+            true \
+            >stdout.log 2>stderr.log
+          exit_code=$?
+          set -e
+
+          echo "[smoke] exit code: $exit_code"
+          echo "--- stderr ---"
+          cat stderr.log
+          echo "--- end stderr ---"
+
+          if [ "$exit_code" -eq 0 ]; then
+            echo "Expected the entrypoint to exit non-zero on an unwritable storage mount."
+            exit 1
+          fi
+
+          for needle in "not writable" "PUID=" "permissions"; do
+            if ! grep -q "$needle" stderr.log; then
+              echo "Missing diagnostic fragment: $needle"
+              exit 1
+            fi
+          done
+          echo "[smoke] PASS"
