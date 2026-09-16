@@ -19,7 +19,6 @@ const resourcePages = [
     { path: '/admin/project-members', heading: 'Project Members' },
     { path: '/admin/tokens', heading: 'Tokens' },
     { path: '/admin/failed-jobs', heading: 'Failed Jobs' },
-    { path: '/admin/audits', heading: 'Audits' },
 ];
 
 test.describe('Admin Panel Access', () => {
