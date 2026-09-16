@@ -13,7 +13,6 @@ use Illuminate\Support\Str;
 use Override;
 use Spatie\TemporaryDirectory\TemporaryDirectory;
 use ValueError;
-use ZipArchive;
 
 class TogglDataImporter extends DefaultImporter
 {
@@ -26,16 +25,10 @@ class TogglDataImporter extends DefaultImporter
         $temporaryDirectoryZip = null;
         $temporaryDirectory = null;
         try {
-            $zip = new ZipArchive;
             $temporaryDirectoryZip = TemporaryDirectory::make();
             file_put_contents($temporaryDirectoryZip->path('import.zip'), $data);
-            $res = $zip->open($temporaryDirectoryZip->path('import.zip'), ZipArchive::RDONLY);
-            if ($res !== true) {
-                throw new ImportException('Invalid ZIP, error code: '.$res);
-            }
             $temporaryDirectory = TemporaryDirectory::make();
-            $zip->extractTo($temporaryDirectory->path());
-            $zip->close();
+            app(ZipImportHelper::class)->extract($temporaryDirectoryZip->path('import.zip'), $temporaryDirectory->path());
             if (! file_exists($temporaryDirectory->path('clients.json'))) {
                 throw new ImportException('File "clients.json" missing in ZIP');
             }

@@ -16,7 +16,6 @@ use Illuminate\Support\Str;
 use League\Csv\Reader;
 use Override;
 use Spatie\TemporaryDirectory\TemporaryDirectory;
-use ZipArchive;
 
 class SolidtimeImporter extends DefaultImporter
 {
@@ -34,16 +33,10 @@ class SolidtimeImporter extends DefaultImporter
         $temporaryDirectoryZip = null;
         $temporaryDirectory = null;
         try {
-            $zip = new ZipArchive;
             $temporaryDirectoryZip = TemporaryDirectory::make();
             file_put_contents($temporaryDirectoryZip->path('import.zip'), $data);
-            $res = $zip->open($temporaryDirectoryZip->path('import.zip'), ZipArchive::RDONLY);
-            if ($res !== true) {
-                throw new ImportException('Invalid ZIP, error code: '.$res);
-            }
             $temporaryDirectory = TemporaryDirectory::make();
-            $zip->extractTo($temporaryDirectory->path());
-            $zip->close();
+            app(ZipImportHelper::class)->extract($temporaryDirectoryZip->path('import.zip'), $temporaryDirectory->path());
 
             if (! file_exists($temporaryDirectory->path('meta.json'))) {
                 throw new ImportException('File "meta.json" missing in ZIP');

@@ -39,6 +39,31 @@ class TogglDataImporterTest extends ImporterTestAbstract
         $this->fail();
     }
 
+    public function test_import_throws_exception_if_zip_contains_too_many_files(): void
+    {
+        // Arrange
+        config(['import.zip_max_files' => 1]);
+        $zipPath = $this->createTestZip('toggl_data_import_test_1');
+        $timezone = 'Europe/Vienna';
+        $organization = Organization::factory()->create();
+        $importer = new TogglDataImporter;
+        $importer->init($organization);
+        $data = file_get_contents($zipPath);
+
+        // Act
+        try {
+            $importer->importData($data, $timezone);
+        } catch (Exception $e) {
+            // Assert
+            $this->assertInstanceOf(ImportException::class, $e);
+            $this->assertSame('ZIP contains too many files, maximum is 1', $e->getMessage());
+            $this->assertSame(0, $importer->getReport()->projectsCreated);
+
+            return;
+        }
+        $this->fail();
+    }
+
     public function test_import_of_test_file_succeeds(): void
     {
         // Arrange

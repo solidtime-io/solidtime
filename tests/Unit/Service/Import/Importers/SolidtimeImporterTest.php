@@ -42,6 +42,31 @@ class SolidtimeImporterTest extends ImporterTestAbstract
         $this->fail();
     }
 
+    public function test_import_throws_exception_if_zip_exceeds_uncompressed_size_limit(): void
+    {
+        // Arrange
+        config(['import.zip_max_uncompressed_size' => 10]);
+        $zipPath = $this->createTestZip('solidtime_import_test_1');
+        $timezone = 'Europe/Vienna';
+        $organization = Organization::factory()->create();
+        $importer = new SolidtimeImporter;
+        $importer->init($organization);
+        $data = file_get_contents($zipPath);
+
+        // Act
+        try {
+            $importer->importData($data, $timezone);
+        } catch (Exception $e) {
+            // Assert
+            $this->assertInstanceOf(ImportException::class, $e);
+            $this->assertSame('ZIP uncompressed size exceeds the maximum of 10 bytes', $e->getMessage());
+            $this->assertSame(0, $importer->getReport()->timeEntriesCreated);
+
+            return;
+        }
+        $this->fail();
+    }
+
     public function test_import_of_test_file_succeeds(): void
     {
         // Arrange

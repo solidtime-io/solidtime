@@ -97,6 +97,29 @@ class ImportEndpointTest extends ApiEndpointTestAbstract
         ]);
     }
 
+    public function test_import_fails_if_data_exceeds_maximum_size(): void
+    {
+        // Arrange
+        config(['import.max_data_size' => 16]);
+        $user = $this->createUserWithPermission([
+            'import',
+        ]);
+        $this->mock(ImportService::class, function (MockInterface $mock): void {
+            $mock->shouldNotReceive('import');
+        });
+        Passport::actingAs($user->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.import.import', ['organization' => $user->organization->getKey()]), [
+            'type' => 'toggl_time_entries',
+            'data' => base64_encode(str_repeat('a', 15)),
+        ]);
+
+        // Assert
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['data']);
+    }
+
     public function test_import_return_error_message_if_import_fails(): void
     {
         // Arrange

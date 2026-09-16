@@ -41,6 +41,7 @@ class ImportServiceTest extends TestCase
         $this->assertSame(1, $report->usersCreated);
         $this->assertSame(2, $report->projectsCreated);
         $this->assertSame(1, $report->clientsCreated);
+        Storage::disk(config('filesystems.default'))->assertDirectoryEmpty('import');
     }
 
     public function test_import_releases_lock_if_an_exception_happens_during_the_import(): void
