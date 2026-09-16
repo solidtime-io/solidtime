@@ -13,6 +13,7 @@ use App\Models\Tag;
 use App\Models\Task;
 use App\Models\TimeEntry;
 use App\Service\PermissionStore;
+use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
@@ -29,7 +30,7 @@ class TimeEntryUpdateRequest extends BaseFormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, array<string|\Closure|ValidationRule|\Illuminate\Contracts\Validation\Rule|ProhibitedIf|ConditionalRules>>
+     * @return array<string, array<string|Closure|ValidationRule|\Illuminate\Contracts\Validation\Rule|ProhibitedIf|ConditionalRules>>
      */
     public function rules(): array
     {
@@ -105,7 +106,7 @@ class TimeEntryUpdateRequest extends BaseFormRequest
             // Type of the time entry (work time or a break)
             'type' => [
                 Rule::enum(TimeEntryType::class),
-                function (string $attribute, mixed $value, \Closure $fail) use ($timeEntry): void {
+                function (string $attribute, mixed $value, Closure $fail) use ($timeEntry): void {
                     // While breaks are disabled, entries that already are breaks may stay
                     // breaks, but converting a work entry to a break is not allowed.
                     if ($value === TimeEntryType::Break->value

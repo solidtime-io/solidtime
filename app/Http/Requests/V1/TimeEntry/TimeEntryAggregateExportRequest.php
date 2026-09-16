@@ -19,11 +19,13 @@ use App\Models\Tag;
 use App\Models\Task;
 use App\Models\User;
 use App\Service\TimeEntryFilter;
+use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
 use Korridor\LaravelModelValidationRules\Rules\ExistsEloquent;
+use LogicException;
 
 /**
  * @property Organization $organization
@@ -33,7 +35,7 @@ class TimeEntryAggregateExportRequest extends BaseFormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, array<string|ValidationRule|\Illuminate\Contracts\Validation\Rule|\Closure>>
+     * @return array<string, array<string|ValidationRule|\Illuminate\Contracts\Validation\Rule|Closure>>
      */
     public function rules(): array
     {
@@ -97,7 +99,7 @@ class TimeEntryAggregateExportRequest extends BaseFormRequest
             ],
             'project_ids.*' => [
                 'string',
-                function (string $attribute, mixed $value, \Closure $fail): void {
+                function (string $attribute, mixed $value, Closure $fail): void {
                     if ($value === TimeEntryFilter::NONE_VALUE) {
                         return;
                     }
@@ -114,7 +116,7 @@ class TimeEntryAggregateExportRequest extends BaseFormRequest
             ],
             'client_ids.*' => [
                 'string',
-                function (string $attribute, mixed $value, \Closure $fail): void {
+                function (string $attribute, mixed $value, Closure $fail): void {
                     if ($value === TimeEntryFilter::NONE_VALUE) {
                         return;
                     }
@@ -131,7 +133,7 @@ class TimeEntryAggregateExportRequest extends BaseFormRequest
             ],
             'tag_ids.*' => [
                 'string',
-                function (string $attribute, mixed $value, \Closure $fail): void {
+                function (string $attribute, mixed $value, Closure $fail): void {
                     if ($value === TimeEntryFilter::NONE_VALUE) {
                         return;
                     }
@@ -152,7 +154,7 @@ class TimeEntryAggregateExportRequest extends BaseFormRequest
             ],
             'task_ids.*' => [
                 'string',
-                function (string $attribute, mixed $value, \Closure $fail): void {
+                function (string $attribute, mixed $value, Closure $fail): void {
                     if ($value === TimeEntryFilter::NONE_VALUE) {
                         return;
                     }
@@ -236,7 +238,7 @@ class TimeEntryAggregateExportRequest extends BaseFormRequest
     {
         $start = Carbon::createFromFormat('Y-m-d\TH:i:s\Z', $this->input('start'), 'UTC');
         if ($start === null) {
-            throw new \LogicException('Start date validation is not working');
+            throw new LogicException('Start date validation is not working');
         }
 
         return $start;
@@ -246,7 +248,7 @@ class TimeEntryAggregateExportRequest extends BaseFormRequest
     {
         $end = Carbon::createFromFormat('Y-m-d\TH:i:s\Z', $this->input('end'), 'UTC');
         if ($end === null) {
-            throw new \LogicException('End date validation is not working');
+            throw new LogicException('End date validation is not working');
         }
 
         return $end;

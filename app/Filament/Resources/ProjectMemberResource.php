@@ -4,12 +4,19 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\ProjectMemberResource\Pages;
+use App\Filament\Resources\ProjectMemberResource\Pages\CreateProjectMember;
+use App\Filament\Resources\ProjectMemberResource\Pages\EditProjectMember;
+use App\Filament\Resources\ProjectMemberResource\Pages\ListProjectMembers;
+use App\Filament\Resources\ProjectMemberResource\Pages\ViewProjectMembers;
 use App\Models\ProjectMember;
-use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
 class ProjectMemberResource extends Resource
@@ -18,11 +25,11 @@ class ProjectMemberResource extends Resource
 
     protected static bool $shouldRegisterNavigation = false;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\TextInput::make('billable_rate')
+        return $schema
+            ->components([
+                TextInput::make('billable_rate')
                     ->label('Billable rate (in Cents)')
                     ->nullable()
                     ->rules([
@@ -32,10 +39,10 @@ class ProjectMemberResource extends Resource
                         'max:2147483647',
                     ])
                     ->numeric(),
-                Forms\Components\Select::make('user_id')
+                Select::make('user_id')
                     ->relationship('user', 'name')
                     ->required(),
-                Forms\Components\Select::make('member_id')
+                Select::make('member_id')
                     ->relationship('member', 'id')
                     ->required(),
             ]);
@@ -45,17 +52,17 @@ class ProjectMemberResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('id')
+                TextColumn::make('id')
                     ->label('ID'),
-                Tables\Columns\TextColumn::make('billable_rate')
+                TextColumn::make('billable_rate')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('project.name'),
-                Tables\Columns\TextColumn::make('user.name'),
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('project.name'),
+                TextColumn::make('user.name'),
+                TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('updated_at')
+                TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -63,12 +70,12 @@ class ProjectMemberResource extends Resource
             ->filters([
                 //
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
+            ->recordActions([
+                EditAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }
@@ -83,10 +90,10 @@ class ProjectMemberResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListProjectMembers::route('/'),
-            'create' => Pages\CreateProjectMember::route('/create'),
-            'edit' => Pages\EditProjectMember::route('/{record}/edit'),
-            'view' => Pages\ViewProjectMembers::route('/{record}'),
+            'index' => ListProjectMembers::route('/'),
+            'create' => CreateProjectMember::route('/create'),
+            'edit' => EditProjectMember::route('/{record}/edit'),
+            'view' => ViewProjectMembers::route('/{record}'),
         ];
     }
 }

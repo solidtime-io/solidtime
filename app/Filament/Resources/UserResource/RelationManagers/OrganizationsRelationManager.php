@@ -11,12 +11,13 @@ use App\Models\Member;
 use App\Models\Organization;
 use App\Models\User;
 use App\Service\MemberService;
+use Filament\Actions\Action;
+use Filament\Actions\DetachAction;
+use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
-use Filament\Tables;
-use Filament\Tables\Actions\Action;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -24,10 +25,10 @@ class OrganizationsRelationManager extends RelationManager
 {
     protected static string $relationship = 'organizations';
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 Select::make('role')
                     ->options(Role::class),
             ]);
@@ -46,21 +47,21 @@ class OrganizationsRelationManager extends RelationManager
             ])
             ->headerActions([
             ])
-            ->actions([
+            ->recordActions([
                 Action::make('view')
                     ->icon('heroicon-o-eye')
                     ->color('gray')
                     ->url(fn (Organization $record): string => OrganizationResource::getUrl('view', [
                         'record' => $record->getKey(),
                     ])),
-                Tables\Actions\EditAction::make()
+                EditAction::make()
                     ->using(function (Organization $record, array $data): Organization {
                         /** @var Member $member */
                         $member = $record->getRelation('membership');
 
                         if ($data['role'] !== $member->role) {
                             try {
-                                app(MemberService::class)->changeRole($member, $record, Role::from($data['role']), true);
+                                app(MemberService::class)->changeRole($member, $record, ($data['role'] instanceof Role ? $data['role'] : Role::from($data['role'])), true);
                             } catch (ApiException $exception) {
                                 Notification::make()
                                     ->danger()
@@ -74,7 +75,7 @@ class OrganizationsRelationManager extends RelationManager
 
                         return $record;
                     }),
-                Tables\Actions\DetachAction::make()
+                DetachAction::make()
                     ->using(function (Organization $record): void {
                         /** @var User $user */
                         $user = $this->getOwnerRecord();
@@ -94,7 +95,7 @@ class OrganizationsRelationManager extends RelationManager
                         }
                     }),
             ])
-            ->bulkActions([
+            ->toolbarActions([
             ]);
     }
 }

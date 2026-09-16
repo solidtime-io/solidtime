@@ -20,6 +20,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
 
 class TimeEntryAggregationService
 {
@@ -526,7 +527,7 @@ class TimeEntryAggregationService
     public function timeSlotsBetween(Carbon $start, Carbon $end, string $timezone, Weekday $startOfWeek, TimeEntryAggregationTypeInterval $interval, string $format): Collection
     {
         if ($start->gt($end)) {
-            throw new \InvalidArgumentException('Start date must be before end date');
+            throw new InvalidArgumentException('Start date must be before end date');
         }
         $slots = new Collection;
         $current = $start->copy()->timezone($timezone);
@@ -539,7 +540,7 @@ class TimeEntryAggregationService
         } elseif ($interval === TimeEntryAggregationTypeInterval::Year) {
             $current->startOfYear();
         } else {
-            throw new \InvalidArgumentException('Invalid interval');
+            throw new InvalidArgumentException('Invalid interval');
         }
 
         while ($current->lt($end)) {

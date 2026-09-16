@@ -5,14 +5,21 @@ declare(strict_types=1);
 namespace App\Filament\Resources;
 
 use App\Enums\Role;
-use App\Filament\Resources\OrganizationInvitationResource\Pages;
+use App\Filament\Resources\OrganizationInvitationResource\Pages\EditOrganizationInvitation;
+use App\Filament\Resources\OrganizationInvitationResource\Pages\ListOrganizationInvitations;
+use App\Filament\Resources\OrganizationInvitationResource\Pages\ViewOrganizationInvitation;
 use App\Models\OrganizationInvitation;
 use App\Service\OrganizationInvitationService;
-use Filament\Forms;
+use Filament\Actions\BulkAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\EditAction;
+use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Form;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Support\Collection;
 
@@ -22,18 +29,18 @@ class OrganizationInvitationResource extends Resource
 
     protected static ?string $label = 'Invitations';
 
-    protected static ?string $navigationIcon = 'heroicon-o-user-plus';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-user-plus';
 
-    protected static ?string $navigationGroup = 'Users';
+    protected static string|\UnitEnum|null $navigationGroup = 'Users';
 
     protected static ?int $navigationSort = 9;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
+        return $schema
             ->columns(1)
-            ->schema([
-                Forms\Components\TextInput::make('email')
+            ->components([
+                TextInput::make('email')
                     ->label('Email')
                     ->disabledOn(['edit'])
                     ->required(),
@@ -45,11 +52,11 @@ class OrganizationInvitationResource extends Resource
                     ->searchable(['name'])
                     ->disabledOn(['edit'])
                     ->required(),
-                Forms\Components\DateTimePicker::make('created_at')
+                DateTimePicker::make('created_at')
                     ->label('Created At')
                     ->hiddenOn(['create'])
                     ->disabled(),
-                Forms\Components\DateTimePicker::make('updated_at')
+                DateTimePicker::make('updated_at')
                     ->label('Updated At')
                     ->hiddenOn(['create'])
                     ->disabled(),
@@ -60,17 +67,17 @@ class OrganizationInvitationResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('organization.name')
+                TextColumn::make('organization.name')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('email')
+                TextColumn::make('email')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('role'),
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('role'),
+                TextColumn::make('created_at')
                     ->label('Created At')
                     ->dateTime()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('updated_at')
+                TextColumn::make('updated_at')
                     ->label('Updated At')
                     ->dateTime()
                     ->sortable()
@@ -80,13 +87,13 @@ class OrganizationInvitationResource extends Resource
             ->filters([
                 //
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+            ->recordActions([
+                EditAction::make(),
+                DeleteAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\BulkAction::make('resend')
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    BulkAction::make('resend')
                         ->label('Resend')
                         ->action(function (Collection $records): void {
                             foreach ($records as $organizationInvite) {
@@ -106,9 +113,9 @@ class OrganizationInvitationResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListOrganizationInvitations::route('/'),
-            'edit' => Pages\EditOrganizationInvitation::route('/{record}/edit'),
-            'view' => Pages\ViewOrganizationInvitation::route('/{record}'),
+            'index' => ListOrganizationInvitations::route('/'),
+            'edit' => EditOrganizationInvitation::route('/{record}/edit'),
+            'view' => ViewOrganizationInvitation::route('/{record}'),
         ];
     }
 }

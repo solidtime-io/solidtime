@@ -4,16 +4,20 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\TimeEntryResource\Pages;
+use App\Filament\Resources\TimeEntryResource\Pages\CreateTimeEntry;
+use App\Filament\Resources\TimeEntryResource\Pages\EditTimeEntry;
+use App\Filament\Resources\TimeEntryResource\Pages\ListTimeEntries;
 use App\Models\Member;
 use App\Models\TimeEntry;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -23,16 +27,16 @@ class TimeEntryResource extends Resource
 {
     protected static ?string $model = TimeEntry::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-clock';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-clock';
 
-    protected static ?string $navigationGroup = 'Timetracking';
+    protected static string|\UnitEnum|null $navigationGroup = 'Timetracking';
 
     protected static ?int $navigationSort = 1;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 TextInput::make('id')
                     ->label('ID')
                     ->readOnly()
@@ -111,12 +115,12 @@ class TimeEntryResource extends Resource
                     ->searchable(),
             ])
             ->defaultSort('created_at', 'desc')
-            ->actions([
-                Tables\Actions\EditAction::make(),
+            ->recordActions([
+                EditAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }
@@ -131,9 +135,9 @@ class TimeEntryResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListTimeEntries::route('/'),
-            'create' => Pages\CreateTimeEntry::route('/create'),
-            'edit' => Pages\EditTimeEntry::route('/{record}/edit'),
+            'index' => ListTimeEntries::route('/'),
+            'create' => CreateTimeEntry::route('/create'),
+            'edit' => EditTimeEntry::route('/{record}/edit'),
         ];
     }
 }

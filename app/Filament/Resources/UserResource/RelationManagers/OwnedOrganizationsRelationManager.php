@@ -6,10 +6,10 @@ namespace App\Filament\Resources\UserResource\RelationManagers;
 
 use App\Filament\Resources\OrganizationResource;
 use App\Models\Organization;
-use Filament\Forms\Form;
+use Filament\Actions\Action;
 use Filament\Resources\RelationManagers\RelationManager;
-use Filament\Tables;
-use Filament\Tables\Actions\Action;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
 class OwnedOrganizationsRelationManager extends RelationManager
@@ -18,10 +18,10 @@ class OwnedOrganizationsRelationManager extends RelationManager
 
     protected static string $relationship = 'ownedOrganizations';
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
             ]);
     }
 
@@ -30,14 +30,14 @@ class OwnedOrganizationsRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('name')
             ->columns([
-                Tables\Columns\TextColumn::make('name'),
+                TextColumn::make('name'),
             ])
             ->filters([
                 //
             ])
             ->headerActions([
             ])
-            ->actions([
+            ->recordActions([
                 Action::make('view')
                     ->icon('heroicon-o-eye')
                     ->color('gray')
@@ -51,7 +51,7 @@ class OwnedOrganizationsRelationManager extends RelationManager
                     ]))
                     ->openUrlInNewTab(),
             ])
-            ->bulkActions([
+            ->toolbarActions([
             ]);
     }
 }

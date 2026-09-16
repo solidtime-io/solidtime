@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Cache;
 
 class ServerOverview extends Widget
 {
-    protected static string $view = 'filament.widgets.server-overview';
+    protected string $view = 'filament.widgets.server-overview';
 
     /**
      * @return array<string, mixed>

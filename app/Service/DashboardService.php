@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use RuntimeException;
 
 class DashboardService
 {
@@ -101,7 +102,7 @@ class DashboardService
         $value1 = Carbon::createFromFormat('Y-m-d', $possibleDates->first(), $timeZone);
         $value2 = Carbon::createFromFormat('Y-m-d', $possibleDates->last(), $timeZone);
         if ($value2 === null || $value1 === null) {
-            throw new \RuntimeException('Provided date is not valid');
+            throw new RuntimeException('Provided date is not valid');
         }
         if ($value1->gt($value2)) {
             $last = $value1;
