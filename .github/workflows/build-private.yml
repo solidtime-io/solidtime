@@ -84,6 +84,8 @@ jobs:
             echo "services_ref=$(jq -r '.Services.ref' extensions/manifest.json)"
             echo "invoicing_repository=$(jq -r '.Invoicing.repository' extensions/manifest.json)"
             echo "invoicing_ref=$(jq -r '.Invoicing.ref' extensions/manifest.json)"
+            echo "auditing_repository=$(jq -r '.Auditing.repository' extensions/manifest.json)"
+            echo "auditing_ref=$(jq -r '.Auditing.ref' extensions/manifest.json)"
           } >> "$GITHUB_OUTPUT"
 
       - name: "Checkout billing extension"
@@ -145,6 +147,25 @@ jobs:
       - name: "Install npm dependencies in invoicing extension"
         run: cd extensions/Invoicing && npm ci
 
+      - name: "Checkout auditing extension"
+        uses: actions/checkout@v7
+        with:
+          repository: ${{ steps.extension-manifest.outputs.auditing_repository }}
+          ref: ${{ steps.extension-manifest.outputs.auditing_ref }}
+          path: extensions/Auditing
+          ssh-key: ${{ secrets.SSH_PRIVATE_KEY_AUDITING_EXTENSION }}
+
+      - name: "Install composer dependencies in auditing extension"
+        uses: php-actions/composer@v6
+        with:
+          working_dir: "extensions/Auditing"
+          command: install
+          only_args: --no-dev --no-ansi --no-interaction --prefer-dist --ignore-platform-reqs --classmap-authoritative
+          php_version: 8.3
+
+      - name: "Install npm dependencies in auditing extension"
+        run: cd extensions/Auditing && npm ci
+
       - name: "Setup PHP with PECL extension"
         uses: shivammathur/setup-php@v2
         with:
@@ -167,6 +188,9 @@ jobs:
 
       - name: "Activate invoicing extension"
         run: php artisan module:enable Invoicing
+
+      - name: "Activate auditing extension"
+        run: php artisan module:enable Auditing
 
       - name: "Install npm dependencies"
         run: npm ci
