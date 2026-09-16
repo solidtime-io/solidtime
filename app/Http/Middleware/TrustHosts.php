@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
+use Closure;
 use Illuminate\Http\Middleware\TrustHosts as BaseTrustHosts;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -39,7 +40,7 @@ class TrustHosts extends BaseTrustHosts
     }
 
     /**
-     * @param  \Closure(Request): Response  $next
+     * @param  Closure(Request):Response  $next
      */
     public function handle(Request $request, $next)
     {

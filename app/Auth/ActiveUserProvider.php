@@ -7,6 +7,7 @@ namespace App\Auth;
 use Illuminate\Auth\EloquentUserProvider;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Override;
 
 /**
  * User provider that only resolves non-placeholder users.
@@ -26,7 +27,7 @@ class ActiveUserProvider extends EloquentUserProvider
      * @param  Model|null  $model
      * @return Builder<Model>
      */
-    #[\Override]
+    #[Override]
     protected function newModelQuery($model = null): Builder
     {
         $query = parent::newModelQuery($model);

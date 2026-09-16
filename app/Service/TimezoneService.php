@@ -6,6 +6,7 @@ namespace App\Service;
 
 use App\Models\User;
 use Carbon\CarbonTimeZone;
+use Exception;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 
@@ -287,7 +288,7 @@ class TimezoneService
     {
         try {
             return new CarbonTimeZone($user->timezone);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('User has a invalid timezone', [
                 'user_id' => $user->getKey(),
                 'timezone' => $user->timezone,

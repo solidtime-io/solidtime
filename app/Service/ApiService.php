@@ -15,6 +15,7 @@ use App\Models\User;
 use Exception;
 use Illuminate\Support\Facades\Http;
 use Log;
+use Throwable;
 
 class ApiService
 {
@@ -42,7 +43,7 @@ class ApiService
 
                 return null;
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::warning('Failed to check for update', [
                 'message' => $e->getMessage(),
             ]);

@@ -4,13 +4,17 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\AuditResource\Pages;
+use App\Filament\Resources\AuditResource\Pages\CreateAudit;
+use App\Filament\Resources\AuditResource\Pages\ListAudits;
+use App\Filament\Resources\AuditResource\Pages\ViewAudit;
 use App\Models\Audit;
-use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Actions\ViewAction;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Support\Str;
 use Novadaemon\FilamentPrettyJson\Form\PrettyJsonField;
@@ -19,32 +23,32 @@ class AuditResource extends Resource
 {
     protected static ?string $model = Audit::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-archive-box';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-archive-box';
 
-    protected static ?string $navigationGroup = 'System';
+    protected static string|\UnitEnum|null $navigationGroup = 'System';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\TextInput::make('user_type')
+        return $schema
+            ->components([
+                TextInput::make('user_type')
                     ->maxLength(255),
-                Forms\Components\TextInput::make('user_id'),
-                Forms\Components\TextInput::make('event')
+                TextInput::make('user_id'),
+                TextInput::make('event')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\TextInput::make('auditable_type')
+                TextInput::make('auditable_type')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\TextInput::make('auditable_id')
+                TextInput::make('auditable_id')
                     ->required(),
                 PrettyJsonField::make('old_values'),
                 PrettyJsonField::make('new_values'),
-                Forms\Components\Textarea::make('url'),
-                Forms\Components\TextInput::make('ip_address'),
-                Forms\Components\TextInput::make('user_agent')
+                Textarea::make('url'),
+                TextInput::make('ip_address'),
+                TextInput::make('user_agent')
                     ->maxLength(1023),
-                Forms\Components\TextInput::make('tags')
+                TextInput::make('tags')
                     ->maxLength(255),
             ]);
     }
@@ -53,27 +57,27 @@ class AuditResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('user.name'),
-                Tables\Columns\TextColumn::make('event'),
-                Tables\Columns\TextColumn::make('auditable_type'),
-                Tables\Columns\TextColumn::make('auditable_id'),
+                TextColumn::make('user.name'),
+                TextColumn::make('event'),
+                TextColumn::make('auditable_type'),
+                TextColumn::make('auditable_id'),
                 IconColumn::make('was_command')
                     ->getStateUsing(fn (Audit $record) => Str::startsWith($record->url, 'artisan '))
                     ->boolean(),
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->sortable()
                     ->dateTime(),
-                Tables\Columns\TextColumn::make('updated_at')
+                TextColumn::make('updated_at')
                     ->sortable()
                     ->dateTime(),
             ])
             ->filters([
                 //
             ])
-            ->actions([
-                Tables\Actions\ViewAction::make(),
+            ->recordActions([
+                ViewAction::make(),
             ])
-            ->bulkActions([
+            ->toolbarActions([
             ])
             ->defaultSort('created_at', 'desc');
     }
@@ -87,9 +91,9 @@ class AuditResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListAudits::route('/'),
-            'create' => Pages\CreateAudit::route('/create'),
-            'view' => Pages\ViewAudit::route('/{record}'),
+            'index' => ListAudits::route('/'),
+            'create' => CreateAudit::route('/create'),
+            'view' => ViewAudit::route('/{record}'),
         ];
     }
 }

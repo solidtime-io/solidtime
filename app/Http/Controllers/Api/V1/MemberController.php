@@ -33,6 +33,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Throwable;
 
 class MemberController extends Controller
 {
@@ -146,7 +147,7 @@ class MemberController extends Controller
      *
      * @throws AuthorizationException
      * @throws OnlyPlaceholdersCanBeMergedIntoAnotherMember
-     * @throws \Throwable
+     * @throws Throwable
      *
      * @operationId mergeMember
      */

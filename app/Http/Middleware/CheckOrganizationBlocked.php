@@ -9,6 +9,7 @@ use App\Models\Organization;
 use App\Service\BillingContract;
 use Closure;
 use Illuminate\Http\Request;
+use LogicException;
 use Symfony\Component\HttpFoundation\Response;
 
 class CheckOrganizationBlocked
@@ -25,7 +26,7 @@ class CheckOrganizationBlocked
         $organization = $request->route('organization');
 
         if (! ($organization instanceof Organization)) {
-            throw new \LogicException('The organization must be loaded before this middleware.');
+            throw new LogicException('The organization must be loaded before this middleware.');
         }
 
         /** @var BillingContract $billing */

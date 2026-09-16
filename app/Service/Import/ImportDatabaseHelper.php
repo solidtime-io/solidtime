@@ -9,6 +9,7 @@ use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Validator;
+use RuntimeException;
 
 /**
  * @template TModel of Model
@@ -133,7 +134,7 @@ class ImportDatabaseHelper
     {
         $jsonData = json_encode($data);
         if ($jsonData === false) {
-            throw new \RuntimeException('Failed to encode data to JSON');
+            throw new RuntimeException('Failed to encode data to JSON');
         }
 
         return md5($jsonData);
@@ -164,7 +165,7 @@ class ImportDatabaseHelper
 
             return $this->createEntity($identifierData, $createValues, $externalIdentifier);
         } else {
-            throw new \RuntimeException('Not implemented');
+            throw new RuntimeException('Not implemented');
         }
     }
 

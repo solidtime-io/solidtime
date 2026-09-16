@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources\OrganizationResource\Pages;
 
 use App\Filament\Resources\OrganizationResource;
+use App\Filament\Resources\OrganizationResource\Actions\DeleteOrganization;
 use Filament\Resources\Pages\EditRecord;
 
 class EditOrganization extends EditRecord
@@ -14,7 +15,7 @@ class EditOrganization extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            OrganizationResource\Actions\DeleteOrganization::make(),
+            DeleteOrganization::make(),
         ];
     }
 }

@@ -7,6 +7,7 @@ namespace App\Service\Import\Importers;
 use Exception;
 use League\Csv\Exception as CsvException;
 use League\Csv\Reader;
+use Override;
 
 class HarvestClientsImporter extends DefaultImporter
 {
@@ -20,7 +21,7 @@ class HarvestClientsImporter extends DefaultImporter
     /**
      * @throws ImportException
      */
-    #[\Override]
+    #[Override]
     public function importData(string $data, string $timezone): void
     {
         try {
@@ -62,13 +63,13 @@ class HarvestClientsImporter extends DefaultImporter
         }
     }
 
-    #[\Override]
+    #[Override]
     public function getName(): string
     {
         return __('importer.harvest_clients.name');
     }
 
-    #[\Override]
+    #[Override]
     public function getDescription(): string
     {
         return __('importer.harvest_clients.description');

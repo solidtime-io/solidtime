@@ -14,6 +14,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use League\Csv\Exception as CsvException;
 use League\Csv\Reader;
+use Override;
 
 class TogglTimeEntriesImporter extends DefaultImporter
 {
@@ -43,7 +44,7 @@ class TogglTimeEntriesImporter extends DefaultImporter
     /**
      * @throws ImportException
      */
-    #[\Override]
+    #[Override]
     public function importData(string $data, string $timezone): void
     {
         try {
@@ -192,13 +193,13 @@ class TogglTimeEntriesImporter extends DefaultImporter
         }
     }
 
-    #[\Override]
+    #[Override]
     public function getName(): string
     {
         return __('importer.toggl_time_entries.name');
     }
 
-    #[\Override]
+    #[Override]
     public function getDescription(): string
     {
         return __('importer.toggl_time_entries.description');

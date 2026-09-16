@@ -6,10 +6,10 @@ namespace App\Filament\Resources\ProjectResource\RelationManagers;
 
 use App\Filament\Resources\ProjectMemberResource;
 use App\Models\ProjectMember;
-use Filament\Forms\Form;
+use Filament\Actions\Action;
 use Filament\Resources\RelationManagers\RelationManager;
-use Filament\Tables;
-use Filament\Tables\Actions\Action;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
 class ProjectMembersRelationManager extends RelationManager
@@ -18,10 +18,10 @@ class ProjectMembersRelationManager extends RelationManager
 
     protected static string $relationship = 'members';
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
             ]);
     }
 
@@ -30,8 +30,8 @@ class ProjectMembersRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('name')
             ->columns([
-                Tables\Columns\TextColumn::make('user.name'),
-                Tables\Columns\TextColumn::make('billable_rate')
+                TextColumn::make('user.name'),
+                TextColumn::make('billable_rate')
                     ->numeric()
                     ->sortable(),
             ])
@@ -40,7 +40,7 @@ class ProjectMembersRelationManager extends RelationManager
             ])
             ->headerActions([
             ])
-            ->actions([
+            ->recordActions([
                 Action::make('view')
                     ->icon('heroicon-o-eye')
                     ->color('gray')
@@ -54,7 +54,7 @@ class ProjectMembersRelationManager extends RelationManager
                     ]))
                     ->openUrlInNewTab(),
             ])
-            ->bulkActions([
+            ->toolbarActions([
             ]);
     }
 }

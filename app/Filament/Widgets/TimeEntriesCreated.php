@@ -11,7 +11,7 @@ use Flowframe\Trend\TrendValue;
 
 class TimeEntriesCreated extends ChartWidget
 {
-    protected static ?string $heading = 'Time Entries Created';
+    protected ?string $heading = 'Time Entries Created';
 
     public ?string $filter = 'week';
 
@@ -53,7 +53,7 @@ class TimeEntriesCreated extends ChartWidget
         return [
             'datasets' => [
                 [
-                    'label' => self::$heading,
+                    'label' => $this->heading,
                     'data' => $data->map(fn (TrendValue $value) => $value->aggregate),
                 ],
             ],

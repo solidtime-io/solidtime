@@ -15,11 +15,13 @@ use App\Models\Project;
 use App\Models\Tag;
 use App\Models\Task;
 use App\Service\TimeEntryFilter;
+use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
 use Korridor\LaravelModelValidationRules\Rules\ExistsEloquent;
+use LogicException;
 
 /**
  * @property Organization $organization
@@ -29,7 +31,7 @@ class TimeEntryIndexExportRequest extends TimeEntryIndexRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, array<string|ValidationRule|\Illuminate\Contracts\Validation\Rule|\Closure>>
+     * @return array<string, array<string|ValidationRule|\Illuminate\Contracts\Validation\Rule|Closure>>
      */
     public function rules(): array
     {
@@ -68,7 +70,7 @@ class TimeEntryIndexExportRequest extends TimeEntryIndexRequest
             ],
             'client_ids.*' => [
                 'string',
-                function (string $attribute, mixed $value, \Closure $fail): void {
+                function (string $attribute, mixed $value, Closure $fail): void {
                     if ($value === TimeEntryFilter::NONE_VALUE) {
                         return;
                     }
@@ -85,7 +87,7 @@ class TimeEntryIndexExportRequest extends TimeEntryIndexRequest
             ],
             'project_ids.*' => [
                 'string',
-                function (string $attribute, mixed $value, \Closure $fail): void {
+                function (string $attribute, mixed $value, Closure $fail): void {
                     if ($value === TimeEntryFilter::NONE_VALUE) {
                         return;
                     }
@@ -102,7 +104,7 @@ class TimeEntryIndexExportRequest extends TimeEntryIndexRequest
             ],
             'tag_ids.*' => [
                 'string',
-                function (string $attribute, mixed $value, \Closure $fail): void {
+                function (string $attribute, mixed $value, Closure $fail): void {
                     if ($value === TimeEntryFilter::NONE_VALUE) {
                         return;
                     }
@@ -123,7 +125,7 @@ class TimeEntryIndexExportRequest extends TimeEntryIndexRequest
             ],
             'task_ids.*' => [
                 'string',
-                function (string $attribute, mixed $value, \Closure $fail): void {
+                function (string $attribute, mixed $value, Closure $fail): void {
                     if ($value === TimeEntryFilter::NONE_VALUE) {
                         return;
                     }
@@ -200,7 +202,7 @@ class TimeEntryIndexExportRequest extends TimeEntryIndexRequest
     {
         $start = Carbon::createFromFormat('Y-m-d\TH:i:s\Z', $this->input('start'), 'UTC');
         if ($start === null) {
-            throw new \LogicException('Start date validation is not working');
+            throw new LogicException('Start date validation is not working');
         }
 
         return $start;
@@ -210,7 +212,7 @@ class TimeEntryIndexExportRequest extends TimeEntryIndexRequest
     {
         $end = Carbon::createFromFormat('Y-m-d\TH:i:s\Z', $this->input('end'), 'UTC');
         if ($end === null) {
-            throw new \LogicException('End date validation is not working');
+            throw new LogicException('End date validation is not working');
         }
 
         return $end;

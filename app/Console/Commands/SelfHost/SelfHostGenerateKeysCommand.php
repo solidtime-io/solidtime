@@ -7,7 +7,7 @@ namespace App\Console\Commands\SelfHost;
 use Illuminate\Console\Command;
 use Illuminate\Encryption\Encrypter;
 use Illuminate\Support\Str;
-use phpseclib3\Crypt\RSA;
+use phpseclib4\Crypt\RSA;
 
 class SelfHostGenerateKeysCommand extends Command
 {

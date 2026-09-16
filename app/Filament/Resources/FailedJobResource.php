@@ -7,16 +7,16 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\FailedJobResource\Pages\ListFailedJobs;
 use App\Filament\Resources\FailedJobResource\Pages\ViewFailedJobs;
 use App\Models\FailedJob;
+use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\ViewAction;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
-use Filament\Tables\Actions\Action;
-use Filament\Tables\Actions\BulkAction;
-use Filament\Tables\Actions\DeleteAction;
-use Filament\Tables\Actions\DeleteBulkAction;
-use Filament\Tables\Actions\ViewAction;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Support\Collection;
@@ -30,19 +30,19 @@ class FailedJobResource extends Resource
 {
     protected static ?string $model = FailedJob::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-exclamation-circle';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-exclamation-circle';
 
-    protected static ?string $navigationGroup = 'System';
+    protected static string|\UnitEnum|null $navigationGroup = 'System';
 
     public static function getNavigationBadge(): ?string
     {
         return (string) FailedJob::query()->count();
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 TextInput::make('uuid')->disabled()->columnSpan(4),
                 TextInput::make('failed_at')->disabled(),
                 TextInput::make('id')->disabled(),
@@ -74,7 +74,7 @@ class FailedJobResource extends Resource
                 TextColumn::make('queue')->sortable()->searchable()->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([])
-            ->bulkActions([
+            ->toolbarActions([
                 BulkAction::make('retry')
                     ->icon('heroicon-o-arrow-path')
                     ->label('Retry selected')
@@ -91,7 +91,7 @@ class FailedJobResource extends Resource
                     }),
                 DeleteBulkAction::make(),
             ])
-            ->actions([
+            ->recordActions([
                 DeleteAction::make(),
                 ViewAction::make(),
                 Action::make('retry')

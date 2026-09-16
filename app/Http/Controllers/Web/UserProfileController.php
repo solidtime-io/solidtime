@@ -16,6 +16,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 use Laravel\Fortify\Actions\DisableTwoFactorAuthentication;
 use Laravel\Fortify\Features;
+use stdClass;
 
 class UserProfileController extends Controller
 {
@@ -103,7 +104,7 @@ class UserProfileController extends Controller
     /**
      * Get the current sessions.
      *
-     * @return array<int, object{agent: array{is_desktop: bool, platform: string|null, browser: string|null}, ip_address: string, is_current_device: bool, last_active: string}&\stdClass>
+     * @return array<int, object{agent: array{is_desktop: bool, platform: string|null, browser: string|null}, ip_address: string, is_current_device: bool, last_active: string}&stdClass>
      */
     public function sessions(Request $request): array
     {
