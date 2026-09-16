@@ -103,6 +103,8 @@ jobs:
           {
             echo "invoicing_repository=$(jq -r '.Invoicing.repository' extensions/manifest.json)"
             echo "invoicing_ref=$(jq -r '.Invoicing.ref' extensions/manifest.json)"
+            echo "auditing_repository=$(jq -r '.Auditing.repository' extensions/manifest.json)"
+            echo "auditing_ref=$(jq -r '.Auditing.ref' extensions/manifest.json)"
           } >> "$GITHUB_OUTPUT"
 
       - name: "Checkout invoicing extension"
@@ -119,8 +121,25 @@ jobs:
       - name: "Install npm dependencies in invoicing extension"
         run: cd extensions/Invoicing && npm ci
 
+      - name: "Checkout auditing extension"
+        uses: actions/checkout@v7
+        with:
+          repository: ${{ steps.extension-manifest.outputs.auditing_repository }}
+          ref: ${{ steps.extension-manifest.outputs.auditing_ref }}
+          path: extensions/Auditing
+          ssh-key: ${{ secrets.SSH_PRIVATE_KEY_AUDITING_EXTENSION }}
+
+      - name: "Install composer dependencies in auditing extension"
+        run: cd extensions/Auditing && composer install --no-dev --no-ansi --no-interaction --prefer-dist --ignore-platform-reqs --classmap-authoritative
+
+      - name: "Install npm dependencies in auditing extension"
+        run: cd extensions/Auditing && npm ci
+
       - name: "Activate invoicing extension"
         run: php artisan module:enable Invoicing
+
+      - name: "Activate auditing extension"
+        run: php artisan module:enable Auditing
 
       - name: "Install npm dependencies"
         run: npm ci
