@@ -16,6 +16,7 @@ import {
 } from '@/packages/api/src';
 import { Checkbox } from '@/packages/ui/src';
 import { TagIcon, ExclamationTriangleIcon } from '@heroicons/vue/20/solid';
+import { XMarkIcon } from '@heroicons/vue/16/solid';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '..';
 import { Button } from '@/packages/ui/src/Buttons';
 import TagDropdown from '@/packages/ui/src/Tag/TagDropdown.vue';
@@ -59,6 +60,13 @@ const taskId = ref<string | null | undefined>(undefined);
 const projectId = ref<string | null>(null);
 const billable = ref<boolean | undefined>(undefined);
 const selectedTags = ref<string[]>([]);
+
+// Clearing the project puts both fields back to "leave unchanged", the same state the form
+// returns to after a successful submit.
+function resetProject() {
+    projectId.value = null;
+    taskId.value = undefined;
+}
 
 const timeEntryBillable = computed({
     get: () => {
@@ -147,7 +155,7 @@ const showBreakWarning = computed(
 </script>
 
 <template>
-    <DialogModal closeable :show="show" @close="show = false">
+    <DialogModal closeable :show="show" @close="show = false" @submit="submit">
         <template #title>
             <div class="flex space-x-2">
                 <span> Update {{ timeEntries.length }} time entries </span>
@@ -182,42 +190,59 @@ const showBreakWarning = computed(
                 </Field>
                 <Field>
                     <FieldLabel for="project">Project</FieldLabel>
-                    <TimeTrackerProjectTaskDropdown
-                        v-model:project="projectId"
-                        v-model:task="taskId"
-                        variant="input"
-                        align="start"
-                        size="default"
-                        :clients
-                        :create-project
-                        :create-client
-                        :currency="currency"
-                        :organization-billable-rate="organizationBillableRate"
-                        :can-create-project
-                        empty-placeholder="Select project..."
-                        allow-reset
-                        :enable-estimated-time
-                        :projects="projects"
-                        :tasks="tasks"></TimeTrackerProjectTaskDropdown>
+                    <div class="flex items-center gap-1 min-w-0">
+                        <!-- the dropdown declares its own `class` prop, which goes to the
+                             trigger button, so the growing has to happen on a wrapper -->
+                        <div class="flex-1 min-w-0">
+                            <TimeTrackerProjectTaskDropdown
+                                v-model:project="projectId"
+                                v-model:task="taskId"
+                                variant="input"
+                                align="start"
+                                size="default"
+                                :clients
+                                :create-project
+                                :create-client
+                                :currency="currency"
+                                :organization-billable-rate="organizationBillableRate"
+                                :can-create-project
+                                empty-placeholder="Select project..."
+                                :enable-estimated-time
+                                :projects="projects"
+                                :tasks="tasks"></TimeTrackerProjectTaskDropdown>
+                        </div>
+                        <button
+                            v-if="projectId !== null"
+                            type="button"
+                            data-testid="project_reset_button"
+                            class="p-1 rounded hover:bg-quaternary text-text-tertiary hover:text-text-primary"
+                            @click="resetProject">
+                            <XMarkIcon class="w-4 h-4" />
+                        </button>
+                    </div>
                 </Field>
                 <Field>
                     <FieldLabel>Tag</FieldLabel>
-                    <div class="flex space-x-5">
-                        <TagDropdown
-                            v-model="selectedTags"
-                            :create-tag
-                            :tags="tags"
-                            :show-no-tag-option="false">
-                            <template #trigger>
-                                <Button variant="input" :disabled="removeAllTags">
-                                    <TagIcon class="h-4 text-icon-default" />
-                                    <span v-if="selectedTags.length > 0">
-                                        Set {{ selectedTags.length }} tags
-                                    </span>
-                                    <span v-else>Select Tags...</span>
-                                </Button>
-                            </template>
-                        </TagDropdown>
+                    <div class="flex items-center space-x-5">
+                        <!-- the dropdown root is `min-w-0`, so as a flex item it would shrink
+                             below its trigger and let the button overflow into the checkbox -->
+                        <div class="shrink-0">
+                            <TagDropdown
+                                v-model="selectedTags"
+                                :create-tag
+                                :tags="tags"
+                                :show-no-tag-option="false">
+                                <template #trigger>
+                                    <Button variant="input" :disabled="removeAllTags">
+                                        <TagIcon class="h-4 text-icon-default" />
+                                        <span v-if="selectedTags.length > 0">
+                                            Set {{ selectedTags.length }} tags
+                                        </span>
+                                        <span v-else>Select Tags...</span>
+                                    </Button>
+                                </template>
+                            </TagDropdown>
+                        </div>
                         <Field orientation="horizontal">
                             <Checkbox id="no_tags" v-model:checked="removeAllTags"></Checkbox>
                             <FieldLabel for="no_tags">Remove all tags</FieldLabel>

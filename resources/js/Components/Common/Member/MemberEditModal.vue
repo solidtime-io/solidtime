@@ -136,7 +136,7 @@ const roleDescription = computed(() => {
         v-model:show="showOwnershipTransferConfirmModal"
         :member-name="member.name"
         @submit="submit"></MemberOwnershipTransferConfirmModal>
-    <DialogModal closeable :show="show" @close="show = false">
+    <DialogModal closeable :show="show" @close="show = false" @submit="saveWithChecks()">
         <template #title>
             <div class="flex space-x-2">
                 <span> Update Member </span>

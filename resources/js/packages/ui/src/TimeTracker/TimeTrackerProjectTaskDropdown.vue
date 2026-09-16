@@ -12,7 +12,7 @@ import type {
     Client,
 } from '@/packages/api/src';
 
-import { PlusCircleIcon, MinusIcon, XMarkIcon } from '@heroicons/vue/16/solid';
+import { PlusCircleIcon, MinusIcon } from '@heroicons/vue/16/solid';
 import ProjectCreateModal from '@/packages/ui/src/Project/ProjectCreateModal.vue';
 import { twMerge } from 'tailwind-merge';
 import { Button } from '@/packages/ui/src/Buttons';
@@ -58,7 +58,6 @@ const props = withDefaults(
         createClient: (client: CreateClientBody) => Promise<Client | undefined>;
         currency: string;
         emptyPlaceholder?: string;
-        allowReset?: boolean;
         noProjectValue?: string | null;
         enableEstimatedTime: boolean;
         organizationBillableRate: number | null;
@@ -70,7 +69,6 @@ const props = withDefaults(
     }>(),
     {
         emptyPlaceholder: 'No Project',
-        allowReset: false,
         noProjectValue: NO_PROJECT_ID,
         variant: 'ghost',
         align: 'center',
@@ -558,12 +556,6 @@ function selectProject(projectId: string) {
     emit('changed', project.value, task.value);
 }
 
-function resetProject() {
-    project.value = null;
-    task.value = null;
-    emit('changed', project.value, task.value);
-}
-
 const showCreateProject = ref(false);
 </script>
 
@@ -571,40 +563,28 @@ const showCreateProject = ref(false);
     <Dropdown v-model="open" :close-on-content-click="false" :align="props.align">
         <template #trigger>
             <slot name="trigger">
-                <div class="flex items-center gap-1">
-                    <Button
-                        :variant="props.variant"
-                        :size="props.size"
-                        :class="twMerge('w-full justify-start overflow-hidden', props.class)">
-                        <div
-                            class="w-2.5 h-2.5 rounded-full shrink-0"
-                            :style="{ backgroundColor: selectedProjectColor }"></div>
-                        <span class="truncate shrink-[1] text-text-primary">{{
-                            selectedProjectName
-                        }}</span>
-                        <template v-if="currentTask">
-                            <ChevronRightIcon class="!size-3 text-text-primary shrink-0 -mx-1" />
-                            <span class="truncate shrink-[100]">{{ currentTask.name }}</span>
-                        </template>
-                        <template v-if="selectedClientName">
-                            <span class="dark:text-text-tertiary text-text-quaternary shrink-0"
-                                >•</span
-                            >
-                            <span
-                                class="truncate shrink-[200] dark:text-text-tertiary text-text-quaternary"
-                                >{{ selectedClientName }}</span
-                            >
-                        </template>
-                    </Button>
-                    <button
-                        v-if="allowReset && project !== null"
-                        type="button"
-                        data-testid="project_reset_button"
-                        class="p-1 rounded hover:bg-quaternary text-text-tertiary hover:text-text-primary"
-                        @click.stop="resetProject">
-                        <XMarkIcon class="w-4 h-4" />
-                    </button>
-                </div>
+                <Button
+                    :variant="props.variant"
+                    :size="props.size"
+                    :class="twMerge('w-full justify-start overflow-hidden', props.class)">
+                    <div
+                        class="w-2.5 h-2.5 rounded-full shrink-0"
+                        :style="{ backgroundColor: selectedProjectColor }"></div>
+                    <span class="truncate shrink-[1] text-text-primary">{{
+                        selectedProjectName
+                    }}</span>
+                    <template v-if="currentTask">
+                        <ChevronRightIcon class="!size-3 text-text-primary shrink-0 -mx-1" />
+                        <span class="truncate shrink-[100]">{{ currentTask.name }}</span>
+                    </template>
+                    <template v-if="selectedClientName">
+                        <span class="dark:text-text-tertiary text-text-quaternary shrink-0">•</span>
+                        <span
+                            class="truncate shrink-[200] dark:text-text-tertiary text-text-quaternary"
+                            >{{ selectedClientName }}</span
+                        >
+                    </template>
+                </Button>
             </slot>
         </template>
         <template #content>

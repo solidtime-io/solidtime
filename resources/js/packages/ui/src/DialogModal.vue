@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import Modal from './Modal.vue';
 
-const emit = defineEmits(['close']);
+const emit = defineEmits(['close', 'submit']);
 
 defineProps({
     show: {
@@ -24,7 +24,12 @@ const close = () => {
 </script>
 
 <template>
-    <Modal :show="show" :max-width="maxWidth" :closeable="closeable" @close="close">
+    <Modal
+        :show="show"
+        :max-width="maxWidth"
+        :closeable="closeable"
+        @close="close"
+        @submit="emit('submit')">
         <div class="px-4 lg:px-6 py-4">
             <div class="text-lg font-medium text-text-primary" role="heading">
                 <slot name="title" />
