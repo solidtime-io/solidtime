@@ -97,7 +97,7 @@ jobs:
       - name: "Install dependencies in billing extension"
         uses: php-actions/composer@v6
         env:
-          COMPOSER_AUTH: '{"http-basic": {"spark.laravel.com": {"username": "gregor@vostrak.at", "password": "${{ secrets.LARAVEL_SPARK_API_KEY }}"}}}'
+          COMPOSER_AUTH: '{"http-basic": {"spark.laravel.com": {"username": "${{ secrets.LARAVEL_SPARK_USERNAME }}", "password": "${{ secrets.LARAVEL_SPARK_API_KEY }}"}}}'
         with:
           working_dir: "extensions/Billing"
           command: install
