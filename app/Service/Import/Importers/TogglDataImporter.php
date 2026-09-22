@@ -153,9 +153,16 @@ class TogglDataImporter extends DefaultImporter
                 }
                 foreach ($projectMembers as $projectMember) {
                     $userId = $this->userImportHelper->getKeyByExternalIdentifier((string) $projectMember->user_id);
+                    if ($userId === null) {
+                        throw new Exception('User does not exist');
+                    }
+                    $memberId = $this->memberImportHelper->getKeyByExternalIdentifier($userId);
+                    if ($memberId === null) {
+                        throw new Exception('Member does not exist');
+                    }
                     $this->projectMemberImportHelper->getKey([
                         'project_id' => $projectId,
-                        'member_id' => $this->memberImportHelper->getKeyByExternalIdentifier($userId),
+                        'member_id' => $memberId,
                     ], [
                         'user_id' => $userId,
                         'billable_rate' => $projectMember->rate !== null ? (int) ($projectMember->rate * 100) : null,
