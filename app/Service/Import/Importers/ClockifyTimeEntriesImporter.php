@@ -228,7 +228,6 @@ class ClockifyTimeEntriesImporter extends DefaultImporter
             'Project',
             'Description',
             'User',
-            'Group',
             'Email',
             'Tags',
             'Start Date',
