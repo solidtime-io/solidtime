@@ -66,4 +66,27 @@ class GenericTimeEntriesImporterTest extends ImporterTestAbstract
         $this->assertSame(0, $report->projectsCreated);
         $this->assertSame(0, $report->clientsCreated);
     }
+
+    public function test_import_fails_if_task_name_is_too_long(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $timezone = 'Europe/Vienna';
+        $importer = new GenericTimeEntriesImporter;
+        $importer->init($organization);
+        $taskName = str_repeat('a', 501);
+        $data = "description,billable,client,project,tags,start,end,task,user_name,user_email\n".
+            '"Working hard","true","Big Company","Project for Big Company","","2024-03-04T09:23:00Z","2024-03-04T10:23:01Z","'.$taskName.'","Peter Tester","peter.test@email.test"';
+
+        // Act
+        try {
+            $importer->importData($data, $timezone);
+        } catch (ImportException $e) {
+            // Assert
+            $this->assertSame('Task name ("'.$taskName.'") is too long, maximum length is 500 characters', $e->getMessage());
+
+            return;
+        }
+        $this->fail();
+    }
 }

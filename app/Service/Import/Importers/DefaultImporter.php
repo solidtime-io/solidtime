@@ -21,6 +21,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 abstract class DefaultImporter implements ImporterContract
 {
+    protected const TASK_NAME_MAX_LENGTH = 500;
+
     protected Organization $organization;
 
     /**
@@ -179,6 +181,16 @@ abstract class DefaultImporter implements ImporterContract
         $this->colorService = app(ColorService::class);
         $this->timezoneService = app(TimezoneService::class);
         $this->billableRateService = app(BillableRateService::class);
+    }
+
+    /**
+     * @throws ImportException
+     */
+    protected function checkTaskNameLength(string $taskName): void
+    {
+        if (strlen($taskName) > self::TASK_NAME_MAX_LENGTH) {
+            throw new ImportException('Task name ("'.$taskName.'") is too long, maximum length is '.self::TASK_NAME_MAX_LENGTH.' characters');
+        }
     }
 
     #[\Override]

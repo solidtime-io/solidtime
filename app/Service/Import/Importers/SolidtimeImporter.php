@@ -199,6 +199,7 @@ class SolidtimeImporter extends DefaultImporter
                 if ($projectId === null) {
                     throw new Exception('Project does not exist');
                 }
+                $this->checkTaskNameLength($task['name']);
                 $this->taskImportHelper->getKey([
                     'name' => $task['name'],
                     'project_id' => $projectId,

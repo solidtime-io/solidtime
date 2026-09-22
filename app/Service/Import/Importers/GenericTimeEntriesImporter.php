@@ -113,6 +113,7 @@ class GenericTimeEntriesImporter extends DefaultImporter
                 }
                 $taskId = null;
                 if ($record['task'] !== '') {
+                    $this->checkTaskNameLength($record['task']);
                     $taskId = $this->taskImportHelper->getKey([
                         'name' => $record['task'],
                         'project_id' => $projectId,
