@@ -6,6 +6,7 @@ dist
 /public/storage
 /public/css
 /public/js
+/public/fonts/filament
 /public/vendor
 /lang/vendor
 /storage/*.key
