@@ -18,6 +18,25 @@ import {
 // Each test registers a new user and creates test data via API
 test.describe.configure({ timeout: 30000 });
 
+test('date range picker labels and navigates reporting periods', async ({ page }) => {
+    await goToReporting(page);
+
+    const range = page.getByTestId('date_range_picker_display');
+    const previous = page.getByTestId('date_range_picker_previous');
+    const next = page.getByTestId('date_range_picker_next');
+
+    await expect(range).toContainText('Last 14 Days');
+    await expect(next).toBeDisabled();
+
+    await Promise.all([waitForReportingUpdate(page), previous.click()]);
+    await expect(range).not.toContainText('Last 14 Days');
+
+    // The initial reporting range is still fresh in Vue Query's cache, so returning to it
+    // does not necessarily trigger another aggregate request.
+    await next.click();
+    await expect(range).toContainText('Last 14 Days');
+});
+
 // ──────────────────────────────────────────────────
 // Project Multiselect Dropdown Tests
 // ──────────────────────────────────────────────────

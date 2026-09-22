@@ -2,6 +2,7 @@ import { computed, ref } from 'vue';
 import type { Dayjs } from 'dayjs';
 import { getLocalizedDayJs } from '../utils/time';
 import { getWeekStartDayNumber } from '../utils/settings';
+import { getDateRangeLabel } from '../utils/dateRange';
 
 export function useCalendarNavigation(callbacks: {
     onDatesChange: (payload: { start: Dayjs; end: Dayjs }) => void;
@@ -34,24 +35,10 @@ export function useCalendarNavigation(callbacks: {
         return days;
     });
 
-    const viewTitle = computed(() => {
-        if (activeView.value === 'timeGridDay') {
-            return currentDate.value.format('MMMM YYYY');
-        }
-
+    const rangeLabel = computed(() => {
         const days = viewDays.value;
         if (days.length === 0) return '';
-
-        const first = days[0]!;
-        const last = days[days.length - 1]!;
-
-        if (first.year() !== last.year()) {
-            return `${first.format('MMM YYYY')} \u2013 ${last.format('MMM YYYY')}`;
-        }
-        if (first.month() !== last.month()) {
-            return `${first.format('MMM')} \u2013 ${last.format('MMM YYYY')}`;
-        }
-        return first.format('MMMM YYYY');
+        return getDateRangeLabel(days[0]!, days[days.length - 1]!);
     });
 
     function emitDatesChange() {
@@ -99,7 +86,7 @@ export function useCalendarNavigation(callbacks: {
         activeView,
         currentDate,
         viewDays,
-        viewTitle,
+        rangeLabel,
         emitDatesChange,
         handlePrev,
         handleNext,

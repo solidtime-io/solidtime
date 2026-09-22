@@ -57,7 +57,7 @@ const { handleApiRequestNotifications } = useNotificationsStore();
 
 const startDate = useSessionStorage<string>(
     'reporting-start-date',
-    getLocalizedDayJs(getDayJsInstance()().format()).subtract(14, 'd').format()
+    getLocalizedDayJs(getDayJsInstance()().format()).subtract(13, 'd').format()
 );
 const endDate = useSessionStorage<string>(
     'reporting-end-date',

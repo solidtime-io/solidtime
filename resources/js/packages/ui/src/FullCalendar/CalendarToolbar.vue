@@ -1,13 +1,12 @@
 <script setup lang="ts">
-import { Button } from '..';
-import { ChevronLeft, ChevronRight } from '@lucide/vue';
 import { Tabs, TabsList } from '../tabs';
 import TabBarItem from '../TabBar/TabBarItem.vue';
+import DateRangeNavigator from '../Input/DateRangeNavigator.vue';
 import CalendarSettingsPopover from './CalendarSettingsPopover.vue';
 import type { CalendarSettings } from './calendarSettings';
 
 defineProps<{
-    viewTitle: string;
+    rangeLabel: string;
     activeView: string;
     settings: CalendarSettings;
 }>();
@@ -23,31 +22,13 @@ const emit = defineEmits<{
 
 <template>
     <div class="flex items-center justify-between bg-default-background px-2 py-1.5">
-        <!-- Left: Navigation -->
-        <div class="flex items-center gap-1">
-            <Button
-                variant="outline"
-                size="sm"
-                class="h-8 w-8 p-0"
-                aria-label="Previous"
-                @click="emit('prev')">
-                <ChevronLeft class="h-4 w-4" />
-            </Button>
-            <Button
-                variant="outline"
-                size="sm"
-                class="h-8 w-8 p-0"
-                aria-label="Next"
-                @click="emit('next')">
-                <ChevronRight class="h-4 w-4" />
-            </Button>
-            <Button variant="outline" size="sm" @click="emit('today')"> today </Button>
-        </div>
-
-        <!-- Center: Title -->
-        <span data-testid="calendar-title" class="text-base font-semibold text-foreground">{{
-            viewTitle
-        }}</span>
+        <DateRangeNavigator
+            :label="rangeLabel"
+            trigger-test-id="calendar-title"
+            trigger-aria-label="today"
+            @previous="emit('prev')"
+            @next="emit('next')"
+            @select="emit('today')" />
 
         <!-- Right: View switcher + Settings -->
         <div class="flex items-center gap-1">

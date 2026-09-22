@@ -30,6 +30,7 @@ import {
     getLocalizedDayJs,
 } from '@/packages/ui/src/utils/time';
 import { getBreakPlacementHint } from '@/packages/ui/src/utils/breakPlacement';
+import { getDateRangeLabel } from '@/packages/ui/src/utils/dateRange';
 import { useTimesheetWeek } from '@/utils/timesheet/useTimesheetWeek';
 import { useTimesheetCellMutations } from '@/utils/timesheet/useTimesheetCellMutations';
 import { useTimesheetRowMutations } from '@/utils/timesheet/useTimesheetRowMutations';
@@ -44,7 +45,6 @@ const {
     weekEnd,
     weekDays,
     weekNumber,
-    isCurrentWeek,
     todayDate,
     goToPreviousWeek,
     goToNextWeek,
@@ -109,13 +109,9 @@ const weekTotalFormatted = computed(() =>
     formatHumanReadableDuration(grandTotal.value, intervalFormat.value, numberFormat.value)
 );
 
-const weekRangeDisplay = computed(() => {
-    const start = weekStart.value;
-    const end = start.add(6, 'day');
-    return start.month() === end.month()
-        ? `${start.format('MMM D')} - ${end.format('D')}`
-        : `${start.format('MMM D')} - ${end.format('MMM D')}`;
-});
+const weekRangeLabel = computed(() =>
+    getDateRangeLabel(weekStart.value, weekStart.value.add(6, 'day'))
+);
 
 // ── Cell / row mutation handlers ──────────────────────────────────
 const {
@@ -208,9 +204,8 @@ async function createTag(name: string): Promise<Tag | undefined> {
     <AppLayout title="Timesheet" data-testid="timesheet_view">
         <div class="pt-5 lg:pt-8 pb-4 lg:pb-6">
             <TimesheetHeader
-                :is-current-week="isCurrentWeek"
                 :week-number="weekNumber"
-                :week-range-display="weekRangeDisplay"
+                :range-label="weekRangeLabel"
                 :week-total-formatted="weekTotalFormatted"
                 @previous="goToPreviousWeek"
                 @next="goToNextWeek"

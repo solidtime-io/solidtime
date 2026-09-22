@@ -252,19 +252,19 @@ test('test that calendar page loads and displays time entries', async ({ page, c
 test('test that calendar navigation buttons work', async ({ page }) => {
     await goToCalendar(page);
     await expect(page.locator('.fc')).toBeVisible();
+    await expect(page.getByTestId('calendar-title')).toContainText('This Week');
 
-    // Click the "next" button to navigate forward
-    await page.getByRole('button', { name: 'Next' }).click();
-    await expect(page.locator('.fc')).toBeVisible();
-
-    // Click the "prev" button to navigate back
+    // Navigate between named periods.
     await page.getByRole('button', { name: 'Previous' }).click();
-    await expect(page.locator('.fc')).toBeVisible();
-
-    // Navigate forward first, then click today
+    await expect(page.getByTestId('calendar-title')).toContainText('Last Week');
     await page.getByRole('button', { name: 'Next' }).click();
+    await expect(page.getByTestId('calendar-title')).toContainText('This Week');
+
+    // Navigate forward first, then use the range button to return to today.
+    await page.getByRole('button', { name: 'Next' }).click();
+    await expect(page.getByTestId('calendar-title')).toContainText('Next Week');
     await page.getByRole('button', { name: 'today' }).click();
-    await expect(page.locator('.fc')).toBeVisible();
+    await expect(page.getByTestId('calendar-title')).toContainText('This Week');
 });
 
 test('test that editing time entry description via calendar modal works', async ({ page, ctx }) => {
