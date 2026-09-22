@@ -43,4 +43,5 @@ yarn-error.log
 /data
 /config/caddy
 /config/composer
+/config/psysh
 /AGENTS.md
