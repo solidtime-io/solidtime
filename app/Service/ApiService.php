@@ -15,11 +15,17 @@ use App\Models\User;
 use Exception;
 use Illuminate\Support\Facades\Http;
 use Log;
+use Nwidart\Modules\Facades\Module;
 use Throwable;
 
 class ApiService
 {
     private const string API_URL = 'https://app.solidtime.io/api/v1';
+
+    private function isPremium(): bool
+    {
+        return Module::has('Invoicing');
+    }
 
     public function checkForUpdate(): ?string
     {
@@ -31,6 +37,7 @@ class ApiService
                     'version' => config('app.version'),
                     'build' => config('app.build'),
                     'url' => config('app.url'),
+                    'is_premium' => $this->isPremium(),
                 ]);
 
             if ($response->status() === 200 && isset($response->json()['version']) && is_string($response->json()['version'])) {
@@ -62,6 +69,7 @@ class ApiService
                     'version' => config('app.version'),
                     'build' => config('app.build'),
                     'url' => config('app.url'),
+                    'is_premium' => $this->isPremium(),
                     // telemetry data
                     'user_count' => User::count(),
                     'organization_count' => Organization::count(),

@@ -8,6 +8,7 @@ use App\Console\Commands\SelfHost\SelfHostTelemetryCommand;
 use App\Service\ApiService;
 use Illuminate\Console\Command;
 use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Http;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -31,6 +32,11 @@ class SelfHostTelemetryCommandTest extends TestCase
         $this->assertSame(Command::SUCCESS, $exitCode);
         $output = Artisan::output();
         $this->assertSame('', $output);
+        Http::assertSent(function (Request $request): bool {
+            $data = $request->data();
+
+            return array_key_exists('is_premium', $data) && is_bool($data['is_premium']);
+        });
     }
 
     public function test_telemetry_sends_fails_gracefully_if_response_has_error_status_code(): void
