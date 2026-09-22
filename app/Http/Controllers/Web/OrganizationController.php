@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Web;
 
 use App\Models\Organization;
 use Brick\Money\Currency;
-use Brick\Money\ISOCurrencyProvider;
+use Brick\Money\IsoCurrencyProvider;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -53,7 +53,7 @@ class OrganizationController extends Controller
             ],
             'currencies' => array_map(function (Currency $currency): string {
                 return $currency->getName();
-            }, ISOCurrencyProvider::getInstance()->getAvailableCurrencies()),
+            }, IsoCurrencyProvider::getInstance()->getAvailableCurrencies()),
             'permissions' => [
                 'canDeleteTeam' => $this->hasPermission($organization, 'organizations:delete'),
                 'canUpdateTeam' => $this->hasPermission($organization, 'organizations:update'),

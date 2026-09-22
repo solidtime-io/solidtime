@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Rules;
 
-use Brick\Money\ISOCurrencyProvider;
+use Brick\Money\IsoCurrencyProvider;
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Translation\PotentiallyTranslatedString;
@@ -24,7 +24,7 @@ class CurrencyRule implements ValidationRule
             return;
         }
 
-        $currencies = ISOCurrencyProvider::getInstance()->getAvailableCurrencies();
+        $currencies = IsoCurrencyProvider::getInstance()->getAvailableCurrencies();
         if (array_key_exists($value, $currencies)) {
             return;
         }

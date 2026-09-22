@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Service\CurrencyService;
 use Brick\Money\Currency;
-use Brick\Money\ISOCurrencyProvider;
+use Brick\Money\IsoCurrencyProvider;
 use Illuminate\Http\JsonResponse;
 
 class CurrencyController extends Controller
@@ -29,7 +29,7 @@ class CurrencyController extends Controller
                 'name' => $currency->getName(),
                 'symbol' => $currencyService->getCurrencySymbol($currency->getCurrencyCode()),
             ],
-            ISOCurrencyProvider::getInstance()->getAvailableCurrencies()
+            IsoCurrencyProvider::getInstance()->getAvailableCurrencies()
         ));
 
         return response()->json($currencies);

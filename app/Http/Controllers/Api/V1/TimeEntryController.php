@@ -191,8 +191,9 @@ class TimeEntryController extends Controller
         $roundingMinutes = $canAccessPremiumFeatures ? $request->getRoundingMinutes() : null;
         if ($roundingType !== null && $roundingMinutes !== null) {
             $select = array_diff($select, ['start', 'end']);
-            $select[] = DB::raw(app(TimeEntryService::class)->getStartSelectRawForRounding($roundingType, $roundingMinutes).' as start');
-            $select[] = DB::raw(app(TimeEntryService::class)->getEndSelectRawForRounding($roundingType, $roundingMinutes).' as end');
+            // These SQL fragments are generated from a rounding enum and validated minute count.
+            $select[] = DB::raw(app(TimeEntryService::class)->getStartSelectRawForRounding($roundingType, $roundingMinutes).' as start'); // @phpstan-ignore argument.type
+            $select[] = DB::raw(app(TimeEntryService::class)->getEndSelectRawForRounding($roundingType, $roundingMinutes).' as end'); // @phpstan-ignore argument.type
         }
         $timeEntriesQuery = TimeEntry::query()
             ->whereBelongsTo($organization, 'organization')

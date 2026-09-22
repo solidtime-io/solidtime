@@ -544,6 +544,68 @@ class OrganizationResourceTest extends FilamentTestCase
         $this->assertSame(Role::Owner->value, $ownerMember->refresh()->role);
     }
 
+    public function test_edit_related_user_does_not_change_role_if_role_is_unchanged_for_owner(): void
+    {
+        // Arrange
+        $owner = User::factory()->create();
+        $organization = Organization::factory()->withOwner($owner)->create();
+        $ownerMember = Member::factory()->forOrganization($organization)->forUser($owner)->role(Role::Owner)->billableRate(1000)->create();
+
+        // Act
+        $response = Livewire::test(OrganizationResource\RelationManagers\UsersRelationManager::class, [
+            'ownerRecord' => $organization,
+            'pageClass' => OrganizationResource\Pages\EditOrganization::class,
+        ])->callTableAction('edit', $owner, data: [
+            'role' => Role::Owner->value,
+            'billable_rate' => 2000,
+        ]);
+
+        // Assert
+        $response->assertSuccessful();
+        $response->assertHasNoTableActionErrors();
+        $response->assertNotNotified(
+            Notification::make()
+                ->danger()
+                ->title('Update failed')
+                ->body(__('exceptions.api.organization_needs_at_least_one_owner'))
+                ->persistent()
+        );
+        $ownerMember->refresh();
+        $this->assertSame(Role::Owner->value, $ownerMember->role);
+        $this->assertSame(2000, $ownerMember->billable_rate);
+    }
+
+    public function test_edit_related_user_does_not_change_role_if_role_is_unchanged_for_placeholder(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $user = User::factory()->placeholder()->create();
+        $member = Member::factory()->forOrganization($organization)->forUser($user)->role(Role::Placeholder)->billableRate(1000)->create();
+
+        // Act
+        $response = Livewire::test(OrganizationResource\RelationManagers\UsersRelationManager::class, [
+            'ownerRecord' => $organization,
+            'pageClass' => OrganizationResource\Pages\EditOrganization::class,
+        ])->callTableAction('edit', $user, data: [
+            'role' => Role::Placeholder->value,
+            'billable_rate' => 2000,
+        ]);
+
+        // Assert
+        $response->assertSuccessful();
+        $response->assertHasNoTableActionErrors();
+        $response->assertNotNotified(
+            Notification::make()
+                ->danger()
+                ->title('Update failed')
+                ->body(__('exceptions.api.changing_role_of_placeholder_is_not_allowed'))
+                ->persistent()
+        );
+        $member->refresh();
+        $this->assertSame(Role::Placeholder->value, $member->role);
+        $this->assertSame(2000, $member->billable_rate);
+    }
+
     public function test_can_detach_related_user_from_organization(): void
     {
         // Arrange

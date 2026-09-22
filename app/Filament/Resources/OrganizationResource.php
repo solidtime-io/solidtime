@@ -23,7 +23,7 @@ use App\Service\Import\Importers\ImportException;
 use App\Service\Import\Importers\ReportDto;
 use App\Service\Import\ImportService;
 use App\Service\TimezoneService;
-use Brick\Money\ISOCurrencyProvider;
+use Brick\Money\IsoCurrencyProvider;
 use Exception;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
@@ -89,7 +89,7 @@ class OrganizationResource extends Resource
                 Select::make('currency')
                     ->label('Currency')
                     ->options(function (): array {
-                        $currencies = ISOCurrencyProvider::getInstance()->getAvailableCurrencies();
+                        $currencies = IsoCurrencyProvider::getInstance()->getAvailableCurrencies();
                         $select = [];
                         foreach ($currencies as $currency) {
                             $select[$currency->getCurrencyCode()] = $currency->getName().' ('.$currency->getCurrencyCode().')';

@@ -152,12 +152,13 @@ class DashboardService
 
         $possibleDays = $this->lastDays($days, $timezone);
 
+        // The SQL fragment contains only a timezone offset calculated as an integer.
         $query = TimeEntry::query()
-            ->select(DB::raw('DATE('.$dateWithTimeZone.') as date, round(sum(extract(epoch from (coalesce("end", now()) - start)))) as aggregate'))
+            ->select(DB::raw('DATE('.$dateWithTimeZone.') as date, round(sum(extract(epoch from (coalesce("end", now()) - start)))) as aggregate')) // @phpstan-ignore argument.type
             ->where('user_id', '=', $user->getKey())
             ->where('organization_id', '=', $organization->getKey())
             ->workTime()
-            ->groupBy(DB::raw('DATE('.$dateWithTimeZone.')'))
+            ->groupBy(DB::raw('DATE('.$dateWithTimeZone.')')) // @phpstan-ignore argument.type
             ->orderBy('date');
 
         $query = $this->constrainDateByPossibleDates($query, $possibleDays, $timezone);
@@ -194,12 +195,13 @@ class DashboardService
         }
         $possibleDays = $this->daysOfThisWeek($timezone, $user->week_start);
 
+        // The SQL fragment contains only a timezone offset calculated as an integer.
         $query = TimeEntry::query()
-            ->select(DB::raw('DATE('.$dateWithTimeZone.') as date, round(sum(extract(epoch from (coalesce("end", now()) - start)))) as aggregate'))
+            ->select(DB::raw('DATE('.$dateWithTimeZone.') as date, round(sum(extract(epoch from (coalesce("end", now()) - start)))) as aggregate')) // @phpstan-ignore argument.type
             ->where('user_id', '=', $user->getKey())
             ->where('organization_id', '=', $organization->getKey())
             ->workTime()
-            ->groupBy(DB::raw('DATE('.$dateWithTimeZone.')'))
+            ->groupBy(DB::raw('DATE('.$dateWithTimeZone.')')) // @phpstan-ignore argument.type
             ->orderBy('date');
 
         $query = $this->constrainDateByPossibleDates($query, $possibleDays, $timezone);

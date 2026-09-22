@@ -19,7 +19,6 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
@@ -100,7 +99,7 @@ class Organization extends Model implements AuditableContract
     /**
      * Get all the users that belong to the team.
      *
-     * @return BelongsToMany<User, $this, Pivot, 'membership'>
+     * @return BelongsToMany<User, $this, Member, 'membership'>
      */
     public function users(): BelongsToMany
     {
@@ -133,7 +132,7 @@ class Organization extends Model implements AuditableContract
     }
 
     /**
-     * @return BelongsToMany<User, $this, Pivot, 'membership'>
+     * @return BelongsToMany<User, $this, Member, 'membership'>
      */
     public function realUsers(): BelongsToMany
     {

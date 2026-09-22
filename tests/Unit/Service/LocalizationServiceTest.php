@@ -187,7 +187,7 @@ class LocalizationServiceTest extends TestCaseWithDatabase
         // Arrange
         $this->localizationService->setCurrencyFormat(CurrencyFormat::SymbolAfterWithSpace);
         $this->localizationService->setNumberFormat(NumberFormat::ThousandsSpaceDecimalComma);
-        $money = Money::of(1234567.89, Currency::of('EUR'));
+        $money = Money::of('1234567.89', Currency::of('EUR'));
 
         // Act
         $formatted = $this->localizationService->formatCurrency($money);
@@ -201,7 +201,7 @@ class LocalizationServiceTest extends TestCaseWithDatabase
         // Arrange
         $this->localizationService->setCurrencyFormat(CurrencyFormat::SymbolBeforeWithSpace);
         $this->localizationService->setNumberFormat(NumberFormat::ThousandsSpaceDecimalComma);
-        $money = Money::of(1234567.89, Currency::of('EUR'));
+        $money = Money::of('1234567.89', Currency::of('EUR'));
 
         // Act
         $formatted = $this->localizationService->formatCurrency($money);
@@ -215,7 +215,7 @@ class LocalizationServiceTest extends TestCaseWithDatabase
         // Arrange
         $this->localizationService->setCurrencyFormat(CurrencyFormat::SymbolBefore);
         $this->localizationService->setNumberFormat(NumberFormat::ThousandsSpaceDecimalComma);
-        $money = Money::of(1234567.89, Currency::of('EUR'));
+        $money = Money::of('1234567.89', Currency::of('EUR'));
 
         // Act
         $formatted = $this->localizationService->formatCurrency($money);
@@ -229,7 +229,7 @@ class LocalizationServiceTest extends TestCaseWithDatabase
         // Arrange
         $this->localizationService->setCurrencyFormat(CurrencyFormat::SymbolAfter);
         $this->localizationService->setNumberFormat(NumberFormat::ThousandsSpaceDecimalComma);
-        $money = Money::of(1234567.89, Currency::of('EUR'));
+        $money = Money::of('1234567.89', Currency::of('EUR'));
 
         // Act
         $formatted = $this->localizationService->formatCurrency($money);
@@ -243,7 +243,7 @@ class LocalizationServiceTest extends TestCaseWithDatabase
         // Arrange
         $this->localizationService->setCurrencyFormat(CurrencyFormat::ISOCodeAfterWithSpace);
         $this->localizationService->setNumberFormat(NumberFormat::ThousandsSpaceDecimalComma);
-        $money = Money::of(1234567.89, Currency::of('EUR'));
+        $money = Money::of('1234567.89', Currency::of('EUR'));
 
         // Act
         $formatted = $this->localizationService->formatCurrency($money);
@@ -257,7 +257,7 @@ class LocalizationServiceTest extends TestCaseWithDatabase
         // Arrange
         $this->localizationService->setCurrencyFormat(CurrencyFormat::ISOCodeBeforeWithSpace);
         $this->localizationService->setNumberFormat(NumberFormat::ThousandsSpaceDecimalComma);
-        $money = Money::of(1234567.89, Currency::of('EUR'));
+        $money = Money::of('1234567.89', Currency::of('EUR'));
 
         // Act
         $formatted = $this->localizationService->formatCurrency($money);

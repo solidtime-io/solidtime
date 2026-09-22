@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service;
 
-use Brick\Money\ISOCurrencyProvider;
+use Brick\Money\IsoCurrencyProvider;
 use Brick\Money\Money;
 
 class CurrencyService
@@ -378,7 +378,7 @@ class CurrencyService
 
     public function getRandomCurrencyCode(): string
     {
-        $currencies = ISOCurrencyProvider::getInstance()->getAvailableCurrencies();
+        $currencies = IsoCurrencyProvider::getInstance()->getAvailableCurrencies();
         $currencyCodes = array_keys($currencies);
 
         return $currencyCodes[array_rand($currencyCodes)];

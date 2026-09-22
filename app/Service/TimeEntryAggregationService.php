@@ -75,8 +75,9 @@ class TimeEntryAggregationService
         $startRawSelect = app(TimeEntryService::class)->getStartSelectRawForRounding($roundingType, $roundingMinutes);
         $endRawSelect = app(TimeEntryService::class)->getEndSelectRawForRounding($roundingType, $roundingMinutes);
 
+        // SQL fragments come from enum cases, integer offsets, and formatted dates.
         $timeEntriesQuery->selectRaw(
-            ($group1Select !== null ? $group1Select.' as group_1,' : '').
+            ($group1Select !== null ? $group1Select.' as group_1,' : ''). // @phpstan-ignore argument.type
             ($group2Select !== null ? $group2Select.' as group_2,' : '').
             ' round(sum(extract(epoch from ('.$endRawSelect.' - '.$startRawSelect.')))) as aggregate,'.
             ' round(sum(extract(epoch from ('.$endRawSelect.' - '.$startRawSelect.')) * (coalesce(billable_rate, 0)::float/60/60))) as cost'
@@ -105,7 +106,7 @@ class TimeEntryAggregationService
                 $baseTotalsPerGroup1Query = $baseTotalsQuery->clone();
                 $baseTotalsPerGroup1 = $baseTotalsPerGroup1Query
                     ->selectRaw(
-                        $group1Select.' as group_1,'.
+                        $group1Select.' as group_1,'. // @phpstan-ignore argument.type
                         ' round(sum(extract(epoch from ('.$endRawSelect.' - '.$startRawSelect.')))) as aggregate,'.
                         ' round(sum(extract(epoch from ('.$endRawSelect.' - '.$startRawSelect.')) * (coalesce(billable_rate, 0)::float/60/60))) as cost'
                     )
@@ -170,7 +171,7 @@ class TimeEntryAggregationService
                 // Reset selects and ordering on the cloned base query
                 $baseTotals = $baseTotalsQuery
                     ->selectRaw(
-                        ' round(sum(extract(epoch from ('.$endRawSelect.' - '.$startRawSelect.')))) as aggregate,'.
+                        ' round(sum(extract(epoch from ('.$endRawSelect.' - '.$startRawSelect.')))) as aggregate,'. // @phpstan-ignore argument.type
                         ' round(sum(extract(epoch from ('.$endRawSelect.' - '.$startRawSelect.')) * (coalesce(billable_rate, 0)::float/60/60))) as cost'
                     )
                     ->first();
