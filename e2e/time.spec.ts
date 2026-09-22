@@ -1592,6 +1592,9 @@ test('test that ctrl+enter submits the create modal after selecting a project vi
     await page.getByRole('button', { name: 'Time entry actions' }).click();
     await page.getByRole('menuitem', { name: 'Manual time entry' }).click();
     await expect(page.getByRole('dialog')).toBeVisible();
+    // The menu that opened the modal animates out and only then hands focus back to its
+    // own trigger.
+    await expect(page.locator('[role="menu"]')).toHaveCount(0);
 
     // Fill the description, then move to the project dropdown and select a project purely via keyboard
     const description = page.getByRole('dialog').getByRole('textbox', { name: 'Description' });
@@ -1604,7 +1607,11 @@ test('test that ctrl+enter submits the create modal after selecting a project vi
     await page.getByTestId('client_dropdown_search').fill(projectName);
     await expect(page.getByRole('option', { name: projectName })).toBeVisible();
     await page.keyboard.press('Enter');
-    await expect(page.getByRole('dialog').getByRole('button', { name: projectName })).toBeVisible();
+    const projectTrigger = page.getByRole('dialog').getByRole('button', { name: projectName });
+    await expect(projectTrigger).toBeVisible();
+    // The trigger label updates on the next tick, but the dropdown keeps focus until its
+    // exit animation has finished and reka-ui hands focus back to the trigger.
+    await expect(projectTrigger).toBeFocused();
 
     // Ctrl+Enter must submit even though focus is no longer on the description input
     const [createResponse] = await Promise.all([
@@ -1617,7 +1624,10 @@ test('test that ctrl+enter submits the create modal after selecting a project vi
     expect(createBody.data.description).toBe('Keyboard submit test');
     expect(createBody.data.project_id).not.toBeNull();
     await expect(page.getByRole('dialog')).toBeHidden();
-    await expect(page.getByText('Keyboard submit test')).toBeVisible();
+    const newTimeEntry = page.locator('[data-testid="time_entry_row"]').first();
+    await expect(newTimeEntry.getByTestId('time_entry_description').first()).toHaveValue(
+        'Keyboard submit test'
+    );
 });
 
 test('test that tag selection works in create modal', async ({ page }) => {
