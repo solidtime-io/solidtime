@@ -1,0 +1,4 @@
+"Project","Client","Status","Visibility","Tasks","Tracked (h)","Estimated (h)","Remaining (h)","Overage (h)","Progress(%)","Project members","Project manager","Note"
+"Project for Big Company","Big Company","Active","Public","Task 1, Task 2, Task 3","1.38","","","","","Constantin Graf","",""
+"Project without Client","","Active","Public","","0.00","","","","","Constantin Graf","",""
+"TEST","Big Company","Active","Public","","0.00","","","","","Constantin Graf","",""
