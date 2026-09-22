@@ -132,6 +132,7 @@ import FullCalendarDayHeader from './FullCalendar/FullCalendarDayHeader.vue';
 import FullCalendarEventContent from './FullCalendar/FullCalendarEventContent.vue';
 import TimeEntryCalendar from './FullCalendar/TimeEntryCalendar.vue';
 import DateRangePicker from './Input/DateRangePicker.vue';
+import DateRangeNavigator from './Input/DateRangeNavigator.vue';
 import { Label } from './label/index';
 import {
     NumberField,
@@ -211,6 +212,7 @@ export {
     ContextMenuSubTrigger,
     ContextMenuTrigger,
     DateRangePicker,
+    DateRangeNavigator,
     Dialog,
     DialogClose,
     DialogContent,

@@ -138,7 +138,7 @@ const {
 const {
     activeView,
     viewDays,
-    viewTitle,
+    rangeLabel,
     emitDatesChange,
     handlePrev,
     handleNext,
@@ -514,7 +514,7 @@ function getEventDurationSeconds(dayEvent: DayEvent, dayStr: string): number {
 
         <template v-if="!loading">
             <CalendarToolbar
-                :view-title="viewTitle"
+                :range-label="rangeLabel"
                 :active-view="activeView"
                 :settings="calendarSettings"
                 @prev="handlePrev"

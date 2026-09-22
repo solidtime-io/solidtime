@@ -409,20 +409,20 @@ test('navigating to previous week shows entries from that week', async ({ page, 
 test('can navigate forward and return to current week', async ({ page }) => {
     await Promise.all([goToTimesheet(page), waitForTimesheetLoad(page)]);
 
-    // Should show "This week"
-    await expect(page.getByTestId('timesheet_week_display')).toContainText('This week');
+    // Should show "This Week"
+    await expect(page.getByTestId('timesheet_week_display')).toContainText('This Week');
 
     // Go to next week — the text assertions below auto-retry until the
     // header label flips.
     await page.getByTestId('timesheet_next_week').click();
 
-    // Should no longer show "This week"
-    await expect(page.getByTestId('timesheet_week_display')).not.toContainText('This week');
+    // Should no longer show "This Week"
+    await expect(page.getByTestId('timesheet_week_display')).not.toContainText('This Week');
 
     // Go back to this week
     await page.getByTestId('timesheet_week_display').click();
 
-    await expect(page.getByTestId('timesheet_week_display')).toContainText('This week');
+    await expect(page.getByTestId('timesheet_week_display')).toContainText('This Week');
 });
 
 // ──────────────────────────────────────────────────
