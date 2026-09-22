@@ -9,6 +9,7 @@ use App\Service\ApiService;
 use Cache;
 use Illuminate\Console\Command;
 use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Http;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -32,6 +33,11 @@ class SelfHostCheckForUpdateCommandTest extends TestCase
         $this->assertSame(Command::SUCCESS, $exitCode);
         $output = Artisan::output();
         $this->assertSame('1.2.3', Cache::get('latest_version'));
+        Http::assertSent(function (Request $request): bool {
+            $data = $request->data();
+
+            return array_key_exists('is_premium', $data) && is_bool($data['is_premium']);
+        });
     }
 
     public function test_checks_for_update_fails_gracefully_if_response_has_error_status_code(): void
