@@ -119,6 +119,24 @@ class ClockifyProjectsImporterTest extends ImporterTestAbstract
         );
     }
 
+    public function test_import_of_test_file_without_billability_column_defaults_to_not_billable(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $timezone = 'Europe/Vienna';
+        $importer = new ClockifyProjectsImporter;
+        $importer->init($organization);
+        // Some Clockify exports don't contain a "Billability" column.
+        $data = Storage::disk('testfiles')->get('clockify_projects_import_test_5.csv');
+
+        // Act
+        $importer->importData($data, $timezone);
+
+        // Assert
+        $project = Project::query()->where('organization_id', $organization->id)->where('name', 'Project for Big Company')->firstOrFail();
+        $this->assertFalse($project->is_billable);
+    }
+
     public function test_import_supports_activities_column_alias_for_tasks(): void
     {
         // Arrange
