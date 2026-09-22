@@ -40,6 +40,7 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Storage;
+use League\Flysystem\UnableToReadFile;
 
 class OrganizationResource extends Resource
 {
@@ -181,9 +182,13 @@ class OrganizationResource extends Resource
                     ->icon('heroicon-o-inbox-arrow-down')
                     ->action(function (Organization $record, array $data): void {
                         try {
-                            $file = Storage::disk(config('filament.default_filesystem_disk'))->get($data['file']);
+                            try {
+                                $file = Storage::disk(config('filament.default_filesystem_disk'))->get($data['file']);
+                            } catch (UnableToReadFile) {
+                                $file = null;
+                            }
                             if ($file === null) {
-                                throw new Exception('File not found');
+                                throw new ImportException('File not found');
                             }
                             /** @var string $timezone */
                             $timezone = $data['timezone'];

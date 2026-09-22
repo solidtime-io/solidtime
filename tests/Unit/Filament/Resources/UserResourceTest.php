@@ -6,12 +6,14 @@ namespace Tests\Unit\Filament\Resources;
 
 use App\Enums\Role;
 use App\Exceptions\Api\CanNotDeleteUserWhoIsOwnerOfOrganizationWithMultipleMembers;
-use App\Filament\Resources\TimeEntryResource;
+use App\Filament\Resources\OrganizationResource;
 use App\Filament\Resources\UserResource;
 use App\Models\Member;
 use App\Models\Organization;
+use App\Models\TimeEntry;
 use App\Models\User;
 use App\Service\DeletionService;
+use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Livewire;
@@ -19,7 +21,7 @@ use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\UsesClass;
 use Tests\Unit\Filament\FilamentTestCase;
 
-#[UsesClass(TimeEntryResource::class)]
+#[UsesClass(UserResource::class)]
 class UserResourceTest extends FilamentTestCase
 {
     protected function setUp(): void
@@ -189,5 +191,203 @@ class UserResourceTest extends FilamentTestCase
         $response->assertSuccessful();
         $response->assertCanSeeTableRecords($user->ownedOrganizations()->get());
         $response->assertCanNotSeeTableRecords([$organization]);
+    }
+
+    public function test_related_organizations_have_view_action_linking_to_organization_resource(): void
+    {
+        // Arrange
+        $user = User::factory()->create();
+        $organization = Organization::factory()->create();
+        Member::factory()->forOrganization($organization)->forUser($user)->role(Role::Employee)->create();
+
+        // Act
+        $response = Livewire::test(UserResource\RelationManagers\OrganizationsRelationManager::class, [
+            'ownerRecord' => $user,
+            'pageClass' => UserResource\Pages\EditUser::class,
+        ]);
+
+        // Assert
+        $response->assertSuccessful();
+        $response->assertTableActionHasUrl('view', OrganizationResource::getUrl('view', [
+            'record' => $organization->getKey(),
+        ]), $organization);
+    }
+
+    public function test_can_edit_role_of_related_organization(): void
+    {
+        // Arrange
+        $user = User::factory()->create();
+        $organization = Organization::factory()->create();
+        $member = Member::factory()->forOrganization($organization)->forUser($user)->role(Role::Employee)->create();
+
+        // Act
+        $response = Livewire::test(UserResource\RelationManagers\OrganizationsRelationManager::class, [
+            'ownerRecord' => $user,
+            'pageClass' => UserResource\Pages\EditUser::class,
+        ])->callTableAction('edit', $organization, data: [
+            'role' => Role::Admin->value,
+        ]);
+
+        // Assert
+        $response->assertSuccessful();
+        $response->assertHasNoTableActionErrors();
+        $this->assertSame(Role::Admin->value, $member->refresh()->role);
+    }
+
+    public function test_can_make_user_owner_of_related_organization(): void
+    {
+        // Arrange
+        $owner = User::factory()->create();
+        $organization = Organization::factory()->withOwner($owner)->create();
+        $ownerMember = Member::factory()->forOrganization($organization)->forUser($owner)->role(Role::Owner)->create();
+        $user = User::factory()->create();
+        $member = Member::factory()->forOrganization($organization)->forUser($user)->role(Role::Employee)->create();
+
+        // Act
+        $response = Livewire::test(UserResource\RelationManagers\OrganizationsRelationManager::class, [
+            'ownerRecord' => $user,
+            'pageClass' => UserResource\Pages\EditUser::class,
+        ])->callTableAction('edit', $organization, data: [
+            'role' => Role::Owner->value,
+        ]);
+
+        // Assert
+        $response->assertSuccessful();
+        $response->assertHasNoTableActionErrors();
+        $this->assertSame(Role::Owner->value, $member->refresh()->role);
+        $this->assertSame(Role::Admin->value, $ownerMember->refresh()->role);
+        $this->assertSame($user->getKey(), $organization->refresh()->user_id);
+    }
+
+    public function test_edit_related_organization_shows_error_notification_if_role_of_owner_is_changed(): void
+    {
+        // Arrange
+        $owner = User::factory()->create();
+        $organization = Organization::factory()->withOwner($owner)->create();
+        $ownerMember = Member::factory()->forOrganization($organization)->forUser($owner)->role(Role::Owner)->create();
+
+        // Act
+        $response = Livewire::test(UserResource\RelationManagers\OrganizationsRelationManager::class, [
+            'ownerRecord' => $owner,
+            'pageClass' => UserResource\Pages\EditUser::class,
+        ])->callTableAction('edit', $organization, data: [
+            'role' => Role::Admin->value,
+        ]);
+
+        // Assert
+        $response->assertSuccessful();
+        $response->assertNotified(
+            Notification::make()
+                ->danger()
+                ->title('Update failed')
+                ->body(__('exceptions.api.organization_needs_at_least_one_owner'))
+                ->persistent()
+        );
+        $this->assertSame(Role::Owner->value, $ownerMember->refresh()->role);
+    }
+
+    public function test_can_detach_related_organization_from_user(): void
+    {
+        // Arrange
+        $user = User::factory()->withPersonalOrganization()->create();
+        $organization = Organization::factory()->create();
+        $member = Member::factory()->forOrganization($organization)->forUser($user)->role(Role::Employee)->create();
+
+        // Act
+        $response = Livewire::test(UserResource\RelationManagers\OrganizationsRelationManager::class, [
+            'ownerRecord' => $user,
+            'pageClass' => UserResource\Pages\EditUser::class,
+        ])->callTableAction('detach', $organization);
+
+        // Assert
+        $response->assertSuccessful();
+        $response->assertHasNoTableActionErrors();
+        $this->assertDatabaseMissing(Member::class, [
+            'id' => $member->getKey(),
+        ]);
+        $this->assertDatabaseHas(Organization::class, [
+            'id' => $organization->getKey(),
+        ]);
+    }
+
+    public function test_detach_related_organization_shows_error_notification_if_user_is_owner(): void
+    {
+        // Arrange
+        $owner = User::factory()->create();
+        $organization = Organization::factory()->withOwner($owner)->create();
+        $ownerMember = Member::factory()->forOrganization($organization)->forUser($owner)->role(Role::Owner)->create();
+
+        // Act
+        $response = Livewire::test(UserResource\RelationManagers\OrganizationsRelationManager::class, [
+            'ownerRecord' => $owner,
+            'pageClass' => UserResource\Pages\EditUser::class,
+        ])->callTableAction('detach', $organization);
+
+        // Assert
+        $response->assertSuccessful();
+        $response->assertNotified(
+            Notification::make()
+                ->danger()
+                ->title('Delete failed')
+                ->body(__('exceptions.api.can_not_remove_owner_from_organization'))
+                ->persistent()
+        );
+        $this->assertDatabaseHas(Member::class, [
+            'id' => $ownerMember->getKey(),
+        ]);
+    }
+
+    public function test_detach_related_organization_shows_error_notification_if_user_still_has_time_entries(): void
+    {
+        // Arrange
+        $user = User::factory()->withPersonalOrganization()->create();
+        $organization = Organization::factory()->create();
+        $member = Member::factory()->forOrganization($organization)->forUser($user)->role(Role::Employee)->create();
+        TimeEntry::factory()->forMember($member)->create();
+
+        // Act
+        $response = Livewire::test(UserResource\RelationManagers\OrganizationsRelationManager::class, [
+            'ownerRecord' => $user,
+            'pageClass' => UserResource\Pages\EditUser::class,
+        ])->callTableAction('detach', $organization);
+
+        // Assert
+        $response->assertSuccessful();
+        $response->assertNotified(
+            Notification::make()
+                ->danger()
+                ->title('Delete failed')
+                ->body(__('exceptions.api.entity_still_in_use', [
+                    'modelToDelete' => __('validation.entities.member'),
+                    'modelInUse' => __('validation.entities.time_entry'),
+                ]))
+                ->persistent()
+        );
+        $this->assertDatabaseHas(Member::class, [
+            'id' => $member->getKey(),
+        ]);
+    }
+
+    public function test_related_owned_organizations_have_view_and_edit_actions_linking_to_organization_resource(): void
+    {
+        // Arrange
+        $user = User::factory()->create();
+        $organization = Organization::factory()->withOwner($user)->create();
+        Member::factory()->forOrganization($organization)->forUser($user)->role(Role::Owner)->create();
+
+        // Act
+        $response = Livewire::test(UserResource\RelationManagers\OwnedOrganizationsRelationManager::class, [
+            'ownerRecord' => $user,
+            'pageClass' => UserResource\Pages\EditUser::class,
+        ]);
+
+        // Assert
+        $response->assertSuccessful();
+        $response->assertTableActionHasUrl('view', OrganizationResource::getUrl('view', [
+            'record' => $organization->getKey(),
+        ]), $organization);
+        $response->assertTableActionHasUrl('edit', OrganizationResource::getUrl('edit', [
+            'record' => $organization->getKey(),
+        ]), $organization);
     }
 }
