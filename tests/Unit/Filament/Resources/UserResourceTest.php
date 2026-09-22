@@ -286,6 +286,62 @@ class UserResourceTest extends FilamentTestCase
         $this->assertSame(Role::Owner->value, $ownerMember->refresh()->role);
     }
 
+    public function test_edit_related_organization_does_not_change_role_if_role_is_unchanged_for_owner(): void
+    {
+        // Arrange
+        $owner = User::factory()->create();
+        $organization = Organization::factory()->withOwner($owner)->create();
+        $ownerMember = Member::factory()->forOrganization($organization)->forUser($owner)->role(Role::Owner)->create();
+
+        // Act
+        $response = Livewire::test(UserResource\RelationManagers\OrganizationsRelationManager::class, [
+            'ownerRecord' => $owner,
+            'pageClass' => UserResource\Pages\EditUser::class,
+        ])->callTableAction('edit', $organization, data: [
+            'role' => Role::Owner->value,
+        ]);
+
+        // Assert
+        $response->assertSuccessful();
+        $response->assertHasNoTableActionErrors();
+        $response->assertNotNotified(
+            Notification::make()
+                ->danger()
+                ->title('Update failed')
+                ->body(__('exceptions.api.organization_needs_at_least_one_owner'))
+                ->persistent()
+        );
+        $this->assertSame(Role::Owner->value, $ownerMember->refresh()->role);
+    }
+
+    public function test_edit_related_organization_does_not_change_role_if_role_is_unchanged_for_placeholder(): void
+    {
+        // Arrange
+        $user = User::factory()->placeholder()->create();
+        $organization = Organization::factory()->create();
+        $member = Member::factory()->forOrganization($organization)->forUser($user)->role(Role::Placeholder)->create();
+
+        // Act
+        $response = Livewire::test(UserResource\RelationManagers\OrganizationsRelationManager::class, [
+            'ownerRecord' => $user,
+            'pageClass' => UserResource\Pages\EditUser::class,
+        ])->callTableAction('edit', $organization, data: [
+            'role' => Role::Placeholder->value,
+        ]);
+
+        // Assert
+        $response->assertSuccessful();
+        $response->assertHasNoTableActionErrors();
+        $response->assertNotNotified(
+            Notification::make()
+                ->danger()
+                ->title('Update failed')
+                ->body(__('exceptions.api.changing_role_of_placeholder_is_not_allowed'))
+                ->persistent()
+        );
+        $this->assertSame(Role::Placeholder->value, $member->refresh()->role);
+    }
+
     public function test_can_detach_related_organization_from_user(): void
     {
         // Arrange

@@ -68,7 +68,7 @@ export async function getPasswordResetUrl(
     for (let attempt = 0; attempt < 5; attempt++) {
         searchResult = await searchEmails(
             request,
-            `to:${encodeURIComponent(recipientEmail)} subject:"Reset Password"`
+            `to:${encodeURIComponent(recipientEmail)} subject:"Reset your password"`
         );
         if (searchResult.messages.length > 0) break;
         await new Promise((resolve) => setTimeout(resolve, 500));

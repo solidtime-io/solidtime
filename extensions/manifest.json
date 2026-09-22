@@ -1,14 +1,14 @@
 {
     "Billing": {
         "repository": "solidtime-io/extension-billing",
-        "ref": "feature/composer-update"
+        "ref": "v0.0.7"
     },
     "Services": {
         "repository": "solidtime-io/extension-services",
-        "ref": "feature/composer-update"
+        "ref": "v0.0.3"
     },
     "Invoicing": {
         "repository": "solidtime-io/extension-invoicing",
-        "ref": "feature/composer-update"
+        "ref": "v0.0.7"
     }
 }

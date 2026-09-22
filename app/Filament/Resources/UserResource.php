@@ -16,7 +16,7 @@ use App\Models\User;
 use App\Service\DeletionService;
 use App\Service\TimezoneService;
 use App\Service\UserService;
-use Brick\Money\ISOCurrencyProvider;
+use Brick\Money\IsoCurrencyProvider;
 use Exception;
 use Filament\Actions\BulkAction;
 use Filament\Actions\DeleteAction;
@@ -115,7 +115,7 @@ class UserResource extends Resource
                 Select::make('currency')
                     ->label('Currency (Personal Organization)')
                     ->options(function (): array {
-                        $currencies = ISOCurrencyProvider::getInstance()->getAvailableCurrencies();
+                        $currencies = IsoCurrencyProvider::getInstance()->getAvailableCurrencies();
                         $select = [];
                         foreach ($currencies as $currency) {
                             $select[$currency->getCurrencyCode()] = $currency->getName().' ('.$currency->getCurrencyCode().')';

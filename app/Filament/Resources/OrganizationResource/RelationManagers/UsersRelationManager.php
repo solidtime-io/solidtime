@@ -98,9 +98,10 @@ class UsersRelationManager extends RelationManager
                             app(BillableRateService::class)->updateTimeEntriesBillableRateForMember($member);
                         }
 
-                        if ($data['role'] !== $member->role) {
+                        $newRole = $data['role'] instanceof Role ? $data['role'] : Role::from($data['role']);
+                        if ($newRole->value !== $member->role) {
                             try {
-                                app(MemberService::class)->changeRole($member, $organization, ($data['role'] instanceof Role ? $data['role'] : Role::from($data['role'])), true);
+                                app(MemberService::class)->changeRole($member, $organization, $newRole, true);
                             } catch (ApiException $exception) {
                                 Notification::make()
                                     ->danger()
