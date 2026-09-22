@@ -1,0 +1,31 @@
+name: Extension Manifest Check
+on:
+  pull_request:
+    paths:
+      - extensions/manifest.json
+      - .github/workflows/extension-manifest-check.yml
+permissions:
+  contents: read
+jobs:
+  check-refs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: "Checkout code"
+        uses: actions/checkout@v7
+
+      # Extension refs must be pinned to a release tag (vX.Y.Z) or a full commit
+      # SHA. Branch names (main, feature/foo, ...) are only acceptable while
+      # developing and must be replaced before the pull request is merged.
+      - name: "Check extension refs are pinned"
+        run: |
+          failed=0
+          while IFS=$'\t' read -r name ref; do
+            if [[ "$ref" =~ ^v[0-9]+\.[0-9]+\.[0-9]+([-+][0-9A-Za-z.]+)?$ ]] || [[ "$ref" =~ ^[0-9a-f]{40}$ ]]; then
+              echo "✅ $name: $ref"
+            else
+              echo "::error file=extensions/manifest.json::Extension \"$name\" uses ref \"$ref\", which is not a release tag or commit SHA. Pin it before merging."
+              failed=1
+            fi
+          done < <(jq -r 'to_entries[] | [.key, .value.ref] | @tsv' extensions/manifest.json)
+          exit $failed
