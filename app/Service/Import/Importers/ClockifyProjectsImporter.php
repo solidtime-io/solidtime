@@ -54,6 +54,7 @@ class ClockifyProjectsImporter extends DefaultImporter
                 if ($tasksKey !== null && $record[$tasksKey] !== '') {
                     $tasks = explode(', ', $record[$tasksKey]);
                     foreach ($tasks as $task) {
+                        $this->checkTaskNameLength($task);
                         $this->taskImportHelper->getKey([
                             'name' => $task,
                             'project_id' => $projectId,

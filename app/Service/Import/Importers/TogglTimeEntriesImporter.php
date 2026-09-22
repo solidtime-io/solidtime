@@ -97,6 +97,7 @@ class TogglTimeEntriesImporter extends DefaultImporter
                 }
                 $taskId = null;
                 if ($record['Task'] !== '') {
+                    $this->checkTaskNameLength($record['Task']);
                     $taskId = $this->taskImportHelper->getKey([
                         'name' => $record['Task'],
                         'project_id' => $projectId,
