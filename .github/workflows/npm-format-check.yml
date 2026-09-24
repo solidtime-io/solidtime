@@ -1,6 +1,8 @@
 name: NPM Format Check
 
 on: [push]
+permissions:
+  contents: read
 
 jobs:
   format-check:
