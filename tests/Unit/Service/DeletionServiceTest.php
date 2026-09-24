@@ -10,6 +10,9 @@ use App\Exceptions\Api\CanNotDeleteUserWhoIsOwnerOfOrganizationWithMultipleMembe
 use App\Models\Client;
 use App\Models\Member;
 use App\Models\Organization;
+use App\Models\Passport\Client as PassportClient;
+use App\Models\Passport\RefreshToken;
+use App\Models\Passport\Token;
 use App\Models\Project;
 use App\Models\ProjectMember;
 use App\Models\Report;
@@ -23,6 +26,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use PHPUnit\Framework\Attributes\CoversClass;
 use Tests\TestCaseWithDatabase;
 use TiMacDonald\Log\LogEntry;
@@ -422,6 +426,47 @@ class DeletionServiceTest extends TestCaseWithDatabase
             'user_id' => $placeholderUser->getKey(),
             'organization_id' => $organizationOfA->getKey(),
             'role' => Role::Placeholder->value,
+        ]);
+    }
+
+    public function test_delete_user_deletes_access_tokens_and_their_refresh_tokens_but_does_not_delete_tokens_of_other_users(): void
+    {
+        // Arrange
+        $user = User::factory()->create();
+        $otherUser = User::factory()->create();
+        $passportClient = PassportClient::factory()->create();
+
+        $userToken = Token::factory()->forUser($user)->forClient($passportClient)->create();
+        $userRefreshToken = RefreshToken::query()->create([
+            'id' => Str::random(100),
+            'access_token_id' => $userToken->getKey(),
+            'revoked' => false,
+            'expires_at' => now()->addDays(30),
+        ]);
+
+        $otherUserToken = Token::factory()->forUser($otherUser)->forClient($passportClient)->create();
+        $otherUserRefreshToken = RefreshToken::query()->create([
+            'id' => Str::random(100),
+            'access_token_id' => $otherUserToken->getKey(),
+            'revoked' => false,
+            'expires_at' => now()->addDays(30),
+        ]);
+
+        // Act
+        $this->deletionService->deleteUser($user);
+
+        // Assert
+        $this->assertDatabaseMissing(Token::class, [
+            'id' => $userToken->getKey(),
+        ]);
+        $this->assertDatabaseMissing(RefreshToken::class, [
+            'id' => $userRefreshToken->getKey(),
+        ]);
+        $this->assertDatabaseHas(Token::class, [
+            'id' => $otherUserToken->getKey(),
+        ]);
+        $this->assertDatabaseHas(RefreshToken::class, [
+            'id' => $otherUserRefreshToken->getKey(),
         ]);
     }
 }
