@@ -111,6 +111,8 @@ export function useEventResize(params: {
         edge: 'start' | 'end',
         dayStr: string
     ) {
+        if (e.button !== 0) return;
+
         e.preventDefault();
         e.stopPropagation();
 
