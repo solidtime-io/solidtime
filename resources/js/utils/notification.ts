@@ -19,7 +19,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
     const showActionBlockedModal = ref(false);
 
     function addNotification(type: NotificationType, title: string, message?: string) {
-        const uuid = Math.random().toString(36).substring(7);
+        const uuid = crypto.randomUUID();
         notifications.value.push({ title, message, type, uuid });
 
         setTimeout(() => {
