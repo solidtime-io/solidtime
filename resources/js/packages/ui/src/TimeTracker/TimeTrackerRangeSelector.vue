@@ -170,6 +170,10 @@ function closeAndFocusInput() {
                             : 'text-text-primary bg-card-background border-border-secondary border border-none'
                     "
                     type="text"
+                    autocomplete="off"
+                    data-1p-ignore
+                    data-lpignore="true"
+                    data-form-type="other"
                     @focusin="openModalOnTab"
                     @click="openModalOnClick"
                     @keydown.exact.tab="focusNextElement"
