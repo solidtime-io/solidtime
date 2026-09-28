@@ -88,17 +88,19 @@ const showEditProjectModal = ref(false);
         <ContextMenuTrigger as-child>
             <TableRow :href="route('projects.show', { project: project.id })">
                 <div
-                    class="whitespace-nowrap min-w-0 flex items-center space-x-5 py-4 pr-3 text-sm font-medium text-text-primary pl-2 sm:pl-4 lg:pl-6">
+                    class="whitespace-nowrap min-w-0 flex items-center space-x-3 py-4 pr-3 text-sm font-medium text-text-primary pl-2 sm:pl-4 lg:pl-6">
                     <div
-                        :style="{
-                            backgroundColor: project.color,
-                            boxShadow: `var(--tw-ring-inset) 0 0 0 calc(4px + var(--tw-ring-offset-width)) ${project.color}30`,
-                        }"
-                        class="w-3 h-3 ml-1 rounded-full"></div>
+                        :style="{ backgroundColor: project.color }"
+                        class="w-2.5 h-2.5 ml-1 rounded-full"></div>
                     <span class="overflow-ellipsis overflow-hidden">
                         {{ project.name }}
                     </span>
-                    <span class="text-text-secondary"> {{ projectTasksCount }} Tasks </span>
+                </div>
+                <div class="whitespace-nowrap px-3 py-4 text-sm text-text-primary">
+                    <span v-if="projectTasksCount">
+                        {{ projectTasksCount }} {{ projectTasksCount === 1 ? 'Task' : 'Tasks' }}
+                    </span>
+                    <span v-else class="text-text-tertiary">--</span>
                 </div>
                 <div class="whitespace-nowrap min-w-0 px-3 py-4 text-sm text-text-primary">
                     <div v-if="project.client_id" class="overflow-ellipsis overflow-hidden">
