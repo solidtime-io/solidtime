@@ -679,6 +679,10 @@ class TimeEntryController extends Controller
             $timeEntry->member()->associate($newMember);
             $timeEntry->user()->associate($newMember->user);
         }
+        // If project is changed, but task is not, we remove the old task from the time entry
+        if ($request->has('project_id') && ! $request->has('task_id') && $oldTask !== null && $oldTask->project_id !== $project?->getKey()) {
+            $timeEntry->task()->disassociate();
+        }
         $timeEntry->description = $request->input('description', $timeEntry->description) ?? '';
         $timeEntry->setComputedAttributeValue('billable_rate');
         $timeEntry->save();
@@ -790,7 +794,7 @@ class TimeEntryController extends Controller
                 $timeEntry->user_id = $newMember->user_id;
             }
             // If project is changed, but task is not, we remove the old task from the time entry
-            if ($oldProject !== null && $project !== null && $oldProject->isNot($project) && $task === null) {
+            if ($request->has('changes.project_id') && ! $request->has('changes.task_id') && $oldTask !== null && $oldTask->project_id !== $project?->getKey()) {
                 $timeEntry->task()->disassociate();
             }
             if ($overwriteClient) {
