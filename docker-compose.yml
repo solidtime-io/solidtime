@@ -5,7 +5,6 @@ services:
             dockerfile: Dockerfile
             args:
                 WWWGROUP: '${WWWGROUP}'
-        image: sail-8.3/app
         labels:
             - "traefik.enable=true"
             - "traefik.docker.network=${NETWORK_NAME}"
@@ -128,7 +127,8 @@ services:
         volumes:
             - '.:/src'
     minio:
-        image: 'minio/minio:latest'
+        build:
+            context: ./docker/local/minio
         environment:
             MINIO_BROWSER_REDIRECT_URL: 'https://storage-management.${NGINX_HOST_NAME}'
             MINIO_ROOT_USER: 'sail'
@@ -171,7 +171,8 @@ services:
             - "traefik.http.routers.solidtime-dev-storage-management-https.tls=true"
 
     minio-create-bucket:
-        image: minio/mc:latest
+        build:
+            context: ./docker/local/minio
         depends_on:
             - minio
         environment:
