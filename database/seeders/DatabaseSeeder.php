@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Enums\GoalPeriod;
 use App\Enums\Role;
+use App\Enums\TimeEntryType;
 use App\Events\DatabaseSeederAfterSeed;
 use App\Events\DatabaseSeederBeforeDelete;
 use App\Models\Audit;
 use App\Models\Client;
+use App\Models\Goal;
 use App\Models\Member;
 use App\Models\Organization;
 use App\Models\OrganizationInvitation;
@@ -19,6 +22,7 @@ use App\Models\Tag;
 use App\Models\Task;
 use App\Models\TimeEntry;
 use App\Models\User;
+use App\Service\Dto\GoalFiltersDto;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Laravel\Passport\AuthCode;
@@ -114,11 +118,26 @@ class DatabaseSeeder extends Seeder
         Tag::factory()->forOrganization($organizationAcme)->create([
             'name' => 'Code Review',
         ]);
-        Tag::factory()->forOrganization($organizationAcme)->create([
+        $tagMeeting = Tag::factory()->forOrganization($organizationAcme)->create([
             'name' => 'Meeting',
         ]);
         Tag::factory()->forOrganization($organizationAcme)->create([
             'name' => 'Research',
+        ]);
+
+        $workFilters = new GoalFiltersDto;
+        $workFilters->timeEntryType = TimeEntryType::Work;
+        Goal::factory()->forMember($userAcmeOwnerMember)->atLeast(6 * 3600)->period(GoalPeriod::Day)->filters($workFilters)->create([
+            'name' => 'Track at least 6 hours per day',
+        ]);
+        $meetingFilters = new GoalFiltersDto;
+        $meetingFilters->setTagIds([$tagMeeting->getKey()]);
+        $meetingFilters->timeEntryType = TimeEntryType::Work;
+        Goal::factory()->forMember($userAcmeOwnerMember)->lessThan(5 * 3600)->period(GoalPeriod::Week)->filters($meetingFilters)->create([
+            'name' => 'Less than 5 hours of meetings per week',
+        ]);
+        Goal::factory()->forMember($userAcmeEmployeeMember)->atLeast(30 * 3600)->period(GoalPeriod::Week)->filters($workFilters)->create([
+            'name' => 'Track 30 hours per week',
         ]);
 
         TimeEntry::factory()
@@ -219,6 +238,7 @@ class DatabaseSeeder extends Seeder
         // Application tables
         DB::table((new Audit)->getTable())->delete();
         DB::table((new Report)->getTable())->delete();
+        DB::table((new Goal)->getTable())->delete();
         DB::table((new TimeEntry)->getTable())->delete();
         DB::table((new Task)->getTable())->delete();
         DB::table((new Tag)->getTable())->delete();

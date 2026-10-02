@@ -132,3 +132,43 @@ export function canViewInvoices() {
 export function canCreateReports() {
     return currentUserHasPermission('reports:create');
 }
+
+// Goal permissions are split by the type of goal they reach: `:own` covers the goals a member sets for
+// themselves, `:organization-type` the organization goals of the team goals extension. The helpers without a
+// suffix answer whether the member reaches at least one of the two, which is what the UI entry points need.
+export function canViewOwnGoals() {
+    return currentUserHasPermission('goals:view:own');
+}
+export function canViewOrganizationGoals() {
+    return currentUserHasPermission('goals:view:organization-type');
+}
+export function canViewGoals() {
+    return canViewOwnGoals() || canViewOrganizationGoals();
+}
+export function canCreateOwnGoals() {
+    return currentUserHasPermission('goals:create:own');
+}
+export function canCreateOrganizationGoals() {
+    return currentUserHasPermission('goals:create:organization-type');
+}
+export function canCreateGoals() {
+    return canCreateOwnGoals() || canCreateOrganizationGoals();
+}
+export function canUpdateOwnGoals() {
+    return currentUserHasPermission('goals:update:own');
+}
+export function canUpdateOrganizationGoals() {
+    return currentUserHasPermission('goals:update:organization-type');
+}
+export function canUpdateGoals() {
+    return canUpdateOwnGoals() || canUpdateOrganizationGoals();
+}
+export function canDeleteOwnGoals() {
+    return currentUserHasPermission('goals:delete:own');
+}
+export function canDeleteOrganizationGoals() {
+    return currentUserHasPermission('goals:delete:organization-type');
+}
+export function canDeleteGoals() {
+    return canDeleteOwnGoals() || canDeleteOrganizationGoals();
+}

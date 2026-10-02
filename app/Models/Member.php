@@ -28,6 +28,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  * @property-read User $user
  * @property-read Collection<int, ProjectMember> $projectMembers
  * @property-read Collection<int, TimeEntry> $timeEntries
+ * @property-read Collection<int, Goal> $goals
  *
  * @method static MemberFactory factory()
  */
@@ -77,5 +78,15 @@ class Member extends Pivot implements AuditableContract
     public function projectMembers(): HasMany
     {
         return $this->hasMany(ProjectMember::class, 'member_id');
+    }
+
+    /**
+     * Goals whose progress counts the time entries of this member.
+     *
+     * @return HasMany<Goal, $this>
+     */
+    public function goals(): HasMany
+    {
+        return $this->hasMany(Goal::class, 'member_id');
     }
 }

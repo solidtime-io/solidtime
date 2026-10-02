@@ -16,7 +16,6 @@ use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Str;
 use InvalidArgumentException;
 
 class ReportPropertiesDto implements Castable
@@ -117,13 +116,13 @@ class ReportPropertiesDto implements Castable
                 $dto->end = $data->end !== null ? Carbon::createFromFormat('Y-m-d\TH:i:s\Z', $data->end) : null;
                 $dto->start = $data->start !== null ? Carbon::createFromFormat('Y-m-d\TH:i:s\Z', $data->start) : null;
                 $dto->active = $data->active;
-                $dto->memberIds = $data->memberIds !== null ? ReportPropertiesDto::idArrayToCollection($data->memberIds) : null;
+                $dto->memberIds = $data->memberIds !== null ? TimeEntryFilter::idArrayToCollection($data->memberIds) : null;
                 $dto->billable = $data->billable;
-                $dto->clientIds = $data->clientIds !== null ? ReportPropertiesDto::idArrayToCollection($data->clientIds) : null;
-                $dto->projectIds = $data->projectIds !== null ? ReportPropertiesDto::idArrayToCollection($data->projectIds) : null;
-                $dto->tagIds = $data->tagIds !== null ? ReportPropertiesDto::idArrayToCollection($data->tagIds) : null;
+                $dto->clientIds = $data->clientIds !== null ? TimeEntryFilter::idArrayToCollection($data->clientIds) : null;
+                $dto->projectIds = $data->projectIds !== null ? TimeEntryFilter::idArrayToCollection($data->projectIds) : null;
+                $dto->tagIds = $data->tagIds !== null ? TimeEntryFilter::idArrayToCollection($data->tagIds) : null;
                 $dto->tagMatchType = isset($data->tagMatchType) ? TagMatchType::from($data->tagMatchType) : null;
-                $dto->taskIds = $data->taskIds ? ReportPropertiesDto::idArrayToCollection($data->taskIds) : null;
+                $dto->taskIds = $data->taskIds ? TimeEntryFilter::idArrayToCollection($data->taskIds) : null;
                 $dto->group = TimeEntryAggregationType::from($data->group);
                 $dto->subGroup = TimeEntryAggregationType::from($data->subGroup);
                 $dto->historyGroup = TimeEntryAggregationTypeInterval::from($data->historyGroup);
@@ -181,31 +180,11 @@ class ReportPropertiesDto implements Castable
     }
 
     /**
-     * @param  array<mixed>  $ids
-     * @return Collection<int, string>
-     */
-    public static function idArrayToCollection(array $ids): Collection
-    {
-        $collection = new Collection;
-        foreach ($ids as $id) {
-            if (! is_string($id)) {
-                throw new InvalidArgumentException('The given ID is not a string');
-            }
-            if ($id !== TimeEntryFilter::NONE_VALUE && ! Str::isUuid($id)) {
-                throw new InvalidArgumentException('The given ID is not a valid UUID');
-            }
-            $collection->push($id);
-        }
-
-        return $collection;
-    }
-
-    /**
      * @param  array<mixed>|null  $memberIds
      */
     public function setMemberIds(?array $memberIds): void
     {
-        $this->memberIds = $memberIds !== null ? ReportPropertiesDto::idArrayToCollection($memberIds) : null;
+        $this->memberIds = $memberIds !== null ? TimeEntryFilter::idArrayToCollection($memberIds) : null;
     }
 
     /**
@@ -213,7 +192,7 @@ class ReportPropertiesDto implements Castable
      */
     public function setClientIds(?array $clientIds): void
     {
-        $this->clientIds = $clientIds !== null ? ReportPropertiesDto::idArrayToCollection($clientIds) : null;
+        $this->clientIds = $clientIds !== null ? TimeEntryFilter::idArrayToCollection($clientIds) : null;
     }
 
     /**
@@ -221,7 +200,7 @@ class ReportPropertiesDto implements Castable
      */
     public function setProjectIds(?array $projectIds): void
     {
-        $this->projectIds = $projectIds !== null ? ReportPropertiesDto::idArrayToCollection($projectIds) : null;
+        $this->projectIds = $projectIds !== null ? TimeEntryFilter::idArrayToCollection($projectIds) : null;
     }
 
     /**
@@ -229,7 +208,7 @@ class ReportPropertiesDto implements Castable
      */
     public function setTagIds(?array $tagIds): void
     {
-        $this->tagIds = $tagIds !== null ? ReportPropertiesDto::idArrayToCollection($tagIds) : null;
+        $this->tagIds = $tagIds !== null ? TimeEntryFilter::idArrayToCollection($tagIds) : null;
     }
 
     public function setTagMatchType(?TagMatchType $tagMatchType): void
@@ -242,6 +221,6 @@ class ReportPropertiesDto implements Castable
      */
     public function setTaskIds(?array $taskIds): void
     {
-        $this->taskIds = $taskIds !== null ? ReportPropertiesDto::idArrayToCollection($taskIds) : null;
+        $this->taskIds = $taskIds !== null ? TimeEntryFilter::idArrayToCollection($taskIds) : null;
     }
 }

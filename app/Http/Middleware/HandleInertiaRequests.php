@@ -42,6 +42,7 @@ class HandleInertiaRequests extends Middleware
         $hasBilling = Module::has('Billing') && Module::isEnabled('Billing');
         $hasInvoicing = Module::has('Invoicing') && Module::isEnabled('Invoicing');
         $hasServices = Module::has('Services') && Module::isEnabled('Services');
+        $hasGoals = Module::has('Goals') && Module::isEnabled('Goals');
 
         /** @var BillingContract $billing */
         $billing = app(BillingContract::class);
@@ -52,11 +53,13 @@ class HandleInertiaRequests extends Middleware
             'has_billing_extension' => $hasBilling,
             'has_invoicing_extension' => $hasInvoicing,
             'has_services_extension' => $hasServices,
+            'has_goals_extension' => $hasGoals,
             'billing' => $currentOrganization !== null ? [
                 'has_subscription' => $billing->hasSubscription($currentOrganization),
                 'has_trial' => $billing->hasTrial($currentOrganization),
                 'trial_until' => $billing->getTrialUntil($currentOrganization)?->toIso8601ZuluString(),
                 'is_blocked' => $billing->isBlocked($currentOrganization),
+                'goal_limit' => $billing->getGoalLimit($currentOrganization),
             ] : null,
             'flash' => [
                 'message' => fn () => $request->session()->get('message'),

@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace Tests\Unit\Service;
 
 use App\Enums\Role;
+use App\Enums\TimeEntryType;
+use App\Models\Goal;
 use App\Models\Member;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Models\ProjectMember;
 use App\Models\TimeEntry;
 use App\Models\User;
+use App\Service\Dto\GoalFiltersDto;
 use App\Service\MemberService;
 use App\Service\UserService;
 use Illuminate\Support\Facades\Hash;
@@ -223,6 +226,141 @@ class MemberServiceTest extends TestCaseWithDatabase
         $this->assertSame(1, ProjectMember::query()->whereBelongsTo($toUserMember, 'member')->count());
         $this->assertSame(1, ProjectMember::query()->whereBelongsTo($otherUserMember, 'member')->count());
         $this->assertSame(0, ProjectMember::query()->whereBelongsTo($fromUserMember, 'member')->count());
+    }
+
+    public function test_assign_organization_entities_to_different_member_moves_all_goals_of_the_member(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $otherOrganization = Organization::factory()->create();
+        $fromMember = Member::factory()->forOrganization($organization)->create();
+        $toMember = Member::factory()->forOrganization($organization)->create();
+        $otherMember = Member::factory()->forOrganization($organization)->create();
+        $personalGoal = Goal::factory()->forMember($fromMember)->create();
+        $organizationGoalForFromMember = Goal::factory()->organizationGoalForMember($fromMember)->create();
+        $organizationGoalForOtherMember = Goal::factory()->organizationGoalForMember($otherMember)->create();
+        $goalForEveryMember = Goal::factory()->forOrganization($organization)->forEveryMember()->create();
+        $personalGoalOfOtherMember = Goal::factory()->forMember($otherMember)->create();
+        $goalOfOtherOrganization = Goal::factory()->forOrganization($otherOrganization)->create();
+
+        // Act
+        $this->memberService->assignOrganizationEntitiesToDifferentMember($organization, $fromMember, $toMember);
+
+        // Assert
+        $this->assertSame($toMember->getKey(), $personalGoal->refresh()->member_id);
+        $this->assertSame($toMember->getKey(), $organizationGoalForFromMember->refresh()->member_id);
+        $this->assertSame($otherMember->getKey(), $organizationGoalForOtherMember->refresh()->member_id);
+        $this->assertNull($goalForEveryMember->refresh()->member_id);
+        $this->assertSame($otherMember->getKey(), $personalGoalOfOtherMember->refresh()->member_id);
+        $this->assertDatabaseHas(Goal::class, ['id' => $goalOfOtherOrganization->getKey()]);
+        $this->assertSame(0, $fromMember->goals()->count());
+    }
+
+    public function test_assign_organization_entities_to_different_member_replaces_the_member_in_goal_member_filters(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $otherOrganization = Organization::factory()->create();
+        $fromMember = Member::factory()->forOrganization($organization)->create();
+        $toMember = Member::factory()->forOrganization($organization)->create();
+        $otherMember = Member::factory()->forOrganization($organization)->create();
+        $goalWithFromMember = Goal::factory()->forOrganization($organization)->forEveryMember()
+            ->filters($this->memberFilter([$fromMember->getKey(), $otherMember->getKey()]))->create();
+        $goalWithBothMembers = Goal::factory()->forOrganization($organization)->forEveryMember()
+            ->filters($this->memberFilter([$toMember->getKey(), $fromMember->getKey()]))->create();
+        $goalWithoutFromMember = Goal::factory()->forOrganization($organization)->forEveryMember()
+            ->filters($this->memberFilter([$otherMember->getKey()]))->create();
+        $goalWithoutMemberFilter = Goal::factory()->forOrganization($organization)->forEveryMember()->create();
+        // Can not happen through the API, but a filter of another organization must stay untouched
+        $goalOfOtherOrganization = Goal::factory()->forOrganization($otherOrganization)->forEveryMember()
+            ->filters($this->memberFilter([$fromMember->getKey()]))->create();
+
+        // Act
+        $this->memberService->assignOrganizationEntitiesToDifferentMember($organization, $fromMember, $toMember);
+
+        // Assert
+        $this->assertSame([$toMember->getKey(), $otherMember->getKey()], $goalWithFromMember->refresh()->filters->memberIds?->all());
+        // No duplicate if $toMember was already in the filter
+        $this->assertSame([$toMember->getKey()], $goalWithBothMembers->refresh()->filters->memberIds?->all());
+        $this->assertSame([$otherMember->getKey()], $goalWithoutFromMember->refresh()->filters->memberIds?->all());
+        $this->assertNull($goalWithoutMemberFilter->refresh()->filters->memberIds);
+        $this->assertSame([$fromMember->getKey()], $goalOfOtherOrganization->refresh()->filters->memberIds?->all());
+    }
+
+    /**
+     * @param  array<string>  $memberIds
+     */
+    private function memberFilter(array $memberIds): GoalFiltersDto
+    {
+        $filters = new GoalFiltersDto;
+        $filters->timeEntryType = TimeEntryType::Work;
+        $filters->setMemberIds($memberIds);
+
+        return $filters;
+    }
+
+    public function test_make_member_to_placeholder_keeps_all_goals_of_the_member(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $user = User::factory()->create();
+        $member = Member::factory()->forOrganization($organization)->forUser($user)->role(Role::Employee)->create();
+        $otherMember = Member::factory()->forOrganization($organization)->create();
+        $personalGoal = Goal::factory()->forMember($member)->create();
+        $organizationGoal = Goal::factory()->organizationGoalForMember($member)->create();
+        $goalOfOtherMember = Goal::factory()->forMember($otherMember)->create();
+
+        // Act
+        $this->memberService->makeMemberToPlaceholder($member);
+
+        // Assert
+        $member->refresh();
+        $this->assertTrue($member->user->is_placeholder);
+        $this->assertDatabaseHas(Goal::class, ['id' => $personalGoal->getKey(), 'member_id' => $member->getKey()]);
+        $this->assertDatabaseHas(Goal::class, ['id' => $organizationGoal->getKey(), 'member_id' => $member->getKey()]);
+        $this->assertDatabaseHas(Goal::class, ['id' => $goalOfOtherMember->getKey()]);
+    }
+
+    public function test_remove_member_deletes_the_goals_of_the_member(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $user = User::factory()->create();
+        $member = Member::factory()->forOrganization($organization)->forUser($user)->role(Role::Employee)->create();
+        $otherMember = Member::factory()->forOrganization($organization)->create();
+        $personalGoal = Goal::factory()->forMember($member)->create();
+        $organizationGoal = Goal::factory()->organizationGoalForMember($member)->create();
+        $goalForEveryMember = Goal::factory()->forOrganization($organization)->forEveryMember()->create();
+        $goalOfOtherMember = Goal::factory()->forMember($otherMember)->create();
+
+        // Act
+        $this->memberService->removeMember($member, $organization);
+
+        // Assert
+        $this->assertDatabaseMissing(Member::class, ['id' => $member->getKey()]);
+        $this->assertDatabaseMissing(Goal::class, ['id' => $personalGoal->getKey()]);
+        $this->assertDatabaseMissing(Goal::class, ['id' => $organizationGoal->getKey()]);
+        $this->assertDatabaseHas(Goal::class, ['id' => $goalForEveryMember->getKey()]);
+        $this->assertDatabaseHas(Goal::class, ['id' => $goalOfOtherMember->getKey()]);
+    }
+
+    public function test_add_member_moves_all_goals_of_placeholder_with_same_email_to_new_member(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $user = User::factory()->create();
+        $member = Member::factory()->forOrganization($organization)->forUser($user)->role(Role::Employee)->create();
+        $personalGoal = Goal::factory()->forMember($member)->create();
+        $organizationGoal = Goal::factory()->organizationGoalForMember($member)->create();
+        $this->memberService->makeMemberToPlaceholder($member);
+
+        // Act
+        $newMember = $this->memberService->addMember($user, $organization, Role::Employee);
+
+        // Assert
+        $this->assertDatabaseMissing(Member::class, ['id' => $member->getKey()]);
+        $this->assertDatabaseHas(Goal::class, ['id' => $personalGoal->getKey(), 'member_id' => $newMember->getKey()]);
+        $this->assertDatabaseHas(Goal::class, ['id' => $organizationGoal->getKey(), 'member_id' => $newMember->getKey()]);
     }
 
     public function test_assign_organization_entities_to_different_member_with_entries(): void
