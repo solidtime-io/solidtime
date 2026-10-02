@@ -2780,6 +2780,90 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         });
     }
 
+    public function test_update_endpoint_removes_task_if_project_is_changed_without_setting_a_new_task(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:update:own',
+            'projects:view:all',
+        ]);
+        $project1 = Project::factory()->forOrganization($data->organization)->create();
+        $project2 = Project::factory()->forOrganization($data->organization)->create();
+        $task1 = Task::factory()->forProject($project1)->forOrganization($data->organization)->create();
+        $timeEntry = TimeEntry::factory()->forOrganization($data->organization)->forProject($project1)->forTask($task1)->forMember($data->member)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.time-entries.update', [$data->organization->getKey(), $timeEntry->getKey()]), [
+            'project_id' => $project2->getKey(),
+        ]);
+
+        // Assert
+        $response->assertValid();
+        $this->assertResponseCode($response, 200);
+        $response->assertJsonPath('data.project_id', $project2->getKey());
+        $response->assertJsonPath('data.task_id', null);
+        $this->assertDatabaseHas(TimeEntry::class, [
+            'id' => $timeEntry->getKey(),
+            'project_id' => $project2->getKey(),
+            'task_id' => null,
+        ]);
+    }
+
+    public function test_update_endpoint_removes_task_if_project_is_removed_without_removing_the_task(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:update:own',
+            'projects:view:all',
+        ]);
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        $task = Task::factory()->forProject($project)->forOrganization($data->organization)->create();
+        $timeEntry = TimeEntry::factory()->forOrganization($data->organization)->forProject($project)->forTask($task)->forMember($data->member)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.time-entries.update', [$data->organization->getKey(), $timeEntry->getKey()]), [
+            'project_id' => null,
+        ]);
+
+        // Assert
+        $response->assertValid();
+        $this->assertResponseCode($response, 200);
+        $this->assertDatabaseHas(TimeEntry::class, [
+            'id' => $timeEntry->getKey(),
+            'project_id' => null,
+            'task_id' => null,
+        ]);
+    }
+
+    public function test_update_endpoint_keeps_task_if_project_is_set_to_the_project_of_the_task(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:update:own',
+            'projects:view:all',
+        ]);
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        $task = Task::factory()->forProject($project)->forOrganization($data->organization)->create();
+        $timeEntry = TimeEntry::factory()->forOrganization($data->organization)->forProject($project)->forTask($task)->forMember($data->member)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.time-entries.update', [$data->organization->getKey(), $timeEntry->getKey()]), [
+            'project_id' => $project->getKey(),
+        ]);
+
+        // Assert
+        $response->assertValid();
+        $this->assertResponseCode($response, 200);
+        $this->assertDatabaseHas(TimeEntry::class, [
+            'id' => $timeEntry->getKey(),
+            'project_id' => $project->getKey(),
+            'task_id' => $task->getKey(),
+        ]);
+    }
+
     public function test_update_endpoint_fails_if_employee_tries_to_update_time_entry_to_private_project_without_access(): void
     {
         // Arrange
@@ -3804,6 +3888,44 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
             'id' => $timeEntry2->getKey(),
             'project_id' => $project2->getKey(),
             'task_id' => $task2->getKey(),
+        ]);
+    }
+
+    public function test_update_multiple_removes_task_from_time_entries_if_project_is_removed_without_removing_the_task(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:update:own',
+            'projects:view:all',
+        ]);
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        $task = Task::factory()->forProject($project)->forOrganization($data->organization)->create();
+        $timeEntry = TimeEntry::factory()->forOrganization($data->organization)->forProject($project)->forTask($task)->forMember($data->member)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->patchJson(route('api.v1.time-entries.update-multiple', [$data->organization->getKey()]), [
+            'ids' => [
+                $timeEntry->getKey(),
+            ],
+            'changes' => [
+                'project_id' => null,
+            ],
+        ]);
+
+        // Assert
+        $response->assertValid();
+        $this->assertResponseCode($response, 200);
+        $response->assertExactJson([
+            'success' => [
+                $timeEntry->getKey(),
+            ],
+            'error' => [],
+        ]);
+        $this->assertDatabaseHas(TimeEntry::class, [
+            'id' => $timeEntry->getKey(),
+            'project_id' => null,
+            'task_id' => null,
         ]);
     }
 
