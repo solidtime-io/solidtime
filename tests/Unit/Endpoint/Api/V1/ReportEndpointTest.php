@@ -606,6 +606,51 @@ class ReportEndpointTest extends ApiEndpointTestAbstract
         );
     }
 
+    public function test_store_endpoint_stores_empty_id_filters_as_null(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'reports:create',
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.reports.store', [$data->organization->getKey()]), [
+            'name' => 'Test Report with empty Filters',
+            'is_public' => false,
+            'properties' => [
+                'start' => Carbon::now()->subDays(30)->toIso8601ZuluString(),
+                'end' => Carbon::now()->toIso8601ZuluString(),
+                'group' => TimeEntryAggregationType::Project->value,
+                'sub_group' => TimeEntryAggregationType::Task->value,
+                'history_group' => TimeEntryAggregationType::Day->value,
+                'member_ids' => [],
+                'project_ids' => [],
+                'client_ids' => [],
+                'tag_ids' => [],
+                'task_ids' => [],
+            ],
+        ]);
+
+        // Assert
+        $response->assertStatus(201);
+        $response->assertJson(fn (AssertableJson $json) => $json
+            ->where('data.properties.member_ids', null)
+            ->where('data.properties.project_ids', null)
+            ->where('data.properties.client_ids', null)
+            ->where('data.properties.tag_ids', null)
+            ->where('data.properties.task_ids', null)
+            ->etc()
+        );
+        /** @var Report $report */
+        $report = Report::query()->findOrFail($response->json('data.id'));
+        $this->assertNull($report->properties->memberIds);
+        $this->assertNull($report->properties->projectIds);
+        $this->assertNull($report->properties->clientIds);
+        $this->assertNull($report->properties->tagIds);
+        $this->assertNull($report->properties->taskIds);
+    }
+
     public function test_store_endpoint_creates_report_with_none_filter_values(): void
     {
         // Arrange
