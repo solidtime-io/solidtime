@@ -27,6 +27,8 @@ import { nextTick, onMounted, provide, ref } from 'vue';
 import NotificationContainer from '@/Components/NotificationContainer.vue';
 import { initializeStores } from '@/utils/init';
 import { useCurrentTimeEntryStore } from '@/utils/useCurrentTimeEntry';
+import { useTimerFavicon } from '@/utils/useTimerFavicon';
+import { storeToRefs } from 'pinia';
 import {
     canManageBilling,
     canUpdateOrganization,
@@ -55,6 +57,8 @@ import { CommandPaletteProvider } from '@/Components/CommandPalette';
 import { useCommandPalette } from '@/utils/useCommandPalette';
 
 const { openPalette } = useCommandPalette();
+const { isActive } = storeToRefs(useCurrentTimeEntryStore());
+useTimerFavicon(isActive);
 
 defineProps({
     title: String,
