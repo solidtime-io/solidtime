@@ -11,12 +11,14 @@ import {
     canViewTags,
     canViewReport,
     canViewInvoices,
+    canViewGoals,
     canManageBilling,
     canUpdateOrganization,
     canCreateProjects,
     canCreateClients,
     canCreateTasks,
     canCreateTags,
+    canCreateGoals,
     canCreateInvitations,
 } from '@/utils/permissions';
 import { isBillingActivated, isInvoicingActivated } from '@/utils/billing';
@@ -63,6 +65,7 @@ const showCreateProjectModal = ref(false);
 const showCreateClientModal = ref(false);
 const showCreateTaskModal = ref(false);
 const showCreateTagModal = ref(false);
+const showCreateGoalModal = ref(false);
 const showInviteMemberModal = ref(false);
 const showCreateTimeEntryModal = ref(false);
 
@@ -237,6 +240,11 @@ export function useCommandPalette() {
         showCreateTagModal.value = true;
     }
 
+    function openCreateGoalModal() {
+        closePaletteAfterAction();
+        showCreateGoalModal.value = true;
+    }
+
     function openInviteMemberModal() {
         closePaletteAfterAction();
         showInviteMemberModal.value = true;
@@ -259,6 +267,7 @@ export function useCommandPalette() {
                 canViewTags,
                 canViewReport,
                 canViewInvoices,
+                canViewGoals,
                 canManageBilling,
                 canUpdateOrganization,
             },
@@ -309,6 +318,7 @@ export function useCommandPalette() {
                 openClientModal: openCreateClientModal,
                 openTaskModal: openCreateTaskModal,
                 openTagModal: openCreateTagModal,
+                openGoalModal: openCreateGoalModal,
                 openInviteModal: openInviteMemberModal,
             },
             {
@@ -316,6 +326,7 @@ export function useCommandPalette() {
                 canCreateClients,
                 canCreateTasks,
                 canCreateTags,
+                canCreateGoals,
                 canCreateInvitations,
             }
         )
@@ -513,6 +524,7 @@ export function useCommandPalette() {
         showCreateClientModal,
         showCreateTaskModal,
         showCreateTagModal,
+        showCreateGoalModal,
         showInviteMemberModal,
         showCreateTimeEntryModal,
         showProjectSelector,

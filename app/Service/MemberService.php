@@ -14,6 +14,7 @@ use App\Exceptions\Api\ChangingRoleToPlaceholderIsNotAllowed;
 use App\Exceptions\Api\EntityStillInUseApiException;
 use App\Exceptions\Api\OnlyOwnerCanChangeOwnership;
 use App\Exceptions\Api\OrganizationNeedsAtLeastOneOwner;
+use App\Models\Goal;
 use App\Models\Member;
 use App\Models\Organization;
 use App\Models\Project;
@@ -109,6 +110,12 @@ class MemberService
             }
         }
 
+        // A goal is deleted together with the member it is for, it is not part of the "still in use" check
+        Goal::query()
+            ->whereBelongsTo($organization, 'organization')
+            ->where('member_id', '=', $member->getKey())
+            ->delete();
+
         $member->delete();
 
         if ($isPlaceholder) {
@@ -181,6 +188,30 @@ class MemberService
             ->whereBelongsToOrganization($organization)
             ->whereBelongsTo($fromMember, 'member')
             ->delete();
+
+        // Goals: the goal belongs to the person it is for, like time entries it moves along
+        Goal::query()
+            ->whereBelongsTo($organization, 'organization')
+            ->where('member_id', '=', $fromMember->getKey())
+            ->update([
+                'member_id' => $toMember->getKey(),
+            ]);
+
+        // Goal member filters: the time entries of $fromMember now belong to $toMember, so the filters follow them
+        $goalsWithMemberFilter = Goal::query()
+            ->whereBelongsTo($organization, 'organization')
+            ->whereJsonContains('filters->memberIds', $fromMember->getKey())
+            ->get();
+        foreach ($goalsWithMemberFilter as $goal) {
+            $filters = $goal->filters;
+            $memberIds = $filters->memberIds?->map(
+                fn (string $memberId): string => $memberId === $fromMember->getKey() ? $toMember->getKey() : $memberId
+            );
+            // $toMember may already be in the filter
+            $filters->setMemberIds($memberIds?->unique()->values()->all());
+            $goal->filters = $filters;
+            $goal->save();
+        }
     }
 
     /**

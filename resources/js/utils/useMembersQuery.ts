@@ -14,7 +14,7 @@ export async function fetchAllMembers(organizationId: string): Promise<Member[]>
     );
 }
 
-export function useMembersQuery() {
+export function useMembersQuery(options: { enabled?: () => boolean } = {}) {
     const queryClient = useQueryClient();
 
     const query = useQuery({
@@ -25,7 +25,7 @@ export function useMembersQuery() {
             const data = await fetchAllMembers(organizationId);
             return { data };
         },
-        enabled: () => !!getCurrentOrganizationId(),
+        enabled: () => !!getCurrentOrganizationId() && (options.enabled?.() ?? true),
         staleTime: 1000 * 30, // 30 seconds
     });
 

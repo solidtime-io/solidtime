@@ -23,6 +23,7 @@ import {
     ClipboardDocumentListIcon,
     BuildingOfficeIcon,
 } from '@heroicons/vue/20/solid';
+import { Target } from '@lucide/vue';
 import BillableIcon from '@/packages/ui/src/Icons/BillableIcon.vue';
 import type { Organization } from '@/types/models';
 
@@ -61,6 +62,7 @@ export function createNavigationCommands(
         canViewTags: () => boolean;
         canViewReport: () => boolean;
         canViewInvoices: () => boolean;
+        canViewGoals: () => boolean;
         canManageBilling: () => boolean;
         canUpdateOrganization: () => boolean;
     },
@@ -125,6 +127,16 @@ export function createNavigationCommands(
             action: () => navigate('reporting.shared'),
             permission: permissions.canViewReport,
             priority: GROUP_PRIORITIES.navigation + 5,
+        },
+        {
+            id: 'nav-goals',
+            label: 'Go to Goals',
+            icon: Target,
+            keywords: ['goals', 'targets', 'habits', 'progress'],
+            group: 'navigation',
+            action: () => navigate('goals'),
+            permission: permissions.canViewGoals,
+            priority: GROUP_PRIORITIES.navigation + 4.5,
         },
         {
             id: 'nav-projects',
@@ -385,6 +397,7 @@ export function createCreateCommands(
         openClientModal: () => void;
         openTaskModal: () => void;
         openTagModal: () => void;
+        openGoalModal: () => void;
         openInviteModal: () => void;
     },
     permissions: {
@@ -392,6 +405,7 @@ export function createCreateCommands(
         canCreateClients: () => boolean;
         canCreateTasks: () => boolean;
         canCreateTags: () => boolean;
+        canCreateGoals: () => boolean;
         canCreateInvitations: () => boolean;
     }
 ): Command[] {
@@ -435,6 +449,16 @@ export function createCreateCommands(
             action: createActions.openTagModal,
             permission: permissions.canCreateTags,
             priority: GROUP_PRIORITIES.create + 2,
+        },
+        {
+            id: 'create-goal',
+            label: 'Create Goal',
+            icon: Target,
+            keywords: ['new goal', 'add goal', 'create', 'target'],
+            group: 'create',
+            action: createActions.openGoalModal,
+            permission: permissions.canCreateGoals,
+            priority: GROUP_PRIORITIES.create + 1.5,
         },
         {
             id: 'create-invite',

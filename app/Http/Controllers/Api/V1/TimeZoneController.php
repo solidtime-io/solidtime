@@ -12,7 +12,7 @@ class TimeZoneController extends Controller
     /**
      * Get all timezones
      *
-     * @response object{key: string}[]
+     * @response array{key: string}[]
      *
      * @operationId getTimezones
      */

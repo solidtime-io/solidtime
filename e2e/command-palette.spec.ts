@@ -292,6 +292,16 @@ test.describe('Command Palette', () => {
             await expect(page.locator('[role="dialog"]').getByText('Create Tags')).toBeVisible();
         });
 
+        test('opens create goal modal', async ({ page }) => {
+            await goToDashboard(page);
+            await openCommandPalette(page);
+            await searchInCommandPalette(page, 'Create Goal');
+            await selectCommand(page, 'Create Goal');
+            await expect(
+                page.locator('[role="dialog"]').getByRole('heading', { name: 'Create Goal' })
+            ).toBeVisible();
+        });
+
         test('opens invite member modal', async ({ page }) => {
             await goToDashboard(page);
             await openCommandPalette(page);
@@ -465,6 +475,9 @@ test.describe('Employee Command Palette Restrictions', () => {
         await expect(
             employee.page.getByRole('option', { name: 'Invite Member' })
         ).not.toBeVisible();
+
+        // Employees can set personal goals for themselves
+        await expect(employee.page.getByRole('option', { name: 'Create Goal' })).toBeVisible();
 
         // Should still see Create Time Entry (employees can create time entries)
         await expect(

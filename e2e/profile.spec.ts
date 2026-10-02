@@ -7,6 +7,12 @@ import {
 } from './utils/mailpit';
 import { getCurrentUserViaApi } from './utils/api';
 import { registerUser } from './utils/members';
+import {
+    selectTimezone,
+    selectWeekStart,
+    timezoneField,
+    weekStartField,
+} from './utils/userSettingsFields';
 import type { Page } from '@playwright/test';
 import path from 'path';
 
@@ -40,20 +46,51 @@ test('user name can be updated', async ({ page }) => {
     await expect(page.getByLabel('Name', { exact: true })).toHaveValue('NEW NAME');
 });
 
+// The tests below pick UTC+0 timezones: the browser runs in UTC, and any other offset
+// opens the timezone mismatch modal after the reload.
 test('timezone change persists across reload', async ({ page }) => {
     await goToProfilePage(page);
-    await page.getByLabel('Timezone').selectOption('America/New_York');
+    await selectTimezone(page, page, 'Africa/Sao_Tome', 'sao tome');
     await saveProfileForm(page);
     await page.reload();
-    await expect(page.getByLabel('Timezone')).toHaveValue('America/New_York');
+    await expect(timezoneField(page)).toHaveText('Africa/Sao_Tome');
+});
+
+test('timezone can be selected with the keyboard', async ({ page }) => {
+    await goToProfilePage(page);
+    await expect(timezoneField(page)).toBeEnabled();
+    await timezoneField(page).focus();
+    await page.keyboard.press('Enter');
+    const search = page.getByRole('combobox', { name: 'Search timezones' });
+    await expect(search).toBeFocused();
+    await search.fill('Africa/Abid');
+    await expect(page.getByRole('option')).toHaveText(['Africa/Abidjan']);
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('Enter');
+    await expect(timezoneField(page)).toHaveText('Africa/Abidjan');
+    await saveProfileForm(page);
+    await page.reload();
+    await expect(timezoneField(page)).toHaveText('Africa/Abidjan');
+});
+
+test('timezone search shows an empty state when nothing matches', async ({ page }) => {
+    await goToProfilePage(page);
+    await timezoneField(page).click();
+    const search = page.getByRole('combobox', { name: 'Search timezones' });
+    // Opening starts with an empty search, not one prefilled with the current timezone
+    await expect(search).toHaveValue('');
+    await expect(page.getByRole('option').nth(1)).toBeVisible();
+    await search.fill('Atlantis');
+    await expect(page.getByText('No timezone found.')).toBeVisible();
+    await expect(page.getByRole('option')).toHaveCount(0);
 });
 
 test('week-start change persists across reload', async ({ page }) => {
     await goToProfilePage(page);
-    await page.getByLabel('Start of the week').selectOption('sunday');
+    await selectWeekStart(page, page, 'Sunday');
     await saveProfileForm(page);
     await page.reload();
-    await expect(page.getByLabel('Start of the week')).toHaveValue('sunday');
+    await expect(weekStartField(page)).toHaveText('Sunday');
 });
 
 test('still-running email notification setting persists across reload', async ({ page }) => {
@@ -565,7 +602,10 @@ test('test that theme can be changed to dark and light', async ({ page }) => {
     await goToProfilePage(page);
 
     // The theme select is a Reka UI combobox (button), not a native <select>
-    const themeSelect = page.locator('button[role="combobox"]');
+    const themeSelect = page
+        .getByRole('heading', { name: 'Theme', exact: true })
+        .locator('xpath=ancestor::*[descendant::form][1]')
+        .getByRole('combobox');
 
     // Change theme to dark
     await themeSelect.click();
@@ -591,7 +631,7 @@ test('test that theme can be changed to dark and light', async ({ page }) => {
     await expect(page.locator('html')).toHaveClass(/light/);
 
     // Reset to system
-    await page.locator('button[role="combobox"]').click();
+    await themeSelect.click();
     await page.getByRole('option', { name: 'System' }).click();
     await expect(page.getByText('System default:')).toBeVisible();
 });
