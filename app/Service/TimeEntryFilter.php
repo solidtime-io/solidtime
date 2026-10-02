@@ -10,7 +10,9 @@ use App\Models\Member;
 use App\Models\TimeEntry;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class TimeEntryFilter
 {
@@ -27,6 +29,26 @@ class TimeEntryFilter
     public function __construct(Builder $builder)
     {
         $this->builder = $builder;
+    }
+
+    /**
+     * @param  array<mixed>  $ids
+     * @return Collection<int, string>
+     */
+    public static function idArrayToCollection(array $ids): Collection
+    {
+        $collection = new Collection;
+        foreach ($ids as $id) {
+            if (! is_string($id)) {
+                throw new \InvalidArgumentException('The given ID is not a string');
+            }
+            if ($id !== self::NONE_VALUE && ! Str::isUuid($id)) {
+                throw new \InvalidArgumentException('The given ID is not a valid UUID');
+            }
+            $collection->push($id);
+        }
+
+        return $collection;
     }
 
     public function addEndFilter(?string $dateTime): self

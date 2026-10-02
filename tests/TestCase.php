@@ -88,6 +88,7 @@ abstract class TestCase extends BaseTestCase
             $mock->shouldReceive('hasSubscription')->andReturn(true);
             $mock->shouldReceive('hasTrial')->andReturn(false);
             $mock->shouldReceive('getTrialUntil')->andReturn(null);
+            $mock->shouldReceive('getGoalLimit')->andReturn(null);
             $mock->shouldReceive('isBlocked')->andReturn(false);
         });
     }
@@ -98,6 +99,8 @@ abstract class TestCase extends BaseTestCase
             $mock->shouldReceive('hasSubscription')->andReturn(false);
             $mock->shouldReceive('hasTrial')->andReturn(false);
             $mock->shouldReceive('getTrialUntil')->andReturn(null);
+            // Core has no goal limit, the limit of the free plan is implemented in the billing extension
+            $mock->shouldReceive('getGoalLimit')->andReturn(null);
             $mock->shouldReceive('isBlocked')->andReturn(false);
         });
     }

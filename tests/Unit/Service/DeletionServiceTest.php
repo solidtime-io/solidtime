@@ -8,6 +8,7 @@ use App\Enums\Role;
 use App\Events\BeforeOrganizationDeletion;
 use App\Exceptions\Api\CanNotDeleteUserWhoIsOwnerOfOrganizationWithMultipleMembers;
 use App\Models\Client;
+use App\Models\Goal;
 use App\Models\Member;
 use App\Models\Organization;
 use App\Models\Passport\Client as PassportClient;
@@ -59,7 +60,8 @@ class DeletionServiceTest extends TestCaseWithDatabase
      *     tasks: Collection<Task>,
      *     timeEntries: Collection<TimeEntry>,
      *     owner: User,
-     *     reports: Collection<Report>
+     *     reports: Collection<Report>,
+     *     goals: Collection<Goal>
      * }
      */
     private function createOrganizationWithAllRelations(): object
@@ -104,6 +106,10 @@ class DeletionServiceTest extends TestCaseWithDatabase
         $report2 = Report::factory()->forOrganization($organization)->create();
         $reports = collect([$report1, $report2]);
 
+        $goal1 = Goal::factory()->forMember($memberOwner)->create();
+        $goal2 = Goal::factory()->forMember($memberEmployee)->create();
+        $goals = collect([$goal1, $goal2]);
+
         $timeEntries = TimeEntry::factory()->forOrganization($organization)->forMember($memberOwner)->createMany(2);
         $timeEntriesWithTask = TimeEntry::factory()->forTask($task1)->forOrganization($organization)->forMember($memberEmployee)->createMany(2);
         $timeEntriesWithProject = TimeEntry::factory()->forProject($projectWithClient)->forOrganization($organization)->forMember($memberPlaceholder)->createMany(2);
@@ -120,6 +126,7 @@ class DeletionServiceTest extends TestCaseWithDatabase
             'timeEntries' => $timeEntries,
             'owner' => $userOwner,
             'reports' => $reports,
+            'goals' => $goals,
         ];
     }
 
@@ -136,6 +143,7 @@ class DeletionServiceTest extends TestCaseWithDatabase
         $this->assertSame(0, Member::query()->whereBelongsTo($organization, 'organization')->count());
         $this->assertSame(0, Task::query()->whereBelongsTo($organization, 'organization')->count());
         $this->assertSame(0, Report::query()->whereBelongsTo($organization, 'organization')->count());
+        $this->assertSame(0, Goal::query()->whereBelongsTo($organization, 'organization')->count());
         $this->assertSame(0, TimeEntry::query()->whereBelongsTo($organization, 'organization')->count());
     }
 
@@ -149,6 +157,7 @@ class DeletionServiceTest extends TestCaseWithDatabase
         $this->assertSame(3, Member::query()->whereBelongsTo($organization, 'organization')->count());
         $this->assertSame(2, Task::query()->whereBelongsTo($organization, 'organization')->count());
         $this->assertSame(2, Report::query()->whereBelongsTo($organization, 'organization')->count());
+        $this->assertSame(2, Goal::query()->whereBelongsTo($organization, 'organization')->count());
         $this->assertSame($specialCase ? 7 : 6, TimeEntry::query()->whereBelongsTo($organization, 'organization')->count());
     }
 

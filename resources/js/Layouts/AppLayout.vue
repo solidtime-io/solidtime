@@ -19,7 +19,7 @@ import {
     DocumentTextIcon,
     TableCellsIcon,
 } from '@heroicons/vue/20/solid';
-import { PanelLeft } from '@lucide/vue';
+import { PanelLeft, Target } from '@lucide/vue';
 import NavigationSidebarItem from '@/Components/NavigationSidebarItem.vue';
 import UserSettingsIcon from '@/Components/UserSettingsIcon.vue';
 import MainContainer from '@/packages/ui/src/MainContainer.vue';
@@ -31,6 +31,7 @@ import {
     canManageBilling,
     canUpdateOrganization,
     canViewClients,
+    canViewGoals,
     canViewInvoices,
     canViewMembers,
     canViewProjects,
@@ -218,6 +219,12 @@ const page = usePage<{
                                 "
                                 :href="route('reporting')">
                             </NavigationSidebarItem>
+                            <NavigationSidebarItem
+                                v-if="canViewGoals()"
+                                title="Goals"
+                                :icon="Target"
+                                :current="route().current('goals')"
+                                :href="route('goals')"></NavigationSidebarItem>
                         </ul>
                     </nav>
 

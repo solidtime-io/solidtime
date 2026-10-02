@@ -990,3 +990,113 @@ export async function getInvoicesViaApi(ctx: TestContext) {
         paid_date: string | null;
     }>;
 }
+
+export async function createGoalViaApi(
+    ctx: TestContext,
+    data: {
+        name: string;
+        type?: 'personal' | 'organization';
+        comparison?: 'at_least' | 'less_than';
+        target_seconds: number;
+        period?: 'day' | 'week' | 'month';
+        // Member the goal is for, null counts every member (organization goals only)
+        member_id?: string | null;
+        timezone?: string;
+        week_start?: string;
+        filters?: {
+            member_ids?: string[] | null;
+            project_ids?: string[] | null;
+            task_ids?: string[] | null;
+            tag_ids?: string[] | null;
+            tag_match_type?: 'contains' | 'not_contains' | null;
+            client_ids?: string[] | null;
+            billable?: boolean | null;
+            time_entry_type?: 'work' | 'break' | null;
+        };
+    }
+) {
+    const response = await ctx.request.post(
+        `${PLAYWRIGHT_BASE_URL}/api/v1/organizations/${ctx.orgId}/goals`,
+        {
+            data: {
+                name: data.name,
+                type: data.type ?? 'personal',
+                comparison: data.comparison ?? 'at_least',
+                target_seconds: data.target_seconds,
+                period: data.period ?? 'week',
+                ...('member_id' in data ? { member_id: data.member_id } : {}),
+                ...(data.timezone ? { timezone: data.timezone } : {}),
+                ...(data.week_start ? { week_start: data.week_start } : {}),
+                filters: data.filters ?? { time_entry_type: 'work' },
+            },
+        }
+    );
+    expect(response.status()).toBe(201);
+    const body = await response.json();
+    return body.data as {
+        id: string;
+        name: string;
+        type: 'personal' | 'organization';
+        comparison: 'at_least' | 'less_than';
+        target_seconds: number;
+        period: 'day' | 'week' | 'month';
+        member_id: string | null;
+        member_name: string | null;
+        timezone: string;
+        week_start: string;
+        is_archived: boolean;
+        progress: {
+            tracked_seconds: number;
+            status: 'in_progress' | 'achieved' | 'on_track' | 'exceeded';
+        };
+    };
+}
+
+export async function updateGoalViaApi(
+    ctx: TestContext,
+    goalId: string,
+    data: Record<string, unknown>
+) {
+    return ctx.request.put(
+        `${PLAYWRIGHT_BASE_URL}/api/v1/organizations/${ctx.orgId}/goals/${goalId}`,
+        { data }
+    );
+}
+
+// ──────────────────────────────────────────────────
+// Entity deletion
+// ──────────────────────────────────────────────────
+
+async function deleteEntityViaApi(ctx: TestContext, path: string) {
+    const response = await ctx.request.delete(
+        `${PLAYWRIGHT_BASE_URL}/api/v1/organizations/${ctx.orgId}/${path}`
+    );
+    expect(response.status()).toBe(204);
+}
+
+export async function deleteProjectViaApi(ctx: TestContext, projectId: string) {
+    await deleteEntityViaApi(ctx, `projects/${projectId}`);
+}
+
+export async function deleteTaskViaApi(ctx: TestContext, taskId: string) {
+    await deleteEntityViaApi(ctx, `tasks/${taskId}`);
+}
+
+export async function deleteTagViaApi(ctx: TestContext, tagId: string) {
+    await deleteEntityViaApi(ctx, `tags/${tagId}`);
+}
+
+export async function deleteClientViaApi(ctx: TestContext, clientId: string) {
+    await deleteEntityViaApi(ctx, `clients/${clientId}`);
+}
+
+export async function deleteMemberViaApi(ctx: TestContext, memberId: string) {
+    await deleteEntityViaApi(ctx, `members/${memberId}`);
+}
+
+export async function makeMemberPlaceholderViaApi(ctx: TestContext, memberId: string) {
+    const response = await ctx.request.post(
+        `${PLAYWRIGHT_BASE_URL}/api/v1/organizations/${ctx.orgId}/members/${memberId}/make-placeholder`
+    );
+    expect(response.status()).toBe(204);
+}

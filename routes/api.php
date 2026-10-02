@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\V1\ChartController;
 use App\Http\Controllers\Api\V1\ClientController;
 use App\Http\Controllers\Api\V1\CurrencyController;
 use App\Http\Controllers\Api\V1\ExportController;
+use App\Http\Controllers\Api\V1\GoalController;
 use App\Http\Controllers\Api\V1\ImportController;
 use App\Http\Controllers\Api\V1\InvitationController;
 use App\Http\Controllers\Api\V1\MemberController;
@@ -132,6 +133,15 @@ Route::prefix('v1')->name('v1.')->group(static function (): void {
             Route::post('/reports', [ReportController::class, 'store'])->name('store');
             Route::put('/reports/{report}', [ReportController::class, 'update'])->name('update');
             Route::delete('/reports/{report}', [ReportController::class, 'destroy'])->name('destroy');
+        });
+
+        // Goal routes
+        Route::name('goals.')->prefix('/organizations/{organization}')->group(static function (): void {
+            Route::get('/goals', [GoalController::class, 'index'])->name('index');
+            Route::get('/goals/{goal}', [GoalController::class, 'show'])->name('show');
+            Route::post('/goals', [GoalController::class, 'store'])->name('store');
+            Route::put('/goals/{goal}', [GoalController::class, 'update'])->name('update');
+            Route::delete('/goals/{goal}', [GoalController::class, 'destroy'])->name('destroy');
         });
 
         // Chart routes

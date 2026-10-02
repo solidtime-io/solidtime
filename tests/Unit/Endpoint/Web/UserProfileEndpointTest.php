@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Endpoint\Web;
 
-use App\Enums\Weekday;
 use App\Http\Controllers\Web\UserProfileController;
 use App\Models\User;
 use Illuminate\Support\Carbon;
@@ -29,8 +28,6 @@ class UserProfileEndpointTest extends EndpointTestAbstract
         $response->assertOk();
         $response->assertInertia(fn (Assert $page) => $page
             ->component('Profile/Show')
-            ->has('timezones')
-            ->where('weekdays', Weekday::toSelectArray())
             ->where('confirmsTwoFactorAuthentication', true)
             ->where('sessions', [])
         );

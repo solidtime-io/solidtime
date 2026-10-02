@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Web;
 
-use App\Enums\Weekday;
 use App\Service\Dto\UserAgentDto;
-use App\Service\TimezoneService;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Carbon;
@@ -94,8 +92,6 @@ class UserProfileController extends Controller
         $this->validateTwoFactorAuthenticationState($request);
 
         return Inertia::render('Profile/Show', [
-            'timezones' => app(TimezoneService::class)->getSelectOptions(),
-            'weekdays' => Weekday::toSelectArray(),
             'confirmsTwoFactorAuthentication' => Features::optionEnabled(Features::twoFactorAuthentication(), 'confirm'),
             'sessions' => $this->sessions($request),
         ]);

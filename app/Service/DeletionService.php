@@ -8,6 +8,7 @@ use App\Enums\Role;
 use App\Events\BeforeOrganizationDeletion;
 use App\Exceptions\Api\CanNotDeleteUserWhoIsOwnerOfOrganizationWithMultipleMembers;
 use App\Models\Client;
+use App\Models\Goal;
 use App\Models\Member;
 use App\Models\Organization;
 use App\Models\OrganizationInvitation;
@@ -75,6 +76,9 @@ class DeletionService
 
         // Delete all reports
         Report::query()->whereBelongsTo($organization, 'organization')->delete();
+
+        // Delete all goals
+        Goal::query()->whereBelongsTo($organization, 'organization')->delete();
 
         // Reset the current organization
         $organization->owner()

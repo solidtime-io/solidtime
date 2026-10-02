@@ -108,6 +108,19 @@ export type UpdateReportBody = ZodiosBodyByAlias<SolidTimeApi, 'updateReport'>;
 export type CreateReportBodyProperties = CreateReportBody['properties'];
 export type Report = ReportIndexResponse['data'][0];
 
+export type GoalIndexResponse = ZodiosResponseByAlias<SolidTimeApi, 'getGoals'>;
+export type Goal = GoalIndexResponse['data'][0];
+export type GoalFilters = Goal['filters'];
+export type GoalProgress = Goal['progress'];
+export type GoalComparison = Goal['comparison'];
+export type GoalPeriod = Goal['period'];
+export type GoalType = Goal['type'];
+export type GoalWeekStart = Goal['week_start'];
+export type Weekday = GoalWeekStart;
+export type GoalStatus = GoalProgress['status'];
+export type CreateGoalBody = ZodiosBodyByAlias<SolidTimeApi, 'createGoal'>;
+export type UpdateGoalBody = ZodiosBodyByAlias<SolidTimeApi, 'updateGoal'>;
+
 export type ApiTokenIndexResponse = ZodiosResponseByAlias<SolidTimeApi, 'getApiTokens'>;
 
 export type CreateApiTokenBody = ZodiosBodyByAlias<SolidTimeApi, 'createApiToken'>;
