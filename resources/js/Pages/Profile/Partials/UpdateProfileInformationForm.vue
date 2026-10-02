@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
-import { usePage } from '@inertiajs/vue3';
 import ActionMessage from '@/Components/ActionMessage.vue';
 import FormSection from '@/Components/FormSection.vue';
 import { Field, FieldError, FieldLabel } from '@/packages/ui/src/field';
@@ -14,8 +13,10 @@ import {
     useUpdateUserMutation,
     useUserQuery,
 } from '@/utils/useUserQuery';
-import type { UpdateUserBody, User } from '@/packages/api/src';
+import type { UpdateUserBody, User, Weekday } from '@/packages/api/src';
 import { getApiValidationFieldErrors } from '@/utils/apiValidation';
+import TimezoneCombobox from '@/Components/Common/TimezoneCombobox.vue';
+import WeekStartSelect from '@/Components/Common/WeekStartSelect.vue';
 
 const { user } = useUserQuery();
 const updateUser = useUpdateUserMutation();
@@ -25,7 +26,7 @@ const resetPendingEmail = useResetUserPendingEmailMutation();
 const name = ref('');
 const email = ref('');
 const timezone = ref('');
-const weekStart = ref('');
+const weekStart = ref<Weekday | ''>('');
 
 const photoBase64 = ref<string | null>(null);
 const photoPreview = ref<string | null>(null);
@@ -166,11 +167,6 @@ function flashSaved() {
 onBeforeUnmount(() => {
     if (resendCooldownTimer) clearTimeout(resendCooldownTimer);
 });
-
-const page = usePage<{
-    timezones: Record<string, string>;
-    weekdays: Record<string, string>;
-}>();
 </script>
 
 <template>
@@ -292,42 +288,14 @@ const page = usePage<{
             <!-- Timezone -->
             <Field class="col-span-6 sm:col-span-4">
                 <FieldLabel for="timezone">Timezone</FieldLabel>
-                <select
-                    id="timezone"
-                    v-model="timezone"
-                    name="timezone"
-                    required
-                    :disabled="!isUserLoaded"
-                    class="block w-full border-input-border bg-input-background text-text-primary focus:border-input-border-active rounded-md shadow-sm">
-                    <option value="" disabled>Select a Timezone</option>
-                    <option
-                        v-for="(timezoneTranslated, timezoneValue) in page.props.timezones"
-                        :key="timezoneValue"
-                        :value="timezoneValue">
-                        {{ timezoneTranslated }}
-                    </option>
-                </select>
+                <TimezoneCombobox id="timezone" v-model="timezone" :disabled="!isUserLoaded" />
                 <FieldError v-if="fieldErrors.timezone">{{ fieldErrors.timezone }}</FieldError>
             </Field>
 
             <!-- Week start -->
             <Field class="col-span-6 sm:col-span-4">
                 <FieldLabel for="week_start">Start of the week</FieldLabel>
-                <select
-                    id="week_start"
-                    v-model="weekStart"
-                    name="week_start"
-                    required
-                    :disabled="!isUserLoaded"
-                    class="block w-full border-input-border bg-input-background text-text-primary focus:border-input-border-active rounded-md shadow-sm">
-                    <option value="" disabled>Select a week day</option>
-                    <option
-                        v-for="(weekdayTranslated, weekdayValue) in page.props.weekdays"
-                        :key="weekdayValue"
-                        :value="weekdayValue">
-                        {{ weekdayTranslated }}
-                    </option>
-                </select>
+                <WeekStartSelect id="week_start" v-model="weekStart" :disabled="!isUserLoaded" />
                 <FieldError v-if="fieldErrors.week_start">{{ fieldErrors.week_start }}</FieldError>
             </Field>
         </template>
