@@ -21,6 +21,7 @@ class ProjectMemberUpdateRequest extends BaseFormRequest
     public function rules(): array
     {
         return [
+            // Billable rate in cents per hour (example: 8000 means 80.00 in the organization's currency)
             'billable_rate' => array_merge(
                 [
                     'nullable',
