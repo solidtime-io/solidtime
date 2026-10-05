@@ -35,7 +35,7 @@ class TimeEntryIndexRequest extends BaseFormRequest
     public function rules(): array
     {
         return [
-            // Filter by member ID
+            // Filter by member ID. Without it, users who may view all time entries (owners, admins) get the entries of every member; pass your own member ID (from GET /v1/users/me/memberships) to get only yours
             'member_id' => [
                 'string',
                 ExistsEloquent::make(Member::class, null, function (Builder $builder): Builder {
@@ -155,7 +155,7 @@ class TimeEntryIndexRequest extends BaseFormRequest
                 'string',
                 Rule::enum(TimeEntryType::class),
             ],
-            // Limit the number of returned time entries (default: 150)
+            // Limit the number of returned time entries (default: 100)
             'limit' => [
                 'integer',
                 'min:1',

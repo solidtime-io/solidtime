@@ -71,6 +71,8 @@ class ReportController extends Controller
     /**
      * Create report
      *
+     * A report is a saved set of filters. Set `is_public` to `true` to share it: the response then contains the `shareable_link` that can be opened without logging in.
+     *
      * @throws AuthorizationException
      *
      * @operationId createReport

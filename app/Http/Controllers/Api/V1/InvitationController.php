@@ -88,6 +88,8 @@ class InvitationController extends Controller
     /**
      * Remove a pending invitation
      *
+     * This revokes the invitation: the link in the invitation email stops working. Find the invitation ID with `GET /organizations/{organization}/invitations`.
+     *
      * @throws AuthorizationException
      *
      * @operationId removeInvitation

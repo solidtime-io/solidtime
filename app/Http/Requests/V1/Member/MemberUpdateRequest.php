@@ -27,6 +27,7 @@ class MemberUpdateRequest extends BaseFormRequest
                 'string',
                 Rule::enum(Role::class),
             ],
+            // Billable rate in cents per hour (example: 8000 means 80.00 in the organization's currency)
             'billable_rate' => array_merge(
                 [
                     'nullable',

@@ -31,6 +31,7 @@ class ProjectMemberStoreRequest extends BaseFormRequest
                     return $builder->whereBelongsTo($this->organization, 'organization');
                 })->uuid(),
             ],
+            // Billable rate in cents per hour (example: 8000 means 80.00 in the organization's currency)
             'billable_rate' => array_merge(
                 [
                     'nullable',

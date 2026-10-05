@@ -109,8 +109,13 @@ class TimeEntryController extends Controller
     /**
      * Get time entries in organization
      *
-     * If you only need time entries for a specific user, you can filter by `member_id`.
+     * Without a member filter this returns the time entries of all members of the organization (for users who may view all time entries, such as owners and admins), not only your own.
+     * To get only your own time entries, pass your member ID as `member_id`. Your member ID is the `id` returned for this organization by `GET /v1/users/me/memberships`; it is not your user ID.
      * Users with the permission `time-entries:view:own` can only use this endpoint with their own member ID in the member_id filter.
+     *
+     * The `start` and `end` filters both apply to the start time of an entry, in UTC. Convert the user's local day boundaries to UTC first.
+     * Results are paginated with `limit` (default 100, max 500) and `offset`; check `meta.total` and fetch further pages when needed.
+     * To find the running timer, use `active=true` (or `GET /v1/users/me/time-entries/active`).
      *
      * @return TimeEntryCollection<TimeEntryResource>
      *
@@ -351,6 +356,11 @@ class TimeEntryController extends Controller
      * The parameters `group` and `sub_group` allow you to group the time entries by different criteria.
      * If the group parameters are all set to `null` or are all missing, the endpoint will aggregate all filtered time entries.
      *
+     * Durations are returned in `seconds` (divide by 3600 for hours) and amounts in `cost` as cents in the organization's currency (divide by 100 for money).
+     * Filter by member with `member_id`. Your member ID is the `id` returned for this organization by `GET /v1/users/me/memberships`; it is not your user ID.
+     * Array filters use the query format `client_ids[]=<id>`.
+     * Example: billable hours per client for a period: `group=client&billable=true&start=...&end=...`.
+     *
      * @operationId getAggregatedTimeEntries
      *
      * @return array{
@@ -584,6 +594,12 @@ class TimeEntryController extends Controller
     /**
      * Create time entry
      *
+     * `billable` is not taken from the project. To match the web app, set it to the project's `is_billable` value (or `false` without a project).
+     *
+     * A member can only have one running time entry (an entry with `end` set to `null`). Creating a running entry while another one runs fails with `time_entry_still_running`.
+     * To start a new timer, first stop the running entry by updating its `end` to the current time, then create the new entry.
+     * To log past work, send both `start` and `end` (UTC). Create one entry per block of work.
+     *
      * @throws AuthorizationException
      * @throws TimeEntryStillRunningApiException
      *
@@ -633,6 +649,8 @@ class TimeEntryController extends Controller
 
     /**
      * Update time entry
+     *
+     * To stop a running timer, set `end` to the stop time (UTC). Times the user gives in their own timezone must be converted to UTC first.
      *
      * @throws AuthorizationException|TimeEntryCanNotBeRestartedApiException
      *
@@ -701,6 +719,10 @@ class TimeEntryController extends Controller
 
     /**
      * Update multiple time entries
+     *
+     * Applies the same `changes` to every entry in `ids`. To find the IDs, list entries with `GET /organizations/{organization}/time-entries`
+     * (filtered by `member_id`, the project and the other criteria), then send their IDs here.
+     * When `changes.project_id` moves entries to another project, also set `changes.task_id` to a task of the new project or to `null`, because tasks belong to a project.
      *
      * @operationId updateMultipleTimeEntries
      *

@@ -32,7 +32,7 @@ class TimeEntryStoreRequest extends BaseFormRequest
     public function rules(): array
     {
         return [
-            // ID of the organization member that the time entry should belong to
+            // ID of the organization member that the time entry should belong to (a member ID from GET /v1/users/me/memberships or the members list, not a user ID)
             'member_id' => [
                 'required',
                 'string',
@@ -86,7 +86,7 @@ class TimeEntryStoreRequest extends BaseFormRequest
                 'date_format:Y-m-d\TH:i:s\Z',
                 'after_or_equal:start',
             ],
-            // Whether time entry is billable
+            // Whether time entry is billable. Not derived from the project: set it to the project's is_billable value to match the web app
             'billable' => [
                 'required',
                 'boolean',

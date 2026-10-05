@@ -145,6 +145,9 @@ class MemberController extends Controller
     /**
      * Merge one member into another
      *
+     * Only placeholder members (for example people created by an import) can be merged. All time entries and other data of the placeholder
+     * are reassigned to the member given in `member_id`, and the placeholder is removed. Find both member IDs with `GET /organizations/{organization}/members`.
+     *
      * @throws AuthorizationException
      * @throws OnlyPlaceholdersCanBeMergedIntoAnotherMember
      * @throws Throwable
