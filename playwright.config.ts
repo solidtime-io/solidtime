@@ -1,4 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
+import { existsSync, readFileSync } from 'node:fs';
 
 /**
  * Read environment variables from file.
@@ -7,10 +8,56 @@ import { defineConfig, devices } from '@playwright/test';
 // require('dotenv').config();
 
 /**
+ * Extensions ship their e2e specs in extensions/<Name>/tests/e2e. Only the specs of extensions
+ * that are enabled in modules_statuses.json (php artisan module:enable <Name>) are collected,
+ * a checked out but disabled extension would fail its specs otherwise.
+ */
+function enabledExtensions(): string[] {
+    const statusesFile = './modules_statuses.json';
+    if (!existsSync(statusesFile)) {
+        return [];
+    }
+    const statuses: Record<string, boolean> = JSON.parse(readFileSync(statusesFile, 'utf-8'));
+    return Object.entries(statuses)
+        .filter(([, enabled]) => enabled)
+        .map(([name]) => name);
+}
+
+/*
+ * Every test root gets its own testDir (instead of testDir: '.') so playwright does not walk the
+ * whole repository, including node_modules, vendor and nested worktrees, to find the specs.
+ */
+const testRoots = [
+    { suffix: '', testDir: './e2e' },
+    ...enabledExtensions().map((name) => ({
+        suffix: '-' + name,
+        testDir: `./extensions/${name}/tests/e2e`,
+    })),
+];
+
+const browsers = [
+    {
+        name: 'chromium',
+        use: { ...devices['Desktop Chrome'] },
+    },
+
+    // Firefox only in CI to keep local runs fast
+    ...(process.env.CI
+        ? [
+              {
+                  name: 'firefox',
+                  use: { ...devices['Desktop Firefox'] },
+              },
+          ]
+        : []),
+];
+
+/**
  * See https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig({
-    testDir: './e2e',
+    /* Resolves the @e2e/* and @e2e-support/* aliases that extension specs import core helpers with */
+    tsconfig: './tsconfig.json',
     /* Run tests in files in parallel */
     fullyParallel: true,
     /* Fail the build on CI if you accidentally left test.only in the source code. */
@@ -32,23 +79,14 @@ export default defineConfig({
 
     timeout: 20 * 1000,
 
-    /* Configure projects for major browsers */
-    projects: [
-        {
-            name: 'chromium',
-            use: { ...devices['Desktop Chrome'] },
-        },
-
-        // Firefox only in CI to keep local runs fast
-        ...(process.env.CI
-            ? [
-                  {
-                      name: 'firefox',
-                      use: { ...devices['Desktop Firefox'] },
-                  },
-              ]
-            : []),
-    ],
+    /* Configure projects for major browsers, core specs keep the plain browser project name */
+    projects: browsers.flatMap((browser) =>
+        testRoots.map((root) => ({
+            name: browser.name + root.suffix,
+            testDir: root.testDir,
+            use: browser.use,
+        }))
+    ),
 
     /* Run your local dev server before starting the tests */
     // webServer: {
