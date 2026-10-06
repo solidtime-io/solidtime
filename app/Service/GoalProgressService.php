@@ -9,10 +9,40 @@ use App\Enums\GoalPeriod;
 use App\Enums\GoalStatus;
 use App\Models\Goal;
 use App\Models\TimeEntry;
+use App\Service\Dto\GoalProgressDto;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 
 class GoalProgressService
 {
+    /**
+     * Progress of the goal in the period that contains $now.
+     */
+    public function getCurrentProgress(Goal $goal, Carbon $now): GoalProgressDto
+    {
+        [$periodStart, $periodEnd] = $this->getPeriodBounds($goal, $now);
+        $trackedSeconds = $this->getProgress($goal, $periodStart, $periodEnd);
+
+        return new GoalProgressDto($periodStart, $periodEnd, $trackedSeconds, $this->getStatus($goal, $trackedSeconds));
+    }
+
+    /**
+     * Progress of the goals in the period that contains $now, keyed by goal ID.
+     * Runs one query per goal, since every goal has its own filters, timezone and period.
+     *
+     * @param  Collection<int, Goal>  $goals
+     * @return array<string, GoalProgressDto>
+     */
+    public function getCurrentProgressForGoals(Collection $goals, Carbon $now): array
+    {
+        $progress = [];
+        foreach ($goals as $goal) {
+            $progress[$goal->getKey()] = $this->getCurrentProgress($goal, $now);
+        }
+
+        return $progress;
+    }
+
     /**
      * Bounds of the period that contains $date, in UTC. The period is calculated in the timezone of the goal
      * and respects the week start of the goal. The start is inclusive, the end exclusive.
@@ -46,7 +76,7 @@ class GoalProgressService
      * @param  Carbon  $periodStart  Start of the period (inclusive)
      * @param  Carbon  $periodEnd  End of the period (exclusive)
      */
-    public function getProgress(Goal $goal, Carbon $periodStart, Carbon $periodEnd): int
+    private function getProgress(Goal $goal, Carbon $periodStart, Carbon $periodEnd): int
     {
         $filters = $goal->filters;
 

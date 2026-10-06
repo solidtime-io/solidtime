@@ -14,6 +14,7 @@ use App\Http\Resources\V1\Goal\GoalResource;
 use App\Models\Goal;
 use App\Models\Organization;
 use App\Service\BillingContract;
+use App\Service\GoalProgressService;
 use App\Service\GoalsContract;
 use App\Service\TimezoneService;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -73,7 +74,7 @@ class GoalController extends Controller
      *
      * @operationId getGoals
      */
-    public function index(Organization $organization, GoalIndexRequest $request, GoalsContract $access): GoalCollection
+    public function index(Organization $organization, GoalIndexRequest $request, GoalsContract $access, GoalProgressService $progressService): GoalCollection
     {
         // An organization goal is visible to the member it is for, who does not hold the :organization-type permission.
         // Either permission is enough, the access contract decides which goals come back.
@@ -96,8 +97,9 @@ class GoalController extends Controller
         }
 
         $goals = $query->paginate(config('app.pagination_per_page_default'));
+        $progressByGoalId = $progressService->getCurrentProgressForGoals($goals->getCollection(), Carbon::now());
 
-        return new GoalCollection($goals);
+        return new GoalCollection($goals, $progressByGoalId);
     }
 
     /**
@@ -107,7 +109,7 @@ class GoalController extends Controller
      *
      * @operationId getGoal
      */
-    public function show(Organization $organization, Goal $goal, GoalsContract $access): GoalResource
+    public function show(Organization $organization, Goal $goal, GoalsContract $access, GoalProgressService $progressService): GoalResource
     {
         // Either permission is enough, see index
         $this->checkAnyPermission($organization, ['goals:view:own', 'goals:view:organization-type']);
@@ -118,7 +120,7 @@ class GoalController extends Controller
         }
         $goal->load('member.user');
 
-        return new GoalResource($goal);
+        return new GoalResource($goal, $progressService->getCurrentProgress($goal, Carbon::now()));
     }
 
     /**
@@ -128,7 +130,7 @@ class GoalController extends Controller
      *
      * @operationId createGoal
      */
-    public function store(Organization $organization, GoalStoreRequest $request, GoalsContract $access): JsonResponse
+    public function store(Organization $organization, GoalStoreRequest $request, GoalsContract $access, GoalProgressService $progressService): JsonResponse
     {
         if ($request->getType() === GoalType::Personal) {
             $this->checkPermission($organization, 'goals:create:own');
@@ -159,7 +161,7 @@ class GoalController extends Controller
         $goal->save();
         $goal->load('member.user');
 
-        return (new GoalResource($goal))
+        return (new GoalResource($goal, $progressService->getCurrentProgress($goal, Carbon::now())))
             ->response()
             ->setStatusCode(201);
     }
@@ -173,7 +175,7 @@ class GoalController extends Controller
      *
      * @operationId updateGoal
      */
-    public function update(Organization $organization, Goal $goal, GoalUpdateRequest $request, GoalsContract $access): GoalResource
+    public function update(Organization $organization, Goal $goal, GoalUpdateRequest $request, GoalsContract $access, GoalProgressService $progressService): GoalResource
     {
         if ($goal->type === GoalType::Personal) {
             $this->checkPermission($organization, 'goals:update:own', $goal);
@@ -212,7 +214,7 @@ class GoalController extends Controller
         $goal->save();
         $goal->load('member.user');
 
-        return new GoalResource($goal);
+        return new GoalResource($goal, $progressService->getCurrentProgress($goal, Carbon::now()));
     }
 
     /**

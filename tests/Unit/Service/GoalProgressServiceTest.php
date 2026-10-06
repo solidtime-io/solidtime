@@ -43,9 +43,8 @@ class GoalProgressServiceTest extends TestCase
     private function progressAt(Goal $goal, Carbon $now): int
     {
         Carbon::setTestNow($now);
-        [$periodStart, $periodEnd] = $this->service->getPeriodBounds($goal, $now);
 
-        return $this->service->getProgress($goal, $periodStart, $periodEnd);
+        return $this->service->getCurrentProgress($goal, $now)->trackedSeconds;
     }
 
     public function test_period_bounds_of_day_goal_are_calculated_in_the_timezone_of_the_goal(): void
