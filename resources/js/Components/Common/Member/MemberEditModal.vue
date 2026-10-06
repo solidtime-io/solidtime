@@ -21,6 +21,7 @@ import { getOrganizationCurrencyString } from '@/utils/money';
 import BillableIcon from '@/packages/ui/src/Icons/BillableIcon.vue';
 import { useOrganizationQuery } from '@/utils/useOrganizationQuery';
 import { getCurrentOrganizationId } from '@/utils/useUser';
+import { useBillableRatesLock } from '@/packages/ui/src/utils/useBillableRatesLock';
 
 const { updateMember } = useMembersStore();
 const { organization } = useOrganizationQuery(getCurrentOrganizationId()!);
@@ -70,6 +71,8 @@ function saveWithChecks() {
         submitBillableRate();
     }
 }
+
+const { locked: billableRatesLocked } = useBillableRatesLock();
 
 const billableRateSelect = ref<MemberBillableKey>('default-rate');
 
@@ -159,7 +162,12 @@ const roleDescription = computed(() => {
                         <FieldLabel :icon="BillableIcon" for="billableRateType"
                             >Billable Rate</FieldLabel
                         >
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <BillableRateInput
+                            v-if="billableRatesLocked"
+                            v-model="displayedRate"
+                            :currency="getOrganizationCurrencyString()"
+                            name="memberBillableRate" />
+                        <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                             <Select v-model="billableRateSelect">
                                 <SelectTrigger id="billableRateType">
                                     <SelectValue />

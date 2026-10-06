@@ -54,4 +54,13 @@ class BillingContract
     {
         return false;
     }
+
+    /**
+     * Check if the organization can set and see billable rates
+     * Without a billing system every organization can use billable rates
+     */
+    public function canUseBillableRates(Organization $organization): bool
+    {
+        return true;
+    }
 }

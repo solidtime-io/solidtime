@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1;
 
-use App\Enums\Role;
 use App\Events\AfterCreateOrganization;
+use App\Exceptions\Api\FeatureIsNotAvailableInFreePlanApiException;
 use App\Http\Requests\V1\Organization\OrganizationDestroyRequest;
 use App\Http\Requests\V1\Organization\OrganizationStoreRequest;
 use App\Http\Requests\V1\Organization\OrganizationUpdateRequest;
@@ -32,7 +32,7 @@ class OrganizationController extends Controller
     {
         $this->checkPermission($organization, 'organizations:view');
 
-        $showBillableRate = $this->member($organization)->role !== Role::Employee->value || $organization->employees_can_see_billable_rates;
+        $showBillableRate = $this->canSeeBillableRates($organization);
 
         return new OrganizationResource($organization, $showBillableRate);
     }
@@ -54,7 +54,10 @@ class OrganizationController extends Controller
         if ($request->getCurrency() !== null) {
             $organization->currency = $request->getCurrency();
         }
-        if ($request->getEmployeesCanSeeBillableRates() !== null) {
+        if ($request->getEmployeesCanSeeBillableRates() !== null && $request->getEmployeesCanSeeBillableRates() !== $organization->employees_can_see_billable_rates) {
+            if (! $this->canUseBillableRates($organization)) {
+                throw new FeatureIsNotAvailableInFreePlanApiException;
+            }
             $organization->employees_can_see_billable_rates = $request->getEmployeesCanSeeBillableRates();
         }
         if ($request->getEmployeesCanManageTasks() !== null) {
@@ -83,6 +86,7 @@ class OrganizationController extends Controller
         }
         $hasBillableRate = $request->has('billable_rate');
         if ($hasBillableRate) {
+            $this->checkBillableRateChange($organization, $organization->billable_rate, $request->getBillableRate());
             $oldBillableRate = $organization->billable_rate;
             $organization->billable_rate = $request->getBillableRate();
         }

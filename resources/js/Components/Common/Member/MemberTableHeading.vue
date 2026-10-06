@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import UpgradeLockedBadge from '@/packages/ui/src/UpgradeLockedBadge.vue';
+import { useBillableRatesLock } from '@/packages/ui/src/utils/useBillableRatesLock';
 import TableHeading from '@/Components/Common/TableHeading.vue';
 import SortableTableHeaderCell from '@/Components/Common/SortableTableHeaderCell.vue';
 import type { SortColumn, SortDirection } from '@/Components/Common/Member/MemberTable.vue';
@@ -12,6 +14,8 @@ const props = defineProps<{
 defineEmits<{
     sort: [column: SortColumn];
 }>();
+
+const { locked: billableRatesLocked } = useBillableRatesLock();
 </script>
 
 <template>
@@ -33,7 +37,10 @@ defineEmits<{
             column="billable_rate"
             v-bind="props"
             @sort="$emit('sort', $event)">
-            Billable Rate
+            <span class="inline-flex items-center gap-2 whitespace-nowrap">
+                Billable Rate
+                <UpgradeLockedBadge v-if="billableRatesLocked" />
+            </span>
         </SortableTableHeaderCell>
         <SortableTableHeaderCell column="status" v-bind="props" @sort="$emit('sort', $event)">
             Status

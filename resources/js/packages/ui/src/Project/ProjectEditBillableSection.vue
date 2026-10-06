@@ -10,11 +10,14 @@ import {
 } from '@/packages/ui/src/tooltip';
 import { computed, onMounted, ref, watch } from 'vue';
 import BillableIcon from '@/packages/ui/src/Icons/BillableIcon.vue';
+import { useBillableRatesLock } from '../utils/useBillableRatesLock';
 
 const props = defineProps<{
     currency: string;
     organizationBillableRate: number | null;
 }>();
+
+const { locked: billableRatesLocked } = useBillableRatesLock();
 
 type RateType = 'default-rate' | 'custom-rate';
 
@@ -91,7 +94,12 @@ const emit = defineEmits(['submit']);
     </Field>
     <Field>
         <FieldLabel :icon="BillableIcon" for="billableRateType">Billable Rate</FieldLabel>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <BillableRateInput
+            v-if="billableRatesLocked"
+            v-model="displayedRate"
+            :currency="currency"
+            name="billableRate" />
+        <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <Select v-model="rateType">
                 <SelectTrigger id="billableRateType">
                     <SelectValue />

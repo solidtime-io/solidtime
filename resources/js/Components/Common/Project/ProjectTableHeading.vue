@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import UpgradeLockedBadge from '@/packages/ui/src/UpgradeLockedBadge.vue';
+import { useBillableRatesLock } from '@/packages/ui/src/utils/useBillableRatesLock';
 import { computed } from 'vue';
 import TableHeading from '@/Components/Common/TableHeading.vue';
 import SortableTableHeaderCell from '@/Components/Common/SortableTableHeaderCell.vue';
@@ -25,6 +27,8 @@ const sortState = computed(() => ({
 function handleSort(column: SortColumn) {
     emit('sort', column);
 }
+
+const { locked: billableRatesLocked } = useBillableRatesLock();
 </script>
 
 <template>
@@ -50,7 +54,10 @@ function handleSort(column: SortColumn) {
             column="billable_rate"
             v-bind="sortState"
             @sort="handleSort">
-            Billable Rate
+            <span class="inline-flex items-center gap-2 whitespace-nowrap">
+                Billable Rate
+                <UpgradeLockedBadge v-if="billableRatesLocked" />
+            </span>
         </SortableTableHeaderCell>
         <SortableTableHeaderCell column="status" v-bind="sortState" @sort="handleSort">
             Status

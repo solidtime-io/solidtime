@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1;
 
-use App\Enums\Role;
 use App\Models\Organization;
 use App\Service\DashboardService;
 use App\Service\PermissionStore;
@@ -159,7 +158,7 @@ class ChartController extends Controller
         $this->checkPermission($organization, 'charts:view:own');
         $user = $this->user();
 
-        $showBillableRate = $this->member($organization)->role !== Role::Employee->value || $organization->employees_can_see_billable_rates;
+        $showBillableRate = $this->canSeeBillableRates($organization);
         if (! $showBillableRate) {
             throw new AuthorizationException('You do not have permission to view billable rates.');
         }

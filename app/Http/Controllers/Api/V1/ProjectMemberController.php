@@ -65,6 +65,7 @@ class ProjectMemberController extends Controller
     public function store(Organization $organization, Project $project, ProjectMemberStoreRequest $request, BillableRateService $billableRateService): JsonResource
     {
         $this->checkPermission($organization, 'project-members:create', $project);
+        $this->checkBillableRateChange($organization, null, $request->getBillableRate());
 
         $member = Member::findOrFail((string) $request->input('member_id'));
         if ($member->user->is_placeholder) {
@@ -98,6 +99,7 @@ class ProjectMemberController extends Controller
     public function update(Organization $organization, ProjectMember $projectMember, ProjectMemberUpdateRequest $request, BillableRateService $billableRateService): JsonResource
     {
         $this->checkPermission($organization, 'project-members:update', projectMember: $projectMember);
+        $this->checkBillableRateChange($organization, $projectMember->billable_rate, $request->getBillableRate());
         $oldBillableRate = $projectMember->billable_rate;
         $projectMember->billable_rate = $request->getBillableRate();
         $projectMember->save();

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useBillableRatesLock } from '@/packages/ui/src/utils/useBillableRatesLock';
 import type { ProjectMember } from '@/packages/api/src';
 import { computed, ref, inject, type ComputedRef } from 'vue';
 import TableRow from '@/Components/TableRow.vue';
@@ -10,6 +11,7 @@ import { capitalizeFirstLetter } from '@/utils/format';
 import ProjectMemberEditModal from '@/Components/Common/ProjectMember/ProjectMemberEditModal.vue';
 import { getOrganizationCurrencyString } from '@/utils/money';
 import type { Organization } from '@/packages/api/src';
+import UpgradeLockedBadge from '@/packages/ui/src/UpgradeLockedBadge.vue';
 
 const props = defineProps<{
     projectMember: ProjectMember;
@@ -33,6 +35,8 @@ const member = computed(() => {
     return members.value.find((member) => member.id === props.projectMember.member_id);
 });
 const showEditModal = ref(false);
+
+const { locked: billableRatesLocked } = useBillableRatesLock();
 </script>
 
 <template>
@@ -48,17 +52,20 @@ const showEditModal = ref(false);
             </span>
         </div>
         <div class="whitespace-nowrap px-3 py-4 text-sm text-text-secondary">
-            {{
-                projectMember.billable_rate
-                    ? formatCents(
-                          projectMember.billable_rate,
-                          getOrganizationCurrencyString(),
-                          organization?.currency_format,
-                          organization?.currency_symbol,
-                          organization?.number_format
-                      )
-                    : '--'
-            }}
+            <UpgradeLockedBadge v-if="billableRatesLocked" />
+            <span v-else>
+                {{
+                    projectMember.billable_rate
+                        ? formatCents(
+                              projectMember.billable_rate,
+                              getOrganizationCurrencyString(),
+                              organization?.currency_format,
+                              organization?.currency_symbol,
+                              organization?.number_format
+                          )
+                        : '--'
+                }}
+            </span>
         </div>
         <div class="whitespace-nowrap px-3 py-4 text-sm text-text-secondary">
             {{ capitalizeFirstLetter(member?.role ?? '') }}

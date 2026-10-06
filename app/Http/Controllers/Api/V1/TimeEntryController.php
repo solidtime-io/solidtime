@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1;
 
 use App\Enums\ExportFormat;
-use App\Enums\Role;
 use App\Enums\TimeEntryType;
 use App\Exceptions\Api\FeatureIsNotAvailableInFreePlanApiException;
 use App\Exceptions\Api\OverlappingTimeEntryApiException;
@@ -240,7 +239,7 @@ class TimeEntryController extends Controller
         }
         $user = $this->user();
         $timezone = $user->timezone;
-        $showBillableRate = $this->member($organization)->role !== Role::Employee->value || $organization->employees_can_see_billable_rates;
+        $showBillableRate = $this->canSeeBillableRates($organization);
         $roundingType = $canAccessPremiumFeatures ? $request->getRoundingType() : null;
         $roundingMinutes = $canAccessPremiumFeatures ? $request->getRoundingMinutes() : null;
 
@@ -386,7 +385,7 @@ class TimeEntryController extends Controller
         }
         $canAccessPremiumFeatures = $this->canAccessPremiumFeatures($organization);
         $user = $this->user();
-        $showBillableRate = $this->member($organization)->role !== Role::Employee->value || $organization->employees_can_see_billable_rates;
+        $showBillableRate = $this->canSeeBillableRates($organization);
 
         $group1Type = $request->getGroup();
         $group2Type = $request->getSubGroup();
@@ -441,7 +440,7 @@ class TimeEntryController extends Controller
         }
         $debug = $request->getDebug();
         $user = $this->user();
-        $showBillableRate = $this->member($organization)->role !== Role::Employee->value || $organization->employees_can_see_billable_rates;
+        $showBillableRate = $this->canSeeBillableRates($organization);
 
         $group = $request->getGroup();
         $subGroup = $request->getSubGroup();

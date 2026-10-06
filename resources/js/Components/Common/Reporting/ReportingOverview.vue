@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import UpgradeLockedBadge from '@/packages/ui/src/UpgradeLockedBadge.vue';
+import { useBillableRatesLock } from '@/packages/ui/src/utils/useBillableRatesLock';
 import {
     ChartBarIcon,
     ArrowDownTrayIcon,
@@ -290,6 +292,8 @@ const tableData = computed(() => {
         };
     });
 });
+
+const { locked: billableRatesLocked } = useBillableRatesLock();
 </script>
 
 <template>
@@ -416,7 +420,12 @@ const tableData = computed(() => {
                         <div class="text-right" :class="!showBillableRate ? 'pr-6' : ''">
                             Duration
                         </div>
-                        <div v-if="showBillableRate" class="text-right pr-6">Cost</div>
+                        <div
+                            v-if="showBillableRate"
+                            class="flex items-center justify-end gap-2 pr-6">
+                            <UpgradeLockedBadge v-if="billableRatesLocked" />
+                            Cost
+                        </div>
                     </div>
                     <template
                         v-if="
