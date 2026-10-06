@@ -205,6 +205,45 @@ class GoalEndpointTest extends ApiEndpointTestAbstract
         );
     }
 
+    public function test_index_endpoint_returns_the_progress_of_each_goal(): void
+    {
+        // Arrange
+        $this->travelTo(Carbon::create(2024, 1, 3, 12, 0, 0, 'UTC'));
+        $data = $this->createUserWithPermission(['goals:view:own']);
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        $filters = new GoalFiltersDto;
+        $filters->setProjectIds([$project->getKey()]);
+        $dayGoal = Goal::factory()->forMember($data->member)->period(GoalPeriod::Day)->atLeast(3600)->filters($filters)->create([
+            'created_at' => Carbon::now()->subDay(),
+        ]);
+        $weekGoal = Goal::factory()->forMember($data->member)->period(GoalPeriod::Week)->atLeast(3600)->create([
+            'created_at' => Carbon::now()->subDays(2),
+        ]);
+        TimeEntry::factory()->forMember($data->member)->forProject($project)
+            ->startWithDuration(Carbon::now()->subHours(3), 1200)->create();
+        TimeEntry::factory()->forMember($data->member)
+            ->startWithDuration(Carbon::now()->subDay(), 1800)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.goals.index', [$data->organization->getKey()]));
+
+        // Assert
+        $response->assertOk();
+        $response->assertJson(fn (AssertableJson $json) => $json
+            ->count('data', 2)
+            ->where('data.0.id', $dayGoal->getKey())
+            ->where('data.0.progress.period_start', '2024-01-03T00:00:00Z')
+            ->where('data.0.progress.period_end', '2024-01-04T00:00:00Z')
+            ->where('data.0.progress.tracked_seconds', 1200)
+            ->where('data.1.id', $weekGoal->getKey())
+            ->where('data.1.progress.period_start', '2024-01-01T00:00:00Z')
+            ->where('data.1.progress.period_end', '2024-01-08T00:00:00Z')
+            ->where('data.1.progress.tracked_seconds', 1200 + 1800)
+            ->etc()
+        );
+    }
+
     public function test_index_endpoint_does_not_show_organization_goals(): void
     {
         // Arrange

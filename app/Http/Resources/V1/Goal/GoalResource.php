@@ -6,15 +6,23 @@ namespace App\Http\Resources\V1\Goal;
 
 use App\Http\Resources\V1\BaseResource;
 use App\Models\Goal;
-use App\Service\GoalProgressService;
+use App\Service\Dto\GoalProgressDto;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 
 /**
  * @property Goal $resource
  */
 class GoalResource extends BaseResource
 {
+    private GoalProgressDto $progress;
+
+    public function __construct(Goal $resource, GoalProgressDto $progress)
+    {
+        parent::__construct($resource);
+
+        $this->progress = $progress;
+    }
+
     /**
      * Transform the resource into an array.
      *
@@ -22,11 +30,6 @@ class GoalResource extends BaseResource
      */
     public function toArray(Request $request): array
     {
-        $progressService = app(GoalProgressService::class);
-        $now = Carbon::now();
-        [$periodStart, $periodEnd] = $progressService->getPeriodBounds($this->resource, $now);
-        $trackedSeconds = $progressService->getProgress($this->resource, $periodStart, $periodEnd);
-
         return [
             /** @var string $id ID of the goal */
             'id' => $this->resource->id,
@@ -70,13 +73,13 @@ class GoalResource extends BaseResource
             ],
             'progress' => [
                 /** @var string $period_start Start of the current period (inclusive) */
-                'period_start' => $this->formatDateTime($periodStart),
+                'period_start' => $this->formatDateTime($this->progress->periodStart),
                 /** @var string $period_end End of the current period (exclusive) */
-                'period_end' => $this->formatDateTime($periodEnd),
+                'period_end' => $this->formatDateTime($this->progress->periodEnd),
                 /** @var int $tracked_seconds Seconds tracked in the current period that match the filters, incl. the running time entry */
-                'tracked_seconds' => $trackedSeconds,
+                'tracked_seconds' => $this->progress->trackedSeconds,
                 /** @var string $status Status in the current period (in_progress, achieved, on_track, exceeded) */
-                'status' => $progressService->getStatus($this->resource, $trackedSeconds)->value,
+                'status' => $this->progress->status->value,
             ],
             /** @var string $created_at Date when the goal was created */
             'created_at' => $this->formatDateTime($this->resource->created_at),
