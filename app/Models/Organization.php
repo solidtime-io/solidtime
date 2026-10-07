@@ -96,6 +96,16 @@ class Organization extends Model implements AuditableContract
     protected $attributes = [
     ];
 
+    public function getAuditOwnerOrganizationId(): ?string
+    {
+        return $this->getKey();
+    }
+
+    protected function isAuditOwnerOfItself(): bool
+    {
+        return true;
+    }
+
     /**
      * Get all the users that belong to the team.
      *
