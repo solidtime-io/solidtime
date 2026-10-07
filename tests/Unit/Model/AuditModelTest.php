@@ -14,6 +14,7 @@ use App\Models\TimeEntry;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\CoversClass;
 
 #[CoversClass(Audit::class)]
@@ -82,6 +83,41 @@ class AuditModelTest extends ModelTestAbstract
         $audit = Audit::query()->where('auditable_id', $projectMember->getKey())->sole();
         $this->assertSame($organization->getKey(), $audit->owner_organization_id);
         $this->assertNull($audit->owner_user_id);
+    }
+
+    public function test_owner_organization_through_parent_uses_the_loaded_parent_without_query(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $project = Project::factory()->forOrganization($organization)->create();
+        $projectMember = ProjectMember::factory()->forProject($project)->forMember(Member::factory()->forOrganization($organization)->create())->create();
+        $projectMember->load('project');
+        DB::enableQueryLog();
+
+        // Act
+        $ownerOrganizationId = $projectMember->getAuditOwnerOrganizationId();
+
+        // Assert
+        $this->assertSame($organization->getKey(), $ownerOrganizationId);
+        $this->assertCount(0, DB::getQueryLog());
+    }
+
+    public function test_owner_organization_through_parent_ignores_a_loaded_parent_that_does_not_match_the_foreign_key(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $otherOrganization = Organization::factory()->create();
+        $project = Project::factory()->forOrganization($organization)->create();
+        $otherProject = Project::factory()->forOrganization($otherOrganization)->create();
+        $projectMember = ProjectMember::factory()->forProject($project)->forMember(Member::factory()->forOrganization($organization)->create())->create();
+        $projectMember->load('project');
+        $projectMember->project_id = $otherProject->getKey();
+
+        // Act
+        $ownerOrganizationId = $projectMember->getAuditOwnerOrganizationId();
+
+        // Assert
+        $this->assertSame($otherOrganization->getKey(), $ownerOrganizationId);
     }
 
     public function test_audits_of_an_organization_have_the_organization_itself_as_owner(): void
