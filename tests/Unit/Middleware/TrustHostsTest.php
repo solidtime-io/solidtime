@@ -50,7 +50,8 @@ class TrustHostsTest extends TestCase
         $this->middleware()->handle($request, fn (Request $request): Response => new Response('passed'));
 
         try {
-            dump($request->getHost());
+            // Note: Throws an exception if the host is not trusted
+            $request->getHost();
 
             return true;
         } catch (\Throwable) {

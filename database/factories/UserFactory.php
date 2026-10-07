@@ -91,7 +91,7 @@ class UserFactory extends Factory
 
     public function withProfilePicture(): static
     {
-        $profilePhoto = $this->faker->image(null, 500, 500);
+        $profilePhoto = $this->generateProfilePhoto();
         /** @see FileHelpers::hashName */
         $path = 'profile-photos/'.Str::random(40).'.png';
         Storage::disk(config('filesystems.public'))->put($path, $profilePhoto);
@@ -101,6 +101,21 @@ class UserFactory extends Factory
                 'profile_photo_path' => $path,
             ];
         });
+    }
+
+    /**
+     * Generates a PNG image with a random background color.
+     * Note: The image is generated locally, since downloading a placeholder image (Faker image()) depends on an external service.
+     */
+    private function generateProfilePhoto(): string
+    {
+        $image = imagecreatetruecolor(500, 500);
+        $color = imagecolorallocate($image, $this->faker->numberBetween(0, 255), $this->faker->numberBetween(0, 255), $this->faker->numberBetween(0, 255));
+        imagefill($image, 0, 0, $color);
+        ob_start();
+        imagepng($image);
+
+        return (string) ob_get_clean();
     }
 
     /**
