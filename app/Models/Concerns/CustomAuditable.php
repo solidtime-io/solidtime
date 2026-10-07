@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Concerns;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Config;
 use OwenIt\Auditing\Auditable;
 
@@ -27,6 +28,36 @@ trait CustomAuditable
      */
     public function getAuditOwnerOrganizationId(): ?string
     {
+        if ($this instanceof AuditableThroughParent) {
+            $relation = $this->getAuditParentRelation();
+            $parentId = $this->getAttributes()[$relation->getForeignKeyName()] ?? null;
+            if ($parentId === null) {
+                return null;
+            }
+
+            // Note: The loaded parent is only used if it still matches the foreign key and was loaded with the organization
+            $relationName = $relation->getRelationName();
+            if ($this->relationLoaded($relationName)) {
+                $parent = $this->getRelation($relationName);
+                if ($parent instanceof Model
+                    && $parent->getAttribute($relation->getOwnerKeyName()) === $parentId
+                    && array_key_exists('organization_id', $parent->getAttributes())) {
+                    /** @var string|null $organizationId */
+                    $organizationId = $parent->getAttributes()['organization_id'];
+
+                    return $organizationId;
+                }
+            }
+
+            /** @var string|null $organizationId */
+            $organizationId = $relation->getRelated()->newQuery()
+                ->toBase()
+                ->where($relation->getOwnerKeyName(), $parentId)
+                ->value('organization_id');
+
+            return $organizationId;
+        }
+
         return $this->getAttributes()['organization_id'] ?? null;
     }
 
