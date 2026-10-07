@@ -38,7 +38,9 @@ const gridTemplateColumns = [
         <div class="inline-block min-w-full align-middle">
             <div data-testid="goal_table" class="grid min-w-full" :style="{ gridTemplateColumns }">
                 <GoalTableHeading :show-target-column="showTargetColumn"></GoalTableHeading>
-                <div v-if="props.isLoading" class="col-span-full py-24 text-center">
+                <div
+                    v-if="props.isLoading"
+                    class="col-span-full flex justify-center items-center py-24">
                     <LoadingSpinner></LoadingSpinner>
                 </div>
                 <div v-else-if="props.goals.length === 0" class="col-span-full py-24 text-center">
