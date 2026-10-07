@@ -32,7 +32,7 @@ return [
     */
 
     'user' => [
-        'morph_prefix' => 'user',
+        'morph_prefix' => 'actor',
         'guards' => [
             'web',
             'api',

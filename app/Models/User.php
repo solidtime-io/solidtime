@@ -124,6 +124,16 @@ class User extends Authenticatable implements AuditableContract, FilamentUser, M
         'send_time_entry_still_running_email' => true,
     ];
 
+    public function getAuditOwnerUserId(): ?string
+    {
+        return $this->getKey();
+    }
+
+    protected function isAuditOwnerOfItself(): bool
+    {
+        return true;
+    }
+
     /**
      * Get the URL to the user's profile photo.
      *

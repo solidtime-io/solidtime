@@ -82,4 +82,12 @@ class ProjectMember extends Model implements AuditableContract
             $query->whereBelongsTo($organization, 'organization');
         });
     }
+
+    public function getAuditOwnerOrganizationId(): ?string
+    {
+        /** @var string|null $organizationId */
+        $organizationId = Project::query()->whereKey($this->project_id)->value('organization_id');
+
+        return $organizationId;
+    }
 }

@@ -7,6 +7,7 @@ namespace Tests\Unit\Service;
 use App\Enums\Role;
 use App\Events\BeforeOrganizationDeletion;
 use App\Exceptions\Api\CanNotDeleteUserWhoIsOwnerOfOrganizationWithMultipleMembers;
+use App\Models\Audit;
 use App\Models\Client;
 use App\Models\Member;
 use App\Models\Organization;
@@ -182,6 +183,8 @@ class DeletionServiceTest extends TestCaseWithDatabase
         // Assert
         $this->assertOrganizationDeleted($organization->organization);
         $this->assertOrganizationNothingDeleted($otherOrganization->organization);
+        $this->assertSame(0, Audit::query()->where('owner_organization_id', $organization->organization->getKey())->count());
+        $this->assertGreaterThan(0, Audit::query()->where('owner_organization_id', $otherOrganization->organization->getKey())->count());
         Log::assertLoggedTimes(fn (LogEntry $log) => $log->level === 'debug'
             && $log->message === 'Start deleting organization'
             && $log->context['organization_id'] === $organization->organization->getKey(),
@@ -318,6 +321,10 @@ class DeletionServiceTest extends TestCaseWithDatabase
         $this->assertDatabaseMissing(Member::class, [
             'user_id' => $user->getKey(),
         ]);
+        $this->assertSame(0, Audit::query()->where('owner_user_id', $user->getKey())->count());
+        $this->assertSame(0, Audit::query()->where('owner_organization_id', $user->current_team_id)->count());
+        $this->assertGreaterThan(0, Audit::query()->where('owner_user_id', $otherUser->getKey())->count());
+        $this->assertGreaterThan(0, Audit::query()->where('owner_organization_id', $otherUser->current_team_id)->count());
         Storage::disk(config('filesystems.public'))->assertMissing($user->profile_photo_path);
         Storage::disk(config('filesystems.public'))->assertExists($otherUser->profile_photo_path);
         Log::assertLoggedTimes(fn (LogEntry $log) => $log->level === 'debug'
@@ -330,6 +337,24 @@ class DeletionServiceTest extends TestCaseWithDatabase
             && $log->context['id'] === $user->getKey(),
             1
         );
+    }
+
+    public function test_delete_user_keeps_audits_of_other_organizations_where_the_user_is_the_actor(): void
+    {
+        // Arrange
+        $user = User::factory()->withPersonalOrganization()->create();
+        $otherOrganization = Organization::factory()->create();
+        $audit = Audit::factory()->auditUser($user)->auditFor($otherOrganization)->create([
+            'owner_organization_id' => $otherOrganization->getKey(),
+        ]);
+
+        // Act
+        $this->deletionService->deleteUser($user);
+
+        // Assert
+        $audit->refresh();
+        $this->assertSame($user->getKey(), $audit->actor_id);
+        $this->assertSame($otherOrganization->getKey(), $audit->owner_organization_id);
     }
 
     public function test_delete_user_deletes_owned_organizations_that_have_only_one_member_and_makes_makes_the_user_placeholder_in_not_owned_organizations(): void
