@@ -1,0 +1,185 @@
+name: Playwright Tests - Extensions
+on: push
+permissions:
+  contents: read
+jobs:
+  test:
+    name: test (${{ matrix.variant }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    # Same extension sets as build-private.yml and build-onpremise.yml, so the extension specs run
+    # with and without Billing.
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - variant: private
+            billing: true
+            extensions: Billing Services Invoicing
+          - variant: onpremise
+            billing: false
+            extensions: Invoicing
+
+    services:
+      mailpit:
+        image: 'axllent/mailpit:latest'
+        ports:
+          - 1025:1025
+          - 8025:8025
+      pgsql_test:
+        image: postgres:15
+        env:
+          PGPASSWORD: 'root'
+          POSTGRES_DB: 'laravel'
+          POSTGRES_USER: 'root'
+          POSTGRES_PASSWORD: 'root'
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      gotenberg:
+        image: gotenberg/gotenberg:8
+        ports:
+          - 3000:3000
+        options: >-
+          --health-cmd "curl --silent --fail http://localhost:3000/health"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: "Checkout code"
+        uses: actions/checkout@v7
+
+      - name: "Setup node"
+        uses: actions/setup-node@v7
+        with:
+          node-version: '20.x'
+
+      - name: "Setup PHP"
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv
+          coverage: none
+
+      - name: "Read extension manifest"
+        id: extension-manifest
+        run: |
+          {
+            echo "billing_repository=$(jq -r '.Billing.repository' extensions/manifest.json)"
+            echo "billing_ref=$(jq -r '.Billing.ref' extensions/manifest.json)"
+            echo "services_repository=$(jq -r '.Services.repository' extensions/manifest.json)"
+            echo "services_ref=$(jq -r '.Services.ref' extensions/manifest.json)"
+            echo "invoicing_repository=$(jq -r '.Invoicing.repository' extensions/manifest.json)"
+            echo "invoicing_ref=$(jq -r '.Invoicing.ref' extensions/manifest.json)"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: "Checkout billing extension"
+        if: matrix.billing
+        uses: actions/checkout@v7
+        with:
+          repository: ${{ steps.extension-manifest.outputs.billing_repository }}
+          ref: ${{ steps.extension-manifest.outputs.billing_ref }}
+          path: extensions/Billing
+          ssh-key: ${{ secrets.SSH_PRIVATE_KEY_BILLING_EXTENSION }}
+
+      - name: "Install composer dependencies in billing extension"
+        if: matrix.billing
+        working-directory: extensions/Billing
+        env:
+          COMPOSER_AUTH: '{"http-basic": {"spark.laravel.com": {"username": "contact@solidtime.io", "password": "${{ secrets.LARAVEL_SPARK_API_KEY }}"}}}'
+        run: composer install -n --prefer-dist --ignore-platform-reqs
+
+      - name: "Install npm dependencies in billing extension"
+        if: matrix.billing
+        run: cd extensions/Billing && npm ci
+
+      - name: "Checkout services extension"
+        if: matrix.billing
+        uses: actions/checkout@v7
+        with:
+          repository: ${{ steps.extension-manifest.outputs.services_repository }}
+          ref: ${{ steps.extension-manifest.outputs.services_ref }}
+          path: extensions/Services
+          ssh-key: ${{ secrets.SSH_PRIVATE_KEY_SERVICES_EXTENSION }}
+
+      - name: "Install composer dependencies in services extension"
+        if: matrix.billing
+        working-directory: extensions/Services
+        run: composer install -n --prefer-dist --ignore-platform-reqs
+
+      - name: "Install npm dependencies in services extension"
+        if: matrix.billing
+        run: cd extensions/Services && npm ci
+
+      - name: "Checkout invoicing extension"
+        uses: actions/checkout@v7
+        with:
+          repository: ${{ steps.extension-manifest.outputs.invoicing_repository }}
+          ref: ${{ steps.extension-manifest.outputs.invoicing_ref }}
+          path: extensions/Invoicing
+          ssh-key: ${{ secrets.SSH_PRIVATE_KEY_INVOICING_EXTENSION }}
+
+      - name: "Install composer dependencies in invoicing extension"
+        working-directory: extensions/Invoicing
+        run: composer install -n --prefer-dist --ignore-platform-reqs
+
+      - name: "Install npm dependencies in invoicing extension"
+        run: cd extensions/Invoicing && npm ci
+
+      - name: "Run composer install"
+        run: composer install -n --prefer-dist
+
+      # Must run before `migrate` so the extensions' migrations are applied, and before the
+      # frontend build so vite collects the extensions' assets. It also writes
+      # modules_statuses.json, which playwright.config.ts reads to collect the extension specs.
+      - name: "Activate extensions"
+        run: |
+          for extension in ${{ matrix.extensions }}; do
+            php artisan module:enable "$extension"
+          done
+
+      - name: "Prepare Laravel Application"
+        run: |
+          cp .env.ci .env
+          php artisan key:generate
+          php artisan passport:keys
+          php artisan migrate --seed
+
+      - name: "Install dependencies"
+        run: npm ci
+
+      - name: "Build Frontend"
+        run: npm run build
+
+      - name: "Install FrankenPHP"
+        run: |
+          ARCH="$(uname -m)"
+          curl -fsSL "https://github.com/dunglas/frankenphp/releases/latest/download/frankenphp-linux-${ARCH}" -o /usr/local/bin/frankenphp
+          chmod +x /usr/local/bin/frankenphp
+
+      - name: "Run Laravel Octane Server"
+        run: php artisan octane:start --server=frankenphp --host=127.0.0.1 --port=8000 --workers=4 --max-requests=500 > /dev/null 2>&1 &
+        env:
+          OCTANE_SERVER: frankenphp
+
+      - name: "Install Playwright Browsers"
+        run: npx playwright install --with-deps
+
+      # Only the extension specs, the core specs run without extensions in playwright.yml
+      - name: "Run Playwright tests"
+        run: npx playwright test extensions/
+        env:
+          PLAYWRIGHT_BASE_URL: 'http://127.0.0.1:8000'
+          MAILPIT_BASE_URL: 'http://localhost:8025'
+
+      # No artifacts are uploaded on purpose. This repository is public, so every artifact is
+      # downloadable by anyone, and Playwright's reports carry the source of the specs that
+      # produced them (traces embed whole source files, error-context.md embeds a window of the
+      # spec). Those specs live in the private extension repositories. Failures are diagnosed from
+      # the job log; to inspect a trace, reproduce the failure locally with the extension checked out.

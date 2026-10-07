@@ -6,7 +6,9 @@
   "compilerOptions": {
     "paths": {
       "@/*": ["./resources/js/*"],
-      "@solidtime/ui": ["./resources/js/packages/ui/src/index.ts"]
+      "@solidtime/ui": ["./resources/js/packages/ui/src/index.ts"],
+      "@e2e/*": ["./e2e/*"],
+      "@e2e-support/*": ["./playwright/*"]
     }
   },
   "skipLibCheck": true,
