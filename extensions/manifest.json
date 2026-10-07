@@ -1,7 +1,7 @@
 {
     "Billing": {
         "repository": "solidtime-io/extension-billing",
-        "ref": "v0.0.8"
+        "ref": "03495baa55a8a1134dc6b8722bc656ec86c07285"
     },
     "Services": {
         "repository": "solidtime-io/extension-services",
@@ -9,10 +9,10 @@
     },
     "Invoicing": {
         "repository": "solidtime-io/extension-invoicing",
-        "ref": "v0.0.7"
+        "ref": "7c1962dc2ae62b87d40f0dca5637dfcbfbad21a3"
     },
     "Auditing": {
         "repository": "solidtime-io/extension-auditing",
-        "ref": "v0.0.3"
+        "ref": "b4cc42819586a6ee9f69e14021452aaf3270d816"
     }
 }
