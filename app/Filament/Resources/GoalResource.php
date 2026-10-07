@@ -107,7 +107,8 @@ class GoalResource extends Resource
                 TextColumn::make('comparison')
                     ->sortable(),
                 TextColumn::make('target_seconds')
-                    ->label('Target (seconds)')
+                    ->label('Target')
+                    ->formatStateUsing(fn (int $state): string => sprintf('%dh %02dm', intdiv($state, 3600), intdiv($state % 3600, 60)))
                     ->sortable(),
                 TextColumn::make('period')
                     ->sortable(),
