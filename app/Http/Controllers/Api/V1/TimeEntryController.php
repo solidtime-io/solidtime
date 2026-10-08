@@ -33,6 +33,7 @@ use App\Service\LocalizationService;
 use App\Service\ReportExport\TimeEntriesDetailedCsvExport;
 use App\Service\ReportExport\TimeEntriesDetailedExport;
 use App\Service\ReportExport\TimeEntriesReportExport;
+use App\Service\ReportService;
 use App\Service\TimeEntryAggregationService;
 use App\Service\TimeEntryFilter;
 use App\Service\TimeEntryService;
@@ -227,7 +228,7 @@ class TimeEntryController extends Controller
      *
      * @operationId exportTimeEntries
      */
-    public function indexExport(Organization $organization, TimeEntryIndexExportRequest $request, TimeEntryAggregationService $timeEntryAggregationService): JsonResponse
+    public function indexExport(Organization $organization, TimeEntryIndexExportRequest $request, TimeEntryAggregationService $timeEntryAggregationService, ReportService $reportService): JsonResponse
     {
         $member = $this->member($organization);
         /** @var Member|null $memberFilter */
@@ -258,6 +259,7 @@ class TimeEntryController extends Controller
             'tagsRelation',
         ]);
         $filename = 'time-entries-export-'.now()->format('Y-m-d_H-i-s').'-'.Str::uuid().'.'.$format->getFileExtension();
+        $downloadFilename = $reportService->exportFilename('detailed', $request->getStart()->timezone($timezone), $request->getEnd()->timezone($timezone), $format);
         $folderPath = 'exports';
         $path = $folderPath.'/'.$filename;
         $localizationService = LocalizationService::forOrganization($organization);
@@ -342,7 +344,7 @@ class TimeEntryController extends Controller
         return response()->json([
             'download_url' => Storage::disk(config('filesystems.private'))
                 ->temporaryUrl($path, now()->addMinutes(5), [
-                    'ResponseContentDisposition' => 'attachment; filename="'.$filename.'"',
+                    'ResponseContentDisposition' => 'attachment; filename="'.$downloadFilename.'"',
                 ]),
         ]);
     }
@@ -434,7 +436,7 @@ class TimeEntryController extends Controller
      * @throws NoOutputFileInResponse
      * @throws FeatureIsNotAvailableInFreePlanApiException
      */
-    public function aggregateExport(Organization $organization, TimeEntryAggregateExportRequest $request, TimeEntryAggregationService $timeEntryAggregationService): JsonResponse
+    public function aggregateExport(Organization $organization, TimeEntryAggregateExportRequest $request, TimeEntryAggregationService $timeEntryAggregationService, ReportService $reportService): JsonResponse
     {
         $member = $this->member($organization);
         /** @var Member|null $memberFilter */
@@ -490,6 +492,7 @@ class TimeEntryController extends Controller
         $localizationService = LocalizationService::forOrganization($organization);
 
         $filename = 'time-entries-report-'.now()->format('Y-m-d_H-i-s').'-'.Str::uuid().'.'.$format->getFileExtension();
+        $downloadFilename = $reportService->exportFilename('overview', $request->getStart()->timezone($timezone), $request->getEnd()->timezone($timezone), $format);
         $folderPath = 'exports';
         $path = $folderPath.'/'.$filename;
 
@@ -560,7 +563,7 @@ class TimeEntryController extends Controller
         return response()->json([
             'download_url' => Storage::disk(config('filesystems.private'))
                 ->temporaryUrl($path, now()->addMinutes(5), [
-                    'ResponseContentDisposition' => 'attachment; filename="'.$filename.'"',
+                    'ResponseContentDisposition' => 'attachment; filename="'.$downloadFilename.'"',
                 ]),
         ]);
     }

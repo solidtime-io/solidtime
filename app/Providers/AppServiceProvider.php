@@ -35,7 +35,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Str;
+use Symfony\Component\HttpFoundation\HeaderUtils;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AppServiceProvider extends ServiceProvider
@@ -111,14 +111,14 @@ class AppServiceProvider extends ServiceProvider
         if (config('filesystems.disks.'.$privateDisk.'.driver') === 'local') {
             $disk = Storage::disk($privateDisk);
             $disk->serveUsing(function (Request $request, string $path, array $headers) use ($disk): StreamedResponse {
-                return $disk->response($path, null, $headers, $request->query('disposition', 'inline'));
+                return $disk->response($path, $request->query('filename'), $headers, $request->query('disposition', 'inline'));
             });
             $disk->buildTemporaryUrlsUsing(function (string $path, DateTimeInterface $expiration, array $options) use ($privateDisk): string {
+                $disposition = HeaderUtils::combine(HeaderUtils::split($options['ResponseContentDisposition'] ?? '', ';='));
                 $parameters = array_filter([
                     'path' => $path,
-                    'disposition' => isset($options['ResponseContentDisposition'])
-                        ? Str::before($options['ResponseContentDisposition'], ';')
-                        : null,
+                    'disposition' => array_key_first($disposition),
+                    'filename' => $disposition['filename'] ?? null,
                 ]);
 
                 return url(URL::temporarySignedRoute('storage.'.$privateDisk, $expiration, $parameters, absolute: false));
