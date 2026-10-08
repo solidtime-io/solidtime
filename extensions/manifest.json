@@ -9,7 +9,7 @@
     },
     "Invoicing": {
         "repository": "solidtime-io/extension-invoicing",
-        "ref": "v0.0.8"
+        "ref": "v0.0.9"
     },
     "Auditing": {
         "repository": "solidtime-io/extension-auditing",
