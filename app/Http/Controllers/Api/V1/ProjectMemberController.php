@@ -36,8 +36,6 @@ class ProjectMemberController extends Controller
     /**
      * Get project members for project
      *
-     * @return ProjectMemberCollection<ProjectMemberResource>
-     *
      * @throws AuthorizationException
      *
      * @operationId getProjectMembers

@@ -117,8 +117,6 @@ class TimeEntryController extends Controller
      * Results are paginated with `limit` (default 100, max 500) and `offset`; check `meta.total` and fetch further pages when needed.
      * To find the running timer, use `active=true` (or `GET /v1/users/me/time-entries/active`).
      *
-     * @return TimeEntryCollection<TimeEntryResource>
-     *
      * @throws AuthorizationException
      *
      * @operationId getTimeEntries

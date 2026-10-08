@@ -29,8 +29,6 @@ class TagController extends Controller
     /**
      * Get tags
      *
-     * @return TagCollection<TagResource>
-     *
      * @operationId getTags
      *
      * @throws AuthorizationException

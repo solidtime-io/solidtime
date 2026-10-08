@@ -48,8 +48,6 @@ class MemberController extends Controller
     /**
      * List all members of an organization
      *
-     * @return MemberCollection<MemberResource>
-     *
      * @throws AuthorizationException
      *
      * @operationId getMembers

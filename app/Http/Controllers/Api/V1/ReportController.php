@@ -10,7 +10,6 @@ use App\Http\Requests\V1\Report\ReportStoreRequest;
 use App\Http\Requests\V1\Report\ReportUpdateRequest;
 use App\Http\Resources\V1\Report\DetailedReportResource;
 use App\Http\Resources\V1\Report\ReportCollection;
-use App\Http\Resources\V1\Report\ReportResource;
 use App\Models\Organization;
 use App\Models\Report;
 use App\Service\Dto\ReportPropertiesDto;
@@ -34,8 +33,6 @@ class ReportController extends Controller
 
     /**
      * Get reports
-     *
-     * @return ReportCollection<ReportResource>
      *
      * @throws AuthorizationException
      *

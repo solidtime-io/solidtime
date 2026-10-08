@@ -35,8 +35,6 @@ class ProjectController extends Controller
     /**
      * Get projects visible to the current user
      *
-     * @return ProjectCollection<ProjectResource>
-     *
      * @throws AuthorizationException
      *
      * @operationId getProjects
