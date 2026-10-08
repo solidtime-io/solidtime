@@ -19,6 +19,7 @@ use Illuminate\Contracts\Validation\Rule as LegacyValidationRule;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\ProhibitedIf;
 use Korridor\LaravelModelValidationRules\Rules\ExistsEloquent;
 
 /**
@@ -29,10 +30,10 @@ use Korridor\LaravelModelValidationRules\Rules\ExistsEloquent;
 trait GoalFilterRules
 {
     /**
-     * @param  bool  $forEveryMember  Whether the goal counts every member instead of one member
-     * @return array<string, array<string|ValidationRule|LegacyValidationRule|\Closure>>
+     * @param  \Closure(): bool  $forEveryMember  Whether the goal counts every member instead of one member, evaluated during validation
+     * @return array<string, array<string|ValidationRule|LegacyValidationRule|\Closure|ProhibitedIf>>
      */
-    protected function filterRules(bool $forEveryMember): array
+    protected function filterRules(\Closure $forEveryMember): array
     {
         return [
             'filters' => [
@@ -44,7 +45,7 @@ trait GoalFilterRules
                 'nullable',
                 'array',
                 // "prohibited" still lets null and an empty array through, both mean "no restriction"
-                ...($forEveryMember ? [] : ['prohibited']),
+                Rule::prohibitedIf(fn (): bool => ! $forEveryMember()),
             ],
             'filters.member_ids.*' => [
                 'string',

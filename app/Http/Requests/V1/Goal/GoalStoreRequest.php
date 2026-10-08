@@ -17,6 +17,7 @@ use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\In;
+use Illuminate\Validation\Rules\ProhibitedIf;
 use Korridor\LaravelModelValidationRules\Rules\ExistsEloquent;
 
 /**
@@ -29,7 +30,7 @@ class GoalStoreRequest extends BaseFormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, array<string|ValidationRule|LegacyValidationRule|In|\Closure>>
+     * @return array<string, array<string|ValidationRule|LegacyValidationRule|In|ProhibitedIf|\Closure>>
      */
     public function rules(): array
     {
@@ -97,7 +98,7 @@ class GoalStoreRequest extends BaseFormRequest
             ],
         ], $this->filterRules(
             // Without a member_id the goal is for the current member
-            $this->has('member_id') && $this->input('member_id') === null,
+            fn (): bool => $this->has('member_id') && $this->input('member_id') === null,
         ));
     }
 
