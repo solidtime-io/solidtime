@@ -68,8 +68,6 @@ class GoalController extends Controller
      *
      * Returns the goals the current member is allowed to see, including the progress in the current period.
      *
-     * @return GoalCollection<GoalResource>
-     *
      * @throws AuthorizationException
      *
      * @operationId getGoals
