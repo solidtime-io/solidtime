@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Resources\V1\Goal;
 
-use App\Http\Resources\PaginatedResourceCollection;
 use App\Models\Goal;
 use App\Service\Dto\GoalProgressDto;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
-class GoalCollection extends ResourceCollection implements PaginatedResourceCollection
+class GoalCollection extends ResourceCollection
 {
     /**
      * @var array<string, GoalProgressDto>
