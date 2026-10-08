@@ -14,6 +14,7 @@ use App\Models\Tag;
 use App\Models\Task;
 use App\Models\User;
 use App\Service\BillableRateService;
+use App\Service\BillingContract;
 use App\Service\ColorService;
 use App\Service\Import\ImportDatabaseHelper;
 use App\Service\TimezoneService;
@@ -74,9 +75,15 @@ abstract class DefaultImporter implements ImporterContract
 
     protected BillableRateService $billableRateService;
 
+    /**
+     * Organizations that can not use billable rates import projects, members and project members without billable rates
+     */
+    protected bool $canUseBillableRates;
+
     public function init(Organization $organization): void
     {
         $this->organization = $organization;
+        $this->canUseBillableRates = app(BillingContract::class)->canUseBillableRates($organization);
         $this->userImportHelper = new ImportDatabaseHelper(User::class, ['email'], true, function (Builder $builder) {
             /** @var Builder<User> $builder */
             return $builder->belongsToOrganization($this->organization);
@@ -99,7 +106,11 @@ abstract class DefaultImporter implements ImporterContract
                 'string',
                 'in:placeholder',
             ],
-        ]);
+        ], beforeSave: function (Member $member): void {
+            if (! $this->canUseBillableRates) {
+                $member->billable_rate = null;
+            }
+        });
         $this->projectImportHelper = new ImportDatabaseHelper(Project::class, ['name', 'client_id', 'organization_id'], true, function (Builder $builder) {
             /** @var Builder<Project> $builder */
             return $builder->where('organization_id', $this->organization->id);
@@ -123,7 +134,7 @@ abstract class DefaultImporter implements ImporterContract
                 'uuid',
             ],
         ], beforeSave: function (Project $project): void {
-            if ($project->billable_rate === 0) {
+            if ($project->billable_rate === 0 || ! $this->canUseBillableRates) {
                 $project->billable_rate = null;
             }
         });
@@ -137,7 +148,7 @@ abstract class DefaultImporter implements ImporterContract
                 'max:2147483647',
             ],
         ], beforeSave: function (ProjectMember $projectMember): void {
-            if ($projectMember->billable_rate === 0) {
+            if ($projectMember->billable_rate === 0 || ! $this->canUseBillableRates) {
                 $projectMember->billable_rate = null;
             }
         });

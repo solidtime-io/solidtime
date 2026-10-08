@@ -70,3 +70,13 @@ export function isAllowedToPerformPremiumAction() {
         (isBillingActivated() && isInTrial())
     );
 }
+
+export function canUseBillableRates() {
+    const page = usePage<{
+        billing: {
+            can_use_billable_rates?: boolean;
+        } | null;
+    }>();
+
+    return !isBillingActivated() || page.props.billing?.can_use_billable_rates !== false;
+}

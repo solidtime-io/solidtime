@@ -82,6 +82,7 @@ class MemberController extends Controller
         $this->checkPermission($organization, 'members:update', $member);
 
         if ($request->has('billable_rate') && $member->billable_rate !== $request->getBillableRate()) {
+            $this->checkBillableRateChange($organization, $member->billable_rate, $request->getBillableRate());
             $member->billable_rate = $request->getBillableRate();
 
             $billableRateService->updateTimeEntriesBillableRateForMember($member);

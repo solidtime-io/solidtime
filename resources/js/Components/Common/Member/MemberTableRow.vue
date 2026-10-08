@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useBillableRatesLock } from '@/packages/ui/src/utils/useBillableRatesLock';
 import type { Member, Organization } from '@/packages/api/src';
 import { api } from '@/packages/api/src';
 import { CheckCircleIcon, UserCircleIcon } from '@heroicons/vue/24/outline';
@@ -25,6 +26,7 @@ import MemberEditModal from '@/Components/Common/Member/MemberEditModal.vue';
 import MemberMergeModal from '@/Components/Common/Member/MemberMergeModal.vue';
 import MemberMakePlaceholderModal from '@/Components/Common/Member/MemberMakePlaceholderModal.vue';
 import MemberDeleteModal from '@/Components/Common/Member/MemberDeleteModal.vue';
+import UpgradeLockedBadge from '@/packages/ui/src/UpgradeLockedBadge.vue';
 import { capitalizeFirstLetter } from '../../../utils/format';
 import { formatCents } from '../../../packages/ui/src/utils/money';
 import {
@@ -71,6 +73,8 @@ async function invitePlaceholder(id: string) {
 const userHasValidMailAddress = computed(() => {
     return !props.member.email.endsWith('@solidtime-import.test');
 });
+
+const { locked: billableRatesLocked } = useBillableRatesLock();
 </script>
 
 <template>
@@ -90,7 +94,8 @@ const userHasValidMailAddress = computed(() => {
                     {{ capitalizeFirstLetter(member.role) }}
                 </div>
                 <div class="whitespace-nowrap px-3 py-4 text-sm text-text-primary">
-                    <span v-if="member.billable_rate">
+                    <UpgradeLockedBadge v-if="billableRatesLocked" />
+                    <span v-else-if="member.billable_rate">
                         {{
                             formatCents(
                                 member.billable_rate,

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import UpgradeLockedBadge from '@/packages/ui/src/UpgradeLockedBadge.vue';
+import { useBillableRatesLock } from '@/packages/ui/src/utils/useBillableRatesLock';
 import ReportingRow from '@/Components/Common/Reporting/ReportingRow.vue';
 import ReportingGroupBySelect from '@/Components/Common/Reporting/ReportingGroupBySelect.vue';
 import {
@@ -126,6 +128,8 @@ const showBillableRate = computed(() => {
         getCurrentRole() !== 'employee' || organization?.value?.employees_can_see_billable_rates
     );
 });
+
+const { locked: billableRatesLocked } = useBillableRatesLock();
 </script>
 
 <template>
@@ -151,7 +155,10 @@ const showBillableRate = computed(() => {
                 class="contents [&>*]:border-card-background-separator [&>*]:border-b [&>*]:pb-1.5 [&>*]:pt-1 text-text-tertiary text-sm">
                 <div class="pl-6">Name</div>
                 <div class="text-right" :class="!showBillableRate ? 'pr-6' : ''">Duration</div>
-                <div v-if="showBillableRate" class="text-right pr-6">Cost</div>
+                <div v-if="showBillableRate" class="flex items-center justify-end gap-2 pr-6">
+                    <UpgradeLockedBadge v-if="billableRatesLocked" />
+                    Cost
+                </div>
             </div>
 
             <div

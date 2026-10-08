@@ -10,10 +10,12 @@ import { storeToRefs } from 'pinia';
 import OrganizationBillableRateModal from '@/Components/Common/Organization/OrganizationBillableRateModal.vue';
 import { getOrganizationCurrencyString } from '@/utils/money';
 import { Checkbox } from '@/packages/ui/src';
+import { useBillableRatesLock } from '@/packages/ui/src/utils/useBillableRatesLock';
 
 const store = useOrganizationStore();
 const { fetchOrganization, updateOrganization } = store;
 const { organization } = storeToRefs(store);
+const { locked: billableRatesLocked, requestUpgrade } = useBillableRatesLock();
 const saving = ref(false);
 const organizationBody = ref<UpdateOrganizationBody>({
     name: '',
@@ -75,9 +77,8 @@ function checkForConfirmationModal() {
                     <Checkbox
                         v-if="organization"
                         id="organizationShowBillableRatesToEmployees"
-                        v-model:checked="
-                            organizationBody.employees_can_see_billable_rates
-                        "></Checkbox>
+                        v-model:checked="organizationBody.employees_can_see_billable_rates"
+                        :disabled="billableRatesLocked"></Checkbox>
                     <FieldLabel for="organizationShowBillableRatesToEmployees"
                         >Show Billable Rates to Employees</FieldLabel
                     >
@@ -85,7 +86,10 @@ function checkForConfirmationModal() {
             </div>
         </template>
         <template #actions>
-            <PrimaryButton @click="checkForConfirmationModal">Save</PrimaryButton>
+            <PrimaryButton v-if="billableRatesLocked" @click="requestUpgrade"
+                >Upgrade</PrimaryButton
+            >
+            <PrimaryButton v-else @click="checkForConfirmationModal">Save</PrimaryButton>
         </template>
     </FormSection>
 </template>

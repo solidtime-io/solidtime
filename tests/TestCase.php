@@ -89,6 +89,7 @@ abstract class TestCase extends BaseTestCase
             $mock->shouldReceive('hasTrial')->andReturn(false);
             $mock->shouldReceive('getTrialUntil')->andReturn(null);
             $mock->shouldReceive('isBlocked')->andReturn(false);
+            $mock->shouldReceive('canUseBillableRates')->andReturn(true);
         });
     }
 
@@ -99,6 +100,18 @@ abstract class TestCase extends BaseTestCase
             $mock->shouldReceive('hasTrial')->andReturn(false);
             $mock->shouldReceive('getTrialUntil')->andReturn(null);
             $mock->shouldReceive('isBlocked')->andReturn(false);
+            $mock->shouldReceive('canUseBillableRates')->andReturn(true);
+        });
+    }
+
+    protected function actAsOrganizationWithoutBillableRates(): void
+    {
+        $this->mock(BillingContract::class, function (MockInterface $mock): void {
+            $mock->shouldReceive('hasSubscription')->andReturn(false);
+            $mock->shouldReceive('hasTrial')->andReturn(false);
+            $mock->shouldReceive('getTrialUntil')->andReturn(null);
+            $mock->shouldReceive('isBlocked')->andReturn(false);
+            $mock->shouldReceive('canUseBillableRates')->andReturn(false);
         });
     }
 }

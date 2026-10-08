@@ -23,8 +23,10 @@ import ProjectVisibilitySelect from '@/packages/ui/src/Project/ProjectVisibility
 import { isAllowedToPerformPremiumAction } from '@/utils/billing';
 import { useOrganizationQuery } from '@/utils/useOrganizationQuery';
 import { getCurrentOrganizationId } from '@/utils/useUser';
+import { useBillableRatesLock } from '@/packages/ui/src/utils/useBillableRatesLock';
 
 const { updateProject } = useProjectsStore();
+const { locked: billableRatesLocked } = useBillableRatesLock();
 const { clients } = useClientsQuery();
 const { organization } = useOrganizationQuery(getCurrentOrganizationId()!);
 const show = defineModel('show', { default: false });
@@ -48,6 +50,11 @@ const project = ref<CreateProjectBody>({
     is_public: props.originalProject.is_public,
 });
 
+// Locked organizations do not receive the rate of the project, so sending it back would remove the existing rate
+function getUpdateBody() {
+    const { billable_rate: billableRate, ...body } = project.value;
+    return billableRatesLocked.value ? body : { ...body, billable_rate: billableRate };
+}
 async function submit() {
     if (props.originalProject.billable_rate !== project.value.billable_rate) {
         // make sure that the alert modal is not immediately submitted when user presses enter
@@ -56,7 +63,7 @@ async function submit() {
         }, 0);
         return;
     }
-    await updateProject(props.originalProject.id, project.value);
+    await updateProject(props.originalProject.id, getUpdateBody());
     show.value = false;
 }
 
@@ -72,7 +79,7 @@ const currentClientName = computed(() => {
 });
 
 async function submitBillableRate() {
-    await updateProject(props.originalProject.id, project.value);
+    await updateProject(props.originalProject.id, getUpdateBody());
     show.value = false;
     showBillableRateModal.value = false;
 }

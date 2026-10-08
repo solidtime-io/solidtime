@@ -21,6 +21,8 @@ export type { CalendarSettings } from './FullCalendar/calendarSettings';
 export type { ActivityPeriod } from './FullCalendar/activityTypes';
 export { cn } from './utils/cn';
 export { useCssVariable } from './utils/useCssVariable';
+export { billableRatesLockKey, useBillableRatesLock } from './utils/useBillableRatesLock';
+export type { BillableRatesLock } from './utils/useBillableRatesLock';
 
 import Badge from './Badge.vue';
 import Button from './Buttons/Button.vue';

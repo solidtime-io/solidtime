@@ -63,7 +63,7 @@ class ProjectController extends Controller
             ->orderBy('id')
             ->paginate(config('app.pagination_per_page_default'));
 
-        $showBillableRate = $this->member($organization)->role !== Role::Employee->value || $organization->employees_can_see_billable_rates;
+        $showBillableRate = $this->canSeeBillableRates($organization);
 
         return new ProjectCollection($projects, $showBillableRate);
     }
@@ -97,6 +97,7 @@ class ProjectController extends Controller
     public function store(Organization $organization, ProjectStoreRequest $request): JsonResource
     {
         $this->checkPermission($organization, 'projects:create');
+        $this->checkBillableRateChange($organization, null, $request->getBillableRate());
         $project = new Project;
         $project->name = $request->input('name');
         $project->color = $request->input('color');
@@ -123,6 +124,7 @@ class ProjectController extends Controller
     public function update(Organization $organization, Project $project, ProjectUpdateRequest $request, BillableRateService $billableRateService): JsonResource
     {
         $this->checkPermission($organization, 'projects:update', $project);
+        $this->checkBillableRateChange($organization, $project->billable_rate, $request->getBillableRate());
         $project->name = $request->input('name');
         $project->color = $request->input('color');
         $project->is_billable = (bool) $request->input('is_billable');
@@ -137,14 +139,17 @@ class ProjectController extends Controller
         }
         $oldBillableRate = $project->billable_rate;
         $clientIdChanged = false;
-        $project->billable_rate = $request->getBillableRate();
+        // Organizations that can not use billable rates do not receive the rate of the project, so the incoming value is ignored to keep the existing rate
+        if ($this->canUseBillableRates($organization)) {
+            $project->billable_rate = $request->getBillableRate();
+        }
         if ($project->client_id !== $request->input('client_id')) {
             $project->client_id = $request->input('client_id');
             $clientIdChanged = true;
         }
         $project->save();
 
-        if ($oldBillableRate !== $request->getBillableRate()) {
+        if ($oldBillableRate !== $project->billable_rate) {
             $billableRateService->updateTimeEntriesBillableRateForProject($project);
         }
         if ($clientIdChanged) {

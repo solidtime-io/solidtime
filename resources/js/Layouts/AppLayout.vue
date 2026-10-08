@@ -23,7 +23,7 @@ import { PanelLeft } from '@lucide/vue';
 import NavigationSidebarItem from '@/Components/NavigationSidebarItem.vue';
 import UserSettingsIcon from '@/Components/UserSettingsIcon.vue';
 import MainContainer from '@/packages/ui/src/MainContainer.vue';
-import { nextTick, onMounted, provide, ref } from 'vue';
+import { computed, nextTick, onMounted, provide, ref } from 'vue';
 import NotificationContainer from '@/Components/NotificationContainer.vue';
 import { initializeStores } from '@/utils/init';
 import { useCurrentTimeEntryStore } from '@/utils/useCurrentTimeEntry';
@@ -37,7 +37,9 @@ import {
     canViewReport,
     canViewTags,
 } from '@/utils/permissions';
-import { isBillingActivated, isInvoicingActivated } from '@/utils/billing';
+import { canUseBillableRates, isBillingActivated, isInvoicingActivated } from '@/utils/billing';
+import UpgradeModal from '@/Components/Common/UpgradeModal.vue';
+import { billableRatesLockKey } from '@/packages/ui/src/utils/useBillableRatesLock';
 import type { User } from '@/types/models';
 import { ArrowsRightLeftIcon } from '@heroicons/vue/16/solid';
 import { fetchToken, isTokenValid } from '@/utils/session';
@@ -87,6 +89,14 @@ const { organization, isLoading: isOrganizationLoading } = useOrganizationQuery(
 );
 
 provide('organization', organization);
+
+const showBillableRatesUpgradeModal = ref(false);
+provide(billableRatesLockKey, {
+    locked: computed(() => !canUseBillableRates()),
+    requestUpgrade: () => {
+        showBillableRatesUpgradeModal.value = true;
+    },
+});
 
 onMounted(async () => {
     useTheme();
@@ -377,4 +387,7 @@ const page = usePage<{
     <NotificationContainer></NotificationContainer>
     <UserTimezoneMismatchModal></UserTimezoneMismatchModal>
     <CommandPaletteProvider></CommandPaletteProvider>
+    <UpgradeModal v-model:show="showBillableRatesUpgradeModal">
+        <strong>Billable Rates</strong> are only available in solidtime Professional.
+    </UpgradeModal>
 </template>

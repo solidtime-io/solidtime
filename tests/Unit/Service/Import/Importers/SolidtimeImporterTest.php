@@ -8,6 +8,8 @@ use App\Enums\TimeEntryType;
 use App\Jobs\RecalculateSpentTimeForProject;
 use App\Jobs\RecalculateSpentTimeForTask;
 use App\Models\Organization;
+use App\Models\Project;
+use App\Models\ProjectMember;
 use App\Models\TimeEntry;
 use App\Service\Import\Importers\DefaultImporter;
 use App\Service\Import\Importers\ImportException;
@@ -100,6 +102,34 @@ class SolidtimeImporterTest extends ImporterTestAbstract
         $this->assertSame(2, $report->clientsCreated);
         Queue::assertPushed(RecalculateSpentTimeForProject::class, 1);
         Queue::assertPushed(RecalculateSpentTimeForTask::class, 1);
+    }
+
+    public function test_import_drops_billable_rates_if_organization_can_not_use_billable_rates(): void
+    {
+        // Arrange
+        $this->actAsOrganizationWithoutBillableRates();
+        $zipPath = $this->createTestZip('solidtime_import_test_1');
+        $timezone = 'Europe/Vienna';
+        $organization = Organization::factory()->create();
+        $importer = new SolidtimeImporter;
+        $importer->init($organization);
+        $data = file_get_contents($zipPath);
+        Queue::fake([
+            RecalculateSpentTimeForProject::class,
+            RecalculateSpentTimeForTask::class,
+        ]);
+
+        // Act
+        $importer->importData($data, $timezone);
+
+        // Assert
+        $this->assertSame(3, Project::query()->whereBelongsTo($organization, 'organization')->whereNull('billable_rate')->count());
+        $this->assertSame(1, ProjectMember::query()->whereBelongsToOrganization($organization)->whereNull('billable_rate')->count());
+        $timeEntries = TimeEntry::query()->whereBelongsTo($organization, 'organization')->get();
+        $this->assertCount(2, $timeEntries);
+        foreach ($timeEntries as $timeEntry) {
+            $this->assertNull($timeEntry->billable_rate);
+        }
     }
 
     public function test_import_of_test_file_with_type_column_imports_breaks(): void
