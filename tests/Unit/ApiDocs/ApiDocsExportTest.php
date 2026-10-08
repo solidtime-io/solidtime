@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace Tests\Unit\ApiDocs;
 
 use App\Http\Controllers\Api\FallbackController;
+use Dedoc\Scramble\Contracts\Diagnostics\Diagnostic;
+use Dedoc\Scramble\Generator;
 use Dedoc\Scramble\Infer\Context;
+use Dedoc\Scramble\Scramble;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -69,6 +72,25 @@ class ApiDocsExportTest extends TestCase
         // Assert
         $this->assertArrayHasKey('paths', $docs);
         $this->assertNotEmpty($docs['paths']);
+    }
+
+    public function test_api_docs_are_generated_without_diagnostics(): void
+    {
+        // Act
+        $result = app(Generator::class)->generate(Scramble::getGeneratorConfig('default'));
+
+        // Assert
+        $diagnostics = $result->diagnostics()->map(function (Diagnostic $diagnostic): string {
+            $location = $diagnostic->codeLocation();
+
+            return sprintf(
+                '[%s] %s%s',
+                $diagnostic->code(),
+                $diagnostic->message(),
+                $location !== null ? ' ('.$location->file.':'.$location->line.')' : ''
+            );
+        })->all();
+        $this->assertSame([], $diagnostics);
     }
 
     public function test_paginated_endpoints_are_documented_with_pagination(): void

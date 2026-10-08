@@ -21,17 +21,17 @@ class PersonalMembershipResource extends BaseResource
     public function toArray(Request $request): array
     {
         return [
-            /** @var string $id ID of membership */
+            /** ID of membership */
             'id' => $this->resource->id,
             'organization' => [
-                /** @var string $id ID of organization */
+                /** ID of organization */
                 'id' => $this->resource->organization->id,
-                /** @var string $name Name of organization */
+                /** Name of organization */
                 'name' => $this->resource->organization->name,
-                /** @var string $currency Currency code (ISO 4217) of organization */
+                /** Currency code (ISO 4217) of organization */
                 'currency' => $this->resource->organization->currency,
             ],
-            /** @var string $role Role */
+            /** Role */
             'role' => $this->resource->role,
         ];
     }

@@ -21,21 +21,21 @@ class ReportResource extends BaseResource
     public function toArray(Request $request): array
     {
         return [
-            /** @var string $id ID of the report */
+            /** ID of the report */
             'id' => $this->resource->id,
-            /** @var string $name Name */
+            /** Name */
             'name' => $this->resource->name,
-            /** @var string|null $email Description */
+            /** Description */
             'description' => $this->resource->description,
-            /** @var bool $is_public Whether the report can be accessed via an external link */
+            /** Whether the report can be accessed via an external link */
             'is_public' => $this->resource->is_public,
             /** @var string|null $public_until Date until the report is public */
             'public_until' => $this->formatDateTime($this->resource->public_until),
             /** @var string|null $shareable_link Get link to access the report externally, not set if the report is private */
             'shareable_link' => $this->resource->getShareableLink(),
-            /** @var string $created_at Date when the report was created */
+            /** Date when the report was created */
             'created_at' => $this->formatDateTime($this->resource->created_at),
-            /** @var string $updated_at Date when the report was last updated */
+            /** Date when the report was last updated */
             'updated_at' => $this->formatDateTime($this->resource->updated_at),
         ];
     }

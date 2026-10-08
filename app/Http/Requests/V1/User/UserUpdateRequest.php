@@ -43,9 +43,10 @@ class UserUpdateRequest extends BaseFormRequest
             'email' => [
                 'email:rfc,strict',
                 'max:255',
-                UniqueEloquent::make(User::class, 'email')->ignore($this->user->id)->query(function (Builder $query) {
+                UniqueEloquent::make(User::class, 'email')->query(function (Builder $query) {
                     /** @var Builder<User> $query */
-                    return $query->where('is_placeholder', '=', false);
+                    return $query->where('is_placeholder', '=', false)
+                        ->whereKeyNot($this->user->getKey());
                 }),
             ],
             'photo' => [
