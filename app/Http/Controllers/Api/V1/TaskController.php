@@ -51,8 +51,6 @@ class TaskController extends Controller
     /**
      * Get tasks
      *
-     * @return TaskCollection<TaskResource>
-     *
      * @throws AuthorizationException
      *
      * @operationId getTasks

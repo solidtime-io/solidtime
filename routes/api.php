@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Api\FallbackController;
 use App\Http\Controllers\Api\V1\ApiTokenController;
 use App\Http\Controllers\Api\V1\ChartController;
 use App\Http\Controllers\Api\V1\ClientController;
@@ -23,7 +24,6 @@ use App\Http\Controllers\Api\V1\UserController;
 use App\Http\Controllers\Api\V1\UserMembershipController;
 use App\Http\Controllers\Api\V1\UserTimeEntryController;
 use Illuminate\Support\Facades\Route;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /*
 |--------------------------------------------------------------------------
@@ -200,9 +200,5 @@ Route::prefix('v1')->name('v1.')->group(static function (): void {
  * Fallback routes, to prevent a rendered HTML page in /api/* routes
  * The / route is also included since the fallback is not triggered on the root route
  */
-Route::get('/', function (): void {
-    throw new NotFoundHttpException('API resource not found');
-});
-Route::fallback(function (): void {
-    throw new NotFoundHttpException('API resource not found');
-});
+Route::get('/', FallbackController::class);
+Route::fallback(FallbackController::class);

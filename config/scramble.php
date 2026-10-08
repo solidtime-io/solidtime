@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use App\Extensions\Scramble\ApiExceptionTypeToSchema;
-use App\Extensions\Scramble\PaginatedResourceCollectionTypeToSchema;
 use Dedoc\Scramble\Http\Middleware\RestrictedDocsAccess;
 
 return [
@@ -101,6 +100,5 @@ MD,
 
     'extensions' => [
         ApiExceptionTypeToSchema::class,
-        PaginatedResourceCollectionTypeToSchema::class,
     ],
 ];

@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Resources\V1\Project;
 
-use App\Http\Resources\PaginatedResourceCollection;
 use App\Models\Project;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
-class ProjectCollection extends ResourceCollection implements PaginatedResourceCollection
+class ProjectCollection extends ResourceCollection
 {
     private bool $showBillableRates;
 
