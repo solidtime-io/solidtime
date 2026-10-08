@@ -12,10 +12,10 @@ use Dedoc\Scramble\Scramble;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use PHPUnit\Framework\Attributes\CoversClass;
-use Tests\TestCase;
+use Tests\TestCaseWithDatabase;
 
 #[CoversClass(FallbackController::class)]
-class ApiDocsExportTest extends TestCase
+class ApiDocsExportTest extends TestCaseWithDatabase
 {
     private string $path;
 
