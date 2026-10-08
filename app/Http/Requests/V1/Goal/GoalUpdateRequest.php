@@ -13,6 +13,7 @@ use App\Models\Organization;
 use Illuminate\Contracts\Validation\Rule as LegacyValidationRule;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\ProhibitedIf;
 
 /**
  * @property Organization $organization Organization from model binding
@@ -25,7 +26,7 @@ class GoalUpdateRequest extends BaseFormRequest
      * Get the validation rules that apply to the request.
      * The type of a goal and the member it is for can not be changed after creation.
      *
-     * @return array<string, array<string|ValidationRule|LegacyValidationRule|\Closure>>
+     * @return array<string, array<string|ValidationRule|LegacyValidationRule|ProhibitedIf|\Closure>>
      */
     public function rules(): array
     {
@@ -89,7 +90,7 @@ class GoalUpdateRequest extends BaseFormRequest
                     }
                 },
             ],
-        ], $this->filterRules($goal->member_id === null));
+        ], $this->filterRules(fn (): bool => $goal->member_id === null));
     }
 
     public function getName(): string
