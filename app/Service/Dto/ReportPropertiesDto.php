@@ -117,13 +117,13 @@ class ReportPropertiesDto implements Castable
                 $dto->end = $data->end !== null ? Carbon::createFromFormat('Y-m-d\TH:i:s\Z', $data->end) : null;
                 $dto->start = $data->start !== null ? Carbon::createFromFormat('Y-m-d\TH:i:s\Z', $data->start) : null;
                 $dto->active = $data->active;
-                $dto->memberIds = $data->memberIds !== null ? ReportPropertiesDto::idArrayToCollection($data->memberIds) : null;
+                $dto->setMemberIds($data->memberIds !== null ? (array) $data->memberIds : null);
                 $dto->billable = $data->billable;
-                $dto->clientIds = $data->clientIds !== null ? ReportPropertiesDto::idArrayToCollection($data->clientIds) : null;
-                $dto->projectIds = $data->projectIds !== null ? ReportPropertiesDto::idArrayToCollection($data->projectIds) : null;
-                $dto->tagIds = $data->tagIds !== null ? ReportPropertiesDto::idArrayToCollection($data->tagIds) : null;
+                $dto->setClientIds($data->clientIds !== null ? (array) $data->clientIds : null);
+                $dto->setProjectIds($data->projectIds !== null ? (array) $data->projectIds : null);
+                $dto->setTagIds($data->tagIds !== null ? (array) $data->tagIds : null);
                 $dto->tagMatchType = isset($data->tagMatchType) ? TagMatchType::from($data->tagMatchType) : null;
-                $dto->taskIds = $data->taskIds ? ReportPropertiesDto::idArrayToCollection($data->taskIds) : null;
+                $dto->setTaskIds($data->taskIds !== null ? (array) $data->taskIds : null);
                 $dto->group = TimeEntryAggregationType::from($data->group);
                 $dto->subGroup = TimeEntryAggregationType::from($data->subGroup);
                 $dto->historyGroup = TimeEntryAggregationTypeInterval::from($data->historyGroup);
@@ -205,7 +205,7 @@ class ReportPropertiesDto implements Castable
      */
     public function setMemberIds(?array $memberIds): void
     {
-        $this->memberIds = $memberIds !== null ? ReportPropertiesDto::idArrayToCollection($memberIds) : null;
+        $this->memberIds = $memberIds !== null && count($memberIds) > 0 ? ReportPropertiesDto::idArrayToCollection($memberIds) : null;
     }
 
     /**
@@ -213,7 +213,7 @@ class ReportPropertiesDto implements Castable
      */
     public function setClientIds(?array $clientIds): void
     {
-        $this->clientIds = $clientIds !== null ? ReportPropertiesDto::idArrayToCollection($clientIds) : null;
+        $this->clientIds = $clientIds !== null && count($clientIds) > 0 ? ReportPropertiesDto::idArrayToCollection($clientIds) : null;
     }
 
     /**
@@ -221,7 +221,7 @@ class ReportPropertiesDto implements Castable
      */
     public function setProjectIds(?array $projectIds): void
     {
-        $this->projectIds = $projectIds !== null ? ReportPropertiesDto::idArrayToCollection($projectIds) : null;
+        $this->projectIds = $projectIds !== null && count($projectIds) > 0 ? ReportPropertiesDto::idArrayToCollection($projectIds) : null;
     }
 
     /**
@@ -229,7 +229,7 @@ class ReportPropertiesDto implements Castable
      */
     public function setTagIds(?array $tagIds): void
     {
-        $this->tagIds = $tagIds !== null ? ReportPropertiesDto::idArrayToCollection($tagIds) : null;
+        $this->tagIds = $tagIds !== null && count($tagIds) > 0 ? ReportPropertiesDto::idArrayToCollection($tagIds) : null;
     }
 
     public function setTagMatchType(?TagMatchType $tagMatchType): void
@@ -242,6 +242,6 @@ class ReportPropertiesDto implements Castable
      */
     public function setTaskIds(?array $taskIds): void
     {
-        $this->taskIds = $taskIds !== null ? ReportPropertiesDto::idArrayToCollection($taskIds) : null;
+        $this->taskIds = $taskIds !== null && count($taskIds) > 0 ? ReportPropertiesDto::idArrayToCollection($taskIds) : null;
     }
 }

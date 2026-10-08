@@ -88,4 +88,25 @@ class ReportPropertiesDtoTest extends TestCase
         $this->assertSame(TimeEntryType::Work, $dtoWork->timeEntryType);
         $this->assertSame(TimeEntryType::Break, $dtoBreak->timeEntryType);
     }
+
+    public function test_empty_id_filters_of_a_persisted_report_are_read_as_null(): void
+    {
+        // Arrange
+        $properties = $this->getBaseProperties();
+        $properties['memberIds'] = [];
+        $properties['clientIds'] = [];
+        $properties['projectIds'] = [];
+        $properties['tagIds'] = [];
+        $properties['taskIds'] = [];
+
+        // Act
+        $dto = $this->castFromJson($properties);
+
+        // Assert
+        $this->assertNull($dto->memberIds);
+        $this->assertNull($dto->clientIds);
+        $this->assertNull($dto->projectIds);
+        $this->assertNull($dto->tagIds);
+        $this->assertNull($dto->taskIds);
+    }
 }

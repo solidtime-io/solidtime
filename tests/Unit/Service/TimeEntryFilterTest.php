@@ -416,6 +416,81 @@ class TimeEntryFilterTest extends TestCaseWithDatabase
         $this->assertCount(3, $builderContains->get());
     }
 
+    public function test_add_member_ids_filter_with_empty_array_applies_no_filter(): void
+    {
+        // Arrange
+        TimeEntry::factory()->createMany(2);
+
+        $builder = TimeEntry::query();
+        $filter = new TimeEntryFilter($builder);
+
+        // Act
+        $filter->addMemberIdsFilter([]);
+
+        // Assert
+        $this->assertCount(2, $builder->get());
+    }
+
+    public function test_add_project_ids_filter_with_empty_array_applies_no_filter(): void
+    {
+        // Arrange
+        $project = Project::factory()->create();
+        TimeEntry::factory()->create([
+            'project_id' => $project->getKey(),
+            'organization_id' => $project->organization_id,
+        ]);
+        TimeEntry::factory()->create(['project_id' => null]);
+
+        $builder = TimeEntry::query();
+        $filter = new TimeEntryFilter($builder);
+
+        // Act
+        $filter->addProjectIdsFilter([]);
+
+        // Assert
+        $this->assertCount(2, $builder->get());
+    }
+
+    public function test_add_task_ids_filter_with_empty_array_applies_no_filter(): void
+    {
+        // Arrange
+        $task = Task::factory()->create();
+        TimeEntry::factory()->create([
+            'task_id' => $task->getKey(),
+            'organization_id' => $task->organization_id,
+        ]);
+        TimeEntry::factory()->create(['task_id' => null]);
+
+        $builder = TimeEntry::query();
+        $filter = new TimeEntryFilter($builder);
+
+        // Act
+        $filter->addTaskIdsFilter([]);
+
+        // Assert
+        $this->assertCount(2, $builder->get());
+    }
+
+    public function test_add_client_ids_filter_with_empty_array_applies_no_filter(): void
+    {
+        // Arrange
+        $client = Client::factory()->create();
+        TimeEntry::factory()->create([
+            'client_id' => $client->getKey(),
+            'organization_id' => $client->organization_id,
+        ]);
+        TimeEntry::factory()->create(['client_id' => null]);
+
+        $builder = TimeEntry::query();
+        $filter = new TimeEntryFilter($builder);
+
+        // Act
+        $filter->addClientIdsFilter([]);
+
+        // Assert
+        $this->assertCount(2, $builder->get());
+    }
+
     public function test_add_tag_ids_filter_with_null_match_type_defaults_to_contains(): void
     {
         // Arrange
