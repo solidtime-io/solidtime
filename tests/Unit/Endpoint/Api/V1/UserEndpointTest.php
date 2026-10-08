@@ -245,6 +245,44 @@ class UserEndpointTest extends ApiEndpointTestAbstract
         Mail::assertNothingSent();
     }
 
+    public function test_update_fails_if_email_is_already_used_by_another_user(): void
+    {
+        // Arrange
+        Mail::fake();
+        $data = $this->createUserWithPermission();
+        User::factory()->create(['email' => 'taken@example.com']);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.users.update', $data->user->getKey()), [
+            'email' => 'taken@example.com',
+        ]);
+
+        // Assert
+        $response->assertUnprocessable();
+        $response->assertJsonValidationErrors(['email']);
+        $this->assertNull($data->user->fresh()->pending_email);
+        Mail::assertNothingSent();
+    }
+
+    public function test_update_email_succeeds_if_email_is_only_used_by_a_placeholder_user(): void
+    {
+        // Arrange
+        Mail::fake();
+        $data = $this->createUserWithPermission();
+        User::factory()->placeholder()->create(['email' => 'placeholder@example.com']);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.users.update', $data->user->getKey()), [
+            'email' => 'placeholder@example.com',
+        ]);
+
+        // Assert
+        $response->assertSuccessful();
+        $this->assertSame('placeholder@example.com', $data->user->fresh()->pending_email);
+    }
+
     public function test_update_fails_if_email_format_is_invalid(): void
     {
         // Arrange

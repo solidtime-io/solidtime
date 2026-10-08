@@ -43,23 +43,23 @@ class OrganizationResource extends BaseResource
         $currencyService = app(CurrencyService::class);
 
         return [
-            /** @var string $id ID */
+            /** ID */
             'id' => $this->resource->id,
-            /** @var string $name Name */
+            /** Name */
             'name' => $this->resource->name,
-            /** @var bool $color Personal organizations automatically created after registration */
+            /** Personal organizations automatically created after registration */
             'is_personal' => $this->resource->personal_team,
-            /** @var int|null $billable_rate Billable rate in cents per hour */
+            /** Billable rate in cents per hour */
             'billable_rate' => $this->showBillableRate ? $this->resource->billable_rate : null,
-            /** @var bool $employees_can_see_billable_rates Can members of the organization with role "employee" see the billable rates */
+            /** Can members of the organization with role "employee" see the billable rates */
             'employees_can_see_billable_rates' => $this->resource->employees_can_see_billable_rates,
-            /** @var bool $employees_can_manage_tasks Can members of the organization with role "employee" manage tasks in public projects and projects they are assigned to */
+            /** Can members of the organization with role "employee" manage tasks in public projects and projects they are assigned to */
             'employees_can_manage_tasks' => $this->resource->employees_can_manage_tasks,
-            /** @var bool $prevent_overlapping_time_entries Prevent creating overlapping time entries (only new entries) */
+            /** Prevent creating overlapping time entries (only new entries) */
             'prevent_overlapping_time_entries' => $this->resource->prevent_overlapping_time_entries,
-            /** @var bool $breaks_enabled Whether members of the organization can track breaks */
+            /** Whether members of the organization can track breaks */
             'breaks_enabled' => $this->resource->breaks_enabled,
-            /** @var string $currency Currency code (ISO 4217) */
+            /** Currency code (ISO 4217) */
             'currency' => $this->resource->currency,
             /** @var string $currency_symbol Currency symbol */
             'currency_symbol' => $currencyService->getCurrencySymbol($this->resource->currency),

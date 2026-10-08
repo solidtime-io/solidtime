@@ -73,13 +73,13 @@ class DetailedWithDataReportResource extends BaseResource
         $currencyService = app(CurrencyService::class);
 
         return [
-            /** @var string $name Name */
+            /** Name */
             'name' => $this->resource->name,
-            /** @var string|null $email Description */
+            /** Description */
             'description' => $this->resource->description,
             /** @var string|null $public_until Date until the report is public */
             'public_until' => $this->formatDateTime($this->resource->public_until),
-            /** @var string $currency Currency code (ISO 4217) */
+            /** Currency code (ISO 4217) */
             'currency' => $this->resource->organization->currency,
             /** @var NumberFormat $number_format Number format */
             'number_format' => $this->resource->organization->number_format->value,
@@ -94,15 +94,15 @@ class DetailedWithDataReportResource extends BaseResource
             /** @var TimeFormat $time_format Time format */
             'time_format' => $this->resource->organization->time_format->value,
             'properties' => [
-                /** @var string $group Type of first grouping */
+                /** Type of first grouping */
                 'group' => $this->resource->properties->group->value,
-                /** @var string $sub_group Type of second grouping */
+                /** Type of second grouping */
                 'sub_group' => $this->resource->properties->subGroup->value,
-                /** @var string $history_group Type of grouping of the historic aggregation (time chart) */
+                /** Type of grouping of the historic aggregation (time chart) */
                 'history_group' => $this->resource->properties->historyGroup->value,
-                /** @var string $start Start date of the report */
+                /** Start date of the report */
                 'start' => $this->formatDateTime($this->resource->properties->start),
-                /** @var string $end End date of the report */
+                /** End date of the report */
                 'end' => $this->formatDateTime($this->resource->properties->end),
             ],
             /** @var array{

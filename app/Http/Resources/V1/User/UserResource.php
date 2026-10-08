@@ -22,21 +22,21 @@ class UserResource extends BaseResource
     public function toArray(Request $request): array
     {
         return [
-            /** @var string $id ID of user */
+            /** ID of user */
             'id' => $this->resource->id,
-            /** @var string $name Name of user */
+            /** Name of user */
             'name' => $this->resource->name,
-            /** @var string $email Email of user */
+            /** Email of user */
             'email' => $this->resource->email,
-            /** @var string|null $pending_email Email address awaiting verification (set when the user has requested an email change but not yet verified the new address) */
+            /** Email address awaiting verification (set when the user has requested an email change but not yet verified the new address) */
             'pending_email' => $this->resource->pending_email,
-            /** @var string $profile_photo_url Profile photo URL */
+            /** Profile photo URL */
             'profile_photo_url' => $this->resource->profile_photo_url,
-            /** @var string $timezone Timezone (f.e. Europe/Berlin or America/New_York) */
+            /** Timezone (f.e. Europe/Berlin or America/New_York) */
             'timezone' => $this->resource->timezone,
             /** @var Weekday $week_start Starting day of the week */
             'week_start' => $this->resource->week_start->value,
-            /** @var bool $send_time_entry_still_running_email Whether to email the user when a time entry has been running for more than 8 hours */
+            /** Whether to email the user when a time entry has been running for more than 8 hours */
             'send_time_entry_still_running_email' => $this->resource->send_time_entry_still_running_email,
         ];
     }

@@ -21,11 +21,11 @@ class InvitationResource extends BaseResource
     public function toArray(Request $request): array
     {
         return [
-            /** @var string $id ID of the invitation */
+            /** ID of the invitation */
             'id' => $this->resource->id,
-            /** @var string $email Email */
+            /** Email */
             'email' => $this->resource->email,
-            /** @var string $role Role */
+            /** Role */
             'role' => $this->resource->role,
         ];
     }

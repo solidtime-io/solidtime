@@ -21,36 +21,36 @@ class DetailedReportResource extends BaseResource
     public function toArray(Request $request): array
     {
         return [
-            /** @var string $id ID of the report */
+            /** ID of the report */
             'id' => $this->resource->id,
-            /** @var string $name Name */
+            /** Name */
             'name' => $this->resource->name,
-            /** @var string|null $email Description */
+            /** Description */
             'description' => $this->resource->description,
-            /** @var bool $is_public Whether the report can be accessed via an external link */
+            /** Whether the report can be accessed via an external link */
             'is_public' => $this->resource->is_public,
             /** @var string|null $public_until Date until the report is public */
             'public_until' => $this->formatDateTime($this->resource->public_until),
             /** @var string|null $shareable_link Get link to access the report externally, not set if the report is private */
             'shareable_link' => $this->resource->getShareableLink(),
             'properties' => [
-                /** @var string $group Type of first grouping */
+                /** Type of first grouping */
                 'group' => $this->resource->properties->group->value,
-                /** @var string $sub_group Type of second grouping */
+                /** Type of second grouping */
                 'sub_group' => $this->resource->properties->subGroup->value,
-                /** @var string $history_group Type of grouping of the historic aggregation (time chart) */
+                /** Type of grouping of the historic aggregation (time chart) */
                 'history_group' => $this->resource->properties->historyGroup->value,
-                /** @var string $start Start date of the report */
+                /** Start date of the report */
                 'start' => $this->formatDateTime($this->resource->properties->start),
-                /** @var string $end End date of the report */
+                /** End date of the report */
                 'end' => $this->formatDateTime($this->resource->properties->end),
-                /** @var bool|null $active Whether the report is active */
+                /** Whether the report is active */
                 'active' => $this->resource->properties->active,
                 /** @var array<string>|null $member_ids Filter by multiple member IDs, member IDs are OR combined */
                 'member_ids' => $this->resource->properties->memberIds?->toArray(),
-                /** @var bool|null $billable Filter by billable status */
+                /** Filter by billable status */
                 'billable' => $this->resource->properties->billable,
-                /** @var string|null $time_entry_type Filter by time entry type */
+                /** Filter by time entry type */
                 'time_entry_type' => $this->resource->properties->timeEntryType?->value,
                 /** @var array<string>|null $client_ids Filter by client IDs, client IDs are OR combined */
                 'client_ids' => $this->resource->properties->clientIds?->toArray(),
@@ -58,18 +58,18 @@ class DetailedReportResource extends BaseResource
                 'project_ids' => $this->resource->properties->projectIds?->toArray(),
                 /** @var array<string>|null $tags_ids Filter by tag IDs, tag IDs are OR combined */
                 'tag_ids' => $this->resource->properties->tagIds?->toArray(),
-                /** @var string|null $tag_match_type Tag match type */
+                /** Tag match type */
                 'tag_match_type' => $this->resource->properties->tagMatchType?->value,
                 /** @var array<string>|null $task_ids Filter by task IDs, task IDs are OR combined */
                 'task_ids' => $this->resource->properties->taskIds?->toArray(),
-                /** @var string|null $rounding_type Rounding type for time entries */
+                /** Rounding type for time entries */
                 'rounding_type' => $this->resource->properties->roundingType?->value,
-                /** @var int|null $rounding_minutes Rounding minutes for time entries */
+                /** Rounding minutes for time entries */
                 'rounding_minutes' => $this->resource->properties->roundingMinutes,
             ],
-            /** @var string $created_at Date when the report was created */
+            /** Date when the report was created */
             'created_at' => $this->formatDateTime($this->resource->created_at),
-            /** @var string $updated_at Date when the report was last updated */
+            /** Date when the report was last updated */
             'updated_at' => $this->formatDateTime($this->resource->updated_at),
         ];
     }
