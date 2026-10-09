@@ -155,6 +155,9 @@ class GenericTimeEntriesImporter extends DefaultImporter
                 if ($end === null) {
                     throw new ImportException('Value of end ("'.$record['end'].'") is invalid');
                 }
+                if ($end->lt($start)) {
+                    throw new ImportException('Value of end ("'.$record['end'].'") is before start ("'.$record['start'].'")');
+                }
                 $timeEntry->end = $end->utc();
                 $timeEntry->billable_rate = $this->billableRateService->getBillableRateForTimeEntryWithGivenRelations(
                     $timeEntry,

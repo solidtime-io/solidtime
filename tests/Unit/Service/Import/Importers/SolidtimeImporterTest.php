@@ -15,7 +15,9 @@ use App\Service\Import\Importers\SolidtimeImporter;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Str;
 use PHPUnit\Framework\Attributes\CoversClass;
+use ZipArchive;
 
 #[CoversClass(SolidtimeImporter::class)]
 #[CoversClass(ImportException::class)]
@@ -176,5 +178,33 @@ class SolidtimeImporterTest extends ImporterTestAbstract
         $this->assertSame(0, $report->clientsCreated);
         Queue::assertPushed(RecalculateSpentTimeForProject::class, 1);
         Queue::assertPushed(RecalculateSpentTimeForTask::class, 1);
+    }
+
+    public function test_import_fails_if_end_of_time_entry_is_before_start(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $timezone = 'Europe/Vienna';
+        $zipPath = $this->createTestZip('solidtime_import_test_1');
+        $zip = new ZipArchive;
+        $zip->open($zipPath);
+        $timeEntries = $zip->getFromName('time_entries.csv');
+        $timeEntries = Str::replaceFirst(',2024-03-04T09:23:52Z,2024-03-04T09:23:52Z,', ',2024-03-04T09:23:52Z,2024-03-04T08:23:52Z,', $timeEntries);
+        $zip->addFromString('time_entries.csv', $timeEntries);
+        $zip->close();
+        $importer = new SolidtimeImporter;
+        $importer->init($organization);
+        $data = file_get_contents($zipPath);
+
+        // Act
+        try {
+            $importer->importData($data, $timezone);
+        } catch (ImportException $e) {
+            // Assert
+            $this->assertSame('End date ("2024-03-04T08:23:52Z") is before start date ("2024-03-04T09:23:52Z")', $e->getMessage());
+
+            return;
+        }
+        $this->fail();
     }
 }

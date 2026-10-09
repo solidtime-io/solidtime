@@ -280,6 +280,9 @@ class SolidtimeImporter extends DefaultImporter
                     if ($end === null) {
                         throw new ImportException('End date ("'.$timeEntryRow['end'].'") is invalid');
                     }
+                    if ($end->lt($start)) {
+                        throw new ImportException('End date ("'.$timeEntryRow['end'].'") is before start date ("'.$timeEntryRow['start'].'")');
+                    }
                     $timeEntry->end = $end->utc();
                 } else {
                     $timeEntry->end = null;

@@ -13,6 +13,7 @@ use App\Models\Task;
 use App\Models\TimeEntry;
 use App\Models\User;
 use Illuminate\Console\Command;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Artisan;
 use PHPUnit\Framework\Attributes\CoversClass;
 use Tests\TestCaseWithDatabase;
@@ -157,5 +158,27 @@ class SelfHostDatabaseConsistencyCommandTest extends TestCaseWithDatabase
         $this->assertSame(Command::FAILURE, $exitCode);
         $output = Artisan::output();
         $this->assertSame("Consistency problem: Users have a current organization that they are not a member of\n  - ".$user1->user->getKey()."\n", $output);
+    }
+
+    public function test_checks_that_end_of_time_entries_is_not_before_start(): void
+    {
+        // Arrange
+        $user = $this->createUserWithRole(Role::Owner);
+        $timeEntry = TimeEntry::factory()->forMember($user->member)->create([
+            'start' => Carbon::parse('2026-08-01T03:00:00Z'),
+            'end' => Carbon::parse('2026-08-01T02:59:55Z'),
+        ]);
+        TimeEntry::factory()->forMember($user->member)->create([
+            'start' => Carbon::parse('2026-08-01T04:00:00Z'),
+            'end' => Carbon::parse('2026-08-01T04:00:00Z'),
+        ]);
+
+        // Act
+        $exitCode = $this->withoutMockingConsoleOutput()->artisan('self-host:database-consistency');
+
+        // Assert
+        $this->assertSame(Command::FAILURE, $exitCode);
+        $output = Artisan::output();
+        $this->assertSame("Consistency problem: Time entries have an end that is before the start\n  - ".$timeEntry->getKey()."\n", $output);
     }
 }

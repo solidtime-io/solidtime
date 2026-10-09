@@ -59,6 +59,14 @@ class SelfHostDatabaseConsistency extends Command
             ->get();
         $this->logProblems($problems, 'Time entries have a client but no project', $hadAProblem);
 
+        // End of time entries can not be before the start
+        $problems = DB::table('time_entries')
+            ->select(['id'])
+            ->whereNotNull('end')
+            ->whereColumn('end', '<', 'start')
+            ->get();
+        $this->logProblems($problems, 'Time entries have an end that is before the start', $hadAProblem);
+
         // Every user needs to be a member of at least one organization
         $problems = DB::table('users')
             ->select(['users.id as id'])

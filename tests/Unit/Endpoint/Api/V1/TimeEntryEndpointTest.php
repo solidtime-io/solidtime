@@ -2961,6 +2961,101 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         ]);
     }
 
+    public function test_update_endpoint_validation_fails_if_only_end_is_sent_and_it_is_before_the_persisted_start(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:update:own',
+        ]);
+        $timeEntry = TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)->create([
+            'start' => Carbon::parse('2026-08-01T03:00:00Z'),
+            'end' => Carbon::parse('2026-08-01T03:01:00Z'),
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.time-entries.update', [$data->organization->getKey(), $timeEntry->getKey()]), [
+            'end' => '2026-08-01T02:59:55Z',
+        ]);
+
+        // Assert
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors([
+            'end' => 'The end field must be a date after or equal to start.',
+        ]);
+        $timeEntry->refresh();
+        $this->assertSame('2026-08-01T03:01:00Z', $timeEntry->end->toIso8601ZuluString());
+    }
+
+    public function test_update_endpoint_validation_fails_if_only_start_is_sent_and_it_is_after_the_persisted_end(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:update:own',
+        ]);
+        $timeEntry = TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)->create([
+            'start' => Carbon::parse('2026-08-01T03:00:00Z'),
+            'end' => Carbon::parse('2026-08-01T03:01:00Z'),
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.time-entries.update', [$data->organization->getKey(), $timeEntry->getKey()]), [
+            'start' => '2026-08-01T03:01:05Z',
+        ]);
+
+        // Assert
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors([
+            'start' => 'The start field must be a date before or equal to end.',
+        ]);
+        $timeEntry->refresh();
+        $this->assertSame('2026-08-01T03:00:00Z', $timeEntry->start->toIso8601ZuluString());
+    }
+
+    public function test_update_endpoint_allows_updating_only_start_of_running_time_entry(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:update:own',
+        ]);
+        $timeEntry = TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)->active()->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.time-entries.update', [$data->organization->getKey(), $timeEntry->getKey()]), [
+            'start' => '2026-08-01T03:00:00Z',
+        ]);
+
+        // Assert
+        $response->assertStatus(200);
+        $timeEntry->refresh();
+        $this->assertSame('2026-08-01T03:00:00Z', $timeEntry->start->toIso8601ZuluString());
+    }
+
+    public function test_update_endpoint_allows_updating_only_end_if_it_is_after_the_persisted_start(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:update:own',
+        ]);
+        $timeEntry = TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)->create([
+            'start' => Carbon::parse('2026-08-01T03:00:00Z'),
+            'end' => Carbon::parse('2026-08-01T03:01:00Z'),
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.time-entries.update', [$data->organization->getKey(), $timeEntry->getKey()]), [
+            'end' => '2026-08-01T03:00:00Z',
+        ]);
+
+        // Assert
+        $response->assertStatus(200);
+        $timeEntry->refresh();
+        $this->assertSame('2026-08-01T03:00:00Z', $timeEntry->end->toIso8601ZuluString());
+    }
+
     public function test_update_endpoint_validation_fails_if_project_id_is_missing_but_request_has_task_id(): void
     {
         // Arrange
