@@ -13,6 +13,6 @@
     },
     "Auditing": {
         "repository": "solidtime-io/extension-auditing",
-        "ref": "v0.0.4"
+        "ref": "v0.0.5"
     }
 }
