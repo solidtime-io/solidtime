@@ -2446,6 +2446,31 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         $response->assertJsonPath('error', true);
     }
 
+    public function test_store_endpoint_fails_if_user_already_has_active_time_entry_in_another_organization(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:create:own',
+        ]);
+        $otherOrganization = Organization::factory()->create();
+        $otherMember = Member::factory()->forOrganization($otherOrganization)->forUser($data->user)->create();
+        TimeEntry::factory()->forOrganization($otherOrganization)->forMember($otherMember)->active()->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.time-entries.store', [$data->organization->getKey()]), [
+            'billable' => true,
+            'start' => Carbon::now()->toIso8601ZuluString(),
+            'end' => null,
+            'member_id' => $data->member->getKey(),
+        ]);
+
+        // Assert
+        $response->assertStatus(400);
+        $response->assertJsonPath('key', 'time_entry_still_running');
+        $this->assertSame(0, TimeEntry::query()->whereBelongsTo($data->organization, 'organization')->count());
+    }
+
     public function test_store_endpoint_releases_running_time_entry_lock_after_request(): void
     {
         // Arrange
