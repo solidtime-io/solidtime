@@ -120,4 +120,27 @@ class TogglTimeEntriesImporterTest extends ImporterTestAbstract
         Queue::assertPushed(RecalculateSpentTimeForProject::class, 2);
         Queue::assertPushed(RecalculateSpentTimeForTask::class, 1);
     }
+
+    public function test_import_fails_if_end_is_before_start(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $timezone = 'Europe/Vienna';
+        $importer = new TogglTimeEntriesImporter;
+        $importer->init($organization);
+        $data = "User,Email,Client,Project,Task,Description,Billable,Start date,Start time,End date,End time,Duration,Tags,Amount (EUR)\n".
+            'Peter Tester,peter.test@email.test,,Project without Client,,"",No,2024-03-04,10:23:52,2024-03-04,09:23:52,-01:00:00,"",';
+
+        // Act
+        try {
+            $importer->importData($data, $timezone);
+        } catch (ImportException $e) {
+            // Assert
+            $this->assertSame('End ("2024-03-04 09:23:52") is before start ("2024-03-04 10:23:52")', $e->getMessage());
+            $this->assertSame(0, TimeEntry::query()->count());
+
+            return;
+        }
+        $this->fail();
+    }
 }

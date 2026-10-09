@@ -190,6 +190,9 @@ class ClockifyTimeEntriesImporter extends DefaultImporter
                 if ($end === null) {
                     throw new ImportException('End date ("'.$endDateStr.'") or time ("'.$endTimeStr.'") are invalid');
                 }
+                if ($end->lt($start)) {
+                    throw new ImportException('End ("'.$endStr.'") is before start ("'.$startStr.'")');
+                }
                 $timeEntry->end = $end->utc();
 
                 $timeEntry->billable_rate = $this->billableRateService->getBillableRateForTimeEntryWithGivenRelations(
