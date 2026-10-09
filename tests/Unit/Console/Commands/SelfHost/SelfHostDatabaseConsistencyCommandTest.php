@@ -38,6 +38,26 @@ class SelfHostDatabaseConsistencyCommandTest extends TestCaseWithDatabase
         $this->assertSame("Consistency problem: Time entries have a task that does not belong to the project of the time entry\n  - ".$timeEntry->getKey()."\n", $output);
     }
 
+    public function test_checks_that_task_need_to_be_part_of_project_in_time_entries_with_no_project_in_time_entry(): void
+    {
+        // Arrange
+        $user = $this->createUserWithRole(Role::Owner);
+        $project = Project::factory()->forOrganization($user->organization)->create();
+        $task = Task::factory()->forOrganization($user->organization)->forProject($project)->create();
+        $timeEntry = TimeEntry::factory()->forMember($user->member)->forTask($task)->create([
+            'project_id' => null,
+            'client_id' => null,
+        ]);
+
+        // Act
+        $exitCode = $this->withoutMockingConsoleOutput()->artisan('self-host:database-consistency');
+
+        // Assert
+        $this->assertSame(Command::FAILURE, $exitCode);
+        $output = Artisan::output();
+        $this->assertSame("Consistency problem: Time entries have a task that does not belong to the project of the time entry\n  - ".$timeEntry->getKey()."\n", $output);
+    }
+
     public function test_checks_that_client_id_is_the_client_id_of_the_project(): void
     {
         // Arrange
