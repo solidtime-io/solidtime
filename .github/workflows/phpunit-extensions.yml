@@ -5,7 +5,7 @@ permissions:
 jobs:
   phpunit-extensions:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     strategy:
       matrix:
         postgres_version: [ 15, 16, 17 ]
@@ -132,5 +132,8 @@ jobs:
           php artisan key:generate
           php artisan passport:keys
 
-      - name: "Run PHPUnit"
+      - name: "Run PHPUnit (extensions)"
         run: php artisan test extensions/Billing/tests extensions/Services/tests extensions/Invoicing/tests --stop-on-failure
+
+      - name: "Run PHPUnit (core)"
+        run: php artisan test --testsuite=Unit,Feature --stop-on-failure
