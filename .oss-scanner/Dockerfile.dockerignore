@@ -1,0 +1,18 @@
+# Used instead of the root .dockerignore when building .oss-scanner/Dockerfile. The root one is tailored to the
+# production image and excludes tests, phpunit.xml etc., which the scanner needs.
+node_modules
+extensions/*/node_modules
+vendor
+.env
+public/build
+public/hot
+storage/*.key
+storage/logs/*
+coverage
+test-results
+playwright-report
+.phpunit.cache
+.phpunit.result.cache
+auth.json
+.DS_Store
+.idea
