@@ -24,7 +24,9 @@ use App\Models\Task;
 use App\Models\TimeEntry;
 use App\Models\User;
 use App\Service\TimeEntryFilter;
+use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -2442,6 +2444,52 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         // Assert
         $response->assertStatus(400);
         $response->assertJsonPath('error', true);
+    }
+
+    public function test_store_endpoint_releases_running_time_entry_lock_after_request(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:create:own',
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.time-entries.store', [$data->organization->getKey()]), [
+            'billable' => true,
+            'start' => Carbon::now()->toIso8601ZuluString(),
+            'end' => null,
+            'member_id' => $data->member->getKey(),
+        ]);
+
+        // Assert
+        $response->assertStatus(201);
+        $this->assertTrue(Cache::lock('time-entries:running:'.$data->user->getKey(), 10)->get());
+    }
+
+    public function test_store_endpoint_waits_for_running_time_entry_lock_and_fails_if_it_is_not_released(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:create:own',
+        ]);
+        Cache::lock('time-entries:running:'.$data->user->getKey(), 10)->get();
+        $this->withoutExceptionHandling();
+        Passport::actingAs($data->user);
+
+        // Act
+        try {
+            $this->postJson(route('api.v1.time-entries.store', [$data->organization->getKey()]), [
+                'billable' => true,
+                'start' => Carbon::now()->toIso8601ZuluString(),
+                'end' => null,
+                'member_id' => $data->member->getKey(),
+            ]);
+            $this->fail('Expected LockTimeoutException');
+        } catch (LockTimeoutException) {
+            // Assert
+            $this->assertSame(0, TimeEntry::query()->count());
+        }
     }
 
     public function test_store_endpoint_validation_fails_if_task_id_does_not_belong_to_project_id(): void
