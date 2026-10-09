@@ -136,6 +136,9 @@ class HarvestTimeEntriesImporter extends DefaultImporter
                     throw new ImportException('Hours ("'.$record['Hours'].'") is invalid');
                 }
                 $hours = (float) $hoursField;
+                if ($hours < 0) {
+                    throw new ImportException('Hours ("'.$record['Hours'].'") is negative');
+                }
                 $timeEntry->start = $date->copy()->startOfDay()->utc();
                 $timeEntry->end = $date->copy()->startOfDay()->addHours($hours)->utc();
                 $timeEntry->billable_rate = $this->billableRateService->getBillableRateForTimeEntryWithGivenRelations(

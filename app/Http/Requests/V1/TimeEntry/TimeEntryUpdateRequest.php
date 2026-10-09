@@ -13,9 +13,11 @@ use App\Models\Tag;
 use App\Models\Task;
 use App\Models\TimeEntry;
 use App\Service\PermissionStore;
+use Carbon\Exceptions\InvalidFormatException;
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ConditionalRules;
 use Illuminate\Validation\Rule;
@@ -90,12 +92,32 @@ class TimeEntryUpdateRequest extends BaseFormRequest
             // Start of time entry (Format: "Y-m-d\TH:i:s\Z", UTC timezone, Example: "2000-02-22T14:58:59Z")
             'start' => [
                 'date_format:Y-m-d\TH:i:s\Z',
+                function (string $attribute, mixed $value, Closure $fail) use ($timeEntry): void {
+                    // If the payload does not contain an end, the start needs to be validated against the persisted end
+                    if ($this->has('end') || $timeEntry?->end === null) {
+                        return;
+                    }
+                    $start = $this->parseDate($value);
+                    if ($start !== null && $start->gt($timeEntry->end)) {
+                        $fail('The start field must be a date before or equal to end.');
+                    }
+                },
             ],
             // End of time entry (Format: "Y-m-d\TH:i:s\Z", UTC timezone, Example: "2000-02-22T14:58:59Z")
             'end' => [
                 'nullable',
                 'date_format:Y-m-d\TH:i:s\Z',
                 'after_or_equal:start',
+                function (string $attribute, mixed $value, Closure $fail) use ($timeEntry): void {
+                    // If the payload does not contain a start, the end needs to be validated against the persisted start
+                    if ($this->has('start') || $timeEntry === null) {
+                        return;
+                    }
+                    $end = $this->parseDate($value);
+                    if ($end !== null && $end->lt($timeEntry->start)) {
+                        $fail('The end field must be a date after or equal to start.');
+                    }
+                },
             ],
             // Whether time entry is billable
             'billable' => [
@@ -136,5 +158,17 @@ class TimeEntryUpdateRequest extends BaseFormRequest
                 })->uuid(),
             ],
         ];
+    }
+
+    private function parseDate(mixed $value): ?Carbon
+    {
+        if (! is_string($value)) {
+            return null;
+        }
+        try {
+            return Carbon::createFromFormat('Y-m-d\TH:i:s\Z', $value, 'UTC');
+        } catch (InvalidFormatException) {
+            return null;
+        }
     }
 }
