@@ -22,6 +22,21 @@ explicitly allow it).
 - Operators of a self-hosted instance (shell, database, environment, filesystem access) are trusted.
 - Everyone else, including organization owners and admins when acting outside their own organization, is untrusted.
 
+## Runtime: long-lived Octane workers
+
+In production (the hosted SaaS and the official Docker image, `docker/prod/`) the app does **not** run as one PHP
+process per request. It runs on Laravel Octane with FrankenPHP in worker mode: each worker boots the application once
+and then serves many requests from different users and organizations. Anything kept in memory survives from one request
+to the next unless Octane resets it (`config/octane.php` lists what is reset). This includes static properties and
+static caches, container bindings registered with `singleton()` instead of `scoped()` (see
+`app/Providers/AppServiceProvider.php`), objects captured by those singletons, runtime `config()` / locale / timezone
+changes, macros and event listeners registered during a request, and state in third-party packages.
+
+Request A leaving state behind that request B (another user, possibly of another organization) then sees or is
+affected by is in scope, rated by its impact like any other issue (see severity below). The PHPUnit suite cannot
+show this class of bug, because it boots a fresh application for every test. It has to be reproduced over HTTP against
+the Octane server, see "How to exercise it".
+
 ## Where untrusted input enters
 
 All authenticated users, including employees of any organization and anyone who self-registers (registration is open
@@ -53,19 +68,30 @@ Less important / out of scope:
 ## How to exercise it
 
 - `.oss-scanner/start-postgres.sh` starts the local PostgreSQL server (user `root`, password `root`, db `laravel`).
-- `php artisan test` runs the PHPUnit suite. Endpoint tests in `tests/Unit/Endpoint/Api/V1/` show how to create users,
+- `.oss-scanner/start-gotenberg.sh` starts the local Gotenberg server (PDF rendering via headless Chromium) on
+  http://127.0.0.1:3000, so the PDF export code path, including what Chromium does with the rendered HTML, can be
+  exercised.
+- `php artisan test` runs the PHPUnit suite (start PostgreSQL and Gotenberg first); all tests are expected to pass. Endpoint tests in `tests/Unit/Endpoint/Api/V1/` show how to create users,
   organizations and members with factories and call the API with a given role; they are the quickest way to write a
   reproducer. Example: `php artisan test --filter=TimeEntryEndpointTest`.
-- To run the app: `php artisan migrate:fresh --seed && php artisan serve` (http://127.0.0.1:8000). Note that the
-  test suite and the app share the same database.
-- There is no network: Gotenberg (PDF generation) and mail delivery are not available. Mail uses the `array`
-  driver in tests. The 8 PDF export tests in `TimeEntryEndpointTest` fail for this reason; that is expected.
+- To run the app like production: `.oss-scanner/start-octane.sh` (http://127.0.0.1:8000). It starts PostgreSQL and
+  Gotenberg, migrates (and seeds an empty database, see `database/seeders/DatabaseSeeder.php` for the users) and runs
+  Octane/FrankenPHP with the production Caddyfile and a **single worker**, so consecutive requests always hit the same
+  worker and leaks between requests reproduce reliably. Workers keep the code they booted with: after changing PHP
+  code run `php artisan octane:reload`. Stop it with `php artisan octane:stop`. Note that the test suite and the app
+  share the same database, so `php artisan test` wipes the app's data.
+- A reproducer for a leak between requests is a script that sends request A (e.g. as a member of organization X) and
+  then request B (as a user of organization Y) to the running Octane server and shows that B observes A's state. API
+  requests can be authenticated with a personal access token, e.g. created with
+  `php artisan tinker --execute="echo App\Models\User::where('email', '...')->first()->createToken('t')->accessToken;"`.
+- There is no network: mail delivery is not available (mail uses the `array` driver in tests), and remote resources
+  referenced by PDF templates (e.g. fonts from fonts.bunny.net) fail to load, so PDFs fall back to local fonts.
 
 ## How we rate severity
 
 - **Critical**: unauthenticated access to other users' data or accounts; authentication bypass; remote code execution;
   SQL injection reachable by any registered user; reading or writing data of an organization the attacker is not a
-  member of.
+  member of, including through state leaking between requests in an Octane worker.
 - **High**: privilege escalation within an organization (e.g. employee to admin/owner, or performing admin-only
   actions); access to data the role must not see (other members' time entries, billable rates, member emails) when
   the organization settings do not allow it; stored XSS that executes in another user's session; SSRF via PDF
@@ -91,5 +117,6 @@ Please do not report (see also `SECURITY.md`):
 ## Reports and patches
 
 Please include the affected endpoint or code path, the attacker's role and the victim, a PHPUnit test (in the style of
-`tests/Unit/Endpoint/Api/V1/`) that reproduces the issue, and a minimal patch that follows the existing patterns
+`tests/Unit/Endpoint/Api/V1/`) that reproduces the issue (for leaks between requests: a script against
+`.oss-scanner/start-octane.sh` instead), and a minimal patch that follows the existing patterns
 (authorisation in form requests/controllers via `PermissionStore`).
