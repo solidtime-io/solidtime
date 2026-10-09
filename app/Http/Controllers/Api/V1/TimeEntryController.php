@@ -630,7 +630,8 @@ class TimeEntryController extends Controller
      */
     private function storeTimeEntry(Organization $organization, Member $member, TimeEntryStoreRequest $request): JsonResource
     {
-        if ($request->input('end') === null && TimeEntry::query()->whereBelongsTo($member, 'member')->where('end', null)->exists()) {
+        // A user can only have one running time entry, across all organizations
+        if ($request->input('end') === null && TimeEntry::query()->where('user_id', $member->user_id)->whereNull('end')->exists()) {
             throw new TimeEntryStillRunningApiException;
         }
 
