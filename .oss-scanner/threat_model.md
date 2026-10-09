@@ -12,6 +12,16 @@ are not a member of, and within an organization a member must not exceed the per
 employee must not see other members' time entries, billable rates, or manage members, unless the organization settings
 explicitly allow it).
 
+## Trust boundaries
+
+- **Super admins are fully trusted.** They are the instance operators, configured via the `SUPER_ADMINS` env
+  variable, and have access to the Filament admin panel (`app/Filament`), which can view and change data of every
+  organization and impersonate users. Anything a super admin can do through the panel (including XSS, SQL injection,
+  SSRF or file access that is only reachable from the panel) is not a vulnerability.
+- What **is** in scope: a user who is not a super admin reaching the admin panel, or any of its actions, at all.
+- Operators of a self-hosted instance (shell, database, environment, filesystem access) are trusted.
+- Everyone else, including organization owners and admins when acting outside their own organization, is untrusted.
+
 ## Where untrusted input enters
 
 All authenticated users, including employees of any organization and anyone who self-registers (registration is open
@@ -27,8 +37,7 @@ by default), are untrusted.
 - **Exports / reports** (`app/Service/Export`, `app/Service/ReportExport`): CSV/XLSX/ODS and PDF. PDFs are rendered by
   sending HTML to a Gotenberg (headless Chromium) service, so user-controlled content in that HTML matters.
 - **OAuth** (Passport) authorization and token endpoints.
-- **Filament admin panel** (`app/Filament`), only for instance super admins (`SUPER_ADMINS` env). Super admins are
-  trusted.
+- **Filament admin panel** (`app/Filament`): only its access control is in scope (see Trust boundaries).
 
 ## Components that matter most / least
 
@@ -74,7 +83,8 @@ Please do not report (see also `SECURITY.md`):
 - Self-XSS; CSRF on non-state-changing endpoints (logout, theme).
 - CSV / spreadsheet formula injection in exports.
 - Owners or admins acting destructively within their own organization.
-- Anything requiring direct DB, shell or filesystem access on a self-hosted instance, or super admin access.
+- Anything requiring direct DB, shell or filesystem access on a self-hosted instance.
+- Anything that requires being a super admin, including issues inside the Filament admin panel.
 - Missing OAuth scope enforcement (not implemented yet).
 - Rate-limit tuning and generic DoS through volume of requests.
 
