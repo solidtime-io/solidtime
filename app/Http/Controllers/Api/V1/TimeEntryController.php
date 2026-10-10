@@ -51,6 +51,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -613,7 +614,24 @@ class TimeEntryController extends Controller
             $this->checkPermission($organization, 'time-entries:create:all');
         }
 
-        if ($request->input('end') === null && TimeEntry::query()->whereBelongsTo($member, 'member')->where('end', null)->exists()) {
+        // Lock the creation of running time entries per user, so that concurrent requests can not create more than one running time entry
+        $lock = $request->input('end') === null ? Cache::lock('time-entries:running:'.$member->user_id, 10) : null;
+        $lock?->block(5);
+
+        try {
+            return $this->storeTimeEntry($organization, $member, $request);
+        } finally {
+            $lock?->release();
+        }
+    }
+
+    /**
+     * @throws TimeEntryStillRunningApiException
+     */
+    private function storeTimeEntry(Organization $organization, Member $member, TimeEntryStoreRequest $request): JsonResource
+    {
+        // A user can only have one running time entry, across all organizations
+        if ($request->input('end') === null && TimeEntry::query()->where('user_id', $member->user_id)->whereNull('end')->exists()) {
             throw new TimeEntryStillRunningApiException;
         }
 
