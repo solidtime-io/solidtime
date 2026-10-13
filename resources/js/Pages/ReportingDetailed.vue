@@ -43,7 +43,7 @@ import { useMembersQuery } from '@/utils/useMembersQuery';
 import { useQueryClient } from '@tanstack/vue-query';
 import { getCurrentOrganizationId, getCurrentMembershipId } from '@/utils/useUser';
 import ReportingTabNavbar from '@/Components/Common/Reporting/ReportingTabNavbar.vue';
-import UpgradeModal from '@/Components/Common/UpgradeModal.vue';
+import UpgradeModal from '@/packages/ui/src/UpgradeModal.vue';
 import type { ExportFormat } from '@/types/reporting';
 import { useNotificationsStore } from '@/utils/notification';
 import TimeEntryMassActionRow from '@/packages/ui/src/TimeEntry/TimeEntryMassActionRow.vue';
@@ -253,9 +253,7 @@ async function downloadExport(format: ExportFormat) {
         <ReportingExportModal
             v-model:show="showExportModal"
             :export-url="exportUrl"></ReportingExportModal>
-        <UpgradeModal v-model:show="showPremiumModal">
-            <strong>PDF Reports</strong> are only available in solidtime Professional.
-        </UpgradeModal>
+        <UpgradeModal v-model:show="showPremiumModal" feature="pdf-reports" />
         <MainContainer
             class="h-14 sm:h-16 border-b border-default-background-separator flex flex-wrap gap-y-3 justify-between items-center">
             <div class="flex items-center space-x-3 sm:space-x-6">

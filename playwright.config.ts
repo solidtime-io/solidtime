@@ -1,5 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
-import { existsSync, readFileSync } from 'node:fs';
+import { enabledExtensions } from './playwright/config';
 
 /**
  * Read environment variables from file.
@@ -7,23 +7,11 @@ import { existsSync, readFileSync } from 'node:fs';
  */
 // require('dotenv').config();
 
-/**
+/*
  * Extensions ship their e2e specs in extensions/<Name>/tests/e2e. Only the specs of extensions
  * that are enabled in modules_statuses.json (php artisan module:enable <Name>) are collected,
  * a checked out but disabled extension would fail its specs otherwise.
- */
-function enabledExtensions(): string[] {
-    const statusesFile = './modules_statuses.json';
-    if (!existsSync(statusesFile)) {
-        return [];
-    }
-    const statuses: Record<string, boolean> = JSON.parse(readFileSync(statusesFile, 'utf-8'));
-    return Object.entries(statuses)
-        .filter(([, enabled]) => enabled)
-        .map(([name]) => name);
-}
-
-/*
+ *
  * Every test root gets its own testDir (instead of testDir: '.') so playwright does not walk the
  * whole repository, including node_modules, vendor and nested worktrees, to find the specs.
  */
