@@ -164,6 +164,31 @@ class SolidtimeImporterTest extends ImporterTestAbstract
         $this->fail();
     }
 
+    public function test_import_skips_running_time_entries(): void
+    {
+        // Arrange
+        $zipPath = $this->createTestZip('solidtime_import_test_3');
+        $timezone = 'Europe/Vienna';
+        $organization = Organization::factory()->create();
+        $importer = new SolidtimeImporter;
+        $importer->init($organization);
+        $data = file_get_contents($zipPath);
+        Queue::fake([
+            RecalculateSpentTimeForProject::class,
+            RecalculateSpentTimeForTask::class,
+        ]);
+
+        // Act
+        $importer->importData($data, $timezone);
+        $report = $importer->getReport();
+
+        // Assert
+        $this->assertSame(3, $report->timeEntriesCreated);
+        $this->assertSame(3, TimeEntry::query()->count());
+        $this->assertSame(0, TimeEntry::query()->whereNull('end')->count());
+        $this->assertNull(TimeEntry::query()->where('description', 'Still running')->first());
+    }
+
     public function test_import_of_test_file_twice_succeeds(): void
     {
         // Arrange
