@@ -390,6 +390,40 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
         ]);
     }
 
+    public function test_merge_into_deletes_running_time_entries_of_source_member(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'members:merge-into',
+        ]);
+        $userSource = User::factory()->placeholder()->create();
+        $memberSource = Member::factory()->forUser($userSource)->forOrganization($data->organization)->role(Role::Placeholder)->create();
+        $runningTimeEntrySource = TimeEntry::factory()->forOrganization($data->organization)->forMember($memberSource)->active()->create();
+        TimeEntry::factory()->forOrganization($data->organization)->forMember($memberSource)->createMany(2);
+
+        $userDestination = User::factory()->create();
+        $memberDestination = Member::factory()->forUser($userDestination)->forOrganization($data->organization)->role(Role::Admin)->create();
+        $runningTimeEntryDestination = TimeEntry::factory()->forOrganization($data->organization)->forMember($memberDestination)->active()->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.members.merge-into', [$data->organization->getKey(), $memberSource->getKey()]), [
+            'member_id' => $memberDestination->getKey(),
+        ]);
+
+        // Assert
+        $response->assertStatus(204);
+        $this->assertDatabaseMissing(Member::class, [
+            'id' => $memberSource->getKey(),
+        ]);
+        $this->assertDatabaseMissing(TimeEntry::class, [
+            'id' => $runningTimeEntrySource->getKey(),
+        ]);
+        $memberDestination->refresh();
+        $this->assertCount(3, $memberDestination->timeEntries);
+        $this->assertSame([$runningTimeEntryDestination->getKey()], TimeEntry::query()->whereBelongsTo($userDestination, 'user')->whereNull('end')->pluck('id')->all());
+    }
+
     public function test_merge_into_assigns_resources_of_source_member_to_destination_member_and_deletes_member_with_existing_destination_resources(): void
     {
         // Arrange
