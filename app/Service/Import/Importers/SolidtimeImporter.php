@@ -211,6 +211,10 @@ class SolidtimeImporter extends DefaultImporter
 
             // Time entries
             foreach ($timeEntriesReader as $timeEntryRow) {
+                // Running time entries are skipped, since the user could already have a running time entry
+                if ($timeEntryRow['end'] === '') {
+                    continue;
+                }
                 $userId = $this->userImportHelper->getKeyByExternalIdentifier($timeEntryRow['user_id']);
                 if ($userId === null) {
                     throw new ImportException('Time entry references a user that does not exist in the import');
@@ -286,22 +290,18 @@ class SolidtimeImporter extends DefaultImporter
                 }
                 $timeEntry->start = $start->utc();
 
-                if ($timeEntryRow['end'] !== '') {
-                    try {
-                        $end = Carbon::createFromFormat('Y-m-d\TH:i:s\Z', $timeEntryRow['end'], 'UTC');
-                    } catch (InvalidFormatException) {
-                        throw new ImportException('End date ("'.$timeEntryRow['end'].'") is invalid');
-                    }
-                    if ($end === null) {
-                        throw new ImportException('End date ("'.$timeEntryRow['end'].'") is invalid');
-                    }
-                    if ($end->lt($start)) {
-                        throw new ImportException('End date ("'.$timeEntryRow['end'].'") is before start date ("'.$timeEntryRow['start'].'")');
-                    }
-                    $timeEntry->end = $end->utc();
-                } else {
-                    $timeEntry->end = null;
+                try {
+                    $end = Carbon::createFromFormat('Y-m-d\TH:i:s\Z', $timeEntryRow['end'], 'UTC');
+                } catch (InvalidFormatException) {
+                    throw new ImportException('End date ("'.$timeEntryRow['end'].'") is invalid');
                 }
+                if ($end === null) {
+                    throw new ImportException('End date ("'.$timeEntryRow['end'].'") is invalid');
+                }
+                if ($end->lt($start)) {
+                    throw new ImportException('End date ("'.$timeEntryRow['end'].'") is before start date ("'.$timeEntryRow['start'].'")');
+                }
+                $timeEntry->end = $end->utc();
 
                 if ($timeEntryRow['still_active_email_sent_at'] !== '') {
                     try {
