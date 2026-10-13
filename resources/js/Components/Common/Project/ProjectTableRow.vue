@@ -18,7 +18,7 @@ import ProjectEditModal from '@/Components/Common/Project/ProjectEditModal.vue';
 import { formatCents } from '@/packages/ui/src/utils/money';
 import { getOrganizationCurrencyString } from '@/utils/money';
 import EstimatedTimeProgress from '@/packages/ui/src/EstimatedTimeProgress.vue';
-import UpgradeBadge from '@/Components/Common/UpgradeBadge.vue';
+import UpgradeBadge from '@/packages/ui/src/UpgradeBadge.vue';
 import { formatHumanReadableDuration } from '../../../packages/ui/src/utils/time';
 import { isAllowedToPerformPremiumAction } from '@/utils/billing';
 import { canUpdateProjects, canDeleteProjects } from '@/utils/permissions';
@@ -119,7 +119,9 @@ const showEditProjectModal = ref(false);
                     <div v-else class="text-text-tertiary">--</div>
                 </div>
                 <div class="whitespace-nowrap px-3 flex items-center text-sm text-text-primary">
-                    <UpgradeBadge v-if="!isAllowedToPerformPremiumAction()"></UpgradeBadge>
+                    <UpgradeBadge
+                        v-if="!isAllowedToPerformPremiumAction()"
+                        feature="estimates"></UpgradeBadge>
                     <EstimatedTimeProgress
                         v-else-if="project.estimated_time"
                         :estimated="project.estimated_time"

@@ -8,9 +8,9 @@ import { computed, ref } from 'vue';
 import GoalTable from '@/Components/Common/Goal/GoalTable.vue';
 import GoalCreateModal from '@/Components/Common/Goal/GoalCreateModal.vue';
 import PageTitle from '@/Components/Common/PageTitle.vue';
-import UpgradeBadge from '@/Components/Common/UpgradeBadge.vue';
+import UpgradeBadge from '@/packages/ui/src/UpgradeBadge.vue';
 import { canCreateGoals } from '@/utils/permissions';
-import { canCreateMoreGoals, goalLimit } from '@/utils/billing';
+import { canCreateMoreGoals } from '@/utils/billing';
 import { useGoalsQuery } from '@/utils/useGoalsQuery';
 import { TabBar, TabBarItem } from '@/packages/ui/src';
 
@@ -25,7 +25,6 @@ const visibleGoals = computed(() =>
 );
 const archivedCount = computed(() => goals.value.filter((goal) => goal.is_archived).length);
 const canCreateMore = computed(() => canCreateMoreGoals(goals.value.length));
-const limit = goalLimit();
 </script>
 
 <template>
@@ -43,10 +42,7 @@ const limit = goalLimit();
                 </TabBar>
             </div>
             <div class="flex items-center space-x-3">
-                <UpgradeBadge v-if="canCreateGoals() && !canCreateMore">
-                    <strong>More than {{ limit }} goal{{ limit === 1 ? '' : 's' }}</strong> is only
-                    available in solidtime Professional.
-                </UpgradeBadge>
+                <UpgradeBadge v-if="canCreateGoals() && !canCreateMore" feature="goals" />
                 <SecondaryButton
                     v-if="canCreateGoals() && canCreateMore"
                     :icon="PlusIcon"

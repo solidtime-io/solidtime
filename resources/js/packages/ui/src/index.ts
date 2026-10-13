@@ -21,6 +21,8 @@ export type { CalendarSettings } from './FullCalendar/calendarSettings';
 export type { ActivityPeriod } from './FullCalendar/activityTypes';
 export { cn } from './utils/cn';
 export { useCssVariable } from './utils/useCssVariable';
+export { upgradeCtaKey, useUpgradeCta } from './UpgradeModal/useUpgradeCta';
+export type { UpgradeCta, UpgradeFeature } from './UpgradeModal/useUpgradeCta';
 
 import Badge from './Badge.vue';
 import Button from './Buttons/Button.vue';
@@ -162,6 +164,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './tabs/index';
 import TabBar from './TabBar/TabBar.vue';
 import TabBarItem from './TabBar/TabBarItem.vue';
 import TimezoneMismatchModal from './TimezoneMismatchModal.vue';
+import UpgradeBadge from './UpgradeBadge.vue';
+import UpgradeModal from './UpgradeModal.vue';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tooltip/index';
 
 export {
@@ -305,4 +309,6 @@ export {
     TooltipContent,
     TooltipProvider,
     TooltipTrigger,
+    UpgradeBadge,
+    UpgradeModal,
 };

@@ -4,7 +4,7 @@ import ReportCreateModal from '@/Components/Common/Report/ReportCreateModal.vue'
 import { h, ref } from 'vue';
 import type { CreateReportBodyProperties } from '@/packages/api/src';
 import { isAllowedToPerformPremiumAction } from '@/utils/billing';
-import UpgradeModal from '@/Components/Common/UpgradeModal.vue';
+import UpgradeModal from '@/packages/ui/src/UpgradeModal.vue';
 import { canCreateReports } from '@/utils/permissions';
 defineProps<{
     reportProperties: CreateReportBodyProperties;
@@ -30,9 +30,7 @@ function onSaveReportClick() {
     <ReportCreateModal
         v-model:show="showCreateReportModal"
         :properties="reportProperties"></ReportCreateModal>
-    <UpgradeModal v-model:show="showPremiumModal">
-        <strong>Sharable Reports</strong> is only available in solidtime Professional.
-    </UpgradeModal>
+    <UpgradeModal v-model:show="showPremiumModal" feature="shareable-reports" />
     <SecondaryButton v-if="canCreateReports()" :icon="SaveIcon" @click="onSaveReportClick"
         >Save Report</SecondaryButton
     >

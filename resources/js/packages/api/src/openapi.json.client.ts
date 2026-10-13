@@ -5070,6 +5070,45 @@ If the group parameters are all set to &#x60;null&#x60; or are all missing, the 
         ],
     },
     {
+        method: 'post',
+        path: '/v1/organizations/:organization/trial/cancel',
+        alias: 'cancelTrial',
+        description: `The organization switches to the free plan right away.`,
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'organization',
+                type: 'Path',
+                schema: z.string(),
+            },
+        ],
+        response: z.void(),
+        errors: [
+            {
+                status: 400,
+                description: `API exception`,
+                schema: z
+                    .object({ error: z.boolean(), key: z.string(), message: z.string() })
+                    .passthrough(),
+            },
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 403,
+                description: `Authorization error`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 404,
+                description: `Not found`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+        ],
+    },
+    {
         method: 'get',
         path: '/v1/public/reports',
         alias: 'getPublicReport',

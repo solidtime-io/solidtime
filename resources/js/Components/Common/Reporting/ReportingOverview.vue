@@ -30,7 +30,8 @@ import {
     DropdownMenuTrigger,
 } from '@/packages/ui/src';
 import ReportCreateModal from '@/Components/Common/Report/ReportCreateModal.vue';
-import UpgradeModal from '@/Components/Common/UpgradeModal.vue';
+import UpgradeModal from '@/packages/ui/src/UpgradeModal.vue';
+import type { UpgradeFeature } from '@/packages/ui/src/UpgradeModal/useUpgradeCta';
 import { canCreateReports } from '@/utils/permissions';
 import { isAllowedToPerformPremiumAction } from '@/utils/billing';
 import { computed, type ComputedRef, inject, ref, watch } from 'vue';
@@ -214,10 +215,13 @@ const showExportModal = ref(false);
 const exportUrl = ref<string | null>(null);
 const showCreateReportModal = ref(false);
 const showPremiumModal = ref(false);
+// Note: The premium modal is shared by the PDF export and saving a report
+const premiumFeature = ref<UpgradeFeature>('pdf-reports');
 const exportLoading = ref(false);
 
 function triggerExport(format: ExportFormat) {
     if (format === 'pdf' && !isAllowedToPerformPremiumAction()) {
+        premiumFeature.value = 'pdf-reports';
         showPremiumModal.value = true;
         return;
     }
@@ -231,6 +235,7 @@ function onSaveReportClick() {
     if (isAllowedToPerformPremiumAction()) {
         showCreateReportModal.value = true;
     } else {
+        premiumFeature.value = 'shareable-reports';
         showPremiumModal.value = true;
     }
 }
@@ -299,9 +304,7 @@ const tableData = computed(() => {
     <ReportCreateModal
         v-model:show="showCreateReportModal"
         :properties="reportProperties"></ReportCreateModal>
-    <UpgradeModal v-model:show="showPremiumModal">
-        This feature is only available in solidtime Professional.
-    </UpgradeModal>
+    <UpgradeModal v-model:show="showPremiumModal" :feature="premiumFeature" />
     <MainContainer
         class="h-14 sm:h-16 border-b border-default-background-separator flex flex-wrap gap-y-3 justify-between items-center">
         <div class="flex items-center space-x-3 sm:space-x-6">
