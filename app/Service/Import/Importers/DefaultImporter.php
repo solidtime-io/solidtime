@@ -126,6 +126,8 @@ abstract class DefaultImporter implements ImporterContract
             if ($project->billable_rate === 0) {
                 $project->billable_rate = null;
             }
+            // Note: Prevents a query per project for the billable rate restriction (see Project::booted)
+            $project->setRelation('organization', $this->organization);
         });
         $this->projectMemberImportHelper = new ImportDatabaseHelper(ProjectMember::class, ['project_id', 'member_id'], true, function (Builder $builder): Builder {
             /** @var Builder<ProjectMember> $builder */
@@ -139,6 +141,11 @@ abstract class DefaultImporter implements ImporterContract
         ], beforeSave: function (ProjectMember $projectMember): void {
             if ($projectMember->billable_rate === 0) {
                 $projectMember->billable_rate = null;
+            }
+            // Note: Prevents queries per project member for the billable rate restriction (see ProjectMember::booted)
+            $project = $this->projectImportHelper->getModelById($projectMember->project_id);
+            if ($project !== null) {
+                $projectMember->setRelation('project', $project->setRelation('organization', $this->organization));
             }
         });
         $this->tagImportHelper = new ImportDatabaseHelper(Tag::class, ['name', 'organization_id'], true, function (Builder $builder): Builder {

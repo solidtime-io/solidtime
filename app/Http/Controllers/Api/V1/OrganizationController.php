@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1;
 
-use App\Enums\Role;
 use App\Events\AfterCreateOrganization;
 use App\Http\Requests\V1\Organization\OrganizationDestroyRequest;
 use App\Http\Requests\V1\Organization\OrganizationStoreRequest;
@@ -28,11 +27,11 @@ class OrganizationController extends Controller
      *
      * @throws AuthorizationException
      */
-    public function show(Organization $organization): OrganizationResource
+    public function show(Organization $organization, BillableRateService $billableRateService): OrganizationResource
     {
         $this->checkPermission($organization, 'organizations:view');
 
-        $showBillableRate = $this->member($organization)->role !== Role::Employee->value || $organization->employees_can_see_billable_rates;
+        $showBillableRate = $billableRateService->canSeeBillableRates($organization, $this->member($organization));
 
         return new OrganizationResource($organization, $showBillableRate);
     }
@@ -81,14 +80,13 @@ class OrganizationController extends Controller
         if ($request->getBreaksEnabled() !== null) {
             $organization->breaks_enabled = $request->getBreaksEnabled();
         }
-        $hasBillableRate = $request->has('billable_rate');
-        if ($hasBillableRate) {
-            $oldBillableRate = $organization->billable_rate;
+        $oldBillableRate = $organization->billable_rate;
+        if ($request->has('billable_rate')) {
             $organization->billable_rate = $request->getBillableRate();
         }
         $organization->save();
 
-        if ($hasBillableRate && $oldBillableRate !== $request->getBillableRate()) {
+        if ($oldBillableRate !== $organization->billable_rate) {
             $billableRateService->updateTimeEntriesBillableRateForOrganization($organization);
         }
 

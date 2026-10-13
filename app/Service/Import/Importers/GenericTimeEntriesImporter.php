@@ -129,7 +129,7 @@ class GenericTimeEntriesImporter extends DefaultImporter
                 $timeEntry->task_id = $taskId;
                 $timeEntry->project_id = $projectId;
                 $timeEntry->client_id = $clientId;
-                $timeEntry->organization_id = $this->organization->id;
+                $timeEntry->organization()->associate($this->organization);
                 $timeEntry->description = $record['description'];
                 if (! in_array($record['billable'], ['true', 'false'], true)) {
                     throw new ImportException('Invalid billable value');

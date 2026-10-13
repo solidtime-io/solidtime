@@ -79,7 +79,7 @@ class ProjectMemberController extends Controller
         $projectMember->project()->associate($project);
         $projectMember->save();
 
-        if ($request->getBillableRate() !== null) {
+        if ($projectMember->billable_rate !== null) {
             $billableRateService->updateTimeEntriesBillableRateForProjectMember($projectMember);
         }
 
@@ -100,7 +100,7 @@ class ProjectMemberController extends Controller
         $projectMember->billable_rate = $request->getBillableRate();
         $projectMember->save();
 
-        if ($oldBillableRate !== $request->getBillableRate()) {
+        if ($oldBillableRate !== $projectMember->billable_rate) {
             $billableRateService->updateTimeEntriesBillableRateForProjectMember($projectMember);
         }
 

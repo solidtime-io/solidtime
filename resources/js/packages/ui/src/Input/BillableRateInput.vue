@@ -8,6 +8,8 @@ import {
     NumberFieldIncrement,
     NumberFieldInput,
 } from '..';
+import UpgradeLockedField from './UpgradeLockedField.vue';
+import { useBillableRatesLock } from '../utils/useBillableRatesLock';
 
 const props = defineProps<{
     name: string;
@@ -20,6 +22,8 @@ const model = defineModel<number | null>({
     default: null,
 });
 
+const { locked } = useBillableRatesLock();
+
 const billableRateInput = ref<HTMLInputElement | null>(null);
 useFocus(billableRateInput, { initialValue: props.focus });
 
@@ -30,7 +34,9 @@ function formatValue(modelValue: number | null) {
 
 <template>
     <div class="relative">
+        <UpgradeLockedField v-if="locked" />
         <NumberField
+            v-else
             :id="name"
             ref="billableRateInput"
             :model-value="formatValue(model)"

@@ -11,6 +11,7 @@ use App\Enums\NumberFormat;
 use App\Enums\TimeFormat;
 use App\Http\Resources\V1\BaseResource;
 use App\Models\Organization;
+use App\Service\BillingContract;
 use App\Service\CurrencyService;
 use Illuminate\Http\Request;
 
@@ -51,6 +52,8 @@ class OrganizationResource extends BaseResource
             'is_personal' => $this->resource->personal_team,
             /** Billable rate in cents per hour */
             'billable_rate' => $this->showBillableRate ? $this->resource->billable_rate : null,
+            /** Whether the organization's plan allows billable flags and rates */
+            'can_use_billable_rates' => app(BillingContract::class)->canUseBillableRates($this->resource),
             /** Can members of the organization with role "employee" see the billable rates */
             'employees_can_see_billable_rates' => $this->resource->employees_can_see_billable_rates,
             /** Can members of the organization with role "employee" manage tasks in public projects and projects they are assigned to */

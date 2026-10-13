@@ -884,7 +884,7 @@ test('test that sorting members by billable rate works', async ({ page, ctx }) =
     await expect(table).toBeVisible();
 
     // First click = desc (highest first), null rates last
-    const billableHeader = table.getByText('Billable Rate').first();
+    const billableHeader = table.getByRole('button', { name: /Billable Rate/ });
     await billableHeader.click();
     await expect(billableHeader.locator('svg')).toBeVisible();
     let names = await getTableRowNames(table);

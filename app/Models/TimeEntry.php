@@ -8,6 +8,7 @@ use App\Enums\TimeEntryType;
 use App\Models\Concerns\CustomAuditable;
 use App\Models\Concerns\HasUuids;
 use App\Service\BillableRateService;
+use App\Service\BillingContract;
 use Carbon\CarbonInterval;
 use Database\Factories\TimeEntryFactory;
 use Illuminate\Database\Eloquent\Builder;
@@ -139,6 +140,12 @@ class TimeEntry extends Model implements AuditableContract
                 $timeEntry->task_id = null;
                 $timeEntry->client_id = null;
                 $timeEntry->tags = [];
+            }
+            // Organizations that can not use billable rates can keep or remove the billable flag, but not set it
+            if ($timeEntry->billable && ! $timeEntry->getOriginal('billable') && ! app(BillingContract::class)->canUseBillableRates($timeEntry->loadMissing('organization')->organization)) {
+                $timeEntry->billable = false;
+                // Note: The billable rate is computed before saving, non-billable time entries have no billable rate
+                $timeEntry->billable_rate = null;
             }
         });
     }

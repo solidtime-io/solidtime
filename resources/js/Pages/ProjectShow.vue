@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import UpgradeLockedBadge from '@/packages/ui/src/UpgradeLockedBadge.vue';
+import { canUseBillableRates } from '@/utils/billing';
 import MainContainer from '@/packages/ui/src/MainContainer.vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { FolderIcon, PlusIcon } from '@heroicons/vue/20/solid';
@@ -80,6 +82,9 @@ const shownTasks = computed(() => {
         return task.project_id === projectId && task.is_done;
     });
 });
+
+// Note: The page sits above the app layout that provides the lock, so it can not inject it
+const billableRatesLocked = computed(() => !canUseBillableRates());
 </script>
 
 <template>
@@ -117,11 +122,17 @@ const shownTasks = computed(() => {
                     </li>
                 </ol>
                 <div class="px-4 space-x-1">
-                    <Badge v-if="project?.billable_rate">
+                    <UpgradeLockedBadge v-if="billableRatesLocked"
+                        >Billable Rates</UpgradeLockedBadge
+                    >
+                    <Badge v-else-if="project?.billable_rate">
                         {{ billableRateFormatted }}
                         / h
                     </Badge>
-                    <Badge v-if="project?.is_billable && !project?.billable_rate">
+                    <Badge
+                        v-if="
+                            project?.is_billable && !project?.billable_rate && !billableRatesLocked
+                        ">
                         Default Rate
                     </Badge>
                     <Badge v-if="!project?.is_billable"> Non-Billable </Badge>

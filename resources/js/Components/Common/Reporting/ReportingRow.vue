@@ -2,6 +2,8 @@
 import { formatReportingDuration } from '@/packages/ui/src/utils/time';
 import { formatCents } from '@/packages/ui/src/utils/money';
 import GroupedItemsCountButton from '@/packages/ui/src/GroupedItemsCountButton.vue';
+import UpgradeLockedValue from '@/packages/ui/src/UpgradeLockedValue.vue';
+import { useBillableRatesLock } from '@/packages/ui/src/utils/useBillableRatesLock';
 import { ref, inject, type ComputedRef } from 'vue';
 import { twMerge } from 'tailwind-merge';
 import type { Organization } from '@/packages/api/src';
@@ -27,6 +29,8 @@ const props = defineProps<{
 const expanded = ref(false);
 
 const organization = inject<ComputedRef<Organization>>('organization');
+
+const { locked: billableRatesLocked } = useBillableRatesLock();
 </script>
 
 <template>
@@ -53,17 +57,20 @@ const organization = inject<ComputedRef<Organization>>('organization');
             }}
         </div>
         <div v-if="showCost" class="justify-end pr-6 flex items-center">
-            {{
-                entry.cost
-                    ? formatCents(
-                          entry.cost,
-                          props.currency,
-                          organization?.currency_format,
-                          organization?.currency_symbol,
-                          organization?.number_format
-                      )
-                    : '--'
-            }}
+            <UpgradeLockedValue v-if="billableRatesLocked" />
+            <template v-else>
+                {{
+                    entry.cost
+                        ? formatCents(
+                              entry.cost,
+                              props.currency,
+                              organization?.currency_format,
+                              organization?.currency_symbol,
+                              organization?.number_format
+                          )
+                        : '--'
+                }}
+            </template>
         </div>
     </div>
     <div

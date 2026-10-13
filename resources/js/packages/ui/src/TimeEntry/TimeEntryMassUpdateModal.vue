@@ -20,9 +20,12 @@ import { XMarkIcon } from '@heroicons/vue/16/solid';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '..';
 import { Button } from '@/packages/ui/src/Buttons';
 import TagDropdown from '@/packages/ui/src/Tag/TagDropdown.vue';
+import { useBillableRatesLock } from '@/packages/ui/src/utils/useBillableRatesLock';
 import type { Tag, Task } from '@/packages/api/src';
 
 const show = defineModel('show', { default: false });
+// Organizations with locked billable rates can remove the billable flag, but not set it
+const { locked: billableRatesLocked } = useBillableRatesLock();
 const saving = ref(false);
 
 const props = defineProps<{
@@ -263,7 +266,9 @@ const showBreakWarning = computed(
                             <SelectItem value="do-not-update">
                                 Keep current billable status
                             </SelectItem>
-                            <SelectItem value="billable">Billable</SelectItem>
+                            <SelectItem value="billable" :disabled="billableRatesLocked"
+                                >Billable</SelectItem
+                            >
                             <SelectItem value="non-billable">Non Billable</SelectItem>
                         </SelectContent>
                     </Select>

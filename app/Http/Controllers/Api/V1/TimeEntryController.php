@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1;
 
 use App\Enums\ExportFormat;
-use App\Enums\Role;
 use App\Enums\TimeEntryType;
 use App\Exceptions\Api\FeatureIsNotAvailableInFreePlanApiException;
 use App\Exceptions\Api\OverlappingTimeEntryApiException;
@@ -30,6 +29,7 @@ use App\Models\Organization;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\TimeEntry;
+use App\Service\BillableRateService;
 use App\Service\LocalizationService;
 use App\Service\ReportExport\TimeEntriesDetailedCsvExport;
 use App\Service\ReportExport\TimeEntriesDetailedExport;
@@ -229,7 +229,7 @@ class TimeEntryController extends Controller
      *
      * @operationId exportTimeEntries
      */
-    public function indexExport(Organization $organization, TimeEntryIndexExportRequest $request, TimeEntryAggregationService $timeEntryAggregationService): JsonResponse
+    public function indexExport(Organization $organization, TimeEntryIndexExportRequest $request, TimeEntryAggregationService $timeEntryAggregationService, BillableRateService $billableRateService): JsonResponse
     {
         $member = $this->member($organization);
         /** @var Member|null $memberFilter */
@@ -247,7 +247,7 @@ class TimeEntryController extends Controller
         }
         $user = $this->user();
         $timezone = $user->timezone;
-        $showBillableRate = $this->member($organization)->role !== Role::Employee->value || $organization->employees_can_see_billable_rates;
+        $showBillableRate = $billableRateService->canSeeBillableRates($organization, $this->member($organization));
         $roundingType = $canAccessPremiumFeatures ? $request->getRoundingType() : null;
         $roundingMinutes = $canAccessPremiumFeatures ? $request->getRoundingMinutes() : null;
 
@@ -386,7 +386,7 @@ class TimeEntryController extends Controller
      *
      * @throws AuthorizationException
      */
-    public function aggregate(Organization $organization, TimeEntryAggregateRequest $request, TimeEntryAggregationService $timeEntryAggregationService): array
+    public function aggregate(Organization $organization, TimeEntryAggregateRequest $request, TimeEntryAggregationService $timeEntryAggregationService, BillableRateService $billableRateService): array
     {
         $member = $this->member($organization);
         /** @var Member|null $memberFilter */
@@ -398,7 +398,7 @@ class TimeEntryController extends Controller
         }
         $canAccessPremiumFeatures = $this->canAccessPremiumFeatures($organization);
         $user = $this->user();
-        $showBillableRate = $this->member($organization)->role !== Role::Employee->value || $organization->employees_can_see_billable_rates;
+        $showBillableRate = $billableRateService->canSeeBillableRates($organization, $this->member($organization));
 
         $group1Type = $request->getGroup();
         $group2Type = $request->getSubGroup();
@@ -436,7 +436,7 @@ class TimeEntryController extends Controller
      * @throws NoOutputFileInResponse
      * @throws FeatureIsNotAvailableInFreePlanApiException
      */
-    public function aggregateExport(Organization $organization, TimeEntryAggregateExportRequest $request, TimeEntryAggregationService $timeEntryAggregationService): JsonResponse
+    public function aggregateExport(Organization $organization, TimeEntryAggregateExportRequest $request, TimeEntryAggregationService $timeEntryAggregationService, BillableRateService $billableRateService): JsonResponse
     {
         $member = $this->member($organization);
         /** @var Member|null $memberFilter */
@@ -453,7 +453,7 @@ class TimeEntryController extends Controller
         }
         $debug = $request->getDebug();
         $user = $this->user();
-        $showBillableRate = $this->member($organization)->role !== Role::Employee->value || $organization->employees_can_see_billable_rates;
+        $showBillableRate = $billableRateService->canSeeBillableRates($organization, $this->member($organization));
 
         $group = $request->getGroup();
         $subGroup = $request->getSubGroup();

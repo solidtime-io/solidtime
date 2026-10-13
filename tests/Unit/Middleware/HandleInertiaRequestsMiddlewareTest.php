@@ -36,6 +36,7 @@ class HandleInertiaRequestsMiddlewareTest extends MiddlewareTestAbstract
             $mock->shouldReceive('getTrialUntil')->andReturn(null);
             $mock->shouldReceive('isBlocked')->andReturn(false);
             $mock->shouldReceive('getGoalLimit')->andReturn(1);
+            $mock->shouldReceive('canUseBillableRates')->andReturn(true);
         });
         Passport::actingAs($user->user);
 
@@ -49,6 +50,7 @@ class HandleInertiaRequestsMiddlewareTest extends MiddlewareTestAbstract
             ->where('billing.trial_until', null)
             ->where('billing.is_blocked', false)
             ->where('billing.goal_limit', 1)
+            ->where('billing.can_use_billable_rates', true)
         );
     }
 
@@ -64,6 +66,7 @@ class HandleInertiaRequestsMiddlewareTest extends MiddlewareTestAbstract
             $mock->shouldReceive('getTrialUntil')->andReturn($trialUntil);
             $mock->shouldReceive('isBlocked')->andReturn(false);
             $mock->shouldReceive('getGoalLimit')->andReturn(null);
+            $mock->shouldReceive('canUseBillableRates')->andReturn(true);
         });
         Passport::actingAs($user->user);
 
@@ -77,6 +80,7 @@ class HandleInertiaRequestsMiddlewareTest extends MiddlewareTestAbstract
             ->where('billing.trial_until', $trialUntil->toIso8601ZuluString())
             ->where('billing.is_blocked', false)
             ->where('billing.goal_limit', null)
+            ->where('billing.can_use_billable_rates', true)
         );
     }
 }

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1;
 
-use App\Enums\Role;
 use App\Models\Organization;
+use App\Service\BillableRateService;
 use App\Service\DashboardService;
 use App\Service\PermissionStore;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -154,12 +154,12 @@ class ChartController extends Controller
      *
      * @response array{value: int, currency: string}
      */
-    public function totalWeeklyBillableAmount(Organization $organization, DashboardService $dashboardService): JsonResponse
+    public function totalWeeklyBillableAmount(Organization $organization, DashboardService $dashboardService, BillableRateService $billableRateService): JsonResponse
     {
         $this->checkPermission($organization, 'charts:view:own');
         $user = $this->user();
 
-        $showBillableRate = $this->member($organization)->role !== Role::Employee->value || $organization->employees_can_see_billable_rates;
+        $showBillableRate = $billableRateService->canSeeBillableRates($organization, $this->member($organization));
         if (! $showBillableRate) {
             throw new AuthorizationException('You do not have permission to view billable rates.');
         }
