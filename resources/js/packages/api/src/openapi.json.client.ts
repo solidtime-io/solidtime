@@ -326,6 +326,7 @@ const IntervalFormat = z.enum([
 const TimeFormat = z.enum(['12-hours', '24-hours']);
 const OrganizationResource = z
     .object({
+        can_use_billable_rates: z.boolean().optional(),
         id: z.string(),
         name: z.string(),
         is_personal: z.boolean(),

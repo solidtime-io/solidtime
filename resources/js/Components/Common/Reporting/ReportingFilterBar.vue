@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { useBreaksEnabled } from '@/packages/ui/src/utils/useBreaksEnabled';
-import { CheckCircleIcon, TagIcon, UserGroupIcon } from '@heroicons/vue/20/solid';
+import { CheckCircleIcon, LockClosedIcon, TagIcon, UserGroupIcon } from '@heroicons/vue/20/solid';
 import { FolderIcon } from '@heroicons/vue/16/solid';
 import { Check, Coffee } from '@lucide/vue';
 import { RadioGroupIndicator, RadioGroupItem, RadioGroupRoot, type AcceptableValue } from 'reka-ui';
 import BillableIcon from '@/packages/ui/src/Icons/BillableIcon.vue';
+import { useBillableRatesLock } from '@/packages/ui/src/utils/useBillableRatesLock';
 import ReportingRoundingControls from '@/Components/Common/Reporting/ReportingRoundingControls.vue';
 import TaskMultiselectDropdown from '@/Components/Common/Task/TaskMultiselectDropdown.vue';
 import ClientMultiselectDropdown from '@/Components/Common/Client/ClientMultiselectDropdown.vue';
@@ -12,6 +13,7 @@ import MemberMultiselectDropdown from '@/Components/Common/Member/MemberMultisel
 import ReportingFilterBadge from '@/Components/Common/Reporting/ReportingFilterBadge.vue';
 import ProjectMultiselectDropdown from '@/Components/Common/Project/ProjectMultiselectDropdown.vue';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/packages/ui/src';
+import { Button } from '@/packages/ui/src/Buttons';
 import MainContainer from '@/packages/ui/src/MainContainer.vue';
 import DateRangePicker from '@/packages/ui/src/Input/DateRangePicker.vue';
 import TagDropdown from '@/packages/ui/src/Tag/TagDropdown.vue';
@@ -34,6 +36,8 @@ const roundingType = defineModel<TimeEntryRoundingType>('roundingType', { requir
 const roundingMinutes = defineModel<number>('roundingMinutes', { required: true });
 const startDate = defineModel<string>('startDate', { required: true });
 const endDate = defineModel<string>('endDate', { required: true });
+
+const { locked: billableRatesLocked, requestUpgrade } = useBillableRatesLock();
 
 const emit = defineEmits<{
     submit: [];
@@ -141,7 +145,17 @@ async function createTag(name: string) {
                     </template>
                 </TagDropdown>
 
-                <Select v-model="billable" @update:model-value="emit('submit')">
+                <Button
+                    v-if="billableRatesLocked"
+                    variant="outline"
+                    size="sm"
+                    data-testid="billable_filter_locked"
+                    @click="requestUpgrade">
+                    <BillableIcon class="h-4 text-text-quaternary" />
+                    <span class="text-text-secondary">Billable</span>
+                    <LockClosedIcon class="!w-3 text-text-tertiary" />
+                </Button>
+                <Select v-else v-model="billable" @update:model-value="emit('submit')">
                     <SelectTrigger
                         size="sm"
                         variant="outline"

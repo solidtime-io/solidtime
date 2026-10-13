@@ -11,6 +11,7 @@ use App\Enums\NumberFormat;
 use App\Enums\TimeFormat;
 use App\Models\Concerns\CustomAuditable;
 use App\Models\Concerns\HasUuids;
+use App\Service\BillingContract;
 use Database\Factories\OrganizationFactory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -95,6 +96,25 @@ class Organization extends Model implements AuditableContract
      */
     protected $attributes = [
     ];
+
+    protected static function booted(): void
+    {
+        static::saving(function (Organization $organization): void {
+            // Organizations that can not use billable rates can keep or remove the visibility for employees, but not
+            // enable it, and can not change the billable rate
+            $enablesVisibility = $organization->employees_can_see_billable_rates && ! $organization->getOriginal('employees_can_see_billable_rates');
+            if (! $enablesVisibility && $organization->billable_rate === $organization->getOriginal('billable_rate')) {
+                return;
+            }
+            if (app(BillingContract::class)->canUseBillableRates($organization)) {
+                return;
+            }
+            if ($enablesVisibility) {
+                $organization->employees_can_see_billable_rates = false;
+            }
+            $organization->billable_rate = $organization->getOriginal('billable_rate');
+        });
+    }
 
     public function getAuditOwnerOrganizationId(): ?string
     {

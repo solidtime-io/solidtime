@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Models\Concerns\CustomAuditable;
 use App\Models\Concerns\HasUuids;
+use App\Service\BillingContract;
 use Database\Factories\ProjectFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -134,6 +135,25 @@ class Project extends Model implements AuditableContract
     public function scopeComputedAttributesValidate(Builder $builder, array $attributes): Builder
     {
         return $this->scopeComputedAttributesGenerate($builder, $attributes);
+    }
+
+    protected static function booted(): void
+    {
+        static::saving(function (Project $project): void {
+            // Organizations that can not use billable rates can keep or remove the billable flag, but not set it,
+            // and can not change the billable rate
+            $enablesBillable = $project->is_billable && ! $project->getOriginal('is_billable');
+            if (! $enablesBillable && $project->billable_rate === $project->getOriginal('billable_rate')) {
+                return;
+            }
+            if (app(BillingContract::class)->canUseBillableRates($project->loadMissing('organization')->organization)) {
+                return;
+            }
+            if ($enablesBillable) {
+                $project->is_billable = false;
+            }
+            $project->billable_rate = $project->getOriginal('billable_rate');
+        });
     }
 
     /**

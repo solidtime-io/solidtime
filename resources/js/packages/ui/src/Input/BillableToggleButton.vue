@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import { twMerge } from 'tailwind-merge';
 import BillableIcon from '@/packages/ui/src/Icons/BillableIcon.vue';
+import { useBillableRatesLock } from '@/packages/ui/src/utils/useBillableRatesLock';
 import {
     Tooltip,
     TooltipContent,
@@ -10,7 +11,13 @@ import {
 } from '@/packages/ui/src/tooltip';
 const active = defineModel<boolean>({ default: false });
 const emit = defineEmits(['changed']);
+const { locked: billableRatesLocked, requestUpgrade } = useBillableRatesLock();
 function toggleBillable() {
+    // Organizations with locked billable rates can remove the billable flag, but not set it
+    if (billableRatesLocked.value && !active.value) {
+        requestUpgrade();
+        return;
+    }
     active.value = !active.value;
     emit('changed', active.value);
 }
@@ -26,7 +33,12 @@ const props = withDefaults(
     }
 );
 
-const tooltipLabel = computed(() => (active.value ? 'Billable' : 'Non Billable'));
+const tooltipLabel = computed(() => {
+    if (billableRatesLocked.value && !active.value) {
+        return 'Billable rates require an upgrade';
+    }
+    return active.value ? 'Billable' : 'Non Billable';
+});
 
 const iconColorClasses = computed(() => {
     if (active.value) {

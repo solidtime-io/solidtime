@@ -1426,6 +1426,33 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
         ]);
     }
 
+    public function test_update_endpoint_keeps_billable_rate_if_it_is_not_part_of_the_request(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'projects:update',
+        ]);
+        $project = Project::factory()->forOrganization($data->organization)->create([
+            'billable_rate' => 10000,
+        ]);
+        $this->assertBillableRateServiceIsUnused();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.projects.update', [$data->organization->getKey(), $project->getKey()]), [
+            'name' => 'Renamed',
+            'color' => $project->color,
+            'client_id' => null,
+            'is_billable' => $project->is_billable,
+        ]);
+
+        // Assert
+        $response->assertStatus(200);
+        $project->refresh();
+        $this->assertSame('Renamed', $project->name);
+        $this->assertSame(10000, $project->billable_rate);
+    }
+
     public function test_update_endpoint_can_archive_a_project(): void
     {
         // Arrange

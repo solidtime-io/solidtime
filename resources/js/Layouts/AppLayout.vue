@@ -38,7 +38,9 @@ import {
     canViewReport,
     canViewTags,
 } from '@/utils/permissions';
-import { isBillingActivated, isInvoicingActivated } from '@/utils/billing';
+import { canUseBillableRates, isBillingActivated, isInvoicingActivated } from '@/utils/billing';
+import UpgradeModal from '@/packages/ui/src/UpgradeModal.vue';
+import { billableRatesLockKey } from '@/packages/ui/src/utils/useBillableRatesLock';
 import { upgradeCtaKey } from '@/packages/ui/src/UpgradeModal/useUpgradeCta';
 import type { User } from '@/types/models';
 import { ArrowsRightLeftIcon } from '@heroicons/vue/16/solid';
@@ -90,6 +92,14 @@ const { organization, isLoading: isOrganizationLoading } = useOrganizationQuery(
 );
 
 provide('organization', organization);
+
+const showBillableRatesUpgradeModal = ref(false);
+provide(billableRatesLockKey, {
+    locked: computed(() => !canUseBillableRates()),
+    requestUpgrade: () => {
+        showBillableRatesUpgradeModal.value = true;
+    },
+});
 
 provide(upgradeCtaKey, {
     canUpgrade: computed(() => isBillingActivated() && canManageBilling()),
@@ -392,4 +402,5 @@ const page = usePage<{
     <NotificationContainer></NotificationContainer>
     <UserTimezoneMismatchModal></UserTimezoneMismatchModal>
     <CommandPaletteProvider></CommandPaletteProvider>
+    <UpgradeModal v-model:show="showBillableRatesUpgradeModal" feature="billable-rates" />
 </template>

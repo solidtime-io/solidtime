@@ -60,6 +60,7 @@ class HandleInertiaRequests extends Middleware
                 'trial_until' => $billing->getTrialUntil($currentOrganization)?->toIso8601ZuluString(),
                 'is_blocked' => $billing->isBlocked($currentOrganization),
                 'goal_limit' => $billing->getGoalLimit($currentOrganization),
+                'can_use_billable_rates' => $billing->canUseBillableRates($currentOrganization),
             ] : null,
             'flash' => [
                 'message' => fn () => $request->session()->get('message'),

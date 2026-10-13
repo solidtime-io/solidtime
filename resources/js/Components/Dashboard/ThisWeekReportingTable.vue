@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import UpgradeLockedValue from '@/packages/ui/src/UpgradeLockedValue.vue';
+import { useBillableRatesLock } from '@/packages/ui/src/utils/useBillableRatesLock';
 import ReportingRow from '@/Components/Common/Reporting/ReportingRow.vue';
 import ReportingGroupBySelect from '@/Components/Common/Reporting/ReportingGroupBySelect.vue';
 import {
@@ -126,6 +128,8 @@ const showBillableRate = computed(() => {
         getCurrentRole() !== 'employee' || organization?.value?.employees_can_see_billable_rates
     );
 });
+
+const { locked: billableRatesLocked } = useBillableRatesLock();
 </script>
 
 <template>
@@ -190,17 +194,20 @@ const showBillableRate = computed(() => {
                     <div
                         v-if="showBillableRate"
                         class="justify-end pr-6 flex items-center font-medium">
-                        {{
-                            aggregatedTableTimeEntries.cost
-                                ? formatCents(
-                                      aggregatedTableTimeEntries.cost,
-                                      getOrganizationCurrencyString(),
-                                      organization?.currency_format,
-                                      organization?.currency_symbol,
-                                      organization?.number_format
-                                  )
-                                : '--'
-                        }}
+                        <UpgradeLockedValue v-if="billableRatesLocked" />
+                        <template v-else>
+                            {{
+                                aggregatedTableTimeEntries.cost
+                                    ? formatCents(
+                                          aggregatedTableTimeEntries.cost,
+                                          getOrganizationCurrencyString(),
+                                          organization?.currency_format,
+                                          organization?.currency_symbol,
+                                          organization?.number_format
+                                      )
+                                    : '--'
+                            }}
+                        </template>
                     </div>
                 </div>
             </template>

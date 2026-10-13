@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\Enums\Role;
 use App\Models\Member;
 use App\Models\Organization;
 use App\Models\Project;
@@ -13,6 +14,24 @@ use Illuminate\Database\Eloquent\Builder;
 
 class BillableRateService
 {
+    public function __construct(
+        private BillingContract $billing,
+    ) {}
+
+    public function canUseBillableRates(Organization $organization): bool
+    {
+        return $this->billing->canUseBillableRates($organization);
+    }
+
+    public function canSeeBillableRates(Organization $organization, Member $member): bool
+    {
+        if (! $this->canUseBillableRates($organization)) {
+            return false;
+        }
+
+        return $member->role !== Role::Employee->value || $organization->employees_can_see_billable_rates;
+    }
+
     public function updateTimeEntriesBillableRateForProjectMember(ProjectMember $projectMember): void
     {
         TimeEntry::query()

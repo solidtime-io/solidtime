@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import UpgradeLockedValue from '@/packages/ui/src/UpgradeLockedValue.vue';
+import { useBillableRatesLock } from '@/packages/ui/src/utils/useBillableRatesLock';
 import {
     ChartBarIcon,
     ArrowDownTrayIcon,
@@ -295,6 +297,8 @@ const tableData = computed(() => {
         };
     });
 });
+
+const { locked: billableRatesLocked } = useBillableRatesLock();
 </script>
 
 <template>
@@ -450,17 +454,20 @@ const tableData = computed(() => {
                             <div
                                 v-if="showBillableRate"
                                 class="justify-end pr-6 flex items-center font-medium">
-                                {{
-                                    aggregatedTableTimeEntries.cost
-                                        ? formatCents(
-                                              aggregatedTableTimeEntries.cost,
-                                              getOrganizationCurrencyString(),
-                                              organization?.currency_format,
-                                              organization?.currency_symbol,
-                                              organization?.number_format
-                                          )
-                                        : '--'
-                                }}
+                                <UpgradeLockedValue v-if="billableRatesLocked" />
+                                <template v-else>
+                                    {{
+                                        aggregatedTableTimeEntries.cost
+                                            ? formatCents(
+                                                  aggregatedTableTimeEntries.cost,
+                                                  getOrganizationCurrencyString(),
+                                                  organization?.currency_format,
+                                                  organization?.currency_symbol,
+                                                  organization?.number_format
+                                              )
+                                            : '--'
+                                    }}
+                                </template>
                             </div>
                         </div>
                     </template>

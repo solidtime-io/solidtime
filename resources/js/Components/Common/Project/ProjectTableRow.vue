@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useBillableRatesLock } from '@/packages/ui/src/utils/useBillableRatesLock';
 import ProjectMoreOptionsDropdown from '@/Components/Common/Project/ProjectMoreOptionsDropdown.vue';
 import type { Project } from '@/packages/api/src';
 import { computed, ref, inject, type ComputedRef } from 'vue';
@@ -15,6 +16,7 @@ import { useTasksQuery } from '@/utils/useTasksQuery';
 import { useProjectsStore } from '@/utils/useProjects';
 import TableRow from '@/Components/TableRow.vue';
 import ProjectEditModal from '@/Components/Common/Project/ProjectEditModal.vue';
+import UpgradeLockedBadge from '@/packages/ui/src/UpgradeLockedBadge.vue';
 import { formatCents } from '@/packages/ui/src/utils/money';
 import { getOrganizationCurrencyString } from '@/utils/money';
 import EstimatedTimeProgress from '@/packages/ui/src/EstimatedTimeProgress.vue';
@@ -78,6 +80,8 @@ const billableRateInfo = computed(() => {
 });
 
 const showEditProjectModal = ref(false);
+
+const { locked: billableRatesLocked } = useBillableRatesLock();
 </script>
 
 <template>
@@ -100,13 +104,15 @@ const showEditProjectModal = ref(false);
                     </span>
                     <span class="text-text-secondary"> {{ projectTasksCount }} Tasks </span>
                 </div>
-                <div class="whitespace-nowrap min-w-0 px-3 py-4 text-sm text-text-primary">
+                <div
+                    class="whitespace-nowrap min-w-0 px-3 py-4 flex items-center text-sm text-text-primary">
                     <div v-if="project.client_id" class="overflow-ellipsis overflow-hidden">
                         {{ client?.name }}
                     </div>
                     <div v-else class="text-text-tertiary">No client</div>
                 </div>
-                <div class="whitespace-nowrap px-3 py-4 text-sm text-text-primary">
+                <div
+                    class="whitespace-nowrap px-3 py-4 flex items-center text-sm text-text-primary">
                     <div v-if="project.spent_time">
                         {{
                             formatHumanReadableDuration(
@@ -130,8 +136,9 @@ const showEditProjectModal = ref(false);
                 </div>
                 <div
                     v-if="showBillableRate"
-                    class="whitespace-nowrap px-3 py-4 text-sm text-text-primary">
-                    <span v-if="billableRateInfo">{{ billableRateInfo }}</span>
+                    class="whitespace-nowrap px-3 flex items-center text-sm text-text-primary">
+                    <UpgradeLockedBadge v-if="billableRatesLocked" />
+                    <span v-else-if="billableRateInfo">{{ billableRateInfo }}</span>
                     <span v-else class="text-text-tertiary">--</span>
                 </div>
                 <div

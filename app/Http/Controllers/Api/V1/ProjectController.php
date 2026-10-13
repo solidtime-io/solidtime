@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1;
 
-use App\Enums\Role;
 use App\Exceptions\Api\EntityStillInUseApiException;
 use App\Http\Requests\V1\Project\ProjectIndexRequest;
 use App\Http\Requests\V1\Project\ProjectStoreRequest;
@@ -39,7 +38,7 @@ class ProjectController extends Controller
      *
      * @operationId getProjects
      */
-    public function index(Organization $organization, ProjectIndexRequest $request): ProjectCollection
+    public function index(Organization $organization, ProjectIndexRequest $request, BillableRateService $billableRateService): ProjectCollection
     {
         $this->checkPermission($organization, 'projects:view');
         $canViewAllProjects = $this->hasPermission($organization, 'projects:view:all');
@@ -63,7 +62,7 @@ class ProjectController extends Controller
             ->orderBy('id')
             ->paginate(config('app.pagination_per_page_default'));
 
-        $showBillableRate = $this->member($organization)->role !== Role::Employee->value || $organization->employees_can_see_billable_rates;
+        $showBillableRate = $billableRateService->canSeeBillableRates($organization, $this->member($organization));
 
         return new ProjectCollection($projects, $showBillableRate);
     }
@@ -137,14 +136,16 @@ class ProjectController extends Controller
         }
         $oldBillableRate = $project->billable_rate;
         $clientIdChanged = false;
-        $project->billable_rate = $request->getBillableRate();
+        if ($request->has('billable_rate')) {
+            $project->billable_rate = $request->getBillableRate();
+        }
         if ($project->client_id !== $request->input('client_id')) {
             $project->client_id = $request->input('client_id');
             $clientIdChanged = true;
         }
         $project->save();
 
-        if ($oldBillableRate !== $request->getBillableRate()) {
+        if ($oldBillableRate !== $project->billable_rate) {
             $billableRateService->updateTimeEntriesBillableRateForProject($project);
         }
         if ($clientIdChanged) {
