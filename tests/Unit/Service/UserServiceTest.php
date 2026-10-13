@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Tests\Unit\Service;
 
 use App\Enums\Role;
+use App\Enums\Weekday;
 use App\Models\Member;
 use App\Models\Organization;
+use App\Models\OrganizationInvitation;
 use App\Models\Project;
 use App\Models\ProjectMember;
 use App\Models\TimeEntry;
@@ -134,5 +136,61 @@ class UserServiceTest extends TestCase
         $newMember = Member::whereBelongsTo($user)->whereBelongsTo($newOrganization)->firstOrFail();
         $this->assertSame(Role::Owner->value, $newMember->role);
         $this->assertSame($newOrganization->getKey(), $user->currentOrganization->getKey());
+    }
+
+    public function test_create_passwordless_user_joins_accepted_invitation_organization_instead_of_creating_personal_one(): void
+    {
+        // Arrange — an accepted invitation exists for the email (e.g. the user
+        // followed the invite link, then signs up via SSO). Casing differs to
+        // prove the email is normalised before the invitation is matched.
+        $organization = Organization::factory()->create();
+        OrganizationInvitation::factory()
+            ->forOrganization($organization)
+            ->role(Role::Employee)
+            ->accepted()
+            ->create([
+                'email' => 'invitee@example.com',
+            ]);
+
+        // Act
+        $user = $this->userService->createPasswordlessUser(
+            'Invitee',
+            'Invitee@Example.com',
+            'UTC',
+            Weekday::Monday,
+            null,
+        );
+
+        // Assert — invitation is materialised, no personal organization is created
+        $this->assertNull($user->password);
+        $this->assertDatabaseMissing(OrganizationInvitation::class, [
+            'email' => 'invitee@example.com',
+        ]);
+        $user->refresh();
+        $this->assertSame(1, $user->organizations()->count());
+        $this->assertSame($organization->getKey(), $user->organizations()->first()->getKey());
+        $member = Member::whereBelongsTo($user)->whereBelongsTo($organization)->firstOrFail();
+        $this->assertSame(Role::Employee->value, $member->role);
+    }
+
+    public function test_create_passwordless_user_creates_personal_organization_when_no_invitation_exists(): void
+    {
+        // Act
+        $user = $this->userService->createPasswordlessUser(
+            'Solo User',
+            'solo@example.com',
+            'UTC',
+            Weekday::Monday,
+            null,
+        );
+
+        // Assert — a personal organization is created, owned by the user and set current
+        $user->refresh();
+        $this->assertNull($user->password);
+        $this->assertSame(1, $user->organizations()->count());
+        $organization = $user->organizations()->first();
+        $this->assertTrue($organization->personal_team);
+        $this->assertSame($user->getKey(), $organization->user_id);
+        $this->assertSame($organization->getKey(), $user->currentOrganization->getKey());
     }
 }
