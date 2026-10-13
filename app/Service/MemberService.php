@@ -159,6 +159,13 @@ class MemberService
 
     public function assignOrganizationEntitiesToDifferentMember(Organization $organization, Member $fromMember, Member $toMember): void
     {
+        // Running time entries are deleted instead of moved, since $toMember could already have a running time entry
+        TimeEntry::query()
+            ->whereBelongsTo($organization, 'organization')
+            ->whereBelongsTo($fromMember, 'member')
+            ->whereNull('end')
+            ->delete();
+
         // Time entries
         TimeEntry::query()
             ->whereBelongsTo($organization, 'organization')

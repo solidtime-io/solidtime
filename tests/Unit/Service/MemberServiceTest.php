@@ -228,6 +228,30 @@ class MemberServiceTest extends TestCaseWithDatabase
         $this->assertSame(0, ProjectMember::query()->whereBelongsTo($fromUserMember, 'member')->count());
     }
 
+    public function test_assign_organization_entities_to_different_member_deletes_running_time_entries_of_the_member(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $fromUser = User::factory()->create();
+        $toUser = User::factory()->create();
+        $fromUserMember = Member::factory()->forOrganization($organization)->forUser($fromUser)->create();
+        $toUserMember = Member::factory()->forOrganization($organization)->forUser($toUser)->create();
+        $runningTimeEntryOfFromMember = TimeEntry::factory()->forOrganization($organization)->forMember($fromUserMember)->active()->create();
+        TimeEntry::factory()->forOrganization($organization)->forMember($fromUserMember)->createMany(2);
+        $runningTimeEntryOfToMember = TimeEntry::factory()->forOrganization($organization)->forMember($toUserMember)->active()->create();
+
+        // Act
+        $this->memberService->assignOrganizationEntitiesToDifferentMember($organization, $fromUserMember, $toUserMember);
+
+        // Assert
+        $this->assertDatabaseMissing(TimeEntry::class, [
+            'id' => $runningTimeEntryOfFromMember->getKey(),
+        ]);
+        $this->assertSame(3, TimeEntry::query()->whereBelongsTo($toUserMember, 'member')->count());
+        $this->assertSame([$runningTimeEntryOfToMember->getKey()], TimeEntry::query()->whereBelongsTo($toUser, 'user')->whereNull('end')->pluck('id')->all());
+        $this->assertSame(0, TimeEntry::query()->whereBelongsTo($fromUserMember, 'member')->count());
+    }
+
     public function test_assign_organization_entities_to_different_member_moves_all_goals_of_the_member(): void
     {
         // Arrange
