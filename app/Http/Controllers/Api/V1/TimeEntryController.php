@@ -11,6 +11,7 @@ use App\Exceptions\Api\FeatureIsNotAvailableInFreePlanApiException;
 use App\Exceptions\Api\OverlappingTimeEntryApiException;
 use App\Exceptions\Api\PdfRendererIsNotConfiguredException;
 use App\Exceptions\Api\TimeEntryCanNotBeRestartedApiException;
+use App\Exceptions\Api\TimeEntryMemberCanNotBeChangedWhileRunningApiException;
 use App\Exceptions\Api\TimeEntryStillRunningApiException;
 use App\Http\Requests\V1\TimeEntry\TimeEntryAggregateExportRequest;
 use App\Http\Requests\V1\TimeEntry\TimeEntryAggregateRequest;
@@ -668,7 +669,7 @@ class TimeEntryController extends Controller
      *
      * To stop a running timer, set `end` to the stop time (UTC). Times the user gives in their own timezone must be converted to UTC first.
      *
-     * @throws AuthorizationException|TimeEntryCanNotBeRestartedApiException
+     * @throws AuthorizationException|TimeEntryCanNotBeRestartedApiException|TimeEntryMemberCanNotBeChangedWhileRunningApiException
      *
      * @operationId updateTimeEntry
      */
@@ -693,6 +694,11 @@ class TimeEntryController extends Controller
         $effectiveStart = $request->has('start') ? Carbon::parse($request->input('start')) : $timeEntry->start;
         $effectiveEnd = $request->has('end') ? ($request->input('end') !== null ? Carbon::parse($request->input('end')) : null) : $timeEntry->end;
         $this->assertNoOverlap($organization, $effectiveMember, $effectiveStart, $effectiveEnd, $timeEntry);
+
+        // The new member could already have a running time entry
+        if ($effectiveEnd === null && $newMember !== null && $newMember->getKey() !== $timeEntry->member_id) {
+            throw new TimeEntryMemberCanNotBeChangedWhileRunningApiException;
+        }
 
         $oldProject = $timeEntry->project;
         $oldTask = $timeEntry->task;
@@ -815,6 +821,12 @@ class TimeEntryController extends Controller
             }
             // Break entries can not be billable, have tags or belong to a project/task (see TimeEntry::booted)
             if ($resultingType === TimeEntryType::Break && ($project !== null || $task !== null || $request->boolean('changes.billable') || count($changes['tags'] ?? []) > 0)) {
+                $error->push($id);
+
+                continue;
+            }
+            // The new member could already have a running time entry
+            if ($newMember !== null && $timeEntry->end === null && $newMember->getKey() !== $timeEntry->member_id) {
                 $error->push($id);
 
                 continue;

@@ -3332,6 +3332,80 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         ]);
     }
 
+    public function test_update_endpoint_fails_if_member_of_running_time_entry_is_changed(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:update:all',
+        ]);
+        $otherMember = Member::factory()->forOrganization($data->organization)->role(Role::Employee)->create();
+        $timeEntry = TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)->active()->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.time-entries.update', [$data->organization->getKey(), $timeEntry->getKey()]), [
+            'member_id' => $otherMember->getKey(),
+        ]);
+
+        // Assert
+        $response->assertStatus(400);
+        $response->assertJsonPath('key', 'time_entry_member_can_not_be_changed_while_running');
+        $this->assertDatabaseHas(TimeEntry::class, [
+            'id' => $timeEntry->getKey(),
+            'member_id' => $data->member->getKey(),
+            'user_id' => $data->user->getKey(),
+        ]);
+    }
+
+    public function test_update_endpoint_can_update_running_time_entry_with_unchanged_member_id(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:update:own',
+        ]);
+        $timeEntry = TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)->active()->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.time-entries.update', [$data->organization->getKey(), $timeEntry->getKey()]), [
+            'member_id' => $data->member->getKey(),
+            'description' => 'New description',
+        ]);
+
+        // Assert
+        $response->assertStatus(200);
+        $this->assertDatabaseHas(TimeEntry::class, [
+            'id' => $timeEntry->getKey(),
+            'description' => 'New description',
+        ]);
+    }
+
+    public function test_update_endpoint_can_stop_running_time_entry_and_change_member_in_the_same_request(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:update:all',
+        ]);
+        $otherUser = User::factory()->create();
+        $otherMember = Member::factory()->forOrganization($data->organization)->forUser($otherUser)->role(Role::Employee)->create();
+        $timeEntry = TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)->active()->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.time-entries.update', [$data->organization->getKey(), $timeEntry->getKey()]), [
+            'member_id' => $otherMember->getKey(),
+            'end' => Carbon::now()->toIso8601ZuluString(),
+        ]);
+
+        // Assert
+        $response->assertStatus(200);
+        $this->assertDatabaseHas(TimeEntry::class, [
+            'id' => $timeEntry->getKey(),
+            'member_id' => $otherMember->getKey(),
+            'user_id' => $otherUser->getKey(),
+        ]);
+    }
+
     public function test_update_endpoint_can_update_project_and_automatically_set_client(): void
     {
         // Arrange
@@ -4196,6 +4270,51 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         $this->assertDatabaseHas(TimeEntry::class, [
             'id' => $timeEntry2->getKey(),
             'description' => '',
+        ]);
+    }
+
+    public function test_update_multiple_does_not_change_member_of_running_time_entries(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:update:all',
+        ]);
+        $otherMember = Member::factory()->forOrganization($data->organization)->role(Role::Employee)->create();
+        $runningTimeEntry = TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)->active()->create();
+        $runningTimeEntryOfOtherMember = TimeEntry::factory()->forOrganization($data->organization)->forMember($otherMember)->active()->create();
+        $finishedTimeEntry = TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->patchJson(route('api.v1.time-entries.update-multiple', [$data->organization->getKey()]), [
+            'ids' => [
+                $runningTimeEntry->getKey(),
+                $runningTimeEntryOfOtherMember->getKey(),
+                $finishedTimeEntry->getKey(),
+            ],
+            'changes' => [
+                'member_id' => $otherMember->getKey(),
+            ],
+        ]);
+
+        // Assert
+        $response->assertStatus(200);
+        $response->assertExactJson([
+            'success' => [
+                $runningTimeEntryOfOtherMember->getKey(),
+                $finishedTimeEntry->getKey(),
+            ],
+            'error' => [
+                $runningTimeEntry->getKey(),
+            ],
+        ]);
+        $this->assertDatabaseHas(TimeEntry::class, [
+            'id' => $runningTimeEntry->getKey(),
+            'member_id' => $data->member->getKey(),
+        ]);
+        $this->assertDatabaseHas(TimeEntry::class, [
+            'id' => $finishedTimeEntry->getKey(),
+            'member_id' => $otherMember->getKey(),
         ]);
     }
 

@@ -22,6 +22,7 @@ use App\Exceptions\Api\PdfRendererIsNotConfiguredException;
 use App\Exceptions\Api\PersonalAccessClientIsNotConfiguredException;
 use App\Exceptions\Api\ThisPlaceholderCanNotBeInvitedUseTheMergeToolInsteadException;
 use App\Exceptions\Api\TimeEntryCanNotBeRestartedApiException;
+use App\Exceptions\Api\TimeEntryMemberCanNotBeChangedWhileRunningApiException;
 use App\Exceptions\Api\TimeEntryStillRunningApiException;
 use App\Exceptions\Api\UserIsAlreadyMemberOfOrganizationApiException;
 use App\Exceptions\Api\UserIsAlreadyMemberOfProjectApiException;
@@ -53,6 +54,7 @@ class ApiExceptionTest extends TestCase
         yield OverlappingTimeEntryApiException::class => [new OverlappingTimeEntryApiException];
         yield ThisPlaceholderCanNotBeInvitedUseTheMergeToolInsteadException::class => [new ThisPlaceholderCanNotBeInvitedUseTheMergeToolInsteadException];
         yield TimeEntryCanNotBeRestartedApiException::class => [new TimeEntryCanNotBeRestartedApiException];
+        yield TimeEntryMemberCanNotBeChangedWhileRunningApiException::class => [new TimeEntryMemberCanNotBeChangedWhileRunningApiException];
         yield TimeEntryStillRunningApiException::class => [new TimeEntryStillRunningApiException];
         yield UserIsAlreadyMemberOfOrganizationApiException::class => [new UserIsAlreadyMemberOfOrganizationApiException];
         yield UserIsAlreadyMemberOfProjectApiException::class => [new UserIsAlreadyMemberOfProjectApiException];
