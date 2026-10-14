@@ -183,7 +183,7 @@ class OrganizationResource extends Resource
                     ->action(function (Organization $record, array $data): void {
                         try {
                             try {
-                                $file = Storage::disk(config('filament.default_filesystem_disk'))->get($data['file']);
+                                $file = Storage::disk(config('filesystems.private'))->get($data['file']);
                             } catch (UnableToReadFile) {
                                 $file = null;
                             }
@@ -220,12 +220,17 @@ class OrganizationResource extends Resource
                                 ->body('Message: '.$exception->getMessage())
                                 ->persistent()
                                 ->send();
+                        } finally {
+                            Storage::disk(config('filesystems.private'))->delete($data['file']);
                         }
                     })
                     ->tooltip(fn (Organization $record): string => 'Import into '.$record->name)
                     ->schema([
                         FileUpload::make('file')
                             ->label('File')
+                            ->disk(config('filesystems.private'))
+                            ->directory('admin-import-uploads')
+                            ->visibility('private')
                             ->required(),
                         Select::make('type')
                             ->required()
