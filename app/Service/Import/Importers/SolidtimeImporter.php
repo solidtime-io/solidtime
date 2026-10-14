@@ -212,17 +212,29 @@ class SolidtimeImporter extends DefaultImporter
             // Time entries
             foreach ($timeEntriesReader as $timeEntryRow) {
                 $userId = $this->userImportHelper->getKeyByExternalIdentifier($timeEntryRow['user_id']);
+                if ($userId === null) {
+                    throw new ImportException('Time entry references a user that does not exist in the import');
+                }
                 $memberId = $this->memberImportHelper->getKeyByExternalIdentifier($timeEntryRow['member_id']);
+                if ($memberId === null) {
+                    throw new ImportException('Time entry references a member that does not exist in the import');
+                }
                 $member = $this->memberImportHelper->getModelById($memberId);
                 $clientId = null;
                 if ($timeEntryRow['client_id'] !== '') {
                     $clientId = $this->clientImportHelper->getKeyByExternalIdentifier($timeEntryRow['client_id']);
+                    if ($clientId === null) {
+                        throw new ImportException('Time entry references a client that does not exist in the import');
+                    }
                 }
                 $project = null;
                 $projectId = null;
                 $projectMember = null;
                 if ($timeEntryRow['project_id'] !== '') {
                     $projectId = $this->projectImportHelper->getKeyByExternalIdentifier($timeEntryRow['project_id']);
+                    if ($projectId === null) {
+                        throw new ImportException('Time entry references a project that does not exist in the import');
+                    }
                     $project = $this->projectImportHelper->getModelById($projectId);
                     $projectMember = $this->projectMemberImportHelper->getModel([
                         'project_id' => $projectId,
@@ -232,6 +244,9 @@ class SolidtimeImporter extends DefaultImporter
                 $taskId = null;
                 if ($timeEntryRow['task_id'] !== '') {
                     $taskId = $this->taskImportHelper->getKeyByExternalIdentifier($timeEntryRow['task_id']);
+                    if ($taskId === null) {
+                        throw new ImportException('Time entry references a task that does not exist in the import');
+                    }
                     $this->taskImportHelper->getModelById($taskId);
                 }
                 $timeEntry = new TimeEntry;
