@@ -342,6 +342,89 @@ test('test that a running time entry counts towards the goal progress', async ({
     );
 });
 
+// Close to midnight UTC an entry that started a few minutes ago could fall on the previous day, so
+// the day of the goal is moved to a timezone (without daylight saving time) where it is late morning
+function timezoneAwayFromMidnight() {
+    const utcHour = new Date().getUTCHours();
+    return utcHour >= 2 && utcHour < 22 ? 'UTC' : 'Asia/Tokyo';
+}
+
+// Navigates via the sidebar, a full page load would start with an empty query cache and hide
+// a missing goals invalidation
+async function navigateViaSidebar(page: Page, name: 'Time' | 'Goals') {
+    await page.getByRole('link', { name, exact: true }).first().click();
+    await expect(page).toHaveURL(new RegExp('/' + name.toLowerCase() + '$'));
+}
+
+test('test that goal progress updates after creating a time entry without a page reload', async ({
+    page,
+    ctx,
+}) => {
+    const goal = await createGoalViaApi(ctx, {
+        name: 'Cache goal',
+        target_seconds: 3600,
+        period: 'day',
+        timezone: timezoneAwayFromMidnight(),
+    });
+
+    await goToGoalsOverview(page);
+    await expect(goalRow(page, goal.id).getByTestId('goal_tracked_time')).toHaveText('0h 00min');
+
+    await navigateViaSidebar(page, 'Time');
+    await page.getByRole('button', { name: 'Time entry actions' }).click();
+    await page.getByRole('menuitem', { name: 'Manual time entry' }).click();
+    const durationInput = page.locator('[role="dialog"] input[name="Duration"]');
+    await durationInput.fill('15min');
+    await durationInput.press('Tab');
+    await Promise.all([
+        page.waitForResponse(
+            (response) => response.url().includes('/time-entries') && response.status() === 201
+        ),
+        page.getByRole('button', { name: 'Create Time Entry' }).click(),
+    ]);
+
+    await navigateViaSidebar(page, 'Goals');
+    await expect(goalRow(page, goal.id).getByTestId('goal_tracked_time')).toHaveText('0h 15min');
+});
+
+test('test that goal progress updates after changing the project of the running time entry without a page reload', async ({
+    page,
+    ctx,
+}) => {
+    const project = await createProjectViaApi(ctx, { name: 'Running Project', is_public: true });
+    const start = new Date(Date.now() - 30 * 60 * 1000).toISOString().replace(/\.\d{3}Z$/, 'Z');
+    await createRunningTimeEntryWithStartViaApi(ctx, 'Running work', start);
+    const goal = await createGoalViaApi(ctx, {
+        name: 'Running project goal',
+        target_seconds: 3600,
+        period: 'day',
+        timezone: timezoneAwayFromMidnight(),
+        filters: { project_ids: [project.id], time_entry_type: 'work' },
+    });
+
+    await goToGoalsOverview(page);
+    await expect(goalRow(page, goal.id).getByTestId('goal_tracked_time')).toHaveText('0h 00min');
+
+    await navigateViaSidebar(page, 'Time');
+    await page.getByRole('button', { name: 'No Project' }).click();
+    await Promise.all([
+        page.waitForResponse(
+            async (response) =>
+                response.url().includes('/time-entries') &&
+                response.request().method() === 'PUT' &&
+                response.status() === 200 &&
+                (await response.json()).data.project_id === project.id
+        ),
+        page.getByRole('option').filter({ hasText: project.name }).click(),
+    ]);
+
+    await navigateViaSidebar(page, 'Goals');
+    // The entry keeps running while the test runs
+    await expect(goalRow(page, goal.id).getByTestId('goal_tracked_time')).toHaveText(
+        /^0h 3[0-2]min$/
+    );
+});
+
 test('test that editing a goal via the modal works', async ({ page, ctx }) => {
     const goal = await createGoalViaApi(ctx, {
         name: 'Old goal name',
