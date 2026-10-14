@@ -1,0 +1,4 @@
+id,name,color,billable_rate,is_public,client_id,organization_id,is_billable,archived_at,created_at,updated_at
+06e79ec4-33f8-4730-804c-d03c014991d1,"Project for Big Company",#ec407a,10001,false,b4187a44-41f4-46d7-8460-f15a25b3aad6,ee5a8cd6-312f-4ae6-b044-e2014f09ecc2,true,,2024-08-22T10:36:48Z,2024-08-22T10:36:48Z
+622c74a9-7e64-44c2-9426-2a37ac738206,"Project without Client",#ef5350,,false,,ee5a8cd6-312f-4ae6-b044-e2014f09ecc2,false,,2024-08-22T10:36:48Z,2024-08-22T10:36:48Z
+aa831162-dbb2-4cfe-bfe0-5e3a252c66f0,"Project (Archived)",#6a407f,,true,e5a4d8f5-81ae-4606-8e84-6ab1ffa58b72,ee5a8cd6-312f-4ae6-b044-e2014f09ecc2,true,2024-08-25T10:00:00Z,2024-08-22T10:36:48Z,2024-08-22T10:36:48Z

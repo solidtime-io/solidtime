@@ -140,6 +140,28 @@ class SolidtimeImporterTest extends ImporterTestAbstract
         $this->assertSame([], $breakEntry->tags);
     }
 
+    public function test_import_throws_exception_if_time_entry_references_task_that_does_not_exist(): void
+    {
+        // Arrange
+        $zipPath = $this->createTestZip('solidtime_import_test_missing_task');
+        $timezone = 'Europe/Vienna';
+        $organization = Organization::factory()->create();
+        $importer = new SolidtimeImporter;
+        $importer->init($organization);
+        $data = file_get_contents($zipPath);
+
+        // Act
+        try {
+            $importer->importData($data, $timezone);
+        } catch (Exception $e) {
+            $this->assertInstanceOf(ImportException::class, $e);
+            $this->assertSame('Time entry references a task that does not exist in the import', $e->getMessage());
+
+            return;
+        }
+        $this->fail();
+    }
+
     public function test_import_of_test_file_twice_succeeds(): void
     {
         // Arrange
