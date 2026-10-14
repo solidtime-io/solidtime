@@ -88,6 +88,30 @@ class ZipImportHelperTest extends TestCase
         $this->fail();
     }
 
+    public function test_extract_with_default_limit_allows_toggl_export_with_many_projects(): void
+    {
+        // Arrange
+        // Toggl exports contain one projects_users and one tasks file per project
+        $files = [
+            'clients.json' => '[]',
+            'projects.json' => '[]',
+            'tags.json' => '[]',
+            'workspace_users.json' => '[]',
+        ];
+        for ($project = 1; $project <= 2000; $project++) {
+            $files['projects_users/'.$project.'.json'] = '[]';
+            $files['tasks/'.$project.'.json'] = '[]';
+        }
+        $zipPath = $this->createZip($files);
+
+        // Act
+        app(ZipImportHelper::class)->extract($zipPath, $this->targetDirectory->path());
+
+        // Assert
+        $this->assertSame('[]', file_get_contents($this->targetDirectory->path('projects_users/2000.json')));
+        $this->assertSame('[]', file_get_contents($this->targetDirectory->path('tasks/2000.json')));
+    }
+
     public function test_extract_throws_exception_if_zip_contains_too_many_files(): void
     {
         // Arrange
