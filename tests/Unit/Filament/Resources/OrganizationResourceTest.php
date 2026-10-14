@@ -21,6 +21,8 @@ use App\Service\Import\Importers\ReportDto;
 use App\Service\Import\ImportService;
 use Exception;
 use Filament\Notifications\Notification;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Mail;
@@ -169,8 +171,7 @@ class OrganizationResourceTest extends FilamentTestCase
     public function test_can_import_into_an_organization(): void
     {
         // Arrange
-        Storage::fake(config('filament.default_filesystem_disk'));
-        Storage::disk(config('filament.default_filesystem_disk'))->put('imports/import.csv', 'csv-content');
+        Storage::fake(config('filesystems.private'));
         $organization = Organization::factory()->create();
         $this->mock(ImportService::class, function (MockInterface $mock) use ($organization): void {
             $mock->shouldReceive('import')
@@ -194,7 +195,7 @@ class OrganizationResourceTest extends FilamentTestCase
         // Act
         $response = Livewire::test(OrganizationResource\Pages\ListOrganizations::class)
             ->callTableAction('Import', $organization, data: [
-                'file' => [(string) Str::uuid() => 'imports/import.csv'],
+                'file' => UploadedFile::fake()->createWithContent('import.csv', 'csv-content'),
                 'type' => 'toggl_time_entries',
                 'timezone' => 'Europe/Vienna',
             ]);
@@ -216,13 +217,41 @@ class OrganizationResourceTest extends FilamentTestCase
                 )
                 ->persistent()
         );
+        Storage::disk(config('filesystems.private'))->assertDirectoryEmpty('admin-import-uploads');
+    }
+
+    public function test_import_into_an_organization_stores_copy_of_import_data_for_debugging_and_deletes_upload(): void
+    {
+        // Arrange
+        Storage::fake(config('filesystems.private'));
+        $data = Storage::disk('testfiles')->get('toggl_time_entries_import_test_1.csv');
+        $organization = Organization::factory()->create();
+
+        // Act
+        $response = Livewire::test(OrganizationResource\Pages\ListOrganizations::class)
+            ->callTableAction('Import', $organization, data: [
+                'file' => UploadedFile::fake()->createWithContent('import.csv', $data),
+                'type' => 'toggl_time_entries',
+                'timezone' => 'Europe/Vienna',
+            ]);
+
+        // Assert
+        $response->assertHasNoTableActionErrors();
+        $response->assertSuccessful();
+        Storage::disk(config('filesystems.private'))->assertDirectoryEmpty('admin-import-uploads');
+        $storedFiles = Storage::disk(config('filesystems.private'))->files('import');
+        $this->assertCount(1, $storedFiles);
+        $this->assertMatchesRegularExpression(
+            '/^import\/'.preg_quote(Carbon::now()->toDateString(), '/').'-'.preg_quote($organization->getKey(), '/').'-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/',
+            $storedFiles[0]
+        );
+        $this->assertSame($data, Storage::disk(config('filesystems.private'))->get($storedFiles[0]));
     }
 
     public function test_import_into_organization_shows_error_notification_on_import_exception(): void
     {
         // Arrange
-        Storage::fake(config('filament.default_filesystem_disk'));
-        Storage::disk(config('filament.default_filesystem_disk'))->put('imports/import.csv', 'csv-content');
+        Storage::fake(config('filesystems.private'));
         $organization = Organization::factory()->create();
         $this->mock(ImportService::class, function (MockInterface $mock): void {
             $mock->shouldReceive('import')
@@ -233,7 +262,7 @@ class OrganizationResourceTest extends FilamentTestCase
         // Act
         $response = Livewire::test(OrganizationResource\Pages\ListOrganizations::class)
             ->callTableAction('Import', $organization, data: [
-                'file' => [(string) Str::uuid() => 'imports/import.csv'],
+                'file' => UploadedFile::fake()->createWithContent('import.csv', 'csv-content'),
                 'type' => 'toggl_time_entries',
                 'timezone' => 'Europe/Vienna',
             ]);
@@ -247,12 +276,13 @@ class OrganizationResourceTest extends FilamentTestCase
                 ->body('Message: Invalid CSV')
                 ->persistent()
         );
+        Storage::disk(config('filesystems.private'))->assertDirectoryEmpty('admin-import-uploads');
     }
 
     public function test_import_into_organization_shows_error_notification_if_file_is_missing(): void
     {
         // Arrange
-        Storage::fake(config('filament.default_filesystem_disk'));
+        Storage::fake(config('filesystems.private'));
         $organization = Organization::factory()->create();
         $this->mock(ImportService::class, function (MockInterface $mock): void {
             $mock->shouldNotReceive('import');
@@ -261,7 +291,7 @@ class OrganizationResourceTest extends FilamentTestCase
         // Act
         $response = Livewire::test(OrganizationResource\Pages\ListOrganizations::class)
             ->callTableAction('Import', $organization, data: [
-                'file' => [(string) Str::uuid() => 'imports/does-not-exist.csv'],
+                'file' => [(string) Str::uuid() => 'admin-import-uploads/does-not-exist.csv'],
                 'type' => 'toggl_time_entries',
                 'timezone' => 'Europe/Vienna',
             ]);
@@ -280,7 +310,7 @@ class OrganizationResourceTest extends FilamentTestCase
     public function test_import_into_organization_shows_error_notification_if_file_is_missing_on_non_throwing_disk(): void
     {
         // Arrange
-        Storage::fake(config('filament.default_filesystem_disk'), ['throw' => false]);
+        Storage::fake(config('filesystems.private'), ['throw' => false]);
         $organization = Organization::factory()->create();
         $this->mock(ImportService::class, function (MockInterface $mock): void {
             $mock->shouldNotReceive('import');
@@ -289,7 +319,7 @@ class OrganizationResourceTest extends FilamentTestCase
         // Act
         $response = Livewire::test(OrganizationResource\Pages\ListOrganizations::class)
             ->callTableAction('Import', $organization, data: [
-                'file' => [(string) Str::uuid() => 'imports/does-not-exist.csv'],
+                'file' => [(string) Str::uuid() => 'admin-import-uploads/does-not-exist.csv'],
                 'type' => 'toggl_time_entries',
                 'timezone' => 'Europe/Vienna',
             ]);
