@@ -27,7 +27,7 @@ return [
     |
     */
 
-    'zip_max_files' => (int) (env('IMPORT_ZIP_MAX_FILES') ?: 100),
+    'zip_max_files' => (int) (env('IMPORT_ZIP_MAX_FILES') ?: 10000),
 
     'zip_max_uncompressed_size' => (int) (env('IMPORT_ZIP_MAX_UNCOMPRESSED_SIZE') ?: 500 * 1024 * 1024),
 
