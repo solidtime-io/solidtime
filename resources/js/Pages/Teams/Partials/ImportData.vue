@@ -5,7 +5,12 @@ import { useNotificationsStore } from '@/utils/notification';
 import { api } from '@/packages/api/src';
 import { Field, FieldLabel } from '@/packages/ui/src/field';
 import { DocumentIcon } from '@heroicons/vue/24/solid';
-import { ArrowDownOnSquareIcon, InformationCircleIcon } from '@heroicons/vue/24/outline';
+import {
+    ArrowDownOnSquareIcon,
+    ExclamationTriangleIcon,
+    InformationCircleIcon,
+} from '@heroicons/vue/24/outline';
+import { canUseBillableRates } from '@/utils/billing';
 
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import type { ImportReport, ImportType } from '@/packages/api/src';
@@ -20,6 +25,8 @@ const importTypeOptions = ref<ImportType[]>([]);
 const { addNotification } = useNotificationsStore();
 
 const loading = ref(false);
+
+const billableRatesLocked = computed(() => !canUseBillableRates());
 
 onMounted(async () => {
     const organizationId = getCurrentOrganizationId();
@@ -155,8 +162,19 @@ const showResultModal = ref(false);
             <div class="py-2 px-3 sm:px-4 text-sm flex items-center space-x-3">
                 <InformationCircleIcon class="h-5 min-w-0 w-5 text-bg-tertiary" />
                 <p class="flex-1">
-                    Import existing data from Toggl, Clockify or a different solidtime instance.
-                    Please select the type of data you want to import and follow the instructions.
+                    Import existing data from Toggl, Clockify, Harvest, generic CSV files or a
+                    different solidtime instance. Please select the type of data you want to import
+                    and follow the instructions.
+                </p>
+            </div>
+            <div
+                v-if="billableRatesLocked"
+                class="py-2 px-3 sm:px-4 text-sm flex items-center space-x-3 border-t border-card-background-separator">
+                <ExclamationTriangleIcon class="h-5 min-w-0 w-5 text-yellow-500" />
+                <p class="flex-1">
+                    Billable rates and billable status will not be imported, since they are not
+                    available in the free plan. All projects and time entries will be imported as
+                    non-billable.
                 </p>
             </div>
         </Card>
