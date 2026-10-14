@@ -648,7 +648,7 @@ class TimeEntryController extends Controller
         $timeEntry = new TimeEntry;
         $timeEntry->fill($request->validated());
         // Organizations that can not use billable rates can not create billable time entries
-        if (! $this->canUseBillableRates($organization)) {
+        if ($timeEntry->billable && ! $this->canUseBillableRates($organization)) {
             $timeEntry->billable = false;
         }
         $timeEntry->client()->associate($client);
@@ -721,7 +721,7 @@ class TimeEntryController extends Controller
         $wasBillable = $timeEntry->billable;
         $timeEntry->fill($request->validated());
         // Organizations that can not use billable rates can keep or remove the billable flag, but not set it
-        if (! $wasBillable && ! $this->canUseBillableRates($organization)) {
+        if ($timeEntry->billable && ! $wasBillable && ! $this->canUseBillableRates($organization)) {
             $timeEntry->billable = false;
         }
         if ($newMember !== null) {

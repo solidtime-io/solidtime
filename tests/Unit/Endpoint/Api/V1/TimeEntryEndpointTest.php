@@ -23,6 +23,7 @@ use App\Models\Tag;
 use App\Models\Task;
 use App\Models\TimeEntry;
 use App\Models\User;
+use App\Service\BillingContract;
 use App\Service\TimeEntryFilter;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Support\Carbon;
@@ -35,6 +36,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Laravel\Passport\Passport;
+use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\UsesClass;
 use Ramsey\Uuid\Type\Time;
 use TiMacDonald\Log\LogEntry;
@@ -6251,4 +6253,69 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         $this->assertSame('Mass update', $nonBillableTimeEntry->description);
     }
 
+    public function test_time_entry_store_does_not_check_billable_rates_for_non_billable_time_entry(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:create:own',
+        ]);
+        $this->mockBillingWithoutBillableRateCheck();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.time-entries.store', [$data->organization->getKey()]), [
+            'billable' => false,
+            'start' => Carbon::now()->subHour()->toIso8601ZuluString(),
+            'end' => Carbon::now()->toIso8601ZuluString(),
+            'member_id' => $data->member->getKey(),
+        ]);
+
+        // Assert
+        $response->assertCreated();
+        $response->assertJsonPath('data.billable', false);
+    }
+
+    public function test_time_entry_update_does_not_check_billable_rates_if_time_entry_does_not_become_billable(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:update:own',
+        ]);
+        $nonBillableTimeEntry = TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)->notBillable()
+            ->startWithDuration(Carbon::now()->subHours(5), 3600)->create();
+        $billableTimeEntry = TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)->billable()
+            ->startWithDuration(Carbon::now()->subHours(3), 3600)->create();
+        $this->mockBillingWithoutBillableRateCheck();
+        Passport::actingAs($data->user);
+
+        // Act
+        $responseNonBillable = $this->putJson(route('api.v1.time-entries.update', [$data->organization->getKey(), $nonBillableTimeEntry->getKey()]), [
+            'description' => 'Still not billable',
+        ]);
+        $responseBillable = $this->putJson(route('api.v1.time-entries.update', [$data->organization->getKey(), $billableTimeEntry->getKey()]), [
+            'billable' => true,
+            'description' => 'Still billable',
+        ]);
+
+        // Assert
+        $responseNonBillable->assertOk();
+        $responseNonBillable->assertJsonPath('data.billable', false);
+        $responseBillable->assertOk();
+        $responseBillable->assertJsonPath('data.billable', true);
+    }
+
+    /**
+     * Billing that fails the test if it is asked whether the organization can use billable rates
+     */
+    private function mockBillingWithoutBillableRateCheck(): void
+    {
+        $this->mock(BillingContract::class, function (MockInterface $mock): void {
+            $mock->shouldReceive('hasSubscription')->andReturn(true);
+            $mock->shouldReceive('hasTrial')->andReturn(false);
+            $mock->shouldReceive('getTrialUntil')->andReturn(null);
+            $mock->shouldReceive('getGoalLimit')->andReturn(null);
+            $mock->shouldReceive('isBlocked')->andReturn(false);
+            $mock->shouldNotReceive('canUseBillableRates');
+        });
+    }
 }
