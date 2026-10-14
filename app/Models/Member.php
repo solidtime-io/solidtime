@@ -6,7 +6,6 @@ namespace App\Models;
 
 use App\Models\Concerns\CustomAuditable;
 use App\Models\Concerns\HasUuids;
-use App\Service\BillingContract;
 use Database\Factories\MemberFactory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -48,16 +47,6 @@ class Member extends Pivot implements AuditableContract
      * @var string
      */
     protected $table = 'members';
-
-    protected static function booted(): void
-    {
-        static::saving(function (Member $member): void {
-            // Organizations that can not use billable rates can not change the billable rate
-            if ($member->billable_rate !== $member->getOriginal('billable_rate') && ! app(BillingContract::class)->canUseBillableRates($member->loadMissing('organization')->organization)) {
-                $member->billable_rate = $member->getOriginal('billable_rate');
-            }
-        });
-    }
 
     /**
      * @return BelongsTo<User, $this>

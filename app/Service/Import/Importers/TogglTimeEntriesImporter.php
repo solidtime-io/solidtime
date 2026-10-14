@@ -113,12 +113,12 @@ class TogglTimeEntriesImporter extends DefaultImporter
                 $timeEntry->task_id = $taskId;
                 $timeEntry->project_id = $projectId;
                 $timeEntry->client_id = $clientId;
-                $timeEntry->organization()->associate($this->organization);
+                $timeEntry->organization_id = $this->organization->id;
                 $timeEntry->description = $record['Description'];
                 if (! in_array($record['Billable'], ['Yes', 'No'], true)) {
                     throw new ImportException('Invalid billable value');
                 }
-                $timeEntry->billable = $record['Billable'] === 'Yes';
+                $timeEntry->billable = $this->canUseBillableRates && $record['Billable'] === 'Yes';
                 $timeEntry->tags = $this->getTags($record['Tags']);
                 $timeEntry->is_imported = true;
                 try {

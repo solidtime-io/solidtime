@@ -7,7 +7,6 @@ namespace App\Models;
 use App\Models\Concerns\AuditableThroughParent;
 use App\Models\Concerns\CustomAuditable;
 use App\Models\Concerns\HasUuids;
-use App\Service\BillingContract;
 use Database\Factories\ProjectMemberFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -48,16 +47,6 @@ class ProjectMember extends Model implements AuditableContract, AuditableThrough
     protected $casts = [
         'billable_rate' => 'int',
     ];
-
-    protected static function booted(): void
-    {
-        static::saving(function (ProjectMember $projectMember): void {
-            // Organizations that can not use billable rates can not change the billable rate
-            if ($projectMember->billable_rate !== $projectMember->getOriginal('billable_rate') && ! app(BillingContract::class)->canUseBillableRates($projectMember->loadMissing('project.organization')->project->organization)) {
-                $projectMember->billable_rate = $projectMember->getOriginal('billable_rate');
-            }
-        });
-    }
 
     /**
      * @return BelongsTo<Project, $this>

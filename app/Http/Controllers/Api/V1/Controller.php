@@ -49,4 +49,9 @@ class Controller extends \App\Http\Controllers\Controller
     {
         return app(BillingContract::class)->hasSubscription($organization) || app(BillingContract::class)->hasTrial($organization);
     }
+
+    protected function canUseBillableRates(Organization $organization): bool
+    {
+        return app(BillingContract::class)->canUseBillableRates($organization);
+    }
 }

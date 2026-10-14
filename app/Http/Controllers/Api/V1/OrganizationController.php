@@ -46,6 +46,7 @@ class OrganizationController extends Controller
     public function update(Organization $organization, OrganizationUpdateRequest $request, BillableRateService $billableRateService): OrganizationResource
     {
         $this->checkPermission($organization, 'organizations:update');
+        $canUseBillableRates = $this->canUseBillableRates($organization);
 
         if ($request->getName() !== null) {
             $organization->name = $request->getName();
@@ -53,7 +54,8 @@ class OrganizationController extends Controller
         if ($request->getCurrency() !== null) {
             $organization->currency = $request->getCurrency();
         }
-        if ($request->getEmployeesCanSeeBillableRates() !== null) {
+        // Organizations that can not use billable rates can keep or remove the visibility for employees, but not enable it
+        if ($request->getEmployeesCanSeeBillableRates() !== null && ($canUseBillableRates || ! $request->getEmployeesCanSeeBillableRates())) {
             $organization->employees_can_see_billable_rates = $request->getEmployeesCanSeeBillableRates();
         }
         if ($request->getEmployeesCanManageTasks() !== null) {
@@ -81,7 +83,7 @@ class OrganizationController extends Controller
             $organization->breaks_enabled = $request->getBreaksEnabled();
         }
         $oldBillableRate = $organization->billable_rate;
-        if ($request->has('billable_rate')) {
+        if ($request->has('billable_rate') && $canUseBillableRates) {
             $organization->billable_rate = $request->getBillableRate();
         }
         $organization->save();

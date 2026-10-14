@@ -119,7 +119,7 @@ class ClockifyTimeEntriesImporter extends DefaultImporter
                 $timeEntry->task_id = $taskId;
                 $timeEntry->project_id = $projectId;
                 $timeEntry->client_id = $clientId;
-                $timeEntry->organization()->associate($this->organization);
+                $timeEntry->organization_id = $this->organization->id;
                 if (strlen($record['Description']) > 5000) {
                     throw new ImportException('Time entry description is too long');
                 }
@@ -128,7 +128,7 @@ class ClockifyTimeEntriesImporter extends DefaultImporter
                     if (! in_array($record['Billable'], ['Yes', 'No'], true)) {
                         throw new ImportException('Invalid billable value');
                     }
-                    $timeEntry->billable = $record['Billable'] === 'Yes';
+                    $timeEntry->billable = $this->canUseBillableRates && $record['Billable'] === 'Yes';
                 }
                 if ($isBreak) {
                     // Breaks can not be billable or belong to a project/task (already skipped above)
