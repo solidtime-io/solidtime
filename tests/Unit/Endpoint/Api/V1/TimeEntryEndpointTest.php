@@ -955,7 +955,9 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         $data = $this->createUserWithPermission([
             'time-entries:view:all',
         ]);
-        TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)->startWithDuration(Carbon::now(), 100)->create();
+        $data->user->timezone = 'Australia/Brisbane';
+        $data->user->save();
+        TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)->startWithDuration(Carbon::parse('2026-07-15T00:00:00Z'), 100)->create();
         Passport::actingAs($data->user);
         $capturedOptions = $this->captureTemporaryUrlOptions();
 
@@ -963,18 +965,15 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         $response = $this->getJson(route('api.v1.time-entries.index-export', [
             $data->organization->getKey(),
             'format' => ExportFormat::CSV,
-            'start' => Carbon::now()->startOfYear()->toIso8601ZuluString(),
-            'end' => Carbon::now()->endOfYear()->toIso8601ZuluString(),
+            'start' => '2026-06-30T14:00:00Z',
+            'end' => '2026-07-31T13:59:59Z',
         ]));
 
         // Assert
         $this->assertResponseCode($response, 200);
         $options = $capturedOptions();
         $this->assertIsArray($options);
-        $this->assertMatchesRegularExpression(
-            '/^attachment; filename="time-entries-export-.+\.csv"$/',
-            $options['ResponseContentDisposition'] ?? ''
-        );
+        $this->assertSame('attachment; filename="solidtime-detailed-2026-07-01-to-2026-07-31.csv"', $options['ResponseContentDisposition'] ?? null);
         $this->assertStringStartsWith('https://storage.fake/exports/', $response->json('download_url'));
     }
 
@@ -1358,7 +1357,9 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         $data = $this->createUserWithPermission([
             'time-entries:view:all',
         ]);
-        TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)->startWithDuration(Carbon::now(), 100)->create();
+        $data->user->timezone = 'Australia/Brisbane';
+        $data->user->save();
+        TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)->startWithDuration(Carbon::parse('2026-07-15T00:00:00Z'), 100)->create();
         Passport::actingAs($data->user);
         $capturedOptions = $this->captureTemporaryUrlOptions();
 
@@ -1369,18 +1370,15 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
             'group' => TimeEntryAggregationType::Client,
             'sub_group' => TimeEntryAggregationType::Project,
             'history_group' => TimeEntryAggregationTypeInterval::Month,
-            'start' => Carbon::now()->startOfYear()->toIso8601ZuluString(),
-            'end' => Carbon::now()->endOfYear()->toIso8601ZuluString(),
+            'start' => '2026-06-30T14:00:00Z',
+            'end' => '2026-07-31T13:59:59Z',
         ]));
 
         // Assert
         $this->assertResponseCode($response, 200);
         $options = $capturedOptions();
         $this->assertIsArray($options);
-        $this->assertMatchesRegularExpression(
-            '/^attachment; filename="time-entries-report-.+\.csv"$/',
-            $options['ResponseContentDisposition'] ?? ''
-        );
+        $this->assertSame('attachment; filename="solidtime-overview-2026-07-01-to-2026-07-31.csv"', $options['ResponseContentDisposition'] ?? null);
         $this->assertStringStartsWith('https://storage.fake/exports/', $response->json('download_url'));
     }
 

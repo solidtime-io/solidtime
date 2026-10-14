@@ -38,6 +38,24 @@ class FileDownloadEndpointTest extends EndpointTestAbstract
         $disk->delete('exports/test-attachment.csv');
     }
 
+    public function test_temporary_url_serves_file_with_filename_from_disposition(): void
+    {
+        // Arrange
+        $disk = $this->privateDisk();
+        $disk->put('exports/test-storage-name.csv', 'Description,Duration');
+        $url = $disk->temporaryUrl('exports/test-storage-name.csv', now()->addMinutes(5), [
+            'ResponseContentDisposition' => 'attachment; filename="test-download-name.csv"',
+        ]);
+
+        // Act
+        $response = $this->get($url);
+
+        // Assert
+        $response->assertOk();
+        $response->assertDownload('test-download-name.csv');
+        $disk->delete('exports/test-storage-name.csv');
+    }
+
     public function test_temporary_url_without_options_serves_file_inline(): void
     {
         // Arrange
