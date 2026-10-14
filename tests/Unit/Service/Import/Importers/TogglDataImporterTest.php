@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Tests\Unit\Service\Import\Importers;
 
 use App\Models\Organization;
+use App\Models\Project;
+use App\Models\ProjectMember;
 use App\Models\User;
 use App\Service\Import\Importers\DefaultImporter;
 use App\Service\Import\Importers\ImportException;
@@ -215,5 +217,31 @@ class TogglDataImporterTest extends ImporterTestAbstract
         $user = User::query()->where('email', '=', 'peter.test@email.test')->first();
         $this->assertSame('UTC', $user->timezone);
         $this->assertTrue($user->is_placeholder);
+    }
+
+    public function test_import_drops_billable_flags_and_rates_if_organization_can_not_use_billable_rates(): void
+    {
+        // Arrange
+        $this->actAsOrganizationWithoutBillableRates();
+        $zipPath = $this->createTestZip('toggl_data_import_test_1');
+        $timezone = 'Europe/Vienna';
+        $organization = Organization::factory()->create();
+        $importer = new TogglDataImporter;
+        $importer->init($organization);
+        $data = file_get_contents($zipPath);
+
+        // Act
+        $importer->importData($data, $timezone);
+
+        // Assert
+        $projects = Project::query()->whereBelongsTo($organization, 'organization')->get();
+        $this->assertCount(3, $projects);
+        foreach ($projects as $project) {
+            $this->assertFalse($project->is_billable);
+            $this->assertNull($project->billable_rate);
+        }
+        $projectMembers = ProjectMember::query()->whereBelongsToOrganization($organization)->get();
+        $this->assertCount(1, $projectMembers);
+        $this->assertNull($projectMembers->first()->billable_rate);
     }
 }
