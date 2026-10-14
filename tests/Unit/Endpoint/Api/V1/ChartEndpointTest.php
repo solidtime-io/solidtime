@@ -300,4 +300,20 @@ class ChartEndpointTest extends EndpointTestAbstract
         // Assert
         $response->assertOk();
     }
+
+    public function test_total_weekly_billable_amount_is_forbidden_if_organization_can_not_use_billable_rates(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'charts:view:own',
+        ]);
+        $this->actAsOrganizationWithoutBillableRates();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.charts.total-weekly-billable-amount', [$data->organization->getKey()]));
+
+        // Assert
+        $response->assertForbidden();
+    }
 }

@@ -1155,4 +1155,35 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
             'message' => 'The given user is not a placeholder',
         ]);
     }
+
+    public function test_member_update_ignores_billable_rate_but_updates_role_if_organization_can_not_use_billable_rates(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'members:update',
+        ]);
+        $member = Member::factory()->forOrganization($data->organization)->forUser(User::factory()->create())->role(Role::Employee)->create([
+            'billable_rate' => 10000,
+        ]);
+        $timeEntry = TimeEntry::factory()->forOrganization($data->organization)->forMember($member)->create([
+            'billable' => true,
+            'billable_rate' => 10000,
+        ]);
+        $this->actAsOrganizationWithoutBillableRates();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.members.update', [$data->organization->getKey(), $member->getKey()]), [
+            'billable_rate' => 20000,
+            'role' => Role::Manager->value,
+        ]);
+
+        // Assert
+        $response->assertOk();
+        $member->refresh();
+        $this->assertSame(10000, $member->billable_rate);
+        $this->assertSame(Role::Manager->value, $member->role);
+        $this->assertSame(10000, $timeEntry->refresh()->billable_rate);
+    }
+
 }
