@@ -1,12 +1,9 @@
 <script setup lang="ts">
-import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
 import { Target } from '@lucide/vue';
-import { PlusIcon } from '@heroicons/vue/16/solid';
-import { ref } from 'vue';
 import type { Goal } from '@/packages/api/src';
 import GoalTableRow from '@/Components/Common/Goal/GoalTableRow.vue';
 import GoalTableHeading from '@/Components/Common/Goal/GoalTableHeading.vue';
-import GoalCreateModal from '@/Components/Common/Goal/GoalCreateModal.vue';
+import GoalCreateButton from '@/Components/Common/Goal/GoalCreateButton.vue';
 import { canCreateGoals } from '@/utils/permissions';
 import { LoadingSpinner } from '@/packages/ui/src';
 import { isGoalsExtensionActivated } from '@/utils/billing';
@@ -18,7 +15,6 @@ const props = defineProps<{
     showingArchived: boolean;
 }>();
 
-const showCreateGoalModal = ref(false);
 const showTargetColumn = isGoalsExtensionActivated();
 // Every column gets a share of the free space so the columns are spread evenly over the table
 const gridTemplateColumns = [
@@ -33,7 +29,6 @@ const gridTemplateColumns = [
 </script>
 
 <template>
-    <GoalCreateModal v-model:show="showCreateGoalModal"></GoalCreateModal>
     <div class="flow-root max-w-[100vw] overflow-x-auto">
         <div class="inline-block min-w-full align-middle">
             <div data-testid="goal_table" class="grid min-w-full" :style="{ gridTemplateColumns }">
@@ -51,14 +46,11 @@ const gridTemplateColumns = [
                     <p v-if="canCreateGoals() && !props.showingArchived" class="pb-5">
                         Set yourself a target and track your progress every day, week or month.
                     </p>
-                    <SecondaryButton
-                        v-if="
-                            canCreateGoals() && !props.showingArchived && props.canCreateMoreGoals
-                        "
-                        :icon="PlusIcon"
-                        @click="showCreateGoalModal = true"
+                    <GoalCreateButton
+                        v-if="canCreateGoals() && !props.showingArchived"
+                        :can-create-more-goals="props.canCreateMoreGoals"
                         >Create your first goal
-                    </SecondaryButton>
+                    </GoalCreateButton>
                 </div>
                 <template v-for="goal in props.goals" :key="goal.id">
                     <GoalTableRow

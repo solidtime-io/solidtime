@@ -29,6 +29,7 @@ import ClientCreateModal from '@/Components/Common/Client/ClientCreateModal.vue'
 import TaskCreateModal from '@/Components/Common/Task/TaskCreateModal.vue';
 import TagCreateModal from '@/packages/ui/src/Tag/TagCreateModal.vue';
 import GoalCreateModal from '@/Components/Common/Goal/GoalCreateModal.vue';
+import UpgradeModal from '@/packages/ui/src/UpgradeModal.vue';
 import MemberInviteModal from '@/Components/Common/Member/MemberInviteModal.vue';
 import TimeEntryCreateModal from '@/packages/ui/src/TimeEntry/TimeEntryCreateModal.vue';
 
@@ -53,6 +54,7 @@ const {
     showCreateTaskModal,
     showCreateTagModal,
     showCreateGoalModal,
+    showGoalUpgradeModal,
     showInviteMemberModal,
     showCreateTimeEntryModal,
     showProjectSelector,
@@ -185,6 +187,7 @@ const firstProjectId = computed(() => projects.value[0]?.id ?? '');
 
     <!-- Goal Create Modal -->
     <GoalCreateModal v-model:show="showCreateGoalModal" />
+    <UpgradeModal v-model:show="showGoalUpgradeModal" feature="goals" />
 
     <!-- Member Invite Modal -->
     <MemberInviteModal v-model:show="showInviteMemberModal" :available-roles="availableRoles" />
