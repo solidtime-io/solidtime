@@ -422,6 +422,7 @@ export function useBreakPlacement(deps: BreakPlacementDeps) {
         },
         onSettled: () => {
             queryClient.invalidateQueries({ queryKey: ['timeEntries'] });
+            queryClient.invalidateQueries({ queryKey: ['goals'] });
         },
     });
 

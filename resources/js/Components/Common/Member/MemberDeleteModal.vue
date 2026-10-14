@@ -43,6 +43,7 @@ const deleteMutation = useMutation({
     onSuccess: () => {
         close();
         queryClient.invalidateQueries({ queryKey: ['members'] });
+        queryClient.invalidateQueries({ queryKey: ['goals'] });
     },
 });
 

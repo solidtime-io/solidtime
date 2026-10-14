@@ -52,6 +52,7 @@ async function submit() {
             'There was an error merging the members.',
             () => {
                 queryClient.invalidateQueries({ queryKey: ['members'] });
+                queryClient.invalidateQueries({ queryKey: ['goals'] });
                 show.value = false;
             }
         );

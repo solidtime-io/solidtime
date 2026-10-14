@@ -174,6 +174,7 @@ export function useTimesheetCellMutations(
             );
         } finally {
             queryClient.invalidateQueries({ queryKey: ['timeEntries'] });
+            queryClient.invalidateQueries({ queryKey: ['goals'] });
         }
     }
 

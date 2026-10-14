@@ -217,6 +217,7 @@ export function useCopyLastWeek(
             }
 
             queryClient.invalidateQueries({ queryKey: ['timeEntries'] });
+            queryClient.invalidateQueries({ queryKey: ['goals'] });
 
             if (attempted === 0) return;
 

@@ -261,6 +261,7 @@ export const useCurrentTimeEntryStore = defineStore('currentTimeEntry', () => {
                     stopLiveTimer();
                 }
             }
+            queryClient.invalidateQueries({ queryKey: ['goals'] });
         } else {
             throw new Error(
                 'Failed to fetch current time entry because organization ID is missing.'
