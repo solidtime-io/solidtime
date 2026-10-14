@@ -32,9 +32,10 @@ async function getExportedModulesArrayAttributes(modulesPath, attribute) {
             // Check if the module is enabled (status is true)
             if (moduleStatuses[moduleDir] === true) {
                 const viteConfigPath = path.join(modulesPath, moduleDir, 'vite.config.js');
-                const stat = await fs.stat(viteConfigPath);
+                // Skip modules without frontend assets (e.g. backend-only extensions)
+                const stat = await fs.stat(viteConfigPath).catch(() => null);
 
-                if (stat.isFile()) {
+                if (stat?.isFile()) {
                     // Import the module-specific Vite configuration
                     const moduleConfig = await import(viteConfigPath);
 
