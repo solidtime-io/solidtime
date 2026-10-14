@@ -1624,4 +1624,174 @@ class ProjectEndpointTest extends ApiEndpointTestAbstract
             'id' => $projectMember->getKey(),
         ]);
     }
+
+    public function test_project_store_ignores_billable_flag_and_rate_if_organization_can_not_use_billable_rates(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'projects:create',
+        ]);
+        $this->actAsOrganizationWithoutBillableRates();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.projects.store', [$data->organization->getKey()]), [
+            'name' => 'Project',
+            'color' => '#ef5350',
+            'client_id' => null,
+            'is_billable' => true,
+            'billable_rate' => 10000,
+        ]);
+
+        // Assert
+        $response->assertCreated();
+        $response->assertJsonPath('data.is_billable', false);
+        $response->assertJsonPath('data.billable_rate', null);
+        $project = Project::query()->findOrFail($response->json('data.id'));
+        $this->assertFalse($project->is_billable);
+        $this->assertNull($project->billable_rate);
+    }
+
+    public function test_project_store_sets_billable_flag_and_rate_if_organization_can_use_billable_rates(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'projects:create',
+        ]);
+        $this->actAsOrganizationWithSubscription();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.projects.store', [$data->organization->getKey()]), [
+            'name' => 'Project',
+            'color' => '#ef5350',
+            'client_id' => null,
+            'is_billable' => true,
+            'billable_rate' => 10000,
+        ]);
+
+        // Assert
+        $response->assertCreated();
+        $response->assertJsonPath('data.is_billable', true);
+        $response->assertJsonPath('data.billable_rate', 10000);
+    }
+
+    public function test_project_update_keeps_or_removes_existing_billable_flag_but_does_not_set_new_one_if_organization_can_not_use_billable_rates(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'projects:update',
+        ]);
+        $billableProject = Project::factory()->forOrganization($data->organization)->create(['is_billable' => true]);
+        $removedBillableProject = Project::factory()->forOrganization($data->organization)->create(['is_billable' => true]);
+        $nonBillableProject = Project::factory()->forOrganization($data->organization)->create(['is_billable' => false]);
+        $this->actAsOrganizationWithoutBillableRates();
+        Passport::actingAs($data->user);
+
+        // Act
+        $responseKeep = $this->putJson(route('api.v1.projects.update', [$data->organization->getKey(), $billableProject->getKey()]), [
+            'name' => 'Still billable',
+            'color' => $billableProject->color,
+            'client_id' => null,
+            'is_billable' => true,
+        ]);
+        $responseRemove = $this->putJson(route('api.v1.projects.update', [$data->organization->getKey(), $removedBillableProject->getKey()]), [
+            'name' => 'No longer billable',
+            'color' => $removedBillableProject->color,
+            'client_id' => null,
+            'is_billable' => false,
+        ]);
+        $responseSet = $this->putJson(route('api.v1.projects.update', [$data->organization->getKey(), $nonBillableProject->getKey()]), [
+            'name' => 'Not billable',
+            'color' => $nonBillableProject->color,
+            'client_id' => null,
+            'is_billable' => true,
+        ]);
+
+        // Assert
+        $responseKeep->assertOk();
+        $responseKeep->assertJsonPath('data.is_billable', true);
+        $responseRemove->assertOk();
+        $responseRemove->assertJsonPath('data.is_billable', false);
+        $responseSet->assertOk();
+        $responseSet->assertJsonPath('data.is_billable', false);
+        $this->assertTrue($billableProject->refresh()->is_billable);
+        $this->assertFalse($removedBillableProject->refresh()->is_billable);
+        $nonBillableProject->refresh();
+        $this->assertFalse($nonBillableProject->is_billable);
+        $this->assertSame('Not billable', $nonBillableProject->name);
+    }
+
+    public function test_project_update_can_enable_billable_flag_if_organization_can_use_billable_rates(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'projects:update',
+        ]);
+        $project = Project::factory()->forOrganization($data->organization)->create(['is_billable' => false]);
+        $this->actAsOrganizationWithSubscription();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.projects.update', [$data->organization->getKey(), $project->getKey()]), [
+            'name' => $project->name,
+            'color' => $project->color,
+            'client_id' => null,
+            'is_billable' => true,
+        ]);
+
+        // Assert
+        $response->assertOk();
+        $this->assertTrue($project->refresh()->is_billable);
+    }
+
+    public function test_project_update_keeps_existing_billable_rate_and_time_entry_rates_if_organization_can_not_use_billable_rates(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'projects:update',
+        ]);
+        $project = Project::factory()->forOrganization($data->organization)->create([
+            'billable_rate' => 10000,
+            'is_billable' => true,
+        ]);
+        $timeEntry = TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)->forProject($project)->create([
+            'billable' => true,
+            'billable_rate' => 10000,
+        ]);
+        $this->actAsOrganizationWithoutBillableRates();
+        Passport::actingAs($data->user);
+
+        // Act
+        $responseChange = $this->putJson(route('api.v1.projects.update', [$data->organization->getKey(), $project->getKey()]), [
+            'name' => 'Changed rate',
+            'color' => $project->color,
+            'client_id' => null,
+            'is_billable' => true,
+            'billable_rate' => 20000,
+        ]);
+        // Note: Organizations that can not use billable rates do not receive the rate of the project, so clients send `null` back
+        $responseNull = $this->putJson(route('api.v1.projects.update', [$data->organization->getKey(), $project->getKey()]), [
+            'name' => 'Hidden rate',
+            'color' => $project->color,
+            'client_id' => null,
+            'is_billable' => true,
+            'billable_rate' => null,
+        ]);
+        $responseOmitted = $this->putJson(route('api.v1.projects.update', [$data->organization->getKey(), $project->getKey()]), [
+            'name' => 'Omitted rate',
+            'color' => $project->color,
+            'client_id' => null,
+            'is_billable' => true,
+        ]);
+
+        // Assert
+        $responseChange->assertOk();
+        $responseNull->assertOk();
+        $responseOmitted->assertOk();
+        $project->refresh();
+        $this->assertSame('Omitted rate', $project->name);
+        $this->assertSame(10000, $project->billable_rate);
+        $this->assertSame(10000, $timeEntry->refresh()->billable_rate);
+    }
 }

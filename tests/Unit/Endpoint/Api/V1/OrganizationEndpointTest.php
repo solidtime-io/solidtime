@@ -9,6 +9,7 @@ use App\Events\AfterCreateOrganization;
 use App\Http\Controllers\Api\V1\OrganizationController;
 use App\Models\Member;
 use App\Models\Organization;
+use App\Models\TimeEntry;
 use App\Service\BillableRateService;
 use App\Service\IpLookup\IpLookupResponseDto;
 use App\Service\IpLookup\IpLookupServiceContract;
@@ -566,5 +567,86 @@ class OrganizationEndpointTest extends ApiEndpointTestAbstract
         $this->assertDatabaseMissing(Organization::class, [
             'id' => $data->organization->getKey(),
         ]);
+    }
+
+    public function test_organization_update_ignores_billable_rate_and_employee_visibility_if_organization_can_not_use_billable_rates(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'organizations:update',
+        ]);
+        $data->organization->billable_rate = 10000;
+        $data->organization->employees_can_see_billable_rates = false;
+        $data->organization->save();
+        $timeEntry = TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)->create([
+            'billable' => true,
+            'billable_rate' => 10000,
+        ]);
+        $this->actAsOrganizationWithoutBillableRates();
+        Passport::actingAs($data->user);
+
+        // Act
+        $responseRate = $this->putJson(route('api.v1.organizations.update', [$data->organization->getKey()]), [
+            'name' => 'Organization',
+            'billable_rate' => 20000,
+        ]);
+        $responseRemoveRate = $this->putJson(route('api.v1.organizations.update', [$data->organization->getKey()]), [
+            'name' => 'Organization',
+            'billable_rate' => null,
+        ]);
+        $responseVisibility = $this->putJson(route('api.v1.organizations.update', [$data->organization->getKey()]), [
+            'name' => 'Renamed organization',
+            'employees_can_see_billable_rates' => true,
+        ]);
+
+        // Assert
+        $responseRate->assertOk();
+        $responseRemoveRate->assertOk();
+        $responseVisibility->assertOk();
+        $responseVisibility->assertJsonPath('data.employees_can_see_billable_rates', false);
+        $data->organization->refresh();
+        $this->assertSame('Renamed organization', $data->organization->name);
+        $this->assertSame(10000, $data->organization->billable_rate);
+        $this->assertFalse($data->organization->employees_can_see_billable_rates);
+        $this->assertSame(10000, $timeEntry->refresh()->billable_rate);
+    }
+
+    public function test_organization_update_can_remove_employee_visibility_if_organization_can_not_use_billable_rates(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'organizations:update',
+        ]);
+        $data->organization->employees_can_see_billable_rates = true;
+        $data->organization->save();
+        $this->actAsOrganizationWithoutBillableRates();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.organizations.update', [$data->organization->getKey()]), [
+            'name' => 'Organization',
+            'employees_can_see_billable_rates' => false,
+        ]);
+
+        // Assert
+        $response->assertOk();
+        $this->assertFalse($data->organization->refresh()->employees_can_see_billable_rates);
+    }
+
+    public function test_organization_exposes_billable_rate_eligibility_for_api_clients(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'organizations:view',
+        ]);
+        $this->actAsOrganizationWithoutBillableRates();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.organizations.show', [$data->organization->getKey()]));
+
+        // Assert
+        $response->assertOk();
+        $response->assertJsonPath('data.can_use_billable_rates', false);
     }
 }

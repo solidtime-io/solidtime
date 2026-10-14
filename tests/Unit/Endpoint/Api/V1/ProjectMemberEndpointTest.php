@@ -501,4 +501,40 @@ class ProjectMemberEndpointTest extends ApiEndpointTestAbstract
             'id' => $projectMember->getKey(),
         ]);
     }
+
+    public function test_project_member_store_and_update_ignore_billable_rate_if_organization_can_not_use_billable_rates(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'project-members:create',
+            'project-members:update',
+        ]);
+        $project = Project::factory()->forOrganization($data->organization)->create();
+        $otherMember = Member::factory()->forOrganization($data->organization)->forUser(User::factory()->create())->create();
+        $projectMember = ProjectMember::factory()->forProject($project)->forMember($data->member)->create([
+            'billable_rate' => 10000,
+        ]);
+        $this->actAsOrganizationWithoutBillableRates();
+        Passport::actingAs($data->user);
+
+        // Act
+        $responseStore = $this->postJson(route('api.v1.project-members.store', [$data->organization->getKey(), $project->getKey()]), [
+            'member_id' => $otherMember->getKey(),
+            'billable_rate' => 10000,
+        ]);
+        $responseUpdate = $this->putJson(route('api.v1.project-members.update', [$data->organization->getKey(), $projectMember->getKey()]), [
+            'billable_rate' => 20000,
+        ]);
+
+        // Assert
+        $responseStore->assertCreated();
+        $responseStore->assertJsonPath('data.billable_rate', null);
+        $responseUpdate->assertOk();
+        $responseUpdate->assertJsonPath('data.billable_rate', 10000);
+        $this->assertSame(10000, $projectMember->refresh()->billable_rate);
+        $this->assertDatabaseHas(ProjectMember::class, [
+            'member_id' => $otherMember->getKey(),
+            'billable_rate' => null,
+        ]);
+    }
 }
