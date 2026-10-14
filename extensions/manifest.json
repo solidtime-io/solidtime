@@ -1,7 +1,7 @@
 {
     "Billing": {
         "repository": "solidtime-io/extension-billing",
-        "ref": "feature/billable_rate_limits"
+        "ref": "v0.0.10"
     },
     "Services": {
         "repository": "solidtime-io/extension-services",
@@ -9,7 +9,7 @@
     },
     "Invoicing": {
         "repository": "solidtime-io/extension-invoicing",
-        "ref": "feature/upgrade_modal_ui_package"
+        "ref": "v0.0.12"
     },
     "Auditing": {
         "repository": "solidtime-io/extension-auditing",
