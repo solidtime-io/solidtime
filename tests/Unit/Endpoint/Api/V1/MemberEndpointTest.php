@@ -1186,4 +1186,25 @@ class MemberEndpointTest extends ApiEndpointTestAbstract
         $this->assertSame(10000, $timeEntry->refresh()->billable_rate);
     }
 
+    public function test_member_update_does_not_remove_billable_rate_if_organization_can_not_use_billable_rates(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'members:update',
+        ]);
+        $member = Member::factory()->forOrganization($data->organization)->forUser(User::factory()->create())->role(Role::Employee)->create([
+            'billable_rate' => 10000,
+        ]);
+        $this->actAsOrganizationWithoutBillableRates();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.members.update', [$data->organization->getKey(), $member->getKey()]), [
+            'billable_rate' => null,
+        ]);
+
+        // Assert
+        $response->assertOk();
+        $this->assertSame(10000, $member->refresh()->billable_rate);
+    }
 }

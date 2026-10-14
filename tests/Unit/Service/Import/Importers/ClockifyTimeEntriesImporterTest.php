@@ -256,4 +256,26 @@ class ClockifyTimeEntriesImporterTest extends ImporterTestAbstract
         }
         $this->fail();
     }
+
+    public function test_import_drops_billable_flags_and_rates_if_organization_can_not_use_billable_rates(): void
+    {
+        // Arrange
+        $this->actAsOrganizationWithoutBillableRates();
+        $organization = Organization::factory()->create();
+        $timezone = 'Europe/Vienna';
+        $importer = new ClockifyTimeEntriesImporter;
+        $importer->init($organization);
+        $data = Storage::disk('testfiles')->get('clockify_time_entries_import_test_1.csv');
+
+        // Act
+        $importer->importData($data, $timezone);
+
+        // Assert
+        $timeEntries = TimeEntry::query()->whereBelongsTo($organization, 'organization')->get();
+        $this->assertCount(2, $timeEntries);
+        foreach ($timeEntries as $timeEntry) {
+            $this->assertFalse($timeEntry->billable);
+            $this->assertNull($timeEntry->billable_rate);
+        }
+    }
 }

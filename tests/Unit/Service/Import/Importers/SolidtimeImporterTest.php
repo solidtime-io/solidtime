@@ -7,6 +7,7 @@ namespace Tests\Unit\Service\Import\Importers;
 use App\Enums\TimeEntryType;
 use App\Jobs\RecalculateSpentTimeForProject;
 use App\Jobs\RecalculateSpentTimeForTask;
+use App\Models\Member;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Models\ProjectMember;
@@ -111,6 +112,13 @@ class SolidtimeImporterTest extends ImporterTestAbstract
         // Arrange
         $this->actAsOrganizationWithoutBillableRates();
         $zipPath = $this->createTestZip('solidtime_import_test_1');
+        // Note: The member of the test file has no billable rate, so one is added to the zip
+        $zip = new ZipArchive;
+        $zip->open($zipPath);
+        $members = str_replace(',ee5a8cd6-312f-4ae6-b044-e2014f09ecc2,,admin,', ',ee5a8cd6-312f-4ae6-b044-e2014f09ecc2,10003,admin,', $zip->getFromName('members.csv'), $replacements);
+        $this->assertSame(1, $replacements);
+        $zip->addFromString('members.csv', $members);
+        $zip->close();
         $timezone = 'Europe/Vienna';
         $organization = Organization::factory()->create();
         $importer = new SolidtimeImporter;
@@ -127,6 +135,9 @@ class SolidtimeImporterTest extends ImporterTestAbstract
         // Assert
         $this->assertSame(3, Project::query()->whereBelongsTo($organization, 'organization')->whereNull('billable_rate')->where('is_billable', '=', false)->count());
         $this->assertSame(1, ProjectMember::query()->whereBelongsToOrganization($organization)->whereNull('billable_rate')->count());
+        $members = Member::query()->whereBelongsTo($organization, 'organization')->get();
+        $this->assertCount(1, $members);
+        $this->assertNull($members->first()->billable_rate);
         $timeEntries = TimeEntry::query()->whereBelongsTo($organization, 'organization')->get();
         $this->assertCount(2, $timeEntries);
         foreach ($timeEntries as $timeEntry) {

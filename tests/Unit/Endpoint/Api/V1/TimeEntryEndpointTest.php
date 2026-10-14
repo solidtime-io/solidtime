@@ -6253,6 +6253,73 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         $this->assertSame('Mass update', $nonBillableTimeEntry->description);
     }
 
+    public function test_time_entry_update_multiple_can_remove_billable_flag_if_organization_can_not_use_billable_rates(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:update:own',
+        ]);
+        $timeEntry = TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)->billable()->create();
+        $this->actAsOrganizationWithoutBillableRates();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->patchJson(route('api.v1.time-entries.update-multiple', [$data->organization->getKey()]), [
+            'ids' => [$timeEntry->getKey()],
+            'changes' => [
+                'billable' => false,
+            ],
+        ]);
+
+        // Assert
+        $response->assertOk();
+        $response->assertExactJson([
+            'success' => [$timeEntry->getKey()],
+            'error' => [],
+        ]);
+        $timeEntry->refresh();
+        $this->assertFalse($timeEntry->billable);
+        $this->assertNull($timeEntry->billable_rate);
+    }
+
+    public function test_time_entry_update_with_project_change_does_not_make_time_entry_billable_if_organization_can_not_use_billable_rates(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:update:own',
+        ]);
+        $project = Project::factory()->forOrganization($data->organization)->isPublic()->billable(10000)->create();
+        $otherProject = Project::factory()->forOrganization($data->organization)->isPublic()->billable(20000)->create();
+        $billableTimeEntry = TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)->forProject($project)->billable()
+            ->startWithDuration(Carbon::now()->subHours(5), 3600)->create();
+        $nonBillableTimeEntry = TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)->notBillable()
+            ->startWithDuration(Carbon::now()->subHours(3), 3600)->create();
+        $this->actAsOrganizationWithoutBillableRates();
+        Passport::actingAs($data->user);
+
+        // Act
+        $responseBillable = $this->putJson(route('api.v1.time-entries.update', [$data->organization->getKey(), $billableTimeEntry->getKey()]), [
+            'project_id' => $otherProject->getKey(),
+            'billable' => true,
+        ]);
+        $responseNonBillable = $this->putJson(route('api.v1.time-entries.update', [$data->organization->getKey(), $nonBillableTimeEntry->getKey()]), [
+            'project_id' => $otherProject->getKey(),
+            'billable' => true,
+        ]);
+
+        // Assert
+        $responseBillable->assertOk();
+        $responseNonBillable->assertOk();
+        $billableTimeEntry->refresh();
+        $this->assertSame($otherProject->getKey(), $billableTimeEntry->project_id);
+        $this->assertTrue($billableTimeEntry->billable);
+        $this->assertSame(20000, $billableTimeEntry->billable_rate);
+        $nonBillableTimeEntry->refresh();
+        $this->assertSame($otherProject->getKey(), $nonBillableTimeEntry->project_id);
+        $this->assertFalse($nonBillableTimeEntry->billable);
+        $this->assertNull($nonBillableTimeEntry->billable_rate);
+    }
+
     public function test_time_entry_store_does_not_check_billable_rates_for_non_billable_time_entry(): void
     {
         // Arrange

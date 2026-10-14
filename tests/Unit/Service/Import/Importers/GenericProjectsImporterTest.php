@@ -82,4 +82,26 @@ class GenericProjectsImporterTest extends ImporterTestAbstract
         $this->assertSame(3, $report->projectsCreated);
         $this->assertSame(2, $report->clientsCreated);
     }
+
+    public function test_import_drops_billable_flags_and_rates_if_organization_can_not_use_billable_rates(): void
+    {
+        // Arrange
+        $this->actAsOrganizationWithoutBillableRates();
+        $organization = Organization::factory()->create();
+        $timezone = 'Europe/Vienna';
+        $importer = new GenericProjectsImporter;
+        $importer->init($organization);
+        $data = Storage::disk('testfiles')->get('generic_projects_import_test_1.csv');
+
+        // Act
+        $importer->importData($data, $timezone);
+
+        // Assert
+        $projects = Project::query()->whereBelongsTo($organization, 'organization')->get();
+        $this->assertCount(3, $projects);
+        foreach ($projects as $project) {
+            $this->assertFalse($project->is_billable);
+            $this->assertNull($project->billable_rate);
+        }
+    }
 }
