@@ -107,7 +107,7 @@ class HarvestTimeEntriesImporter extends DefaultImporter
                 $timeEntry->task_id = $taskId;
                 $timeEntry->project_id = $projectId;
                 $timeEntry->client_id = $clientId;
-                $timeEntry->organization()->associate($this->organization);
+                $timeEntry->organization_id = $this->organization->id;
                 if (strlen($record['Notes']) > 5000) {
                     throw new ImportException('Time entry note is too long');
                 }
@@ -115,7 +115,7 @@ class HarvestTimeEntriesImporter extends DefaultImporter
                 if (! in_array($record['Billable?'], ['Yes', 'No'], true)) {
                     throw new ImportException('Invalid billable value');
                 }
-                $timeEntry->billable = $record['Billable?'] === 'Yes';
+                $timeEntry->billable = $this->canUseBillableRates && $record['Billable?'] === 'Yes';
                 $timeEntry->tags = [];
                 $timeEntry->is_imported = true;
 

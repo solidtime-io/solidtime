@@ -647,6 +647,10 @@ class TimeEntryController extends Controller
 
         $timeEntry = new TimeEntry;
         $timeEntry->fill($request->validated());
+        // Organizations that can not use billable rates can not create billable time entries
+        if (! $this->canUseBillableRates($organization)) {
+            $timeEntry->billable = false;
+        }
         $timeEntry->client()->associate($client);
         $timeEntry->user_id = $member->user_id;
         $timeEntry->description = $request->input('description') ?? '';
@@ -714,7 +718,12 @@ class TimeEntryController extends Controller
             $task = $request->input('task_id') !== null ? Task::findOrFail((string) $request->input('task_id')) : null;
         }
 
+        $wasBillable = $timeEntry->billable;
         $timeEntry->fill($request->validated());
+        // Organizations that can not use billable rates can keep or remove the billable flag, but not set it
+        if (! $wasBillable && ! $this->canUseBillableRates($organization)) {
+            $timeEntry->billable = false;
+        }
         if ($newMember !== null) {
             $timeEntry->member()->associate($newMember);
             $timeEntry->user()->associate($newMember->user);
@@ -772,6 +781,7 @@ class TimeEntryController extends Controller
             ->get();
 
         $changes = $request->validated('changes');
+        $canUseBillableRates = $this->canUseBillableRates($organization);
 
         if ($request->has('changes.description')) {
             $changes['description'] = $request->input('changes.description') ?? '';
@@ -837,8 +847,13 @@ class TimeEntryController extends Controller
             }
             $oldProject = $timeEntry->project;
             $oldTask = $timeEntry->task;
+            $wasBillable = $timeEntry->billable;
 
             $timeEntry->fill($changes);
+            // Organizations that can not use billable rates can keep or remove the billable flag, but not set it
+            if (! $wasBillable && ! $canUseBillableRates) {
+                $timeEntry->billable = false;
+            }
             if ($newMember !== null) {
                 $timeEntry->member()->associate($newMember);
                 $timeEntry->user_id = $newMember->user_id;

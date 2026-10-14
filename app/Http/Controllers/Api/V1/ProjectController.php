@@ -96,11 +96,12 @@ class ProjectController extends Controller
     public function store(Organization $organization, ProjectStoreRequest $request): JsonResource
     {
         $this->checkPermission($organization, 'projects:create');
+        $canUseBillableRates = $this->canUseBillableRates($organization);
         $project = new Project;
         $project->name = $request->input('name');
         $project->color = $request->input('color');
-        $project->is_billable = (bool) $request->input('is_billable');
-        $project->billable_rate = $request->getBillableRate();
+        $project->is_billable = $canUseBillableRates && $request->boolean('is_billable');
+        $project->billable_rate = $canUseBillableRates ? $request->getBillableRate() : null;
         $project->client_id = $request->input('client_id');
         $project->is_public = $request->getIsPublic();
         if ($this->canAccessPremiumFeatures($organization) && $request->has('estimated_time')) {
@@ -122,9 +123,13 @@ class ProjectController extends Controller
     public function update(Organization $organization, Project $project, ProjectUpdateRequest $request, BillableRateService $billableRateService): JsonResource
     {
         $this->checkPermission($organization, 'projects:update', $project);
+        $canUseBillableRates = $this->canUseBillableRates($organization);
         $project->name = $request->input('name');
         $project->color = $request->input('color');
-        $project->is_billable = (bool) $request->input('is_billable');
+        // Organizations that can not use billable rates can keep or remove the billable flag, but not set it
+        if ($canUseBillableRates || ! $request->boolean('is_billable')) {
+            $project->is_billable = $request->boolean('is_billable');
+        }
         if ($request->has('is_archived')) {
             $project->archived_at = $request->getIsArchived() ? Carbon::now() : null;
         }
@@ -136,7 +141,7 @@ class ProjectController extends Controller
         }
         $oldBillableRate = $project->billable_rate;
         $clientIdChanged = false;
-        if ($request->has('billable_rate')) {
+        if ($request->has('billable_rate') && $canUseBillableRates) {
             $project->billable_rate = $request->getBillableRate();
         }
         if ($project->client_id !== $request->input('client_id')) {

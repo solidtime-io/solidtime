@@ -82,7 +82,7 @@ class MemberController extends Controller
         $this->checkPermission($organization, 'members:update', $member);
 
         $oldBillableRate = $member->billable_rate;
-        if ($request->has('billable_rate')) {
+        if ($request->has('billable_rate') && $this->canUseBillableRates($organization)) {
             $member->billable_rate = $request->getBillableRate();
         }
         if ($request->has('role') && $member->role !== $request->getRole()->value) {

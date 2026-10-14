@@ -73,7 +73,7 @@ class ProjectMemberController extends Controller
         }
 
         $projectMember = new ProjectMember;
-        $projectMember->billable_rate = $request->getBillableRate();
+        $projectMember->billable_rate = $this->canUseBillableRates($organization) ? $request->getBillableRate() : null;
         $projectMember->member()->associate($member);
         $projectMember->user()->associate($member->user);
         $projectMember->project()->associate($project);
@@ -97,7 +97,9 @@ class ProjectMemberController extends Controller
     {
         $this->checkPermission($organization, 'project-members:update', projectMember: $projectMember);
         $oldBillableRate = $projectMember->billable_rate;
-        $projectMember->billable_rate = $request->getBillableRate();
+        if ($this->canUseBillableRates($organization)) {
+            $projectMember->billable_rate = $request->getBillableRate();
+        }
         $projectMember->save();
 
         if ($oldBillableRate !== $projectMember->billable_rate) {

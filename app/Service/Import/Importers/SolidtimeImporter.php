@@ -260,7 +260,7 @@ class SolidtimeImporter extends DefaultImporter
                 $timeEntry->task_id = $taskId;
                 $timeEntry->project_id = $projectId;
                 $timeEntry->client_id = $clientId;
-                $timeEntry->organization()->associate($this->organization);
+                $timeEntry->organization_id = $this->organization->id;
                 if (strlen($timeEntryRow['description']) > 5000) {
                     throw new ImportException('Time entry description is too long');
                 }
@@ -268,7 +268,7 @@ class SolidtimeImporter extends DefaultImporter
                 if (! in_array($timeEntryRow['billable'], ['true', 'false'], true)) {
                     throw new ImportException('Invalid billable value');
                 }
-                $timeEntry->billable = $timeEntryRow['billable'] === 'true';
+                $timeEntry->billable = $this->canUseBillableRates && $timeEntryRow['billable'] === 'true';
                 // The type column does not exist in old exports
                 if (($timeEntryRow['type'] ?? '') !== '') {
                     $type = TimeEntryType::tryFrom($timeEntryRow['type']);
