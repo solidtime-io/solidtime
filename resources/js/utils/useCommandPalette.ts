@@ -22,6 +22,8 @@ import {
     canCreateInvitations,
 } from '@/utils/permissions';
 import { isBillingActivated, isInvoicingActivated } from '@/utils/billing';
+import { useQueryClient } from '@tanstack/vue-query';
+import { fetchCanCreateMoreGoals } from '@/utils/useGoalsQuery';
 import { useTimeEntriesInfiniteQuery } from '@/utils/useTimeEntriesInfiniteQuery';
 import { useProjectsQuery } from '@/utils/useProjectsQuery';
 import { useClientsQuery } from '@/utils/useClientsQuery';
@@ -66,6 +68,7 @@ const showCreateClientModal = ref(false);
 const showCreateTaskModal = ref(false);
 const showCreateTagModal = ref(false);
 const showCreateGoalModal = ref(false);
+const showGoalUpgradeModal = ref(false);
 const showInviteMemberModal = ref(false);
 const showCreateTimeEntryModal = ref(false);
 
@@ -103,6 +106,7 @@ const ENTITY_ICONS: Record<string, typeof FolderIcon> = {
 };
 
 export function useCommandPalette() {
+    const queryClient = useQueryClient();
     const currentTimeEntryStore = useCurrentTimeEntryStore();
     const { currentTimeEntry, isActive } = storeToRefs(currentTimeEntryStore);
     const { setActiveState, updateTimer } = currentTimeEntryStore;
@@ -240,9 +244,13 @@ export function useCommandPalette() {
         showCreateTagModal.value = true;
     }
 
-    function openCreateGoalModal() {
+    async function openCreateGoalModal() {
         closePaletteAfterAction();
-        showCreateGoalModal.value = true;
+        if (await fetchCanCreateMoreGoals(queryClient)) {
+            showCreateGoalModal.value = true;
+        } else {
+            showGoalUpgradeModal.value = true;
+        }
     }
 
     function openInviteMemberModal() {
@@ -525,6 +533,7 @@ export function useCommandPalette() {
         showCreateTaskModal,
         showCreateTagModal,
         showCreateGoalModal,
+        showGoalUpgradeModal,
         showInviteMemberModal,
         showCreateTimeEntryModal,
         showProjectSelector,

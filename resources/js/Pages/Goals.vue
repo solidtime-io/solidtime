@@ -2,19 +2,15 @@
 import MainContainer from '@/packages/ui/src/MainContainer.vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Target } from '@lucide/vue';
-import { PlusIcon } from '@heroicons/vue/16/solid';
-import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
 import { computed, ref } from 'vue';
 import GoalTable from '@/Components/Common/Goal/GoalTable.vue';
-import GoalCreateModal from '@/Components/Common/Goal/GoalCreateModal.vue';
+import GoalCreateButton from '@/Components/Common/Goal/GoalCreateButton.vue';
 import PageTitle from '@/Components/Common/PageTitle.vue';
-import UpgradeBadge from '@/packages/ui/src/UpgradeBadge.vue';
 import { canCreateGoals } from '@/utils/permissions';
 import { canCreateMoreGoals } from '@/utils/billing';
 import { useGoalsQuery } from '@/utils/useGoalsQuery';
 import { TabBar, TabBarItem } from '@/packages/ui/src';
 
-const showCreateGoalModal = ref(false);
 const activeTab = ref('active');
 const showArchived = computed(() => activeTab.value === 'archived');
 
@@ -41,16 +37,9 @@ const canCreateMore = computed(() => canCreateMoreGoals(goals.value.length));
                     </TabBarItem>
                 </TabBar>
             </div>
-            <div class="flex items-center space-x-3">
-                <UpgradeBadge v-if="canCreateGoals() && !canCreateMore" feature="goals" />
-                <SecondaryButton
-                    v-if="canCreateGoals() && canCreateMore"
-                    :icon="PlusIcon"
-                    @click="showCreateGoalModal = true"
-                    >Create Goal
-                </SecondaryButton>
-            </div>
-            <GoalCreateModal v-model:show="showCreateGoalModal"></GoalCreateModal>
+            <GoalCreateButton
+                v-if="canCreateGoals()"
+                :can-create-more-goals="canCreateMore"></GoalCreateButton>
         </MainContainer>
         <GoalTable
             :goals="visibleGoals"
