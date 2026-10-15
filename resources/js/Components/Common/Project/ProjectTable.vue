@@ -10,13 +10,21 @@ import Pagination from '@/packages/ui/src/Pagination.vue';
 import LoadingSpinner from '@/packages/ui/src/LoadingSpinner.vue';
 
 export type SortColumn =
-    'name' | 'client_name' | 'spent_time' | 'progress' | 'billable_rate' | 'status' | 'visibility';
+    | 'name'
+    | 'tasks'
+    | 'client_name'
+    | 'spent_time'
+    | 'progress'
+    | 'billable_rate'
+    | 'status'
+    | 'visibility';
 export type { SortDirection } from '@/utils/useSortableTable';
 import { canCreateProjects } from '@/utils/permissions';
 import type { CreateProjectBody, Project, Client, CreateClientBody } from '@/packages/api/src';
 import { useProjectsStore } from '@/utils/useProjects';
 import { useClientsStore } from '@/utils/useClients';
 import { useClientsQuery } from '@/utils/useClientsQuery';
+import { useTasksQuery } from '@/utils/useTasksQuery';
 import { getOrganizationCurrencyString } from '@/utils/money';
 import { isAllowedToPerformPremiumAction } from '@/utils/billing';
 import { useOrganizationQuery } from '@/utils/useOrganizationQuery';
@@ -56,6 +64,16 @@ const clientNameMap = computed(() => {
     return map;
 });
 
+const { tasks } = useTasksQuery();
+
+const taskCountMap = computed(() => {
+    const map = new Map<string, number>();
+    tasks.value.forEach((task) => {
+        map.set(task.project_id, (map.get(task.project_id) ?? 0) + 1);
+    });
+    return map;
+});
+
 // Define column accessors for sorting.
 // Numeric columns use sortDescFirst so that the first click (chevron down) sorts highest-first,
 // while text columns default to ascending (A-Z) on first click (chevron down).
@@ -63,6 +81,11 @@ const columns = computed<SortableColumnDef<Project, SortColumn>[]>(() => [
     {
         id: 'name',
         accessorFn: (row: Project) => row.name.toLowerCase(),
+    },
+    {
+        id: 'tasks',
+        sortDescFirst: true,
+        accessorFn: (row: Project) => taskCountMap.value.get(row.id) ?? 0,
     },
     {
         id: 'client_name',
@@ -161,7 +184,7 @@ async function createClient(client: CreateClientBody): Promise<Client | undefine
 }
 
 const gridTemplate = computed(() => {
-    return `grid-template-columns: minmax(300px, 1fr) minmax(150px, auto) minmax(140px, auto) minmax(130px, auto) ${props.showBillableRate ? 'minmax(130px, auto)' : ''} minmax(120px, auto) minmax(120px, auto) 80px;`;
+    return `grid-template-columns: minmax(300px, 1fr) minmax(100px, auto) minmax(150px, auto) minmax(140px, auto) minmax(130px, auto) ${props.showBillableRate ? 'minmax(130px, auto)' : ''} minmax(120px, auto) minmax(120px, auto) 80px;`;
 });
 </script>
 
