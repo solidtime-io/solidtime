@@ -30,11 +30,16 @@ If you do not want to self-host solidtime or try it out you can sign up for [sol
 
 ## Issues & Feature Requests
 
-If you find any **bugs in solidtime**, please feel free to [**open an issue**](https://github.com/solidtime-io/solidtime/issues/new) in this repository, with instructions on how to reproduce the bug. 
-If you have a **feature request**, please [**create a discussion**](https://github.com/solidtime-io/solidtime/discussions/new?category=feature-requests) in this repository.
+If you 
+* find any **bugs in solidtime**, please feel free to [**open an issue**](https://github.com/solidtime-io/solidtime/issues/new) in this repository, with instructions on how to reproduce the bug. 
+* have a **feature request**, please [**create a discussion**](https://github.com/solidtime-io/solidtime/discussions/new?category=feature-requests) in this repository.
 
-**Do not use AI-generated text in issues, discussions and PR descriptions.**
-We are human, so please write in natural language in your issues, discussions, and PR descriptions. Don't be a meatproxy. We will ban people who repeatedly violate this rule from further communication on our repositories.
+
+> **Do not use AI-generated text in issues, discussions and PR descriptions.**
+>
+> We are human, so please write in natural language in your issues, discussions, and PR descriptions.
+> Don't be a meatproxy. We will ban people who repeatedly violate this rule from further communication on our repositories.
+
 
 ## Contributing
 
