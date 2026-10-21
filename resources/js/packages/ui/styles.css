@@ -66,13 +66,13 @@
 :root.light {
     --color-bg-primary: #ffffff;
     --color-bg-secondary: #fcfcfc;
-    --color-bg-tertiary: #eeeeef;
-    --color-bg-quaternary: #e1e1e3;
+    --color-bg-tertiary: #eeeeee;
+    --color-bg-quaternary: #e1e1e1;
     --color-bg-background: #f5f5f5;
-    --color-text-primary: #18181b;
-    --color-text-secondary: #3f3f46;
-    --color-text-tertiary: #57575c;
-    --color-text-quaternary: #a1a1aa;
+    --color-text-primary: #181818;
+    --color-text-secondary: #404040;
+    --color-text-tertiary: #575757;
+    --color-text-quaternary: #a2a2a2;
     --color-border-primary: #e7e7e7;
     --color-border-secondary: #e5e5e5;
     --color-border-tertiary: #dfdfdf;
