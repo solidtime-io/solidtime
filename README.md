@@ -7,6 +7,8 @@
 
 ![Screenshot of the solidtime application with header: solidtime - The modern Open-Source Time Tracker](docs/solidtime-banner.png "solidtime Banner")
 
+[![Deploy to Railyard](https://app.railyard.run/deploy/badge)](https://app.railyard.run/deploy?repo=https://github.com/solidtime-io/solidtime)
+
 solidtime is a modern open-source time tracking application for Freelancers and Agencies.
 
 ## Features
