@@ -35,6 +35,12 @@ pgsql_test, gotenberg, mailpit, minio.
 
 ## Verification
 
-- `go build ./... && go test ./... && golangci-lint run` before every push.
+- `just verify` (= `go build ./...`, `go test`, `golangci-lint run`) before
+  every push. `GOFLAGS=-mod=mod` is mandatory: PHP's composer `vendor/` dir
+  would otherwise trigger Go vendor mode. Set via `.envrc`/justfile/CI until
+  the PHP tree is deleted in Phase 9.
+- Dev deps: `just dev` (docker-compose.dev.yml). `just spa` rebuilds the
+  embedded SPA bundle (npm build → `internal/web/dist`). `just migrate`,
+  `just seed`, `just sqlc`.
 - API parity = diff generated spec vs committed `openapi.json` snapshot.
 - Upstream runs locally via `docker compose` — it is the behavior oracle.

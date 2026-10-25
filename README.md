@@ -1,4 +1,29 @@
-# solidtime - The modern Open-Source TimeTracker
+# tock — solidtime, rebuilt in Go
+
+This is a fork of [solidtime](https://github.com/solidtime-io/solidtime) with
+the PHP/Laravel backend being replaced by a single Go binary (`tock`). The PHP
+app in `app/`, `routes/`, `config/`, `database/` remains as the executable
+spec. See [PLAN.md](PLAN.md) and [AGENTS.md](AGENTS.md).
+
+## Development (Go)
+
+```sh
+just dev       # postgres, postgres-test, gotenberg, mailpit, minio
+just spa       # build the Vue SPA and stage it for embedding
+just build     # compile bin/tock
+just migrate   # apply schema (baseline mirrors a migrated upstream DB)
+just seed      # demo data: OAuth clients + admin@example.com / password
+just serve     # http://localhost:8080 — API + embedded SPA
+just verify    # build + test + lint (pre-push gate)
+```
+
+`tock serve` embeds the Vite build from `public/build`; run `just spa` first
+for the frontend shell. Environment via `.envrc` (`direnv allow`).
+
+---
+
+# solidtime - The modern Open-Source TimeTracker (upstream reference)
+
 
 [![GitHub License](https://img.shields.io/github/license/solidtime-io/solidtime?style=flat-square)](https://github.com/solidtime-io/solidtime/blob/main/LICENSE.md)
 [![Codecov](https://img.shields.io/codecov/c/github/solidtime-io/solidtime?style=flat-square&logo=codecov)](https://codecov.io/gh/solidtime-io/solidtime)

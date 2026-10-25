@@ -1,0 +1,83 @@
+# tock development dependencies. The upstream PHP app stays on the root
+# docker-compose.yml as the behavior oracle; this stack is only the services
+# the Go binary talks to.
+name: tock
+
+services:
+    pgsql:
+        image: postgres:16-alpine
+        ports:
+            - '127.0.0.1:54329:5432'
+        environment:
+            POSTGRES_DB: tock
+            POSTGRES_USER: tock
+            POSTGRES_PASSWORD: tock
+        volumes:
+            - tock-pgsql:/var/lib/postgresql/data
+        healthcheck:
+            test: ['CMD', 'pg_isready', '-q', '-d', 'tock', '-U', 'tock']
+            retries: 5
+            timeout: 5s
+
+    pgsql_test:
+        image: postgres:16-alpine
+        ports:
+            - '127.0.0.1:54330:5432'
+        environment:
+            POSTGRES_DB: tock_test
+            POSTGRES_USER: tock
+            POSTGRES_PASSWORD: tock
+        tmpfs:
+            - /var/lib/postgresql/data
+        healthcheck:
+            test: ['CMD', 'pg_isready', '-q', '-d', 'tock_test', '-U', 'tock']
+            retries: 5
+            timeout: 5s
+
+    gotenberg:
+        image: gotenberg/gotenberg:8
+        ports:
+            - '127.0.0.1:3100:3000'
+        healthcheck:
+            test: ['CMD', 'curl', '--silent', '--fail', 'http://localhost:3000/health']
+            retries: 5
+            timeout: 5s
+
+    mailpit:
+        image: axllent/mailpit:latest
+        ports:
+            - '127.0.0.1:10025:1025' # SMTP
+            - '127.0.0.1:8025:8025'  # web UI
+
+    minio:
+        image: minio/minio:latest
+        command: minio server /data --console-address ":9001"
+        ports:
+            - '127.0.0.1:9000:9000' # S3 API
+            - '127.0.0.1:9001:9001' # console
+        environment:
+            MINIO_ROOT_USER: sail
+            MINIO_ROOT_PASSWORD: password
+        volumes:
+            - tock-minio:/data
+        healthcheck:
+            test: ['CMD', 'mc', 'ready', 'local']
+            interval: 5s
+            timeout: 5s
+            retries: 5
+
+    minio-init:
+        image: minio/mc:latest
+        depends_on:
+            minio:
+                condition: service_healthy
+        entrypoint: >
+            /bin/sh -c "
+            mc alias set local http://minio:9000 sail password &&
+            mc mb --ignore-existing local/local &&
+            mc anonymous set download local/local;
+            "
+
+volumes:
+    tock-pgsql:
+    tock-minio:

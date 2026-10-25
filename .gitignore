@@ -45,3 +45,10 @@ yarn-error.log
 /config/caddy
 /config/composer
 /config/psysh
+
+# tock Go build
+/bin/
+/tock
+internal/web/dist/*
+!internal/web/dist/
+!internal/web/dist/.gitkeep

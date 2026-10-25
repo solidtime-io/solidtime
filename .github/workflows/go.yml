@@ -1,0 +1,143 @@
+name: Go
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '**.go'
+      - 'go.mod'
+      - 'go.sum'
+      - 'db/**'
+      - 'internal/web/dist/**'
+      - 'sqlc.yaml'
+      - '.github/workflows/go.yml'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'vite.config.js'
+      - 'resources/js/**'
+      - 'resources/css/**'
+      - 'composer.json'
+      - 'composer.lock'
+  pull_request:
+    paths:
+      - '**.go'
+      - 'go.mod'
+      - 'go.sum'
+      - 'db/**'
+      - 'internal/web/dist/**'
+      - 'sqlc.yaml'
+      - '.github/workflows/go.yml'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'vite.config.js'
+      - 'resources/js/**'
+      - 'resources/css/**'
+      - 'composer.json'
+      - 'composer.lock'
+
+permissions:
+  contents: read
+
+env:
+  # PHP composer vendor/ would trigger Go vendor mode — disable until Phase 9.
+  GOFLAGS: -mod=mod
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: tock_test
+          POSTGRES_USER: tock
+          POSTGRES_PASSWORD: tock
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -q -d tock_test -U tock"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      # vendor/ is needed for the vite build (imports ../../vendor/tightenco/ziggy)
+      - name: Setup PHP (for Ziggy vendor files)
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: intl, zip
+          coverage: none
+
+      - name: Composer install (Ziggy for the SPA build)
+        run: composer install -n --prefer-dist --ignore-platform-reqs
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22.x'
+          cache: npm
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Build SPA
+        run: npm run build
+
+      - name: Stage embedded assets
+        run: |
+          rm -rf internal/web/dist
+          mkdir -p internal/web/dist
+          cp -r public/build internal/web/dist/build
+          cp -r public/favicons public/images public/fonts public/desktop-version internal/web/dist/
+          cp public/favicon.ico public/robots.txt public/security.txt internal/web/dist/
+
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: go.sum
+
+      - name: sqlc codegen check
+        uses: sqlc-dev/setup-sqlc@v4
+        with:
+          sqlc-version: '1.31.1'
+      - run: sqlc generate && git diff --exit-code internal/db
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v9
+        with:
+          version: latest
+
+      - name: Build
+        run: go build -o bin/tock ./cmd/tock
+
+      - name: Migrations apply
+        run: ./bin/tock migrate
+        env:
+          TOCK_DB_DSN: postgres://tock:tock@127.0.0.1:5432/tock_test?sslmode=disable
+
+      - name: Seed applies
+        run: ./bin/tock seed
+        env:
+          TOCK_DB_DSN: postgres://tock:tock@127.0.0.1:5432/tock_test?sslmode=disable
+
+      - name: Test
+        run: go test $(go list ./... | grep -v /node_modules/)
+        env:
+          TOCK_TEST_DSN: postgres://tock:tock@127.0.0.1:5432/tock_test?sslmode=disable
+
+      - name: Smoke — serve answers 401 on /api/v1/users/me
+        run: |
+          ./bin/tock serve --no-jobs -addr 127.0.0.1:18080 &
+          for i in $(seq 1 30); do curl -sf -o /dev/null http://127.0.0.1:18080/login && break; sleep 1; done
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:18080/api/v1/users/me)" = 401
+          curl -sf http://127.0.0.1:18080/login | grep -q 'id="app"'
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:18080/api/unknown)" = 404
+        env:
+          TOCK_DB_DSN: postgres://tock:tock@127.0.0.1:5432/tock_test?sslmode=disable
