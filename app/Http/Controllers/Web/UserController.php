@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Web;
 
 use App\Models\User;
+use App\Service\AuthenticationContract;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -12,7 +13,7 @@ use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
-    public function verifyEmailChange(Request $request, User $user): RedirectResponse
+    public function verifyEmailChange(Request $request, User $user, AuthenticationContract $authentication): RedirectResponse
     {
         if ($request->user()?->getAuthIdentifier() !== $user->getKey()) {
             abort(403);
@@ -27,6 +28,16 @@ class UserController extends Controller
 
         if ($user->pending_email !== $email) {
             abort(403);
+        }
+
+        // A change requested before the email was locked can no longer be confirmed.
+        if (! $authentication->canChangeEmail($user)) {
+            $user->pending_email = null;
+            $user->save();
+
+            return redirect(route('dashboard'))
+                ->with('bannerStyle', 'danger')
+                ->with('bannerText', AuthenticationContract::EMAIL_CHANGE_LOCKED_MESSAGE);
         }
 
         $emailAlreadyInUse = User::query()

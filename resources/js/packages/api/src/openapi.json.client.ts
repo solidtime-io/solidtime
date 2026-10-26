@@ -37,7 +37,11 @@ const ClientStoreRequest = z.object({ name: z.string().min(1).max(255) }).passth
 const ClientUpdateRequest = z
     .object({ name: z.string().min(1).max(255), is_archived: z.boolean().optional() })
     .passthrough();
-const DestroyWithPasswordRequest = z.object({ password: z.string() }).passthrough();
+const DestroyWithPasswordRequest = z
+    .object({
+        password: z.string().nullish(),
+    })
+    .passthrough();
 const ImportRequest = z.object({ type: z.string(), data: z.string() }).passthrough();
 const InvitationResource = z
     .object({ id: z.string(), email: z.string(), role: z.string() })
@@ -800,6 +804,8 @@ const UserResource = z
         timezone: z.string(),
         week_start: Weekday,
         send_time_entry_still_running_email: z.boolean(),
+        confirms_with_password: z.boolean(),
+        can_change_email: z.boolean(),
     })
     .passthrough();
 const UserUpdateRequest = z

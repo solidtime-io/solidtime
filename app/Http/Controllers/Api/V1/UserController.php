@@ -13,6 +13,7 @@ use App\Http\Resources\V1\User\UserResource;
 use App\Mail\VerifyUpdatedEmailMail;
 use App\Models\Organization;
 use App\Models\User;
+use App\Service\AuthenticationContract;
 use App\Service\DeletionService;
 use App\Service\UserService;
 use App\Support\Base64File;
@@ -21,6 +22,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class UserController extends Controller
 {
@@ -167,8 +169,9 @@ class UserController extends Controller
      *
      * @throws AuthorizationException Thrown when the authenticated user does not match the user whose email is pending verification.
      * @throws UserResendEmailVerificationNoPendingEmailApiException Thrown when the user does not have a pending email to verify.
+     * @throws ValidationException Thrown when the user's email is locked, e.g. managed by their organization's identity provider.
      */
-    public function resendEmailVerification(User $user): JsonResponse
+    public function resendEmailVerification(User $user, AuthenticationContract $authentication): JsonResponse
     {
         if ($user->getKey() !== $this->user()->getKey()) {
             throw new AuthorizationException;
@@ -176,6 +179,11 @@ class UserController extends Controller
 
         if ($user->pending_email === null) {
             throw new UserResendEmailVerificationNoPendingEmailApiException;
+        }
+
+        // A change requested before the email was locked can no longer be confirmed.
+        if (! $authentication->canChangeEmail($user)) {
+            throw ValidationException::withMessages(['email' => AuthenticationContract::EMAIL_CHANGE_LOCKED_MESSAGE]);
         }
 
         Mail::to($user->pending_email)
