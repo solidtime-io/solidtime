@@ -14,6 +14,7 @@ const end = defineModel<string>('end', { required: true });
 defineProps<{
     showHint?: boolean;
     datePickerSize?: 'sm';
+    durationAnchor?: 'start' | 'end';
 }>();
 
 // Moving the start to or past the end drags the end along, preserving the
@@ -36,6 +37,7 @@ watch(start, (value, oldValue) => {
                 <DurationHumanInput
                     v-model:start="start"
                     v-model:end="end"
+                    :anchor="durationAnchor"
                     name="Duration"></DurationHumanInput>
                 <div v-if="showHint" class="text-sm flex space-x-1">
                     <InformationCircleIcon
