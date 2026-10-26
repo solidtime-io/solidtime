@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Models\User;
+use App\Service\AuthenticationContract;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Mockery\MockInterface;
 use Tests\TestCase;
 
 class UpdatePasswordTest extends TestCase
@@ -54,5 +56,42 @@ class UpdatePasswordTest extends TestCase
         $response->assertSessionHasErrors();
 
         $this->assertTrue(Hash::check('password', $user->fresh()->password));
+    }
+
+    public function test_password_cannot_be_updated_by_users_who_may_not_log_in_with_it(): void
+    {
+        // Arrange
+        $user = User::factory()->create();
+        $this->partialMock(AuthenticationContract::class, function (MockInterface $mock): void {
+            $mock->shouldReceive('isPasswordLoginAllowed')->andReturn(false);
+        });
+
+        // Act
+        $response = $this->actingAs($user)->put('/user/password', [
+            'current_password' => 'password',
+            'password' => 'new-password',
+            'password_confirmation' => 'new-password',
+        ]);
+
+        // Assert
+        $response->assertSessionHasErrorsIn('updatePassword', ['current_password']);
+        $this->assertTrue(Hash::check('password', $user->fresh()->password));
+    }
+
+    public function test_password_cannot_be_set_by_users_without_a_password(): void
+    {
+        // Arrange
+        $user = User::factory()->create(['password' => null]);
+
+        // Act
+        $response = $this->actingAs($user)->put('/user/password', [
+            'current_password' => '',
+            'password' => 'new-password',
+            'password_confirmation' => 'new-password',
+        ]);
+
+        // Assert
+        $response->assertSessionHasErrorsIn('updatePassword', ['current_password']);
+        $this->assertNull($user->fresh()->password);
     }
 }

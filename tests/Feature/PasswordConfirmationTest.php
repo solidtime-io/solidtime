@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Models\User;
+use App\Service\AuthenticationContract;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Mockery\MockInterface;
 use Tests\TestCase;
 
 class PasswordConfirmationTest extends TestCase
@@ -77,6 +79,39 @@ class PasswordConfirmationTest extends TestCase
         // Act
         $response = $this->actingAs($user)->post('/user/confirm-password', [
             'password' => 'outdated-password',
+        ]);
+
+        // Assert
+        $response->assertSessionHasErrors();
+        $this->assertFalse($this->app['session']->has('auth.password_confirmed_at'));
+    }
+
+    public function test_password_is_not_confirmed_for_users_who_may_not_log_in_with_their_password(): void
+    {
+        // Arrange
+        $user = User::factory()->create();
+        $this->partialMock(AuthenticationContract::class, function (MockInterface $mock): void {
+            $mock->shouldReceive('isPasswordLoginAllowed')->andReturn(false);
+        });
+
+        // Act
+        $response = $this->actingAs($user)->post('/user/confirm-password', [
+            'password' => 'password',
+        ]);
+
+        // Assert
+        $response->assertSessionHasErrors();
+        $this->assertFalse($this->app['session']->has('auth.password_confirmed_at'));
+    }
+
+    public function test_password_is_not_confirmed_for_users_without_a_password(): void
+    {
+        // Arrange
+        $user = User::factory()->create(['password' => null]);
+
+        // Act
+        $response = $this->actingAs($user)->post('/user/confirm-password', [
+            'password' => '',
         ]);
 
         // Assert

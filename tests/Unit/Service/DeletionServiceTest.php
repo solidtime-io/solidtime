@@ -6,6 +6,7 @@ namespace Tests\Unit\Service;
 
 use App\Enums\Role;
 use App\Events\BeforeOrganizationDeletion;
+use App\Events\BeforeUserDeletion;
 use App\Exceptions\Api\CanNotDeleteUserWhoIsOwnerOfOrganizationWithMultipleMembers;
 use App\Models\Audit;
 use App\Models\Client;
@@ -43,6 +44,7 @@ class DeletionServiceTest extends TestCaseWithDatabase
         parent::setUp();
         Event::fake([
             BeforeOrganizationDeletion::class,
+            BeforeUserDeletion::class,
         ]);
         $this->deletionService = app(DeletionService::class);
     }
@@ -255,6 +257,7 @@ class DeletionServiceTest extends TestCaseWithDatabase
             // Assert
             $this->assertTrue(true);
         }
+        Event::assertNotDispatched(BeforeUserDeletion::class);
     }
 
     public function test_delete_user_rolls_back_on_error_if_transaction_is_active(): void
@@ -312,6 +315,7 @@ class DeletionServiceTest extends TestCaseWithDatabase
         $this->deletionService->deleteUser($user);
 
         // Assert
+        Event::assertDispatched(fn (BeforeUserDeletion $event): bool => $event->user->is($user), 1);
         $this->assertDatabaseMissing(User::class, [
             'id' => $user->getKey(),
         ]);

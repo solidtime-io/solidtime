@@ -2,19 +2,19 @@
 import { ref } from 'vue';
 import { router } from '@inertiajs/vue3';
 import ActionSection from '@/Components/ActionSection.vue';
+import IdentityConfirmationInput from '@/Components/Common/IdentityConfirmation/IdentityConfirmationInput.vue';
 import DangerButton from '@/packages/ui/src/Buttons/DangerButton.vue';
 import DialogModal from '@/packages/ui/src/DialogModal.vue';
-import { Field, FieldError } from '@/packages/ui/src/field';
 import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
-import TextInput from '@/packages/ui/src/Input/TextInput.vue';
 import { useOrganizationStore } from '@/utils/useOrganization';
 
 const props = defineProps<{
     team: { id: string };
+    confirmsWithPassword: boolean;
 }>();
 
 const confirmingTeamDeletion = ref(false);
-const passwordInput = ref<HTMLInputElement | null>(null);
+const confirmationInput = ref<InstanceType<typeof IdentityConfirmationInput> | null>(null);
 const password = ref('');
 const passwordError = ref('');
 const processing = ref(false);
@@ -22,11 +22,11 @@ const organizationStore = useOrganizationStore();
 
 const confirmTeamDeletion = () => {
     confirmingTeamDeletion.value = true;
-    setTimeout(() => passwordInput.value?.focus(), 250);
+    setTimeout(() => confirmationInput.value?.focus(), 250);
 };
 
 const deleteTeam = async () => {
-    if (processing.value) return;
+    if (processing.value || !props.confirmsWithPassword) return;
     processing.value = true;
     passwordError.value = '';
     try {
@@ -44,7 +44,7 @@ const deleteTeam = async () => {
             }
         }
         processing.value = false;
-        passwordInput.value?.focus();
+        confirmationInput.value?.focus();
     }
 };
 
@@ -78,21 +78,18 @@ const closeModal = () => {
 
                 <template #content>
                     Are you sure you want to delete this organization? Once a organization is
-                    deleted, all of its resources and data will be permanently deleted. Please enter
-                    your password to confirm you would like to permanently delete this organization.
+                    deleted, all of its resources and data will be permanently deleted.
+                    <template v-if="confirmsWithPassword">
+                        Please enter your password to confirm you would like to permanently delete
+                        this organization.
+                    </template>
 
-                    <Field class="mt-4">
-                        <TextInput
-                            ref="passwordInput"
-                            v-model="password"
-                            type="password"
-                            class="block w-3/4"
-                            placeholder="Password"
-                            autocomplete="current-password"
-                            @keyup.enter="deleteTeam" />
-
-                        <FieldError v-if="passwordError">{{ passwordError }}</FieldError>
-                    </Field>
+                    <IdentityConfirmationInput
+                        ref="confirmationInput"
+                        v-model:password="password"
+                        :confirms-with-password="confirmsWithPassword"
+                        :error="passwordError"
+                        @submit="deleteTeam" />
                 </template>
 
                 <template #footer>
@@ -100,8 +97,8 @@ const closeModal = () => {
 
                     <DangerButton
                         class="ms-3"
-                        :class="{ 'opacity-25': processing }"
-                        :disabled="processing"
+                        :class="{ 'opacity-25': processing || !confirmsWithPassword }"
+                        :disabled="processing || !confirmsWithPassword"
                         @click="deleteTeam">
                         Delete Organization
                     </DangerButton>
