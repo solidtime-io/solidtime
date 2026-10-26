@@ -24,10 +24,15 @@ use InvalidArgumentException;
 
 class UserService
 {
+    /**
+     * Create a user. Without a password, the user can only sign in another way (e.g. via SSO).
+     * The user joins the organizations of their accepted invitations. If an organization is given,
+     * they also join it; otherwise they get their own organization if no invitation placed them anywhere.
+     */
     public function createUser(
         string $name,
         string $email,
-        string $password,
+        ?string $password,
         string $timezone,
         Weekday $weekStart,
         ?string $currency,
@@ -36,12 +41,14 @@ class UserService
         ?DateFormat $dateFormat = null,
         ?IntervalFormat $intervalFormat = null,
         ?TimeFormat $timeFormat = null,
-        bool $verifyEmail = false
+        bool $verifyEmail = false,
+        ?Organization $organization = null,
+        Role $role = Role::Employee,
     ): User {
         $user = new User;
         $user->name = $name;
         $user->email = strtolower($email);
-        $user->password = Hash::make($password);
+        $user->password = $password !== null ? Hash::make($password) : null;
         $user->timezone = $timezone;
         $user->week_start = $weekStart;
         if ($verifyEmail) {
@@ -49,9 +56,16 @@ class UserService
         }
         $user->save();
 
-        $organizations = app(InvitationService::class)->processAcceptedInvitations($user);
+        $invitedOrganizations = app(InvitationService::class)->processAcceptedInvitations($user);
 
-        if ($organizations->isEmpty()) {
+        if ($organization !== null) {
+            // An accepted invitation may already have added the user to the organization
+            if ($invitedOrganizations->doesntContain(fn (Organization $invited): bool => $invited->is($organization))) {
+                app(MemberService::class)->addMember($user, $organization, $role);
+            } else {
+                $this->switchCurrentOrganization($user, $organization);
+            }
+        } elseif ($invitedOrganizations->isEmpty()) {
             $organization = app(OrganizationService::class)->createOrganization(
                 $this->getOrganizationNameForUserName($user->name),
                 $user,

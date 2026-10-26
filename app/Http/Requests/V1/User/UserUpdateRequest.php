@@ -8,6 +8,8 @@ use App\Enums\Weekday;
 use App\Http\Requests\V1\BaseFormRequest;
 use App\Models\User;
 use App\Rules\Base64ImageRule;
+use App\Service\AuthenticationContract;
+use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
@@ -31,7 +33,7 @@ class UserUpdateRequest extends BaseFormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, array<string|\Illuminate\Contracts\Validation\Rule|ValidationRule>>
+     * @return array<string, array<string|\Illuminate\Contracts\Validation\Rule|ValidationRule|Closure>>
      */
     public function rules(): array
     {
@@ -48,6 +50,16 @@ class UserUpdateRequest extends BaseFormRequest
                     return $query->where('is_placeholder', '=', false)
                         ->whereKeyNot($this->user->getKey());
                 }),
+                function (string $attribute, mixed $value, Closure $fail): void {
+                    // Sending the current address back unchanged is not a change.
+                    if (! is_string($value) || $value === Str::lower($this->user->email)) {
+                        return;
+                    }
+
+                    if (! app(AuthenticationContract::class)->canChangeEmail($this->user)) {
+                        $fail(AuthenticationContract::EMAIL_CHANGE_LOCKED_MESSAGE);
+                    }
+                },
             ],
             'photo' => [
                 'nullable',

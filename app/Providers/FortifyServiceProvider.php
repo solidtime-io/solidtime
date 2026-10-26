@@ -11,6 +11,8 @@ use App\Actions\Fortify\UpdateUserProfileInformation;
 use App\Extensions\Fortify\CustomLoginResponse;
 use App\Extensions\Fortify\CustomTwoFactorLoginResponse;
 use App\Models\User;
+use App\Service\AuthenticationContract;
+use App\Service\IdentityConfirmationService;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -25,6 +27,12 @@ use Laravel\Fortify\Fortify;
 
 class FortifyServiceProvider extends ServiceProvider
 {
+    /**
+     * Hash of a random value that is checked when no user exists for the email,
+     * so login takes the same time whether the email is registered or not.
+     */
+    private const ABSENT_USER_PASSWORD_HASH = '$2y$12$PtSQLk/QWOJJpg42pGEkt.TTR7NwCq0.g/0EOWb2B6eDww4zR92.2';
+
     /**
      * Register any application services.
      */
@@ -93,11 +101,22 @@ class FortifyServiceProvider extends ServiceProvider
                 ->where('is_placeholder', '=', false)
                 ->first();
 
-            if ($user !== null && Hash::check($request->password, $user->password)) {
+            // Always check a hash so the response time doesn't reveal whether the user exists
+            $hasLocalPassword = $user !== null && $user->hasLocalPassword();
+            $existingPasswordHash = $hasLocalPassword ? $user->password : self::ABSENT_USER_PASSWORD_HASH;
+
+            $passwordIsValid = Hash::check((string) $request->password, $existingPasswordHash);
+
+            if ($hasLocalPassword && $passwordIsValid && app(AuthenticationContract::class)->isPasswordLoginAllowed($user)) {
                 return $user;
             }
 
             return null;
+        });
+
+        // Used by the password confirmation screen (e.g. before enabling 2FA) and OtherBrowserSessionsController
+        Fortify::confirmPasswordsUsing(function (mixed $user, ?string $password): bool {
+            return $user instanceof User && app(IdentityConfirmationService::class)->confirmPassword($user, $password);
         });
 
         RateLimiter::for('login', function (Request $request) {

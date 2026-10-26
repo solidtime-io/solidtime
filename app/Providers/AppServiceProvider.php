@@ -16,6 +16,7 @@ use App\Models\Tag;
 use App\Models\Task;
 use App\Models\TimeEntry;
 use App\Models\User;
+use App\Service\AuthenticationContract;
 use App\Service\BillingContract;
 use App\Service\GoalsContract;
 use App\Service\IpLookup\IpLookupServiceContract;
@@ -105,6 +106,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(IpLookupServiceContract::class, NoIpLookupService::class);
         $this->app->bind(BillingContract::class);
         $this->app->bind(GoalsContract::class);
+        $this->app->bind(AuthenticationContract::class);
 
         // Storage
         // The local driver ignores the ResponseContentDisposition option of temporaryUrl,

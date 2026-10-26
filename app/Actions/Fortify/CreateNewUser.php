@@ -109,17 +109,17 @@ class CreateNewUser implements CreatesNewUsers
         DB::transaction(function () use (&$user, $input, $timezone, $startOfWeek, $currency, $numberFormat, $currencyFormat, $dateFormat, $intervalFormat, $timeFormat): void {
             $userService = app(UserService::class);
             $user = $userService->createUser(
-                $input['name'],
-                $input['email'],
-                $input['password'],
-                $timezone ?? 'UTC',
-                $startOfWeek,
-                $currency,
-                $numberFormat,
-                $currencyFormat,
-                $dateFormat,
-                $intervalFormat,
-                $timeFormat
+                name: $input['name'],
+                email: $input['email'],
+                password: $input['password'],
+                timezone: $timezone ?? 'UTC',
+                weekStart: $startOfWeek,
+                currency: $currency,
+                numberFormat: $numberFormat,
+                currencyFormat: $currencyFormat,
+                dateFormat: $dateFormat,
+                intervalFormat: $intervalFormat,
+                timeFormat: $timeFormat,
             );
         });
 
