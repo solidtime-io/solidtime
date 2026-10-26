@@ -411,6 +411,23 @@ test('delete account shows an error when the password is wrong', async ({ page }
     await expect(dialog).toBeVisible();
 });
 
+test('delete account submits when pressing Enter in the password field', async ({ page }) => {
+    await goToProfilePage(page);
+    await page.getByRole('button', { name: 'Delete Account' }).click();
+    const dialog = page.getByRole('dialog');
+    await dialog.getByPlaceholder('Password').fill('not-the-real-password');
+    await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/api/v1/users/') &&
+                response.request().method() === 'DELETE' &&
+                response.status() === 422
+        ),
+        dialog.getByPlaceholder('Password').press('Enter'),
+    ]);
+    await expect(dialog.getByRole('alert')).toBeVisible();
+});
+
 test('delete account succeeds with the correct password and logs the user out', async ({
     page,
 }) => {
@@ -763,6 +780,27 @@ test('test that 2FA can be enabled with correct password', async ({ page }) => {
 // =============================================
 // Logout Other Browser Sessions Tests
 // =============================================
+
+test('test that logout other browser sessions shows an error when the password is wrong', async ({
+    page,
+}) => {
+    await goToProfilePage(page);
+
+    await page.getByRole('button', { name: 'Log Out Other Browser Sessions' }).click();
+    const dialog = page.getByRole('dialog');
+    await dialog.getByPlaceholder('Password').fill('not-the-real-password');
+    // Inertia validation errors redirect back instead of returning a 422.
+    await Promise.all([
+        page.waitForResponse(
+            (response) =>
+                response.url().includes('/user/other-browser-sessions') &&
+                response.request().method() === 'DELETE'
+        ),
+        dialog.getByPlaceholder('Password').press('Enter'),
+    ]);
+    await expect(dialog.getByRole('alert')).toBeVisible();
+    await expect(dialog).toBeVisible();
+});
 
 test('test that logout other browser sessions works with correct password', async ({ page }) => {
     await goToProfilePage(page);

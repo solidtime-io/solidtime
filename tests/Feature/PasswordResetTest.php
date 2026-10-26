@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Models\User;
+use App\Service\AuthenticationContract;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Laravel\Fortify\Features;
+use Mockery\MockInterface;
 use Tests\TestCase;
 
 class PasswordResetTest extends TestCase
@@ -151,5 +153,37 @@ class PasswordResetTest extends TestCase
 
         $response->assertSessionHasErrors('email');
         Notification::assertNothingSent();
+    }
+
+    public function test_password_can_not_be_reset_if_password_login_is_not_allowed(): void
+    {
+        Notification::fake();
+
+        $user = User::factory()->create();
+        $passwordBefore = $user->password;
+
+        $this->post('/forgot-password', [
+            'email' => $user->email,
+        ]);
+
+        $this->partialMock(AuthenticationContract::class, function (MockInterface $mock): void {
+            $mock->shouldReceive('isPasswordLoginAllowed')->andReturn(false);
+        });
+
+        Notification::assertSentTo($user, ResetPassword::class, function (ResetPassword $notification) use ($user) {
+            $response = $this->post('/reset-password', [
+                'token' => $notification->token,
+                'email' => $user->email,
+                'password' => 'new-password-123',
+                'password_confirmation' => 'new-password-123',
+            ]);
+
+            $response->assertSessionHasErrors('email');
+            $this->assertDatabaseMissing('password_reset_tokens', ['email' => $user->email]);
+
+            return true;
+        });
+
+        $this->assertSame($passwordBefore, $user->refresh()->password);
     }
 }

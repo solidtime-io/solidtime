@@ -1,29 +1,32 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import ActionSection from '@/Components/ActionSection.vue';
+import IdentityConfirmationInput from '@/Components/Common/IdentityConfirmation/IdentityConfirmationInput.vue';
 import DangerButton from '@/packages/ui/src/Buttons/DangerButton.vue';
 import DialogModal from '@/packages/ui/src/DialogModal.vue';
-import { Field, FieldError } from '@/packages/ui/src/field';
 import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
-import TextInput from '@/packages/ui/src/Input/TextInput.vue';
 import { useDeleteUserMutation } from '@/utils/useUserQuery';
 import { getCurrentUserId } from '@/utils/useUser';
+
+const props = defineProps<{
+    confirmsWithPassword: boolean;
+}>();
 
 const deleteUserMutation = useDeleteUserMutation();
 
 const confirmingUserDeletion = ref(false);
-const passwordInput = ref<HTMLInputElement | null>(null);
+const confirmationInput = ref<InstanceType<typeof IdentityConfirmationInput> | null>(null);
 const password = ref('');
 const passwordError = ref('');
 const processing = ref(false);
 
 function confirmUserDeletion() {
     confirmingUserDeletion.value = true;
-    setTimeout(() => passwordInput.value?.focus(), 250);
+    setTimeout(() => confirmationInput.value?.focus(), 250);
 }
 
 async function deleteUser() {
-    if (processing.value) return;
+    if (processing.value || !props.confirmsWithPassword) return;
     processing.value = true;
     passwordError.value = '';
     try {
@@ -41,7 +44,7 @@ async function deleteUser() {
             }
         }
         processing.value = false;
-        passwordInput.value?.focus();
+        confirmationInput.value?.focus();
     }
 }
 
@@ -75,21 +78,18 @@ function closeModal() {
 
                 <template #content>
                     Are you sure you want to delete your account? Once your account is deleted, all
-                    of its resources and data will be permanently deleted. Please enter your
-                    password to confirm you would like to permanently delete your account.
+                    of its resources and data will be permanently deleted.
+                    <template v-if="confirmsWithPassword">
+                        Please enter your password to confirm you would like to permanently delete
+                        your account.
+                    </template>
 
-                    <Field class="mt-4">
-                        <TextInput
-                            ref="passwordInput"
-                            v-model="password"
-                            type="password"
-                            class="block w-3/4"
-                            placeholder="Password"
-                            autocomplete="current-password"
-                            @keyup.enter="deleteUser" />
-
-                        <FieldError v-if="passwordError">{{ passwordError }}</FieldError>
-                    </Field>
+                    <IdentityConfirmationInput
+                        ref="confirmationInput"
+                        v-model:password="password"
+                        :confirms-with-password="confirmsWithPassword"
+                        :error="passwordError"
+                        @submit="deleteUser" />
                 </template>
 
                 <template #footer>
@@ -97,8 +97,8 @@ function closeModal() {
 
                     <DangerButton
                         class="ms-3"
-                        :class="{ 'opacity-25': processing }"
-                        :disabled="processing"
+                        :class="{ 'opacity-25': processing || !confirmsWithPassword }"
+                        :disabled="processing || !confirmsWithPassword"
                         @click="deleteUser">
                         Delete Account
                     </DangerButton>

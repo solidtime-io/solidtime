@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests;
 
+use App\Service\AuthenticationContract;
 use App\Service\BillableRateService;
 use App\Service\BillingContract;
 use App\Service\PermissionStore;
@@ -34,6 +35,16 @@ abstract class TestCase extends BaseTestCase
         }
         // Note: The following line can be used to test timezone edge cases.
         // $this->travelTo(Carbon::now()->timezone('Europe/Vienna')->setHour(0)->setMinute(59)->setSecond(0));
+    }
+
+    /**
+     * Act as if an extension, like SSO, manages the email address of every user.
+     */
+    protected function lockEmailChanges(): void
+    {
+        $this->partialMock(AuthenticationContract::class, function (MockInterface $mock): void {
+            $mock->shouldReceive('canChangeEmail')->andReturn(false);
+        });
     }
 
     protected function mockPrivateStorage(): void
