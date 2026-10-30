@@ -6,6 +6,7 @@ namespace Tests\Unit\Filament\Widgets;
 
 use App\Filament\Widgets\TimeEntriesImported;
 use App\Models\TimeEntry;
+use Illuminate\Support\Carbon;
 use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\UsesClass;
 
@@ -93,6 +94,24 @@ class TimeEntriesImportedWidgetTest extends ChartWidgetTestCase
         $this->assertCount(13, $data['labels']);
         $this->assertSame(now()->subYear()->format('Y-m'), $data['labels']->first());
         $this->assertSame(now()->format('Y-m'), $data['labels']->last());
+    }
+
+    public function test_year_filter_contains_every_month_if_today_is_the_end_of_a_month(): void
+    {
+        // Arrange
+        $this->travelTo(Carbon::parse('2026-10-31 12:00:00'));
+
+        // Act
+        $response = Livewire::test(TimeEntriesImported::class)
+            ->set('filter', 'year');
+
+        // Assert
+        $response->assertSuccessful();
+        $data = $this->getChartData($response);
+        $this->assertSame([
+            '2025-10', '2025-11', '2025-12', '2026-01', '2026-02', '2026-03', '2026-04',
+            '2026-05', '2026-06', '2026-07', '2026-08', '2026-09', '2026-10',
+        ], $data['labels']->values()->all());
     }
 
     public function test_unknown_filter_falls_back_to_last_week(): void
