@@ -511,6 +511,29 @@ test.describe('Organization Create, Delete & Switch', () => {
         await expect(dialog).toBeVisible();
     });
 
+    test('delete organization submits when pressing Enter in the password field', async ({
+        page,
+    }) => {
+        const orgName = 'DeleteOrgEnter' + Math.floor(Math.random() * 100000);
+        await createOrganization(page, orgName);
+        await goToOrganizationSettings(page);
+
+        await page.getByRole('button', { name: 'Delete Organization' }).click();
+        const dialog = page.getByRole('dialog');
+        await dialog.getByPlaceholder('Password').fill('not-the-real-password');
+        await Promise.all([
+            page.waitForResponse(
+                (response) =>
+                    response.url().includes('/api/v1/organizations') &&
+                    response.request().method() === 'DELETE' &&
+                    response.status() === 422
+            ),
+            dialog.getByPlaceholder('Password').press('Enter'),
+        ]);
+
+        await expect(dialog.getByRole('alert')).toBeVisible();
+    });
+
     test('can switch the current organization via the organization switcher', async ({ page }) => {
         await page.goto(PLAYWRIGHT_BASE_URL + '/dashboard');
         const orgSwitcher = page.locator('[data-testid="organization_switcher"]:visible');

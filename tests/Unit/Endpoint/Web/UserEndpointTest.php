@@ -6,6 +6,7 @@ namespace Tests\Unit\Endpoint\Web;
 
 use App\Http\Controllers\Web\UserController;
 use App\Models\User;
+use App\Service\AuthenticationContract;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\URL;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -44,6 +45,37 @@ class UserEndpointTest extends EndpointTestAbstract
         $this->assertSame('new@example.com', $user->email);
         $this->assertNull($user->pending_email);
         $this->assertTrue(now()->equalTo($user->email_verified_at));
+    }
+
+    public function test_pending_email_verification_is_refused_and_cleared_when_an_extension_locks_the_email(): void
+    {
+        // Arrange
+        $user = User::factory()->create([
+            'email' => 'current@example.com',
+            'pending_email' => 'new@example.com',
+        ]);
+        $this->lockEmailChanges();
+        $this->actingAs($user);
+        $verificationUrl = URL::temporarySignedRoute(
+            'users.verify-email-change',
+            now()->addMinutes(60),
+            [
+                'user' => $user->getKey(),
+                'email' => 'new@example.com',
+            ],
+            false
+        );
+
+        // Act
+        $response = $this->get($verificationUrl);
+
+        // Assert
+        $response->assertRedirect(route('dashboard'));
+        $response->assertSessionHas('bannerStyle', 'danger');
+        $response->assertSessionHas('bannerText', AuthenticationContract::EMAIL_CHANGE_LOCKED_MESSAGE);
+        $user->refresh();
+        $this->assertSame('current@example.com', $user->email);
+        $this->assertNull($user->pending_email);
     }
 
     public function test_pending_email_verification_is_rejected_for_another_authenticated_user(): void
