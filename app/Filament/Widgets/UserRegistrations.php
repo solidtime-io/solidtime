@@ -25,7 +25,7 @@ class UserRegistrations extends ChartWidget
         } elseif ($filter === 'month') {
             $start = now()->subMonth();
         } elseif ($filter === 'year') {
-            $start = now()->subYear();
+            $start = now()->subYear()->startOfMonth();
         } else {
             $start = now()->subWeek();
         }
