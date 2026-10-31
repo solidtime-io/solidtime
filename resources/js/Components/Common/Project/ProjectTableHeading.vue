@@ -36,6 +36,9 @@ function handleSort(column: SortColumn) {
             @sort="handleSort">
             Name
         </SortableTableHeaderCell>
+        <SortableTableHeaderCell column="tasks" v-bind="sortState" @sort="handleSort">
+            Tasks
+        </SortableTableHeaderCell>
         <SortableTableHeaderCell column="client_name" v-bind="sortState" @sort="handleSort">
             Client
         </SortableTableHeaderCell>
