@@ -686,4 +686,58 @@ test.describe('Calendar Settings Effects', () => {
             expect(count).toBe(0);
         }).toPass({ timeout: 5000 });
     });
+
+    // https://github.com/solidtime-io/solidtime/issues/1361
+    test('dragging an event with a non-midnight start time moves it to the drop position', async ({
+        page,
+        ctx,
+    }) => {
+        const now = new Date();
+        const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 8, 0, 0);
+        const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 9, 0, 0);
+        await createTimeEntryWithTimestampsViaApi(ctx, {
+            description: 'Start hour drag test',
+            start: start.toISOString().replace(/\.\d{3}Z$/, 'Z'),
+            end: end.toISOString().replace(/\.\d{3}Z$/, 'Z'),
+        });
+
+        await goToCalendar(page);
+        await page.evaluate(() =>
+            localStorage.setItem(
+                'solidtime:calendar-settings',
+                JSON.stringify({ snapMinutes: 1, startHour: 4, endHour: 22, slotMinutes: 10 })
+            )
+        );
+        await page.reload();
+        await expect(page.locator('.fc')).toBeVisible({ timeout: 10000 });
+        await scrollCalendarToTime(page, '07:00:00');
+
+        const event = page.locator('.fc-event').filter({ hasText: 'Start hour drag test' }).first();
+        await expect(event).toBeVisible();
+        const eventBox = await event.boundingBox();
+        const slotHeight = await getSlotHeight(page);
+
+        const putResponsePromise = page.waitForResponse(
+            (resp) => resp.url().includes('/time-entries/') && resp.request().method() === 'PUT'
+        );
+
+        // Drag the event down by 2 hours (12 x 10-min slots), from 08:00 to 10:00
+        await event.hover();
+        await page.mouse.down();
+        await page.mouse.move(
+            eventBox!.x + eventBox!.width / 2,
+            eventBox!.y + eventBox!.height / 2 + slotHeight * 12 + 1,
+            { steps: 15 }
+        );
+        await page.mouse.up();
+
+        const putResponse = await putResponsePromise;
+        expect(putResponse.status()).toBe(200);
+        const body = await putResponse.json();
+        const newStart = new Date(body.data.start);
+        const newEnd = new Date(body.data.end);
+        expect(newStart.getHours()).toBe(10);
+        expect(newStart.getMinutes()).toBeLessThan(5);
+        expect(newEnd.getTime() - newStart.getTime()).toBe(3600000);
+    });
 });
