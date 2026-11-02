@@ -32,6 +32,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
+use Illuminate\Mail\Markdown;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
@@ -77,6 +78,9 @@ class AppServiceProvider extends ServiceProvider
             'user' => User::class,
         ]);
         Model::unguard();
+
+        // Mail: render user-provided values (e.g. names) as plain text instead of Markdown
+        Markdown::withSecuredEncoding();
 
         // Filament
         Section::configureUsing(function (Section $section): void {
