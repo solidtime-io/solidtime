@@ -811,6 +811,99 @@ class TimeEntryAggregationServiceTest extends TestCaseWithDatabase
         ], $result);
     }
 
+    public function test_aggregate_time_entries_by_day_and_project_with_filled_gaps(): void
+    {
+        // Arrange
+        $project = Project::factory()->create();
+        TimeEntry::factory()->startWithDuration(Carbon::parse('2026-01-02 10:00:00', 'UTC'), 10)->forProject($project)->create();
+        $query = TimeEntry::query();
+
+        // Act
+        $result = $this->service->getAggregatedTimeEntries(
+            $query,
+            TimeEntryAggregationType::Day,
+            TimeEntryAggregationType::Project,
+            'UTC',
+            Weekday::Monday,
+            true,
+            Carbon::parse('2026-01-01 00:00:00', 'UTC'),
+            Carbon::parse('2026-01-02 23:59:59', 'UTC'),
+            true,
+            null,
+            null
+        );
+
+        // Assert
+        $this->assertSame([
+            'seconds' => 10,
+            'cost' => 0,
+            'grouped_type' => 'day',
+            'grouped_data' => [
+                [
+                    'key' => '2026-01-01',
+                    'seconds' => 0,
+                    'cost' => 0,
+                    'grouped_type' => 'project',
+                    'grouped_data' => [],
+                ],
+                [
+                    'key' => '2026-01-02',
+                    'seconds' => 10,
+                    'cost' => 0,
+                    'grouped_type' => 'project',
+                    'grouped_data' => [
+                        [
+                            'key' => $project->getKey(),
+                            'seconds' => 10,
+                            'cost' => 0,
+                            'grouped_type' => null,
+                            'grouped_data' => null,
+                        ],
+                    ],
+                ],
+            ],
+        ], $result);
+    }
+
+    public function test_aggregate_time_entries_by_project_with_filled_gaps(): void
+    {
+        // Arrange
+        $project = Project::factory()->create();
+        TimeEntry::factory()->startWithDuration(Carbon::parse('2026-01-02 10:00:00', 'UTC'), 10)->forProject($project)->create();
+        $query = TimeEntry::query();
+
+        // Act
+        $result = $this->service->getAggregatedTimeEntries(
+            $query,
+            TimeEntryAggregationType::Project,
+            null,
+            'UTC',
+            Weekday::Monday,
+            true,
+            Carbon::parse('2026-01-01 00:00:00', 'UTC'),
+            Carbon::parse('2026-01-02 23:59:59', 'UTC'),
+            true,
+            null,
+            null
+        );
+
+        // Assert
+        $this->assertSame([
+            'seconds' => 10,
+            'cost' => 0,
+            'grouped_type' => 'project',
+            'grouped_data' => [
+                [
+                    'key' => $project->getKey(),
+                    'seconds' => 10,
+                    'cost' => 0,
+                    'grouped_type' => null,
+                    'grouped_data' => null,
+                ],
+            ],
+        ], $result);
+    }
+
     public function test_aggregated_time_entries_with_descriptions_by_description_and_billable(): void
     {
         // Arrange
