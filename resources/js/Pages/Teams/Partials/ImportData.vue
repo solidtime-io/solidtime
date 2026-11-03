@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { useNotificationsStore } from '@/utils/notification';
 import { api } from '@/packages/api/src';
 import { Field, FieldLabel } from '@/packages/ui/src/field';
@@ -13,7 +13,7 @@ import {
 import { canUseBillableRates } from '@/utils/billing';
 
 import { getCurrentOrganizationId } from '@/utils/useUser';
-import type { ImportReport, ImportType } from '@/packages/api/src';
+import type { Import, ImportReport, ImportType } from '@/packages/api/src';
 import DialogModal from '@/packages/ui/src/DialogModal.vue';
 import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
 import { initializeStores } from '@/utils/init';
@@ -60,7 +60,7 @@ async function importData() {
         const { handleApiRequestNotifications } = useNotificationsStore();
         loading.value = true;
         try {
-            reportResult.value = await handleApiRequestNotifications(() => {
+            const response = await handleApiRequestNotifications(() => {
                 if (importType.value) {
                     return api.importData(
                         {
@@ -74,11 +74,29 @@ async function importData() {
                         }
                     );
                 }
-                return new Promise((resolve, reject) => {
+                return new Promise<never>((resolve, reject) => {
                     reject('Import type is null');
                 });
             });
+            if (response === undefined) {
+                return;
+            }
+            const finishedImport = await handleApiRequestNotifications(() =>
+                waitForImport(organizationId, response.data)
+            );
+            if (finishedImport === undefined || isUnmounted) {
+                return;
+            }
+            if (finishedImport.status === 'failed') {
+                addNotification(
+                    'error',
+                    'Import failed',
+                    finishedImport.error_message ?? 'The import failed, no data was imported.'
+                );
+                return;
+            }
             initializeStores();
+            reportResult.value = finishedImport.report;
             if (reportResult.value) {
                 showResultModal.value = true;
             }
@@ -86,6 +104,34 @@ async function importData() {
             loading.value = false;
         }
     }
+}
+
+const IMPORT_POLL_INTERVAL_MS = 2000;
+
+let isUnmounted = false;
+onUnmounted(() => {
+    isUnmounted = true;
+});
+
+/**
+ * The import is processed in the background, poll it until it is completed or failed.
+ */
+async function waitForImport(organizationId: string, currentImport: Import): Promise<Import> {
+    while (
+        (currentImport.status === 'pending' || currentImport.status === 'running') &&
+        !isUnmounted
+    ) {
+        await new Promise((resolve) => setTimeout(resolve, IMPORT_POLL_INTERVAL_MS));
+        currentImport = (
+            await api.getImport({
+                params: {
+                    organization: organizationId,
+                    import: currentImport.id,
+                },
+            })
+        ).data;
+    }
+    return currentImport;
 }
 
 const importFile = ref<HTMLInputElement | null>();
@@ -137,19 +183,19 @@ const showResultModal = ref(false);
 
             <div class="py-2.5 px-3 border-t border-t-card-background-separator">
                 <span class="text-text-primary font-semibold">Clients created:</span>
-                {{ reportResult?.report.clients.created }}
+                {{ reportResult?.clients.created }}
             </div>
             <div class="py-2.5 px-3 border-t border-t-card-background-separator">
                 <span class="text-text-primary font-semibold">Projects created:</span>
-                {{ reportResult?.report.projects.created }}
+                {{ reportResult?.projects.created }}
             </div>
             <div class="py-2.5 px-3 border-t border-t-card-background-separator">
                 <span class="text-text-primary font-semibold">Tasks created:</span>
-                {{ reportResult?.report.tasks.created }}
+                {{ reportResult?.tasks.created }}
             </div>
             <div class="py-2.5 px-3 border-t border-t-card-background-separator">
                 <span class="text-text-primary font-semibold">Time entries created:</span>
-                {{ reportResult?.report.time_entries.created }}
+                {{ reportResult?.time_entries.created }}
             </div>
         </template>
         <template #footer>

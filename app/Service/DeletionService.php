@@ -9,6 +9,7 @@ use App\Events\BeforeOrganizationDeletion;
 use App\Exceptions\Api\CanNotDeleteUserWhoIsOwnerOfOrganizationWithMultipleMembers;
 use App\Models\Client;
 use App\Models\Goal;
+use App\Models\Import;
 use App\Models\Member;
 use App\Models\Organization;
 use App\Models\OrganizationInvitation;
@@ -22,6 +23,7 @@ use App\Models\TimeEntry;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class DeletionService
 {
@@ -79,6 +81,20 @@ class DeletionService
 
         // Delete all goals
         Goal::query()->whereBelongsTo($organization, 'organization')->delete();
+
+        // Delete all imports, the stored import files are deleted after the transaction is committed,
+        // since the deletion of files is not reversible via a database rollback
+        $importFilePaths = Import::query()
+            ->whereBelongsTo($organization, 'organization')
+            ->whereNotNull('file_path')
+            ->pluck('file_path')
+            ->all();
+        Import::query()->whereBelongsTo($organization, 'organization')->delete();
+        if (count($importFilePaths) > 0) {
+            DB::afterCommit(function () use ($importFilePaths): void {
+                Storage::disk(config('filesystems.private'))->delete($importFilePaths);
+            });
+        }
 
         // Reset the current organization
         $organization->owner()

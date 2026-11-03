@@ -38,7 +38,36 @@ const ClientUpdateRequest = z
     .object({ name: z.string().min(1).max(255), is_archived: z.boolean().optional() })
     .passthrough();
 const DestroyWithPasswordRequest = z.object({ password: z.string() }).passthrough();
-const ImportRequest = z.object({ type: z.string(), data: z.string() }).passthrough();
+const ImportRequest = z.object({ type: z.string(), data: z.string().max(52428800) }).passthrough();
+const ImportSource = z.enum(['file', 'api']);
+const ImportStatus = z.enum(['pending', 'running', 'completed', 'failed']);
+const ImportResource = z
+    .object({
+        id: z.string(),
+        type: z.string(),
+        source: ImportSource,
+        status: ImportStatus,
+        report: z.union([
+            z
+                .object({
+                    clients: z.object({ created: z.number().int() }).passthrough(),
+                    projects: z.object({ created: z.number().int() }).passthrough(),
+                    tasks: z.object({ created: z.number().int() }).passthrough(),
+                    time_entries: z.object({ created: z.number().int() }).passthrough(),
+                    tags: z.object({ created: z.number().int() }).passthrough(),
+                    users: z.object({ created: z.number().int() }).passthrough(),
+                })
+                .passthrough(),
+            z.null(),
+        ]),
+        error_message: z.union([z.string(), z.null()]),
+        user_id: z.union([z.string(), z.null()]),
+        started_at: z.union([z.string(), z.null()]),
+        finished_at: z.union([z.string(), z.null()]),
+        created_at: z.union([z.string(), z.null()]),
+    })
+    .passthrough();
+const ImportCollection = z.array(ImportResource);
 const InvitationResource = z
     .object({ id: z.string(), email: z.string(), role: z.string() })
     .passthrough();
@@ -832,6 +861,10 @@ export const schemas = {
     ClientStoreRequest,
     ClientUpdateRequest,
     ImportRequest,
+    ImportSource,
+    ImportStatus,
+    ImportResource,
+    ImportCollection,
     InvitationResource,
     InvitationStoreRequest,
     InvoiceResource,
@@ -1637,6 +1670,7 @@ const endpoints = makeApi([
         method: 'post',
         path: '/v1/organizations/:organization/import',
         alias: 'importData',
+        description: `The import is processed in the background. Use the returned import ID to poll the status of the import.`,
         requestFormat: 'json',
         parameters: [
             {
@@ -1650,26 +1684,13 @@ const endpoints = makeApi([
                 schema: z.string(),
             },
         ],
-        response: z
-            .object({
-                report: z
-                    .object({
-                        clients: z.object({ created: z.number().int() }).passthrough(),
-                        projects: z.object({ created: z.number().int() }).passthrough(),
-                        tasks: z.object({ created: z.number().int() }).passthrough(),
-                        time_entries: z.object({ created: z.number().int() }).passthrough(),
-                        tags: z.object({ created: z.number().int() }).passthrough(),
-                        users: z.object({ created: z.number().int() }).passthrough(),
-                    })
-                    .passthrough(),
-            })
-            .passthrough(),
+        response: z.object({ data: ImportResource }).passthrough(),
         errors: [
             {
                 status: 400,
                 schema: z.union([
                     z.object({ message: z.string() }).passthrough(),
-                    z.object({ message: z.literal('Invalid base64 encoded data') }).passthrough(),
+                    z.object({ message: z.string() }).passthrough(),
                 ]),
             },
             {
@@ -1717,6 +1738,117 @@ const endpoints = makeApi([
                 ),
             })
             .passthrough(),
+        errors: [
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 403,
+                description: `Authorization error`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 404,
+                description: `Not found`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+        ],
+    },
+    {
+        method: 'get',
+        path: '/v1/organizations/:organization/imports',
+        alias: 'getImports',
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'organization',
+                type: 'Path',
+                schema: z.string(),
+            },
+            {
+                name: 'page',
+                type: 'Query',
+                schema: z.number().int().gte(1).lte(2147483647).optional(),
+            },
+        ],
+        response: z
+            .object({
+                data: ImportCollection,
+                links: z
+                    .object({
+                        first: z.union([z.string(), z.null()]),
+                        last: z.union([z.string(), z.null()]),
+                        prev: z.union([z.string(), z.null()]),
+                        next: z.union([z.string(), z.null()]),
+                    })
+                    .passthrough(),
+                meta: z
+                    .object({
+                        current_page: z.number().int().gte(1),
+                        from: z.union([z.number(), z.null()]),
+                        last_page: z.number().int().gte(1),
+                        links: z.array(
+                            z
+                                .object({
+                                    url: z.union([z.string(), z.null()]),
+                                    label: z.string(),
+                                    active: z.boolean(),
+                                })
+                                .passthrough()
+                        ),
+                        path: z.union([z.string(), z.null()]),
+                        per_page: z.number().int().gte(0),
+                        to: z.union([z.number(), z.null()]),
+                        total: z.number().int().gte(0),
+                    })
+                    .passthrough(),
+            })
+            .passthrough(),
+        errors: [
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 403,
+                description: `Authorization error`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 404,
+                description: `Not found`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 422,
+                description: `Validation error`,
+                schema: z
+                    .object({ message: z.string(), errors: z.record(z.array(z.string())) })
+                    .passthrough(),
+            },
+        ],
+    },
+    {
+        method: 'get',
+        path: '/v1/organizations/:organization/imports/:import',
+        alias: 'getImport',
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'organization',
+                type: 'Path',
+                schema: z.string(),
+            },
+            {
+                name: 'import',
+                type: 'Path',
+                schema: z.string(),
+            },
+        ],
+        response: z.object({ data: ImportResource }).passthrough(),
         errors: [
             {
                 status: 401,

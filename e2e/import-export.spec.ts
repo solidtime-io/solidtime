@@ -112,13 +112,13 @@ test('test that importing a generic time entries CSV works', async ({ page }) =>
     const csvPath = path.resolve('resources/testfiles/generic_time_entries_import_test_1.csv');
     await page.locator('#file-upload').setInputFiles(csvPath);
 
-    // Click Import and wait for the API response
+    // Click Import and wait for the API response, the import is queued and processed in the background
     await Promise.all([
         page.waitForResponse(
             (response) =>
                 response.url().includes('/import') &&
                 response.request().method() === 'POST' &&
-                response.status() === 200,
+                response.status() === 202,
             { timeout: 30000 }
         ),
         page.getByRole('button', { name: 'Import Data' }).click(),

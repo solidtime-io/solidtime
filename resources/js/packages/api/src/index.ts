@@ -70,7 +70,8 @@ export type CreateTagBody = ZodiosBodyByAlias<SolidTimeApi, 'createTag'>;
 export type UpdateTagBody = ZodiosBodyByAlias<SolidTimeApi, 'updateTag'>;
 
 export type ImportType = ZodiosResponseByAlias<SolidTimeApi, 'getImporters'>['data'][0];
-export type ImportReport = ZodiosResponseByAlias<SolidTimeApi, 'importData'>;
+export type Import = ZodiosResponseByAlias<SolidTimeApi, 'getImport'>['data'];
+export type ImportReport = NonNullable<Import['report']>;
 
 export type ReportingResponse = ZodiosResponseByAlias<SolidTimeApi, 'getAggregatedTimeEntries'>;
 

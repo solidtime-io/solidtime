@@ -31,4 +31,32 @@ return [
 
     'zip_max_uncompressed_size' => (int) (env('IMPORT_ZIP_MAX_UNCOMPRESSED_SIZE') ?: 500 * 1024 * 1024),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Import job
+    |--------------------------------------------------------------------------
+    |
+    | Imports are processed by a queued job. The timeout is in seconds, the
+    | "retry_after" of the queue connection needs to be higher than the
+    | timeout. The queue is the queue name the job is pushed to, null
+    | means the default queue of the connection.
+    |
+    */
+
+    'job_timeout' => (int) (env('IMPORT_JOB_TIMEOUT') ?: 3600),
+
+    'queue' => env('IMPORT_QUEUE'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Import file retention
+    |--------------------------------------------------------------------------
+    |
+    | Number of days the uploaded import files are kept after the import
+    | finished. The import itself is kept, only the file is deleted.
+    |
+    */
+
+    'file_retention_days' => (int) (env('IMPORT_FILE_RETENTION_DAYS') ?: 30),
+
 ];

@@ -16,11 +16,11 @@ use App\Filament\Resources\OrganizationResource\Pages\ViewOrganization;
 use App\Filament\Resources\OrganizationResource\RelationManagers\InvitationsRelationManager;
 use App\Filament\Resources\OrganizationResource\RelationManagers\UsersRelationManager;
 use App\Models\Organization;
+use App\Models\User;
 use App\Service\DeletionService;
 use App\Service\Export\ExportService;
 use App\Service\Import\Importers\ImporterProvider;
 use App\Service\Import\Importers\ImportException;
-use App\Service\Import\Importers\ReportDto;
 use App\Service\Import\ImportService;
 use App\Service\TimezoneService;
 use Brick\Money\IsoCurrencyProvider;
@@ -39,6 +39,7 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use League\Flysystem\UnableToReadFile;
 
@@ -192,30 +193,29 @@ class OrganizationResource extends Resource
                             }
                             /** @var string $timezone */
                             $timezone = $data['timezone'];
-                            /** @var ReportDto $report */
-                            $report = app(ImportService::class)->import(
+                            /** @var User|null $user */
+                            $user = Auth::user();
+                            $import = app(ImportService::class)->createFileImport(
                                 $record,
+                                $user,
                                 $data['type'],
                                 $file,
                                 $timezone
                             );
                             Notification::make()
-                                ->title('Import successful')
+                                ->title('Import queued')
                                 ->success()
-                                ->body(
-                                    'Imported time entries: '.$report->timeEntriesCreated.'<br>'.
-                                    'Imported clients: '.$report->clientsCreated.'<br>'.
-                                    'Imported projects: '.$report->projectsCreated.'<br>'.
-                                    'Imported tasks: '.$report->tasksCreated.'<br>'.
-                                    'Imported tags: '.$report->tagsCreated.'<br>'.
-                                    'Imported users: '.$report->usersCreated
-                                )
+                                ->body('The import is processed in the background, see the imports for the result.')
+                                ->actions([
+                                    Action::make('view')
+                                        ->label('View import')
+                                        ->url(ImportResource::getUrl('view', ['record' => $import])),
+                                ])
                                 ->persistent()
                                 ->send();
                         } catch (ImportException $exception) {
-                            report($exception);
                             Notification::make()
-                                ->title('Import failed, changes rolled back')
+                                ->title('Import failed')
                                 ->danger()
                                 ->body('Message: '.$exception->getMessage())
                                 ->persistent()

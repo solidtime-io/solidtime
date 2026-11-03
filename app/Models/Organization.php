@@ -40,6 +40,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  * @property Collection<int, User> $users
  * @property Collection<int, User> $realUsers
  * @property-read Collection<int, OrganizationInvitation> $organizationInvitations
+ * @property-read Collection<int, Import> $imports
  * @property Member $membership
  * @property NumberFormat $number_format
  * @property CurrencyFormat $currency_format
@@ -156,6 +157,14 @@ class Organization extends Model implements AuditableContract
     public function organizationInvitations(): HasMany
     {
         return $this->hasMany(OrganizationInvitation::class, 'organization_id');
+    }
+
+    /**
+     * @return HasMany<Import, $this>
+     */
+    public function imports(): HasMany
+    {
+        return $this->hasMany(Import::class, 'organization_id');
     }
 
     /**

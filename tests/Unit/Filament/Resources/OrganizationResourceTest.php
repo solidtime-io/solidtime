@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Filament\Resources;
 
+use App\Enums\ImportStatus;
 use App\Enums\Role;
 use App\Events\OrganizationInvitationAdding;
 use App\Filament\Resources\OrganizationResource;
 use App\Filament\Resources\UserResource;
 use App\Mail\OrganizationInvitationMail;
+use App\Models\Import;
 use App\Models\Member;
 use App\Models\Organization;
 use App\Models\OrganizationInvitation;
@@ -17,12 +19,11 @@ use App\Models\User;
 use App\Service\DeletionService;
 use App\Service\Export\ExportService;
 use App\Service\Import\Importers\ImportException;
-use App\Service\Import\Importers\ReportDto;
 use App\Service\Import\ImportService;
 use Exception;
 use Filament\Notifications\Notification;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Mail;
@@ -173,23 +174,18 @@ class OrganizationResourceTest extends FilamentTestCase
         // Arrange
         Storage::fake(config('filesystems.private'));
         $organization = Organization::factory()->create();
-        $this->mock(ImportService::class, function (MockInterface $mock) use ($organization): void {
-            $mock->shouldReceive('import')
-                ->withArgs(function (Organization $organizationArg, string $importerType, string $data, string $timezone) use ($organization): bool {
+        $import = Import::factory()->forOrganization($organization)->create();
+        $this->mock(ImportService::class, function (MockInterface $mock) use ($organization, $import): void {
+            $mock->shouldReceive('createFileImport')
+                ->withArgs(function (Organization $organizationArg, ?User $user, string $importerType, string $data, string $timezone) use ($organization): bool {
                     return $organizationArg->is($organization)
+                        && $user?->email === 'admin@example.com'
                         && $importerType === 'toggl_time_entries'
                         && $data === 'csv-content'
                         && $timezone === 'Europe/Vienna';
                 })
                 ->once()
-                ->andReturn(new ReportDto(
-                    clientsCreated: 1,
-                    projectsCreated: 2,
-                    tasksCreated: 3,
-                    timeEntriesCreated: 4,
-                    tagsCreated: 5,
-                    usersCreated: 6,
-                ));
+                ->andReturn($import);
         });
 
         // Act
@@ -203,24 +199,11 @@ class OrganizationResourceTest extends FilamentTestCase
         // Assert
         $response->assertHasNoTableActionErrors();
         $response->assertSuccessful();
-        $response->assertNotified(
-            Notification::make()
-                ->title('Import successful')
-                ->success()
-                ->body(
-                    'Imported time entries: 4<br>'.
-                    'Imported clients: 1<br>'.
-                    'Imported projects: 2<br>'.
-                    'Imported tasks: 3<br>'.
-                    'Imported tags: 5<br>'.
-                    'Imported users: 6'
-                )
-                ->persistent()
-        );
+        $response->assertNotified('Import queued');
         Storage::disk(config('filesystems.private'))->assertDirectoryEmpty('admin-import-uploads');
     }
 
-    public function test_import_into_an_organization_stores_copy_of_import_data_for_debugging_and_deletes_upload(): void
+    public function test_import_into_an_organization_creates_import_with_copy_of_import_data_and_deletes_upload(): void
     {
         // Arrange
         Storage::fake(config('filesystems.private'));
@@ -239,13 +222,12 @@ class OrganizationResourceTest extends FilamentTestCase
         $response->assertHasNoTableActionErrors();
         $response->assertSuccessful();
         Storage::disk(config('filesystems.private'))->assertDirectoryEmpty('admin-import-uploads');
-        $storedFiles = Storage::disk(config('filesystems.private'))->files('import');
-        $this->assertCount(1, $storedFiles);
-        $this->assertMatchesRegularExpression(
-            '/^import\/'.preg_quote(Carbon::now()->toDateString(), '/').'-'.preg_quote($organization->getKey(), '/').'-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/',
-            $storedFiles[0]
-        );
-        $this->assertSame($data, Storage::disk(config('filesystems.private'))->get($storedFiles[0]));
+        /** @var Import $import */
+        $import = Import::query()->whereBelongsTo($organization, 'organization')->firstOrFail();
+        $this->assertSame(ImportStatus::Completed, $import->status);
+        $this->assertSame('Europe/Vienna', $import->timezone);
+        $this->assertSame(Auth::id(), $import->user_id);
+        $this->assertSame($data, Storage::disk(config('filesystems.private'))->get((string) $import->file_path));
     }
 
     public function test_import_into_organization_shows_error_notification_on_import_exception(): void
@@ -254,9 +236,9 @@ class OrganizationResourceTest extends FilamentTestCase
         Storage::fake(config('filesystems.private'));
         $organization = Organization::factory()->create();
         $this->mock(ImportService::class, function (MockInterface $mock): void {
-            $mock->shouldReceive('import')
+            $mock->shouldReceive('createFileImport')
                 ->once()
-                ->andThrow(new ImportException('Invalid CSV'));
+                ->andThrow(new ImportException('Import is already in progress'));
         });
 
         // Act
@@ -271,9 +253,9 @@ class OrganizationResourceTest extends FilamentTestCase
         $response->assertSuccessful();
         $response->assertNotified(
             Notification::make()
-                ->title('Import failed, changes rolled back')
+                ->title('Import failed')
                 ->danger()
-                ->body('Message: Invalid CSV')
+                ->body('Message: Import is already in progress')
                 ->persistent()
         );
         Storage::disk(config('filesystems.private'))->assertDirectoryEmpty('admin-import-uploads');
@@ -285,7 +267,7 @@ class OrganizationResourceTest extends FilamentTestCase
         Storage::fake(config('filesystems.private'));
         $organization = Organization::factory()->create();
         $this->mock(ImportService::class, function (MockInterface $mock): void {
-            $mock->shouldNotReceive('import');
+            $mock->shouldNotReceive('createFileImport');
         });
 
         // Act
@@ -300,7 +282,7 @@ class OrganizationResourceTest extends FilamentTestCase
         $response->assertSuccessful();
         $response->assertNotified(
             Notification::make()
-                ->title('Import failed, changes rolled back')
+                ->title('Import failed')
                 ->danger()
                 ->body('Message: File not found')
                 ->persistent()
@@ -313,7 +295,7 @@ class OrganizationResourceTest extends FilamentTestCase
         Storage::fake(config('filesystems.private'), ['throw' => false]);
         $organization = Organization::factory()->create();
         $this->mock(ImportService::class, function (MockInterface $mock): void {
-            $mock->shouldNotReceive('import');
+            $mock->shouldNotReceive('createFileImport');
         });
 
         // Act
@@ -328,7 +310,7 @@ class OrganizationResourceTest extends FilamentTestCase
         $response->assertSuccessful();
         $response->assertNotified(
             Notification::make()
-                ->title('Import failed, changes rolled back')
+                ->title('Import failed')
                 ->danger()
                 ->body('Message: File not found')
                 ->persistent()
@@ -340,7 +322,7 @@ class OrganizationResourceTest extends FilamentTestCase
         // Arrange
         $organization = Organization::factory()->create();
         $this->mock(ImportService::class, function (MockInterface $mock): void {
-            $mock->shouldNotReceive('import');
+            $mock->shouldNotReceive('createFileImport');
         });
 
         // Act

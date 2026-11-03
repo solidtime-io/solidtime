@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Http\Requests\V1\Import\ImportIndexRequest;
 use App\Http\Requests\V1\Import\ImportRequest;
+use App\Http\Resources\V1\Import\ImportCollection;
+use App\Http\Resources\V1\Import\ImportResource;
+use App\Models\Import;
 use App\Models\Organization;
 use App\Service\Import\Importers\ImporterContract;
 use App\Service\Import\Importers\ImporterProvider;
@@ -51,11 +55,13 @@ class ImportController extends Controller
     /**
      * Import data into the organization
      *
+     * The import is processed in the background. Use the returned import ID to poll the status of the import.
+     *
      * @throws AuthorizationException
      *
      * @operationId importData
      */
-    public function import(Organization $organization, ImportRequest $request, ImportService $importService): JsonResponse
+    public function import(Organization $organization, ImportRequest $request, ImportService $importService): JsonResponse|ImportResource
     {
         $this->checkPermission($organization, 'import');
 
@@ -67,43 +73,59 @@ class ImportController extends Controller
                 ], 400);
             }
 
-            $timezone = $this->user()->timezone;
-            $report = $importService->import(
+            $user = $this->user();
+            $import = $importService->createFileImport(
                 $organization,
+                $user,
                 $request->input('type'),
                 $importData,
-                $timezone
+                $user->timezone
             );
 
-            return new JsonResponse([
-                /** @var array{
-                 *   clients: array{
-                 *     created: int,
-                 *   },
-                 *   projects: array{
-                 *     created: int,
-                 *   },
-                 *   tasks: array{
-                 *     created: int,
-                 *   },
-                 *   time_entries: array{
-                 *     created: int,
-                 *   },
-                 *   tags: array{
-                 *     created: int,
-                 *   },
-                 *   users: array{
-                 *     created: int,
-                 *   }
-                 * } $report Import report */
-                'report' => $report->toArray(),
-            ], 200);
+            return (new ImportResource($import->refresh()))
+                ->response()
+                ->setStatusCode(202);
         } catch (ImportException $exception) {
-            report($exception);
-
             return new JsonResponse([
                 'message' => $exception->getMessage(),
             ], 400);
         }
+    }
+
+    /**
+     * Get imports
+     *
+     * @throws AuthorizationException
+     *
+     * @operationId getImports
+     */
+    public function indexImports(Organization $organization, ImportIndexRequest $request): ImportCollection
+    {
+        $this->checkPermission($organization, 'import');
+
+        $imports = Import::query()
+            ->whereBelongsTo($organization, 'organization')
+            ->orderBy('created_at', 'desc')
+            ->orderBy('id')
+            ->paginate(config('app.pagination_per_page_default'));
+
+        return new ImportCollection($imports);
+    }
+
+    /**
+     * Get import
+     *
+     * @throws AuthorizationException
+     *
+     * @operationId getImport
+     */
+    public function show(Organization $organization, Import $import): ImportResource
+    {
+        $this->checkPermission($organization, 'import');
+        if ($import->organization_id !== $organization->getKey()) {
+            throw new AuthorizationException('Import does not belong to organization');
+        }
+
+        return new ImportResource($import);
     }
 }
