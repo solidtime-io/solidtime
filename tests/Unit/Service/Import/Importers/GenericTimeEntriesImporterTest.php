@@ -114,6 +114,25 @@ class GenericTimeEntriesImporterTest extends ImporterTestAbstract
         $this->fail();
     }
 
+    public function test_import_does_not_set_client_on_time_entry_without_project(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $timezone = 'Europe/Vienna';
+        $importer = new GenericTimeEntriesImporter;
+        $importer->init($organization);
+        $data = "description,billable,client,project,tags,start,end,task,user_name,user_email\n".
+            '"Working hard","false","Big Company","","","2024-03-04T09:23:00Z","2024-03-04T10:23:00Z","","Peter Tester","peter.test@email.test"';
+
+        // Act
+        $importer->importData($data, $timezone);
+
+        // Assert
+        $timeEntry = TimeEntry::query()->sole();
+        $this->assertNull($timeEntry->project_id);
+        $this->assertNull($timeEntry->client_id);
+    }
+
     public function test_import_drops_billable_flags_and_rates_if_organization_can_not_use_billable_rates(): void
     {
         // Arrange

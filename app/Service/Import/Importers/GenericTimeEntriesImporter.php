@@ -128,7 +128,7 @@ class GenericTimeEntriesImporter extends DefaultImporter
                 $timeEntry->member_id = $memberId;
                 $timeEntry->task_id = $taskId;
                 $timeEntry->project_id = $projectId;
-                $timeEntry->client_id = $clientId;
+                $timeEntry->client_id = $project?->client_id;
                 $timeEntry->organization_id = $this->organization->id;
                 $timeEntry->description = $record['description'];
                 if (! in_array($record['billable'], ['true', 'false'], true)) {

@@ -8,6 +8,7 @@ use App\Filament\Resources\TimeEntryResource\Pages\CreateTimeEntry;
 use App\Filament\Resources\TimeEntryResource\Pages\EditTimeEntry;
 use App\Filament\Resources\TimeEntryResource\Pages\ListTimeEntries;
 use App\Models\Member;
+use App\Models\Project;
 use App\Models\TimeEntry;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -130,6 +131,20 @@ class TimeEntryResource extends Resource
         return [
             //
         ];
+    }
+
+    /**
+     * The client of a time entry is always the client of its project.
+     */
+    public static function getClientIdForProject(mixed $projectId): ?string
+    {
+        if ($projectId === null || $projectId === '') {
+            return null;
+        }
+        /** @var Project|null $project */
+        $project = Project::query()->find($projectId);
+
+        return $project?->client_id;
     }
 
     public static function getPages(): array
