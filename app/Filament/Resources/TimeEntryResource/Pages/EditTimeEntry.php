@@ -35,6 +35,7 @@ class EditTimeEntry extends EditRecord
                 $data['organization_id'] = $member->organization_id;
             }
         }
+        $data['client_id'] = TimeEntryResource::getClientIdForProject($data['project_id'] ?? null);
 
         return $data;
     }

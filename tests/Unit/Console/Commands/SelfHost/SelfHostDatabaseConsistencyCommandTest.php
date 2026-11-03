@@ -106,8 +106,10 @@ class SelfHostDatabaseConsistencyCommandTest extends TestCaseWithDatabase
         $client1 = Client::factory()->forOrganization($user->organization)->create();
         $project = Project::factory()->forOrganization($user->organization)->forClient($client1)->create();
         $timeEntry = TimeEntry::factory()->forMember($user->member)->create([
-            'client_id' => $client1->getKey(),
+            'project_id' => null,
         ]);
+        // The model removes the client of time entries without a project, so the inconsistent state is written directly
+        TimeEntry::query()->whereKey($timeEntry->getKey())->update(['client_id' => $client1->getKey()]);
 
         // Act
         $exitCode = $this->withoutMockingConsoleOutput()->artisan('self-host:database-consistency');

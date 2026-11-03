@@ -224,12 +224,8 @@ class SolidtimeImporter extends DefaultImporter
                     throw new ImportException('Time entry references a member that does not exist in the import');
                 }
                 $member = $this->memberImportHelper->getModelById($memberId);
-                $clientId = null;
-                if ($timeEntryRow['client_id'] !== '') {
-                    $clientId = $this->clientImportHelper->getKeyByExternalIdentifier($timeEntryRow['client_id']);
-                    if ($clientId === null) {
-                        throw new ImportException('Time entry references a client that does not exist in the import');
-                    }
+                if ($timeEntryRow['client_id'] !== '' && $this->clientImportHelper->getKeyByExternalIdentifier($timeEntryRow['client_id']) === null) {
+                    throw new ImportException('Time entry references a client that does not exist in the import');
                 }
                 $project = null;
                 $projectId = null;
@@ -259,7 +255,7 @@ class SolidtimeImporter extends DefaultImporter
                 $timeEntry->member_id = $memberId;
                 $timeEntry->task_id = $taskId;
                 $timeEntry->project_id = $projectId;
-                $timeEntry->client_id = $clientId;
+                $timeEntry->client_id = $project?->client_id;
                 $timeEntry->organization_id = $this->organization->id;
                 if (strlen($timeEntryRow['description']) > 5000) {
                     throw new ImportException('Time entry description is too long');
