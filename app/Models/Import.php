@@ -23,6 +23,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $file_path
  * @property array<string, mixed>|null $credentials
  * @property array<string, mixed>|null $options
+ * @property bool $ignore_limits
  * @property array<string, mixed>|null $report
  * @property string|null $error_message
  * @property Carbon|null $started_at
@@ -53,6 +54,7 @@ class Import extends Model
         'status' => ImportStatus::class,
         'credentials' => 'encrypted:array',
         'options' => 'array',
+        'ignore_limits' => 'bool',
         'report' => 'array',
         'started_at' => 'datetime',
         'finished_at' => 'datetime',

@@ -200,7 +200,8 @@ class OrganizationResource extends Resource
                                 $user,
                                 $data['type'],
                                 $file,
-                                $timezone
+                                $timezone,
+                                ignoreLimits: true
                             );
                             Notification::make()
                                 ->title('Import queued')

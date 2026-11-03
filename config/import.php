@@ -18,6 +18,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Import record limit
+    |--------------------------------------------------------------------------
+    |
+    | Maximum number of records (clients, projects, tasks, time entries, tags
+    | and users) a single import can create. Imports that exceed the limit
+    | fail and are rolled back. Imports started via the admin panel are not
+    | limited. Null disables the limit.
+    |
+    */
+
+    'max_records' => is_numeric(env('IMPORT_MAX_RECORDS')) ? (int) env('IMPORT_MAX_RECORDS') : null,
+
+    /*
+    |--------------------------------------------------------------------------
     | ZIP extraction limits
     |--------------------------------------------------------------------------
     |

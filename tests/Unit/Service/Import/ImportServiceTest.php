@@ -211,6 +211,85 @@ class ImportServiceTest extends TestCase
         $this->assertSame(0, TimeEntry::query()->count());
     }
 
+    public function test_process_fails_and_rolls_back_if_import_exceeds_record_limit(): void
+    {
+        // Arrange
+        config(['import.max_records' => 8]);
+        Storage::fake(config('filesystems.private'));
+        $organization = Organization::factory()->create();
+        $data = Storage::disk('testfiles')->get('toggl_time_entries_import_test_1.csv');
+        Storage::disk(config('filesystems.private'))->put('import/test', $data);
+        $import = Import::factory()->forOrganization($organization)->create([
+            'file_path' => 'import/test',
+        ]);
+
+        // Act
+        app(ImportService::class)->process($import);
+
+        // Assert
+        $import->refresh();
+        $this->assertSame(ImportStatus::Failed, $import->status);
+        $this->assertSame('The import would create 9 records, but imports are limited to 8 records. '.
+            'Bigger imports are possible, please contact the support.', $import->error_message);
+        $this->assertNull($import->report);
+        $this->assertSame(0, TimeEntry::query()->whereBelongsTo($organization, 'organization')->count());
+    }
+
+    public function test_process_succeeds_if_import_is_exactly_at_record_limit(): void
+    {
+        // Arrange
+        config(['import.max_records' => 9]);
+        Storage::fake(config('filesystems.private'));
+        $organization = Organization::factory()->create();
+        $data = Storage::disk('testfiles')->get('toggl_time_entries_import_test_1.csv');
+        Storage::disk(config('filesystems.private'))->put('import/test', $data);
+        $import = Import::factory()->forOrganization($organization)->create([
+            'file_path' => 'import/test',
+        ]);
+
+        // Act
+        app(ImportService::class)->process($import);
+
+        // Assert
+        $this->assertSame(ImportStatus::Completed, $import->refresh()->status);
+    }
+
+    public function test_process_ignores_record_limit_if_import_ignores_limits(): void
+    {
+        // Arrange
+        config(['import.max_records' => 1]);
+        Storage::fake(config('filesystems.private'));
+        $organization = Organization::factory()->create();
+        $data = Storage::disk('testfiles')->get('toggl_time_entries_import_test_1.csv');
+        Storage::disk(config('filesystems.private'))->put('import/test', $data);
+        $import = Import::factory()->forOrganization($organization)->create([
+            'file_path' => 'import/test',
+            'ignore_limits' => true,
+        ]);
+
+        // Act
+        app(ImportService::class)->process($import);
+
+        // Assert
+        $import->refresh();
+        $this->assertSame(ImportStatus::Completed, $import->status);
+        $this->assertSame(2, TimeEntry::query()->whereBelongsTo($organization, 'organization')->count());
+    }
+
+    public function test_create_file_import_stores_ignore_limits_flag(): void
+    {
+        // Arrange
+        Queue::fake();
+        Storage::fake(config('filesystems.private'));
+        $organization = Organization::factory()->create();
+
+        // Act
+        $import = app(ImportService::class)->createFileImport($organization, null, 'toggl_time_entries', 'data', 'Europe/Vienna', ignoreLimits: true);
+
+        // Assert
+        $this->assertTrue($import->refresh()->ignore_limits);
+    }
+
     public function test_process_marks_import_as_failed_if_file_does_not_exist(): void
     {
         // Arrange

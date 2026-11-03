@@ -13,6 +13,7 @@ use App\Models\User;
 use App\Service\Import\Importers\ImporterContract;
 use App\Service\Import\Importers\ImporterProvider;
 use App\Service\Import\Importers\ImportException;
+use App\Service\Import\Importers\ReportDto;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -26,9 +27,11 @@ class ImportService
     /**
      * Stores the import file and queues the import.
      *
+     * @param  bool  $ignoreLimits  Skip the import limits, only for imports started by a super admin (admin panel)
+     *
      * @throws ImportException
      */
-    public function createFileImport(Organization $organization, ?User $user, string $importerType, string $data, string $timezone): Import
+    public function createFileImport(Organization $organization, ?User $user, string $importerType, string $data, string $timezone, bool $ignoreLimits = false): Import
     {
         // Throws an InvalidArgumentException if the importer type is unknown
         app(ImporterProvider::class)->getImporter($importerType);
@@ -42,6 +45,7 @@ class ImportService
         $import->source = ImportSource::File;
         $import->status = ImportStatus::Pending;
         $import->timezone = $timezone;
+        $import->ignore_limits = $ignoreLimits;
         $import->organization()->associate($organization);
         $import->user()->associate($user);
         $import->id = $import->newUniqueId();
@@ -88,6 +92,8 @@ class ImportService
             $data = $this->getImportData($import);
             DB::transaction(function () use (&$importer, &$data, $import): void {
                 $importer->importData($data, $import->timezone);
+                // Note: The limit is checked after the import, the exception rolls back all created records
+                $this->checkLimits($import, $importer->getReport());
             });
 
             $import->status = ImportStatus::Completed;
@@ -117,6 +123,22 @@ class ImportService
         $import->credentials = null;
         $import->finished_at = Carbon::now();
         $import->save();
+    }
+
+    /**
+     * @throws ImportException
+     */
+    private function checkLimits(Import $import, ReportDto $report): void
+    {
+        $maxRecords = config('import.max_records');
+        if ($import->ignore_limits || $maxRecords === null) {
+            return;
+        }
+        $totalCreated = $report->getTotalCreated();
+        if ($totalCreated > $maxRecords) {
+            throw new ImportException('The import would create '.$totalCreated.' records, but imports are limited to '.
+                $maxRecords.' records. Bigger imports are possible, please contact the support.');
+        }
     }
 
     /**

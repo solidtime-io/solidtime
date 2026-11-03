@@ -27,6 +27,8 @@ return new class extends Migration
             // Encrypted credentials for imports via a third party API, removed after the import finished
             $table->text('credentials')->nullable();
             $table->jsonb('options')->nullable();
+            // Imports started by a super admin (admin panel) are not limited by the configured import limits
+            $table->boolean('ignore_limits')->default(false);
             $table->jsonb('report')->nullable();
             $table->text('error_message')->nullable();
             $table->dateTime('started_at')->nullable();

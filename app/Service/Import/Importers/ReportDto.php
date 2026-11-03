@@ -28,6 +28,12 @@ class ReportDto
         $this->usersCreated = $usersCreated;
     }
 
+    public function getTotalCreated(): int
+    {
+        return $this->clientsCreated + $this->projectsCreated + $this->tasksCreated +
+            $this->timeEntriesCreated + $this->tagsCreated + $this->usersCreated;
+    }
+
     /**
      * @return array{
      *    clients: array{

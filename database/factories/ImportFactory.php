@@ -32,6 +32,7 @@ class ImportFactory extends Factory
             'file_path' => null,
             'credentials' => null,
             'options' => null,
+            'ignore_limits' => false,
             'report' => null,
             'error_message' => null,
             'started_at' => null,

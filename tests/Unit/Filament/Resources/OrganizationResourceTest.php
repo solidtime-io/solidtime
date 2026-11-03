@@ -177,12 +177,13 @@ class OrganizationResourceTest extends FilamentTestCase
         $import = Import::factory()->forOrganization($organization)->create();
         $this->mock(ImportService::class, function (MockInterface $mock) use ($organization, $import): void {
             $mock->shouldReceive('createFileImport')
-                ->withArgs(function (Organization $organizationArg, ?User $user, string $importerType, string $data, string $timezone) use ($organization): bool {
+                ->withArgs(function (Organization $organizationArg, ?User $user, string $importerType, string $data, string $timezone, bool $ignoreLimits) use ($organization): bool {
                     return $organizationArg->is($organization)
                         && $user?->email === 'admin@example.com'
                         && $importerType === 'toggl_time_entries'
                         && $data === 'csv-content'
-                        && $timezone === 'Europe/Vienna';
+                        && $timezone === 'Europe/Vienna'
+                        && $ignoreLimits;
                 })
                 ->once()
                 ->andReturn($import);
@@ -206,6 +207,8 @@ class OrganizationResourceTest extends FilamentTestCase
     public function test_import_into_an_organization_creates_import_with_copy_of_import_data_and_deletes_upload(): void
     {
         // Arrange
+        // Note: Imports started via the admin panel are not limited
+        Config::set('import.max_records', 1);
         Storage::fake(config('filesystems.private'));
         $data = Storage::disk('testfiles')->get('toggl_time_entries_import_test_1.csv');
         $organization = Organization::factory()->create();
@@ -225,6 +228,7 @@ class OrganizationResourceTest extends FilamentTestCase
         /** @var Import $import */
         $import = Import::query()->whereBelongsTo($organization, 'organization')->firstOrFail();
         $this->assertSame(ImportStatus::Completed, $import->status);
+        $this->assertTrue($import->ignore_limits);
         $this->assertSame('Europe/Vienna', $import->timezone);
         $this->assertSame(Auth::id(), $import->user_id);
         $this->assertSame($data, Storage::disk(config('filesystems.private'))->get((string) $import->file_path));

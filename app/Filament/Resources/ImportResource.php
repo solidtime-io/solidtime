@@ -17,6 +17,7 @@ use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
@@ -68,6 +69,9 @@ class ImportResource extends Resource
                     ->disabled(),
                 TextInput::make('file_path')
                     ->label('File path')
+                    ->disabled(),
+                Toggle::make('ignore_limits')
+                    ->label('Ignore limits (admin import)')
                     ->disabled(),
                 Textarea::make('error_message')
                     ->label('Error message')
