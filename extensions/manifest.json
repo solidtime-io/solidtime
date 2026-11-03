@@ -5,7 +5,7 @@
     },
     "Services": {
         "repository": "solidtime-io/extension-services",
-        "ref": "v0.0.7"
+        "ref": "v0.0.8"
     },
     "Invoicing": {
         "repository": "solidtime-io/extension-invoicing",
