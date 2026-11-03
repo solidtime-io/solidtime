@@ -122,3 +122,9 @@ Route::get('/organization-invitations/{invitation}', [OrganizationInvitationCont
 Route::get('/users/{user}/verify-email-change', [UserController::class, 'verifyEmailChange'])
     ->middleware(['auth:web', 'signed:relative'])
     ->name('users.verify-email-change');
+
+// Filament's import/export download routes are not used, and the required tables do not exist.
+Route::prefix(config('filament.system_route_prefix', 'filament'))->group(function (): void {
+    Route::get('/exports/{export}/download', fn () => abort(404));
+    Route::get('/imports/{import}/failed-rows/download', fn () => abort(404));
+});
