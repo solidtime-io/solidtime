@@ -5215,18 +5215,19 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
             'time-entries:view:all',
         ]);
         $client = Client::factory()->forOrganization($data->organization)->create();
+        $project = Project::factory()->forOrganization($data->organization)->forClient($client)->create();
         $timeEntryWithClient = TimeEntry::factory()
             ->forOrganization($data->organization)
             ->forMember($data->member)
+            ->forProject($project)
             ->create([
-                'client_id' => $client->getKey(),
                 'start' => Carbon::now()->subHour(),
             ]);
         $timeEntryWithoutClient = TimeEntry::factory()
             ->forOrganization($data->organization)
             ->forMember($data->member)
+            ->forProject(null)
             ->create([
-                'client_id' => null,
                 'start' => Carbon::now()->subHour(),
             ]);
         Passport::actingAs($data->user);

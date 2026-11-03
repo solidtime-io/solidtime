@@ -140,6 +140,10 @@ class TimeEntry extends Model implements AuditableContract
                 $timeEntry->client_id = null;
                 $timeEntry->tags = [];
             }
+            // The client of a time entry is always the client of its project.
+            if ($timeEntry->project_id === null) {
+                $timeEntry->client_id = null;
+            }
         });
     }
 

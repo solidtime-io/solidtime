@@ -144,6 +144,25 @@ class TogglTimeEntriesImporterTest extends ImporterTestAbstract
         $this->fail();
     }
 
+    public function test_import_does_not_set_client_on_time_entry_without_project(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $timezone = 'Europe/Vienna';
+        $importer = new TogglTimeEntriesImporter;
+        $importer->init($organization);
+        $data = "User,Email,Client,Project,Task,Description,Billable,Start date,Start time,End date,End time,Duration,Tags,Amount (EUR)\n".
+            'Peter Tester,peter.test@email.test,Big Company,,,"",No,2024-03-04,10:23:52,2024-03-04,11:23:52,01:00:00,"",';
+
+        // Act
+        $importer->importData($data, $timezone);
+
+        // Assert
+        $timeEntry = TimeEntry::query()->sole();
+        $this->assertNull($timeEntry->project_id);
+        $this->assertNull($timeEntry->client_id);
+    }
+
     public function test_import_drops_billable_flags_and_rates_if_organization_can_not_use_billable_rates(): void
     {
         // Arrange

@@ -118,7 +118,7 @@ class ClockifyTimeEntriesImporter extends DefaultImporter
                 $timeEntry->member_id = $memberId;
                 $timeEntry->task_id = $taskId;
                 $timeEntry->project_id = $projectId;
-                $timeEntry->client_id = $clientId;
+                $timeEntry->client_id = $project?->client_id;
                 $timeEntry->organization_id = $this->organization->id;
                 if (strlen($record['Description']) > 5000) {
                     throw new ImportException('Time entry description is too long');

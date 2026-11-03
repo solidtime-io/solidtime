@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Model;
 
+use App\Models\Client;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Models\Tag;
@@ -160,6 +161,20 @@ class TimeEntryModelTest extends ModelTestAbstract
 
         // Assert
         $this->assertNull($clientId);
+    }
+
+    public function test_saving_removes_client_if_time_entry_has_no_project(): void
+    {
+        // Arrange
+        $client = Client::factory()->create();
+        $timeEntry = TimeEntry::factory()->forProject(null)->make();
+        $timeEntry->client_id = $client->getKey();
+
+        // Act
+        $timeEntry->save();
+
+        // Assert
+        $this->assertNull($timeEntry->refresh()->client_id);
     }
 
     public function test_computed_client_id_returns_project_client_id(): void

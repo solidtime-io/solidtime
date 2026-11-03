@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Tests\Unit\Filament\Resources;
 
 use App\Filament\Resources\TimeEntryResource;
+use App\Models\Client;
 use App\Models\Member;
 use App\Models\Organization;
+use App\Models\Project;
 use App\Models\TimeEntry;
 use App\Models\User;
 use Illuminate\Support\Facades\Config;
@@ -196,5 +198,55 @@ class TimeEntryResourceTest extends FilamentTestCase
         $this->assertSame($newMember->getKey(), $timeEntry->member_id);
         $this->assertSame($newUser->getKey(), $timeEntry->user_id);
         $this->assertSame($newOrganization->getKey(), $timeEntry->organization_id);
+    }
+
+    public function test_update_time_entry_sets_client_of_project(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $member = Member::factory()->forOrganization($organization)->create();
+        $oldProject = Project::factory()->forOrganization($organization)->forClient(Client::factory()->forOrganization($organization)->create())->create();
+        $newClient = Client::factory()->forOrganization($organization)->create();
+        $newProject = Project::factory()->forOrganization($organization)->forClient($newClient)->create();
+        $timeEntry = TimeEntry::factory()->forMember($member)->forProject($oldProject)->create();
+
+        // Act
+        $response = Livewire::test(TimeEntryResource\Pages\EditTimeEntry::class, ['record' => $timeEntry->getKey()])
+            ->fillForm([
+                'member_id' => $member->getKey(),
+                'project_id' => $newProject->getKey(),
+            ])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        // Assert
+        $response->assertSuccessful();
+        $timeEntry->refresh();
+        $this->assertSame($newProject->getKey(), $timeEntry->project_id);
+        $this->assertSame($newClient->getKey(), $timeEntry->client_id);
+    }
+
+    public function test_update_time_entry_removes_client_if_project_is_removed(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $member = Member::factory()->forOrganization($organization)->create();
+        $project = Project::factory()->forOrganization($organization)->forClient(Client::factory()->forOrganization($organization)->create())->create();
+        $timeEntry = TimeEntry::factory()->forMember($member)->forProject($project)->create();
+
+        // Act
+        $response = Livewire::test(TimeEntryResource\Pages\EditTimeEntry::class, ['record' => $timeEntry->getKey()])
+            ->fillForm([
+                'member_id' => $member->getKey(),
+                'project_id' => null,
+            ])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        // Assert
+        $response->assertSuccessful();
+        $timeEntry->refresh();
+        $this->assertNull($timeEntry->project_id);
+        $this->assertNull($timeEntry->client_id);
     }
 }

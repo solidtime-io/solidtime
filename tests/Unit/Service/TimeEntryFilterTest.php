@@ -174,13 +174,11 @@ class TimeEntryFilterTest extends TestCaseWithDatabase
     {
         // Arrange
         $client = Client::factory()->create();
-        $timeEntryWithClient = TimeEntry::factory()->create([
-            'client_id' => $client->getKey(),
+        $project = Project::factory()->forClient($client)->create(['organization_id' => $client->organization_id]);
+        $timeEntryWithClient = TimeEntry::factory()->forProject($project)->create([
             'organization_id' => $client->organization_id,
         ]);
-        $timeEntryWithoutClient = TimeEntry::factory()->create([
-            'client_id' => null,
-        ]);
+        $timeEntryWithoutClient = TimeEntry::factory()->forProject(null)->create();
 
         $builder = TimeEntry::query();
         $filter = new TimeEntryFilter($builder);
@@ -475,11 +473,11 @@ class TimeEntryFilterTest extends TestCaseWithDatabase
     {
         // Arrange
         $client = Client::factory()->create();
-        TimeEntry::factory()->create([
-            'client_id' => $client->getKey(),
+        $project = Project::factory()->forClient($client)->create(['organization_id' => $client->organization_id]);
+        TimeEntry::factory()->forProject($project)->create([
             'organization_id' => $client->organization_id,
         ]);
-        TimeEntry::factory()->create(['client_id' => null]);
+        TimeEntry::factory()->forProject(null)->create();
 
         $builder = TimeEntry::query();
         $filter = new TimeEntryFilter($builder);
