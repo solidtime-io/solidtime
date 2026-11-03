@@ -1,4 +1,5 @@
 ARG PHP_VERSION=8.3
+ARG MIN_PHP_VERSION=8.3.36
 ARG FRANKENPHP_VERSION=1.13
 ARG COMPOSER_VERSION=2.8
 ARG APP_ENV
@@ -35,6 +36,7 @@ ARG USER_ID=1000
 ARG GROUP_ID=1000
 ARG TZ=UTC
 ARG DOCKER_FILES_BASE_PATH
+ARG MIN_PHP_VERSION
 
 ENV DEBIAN_FRONTEND=noninteractive \
     TERM=xterm-color \
@@ -57,6 +59,8 @@ ENV XDG_CONFIG_HOME=${ROOT}/.config XDG_DATA_HOME=${ROOT}/.data
 WORKDIR ${ROOT}
 
 SHELL ["/bin/bash", "-eou", "pipefail", "-c"]
+
+RUN php -r 'if (version_compare(PHP_VERSION, $argv[1], "<")) { fwrite(STDERR, "error: PHP >= {$argv[1]} required, got ".PHP_VERSION.PHP_EOL); exit(1); }' "${MIN_PHP_VERSION}"
 
 RUN ln -snf /usr/share/zoneinfo/${TZ} /etc/localtime \
     && echo ${TZ} > /etc/timezone
