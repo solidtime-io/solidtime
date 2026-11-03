@@ -8,6 +8,7 @@ use App\Enums\Role;
 use App\Events\OrganizationInvitationAdding;
 use App\Exceptions\Api\InvitationForTheEmailAlreadyExistsApiException;
 use App\Exceptions\Api\UserIsAlreadyMemberOfOrganizationApiException;
+use App\Exceptions\MemberCanNotBeAddedException;
 use App\Mail\OrganizationInvitationMail;
 use App\Models\Organization;
 use App\Models\OrganizationInvitation;
@@ -90,7 +91,17 @@ class InvitationService
 
                 continue;
             }
-            app(MemberService::class)->addMember($user, $organization, $role);
+            try {
+                app(MemberService::class)->addMember($user, $organization, $role);
+            } catch (MemberCanNotBeAddedException $exception) {
+                Log::warning('Accepted invitation could not be processed', [
+                    'invitation' => $invitation->getKey(),
+                    'organization' => $organization->getKey(),
+                    'exception' => $exception::class,
+                ]);
+
+                continue;
+            }
 
             $invitation->delete();
 
