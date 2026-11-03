@@ -6,7 +6,9 @@ namespace Tests\Feature;
 
 use App\Enums\Role;
 use App\Enums\Weekday;
+use App\Events\MemberAdding;
 use App\Events\NewsletterRegistered;
+use App\Exceptions\MemberCanNotBeAddedException;
 use App\Models\Member;
 use App\Models\OrganizationInvitation;
 use App\Models\User;
@@ -527,6 +529,53 @@ class RegistrationTest extends TestCaseWithDatabase
             'id' => $organizationInvitation->getKey(),
             'email' => 'test@example.com',
             'role' => 'invalid-role',
+        ]);
+        $this->assertDatabaseMissing(Member::class, [
+            'organization_id' => $user->organization->getKey(),
+            'user_id' => $newUser->getKey(),
+        ]);
+        $organizations = $newUser->organizations;
+        $this->assertCount(1, $organizations);
+        $this->assertNotSame($user->organization->id, $organizations->first()->id);
+    }
+
+    public function test_registration_succeeds_and_keeps_accepted_invitation_if_member_can_not_be_added(): void
+    {
+        // Arrange
+        $user = $this->createUserWithPermission();
+        $organizationInvitation = OrganizationInvitation::factory()
+            ->forOrganization($user->organization)
+            ->role(Role::Employee)
+            ->accepted()
+            ->create([
+                'email' => 'test@example.com',
+            ]);
+        Event::listen(MemberAdding::class, function (): void {
+            throw new MemberCanNotBeAddedException;
+        });
+
+        // Act
+        $response = $this->post('/register', [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+            'terms' => true,
+        ]);
+
+        // Assert
+        $this->assertAuthenticated();
+        $response->assertRedirect(RouteServiceProvider::HOME);
+        Log::assertLogged(fn (LogEntry $log) => $log->level === 'warning'
+            && $log->message === 'Accepted invitation could not be processed'
+            && $log->context === [
+                'invitation' => $organizationInvitation->getKey(),
+                'organization' => $user->organization->getKey(),
+                'exception' => MemberCanNotBeAddedException::class,
+            ]);
+        $newUser = User::where('email', 'test@example.com')->firstOrFail();
+        $this->assertDatabaseHas(OrganizationInvitation::class, [
+            'id' => $organizationInvitation->getKey(),
         ]);
         $this->assertDatabaseMissing(Member::class, [
             'organization_id' => $user->organization->getKey(),
