@@ -15,34 +15,10 @@ updates:
     schedule:
       interval: "weekly"
     target-branch: "main"
-    groups:
-      major-updates:
-        update-types:
-          - "major"
-      minor-updates:
-        update-types:
-          - "minor"
-          - "patch"
-      security-updates:
-        applies-to: version-updates
-        update-types:
-          - "minor"
-          - "patch"
+    open-pull-requests-limit: 0
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
       interval: "weekly"
     target-branch: "main"
-    groups:
-      major-updates:
-        update-types:
-          - "major"
-      minor-updates:
-        update-types:
-          - "minor"
-          - "patch"
-      security-updates:
-        applies-to: version-updates
-        update-types:
-          - "minor"
-          - "patch"
+    open-pull-requests-limit: 0
