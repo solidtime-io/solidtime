@@ -12,7 +12,6 @@ use App\Models\Goal;
 use App\Models\Member;
 use App\Models\Organization;
 use App\Models\OrganizationInvitation;
-use App\Models\Passport\RefreshToken;
 use App\Models\Project;
 use App\Models\ProjectMember;
 use App\Models\Report;
@@ -174,10 +173,7 @@ class DeletionService
             }
         }
 
-        // Refresh tokens are not linked to the user directly, so they need to be deleted via their access tokens.
-        // Otherwise a still-valid refresh token could be used to issue a new access token for a deleted user,
-        // which fails with a foreign key violation on oauth_access_tokens.user_id.
-        RefreshToken::query()->whereIn('access_token_id', $user->accessTokens()->pluck('id'))->delete();
+        // Note: Refresh tokens are deleted via the cascading foreign key on oauth_refresh_tokens.access_token_id
         $user->accessTokens()->delete();
         $user->authCodes()->delete();
 
