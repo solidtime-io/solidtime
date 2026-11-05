@@ -184,4 +184,27 @@ class TogglTimeEntriesImporterTest extends ImporterTestAbstract
             $this->assertNull($timeEntry->billable_rate);
         }
     }
+
+    public function test_import_fails_if_email_is_invalid(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $timezone = 'Europe/Vienna';
+        $importer = new TogglTimeEntriesImporter;
+        $importer->init($organization);
+        $data = "User,Email,Client,Project,Task,Description,Billable,Start date,Start time,End date,End time,Duration,Tags,Amount (EUR)\n".
+            'Ivanna,not-an-email,,Project without Client,,"",No,2024-03-04,09:23:52,2024-03-04,10:23:52,01:00:00,"",';
+
+        // Act
+        try {
+            $importer->importData($data, $timezone);
+        } catch (ImportException $e) {
+            // Assert
+            $this->assertSame('Value of Email ("not-an-email") is not a valid email address', $e->getMessage());
+            $this->assertSame(0, TimeEntry::query()->count());
+
+            return;
+        }
+        $this->fail();
+    }
 }

@@ -244,4 +244,39 @@ class TogglDataImporterTest extends ImporterTestAbstract
         $this->assertCount(1, $projectMembers);
         $this->assertNull($projectMembers->first()->billable_rate);
     }
+
+    public function test_import_fails_if_user_has_no_email(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $importer = new TogglDataImporter;
+        $importer->init($organization);
+        $tempDir = TemporaryDirectory::make();
+        $zipPath = $tempDir->path('no_email.zip');
+        $zip = new ZipArchive;
+        $zip->open($zipPath, ZipArchive::CREATE);
+        $zip->addFromString('clients.json', '[]');
+        $zip->addFromString('tags.json', '[]');
+        $zip->addFromString('projects.json', '[]');
+        $zip->addFromString('workspace_users.json', (string) json_encode([[
+            'email' => null,
+            'name' => 'Ivanna',
+            'timezone' => 'Europe/Vienna',
+            'uid' => 3001,
+        ]]));
+        $zip->close();
+        $data = file_get_contents($zipPath);
+
+        // Act
+        try {
+            $importer->importData($data, 'Europe/Vienna');
+        } catch (ImportException $e) {
+            // Assert
+            $this->assertSame('Value of email ("") is not a valid email address', $e->getMessage());
+            $this->assertSame(0, User::query()->where('name', '=', 'Ivanna')->count());
+
+            return;
+        }
+        $this->fail();
+    }
 }

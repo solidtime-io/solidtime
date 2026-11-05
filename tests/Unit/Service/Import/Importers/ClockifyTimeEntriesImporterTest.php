@@ -278,4 +278,29 @@ class ClockifyTimeEntriesImporterTest extends ImporterTestAbstract
             $this->assertNull($timeEntry->billable_rate);
         }
     }
+
+    public function test_import_fails_if_email_is_invalid(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $timezone = 'Europe/Vienna';
+        $importer = new ClockifyTimeEntriesImporter;
+        $importer->init($organization);
+        $data = <<<'CSV'
+        "Project","Client","Description","Task","User","Group","Email","Tags","Billable","Start Date","Start Time","End Date","End Time","Duration (h)","Duration (decimal)","Billable Rate (USD)","Billable Amount (USD)"
+        "Project","Client","Working hard","","Ivanna","","","","Yes","03/04/2024","10:00:00 AM","03/04/2024","10:30:00 AM","00:30:00","0.50","0.00","0.00"
+        CSV;
+
+        // Act
+        try {
+            $importer->importData($data, $timezone);
+        } catch (ImportException $e) {
+            // Assert
+            $this->assertSame('Value of Email ("") is not a valid email address', $e->getMessage());
+            $this->assertSame(0, TimeEntry::query()->count());
+
+            return;
+        }
+        $this->fail();
+    }
 }

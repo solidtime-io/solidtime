@@ -140,7 +140,7 @@ class SolidtimeImporter extends DefaultImporter
 
             foreach ($membersReader as $member) {
                 $userId = $this->userImportHelper->getKey([
-                    'email' => $member['email'],
+                    'email' => $this->validateEmail($member['email'], 'email'),
                 ], [
                     'name' => $member['name'],
                     'timezone' => 'UTC',

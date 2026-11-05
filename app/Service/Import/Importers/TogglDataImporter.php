@@ -101,7 +101,7 @@ class TogglDataImporter extends DefaultImporter
                 }
 
                 $userId = $this->userImportHelper->getKey([
-                    'email' => $workspaceUser->email,
+                    'email' => $this->validateEmail($workspaceUser->email ?? null, 'email'),
                 ], [
                     'name' => $workspaceUser->name,
                     'timezone' => $timezone,

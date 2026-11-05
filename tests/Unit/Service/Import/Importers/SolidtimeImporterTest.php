@@ -12,6 +12,7 @@ use App\Models\Organization;
 use App\Models\Project;
 use App\Models\ProjectMember;
 use App\Models\TimeEntry;
+use App\Models\User;
 use App\Service\Import\Importers\DefaultImporter;
 use App\Service\Import\Importers\ImportException;
 use App\Service\Import\Importers\SolidtimeImporter;
@@ -291,6 +292,33 @@ class SolidtimeImporterTest extends ImporterTestAbstract
         } catch (ImportException $e) {
             // Assert
             $this->assertSame('End date ("2024-03-04T08:23:52Z") is before start date ("2024-03-04T09:23:52Z")', $e->getMessage());
+
+            return;
+        }
+        $this->fail();
+    }
+
+    public function test_import_fails_if_member_has_no_email(): void
+    {
+        // Arrange
+        $zipPath = $this->createTestZip('solidtime_import_test_1');
+        $zip = new ZipArchive;
+        $zip->open($zipPath);
+        $zip->addFromString('members.csv', "id,user_id,name,email,organization_id,billable_rate,role,created_at,updated_at\n".
+            '06e6e605-86bd-417b-b75d-02f671e5d520,0446cdd8-3ad1-43d6-9231-9e0dc4eeb71c,"Ivanna",,ee5a8cd6-312f-4ae6-b044-e2014f09ecc2,,admin,2024-08-22T10:36:48Z,2024-08-22T10:36:48Z');
+        $zip->close();
+        $organization = Organization::factory()->create();
+        $importer = new SolidtimeImporter;
+        $importer->init($organization);
+        $data = file_get_contents($zipPath);
+
+        // Act
+        try {
+            $importer->importData($data, 'Europe/Vienna');
+        } catch (ImportException $e) {
+            // Assert
+            $this->assertSame('Value of email ("") is not a valid email address', $e->getMessage());
+            $this->assertSame(0, User::query()->where('name', '=', 'Ivanna')->count());
 
             return;
         }
