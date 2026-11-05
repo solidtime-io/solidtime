@@ -60,7 +60,7 @@ class ClockifyTimeEntriesImporter extends DefaultImporter
             $records = $reader->getRecords();
             foreach ($records as $record) {
                 $userId = $this->userImportHelper->getKey([
-                    'email' => $record['Email'],
+                    'email' => $this->validateEmail($record['Email'], 'Email'),
                 ], [
                     'name' => $record['User'],
                     'timezone' => 'UTC',

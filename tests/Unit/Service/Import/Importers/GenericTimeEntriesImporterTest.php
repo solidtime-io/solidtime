@@ -6,11 +6,13 @@ namespace Tests\Unit\Service\Import\Importers;
 
 use App\Models\Organization;
 use App\Models\TimeEntry;
+use App\Models\User;
 use App\Service\Import\Importers\DefaultImporter;
 use App\Service\Import\Importers\GenericTimeEntriesImporter;
 use App\Service\Import\Importers\ImportException;
 use Illuminate\Support\Facades\Storage;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 #[CoversClass(GenericTimeEntriesImporter::class)]
 #[CoversClass(ImportException::class)]
@@ -85,6 +87,61 @@ class GenericTimeEntriesImporterTest extends ImporterTestAbstract
         } catch (ImportException $e) {
             // Assert
             $this->assertSame('Task name ("'.$taskName.'") is too long, maximum length is 500 characters', $e->getMessage());
+
+            return;
+        }
+        $this->fail();
+    }
+
+    public static function invalidUserEmailProvider(): array
+    {
+        return [
+            'empty' => ['', ''],
+            'whitespace' => ['   ', ''],
+            'invalid' => ['not-an-email', 'not-an-email'],
+        ];
+    }
+
+    #[DataProvider('invalidUserEmailProvider')]
+    public function test_import_fails_if_user_email_is_invalid(string $userEmail, string $expectedValue): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $timezone = 'Europe/Vienna';
+        $importer = new GenericTimeEntriesImporter;
+        $importer->init($organization);
+        $data = "description,billable,client,project,tags,start,end,task,user_name,user_email\n".
+            '"Working hard","true","","","","2024-03-04T09:23:00Z","2024-03-04T10:23:00Z","","Ivanna","'.$userEmail.'"';
+
+        // Act
+        try {
+            $importer->importData($data, $timezone);
+        } catch (ImportException $e) {
+            // Assert
+            $this->assertSame('Value of user_email ("'.$expectedValue.'") is not a valid email address', $e->getMessage());
+            $this->assertSame(0, User::query()->where('name', '=', 'Ivanna')->count());
+
+            return;
+        }
+        $this->fail();
+    }
+
+    public function test_import_fails_if_user_email_is_missing_in_row(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $timezone = 'Europe/Vienna';
+        $importer = new GenericTimeEntriesImporter;
+        $importer->init($organization);
+        $data = "description,billable,client,project,tags,start,end,task,user_name,user_email\n".
+            '"Working hard","true","","","","2024-03-04T09:23:00Z","2024-03-04T10:23:00Z","","Ivanna"';
+
+        // Act
+        try {
+            $importer->importData($data, $timezone);
+        } catch (ImportException $e) {
+            // Assert
+            $this->assertSame('Value of user_email ("") is not a valid email address', $e->getMessage());
 
             return;
         }

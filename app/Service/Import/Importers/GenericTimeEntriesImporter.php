@@ -74,7 +74,7 @@ class GenericTimeEntriesImporter extends DefaultImporter
             $records = $reader->getRecords();
             foreach ($records as $record) {
                 $userId = $this->userImportHelper->getKey([
-                    'email' => $record['user_email'],
+                    'email' => $this->validateEmail($record['user_email'], 'user_email'),
                 ], [
                     'name' => $record['user_name'],
                     'timezone' => 'UTC',
