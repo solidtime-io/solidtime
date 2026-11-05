@@ -17,6 +17,7 @@ use App\Models\Organization;
 use App\Models\ProjectMember;
 use App\Models\TimeEntry;
 use App\Models\User;
+use Illuminate\Auth\Events\Verified;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -64,6 +65,11 @@ class UserService
                 $timeFormat,
             );
             $this->switchCurrentOrganization($user, $organization);
+        }
+
+        // Same as a regular email verification, so that e.g. the trial of the organization starts
+        if ($verifyEmail) {
+            event(new Verified($user));
         }
 
         return $user;
