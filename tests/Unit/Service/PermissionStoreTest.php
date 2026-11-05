@@ -9,6 +9,7 @@ use App\Models\Organization;
 use App\Models\User;
 use App\Service\PermissionStore;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\CoversClass;
 use Tests\TestCase;
 
@@ -206,5 +207,103 @@ class PermissionStoreTest extends TestCase
         $this->assertNotContains('tasks:create:all', $result);
         $this->assertNotContains('tasks:update:all', $result);
         $this->assertNotContains('tasks:delete:all', $result);
+    }
+
+    public function test_permission_checks_need_one_query_per_request(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $user = User::factory()->create();
+        $organization->users()->attach($user, ['role' => Role::Employee->value]);
+        $permissionStore = new PermissionStore;
+        $this->actingAs($user);
+        DB::enableQueryLog();
+
+        // Act
+        $permissionStore->isMember($organization);
+        $permissionStore->has($organization, 'time-entries:view:own');
+        $permissionStore->has($organization, 'time-entries:view:all');
+        $permissionStore->getPermissions($organization);
+        $permissionStore->getMember($organization, $user);
+
+        // Assert
+        $this->assertCount(1, DB::getQueryLog());
+    }
+
+    public function test_is_member_returns_false_when_user_does_not_belong_to_organization(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $user = User::factory()->create();
+        $permissionStore = new PermissionStore;
+        $this->actingAs($user);
+
+        // Act
+        $result = $permissionStore->isMember($organization);
+
+        // Assert
+        $this->assertFalse($result);
+    }
+
+    public function test_is_member_returns_false_when_user_is_not_authenticated(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $permissionStore = new PermissionStore;
+
+        // Act
+        $result = $permissionStore->isMember($organization);
+
+        // Assert
+        $this->assertFalse($result);
+    }
+
+    public function test_membership_created_after_a_failed_check_is_picked_up(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $user = User::factory()->create();
+        $permissionStore = new PermissionStore;
+        $this->actingAs($user);
+        $this->assertFalse($permissionStore->has($organization, 'time-entries:view:own'));
+        $organization->users()->attach($user, ['role' => Role::Employee->value]);
+
+        // Act
+        $result = $permissionStore->has($organization, 'time-entries:view:own');
+
+        // Assert
+        $this->assertTrue($result);
+    }
+
+    public function test_get_member_returns_the_membership_of_the_user(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $user = User::factory()->create();
+        $organization->users()->attach($user, ['role' => Role::Employee->value]);
+        $permissionStore = new PermissionStore;
+
+        // Act
+        $member = $permissionStore->getMember($organization, $user);
+
+        // Assert
+        $this->assertNotNull($member);
+        $this->assertSame($user->getKey(), $member->user_id);
+        $this->assertSame($organization->getKey(), $member->organization_id);
+        $this->assertSame(Role::Employee->value, $member->role);
+    }
+
+    public function test_get_member_returns_null_when_user_does_not_belong_to_organization(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $user = User::factory()->create();
+        $permissionStore = new PermissionStore;
+
+        // Act
+        $member = $permissionStore->getMember($organization, $user);
+
+        // Assert
+        $this->assertNull($member);
     }
 }

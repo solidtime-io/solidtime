@@ -6,6 +6,7 @@ namespace App\Http;
 
 use App\Http\Middleware\Authenticate;
 use App\Http\Middleware\CheckOrganizationBlocked;
+use App\Http\Middleware\CheckOrganizationMember;
 use App\Http\Middleware\EncryptCookies;
 use App\Http\Middleware\EnsureEmailIsVerified;
 use App\Http\Middleware\ForceHttps;
@@ -106,5 +107,6 @@ class Kernel extends HttpKernel
         'throttle' => ThrottleRequests::class,
         'verified' => EnsureEmailIsVerified::class,
         'check-organization-blocked' => CheckOrganizationBlocked::class,
+        'check-organization-member' => CheckOrganizationMember::class,
     ];
 }

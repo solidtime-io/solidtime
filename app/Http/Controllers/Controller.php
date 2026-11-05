@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Models\Member;
 use App\Models\Organization;
 use App\Models\User;
+use App\Service\PermissionStore;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Validation\ValidatesRequests;
@@ -40,8 +41,7 @@ class Controller extends BaseController
     protected function member(Organization $organization): Member
     {
         $user = $this->user();
-        /** @var Member|null $member */
-        $member = Member::query()->whereBelongsTo($organization, 'organization')->whereBelongsTo($user, 'user')->first();
+        $member = app(PermissionStore::class)->getMember($organization, $user);
         if ($member === null) {
             Log::error('This function should only be called in authenticated context after checking the user is a member of the organization', [
                 'user' => $user->getKey(),
