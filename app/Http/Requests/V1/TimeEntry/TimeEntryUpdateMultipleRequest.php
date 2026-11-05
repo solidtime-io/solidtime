@@ -15,6 +15,8 @@ use App\Service\PermissionStore;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ConditionalRules;
 use Illuminate\Validation\Rule;
 use Korridor\LaravelModelValidationRules\Rules\ExistsEloquent;
 
@@ -26,7 +28,7 @@ class TimeEntryUpdateMultipleRequest extends BaseFormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, array<string|ValidationRule|\Illuminate\Contracts\Validation\Rule>>
+     * @return array<string, array<string|ValidationRule|\Illuminate\Contracts\Validation\Rule|ConditionalRules>>
      */
     public function rules(): array
     {
@@ -80,11 +82,13 @@ class TimeEntryUpdateMultipleRequest extends BaseFormRequest
                     /** @var Builder<Task> $builder */
                     return $builder->whereBelongsTo($this->organization, 'organization');
                 })->uuid(),
-                ExistsEloquent::make(Task::class, null, function (Builder $builder): Builder {
-                    /** @var Builder<Task> $builder */
-                    return $builder->whereBelongsTo($this->organization, 'organization')
-                        ->where('project_id', $this->input('changes.project_id'));
-                })->uuid()->withMessage(__('validation.task_belongs_to_project')),
+                Rule::when(Str::isUuid($this->input('changes.project_id')), [
+                    ExistsEloquent::make(Task::class, null, function (Builder $builder): Builder {
+                        /** @var Builder<Task> $builder */
+                        return $builder->whereBelongsTo($this->organization, 'organization')
+                            ->where('project_id', $this->input('changes.project_id'));
+                    })->uuid()->withMessage(__('validation.task_belongs_to_project')),
+                ]),
             ],
             // Whether time entry is billable
             'changes.billable' => [
