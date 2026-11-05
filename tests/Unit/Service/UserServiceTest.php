@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Service;
 
 use App\Enums\Role;
+use App\Enums\Weekday;
 use App\Models\Member;
 use App\Models\Organization;
 use App\Models\Project;
@@ -12,7 +13,9 @@ use App\Models\ProjectMember;
 use App\Models\TimeEntry;
 use App\Models\User;
 use App\Service\UserService;
+use Illuminate\Auth\Events\Verified;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Event;
 use PHPUnit\Framework\Attributes\CoversClass;
 use Tests\TestCase;
 
@@ -27,6 +30,33 @@ class UserServiceTest extends TestCase
     {
         parent::setUp();
         $this->userService = app(UserService::class);
+    }
+
+    public function test_create_user_with_verified_email_dispatches_verified_event(): void
+    {
+        // Arrange
+        Event::fake([Verified::class]);
+
+        // Act
+        $user = $this->userService->createUser('Test User', 'Test@Example.test', 'password', 'Europe/Vienna', Weekday::Monday, 'EUR', verifyEmail: true);
+
+        // Assert
+        $this->assertNotNull($user->email_verified_at);
+        $this->assertSame('test@example.test', $user->email);
+        Event::assertDispatched(fn (Verified $event): bool => $event->user->is($user));
+    }
+
+    public function test_create_user_without_verified_email_does_not_dispatch_verified_event(): void
+    {
+        // Arrange
+        Event::fake([Verified::class]);
+
+        // Act
+        $user = $this->userService->createUser('Test User', 'test@example.test', 'password', 'Europe/Vienna', Weekday::Monday, 'EUR');
+
+        // Assert
+        $this->assertNull($user->email_verified_at);
+        Event::assertNotDispatched(Verified::class);
     }
 
     public function test_assign_organization_entities_to_different_user(): void
