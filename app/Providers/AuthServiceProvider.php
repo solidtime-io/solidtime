@@ -25,6 +25,15 @@ class AuthServiceProvider extends ServiceProvider
     protected $policies = [
     ];
 
+    public function register(): void
+    {
+        parent::register();
+
+        // The device authorization grant is not used and has no views. Passport registers its routes
+        // while booting, so the grant has to be disabled before that, during registration.
+        Passport::$deviceCodeGrantEnabled = false;
+    }
+
     /**
      * Register any authentication / authorization services.
      */

@@ -23,4 +23,31 @@ class OAuthTokenEndpointTest extends EndpointTestAbstract
         $response->assertStatus(401);
         $response->assertJsonPath('error', 'invalid_client');
     }
+
+    public function test_device_authorization_grant_routes_are_not_registered(): void
+    {
+        // Act
+        $userCodeResponse = $this->get('/oauth/device');
+        $deviceCodeResponse = $this->postJson('/oauth/device/code', [
+            'client_id' => 'audit',
+        ]);
+
+        // Assert
+        $userCodeResponse->assertNotFound();
+        $deviceCodeResponse->assertNotFound();
+    }
+
+    public function test_token_endpoint_rejects_device_code_grant(): void
+    {
+        // Act
+        $response = $this->postJson('/oauth/token', [
+            'grant_type' => 'urn:ietf:params:oauth:grant-type:device_code',
+            'client_id' => 'audit',
+            'device_code' => 'code',
+        ]);
+
+        // Assert
+        $response->assertStatus(400);
+        $response->assertJsonPath('error', 'unsupported_grant_type');
+    }
 }
