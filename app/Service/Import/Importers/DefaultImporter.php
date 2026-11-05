@@ -18,6 +18,7 @@ use App\Service\ColorService;
 use App\Service\Import\ImportDatabaseHelper;
 use App\Service\TimezoneService;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Str;
 use Override;
 
 abstract class DefaultImporter implements ImporterContract
@@ -88,6 +89,11 @@ abstract class DefaultImporter implements ImporterContract
             /** @var Builder<User> $builder */
             return $builder->belongsToOrganization($this->organization);
         }, null, validate: [
+            'email' => [
+                'present',
+                'string',
+                'max:255',
+            ],
             'name' => [
                 'required',
                 'max:255',
@@ -204,6 +210,19 @@ abstract class DefaultImporter implements ImporterContract
     /**
      * @throws ImportException
      */
+    /**
+     * @throws ImportException
+     */
+    protected function validateEmail(mixed $email, string $field): string
+    {
+        $email = is_string($email) ? Str::trim($email) : '';
+        if (filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
+            throw new ImportException('Value of '.$field.' ("'.$email.'") is not a valid email address');
+        }
+
+        return $email;
+    }
+
     protected function checkTaskNameLength(string $taskName): void
     {
         if (strlen($taskName) > self::TASK_NAME_MAX_LENGTH) {
