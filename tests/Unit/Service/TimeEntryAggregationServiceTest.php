@@ -13,8 +13,10 @@ use App\Models\Tag;
 use App\Models\TimeEntry;
 use App\Service\TimeEntryAggregationService;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
 use PHPUnit\Framework\Attributes\CoversClass;
 use Tests\TestCaseWithDatabase;
+use TiMacDonald\Log\LogEntry;
 
 #[CoversClass(TimeEntryAggregationService::class)]
 class TimeEntryAggregationServiceTest extends TestCaseWithDatabase
@@ -1501,5 +1503,68 @@ class TimeEntryAggregationServiceTest extends TestCaseWithDatabase
         $this->assertSame(['2025-12-29', '2026-01-05'], array_column($result['grouped_data'], 'key'));
         // Three of the four entries fall in the week that straddles new year.
         $this->assertSame([30, 10], array_column($result['grouped_data'], 'seconds'));
+    }
+
+    public function test_aggregate_time_entries_by_day_with_filled_gaps_uses_the_offset_of_each_entry_when_range_spans_a_daylight_saving_time_change(): void
+    {
+        // Arrange
+        // Note: "Now" is in winter time (UTC+1), the first entry is in summer time (UTC+2). DST ended on 2026-10-25.
+        $this->travelTo(Carbon::create(2026, 11, 4, 12, 0, 0, 'Europe/Vienna'));
+        // 2026-10-01 00:30 in Europe/Vienna (UTC+2)
+        TimeEntry::factory()->startWithDuration(Carbon::create(2026, 9, 30, 22, 30, 0, 'UTC'), 10)->create();
+        // 2026-10-31 23:30 in Europe/Vienna (UTC+1)
+        TimeEntry::factory()->startWithDuration(Carbon::create(2026, 10, 31, 22, 30, 0, 'UTC'), 20)->create();
+        $query = TimeEntry::query();
+
+        // Act
+        $result = $this->service->getAggregatedTimeEntries(
+            $query,
+            TimeEntryAggregationType::Day,
+            null,
+            'Europe/Vienna',
+            Weekday::Monday,
+            true,
+            Carbon::create(2026, 9, 30, 22, 0, 0, 'UTC'),
+            Carbon::create(2026, 10, 31, 22, 59, 59, 'UTC'),
+            true,
+            null,
+            null
+        );
+
+        // Assert
+        $this->assertCount(31, $result['grouped_data']);
+        $this->assertSame('2026-10-01', $result['grouped_data'][0]['key']);
+        $this->assertSame(10, $result['grouped_data'][0]['seconds']);
+        $this->assertSame('2026-10-31', $result['grouped_data'][30]['key']);
+        $this->assertSame(20, $result['grouped_data'][30]['seconds']);
+        $this->assertSame(30, array_sum(array_column($result['grouped_data'], 'seconds')));
+        Log::assertNotLogged(fn (LogEntry $log) => $log->level === 'error');
+    }
+
+    public function test_aggregate_time_entries_by_week_uses_the_offset_of_each_entry_when_range_spans_a_daylight_saving_time_change(): void
+    {
+        // Arrange
+        $this->travelTo(Carbon::create(2026, 11, 4, 12, 0, 0, 'Europe/Vienna'));
+        // Monday 2026-10-19 00:30 in Europe/Vienna (UTC+2), belongs to the week of 2026-10-19
+        TimeEntry::factory()->startWithDuration(Carbon::create(2026, 10, 18, 22, 30, 0, 'UTC'), 10)->create();
+        $query = TimeEntry::query();
+
+        // Act
+        $result = $this->service->getAggregatedTimeEntries(
+            $query,
+            TimeEntryAggregationType::Week,
+            null,
+            'Europe/Vienna',
+            Weekday::Monday,
+            false,
+            null,
+            null,
+            true,
+            null,
+            null
+        );
+
+        // Assert
+        $this->assertSame(['2026-10-19'], array_column($result['grouped_data'], 'key'));
     }
 }

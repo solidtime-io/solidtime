@@ -9,6 +9,7 @@ use Carbon\CarbonTimeZone;
 use Exception;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
 
 class TimezoneService
 {
@@ -325,5 +326,35 @@ class TimezoneService
     public function getShiftFromUtc(CarbonTimeZone $timeZone): int
     {
         return $timeZone->getOffset(Carbon::now());
+    }
+
+    /**
+     * SQL expression that converts a UTC "timestamp without time zone" column into the local wall-clock time
+     * of the given timezone. The conversion is done by PostgreSQL per row, so daylight saving time changes
+     * inside the queried range are respected (unlike a fixed offset).
+     * The timezone is passed as a binding, so the returned bindings must be passed to the query together with the SQL.
+     *
+     * @param  literal-string  $column
+     * @return array{sql: literal-string, bindings: list<string|int>}
+     */
+    public function getLocalDateTimeSqlExpression(string $column, CarbonTimeZone $timeZone): array
+    {
+        if (preg_match('/^[a-z_]+$/i', $column) !== 1) {
+            throw new InvalidArgumentException('Invalid column name');
+        }
+        $timezoneName = $timeZone->getName();
+        // Offset timezones like "+01:00" are interpreted with inverted sign (POSIX) by PostgreSQL,
+        // so only named timezones (e.g. "Europe/Vienna", "UTC") are passed to PostgreSQL.
+        if (preg_match('/^[+\-]\d/', $timezoneName) !== 1) {
+            return [
+                'sql' => '("'.$column.'" AT TIME ZONE \'UTC\' AT TIME ZONE CAST(? AS text))',
+                'bindings' => [$timezoneName],
+            ];
+        }
+
+        return [
+            'sql' => '("'.$column.'" + make_interval(secs => CAST(? AS integer)))',
+            'bindings' => [$this->getShiftFromUtc($timeZone)],
+        ];
     }
 }
