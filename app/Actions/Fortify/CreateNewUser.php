@@ -8,6 +8,7 @@ use App\Enums\RegistrationMode;
 use App\Enums\Weekday;
 use App\Events\NewsletterRegistered;
 use App\Models\User;
+use App\Service\AuthenticationContract;
 use App\Service\InvitationService;
 use App\Service\IpLookup\IpLookupServiceContract;
 use App\Service\TimezoneService;
@@ -37,6 +38,12 @@ class CreateNewUser implements CreatesNewUsers
         if ($registrationMode === RegistrationMode::Off) {
             throw ValidationException::withMessages([
                 'email' => [__('Registration is disabled.')],
+            ]);
+        }
+
+        if (! app(AuthenticationContract::class)->isPasswordRegistrationAllowed()) {
+            throw ValidationException::withMessages([
+                'email' => [__(AuthenticationContract::PASSWORD_REGISTRATION_DISABLED_MESSAGE)],
             ]);
         }
 
@@ -109,17 +116,17 @@ class CreateNewUser implements CreatesNewUsers
         DB::transaction(function () use (&$user, $input, $timezone, $startOfWeek, $currency, $numberFormat, $currencyFormat, $dateFormat, $intervalFormat, $timeFormat): void {
             $userService = app(UserService::class);
             $user = $userService->createUser(
-                $input['name'],
-                $input['email'],
-                $input['password'],
-                $timezone ?? 'UTC',
-                $startOfWeek,
-                $currency,
-                $numberFormat,
-                $currencyFormat,
-                $dateFormat,
-                $intervalFormat,
-                $timeFormat
+                name: $input['name'],
+                email: $input['email'],
+                password: $input['password'],
+                timezone: $timezone ?? 'UTC',
+                weekStart: $startOfWeek,
+                currency: $currency,
+                numberFormat: $numberFormat,
+                currencyFormat: $currencyFormat,
+                dateFormat: $dateFormat,
+                intervalFormat: $intervalFormat,
+                timeFormat: $timeFormat,
             );
         });
 

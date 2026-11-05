@@ -18,13 +18,13 @@ class CreateUser extends CreateRecord
     {
         $userService = app(UserService::class);
         $user = $userService->createUser(
-            $data['name'],
-            $data['email'],
-            $data['password_create'],
-            $data['timezone'],
-            $data['week_start'] instanceof Weekday ? $data['week_start'] : Weekday::from($data['week_start']),
-            $data['currency'],
-            verifyEmail: (bool) $data['is_email_verified']
+            name: $data['name'],
+            email: $data['email'],
+            password: $data['password_create'],
+            timezone: $data['timezone'],
+            weekStart: $data['week_start'] instanceof Weekday ? $data['week_start'] : Weekday::from($data['week_start']),
+            currency: $data['currency'],
+            verifyEmail: (bool) $data['is_email_verified'],
         );
 
         return $user;

@@ -24,5 +24,7 @@
     "extensions/Invoicing/resources/js/**/*.ts",
     "extensions/Invoicing/resources/js/**/*.d.ts",
     "extensions/Invoicing/resources/js/**/*.vue",
+    "extensions/SSO/resources/js/**/*.ts",
+    "extensions/SSO/resources/js/**/*.vue",
   ]
 }

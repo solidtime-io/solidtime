@@ -116,7 +116,11 @@ return [
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
-    'super_admins' => ! is_string(env('SUPER_ADMINS', null)) ? [] : explode(',', env('SUPER_ADMINS')),
+    // Trimmed and lowercased, so a stray space or capital letter can't lock a super admin out.
+    'super_admins' => array_values(array_filter(array_map(
+        fn (string $email): string => strtolower(trim($email)),
+        explode(',', (string) env('SUPER_ADMINS', '')),
+    ))),
 
     'terms_url' => env('TERMS_URL', ''),
 

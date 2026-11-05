@@ -10,6 +10,7 @@ use App\Mail\VerifyUpdatedEmailMail;
 use App\Models\Member;
 use App\Models\Organization;
 use App\Models\User;
+use App\Service\AuthenticationContract;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Passport\Passport;
@@ -46,8 +47,40 @@ class UserEndpointTest extends ApiEndpointTestAbstract
                 'timezone' => $data->user->timezone,
                 'week_start' => $data->user->week_start->value,
                 'send_time_entry_still_running_email' => true,
+                'confirms_with_password' => true,
+                'can_change_email' => true,
             ],
         ]);
+    }
+
+    public function test_me_returns_that_users_without_a_password_cannot_confirm_with_it(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission();
+        $data->user->forceFill(['password' => null])->save();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.users.me'));
+
+        // Assert
+        $response->assertSuccessful();
+        $response->assertJsonPath('data.confirms_with_password', false);
+    }
+
+    public function test_me_returns_that_the_email_cannot_be_changed_when_it_is_managed_elsewhere(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission();
+        $this->lockEmailChanges();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.users.me'));
+
+        // Assert
+        $response->assertSuccessful();
+        $response->assertJsonPath('data.can_change_email', false);
     }
 
     public function test_update_current_organization_fails_when_not_authenticated(): void
@@ -245,6 +278,52 @@ class UserEndpointTest extends ApiEndpointTestAbstract
         Mail::assertNothingSent();
     }
 
+    public function test_update_email_fails_when_an_extension_locks_the_email(): void
+    {
+        // Arrange
+        Mail::fake();
+        $data = $this->createUserWithPermission();
+        $data->user->email = 'current@example.com';
+        $data->user->save();
+        $this->lockEmailChanges();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.users.update', $data->user->getKey()), [
+            'email' => 'new@example.com',
+            'name' => 'New Name',
+        ]);
+
+        // Assert
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['email' => AuthenticationContract::EMAIL_CHANGE_LOCKED_MESSAGE]);
+        $user = $data->user->fresh();
+        $this->assertNull($user->pending_email);
+        $this->assertNotSame('New Name', $user->name);
+        Mail::assertNothingSent();
+    }
+
+    public function test_update_with_the_current_email_succeeds_when_an_extension_locks_the_email(): void
+    {
+        // Arrange
+        // The profile form sends the unchanged address along with other fields.
+        $data = $this->createUserWithPermission();
+        $data->user->email = 'current@example.com';
+        $data->user->save();
+        $this->lockEmailChanges();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.users.update', $data->user->getKey()), [
+            'email' => 'Current@Example.com',
+            'name' => 'New Name',
+        ]);
+
+        // Assert
+        $response->assertSuccessful();
+        $this->assertSame('New Name', $data->user->fresh()->name);
+    }
+
     public function test_update_fails_if_email_is_already_used_by_another_user(): void
     {
         // Arrange
@@ -331,6 +410,26 @@ class UserEndpointTest extends ApiEndpointTestAbstract
         Mail::assertQueued(VerifyUpdatedEmailMail::class, function (VerifyUpdatedEmailMail $mail): bool {
             return $mail->hasTo('new.email@example.com') && $mail->email === 'new.email@example.com';
         });
+    }
+
+    public function test_resend_email_verification_fails_when_an_extension_locks_the_email(): void
+    {
+        // Arrange
+        // E.g. a change requested before the user's organization started managing it.
+        Mail::fake();
+        $data = $this->createUserWithPermission();
+        $data->user->pending_email = 'new.email@example.com';
+        $data->user->save();
+        $this->lockEmailChanges();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.users.resend-email-verification', $data->user->getKey()));
+
+        // Assert
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['email' => AuthenticationContract::EMAIL_CHANGE_LOCKED_MESSAGE]);
+        Mail::assertNothingOutgoing();
     }
 
     public function test_resend_email_verification_fails_if_given_id_is_not_the_authenticated_user(): void
@@ -788,5 +887,21 @@ class UserEndpointTest extends ApiEndpointTestAbstract
         // Assert
         $response->assertNoContent();
         $this->assertDatabaseMissing(User::class, ['id' => $data->user->getKey()]);
+    }
+
+    public function test_delete_fails_for_passwordless_user(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission();
+        $data->user->forceFill(['password' => null])->save();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->deleteJson(route('api.v1.users.destroy', $data->user->getKey()));
+
+        // Assert
+        $response->assertUnprocessable();
+        $response->assertJsonValidationErrors(['password']);
+        $this->assertDatabaseHas(User::class, ['id' => $data->user->getKey()]);
     }
 }

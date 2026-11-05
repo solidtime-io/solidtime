@@ -59,13 +59,13 @@ class UserCreateCommand extends Command
         $user = null;
         DB::transaction(function () use (&$user, $name, $email, $password, $verifyEmail): void {
             $user = app(UserService::class)->createUser(
-                $name,
-                $email,
-                $password,
-                'UTC',
-                Weekday::Monday,
-                null,
-                verifyEmail: $verifyEmail
+                name: $name,
+                email: $email,
+                password: $password,
+                timezone: 'UTC',
+                weekStart: Weekday::Monday,
+                currency: null,
+                verifyEmail: $verifyEmail,
             );
         });
         /** @var Organization|null $organization */
