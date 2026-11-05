@@ -6,8 +6,10 @@ namespace Tests\Unit\Console\Commands\Admin;
 
 use App\Console\Commands\Admin\UserCreateCommand;
 use App\Models\User;
+use Illuminate\Auth\Events\Verified;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
 use PHPUnit\Framework\Attributes\CoversClass;
 use Tests\TestCaseWithDatabase;
@@ -18,6 +20,7 @@ class UserCreateCommandCommandTest extends TestCaseWithDatabase
     public function test_it_creates_user(): void
     {
         // Arrange
+        Event::fake([Verified::class]);
         $email = 'mail@testuser.test';
         $name = 'Test User';
 
@@ -36,11 +39,13 @@ class UserCreateCommandCommandTest extends TestCaseWithDatabase
             'email' => $email,
             'email_verified_at' => null,
         ]);
+        Event::assertNotDispatched(Verified::class);
     }
 
     public function test_created_user_is_verified_if_option_is_set(): void
     {
         // Arrange
+        Event::fake([Verified::class]);
         $email = 'mail@testuser.test';
         $name = 'Test User';
 
@@ -61,6 +66,7 @@ class UserCreateCommandCommandTest extends TestCaseWithDatabase
         ]);
         $user = User::where('email', $email)->first();
         $this->assertNotNull($user->email_verified_at);
+        Event::assertDispatched(fn (Verified $event): bool => $event->user->is($user));
     }
 
     public function test_it_fails_if_user_with_email_already_exists(): void
