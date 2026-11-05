@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Enums\Role;
+use App\Models\Member;
 use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -281,9 +282,15 @@ class PermissionStore
      */
     private array $permissionCache = [];
 
+    /**
+     * @var array<string, Member>
+     */
+    private array $memberCache = [];
+
     public function clear(): void
     {
         $this->permissionCache = [];
+        $this->memberCache = [];
     }
 
     /**
@@ -330,18 +337,22 @@ class PermissionStore
 
     public function userHas(Organization $organization, User $user, string $permission): bool
     {
-        if (! isset($this->permissionCache[$user->getKey().'|'.$organization->getKey()])) {
-            if (! $user->isMemberOfOrganization($organization)) {
-                return false;
-            }
+        return in_array($permission, $this->getPermissionsByUser($organization, $user), true);
+    }
 
-            $permissions = $this->getPermissionsByUser($organization, $user);
-            $this->permissionCache[$user->getKey().'|'.$organization->getKey()] = $permissions;
-        } else {
-            $permissions = $this->permissionCache[$user->getKey().'|'.$organization->getKey()];
+    /**
+     * Whether the currently authenticated user is a member of the organization.
+     * Warms the permission cache, so later permission checks in the same request need no query.
+     */
+    public function isMember(Organization $organization): bool
+    {
+        /** @var User|null $user */
+        $user = Auth::user();
+        if ($user === null) {
+            return false;
         }
 
-        return in_array($permission, $permissions, true);
+        return $this->getMember($organization, $user) !== null;
     }
 
     /**
@@ -349,19 +360,17 @@ class PermissionStore
      */
     private function getPermissionsByUser(Organization $organization, User $user): array
     {
-        if (! $user->isMemberOfOrganization($organization)) {
-            return [];
+        $cacheKey = $user->getKey().'|'.$organization->getKey();
+        if (isset($this->permissionCache[$cacheKey])) {
+            return $this->permissionCache[$cacheKey];
         }
 
-        $role = $organization->users
-            ->where('id', $user->getKey())
-            ->first()
-            ?->membership
-            ?->role;
-
-        if ($role === null) {
+        $member = $this->getMember($organization, $user);
+        if ($member === null) {
+            // Not cached, so a membership created later in the same request is picked up
             return [];
         }
+        $role = $member->role;
 
         $permissions = self::permissionsForRole($role);
 
@@ -375,7 +384,32 @@ class PermissionStore
             ]);
         }
 
+        $this->permissionCache[$cacheKey] = $permissions;
+
         return $permissions;
+    }
+
+    /**
+     * The membership of the user in the organization, cached for the rest of the request.
+     */
+    public function getMember(Organization $organization, User $user): ?Member
+    {
+        $cacheKey = $user->getKey().'|'.$organization->getKey();
+        if (isset($this->memberCache[$cacheKey])) {
+            return $this->memberCache[$cacheKey];
+        }
+
+        /** @var Member|null $member */
+        $member = Member::query()
+            ->whereBelongsTo($organization, 'organization')
+            ->whereBelongsTo($user, 'user')
+            ->first();
+
+        if ($member !== null) {
+            $this->memberCache[$cacheKey] = $member;
+        }
+
+        return $member;
     }
 
     /**
