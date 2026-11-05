@@ -6,6 +6,7 @@ namespace Tests\Unit\Service;
 
 use App\Models\User;
 use App\Service\TimezoneService;
+use Carbon\CarbonTimeZone;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Log;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -69,5 +70,47 @@ class TimezoneServiceTest extends TestCase
         Log::assertLogged(fn (LogEntry $log) => $log->level === 'error'
             && $log->message === 'User has a invalid timezone'
         );
+    }
+
+    public function test_get_local_date_time_sql_expression_binds_named_timezones(): void
+    {
+        // Arrange
+        $timezoneService = app(TimezoneService::class);
+
+        // Act
+        $expression = $timezoneService->getLocalDateTimeSqlExpression('start', new CarbonTimeZone('Europe/Vienna'));
+
+        // Assert
+        $this->assertSame([
+            'sql' => '("start" AT TIME ZONE \'UTC\' AT TIME ZONE CAST(? AS text))',
+            'bindings' => ['Europe/Vienna'],
+        ], $expression);
+    }
+
+    public function test_get_local_date_time_sql_expression_binds_the_shift_for_offset_timezones(): void
+    {
+        // Arrange
+        $timezoneService = app(TimezoneService::class);
+
+        // Act
+        $positive = $timezoneService->getLocalDateTimeSqlExpression('start', new CarbonTimeZone('+02:00'));
+        $negative = $timezoneService->getLocalDateTimeSqlExpression('start', new CarbonTimeZone('-05:30'));
+
+        // Assert
+        $this->assertSame('("start" + make_interval(secs => CAST(? AS integer)))', $positive['sql']);
+        $this->assertSame([7200], $positive['bindings']);
+        $this->assertSame([-19800], $negative['bindings']);
+    }
+
+    public function test_get_local_date_time_sql_expression_rejects_invalid_column_names(): void
+    {
+        // Arrange
+        $timezoneService = app(TimezoneService::class);
+
+        // Assert
+        $this->expectException(\InvalidArgumentException::class);
+
+        // Act
+        $timezoneService->getLocalDateTimeSqlExpression('start; drop table users', new CarbonTimeZone('UTC'));
     }
 }

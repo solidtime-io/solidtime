@@ -140,25 +140,17 @@ class DashboardService
     public function getDailyTrackedHours(User $user, Organization $organization, int $days): array
     {
         $timezone = $this->timezoneService->getTimezoneFromUser($user);
-        $timezoneShift = $this->timezoneService->getShiftFromUtc($timezone);
-
-        if ($timezoneShift > 0) {
-            $dateWithTimeZone = 'start + INTERVAL \''.$timezoneShift.' second\'';
-        } elseif ($timezoneShift < 0) {
-            $dateWithTimeZone = 'start - INTERVAL \''.abs($timezoneShift).' second\'';
-        } else {
-            $dateWithTimeZone = 'start';
-        }
+        $dateWithTimeZone = $this->timezoneService->getLocalDateTimeSqlExpression('start', $timezone);
 
         $possibleDays = $this->lastDays($days, $timezone);
 
-        // The SQL fragment contains only a timezone offset calculated as an integer.
+        // Note: GROUP BY must use the alias, since the bound expressions would not be recognized as identical by PostgreSQL.
         $query = TimeEntry::query()
-            ->select(DB::raw('DATE('.$dateWithTimeZone.') as date, round(sum(extract(epoch from (coalesce("end", now()) - start)))) as aggregate')) // @phpstan-ignore argument.type
+            ->selectRaw('DATE('.$dateWithTimeZone['sql'].') as date, round(sum(extract(epoch from (coalesce("end", now()) - start)))) as aggregate', $dateWithTimeZone['bindings'])
             ->where('user_id', '=', $user->getKey())
             ->where('organization_id', '=', $organization->getKey())
             ->workTime()
-            ->groupBy(DB::raw('DATE('.$dateWithTimeZone.')')) // @phpstan-ignore argument.type
+            ->groupBy('date')
             ->orderBy('date');
 
         $query = $this->constrainDateByPossibleDates($query, $possibleDays, $timezone);
@@ -185,23 +177,16 @@ class DashboardService
     public function getWeeklyHistory(User $user, Organization $organization): array
     {
         $timezone = $this->timezoneService->getTimezoneFromUser($user);
-        $timezoneShift = $this->timezoneService->getShiftFromUtc($timezone);
-        if ($timezoneShift > 0) {
-            $dateWithTimeZone = 'start + INTERVAL \''.$timezoneShift.' second\'';
-        } elseif ($timezoneShift < 0) {
-            $dateWithTimeZone = 'start - INTERVAL \''.abs($timezoneShift).' second\'';
-        } else {
-            $dateWithTimeZone = 'start';
-        }
+        $dateWithTimeZone = $this->timezoneService->getLocalDateTimeSqlExpression('start', $timezone);
         $possibleDays = $this->daysOfThisWeek($timezone, $user->week_start);
 
-        // The SQL fragment contains only a timezone offset calculated as an integer.
+        // Note: GROUP BY must use the alias, since the bound expressions would not be recognized as identical by PostgreSQL.
         $query = TimeEntry::query()
-            ->select(DB::raw('DATE('.$dateWithTimeZone.') as date, round(sum(extract(epoch from (coalesce("end", now()) - start)))) as aggregate')) // @phpstan-ignore argument.type
+            ->selectRaw('DATE('.$dateWithTimeZone['sql'].') as date, round(sum(extract(epoch from (coalesce("end", now()) - start)))) as aggregate', $dateWithTimeZone['bindings'])
             ->where('user_id', '=', $user->getKey())
             ->where('organization_id', '=', $organization->getKey())
             ->workTime()
-            ->groupBy(DB::raw('DATE('.$dateWithTimeZone.')')) // @phpstan-ignore argument.type
+            ->groupBy('date')
             ->orderBy('date');
 
         $query = $this->constrainDateByPossibleDates($query, $possibleDays, $timezone);

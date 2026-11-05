@@ -79,6 +79,35 @@ class DashboardServiceTest extends TestCase
         ], $result);
     }
 
+    public function test_daily_tracked_hours_uses_the_offset_of_each_entry_when_days_span_a_daylight_saving_time_change(): void
+    {
+        // Arrange
+        // Note: "Now" is in winter time (UTC+1), the entry is in summer time (UTC+2). DST ended on 2026-10-25.
+        $this->travelTo(Carbon::create(2026, 10, 27, 12, 0, 0, 'Europe/Vienna'));
+        $organization = Organization::factory()->create();
+        $user = User::factory()->create([
+            'timezone' => 'Europe/Vienna',
+        ]);
+        $member = Member::factory()->forUser($user)->forOrganization($organization)->create();
+        TimeEntry::factory()->forMember($member)->forOrganization($organization)->create([
+            // Note: 2026-10-24 00:30 in Europe/Vienna (UTC+2)
+            'start' => Carbon::create(2026, 10, 23, 22, 30, 0, 'UTC'),
+            'end' => Carbon::create(2026, 10, 23, 22, 30, 40, 'UTC'),
+        ]);
+
+        // Act
+        $result = $this->dashboardService->getDailyTrackedHours($user, $organization, 5);
+
+        // Assert
+        $this->assertSame([
+            ['date' => '2026-10-23', 'duration' => 0],
+            ['date' => '2026-10-24', 'duration' => 40],
+            ['date' => '2026-10-25', 'duration' => 0],
+            ['date' => '2026-10-26', 'duration' => 0],
+            ['date' => '2026-10-27', 'duration' => 0],
+        ], $result);
+    }
+
     public function test_weekly_history_returns_correct_values(): void
     {
         // Arrange
