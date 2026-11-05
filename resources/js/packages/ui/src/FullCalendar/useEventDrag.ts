@@ -154,7 +154,7 @@ export function useEventDrag(params: {
 
         const originalSegmentStart = getLocalizedDayJsFromMinutes(
             savedOriginalDayStr,
-            startMin + params.pixelsToMinutesFromMidnight(dragStartEventTop)
+            params.pixelsToMinutesFromMidnight(dragStartEventTop)
         );
         const newSegmentStart = getLocalizedDayJsFromMinutes(targetDateStr, clampedMinutes);
         const deltaMs = newSegmentStart.diff(originalSegmentStart);
