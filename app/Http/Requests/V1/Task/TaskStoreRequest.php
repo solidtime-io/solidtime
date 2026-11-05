@@ -10,6 +10,9 @@ use App\Models\Project;
 use App\Models\Task;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ConditionalRules;
+use Illuminate\Validation\Rule;
 use Korridor\LaravelModelValidationRules\Rules\ExistsEloquent;
 use Korridor\LaravelModelValidationRules\Rules\UniqueEloquent;
 
@@ -21,7 +24,7 @@ class TaskStoreRequest extends BaseFormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, array<string|ValidationRule>>
+     * @return array<string, array<string|ValidationRule|ConditionalRules>>
      */
     public function rules(): array
     {
@@ -31,10 +34,12 @@ class TaskStoreRequest extends BaseFormRequest
                 'string',
                 'min:1',
                 'max:255',
-                UniqueEloquent::make(Task::class, 'name', function (Builder $builder): Builder {
-                    /** @var Builder<Task> $builder */
-                    return $builder->where('project_id', '=', $this->input('project_id'));
-                })->withCustomTranslation('validation.task_name_already_exists'),
+                Rule::when(Str::isUuid($this->input('project_id')), [
+                    UniqueEloquent::make(Task::class, 'name', function (Builder $builder): Builder {
+                        /** @var Builder<Task> $builder */
+                        return $builder->where('project_id', '=', $this->input('project_id'));
+                    })->withCustomTranslation('validation.task_name_already_exists'),
+                ]),
             ],
             'project_id' => [
                 'required',
