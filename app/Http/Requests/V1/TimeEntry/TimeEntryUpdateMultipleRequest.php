@@ -15,7 +15,6 @@ use App\Service\PermissionStore;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ConditionalRules;
 use Illuminate\Validation\Rule;
 use Korridor\LaravelModelValidationRules\Rules\ExistsEloquent;
@@ -57,7 +56,7 @@ class TimeEntryUpdateMultipleRequest extends BaseFormRequest
             'changes.project_id' => [
                 'nullable',
                 'string',
-                'required_with:task_id',
+                'required_with:changes.task_id',
                 'prohibited_if:changes.type,break',
                 ExistsEloquent::make(Project::class, null, function (Builder $builder): Builder {
                     /** @var Builder<Project> $builder */
@@ -82,13 +81,7 @@ class TimeEntryUpdateMultipleRequest extends BaseFormRequest
                     /** @var Builder<Task> $builder */
                     return $builder->whereBelongsTo($this->organization, 'organization');
                 })->uuid(),
-                Rule::when(Str::isUuid($this->input('changes.project_id')), [
-                    ExistsEloquent::make(Task::class, null, function (Builder $builder): Builder {
-                        /** @var Builder<Task> $builder */
-                        return $builder->whereBelongsTo($this->organization, 'organization')
-                            ->where('project_id', $this->input('changes.project_id'));
-                    })->uuid()->withMessage(__('validation.task_belongs_to_project')),
-                ]),
+                $this->taskBelongsToProjectRule($this->organization, 'changes.project_id'),
             ],
             // Whether time entry is billable
             'changes.billable' => [

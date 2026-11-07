@@ -2601,8 +2601,8 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         $response->assertStatus(422);
         $response->assertJsonValidationErrors([
             'project_id' => 'The project field is required when task is present.',
+            'task_id' => 'The task is not part of the given project.',
         ]);
-        $response->assertJsonMissingValidationErrors(['task_id']);
     }
 
     public function test_store_endpoint_creates_new_time_entry_for_current_user(): void
@@ -3290,6 +3290,42 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         $response->assertJsonMissingValidationErrors(['changes.task_id']);
     }
 
+    public function test_update_multiple_endpoint_validation_fails_if_project_id_is_missing_but_request_has_task_id(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:update:own',
+            'projects:view:all',
+        ]);
+        $timeEntries = TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)->createMany(2);
+        $timeEntryFake = TimeEntry::factory()->forOrganization($data->organization)->withTask($data->organization)->make();
+        Passport::actingAs($data->user);
+
+        // Act
+        $responseMissing = $this->patchJson(route('api.v1.time-entries.update-multiple', [$data->organization->getKey()]), [
+            'ids' => $timeEntries->pluck('id')->toArray(),
+            'changes' => [
+                'task_id' => $timeEntryFake->task_id,
+            ],
+        ]);
+        $responseNull = $this->patchJson(route('api.v1.time-entries.update-multiple', [$data->organization->getKey()]), [
+            'ids' => $timeEntries->pluck('id')->toArray(),
+            'changes' => [
+                'project_id' => null,
+                'task_id' => $timeEntryFake->task_id,
+            ],
+        ]);
+
+        // Assert
+        $responseMissing->assertStatus(422);
+        $responseMissing->assertJsonValidationErrors(['changes.project_id']);
+        $responseNull->assertStatus(422);
+        $responseNull->assertJsonValidationErrors(['changes.project_id']);
+        foreach ($timeEntries as $timeEntry) {
+            $this->assertNull($timeEntry->refresh()->task_id);
+        }
+    }
+
     public function test_update_endpoint_validation_fails_if_project_id_is_missing_but_request_has_task_id(): void
     {
         // Arrange
@@ -3316,8 +3352,8 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         $response->assertStatus(422);
         $response->assertJsonValidationErrors([
             'project_id' => 'The project field is required when task is present.',
+            'task_id' => 'The task is not part of the given project.',
         ]);
-        $response->assertJsonMissingValidationErrors(['task_id']);
     }
 
     public function test_update_endpoint_updates_time_entry_for_current_user(): void
