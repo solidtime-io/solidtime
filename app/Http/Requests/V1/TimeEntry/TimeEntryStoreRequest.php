@@ -16,6 +16,7 @@ use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ConditionalRules;
 use Illuminate\Validation\Rule;
 use Korridor\LaravelModelValidationRules\Rules\ExistsEloquent;
 
@@ -27,7 +28,7 @@ class TimeEntryStoreRequest extends BaseFormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, array<string|Closure|ValidationRule|\Illuminate\Contracts\Validation\Rule>>
+     * @return array<string, array<string|Closure|ValidationRule|\Illuminate\Contracts\Validation\Rule|ConditionalRules>>
      */
     public function rules(): array
     {
@@ -69,11 +70,7 @@ class TimeEntryStoreRequest extends BaseFormRequest
                     /** @var Builder<Task> $builder */
                     return $builder->whereBelongsTo($this->organization, 'organization');
                 })->uuid(),
-                ExistsEloquent::make(Task::class, null, function (Builder $builder): Builder {
-                    /** @var Builder<Task> $builder */
-                    return $builder->whereBelongsTo($this->organization, 'organization')
-                        ->where('project_id', $this->input('project_id'));
-                })->uuid()->withMessage(__('validation.task_belongs_to_project')),
+                $this->taskBelongsToProjectRule($this->organization, 'project_id'),
             ],
             // Start of time entry (Format: "Y-m-d\TH:i:s\Z", UTC timezone, Example: "2000-02-22T14:58:59Z")
             'start' => [

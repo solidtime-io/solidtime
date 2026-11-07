@@ -2549,6 +2549,32 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         ]);
     }
 
+    public function test_store_endpoint_validation_fails_if_project_id_is_not_a_valid_uuid_and_request_has_task_id(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:create:own',
+            'projects:view:all',
+        ]);
+        $timeEntryFake = TimeEntry::factory()->forOrganization($data->organization)->withTask($data->organization)->make();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.time-entries.store', [$data->organization->getKey()]), [
+            'billable' => $timeEntryFake->billable,
+            'start' => $timeEntryFake->start->toIso8601ZuluString(),
+            'end' => $timeEntryFake->end->toIso8601ZuluString(),
+            'member_id' => $data->member->getKey(),
+            'project_id' => '6b0b0f0b-b9a0-4aa-9914-490bf938c1bf',
+            'task_id' => $timeEntryFake->task_id,
+        ]);
+
+        // Assert
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['project_id']);
+        $response->assertJsonMissingValidationErrors(['task_id']);
+    }
+
     public function test_store_endpoint_validation_fails_if_project_id_is_missing_but_request_has_task_id(): void
     {
         // Arrange
@@ -3213,6 +3239,91 @@ class TimeEntryEndpointTest extends ApiEndpointTestAbstract
         $response->assertStatus(200);
         $timeEntry->refresh();
         $this->assertSame('2026-08-01T03:00:00Z', $timeEntry->end->toIso8601ZuluString());
+    }
+
+    public function test_update_endpoint_validation_fails_if_project_id_is_not_a_valid_uuid_and_request_has_task_id(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:update:own',
+            'projects:view:all',
+        ]);
+        $timeEntry = TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)->create();
+        $timeEntryFake = TimeEntry::factory()->forOrganization($data->organization)->withTask($data->organization)->make();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.time-entries.update', [$data->organization->getKey(), $timeEntry->getKey()]), [
+            'project_id' => '6b0b0f0b-b9a0-4aa-9914-490bf938c1bf',
+            'task_id' => $timeEntryFake->task_id,
+        ]);
+
+        // Assert
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['project_id']);
+        $response->assertJsonMissingValidationErrors(['task_id']);
+    }
+
+    public function test_update_multiple_endpoint_validation_fails_if_project_id_is_not_a_valid_uuid_and_request_has_task_id(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:update:own',
+            'projects:view:all',
+        ]);
+        $timeEntries = TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)->createMany(2);
+        $timeEntryFake = TimeEntry::factory()->forOrganization($data->organization)->withTask($data->organization)->make();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->patchJson(route('api.v1.time-entries.update-multiple', [$data->organization->getKey()]), [
+            'ids' => $timeEntries->pluck('id')->toArray(),
+            'changes' => [
+                'project_id' => '6b0b0f0b-b9a0-4aa-9914-490bf938c1bf',
+                'task_id' => $timeEntryFake->task_id,
+            ],
+        ]);
+
+        // Assert
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['changes.project_id']);
+        $response->assertJsonMissingValidationErrors(['changes.task_id']);
+    }
+
+    public function test_update_multiple_endpoint_validation_fails_if_project_id_is_missing_but_request_has_task_id(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'time-entries:update:own',
+            'projects:view:all',
+        ]);
+        $timeEntries = TimeEntry::factory()->forOrganization($data->organization)->forMember($data->member)->createMany(2);
+        $timeEntryFake = TimeEntry::factory()->forOrganization($data->organization)->withTask($data->organization)->make();
+        Passport::actingAs($data->user);
+
+        // Act
+        $responseMissing = $this->patchJson(route('api.v1.time-entries.update-multiple', [$data->organization->getKey()]), [
+            'ids' => $timeEntries->pluck('id')->toArray(),
+            'changes' => [
+                'task_id' => $timeEntryFake->task_id,
+            ],
+        ]);
+        $responseNull = $this->patchJson(route('api.v1.time-entries.update-multiple', [$data->organization->getKey()]), [
+            'ids' => $timeEntries->pluck('id')->toArray(),
+            'changes' => [
+                'project_id' => null,
+                'task_id' => $timeEntryFake->task_id,
+            ],
+        ]);
+
+        // Assert
+        $responseMissing->assertStatus(422);
+        $responseMissing->assertJsonValidationErrors(['changes.project_id']);
+        $responseNull->assertStatus(422);
+        $responseNull->assertJsonValidationErrors(['changes.project_id']);
+        foreach ($timeEntries as $timeEntry) {
+            $this->assertNull($timeEntry->refresh()->task_id);
+        }
     }
 
     public function test_update_endpoint_validation_fails_if_project_id_is_missing_but_request_has_task_id(): void

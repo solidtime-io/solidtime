@@ -83,11 +83,7 @@ class TimeEntryUpdateRequest extends BaseFormRequest
                     /** @var Builder<Task> $builder */
                     return $builder->whereBelongsTo($this->organization, 'organization');
                 })->uuid(),
-                ExistsEloquent::make(Task::class, null, function (Builder $builder): Builder {
-                    /** @var Builder<Task> $builder */
-                    return $builder->whereBelongsTo($this->organization, 'organization')
-                        ->where('project_id', $this->input('project_id'));
-                })->uuid()->withMessage(__('validation.task_belongs_to_project')),
+                $this->taskBelongsToProjectRule($this->organization, 'project_id'),
             ],
             // Start of time entry (Format: "Y-m-d\TH:i:s\Z", UTC timezone, Example: "2000-02-22T14:58:59Z")
             'start' => [

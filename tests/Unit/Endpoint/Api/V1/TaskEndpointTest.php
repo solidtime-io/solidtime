@@ -348,6 +348,26 @@ class TaskEndpointTest extends ApiEndpointTestAbstract
         ]);
     }
 
+    public function test_store_endpoint_fails_if_project_id_is_not_a_valid_uuid(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'tasks:create:all',
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.tasks.store', [$data->organization->getKey()]), [
+            'name' => 'Task 1',
+            'project_id' => '6b0b0f0b-b9a0-4aa-9914-490bf938c1bf',
+        ]);
+
+        // Assert
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['project_id']);
+        $response->assertJsonMissingValidationErrors(['name']);
+    }
+
     public function test_store_endpoint_creates_new_task_even_if_task_with_same_name_already_exists_in_other_project(): void
     {
         // Arrange
