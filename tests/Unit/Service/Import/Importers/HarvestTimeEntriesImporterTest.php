@@ -129,6 +129,29 @@ class HarvestTimeEntriesImporterTest extends ImporterTestAbstract
         $this->fail();
     }
 
+    public function test_import_fails_if_generated_user_email_is_invalid(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $timezone = 'Europe/Vienna';
+        $importer = new HarvestTimeEntriesImporter;
+        $importer->init($organization);
+        $data = "Date,Client,Project,Project Code,Task,Notes,Hours,Billable?,Invoiced?,Approved?,First Name,Last Name,Roles,Employee?,Billable Rate,Billable Amount,Cost Rate,Cost Amount,Currency,External Reference URL\n".
+            '2024-03-04,,Project without Client,,,"","2,0",No,No,No,"🙂","🙂",,Yes,"100,0","2.000,0","0,0","0,0",Euro - EUR,';
+
+        // Act
+        try {
+            $importer->importData($data, $timezone);
+        } catch (ImportException $e) {
+            // Assert
+            $this->assertSame('Invalid data: The email field must be a valid email address.', $e->getMessage());
+            $this->assertSame(0, User::query()->where('email', '=', '.@solidtime-import.test')->count());
+
+            return;
+        }
+        $this->fail();
+    }
+
     public function test_import_drops_billable_flags_and_rates_if_organization_can_not_use_billable_rates(): void
     {
         // Arrange

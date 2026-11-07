@@ -97,9 +97,28 @@ class GenericTimeEntriesImporterTest extends ImporterTestAbstract
     {
         return [
             'empty' => ['', ''],
-            'whitespace' => ['   ', ''],
+            'whitespace' => ['   ', '   '],
+            'surrounding whitespace' => [' ivanna@example.com ', ' ivanna@example.com '],
             'invalid' => ['not-an-email', 'not-an-email'],
         ];
+    }
+
+    public function test_import_accepts_unicode_user_email(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $timezone = 'Europe/Vienna';
+        $importer = new GenericTimeEntriesImporter;
+        $importer->init($organization);
+        $data = "description,billable,client,project,tags,start,end,task,user_name,user_email\n".
+            '"Working hard","true","","","","2024-03-04T09:23:00Z","2024-03-04T10:23:00Z","","Jörg","jörg@example.com"';
+
+        // Act
+        $importer->importData($data, $timezone);
+
+        // Assert
+        $this->assertSame(1, User::query()->where('email', '=', 'jörg@example.com')->count());
+        $this->assertSame(1, TimeEntry::query()->count());
     }
 
     #[DataProvider('invalidUserEmailProvider')]
