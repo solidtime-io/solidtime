@@ -38,8 +38,13 @@ class BaseFormRequest extends FormRequest
      * The check is skipped if the project ID is not a valid UUID, since the project ID rule already reports that error
      * and the query would otherwise fail in the database.
      */
-    protected function taskBelongsToProjectRule(Organization $organization, string $projectKey): ConditionalRules
+    protected function taskBelongsToProjectRule(?Organization $organization, string $projectKey): ConditionalRules
     {
+        if ($organization === null) {
+            // The rules are also evaluated without a bound route (e.g. during API docs generation), so there is no organization yet
+            return Rule::when(false, []);
+        }
+
         $projectId = $this->input($projectKey);
 
         return Rule::when($projectId === null || Str::isUuid($projectId), [
