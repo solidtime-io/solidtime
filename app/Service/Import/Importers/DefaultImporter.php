@@ -18,7 +18,7 @@ use App\Service\ColorService;
 use App\Service\Import\ImportDatabaseHelper;
 use App\Service\TimezoneService;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Validator;
 use Override;
 
 abstract class DefaultImporter implements ImporterContract
@@ -90,9 +90,10 @@ abstract class DefaultImporter implements ImporterContract
             return $builder->belongsToOrganization($this->organization);
         }, null, validate: [
             'email' => [
-                'present',
+                'required',
                 'string',
                 'max:255',
+                'email:rfc,strict',
             ],
             'name' => [
                 'required',
@@ -208,21 +209,24 @@ abstract class DefaultImporter implements ImporterContract
     }
 
     /**
-     * @throws ImportException
-     */
-    /**
+     * Uses the same rule as registration and invitations, so every email the app accepts can be re-imported.
+     * The value is not trimmed, so it matches existing users exactly as stored.
+     *
      * @throws ImportException
      */
     protected function validateEmail(mixed $email, string $field): string
     {
-        $email = is_string($email) ? Str::trim($email) : '';
-        if (filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
+        $email = is_string($email) ? $email : '';
+        if (Validator::make(['email' => $email], ['email' => ['required', 'email:rfc,strict']])->fails()) {
             throw new ImportException('Value of '.$field.' ("'.$email.'") is not a valid email address');
         }
 
         return $email;
     }
 
+    /**
+     * @throws ImportException
+     */
     protected function checkTaskNameLength(string $taskName): void
     {
         if (strlen($taskName) > self::TASK_NAME_MAX_LENGTH) {
