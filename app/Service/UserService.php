@@ -19,6 +19,7 @@ use App\Models\TimeEntry;
 use App\Models\User;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use InvalidArgumentException;
@@ -67,9 +68,12 @@ class UserService
             $this->switchCurrentOrganization($user, $organization);
         }
 
-        // Same as a regular email verification, so that e.g. the trial of the organization starts
+        // Same as a regular email verification, so that e.g. the trial of the organization starts.
+        // Dispatched after the commit, since callers might wrap the user creation in a transaction.
         if ($verifyEmail) {
-            event(new Verified($user));
+            DB::afterCommit(function () use ($user): void {
+                event(new Verified($user));
+            });
         }
 
         return $user;
