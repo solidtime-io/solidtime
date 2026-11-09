@@ -81,8 +81,7 @@ export async function setupTestContext(page: Page): Promise<TestContext> {
     const request = page.request;
     const headers = bearerHeaders(token);
 
-    const orgId = await getOrganizationId(request, headers);
-    const memberId = await getCurrentMemberId(request, orgId, headers);
+    const { orgId, memberId } = await getFirstMembership(request, headers);
     return { request: createAuthenticatedRequest(request, headers), orgId, memberId };
 }
 
@@ -115,30 +114,20 @@ function createAuthenticatedRequest(
     });
 }
 
-async function getOrganizationId(
+/**
+ * The user's oldest membership, which is the organization created at registration.
+ * Its ID is the member ID, so no permission to list the organization's members is needed.
+ */
+async function getFirstMembership(
     request: APIRequestContext,
     headers: Record<string, string>
-): Promise<string> {
+): Promise<{ orgId: string; memberId: string }> {
     const response = await request.get(`${PLAYWRIGHT_BASE_URL}/api/v1/users/me/memberships`, {
         headers,
     });
     expect(response.status()).toBe(200);
     const body = await response.json();
-    return body.data[0].organization.id;
-}
-
-async function getCurrentMemberId(
-    request: APIRequestContext,
-    orgId: string,
-    headers: Record<string, string>
-): Promise<string> {
-    const response = await request.get(
-        `${PLAYWRIGHT_BASE_URL}/api/v1/organizations/${orgId}/members`,
-        { headers }
-    );
-    expect(response.status()).toBe(200);
-    const body = await response.json();
-    return body.data[0].id;
+    return { orgId: body.data[0].organization.id, memberId: body.data[0].id };
 }
 
 // ──────────────────────────────────────────────────

@@ -29,6 +29,8 @@ class UserMembershipController extends Controller
         $members = Member::query()
             ->whereBelongsTo($user, 'user')
             ->with(['organization'])
+            ->orderBy('created_at')
+            ->orderBy('id')
             ->get();
 
         return new PersonalMembershipCollection($members);
