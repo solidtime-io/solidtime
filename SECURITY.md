@@ -18,6 +18,8 @@ cosign verify ghcr.io/solidtime-io/solidtime:<version> \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com
 ```
 
+On-premise images (`registry.on-premise.solidtime.io/solidtime/solidtime`) are signed the same way; log in to the registry first and use `build-onpremise.yml` instead of `build-public.yml` in the identity regex.
+
 Show the SBOM (SPDX) and build provenance:
 
 ```bash
