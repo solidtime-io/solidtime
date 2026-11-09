@@ -40,4 +40,31 @@ class UserMembershipEndpointTest extends ApiEndpointTestAbstract
         $memberResponse = collect($response->json('data'))->where('id', '=', $data->member->getKey())->first();
         $this->assertNotNull($memberResponse);
     }
+
+    public function test_my_members_returns_the_memberships_ordered_from_oldest_to_newest(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission();
+        $data->member->forceFill(['created_at' => now()->subDays(2)])->save();
+        $newerMember = Member::factory()
+            ->forOrganization(Organization::factory()->create())
+            ->forUser($data->user)
+            ->create(['created_at' => now()]);
+        $olderMember = Member::factory()
+            ->forOrganization(Organization::factory()->create())
+            ->forUser($data->user)
+            ->create(['created_at' => now()->subDay()]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->getJson(route('api.v1.users.memberships.my-memberships'));
+
+        // Assert
+        $response->assertSuccessful();
+        $this->assertSame([
+            $data->member->getKey(),
+            $olderMember->getKey(),
+            $newerMember->getKey(),
+        ], array_column($response->json('data'), 'id'));
+    }
 }
