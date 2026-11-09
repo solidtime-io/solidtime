@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Web;
 
+use App\Models\User;
+use App\Service\AppSessionService;
 use Illuminate\Contracts\Auth\StatefulGuard;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,9 +17,9 @@ use Laravel\Fortify\Actions\ConfirmPassword;
 class OtherBrowserSessionsController extends Controller
 {
     /**
-     * Log the user out of their other browser sessions across all devices.
+     * Log the user out of their other browser sessions and apps across all devices.
      */
-    public function destroy(Request $request, StatefulGuard $guard): RedirectResponse
+    public function destroy(Request $request, StatefulGuard $guard, AppSessionService $appSessionService): RedirectResponse
     {
         $password = (string) $request->string('password');
 
@@ -32,6 +34,10 @@ class OtherBrowserSessionsController extends Controller
         $guard->logoutOtherDevices($password);
 
         $this->deleteOtherSessionRecords($request);
+
+        /** @var User $user */
+        $user = $request->user();
+        $appSessionService->revokeAppSessions($user);
 
         return back(303);
     }

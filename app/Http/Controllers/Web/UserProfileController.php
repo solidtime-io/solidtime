@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Web;
 
+use App\Models\Passport\Token;
 use App\Service\Dto\UserAgentDto;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -94,6 +95,7 @@ class UserProfileController extends Controller
         return Inertia::render('Profile/Show', [
             'confirmsTwoFactorAuthentication' => Features::optionEnabled(Features::twoFactorAuthentication(), 'confirm'),
             'sessions' => $this->sessions($request),
+            'appSessions' => $this->appSessions($request),
         ]);
     }
 
@@ -127,6 +129,29 @@ class UserProfileController extends Controller
                 'last_active' => Carbon::createFromTimestamp($session->last_activity)->diffForHumans(),
             ];
         })->all();
+    }
+
+    /**
+     * Get the apps (e.g. the desktop app) that are logged in via OAuth.
+     *
+     * @return array<int, array{id: string, name: string, last_active: string}>
+     */
+    public function appSessions(Request $request): array
+    {
+        return Token::query()
+            ->with('client')
+            ->where('user_id', '=', $request->user()->getAuthIdentifier())
+            ->isApiToken(false)
+            ->isActive()
+            ->orderByDesc('created_at')
+            ->get()
+            ->map(fn (Token $token): array => [
+                'id' => $token->id,
+                'name' => $token->client->name ?? 'Unknown',
+                'last_active' => $token->created_at?->diffForHumans() ?? 'Unknown',
+            ])
+            ->values()
+            ->all();
     }
 
     /**

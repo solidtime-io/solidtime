@@ -28,6 +28,7 @@ use Laravel\Passport\Token as PassportToken;
  * @property-read User|null $user
  *
  * @method Builder<Token> isApiToken(bool $isApiToken = true)
+ * @method Builder<Token> isActive()
  */
 class Token extends PassportToken
 {
@@ -92,5 +93,23 @@ class Token extends PassportToken
             });
         }
 
+    }
+
+    /**
+     * Tokens that can still be used, either directly or by exchanging their refresh token.
+     *
+     * @param  Builder<static>  $query
+     * @return Builder<static>
+     */
+    public function scopeIsActive(Builder $query): Builder
+    {
+        return $query->where('revoked', '=', false)
+            ->where(function (Builder $query): void {
+                $query->where('expires_at', '>', now())
+                    ->orWhereHas('refreshToken', function (Builder $query): void {
+                        $query->where('revoked', '=', false)
+                            ->where('expires_at', '>', now());
+                    });
+            });
     }
 }

@@ -767,15 +767,12 @@ test('test that 2FA can be enabled with correct password', async ({ page }) => {
 test('test that logout other browser sessions works with correct password', async ({ page }) => {
     await goToProfilePage(page);
 
-    await page.getByRole('button', { name: 'Log Out Other Browser Sessions' }).click();
+    await page.getByRole('button', { name: 'Log Out Other Sessions' }).click();
     await expect(page.getByRole('dialog')).toBeVisible();
 
     await page.getByPlaceholder('Password').fill(TEST_USER_PASSWORD);
     await Promise.all([
-        page
-            .getByRole('dialog')
-            .getByRole('button', { name: 'Log Out Other Browser Sessions' })
-            .click(),
+        page.getByRole('dialog').getByRole('button', { name: 'Log Out Other Sessions' }).click(),
         page.waitForResponse(
             (response) =>
                 response.url().includes('/user/other-browser-sessions') &&

@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Tests\Unit\Endpoint\Web;
 
 use App\Http\Controllers\Web\OtherBrowserSessionsController;
+use App\Models\Passport\Client;
+use App\Models\Passport\RefreshToken;
+use App\Models\Passport\Token;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -99,5 +102,62 @@ class OtherBrowserSessionsEndpointTest extends EndpointTestAbstract
         // The current user's other sessions are removed, while another user's session is untouched.
         $this->assertDatabaseMissing('sessions', ['id' => 'other-session-of-current-user']);
         $this->assertDatabaseHas('sessions', ['id' => 'session-of-another-user']);
+    }
+
+    public function test_destroy_revokes_app_tokens_but_not_personal_access_tokens(): void
+    {
+        // Arrange
+        $user = User::factory()->create();
+        $otherUser = User::factory()->create();
+        $desktopClient = Client::factory()->desktopClient()->create();
+        $personalAccessClient = Client::factory()->personalAccessClient()->create();
+        $desktopToken = Token::factory()->forUser($user)->forClient($desktopClient)->create([
+            'expires_at' => now()->addDay(),
+        ]);
+        RefreshToken::query()->forceCreate([
+            'id' => 'desktop-refresh-token',
+            'access_token_id' => $desktopToken->id,
+            'revoked' => false,
+            'expires_at' => now()->addMonth(),
+        ]);
+        $personalAccessToken = Token::factory()->forUser($user)->forClient($personalAccessClient)->create([
+            'expires_at' => now()->addDay(),
+        ]);
+        $otherUserToken = Token::factory()->forUser($otherUser)->forClient($desktopClient)->create([
+            'expires_at' => now()->addDay(),
+        ]);
+        $this->actingAs($user);
+
+        // Act
+        $response = $this->delete('/user/other-browser-sessions', [
+            'password' => 'password',
+        ]);
+
+        // Assert
+        $response->assertSessionHasNoErrors();
+        $this->assertTrue($desktopToken->fresh()->revoked);
+        $this->assertTrue(RefreshToken::query()->findOrFail('desktop-refresh-token')->revoked);
+        $this->assertFalse($personalAccessToken->fresh()->revoked);
+        $this->assertFalse($otherUserToken->fresh()->revoked);
+    }
+
+    public function test_destroy_does_not_revoke_app_tokens_with_an_incorrect_password(): void
+    {
+        // Arrange
+        $user = User::factory()->create();
+        $desktopClient = Client::factory()->desktopClient()->create();
+        $desktopToken = Token::factory()->forUser($user)->forClient($desktopClient)->create([
+            'expires_at' => now()->addDay(),
+        ]);
+        $this->actingAs($user);
+
+        // Act
+        $response = $this->delete('/user/other-browser-sessions', [
+            'password' => 'wrong-password',
+        ]);
+
+        // Assert
+        $response->assertSessionHasErrors('password');
+        $this->assertFalse($desktopToken->fresh()->revoked);
     }
 }

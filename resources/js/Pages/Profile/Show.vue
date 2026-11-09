@@ -6,7 +6,7 @@ import SectionBorder from '@/Components/SectionBorder.vue';
 import TwoFactorAuthenticationForm from '@/Pages/Profile/Partials/TwoFactorAuthenticationForm.vue';
 import UpdatePasswordForm from '@/Pages/Profile/Partials/UpdatePasswordForm.vue';
 import UpdateProfileInformationForm from '@/Pages/Profile/Partials/UpdateProfileInformationForm.vue';
-import type { Session } from '@/types/jetstream';
+import type { AppSession, Session } from '@/types/jetstream';
 import ApiTokensForm from '@/Pages/Profile/Partials/ApiTokensForm.vue';
 import ThemeForm from '@/Pages/Profile/Partials/ThemeForm.vue';
 import NotificationSettingsForm from '@/Pages/Profile/Partials/NotificationSettingsForm.vue';
@@ -14,6 +14,7 @@ import NotificationSettingsForm from '@/Pages/Profile/Partials/NotificationSetti
 defineProps<{
     confirmsTwoFactorAuthentication: boolean;
     sessions: Session[];
+    appSessions: AppSession[];
 }>();
 </script>
 
@@ -57,7 +58,10 @@ defineProps<{
                     <SectionBorder />
                 </div>
 
-                <LogoutOtherBrowserSessionsForm :sessions="sessions" class="mt-10 sm:mt-0" />
+                <LogoutOtherBrowserSessionsForm
+                    :sessions="sessions"
+                    :app-sessions="appSessions"
+                    class="mt-10 sm:mt-0" />
                 <SectionBorder />
 
                 <ApiTokensForm></ApiTokensForm>
