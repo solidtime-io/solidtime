@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Models\Passport\Client;
+use App\Models\Passport\Token;
 use App\Models\User;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -93,6 +95,39 @@ class PasswordResetTest extends TestCase
 
             return true;
         });
+    }
+
+    public function test_resetting_password_revokes_app_tokens(): void
+    {
+        if (! Features::enabled(Features::resetPasswords())) {
+            $this->markTestSkipped('Password updates are not enabled.');
+        }
+
+        Notification::fake();
+
+        $user = User::factory()->create();
+        $desktopClient = Client::factory()->desktopClient()->create();
+        $desktopToken = Token::factory()->forUser($user)->forClient($desktopClient)->create([
+            'expires_at' => now()->addDay(),
+        ]);
+
+        $this->post('/forgot-password', [
+            'email' => $user->email,
+        ]);
+
+        Notification::assertSentTo($user, ResetPassword::class, function (object $notification) use ($user) {
+            $response = $this->post('/reset-password', [
+                'token' => $notification->token,
+                'email' => $user->email,
+                'password' => 'new-password',
+                'password_confirmation' => 'new-password',
+            ]);
+
+            $response->assertSessionHasNoErrors();
+
+            return true;
+        });
+        $this->assertTrue($desktopToken->fresh()->revoked);
     }
 
     public function test_password_reset_targets_the_real_user_when_a_placeholder_user_with_the_same_email_exists(): void
