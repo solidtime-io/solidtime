@@ -2,7 +2,28 @@
 
 ## Reporting a Vulnerability
 
-If you discover a security vulnerability regarding this project, please e-mail me to [security@solidtime.io](mailto:security@solidtime.io)!
+If you discover a security vulnerability regarding this project, please e-mail me to [security@solidtime.io](mailto:security@solidtime.io) or use GitHub's [private vulnerability reporting](https://github.com/solidtime-io/solidtime/security/advisories/new)!
+
+Published advisories are listed at [github.com/solidtime-io/solidtime/security/advisories](https://github.com/solidtime-io/solidtime/security/advisories).
+
+## Verifying Docker images
+
+The public images (`solidtime/solidtime` and `ghcr.io/solidtime-io/solidtime`) are signed with [Sigstore cosign](https://github.com/sigstore/cosign) (keyless, via GitHub Actions OIDC) and ship with an SBOM and SLSA provenance attestation.
+
+Verify the signature:
+
+```bash
+cosign verify ghcr.io/solidtime-io/solidtime:<version> \
+  --certificate-identity-regexp '^https://github.com/solidtime-io/solidtime/.github/workflows/build-public.yml@refs/(heads/main|tags/v.*)$' \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com
+```
+
+Show the SBOM (SPDX) and build provenance:
+
+```bash
+docker buildx imagetools inspect ghcr.io/solidtime-io/solidtime:<version> --format '{{ json .SBOM }}'
+docker buildx imagetools inspect ghcr.io/solidtime-io/solidtime:<version> --format '{{ json .Provenance }}'
+```
 
 ## Out of scope
 
