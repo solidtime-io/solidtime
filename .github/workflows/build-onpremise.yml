@@ -183,6 +183,8 @@ jobs:
           platforms: ${{ matrix.platform }}
           labels: ${{ steps.meta.outputs.labels }}
           outputs: type=image,"name=${{ env.DOCKER_REPO }}",push-by-digest=true,name-canonical=true,push=true
+          provenance: mode=max
+          sbom: true
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -244,3 +246,17 @@ jobs:
       - name: "Inspect image"
         run: |
           docker buildx imagetools inspect ${{ env.DOCKER_REPO }}:${{ steps.meta.outputs.version }}
+
+      - name: "Install cosign"
+        if: ${{ github.event_name != 'pull_request' }}
+        uses: sigstore/cosign-installer@v4
+
+      # Keyless signing via GitHub OIDC; the signature is recorded in the public Sigstore transparency log.
+      - name: "Sign image"
+        if: ${{ github.event_name != 'pull_request' }}
+        env:
+          VERSION: ${{ steps.meta.outputs.version }}
+        run: |
+          digest=$(docker buildx imagetools inspect "${{ env.DOCKER_REPO }}:${VERSION}" --format '{{json .Manifest}}' | jq -r '.digest')
+          echo "Signing ${{ env.DOCKER_REPO }}@${digest}"
+          cosign sign --yes "${{ env.DOCKER_REPO }}@${digest}"
