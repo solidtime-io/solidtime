@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Tests\Unit\Endpoint\Api\V1;
 
 use App\Http\Controllers\Api\V1\ApiTokenController;
+use App\Mail\AuthApiTokenCreatedMail;
 use App\Models\Passport\Client;
 use App\Models\Passport\Token;
+use Illuminate\Support\Facades\Mail;
 use Laravel\Passport\ClientRepository;
 use Laravel\Passport\Passport;
 use PHPUnit\Framework\Attributes\UsesClass;
@@ -77,6 +79,7 @@ class ApiTokenEndpointTest extends ApiEndpointTestAbstract
         $data = $this->createUserWithPermission([]);
         $personalAccessClient = $this->createPersonalAccessClient();
         Passport::actingAs($data->user);
+        Mail::fake();
 
         // Act
         $response = $this->postJson(route('api.v1.api-tokens.store'), [
@@ -85,6 +88,11 @@ class ApiTokenEndpointTest extends ApiEndpointTestAbstract
 
         // Assert
         $this->assertResponseCode($response, 200);
+        Mail::assertQueued(AuthApiTokenCreatedMail::class, function (AuthApiTokenCreatedMail $mail) use ($data): bool {
+            return $mail->hasTo($data->user->email)
+                && $mail->user->is($data->user)
+                && $mail->token->name === 'Test Token';
+        });
         $response->assertJsonStructure([
             'data' => [
                 'id',
@@ -103,6 +111,7 @@ class ApiTokenEndpointTest extends ApiEndpointTestAbstract
         // Arrange
         $data = $this->createUserWithPermission([]);
         Passport::actingAs($data->user);
+        Mail::fake();
 
         // Act
         $response = $this->postJson(route('api.v1.api-tokens.store'), [
@@ -111,6 +120,7 @@ class ApiTokenEndpointTest extends ApiEndpointTestAbstract
 
         // Assert
         $this->assertResponseCode($response, 400);
+        Mail::assertNothingQueued();
         $response->assertExactJson([
             'error' => true,
             'key' => 'personal_access_client_is_not_configured',
