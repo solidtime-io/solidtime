@@ -242,12 +242,12 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: "Install cosign"
-        if: ${{ github.event_name != 'pull_request' }}
+        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
         uses: sigstore/cosign-installer@756fe2d284c7292c4e9b62c8a28f1e5629c59532 # v4.1.3
 
       # Keyless signing via GitHub OIDC; the deploy script verifies this signature before rollout.
       - name: "Sign image"
-        if: ${{ github.event_name != 'pull_request' }}
+        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
         env:
           DIGEST: ${{ steps.build-push.outputs.digest }}
         run: cosign sign --yes "rg.fr-par.scw.cloud/solidtime/solidtime@${DIGEST}"

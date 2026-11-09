@@ -248,12 +248,12 @@ jobs:
           docker buildx imagetools inspect ${{ env.DOCKER_REPO }}:${{ steps.meta.outputs.version }}
 
       - name: "Install cosign"
-        if: ${{ github.event_name != 'pull_request' }}
+        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
         uses: sigstore/cosign-installer@756fe2d284c7292c4e9b62c8a28f1e5629c59532 # v4.1.3
 
       # Keyless signing via GitHub OIDC; the signature is recorded in the public Sigstore transparency log.
       - name: "Sign image"
-        if: ${{ github.event_name != 'pull_request' }}
+        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
         env:
           VERSION: ${{ steps.meta.outputs.version }}
         run: |
