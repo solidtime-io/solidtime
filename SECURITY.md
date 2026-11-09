@@ -13,7 +13,7 @@ The public images (`solidtime/solidtime` and `ghcr.io/solidtime-io/solidtime`) a
 Verify the signature:
 
 ```bash
-cosign verify ghcr.io/solidtime-io/solidtime:<version> \
+cosign verify solidtime/solidtime:<version> \
   --certificate-identity-regexp '^https://github.com/solidtime-io/solidtime/.github/workflows/build-public.yml@refs/(heads/main|tags/v.*)$' \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com
 ```
@@ -23,8 +23,8 @@ On-premise images (`registry.on-premise.solidtime.io/solidtime/solidtime`) are s
 Show the SBOM (SPDX) and build provenance:
 
 ```bash
-docker buildx imagetools inspect ghcr.io/solidtime-io/solidtime:<version> --format '{{ json .SBOM }}'
-docker buildx imagetools inspect ghcr.io/solidtime-io/solidtime:<version> --format '{{ json .Provenance }}'
+docker buildx imagetools inspect solidtime/solidtime:<version> --format '{{ json .SBOM }}'
+docker buildx imagetools inspect solidtime/solidtime:<version> --format '{{ json .Provenance }}'
 ```
 
 ## Out of scope
