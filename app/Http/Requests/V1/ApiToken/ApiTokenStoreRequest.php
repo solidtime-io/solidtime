@@ -22,6 +22,12 @@ class ApiTokenStoreRequest extends BaseFormRequest
                 'min:1',
                 'max:255',
             ],
+            // Prevents a hijacked session from creating a long-lived token without knowing the password
+            'password' => [
+                'required',
+                'string',
+                'current_password:api',
+            ],
         ];
     }
 

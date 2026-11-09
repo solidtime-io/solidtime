@@ -37,11 +37,13 @@ async function createApiToken() {
         () =>
             createApiTokenMutation.mutateAsync({
                 name: createApiTokenForm.name,
+                password: createApiTokenForm.password,
             }),
         'API Token successfully created',
         'There was an error while creating the API Token',
         (response) => {
             createApiTokenForm.name = '';
+            createApiTokenForm.password = '';
             displayingToken.value = true;
             newToken.value = response.data.access_token;
         }
@@ -50,6 +52,7 @@ async function createApiToken() {
 
 const createApiTokenForm = useForm({
     name: '',
+    password: '',
 });
 
 function confirmApiTokenDeletion(token: ApiToken) {
@@ -161,6 +164,20 @@ const revokeApiTokenMutation = useMutation({
                             <ClockIcon class="w-4"></ClockIcon>
                             <span> API Tokens are valid for 1 year </span>
                         </span>
+                    </FieldDescription>
+                </Field>
+
+                <!-- Password Confirmation -->
+                <Field class="col-span-6 sm:col-span-4">
+                    <FieldLabel for="api_key_password">Password</FieldLabel>
+                    <TextInput
+                        id="api_key_password"
+                        v-model="createApiTokenForm.password"
+                        type="password"
+                        class="block w-full"
+                        autocomplete="current-password" />
+                    <FieldDescription>
+                        Please enter your password to confirm the creation of the API token.
                     </FieldDescription>
                 </Field>
             </template>
