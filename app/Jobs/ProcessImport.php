@@ -11,6 +11,7 @@ use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\MaxAttemptsExceededException;
 use Illuminate\Queue\SerializesModels;
 use Throwable;
 
@@ -28,8 +29,6 @@ class ProcessImport implements ShouldDispatchAfterCommit, ShouldQueue
 
     /**
      * Imports are not retried, since a failed import is rolled back and the user has to fix the import data.
-     * Note: The "retry_after" of the queue connection needs to be higher than the timeout,
-     * otherwise a long-running import is started a second time.
      */
     public int $tries = 1;
 
@@ -56,10 +55,20 @@ class ProcessImport implements ShouldDispatchAfterCommit, ShouldQueue
     }
 
     /**
-     * Handle a job failure, for example a timeout.
+     * Handle a job failure.
      */
     public function failed(?Throwable $exception): void
     {
+        // A MaxAttemptsExceededException is thrown in two cases where the import must not be marked as failed here:
+        // - The import runs longer than the "retry_after" of the queue connection and the queue hands out the job
+        //   a second time, while the first attempt is still running.
+        // - The import timed out (TimeoutExceededException). The timeout handler runs while the import transaction
+        //   is still open, so the change would be rolled back when the worker is killed.
+        // In both cases the import:prune command marks the import as failed if it is really stale.
+        if ($exception instanceof MaxAttemptsExceededException) {
+            return;
+        }
+
         $this->import->refresh();
         if ($this->import->status->isActive()) {
             app(ImportService::class)->markAsFailed($this->import, 'Import could not be finished');

@@ -8,6 +8,8 @@ use App\Enums\ImportStatus;
 use App\Jobs\ProcessImport;
 use App\Models\Import;
 use App\Service\Import\ImportService;
+use Illuminate\Queue\MaxAttemptsExceededException;
+use Illuminate\Queue\TimeoutExceededException;
 use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use RuntimeException;
@@ -75,6 +77,36 @@ class ProcessImportTest extends TestCaseWithDatabase
         // Assert
         $import->refresh();
         $this->assertSame(ImportStatus::Completed, $import->status);
+        $this->assertNull($import->error_message);
+    }
+
+    public function test_failed_does_not_mark_import_as_failed_if_job_was_handed_out_again_while_still_running(): void
+    {
+        // Arrange
+        $import = Import::factory()->running()->create();
+        $job = new ProcessImport($import);
+
+        // Act
+        $job->failed(new MaxAttemptsExceededException('App\\Jobs\\ProcessImport has been attempted too many times.'));
+
+        // Assert
+        $import->refresh();
+        $this->assertSame(ImportStatus::Running, $import->status);
+        $this->assertNull($import->error_message);
+    }
+
+    public function test_failed_does_not_mark_import_as_failed_on_timeout(): void
+    {
+        // Arrange
+        $import = Import::factory()->running()->create();
+        $job = new ProcessImport($import);
+
+        // Act
+        $job->failed(new TimeoutExceededException('App\\Jobs\\ProcessImport has timed out.'));
+
+        // Assert
+        $import->refresh();
+        $this->assertSame(ImportStatus::Running, $import->status);
         $this->assertNull($import->error_message);
     }
 }

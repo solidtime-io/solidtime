@@ -30,16 +30,20 @@ class ImportPruneCommandTest extends TestCaseWithDatabase
     {
         // Arrange
         $stalePending = Import::factory()->create([
-            'updated_at' => now()->subHours(3),
+            'created_at' => now()->subHours(3),
+        ]);
+        $recentPending = Import::factory()->create([
+            'created_at' => now()->subMinutes(90),
         ]);
         $staleRunning = Import::factory()->running()->create([
-            'updated_at' => now()->subHours(3),
+            'started_at' => now()->subMinutes(70),
         ]);
         $recentRunning = Import::factory()->running()->create([
-            'updated_at' => now()->subHour(),
+            'started_at' => now()->subMinutes(50),
         ]);
         $oldCompleted = Import::factory()->completed()->create([
-            'updated_at' => now()->subHours(3),
+            'created_at' => now()->subHours(3),
+            'started_at' => now()->subHours(3),
         ]);
 
         // Act
@@ -50,6 +54,7 @@ class ImportPruneCommandTest extends TestCaseWithDatabase
         $this->assertStringContainsString('Marked 2 stale imports as failed and deleted 0 import files.', Artisan::output());
         $this->assertSame(ImportStatus::Failed, $stalePending->refresh()->status);
         $this->assertSame('Import could not be finished', $stalePending->error_message);
+        $this->assertSame(ImportStatus::Pending, $recentPending->refresh()->status);
         $this->assertSame(ImportStatus::Failed, $staleRunning->refresh()->status);
         $this->assertSame(ImportStatus::Running, $recentRunning->refresh()->status);
         $this->assertSame(ImportStatus::Completed, $oldCompleted->refresh()->status);
@@ -88,7 +93,7 @@ class ImportPruneCommandTest extends TestCaseWithDatabase
         $disk = Storage::disk(config('filesystems.private'));
         $disk->put('import/old', 'old');
         $staleImport = Import::factory()->running()->create([
-            'updated_at' => now()->subHours(3),
+            'started_at' => now()->subHours(3),
         ]);
         $oldImport = Import::factory()->completed()->create([
             'file_path' => 'import/old',
