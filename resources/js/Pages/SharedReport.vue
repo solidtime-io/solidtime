@@ -233,7 +233,11 @@ onMounted(async () => {
                     </div>
                     <div
                         class="grid items-center"
-                        :style="`grid-template-columns: 1fr 100px ${showAmounts ? '150px' : ''}`">
+                        :style="
+                            showAmounts
+                                ? 'grid-template-columns: 1fr 100px 150px'
+                                : 'grid-template-columns: 1fr 100px'
+                        ">
                         <div
                             class="contents [&>*]:border-card-background-separator [&>*]:border-b [&>*]:bg-tertiary [&>*]:pb-1.5 [&>*]:pt-1 text-text-secondary text-sm">
                             <div class="pl-6">Name</div>

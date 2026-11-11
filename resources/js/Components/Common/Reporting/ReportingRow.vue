@@ -77,7 +77,9 @@ const { locked: billableRatesLocked } = useBillableRatesLock();
         v-if="expanded && entry.grouped_data"
         :class="showCost ? 'col-span-3' : 'col-span-2'"
         class="grid bg-tertiary"
-        :style="`grid-template-columns: 1fr 150px ${showCost ? '150px' : ''}`">
+        :style="
+            showCost ? 'grid-template-columns: 1fr 150px 150px' : 'grid-template-columns: 1fr 150px'
+        ">
         <ReportingRow
             v-for="subEntry in entry.grouped_data"
             :key="subEntry.key ?? 'none'"

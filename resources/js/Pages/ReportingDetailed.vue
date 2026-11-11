@@ -30,7 +30,7 @@ import {
 } from '@/packages/api/src';
 import { useTagsQuery } from '@/utils/useTagsQuery';
 import { useTagsStore } from '@/utils/useTags';
-import { useSessionStorage } from '@vueuse/core';
+import { useSessionStorage, useStorage } from '@vueuse/core';
 import TimeEntryRow from '@/packages/ui/src/TimeEntry/TimeEntryRow.vue';
 import { useCurrentTimeEntryStore } from '@/utils/useCurrentTimeEntry';
 import { useProjectsQuery } from '@/utils/useProjectsQuery';
@@ -41,7 +41,7 @@ import { useClientsStore } from '@/utils/useClients';
 import { getOrganizationCurrencyString } from '@/utils/money';
 import { useMembersQuery } from '@/utils/useMembersQuery';
 import { useQueryClient } from '@tanstack/vue-query';
-import { getCurrentOrganizationId, getCurrentMembershipId } from '@/utils/useUser';
+import { getCurrentOrganizationId, getCurrentMembershipId, getCurrentRole } from '@/utils/useUser';
 import ReportingTabNavbar from '@/Components/Common/Reporting/ReportingTabNavbar.vue';
 import UpgradeModal from '@/packages/ui/src/UpgradeModal.vue';
 import type { ExportFormat } from '@/types/reporting';
@@ -54,6 +54,7 @@ import ReportingFilterBar from '@/Components/Common/Reporting/ReportingFilterBar
 import { useTimeEntriesReportQuery } from '@/utils/useTimeEntriesReportQuery';
 import { useTimeEntriesMutations } from '@/utils/useTimeEntriesMutations';
 import { useOrganizationQuery } from '@/utils/useOrganizationQuery';
+import { useBillableRatesLock } from '@/packages/ui/src/utils/useBillableRatesLock';
 import type { TagMatchType } from '@/types/reporting';
 
 // TimeEntryRoundingType is now defined in ReportingRoundingControls component
@@ -78,10 +79,21 @@ const entryType = ref<'work' | 'break' | null>('work');
 const roundingEnabled = ref<boolean>(false);
 const roundingType = ref<TimeEntryRoundingType>('nearest');
 const roundingMinutes = ref<number>(15);
-const showAmounts = ref<boolean>(true);
+const showAmounts = useStorage<boolean>('reporting-show-amounts', true);
 
 const { members } = useMembersQuery();
 const { organization } = useOrganizationQuery(getCurrentOrganizationId()!);
+const { locked: billableRatesLocked } = useBillableRatesLock();
+
+const canSeeBillableRate = computed(() => {
+    return !!(
+        getCurrentRole() !== 'employee' || organization.value?.employees_can_see_billable_rates
+    );
+});
+
+const canToggleAmounts = computed(() => canSeeBillableRate.value && !billableRatesLocked.value);
+const effectiveShowAmounts = computed(() => !canToggleAmounts.value || showAmounts.value);
+
 const pageLimit = 15;
 
 // Watch rounding enabled state to trigger updates
@@ -111,7 +123,7 @@ function getFilterAttributes() {
         type: entryType.value !== null ? entryType.value : undefined,
         rounding_type: roundingEnabled.value ? roundingType.value : undefined,
         rounding_minutes: roundingEnabled.value ? roundingMinutes.value : undefined,
-        show_amounts: showAmounts.value,
+        show_amounts: effectiveShowAmounts.value,
     };
     return params;
 }
@@ -338,6 +350,7 @@ async function downloadExport(format: ExportFormat) {
             v-model:show-amounts="showAmounts"
             v-model:start-date="startDate"
             v-model:end-date="endDate"
+            :show-view-options="canToggleAmounts"
             @submit="updateFilteredTimeEntries" />
         <TimeEntryMassActionRow
             :selected-time-entries="selectedTimeEntries"

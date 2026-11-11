@@ -1,19 +1,13 @@
 <script setup lang="ts">
 import { useBreaksEnabled } from '@/packages/ui/src/utils/useBreaksEnabled';
-import {
-    CheckCircleIcon,
-    LockClosedIcon,
-    TagIcon,
-    UserGroupIcon,
-    EyeIcon,
-    EyeSlashIcon,
-} from '@heroicons/vue/20/solid';
+import { CheckCircleIcon, LockClosedIcon, TagIcon, UserGroupIcon } from '@heroicons/vue/20/solid';
 import { FolderIcon } from '@heroicons/vue/16/solid';
 import { Check, Coffee } from '@lucide/vue';
 import { RadioGroupIndicator, RadioGroupItem, RadioGroupRoot, type AcceptableValue } from 'reka-ui';
 import BillableIcon from '@/packages/ui/src/Icons/BillableIcon.vue';
 import { useBillableRatesLock } from '@/packages/ui/src/utils/useBillableRatesLock';
 import ReportingRoundingControls from '@/Components/Common/Reporting/ReportingRoundingControls.vue';
+import ReportingViewOptions from '@/Components/Common/Reporting/ReportingViewOptions.vue';
 import TaskMultiselectDropdown from '@/Components/Common/Task/TaskMultiselectDropdown.vue';
 import ClientMultiselectDropdown from '@/Components/Common/Client/ClientMultiselectDropdown.vue';
 import MemberMultiselectDropdown from '@/Components/Common/Member/MemberMultiselectDropdown.vue';
@@ -41,9 +35,11 @@ const entryType = defineModel<'work' | 'break' | null>('entryType', { required: 
 const roundingEnabled = defineModel<boolean>('roundingEnabled', { required: true });
 const roundingType = defineModel<TimeEntryRoundingType>('roundingType', { required: true });
 const roundingMinutes = defineModel<number>('roundingMinutes', { required: true });
-const showAmounts = defineModel<boolean>('showAmounts', { required: true });
+const showAmounts = defineModel<boolean>('showAmounts', { default: true });
 const startDate = defineModel<string>('startDate', { required: true });
 const endDate = defineModel<string>('endDate', { required: true });
+
+withDefaults(defineProps<{ showViewOptions?: boolean }>(), { showViewOptions: true });
 
 const { locked: billableRatesLocked, requestUpgrade } = useBillableRatesLock();
 
@@ -225,35 +221,13 @@ async function createTag(name: string) {
                     v-model:type="roundingType"
                     v-model:minutes="roundingMinutes"
                     @change="emit('submit')" />
-                <Select
-                    :model-value="showAmounts ? 'true' : 'false'"
-                    @update:model-value="(v) => (showAmounts = v === 'true')">
-                    <SelectTrigger
-                        size="sm"
-                        variant="outline"
-                        :active="!showAmounts"
-                        :show-chevron="false">
-                        <SelectValue class="flex items-center gap-2">
-                            <EyeSlashIcon
-                                v-if="!showAmounts"
-                                class="h-4 dark:text-accent-300/80 text-accent-400/80" />
-                            <EyeIcon v-else class="h-4 text-text-quaternary" />
-                            <span class="text-text-secondary">
-                                Show amount: {{ showAmounts ? 'on' : 'off' }}
-                            </span>
-                        </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="true">On</SelectItem>
-                        <SelectItem value="false">Off</SelectItem>
-                    </SelectContent>
-                </Select>
             </div>
-            <div>
+            <div class="flex items-center gap-2">
                 <DateRangePicker
                     v-model:start="startDate"
                     v-model:end="endDate"
                     @submit="emit('submit')" />
+                <ReportingViewOptions v-if="showViewOptions" v-model:show-amounts="showAmounts" />
             </div>
         </MainContainer>
     </div>

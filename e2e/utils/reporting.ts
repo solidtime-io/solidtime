@@ -290,6 +290,20 @@ export async function waitForDetailedReportingUpdate(page: Page) {
 }
 
 // ──────────────────────────────────────────────────
+// View options
+// ──────────────────────────────────────────────────
+
+export async function setShowAmounts(page: Page, value: boolean) {
+    await page.getByTestId('reporting_view_options').click();
+    const showAmountsSwitch = page.getByTestId('reporting_view_options_show_amounts');
+    await expect(showAmountsSwitch).toBeChecked({ checked: !value });
+    await Promise.all([waitForReportingUpdate(page), showAmountsSwitch.click()]);
+    await expect(showAmountsSwitch).toBeChecked({ checked: value });
+    await page.keyboard.press('Escape');
+    await expect(showAmountsSwitch).not.toBeVisible();
+}
+
+// ──────────────────────────────────────────────────
 // Shared report helpers
 // ──────────────────────────────────────────────────
 

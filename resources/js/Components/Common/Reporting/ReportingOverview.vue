@@ -94,7 +94,12 @@ const canSeeBillableRate = computed(() => {
     );
 });
 
-const showBillableRate = computed(() => canSeeBillableRate.value && showAmounts.value);
+const { locked: billableRatesLocked } = useBillableRatesLock();
+
+const canToggleAmounts = computed(() => canSeeBillableRate.value && !billableRatesLocked.value);
+const effectiveShowAmounts = computed(() => !canToggleAmounts.value || showAmounts.value);
+
+const showBillableRate = computed(() => canSeeBillableRate.value && effectiveShowAmounts.value);
 
 // Ensure sub-group falls back when it collides with group
 watch(
@@ -137,7 +142,7 @@ const filterParams = computed<AggregatedTimeEntriesQueryParams>(() => {
         member_id: getCurrentRole() === 'employee' ? getCurrentMembershipId() : undefined,
         rounding_type: roundingEnabled.value ? roundingType.value : undefined,
         rounding_minutes: roundingEnabled.value ? roundingMinutes.value : undefined,
-        show_amounts: showAmounts.value,
+        show_amounts: effectiveShowAmounts.value,
     };
 });
 
@@ -301,8 +306,6 @@ const tableData = computed(() => {
         };
     });
 });
-
-const { locked: billableRatesLocked } = useBillableRatesLock();
 </script>
 
 <template>
@@ -394,9 +397,9 @@ const { locked: billableRatesLocked } = useBillableRatesLock();
         v-model:rounding-type="roundingType"
         v-model:rounding-minutes="roundingMinutes"
         v-model:show-amounts="showAmounts"
-        :can-toggle-amounts="canSeeBillableRate"
         v-model:start-date="startDate"
-        v-model:end-date="endDate" />
+        v-model:end-date="endDate"
+        :show-view-options="canToggleAmounts" />
     <MainContainer>
         <div class="pt-10 w-full px-3 relative">
             <ReportingChart
@@ -422,7 +425,11 @@ const { locked: billableRatesLocked } = useBillableRatesLock();
                 </div>
                 <div
                     class="grid items-center"
-                    :style="`grid-template-columns: 1fr 100px ${showBillableRate ? '150px' : ''}`">
+                    :style="
+                        showBillableRate
+                            ? 'grid-template-columns: 1fr 100px 150px'
+                            : 'grid-template-columns: 1fr 100px'
+                    ">
                     <div
                         class="contents [&>*]:border-card-background-separator [&>*]:border-b [&>*]:bg-secondary [&>*]:pb-1.5 [&>*]:pt-1 text-text-tertiary text-sm">
                         <div class="pl-6">Name</div>

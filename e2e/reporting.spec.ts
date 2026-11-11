@@ -1,7 +1,7 @@
 import { expect } from '@playwright/test';
 import { PLAYWRIGHT_BASE_URL } from '../playwright/config';
 import { test } from '../playwright/fixtures';
-import { goToReporting, waitForReportingUpdate } from './utils/reporting';
+import { goToReporting, setShowAmounts, waitForReportingUpdate } from './utils/reporting';
 import {
     createProjectViaApi,
     createClientViaApi,
@@ -735,17 +735,11 @@ test('test that toggling show amount off hides the Cost column', async ({ page, 
 
     // Cost column should be visible by default for admin users with billable projects
     await expect(page.getByText('Cost', { exact: true })).toBeVisible();
-    await expect(page.getByText(/Show amount: on/)).toBeVisible();
 
-    // Toggle show amount off
-    const reportUpdatePromise = waitForReportingUpdate(page);
-    await page.getByText(/Show amount: on/).click();
-    await page.getByRole('option', { name: 'Off' }).click();
-    await reportUpdatePromise;
+    await setShowAmounts(page, false);
 
     // Cost column should no longer be visible
     await expect(page.getByText('Cost', { exact: true })).not.toBeVisible();
-    await expect(page.getByText(/Show amount: off/)).toBeVisible();
 });
 
 test('test that toggling show amount back on restores the Cost column', async ({ page, ctx }) => {
@@ -765,18 +759,10 @@ test('test that toggling show amount back on restores the Cost column', async ({
     await goToReporting(page);
     await expect(page.getByRole('button', { name: 'Export' })).toBeVisible();
 
-    // Toggle off
-    let reportUpdatePromise = waitForReportingUpdate(page);
-    await page.getByText(/Show amount: on/).click();
-    await page.getByRole('option', { name: 'Off' }).click();
-    await reportUpdatePromise;
+    await setShowAmounts(page, false);
     await expect(page.getByText('Cost', { exact: true })).not.toBeVisible();
 
-    // Toggle back on
-    reportUpdatePromise = waitForReportingUpdate(page);
-    await page.getByText(/Show amount: off/).click();
-    await page.getByRole('option', { name: 'On' }).click();
-    await reportUpdatePromise;
+    await setShowAmounts(page, true);
 
     // Cost column should be visible again
     await expect(page.getByText('Cost', { exact: true })).toBeVisible();

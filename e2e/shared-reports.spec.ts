@@ -23,6 +23,7 @@ import {
     goToReportingShared,
     waitForReportingUpdate,
     saveAsSharedReport,
+    setShowAmounts,
 } from './utils/reporting';
 
 // Each test registers a new user and creates test data via API
@@ -975,11 +976,7 @@ test('test that shared report hides Cost column when saved with show amounts off
     await goToReporting(page);
     await expect(page.getByTestId('reporting_view').getByText(projectName)).toBeVisible();
 
-    // Toggle show amounts off before saving the report
-    const reportUpdatePromise = waitForReportingUpdate(page);
-    await page.getByText(/Show amount: on/).click();
-    await page.getByRole('option', { name: 'Off' }).click();
-    await reportUpdatePromise;
+    await setShowAmounts(page, false);
 
     // Cost column should be hidden in the overview before saving
     await expect(page.getByText('Cost', { exact: true })).not.toBeVisible();
