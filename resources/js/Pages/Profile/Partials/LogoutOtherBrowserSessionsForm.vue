@@ -8,10 +8,11 @@ import { Field, FieldError } from '@/packages/ui/src/field';
 import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
 import TextInput from '@/packages/ui/src/Input/TextInput.vue';
-import type { Session } from '@/types/jetstream';
+import type { AppSession, Session } from '@/types/jetstream';
 
 defineProps<{
     sessions: Session[];
+    appSessions: AppSession[];
 }>();
 
 const confirmingLogout = ref(false);
@@ -45,18 +46,18 @@ const closeModal = () => {
 
 <template>
     <ActionSection>
-        <template #title> Browser Sessions </template>
+        <template #title> Sessions </template>
 
         <template #description>
-            Manage and log out your active sessions on other browsers and devices.
+            Manage and log out your active sessions on other browsers, devices and apps.
         </template>
 
         <template #content>
             <div class="max-w-xl text-sm text-text-secondary">
-                If necessary, you may log out of all of your other browser sessions across all of
-                your devices. Some of your recent sessions are listed below; however, this list may
-                not be exhaustive. If you feel your account has been compromised, you should also
-                update your password.
+                If necessary, you may log out of all of your other browser sessions and apps across
+                all of your devices. Some of your recent sessions are listed below; however, this
+                list may not be exhaustive. If you feel your account has been compromised, you
+                should also update your password.
             </div>
 
             <!-- Other Browser Sessions -->
@@ -115,21 +116,52 @@ const closeModal = () => {
                 </div>
             </div>
 
+            <!-- Apps (e.g. desktop app) logged in via OAuth -->
+            <div v-if="appSessions.length > 0" class="mt-6 space-y-6">
+                <div
+                    v-for="appSession in appSessions"
+                    :key="appSession.id"
+                    class="flex items-center">
+                    <div>
+                        <svg
+                            class="w-8 h-8 text-text-primary"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke-width="1.5"
+                            stroke="currentColor">
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                d="M3 8.25V18a2.25 2.25 0 002.25 2.25h13.5A2.25 2.25 0 0021 18V8.25m-18 0V6a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 6v2.25m-18 0h18M5.25 6h.008v.008H5.25V6zM7.5 6h.008v.008H7.5V6zm2.25 0h.008v.008H9.75V6z" />
+                        </svg>
+                    </div>
+
+                    <div class="ms-3">
+                        <div class="text-sm text-text-primary font-medium">
+                            {{ appSession.name }}
+                        </div>
+
+                        <div class="text-xs text-text-secondary">
+                            Signed in {{ appSession.last_active }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="flex items-center mt-5">
-                <PrimaryButton @click="confirmLogout">
-                    Log Out Other Browser Sessions
-                </PrimaryButton>
+                <PrimaryButton @click="confirmLogout"> Log Out Other Sessions </PrimaryButton>
 
                 <ActionMessage :on="form.recentlySuccessful" class="ms-3"> Done. </ActionMessage>
             </div>
 
             <!-- Log Out Other Devices Confirmation Modal -->
             <DialogModal :show="confirmingLogout" @close="closeModal">
-                <template #title> Log Out Other Browser Sessions </template>
+                <template #title> Log Out Other Sessions </template>
 
                 <template #content>
                     Please enter your password to confirm you would like to log out of your other
-                    browser sessions across all of your devices.
+                    browser sessions and apps across all of your devices.
 
                     <Field class="mt-4">
                         <TextInput
@@ -155,7 +187,7 @@ const closeModal = () => {
                         :class="{ 'opacity-25': form.processing }"
                         :disabled="form.processing"
                         @click="logoutOtherBrowserSessions">
-                        Log Out Other Browser Sessions
+                        Log Out Other Sessions
                     </PrimaryButton>
                 </template>
             </DialogModal>

@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Tests\Unit\Endpoint\Web;
 
 use App\Http\Controllers\Web\UserProfileController;
+use App\Models\Passport\Client;
+use App\Models\Passport\RefreshToken;
+use App\Models\Passport\Token;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -131,5 +134,58 @@ class UserProfileEndpointTest extends EndpointTestAbstract
         $response->assertSessionMissing('two_factor_confirming_at');
         $this->assertNull($user->fresh()->two_factor_secret);
         $this->assertNull($user->fresh()->two_factor_confirmed_at);
+    }
+
+    public function test_showing_profile_exposes_active_app_sessions_of_current_user(): void
+    {
+        // Arrange
+        $this->travelTo(Carbon::parse('2024-01-02 12:00:00', 'UTC'));
+        $user = User::factory()->withPersonalOrganization()->create();
+        $otherUser = User::factory()->create();
+        $desktopClient = Client::factory()->desktopClient()->create();
+        $personalAccessClient = Client::factory()->personalAccessClient()->create();
+        $activeToken = Token::factory()->forUser($user)->forClient($desktopClient)->create([
+            'created_at' => now()->subHours(2),
+            'expires_at' => now()->addDay(),
+        ]);
+        $expiredTokenWithValidRefreshToken = Token::factory()->forUser($user)->forClient($desktopClient)->create([
+            'created_at' => now()->subDays(3),
+            'expires_at' => now()->subDay(),
+        ]);
+        RefreshToken::query()->forceCreate([
+            'id' => 'valid-refresh-token',
+            'access_token_id' => $expiredTokenWithValidRefreshToken->id,
+            'revoked' => false,
+            'expires_at' => now()->addMonth(),
+        ]);
+        Token::factory()->forUser($user)->forClient($desktopClient)->create([
+            'revoked' => true,
+            'expires_at' => now()->addDay(),
+        ]);
+        Token::factory()->forUser($user)->forClient($desktopClient)->create([
+            'expires_at' => now()->subDay(),
+        ]);
+        Token::factory()->forUser($user)->forClient($personalAccessClient)->create([
+            'expires_at' => now()->addDay(),
+        ]);
+        Token::factory()->forUser($otherUser)->forClient($desktopClient)->create([
+            'expires_at' => now()->addDay(),
+        ]);
+        $this->actingAs($user);
+
+        // Act
+        $response = $this->get('/user/profile');
+
+        // Assert
+        $response->assertOk();
+        $response->assertInertia(fn (Assert $page) => $page
+            ->component('Profile/Show')
+            ->has('appSessions', 2)
+            ->where('appSessions.0.id', $activeToken->id)
+            ->where('appSessions.0.name', 'Desktop')
+            ->where('appSessions.0.last_active', '2 hours ago')
+            ->where('appSessions.1.id', $expiredTokenWithValidRefreshToken->id)
+            ->where('appSessions.1.last_active', '3 days ago')
+        );
     }
 }

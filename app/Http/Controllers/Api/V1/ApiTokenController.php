@@ -8,11 +8,13 @@ use App\Exceptions\Api\PersonalAccessClientIsNotConfiguredException;
 use App\Http\Requests\V1\ApiToken\ApiTokenStoreRequest;
 use App\Http\Resources\V1\ApiToken\ApiTokenCollection;
 use App\Http\Resources\V1\ApiToken\ApiTokenWithAccessTokenResource;
+use App\Mail\AuthApiTokenCreatedMail;
 use App\Models\Passport\Client;
 use App\Models\Passport\Token;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use RuntimeException;
 
@@ -58,11 +60,6 @@ class ApiTokenController extends Controller
 
         try {
             $token = $user->createToken($request->getName(), ['*']);
-
-            /** @var Token $tokenModel */
-            $tokenModel = $token->getToken();
-
-            return new ApiTokenWithAccessTokenResource($tokenModel, $token->accessToken);
         } catch (RuntimeException $exception) {
             report($exception);
             if (Str::contains($exception->getMessage(), ['Personal access client not found'])) {
@@ -71,6 +68,14 @@ class ApiTokenController extends Controller
 
             throw $exception;
         }
+
+        /** @var Token $tokenModel */
+        $tokenModel = $token->getToken();
+
+        Mail::to($user->email)
+            ->queue(new AuthApiTokenCreatedMail($tokenModel, $user));
+
+        return new ApiTokenWithAccessTokenResource($tokenModel, $token->accessToken);
     }
 
     /**

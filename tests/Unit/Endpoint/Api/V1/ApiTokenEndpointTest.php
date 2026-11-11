@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Tests\Unit\Endpoint\Api\V1;
 
 use App\Http\Controllers\Api\V1\ApiTokenController;
+use App\Mail\AuthApiTokenCreatedMail;
 use App\Models\Passport\Client;
 use App\Models\Passport\Token;
+use Illuminate\Support\Facades\Mail;
 use Laravel\Passport\ClientRepository;
 use Laravel\Passport\Passport;
 use PHPUnit\Framework\Attributes\UsesClass;
@@ -77,14 +79,21 @@ class ApiTokenEndpointTest extends ApiEndpointTestAbstract
         $data = $this->createUserWithPermission([]);
         $personalAccessClient = $this->createPersonalAccessClient();
         Passport::actingAs($data->user);
+        Mail::fake();
 
         // Act
         $response = $this->postJson(route('api.v1.api-tokens.store'), [
             'name' => 'Test Token',
+            'password' => 'password',
         ]);
 
         // Assert
         $this->assertResponseCode($response, 200);
+        Mail::assertQueued(AuthApiTokenCreatedMail::class, function (AuthApiTokenCreatedMail $mail) use ($data): bool {
+            return $mail->hasTo($data->user->email)
+                && $mail->user->is($data->user)
+                && $mail->token->name === 'Test Token';
+        });
         $response->assertJsonStructure([
             'data' => [
                 'id',
@@ -103,6 +112,51 @@ class ApiTokenEndpointTest extends ApiEndpointTestAbstract
         // Arrange
         $data = $this->createUserWithPermission([]);
         Passport::actingAs($data->user);
+        Mail::fake();
+
+        // Act
+        $response = $this->postJson(route('api.v1.api-tokens.store'), [
+            'name' => 'Test Token',
+            'password' => 'password',
+        ]);
+
+        // Assert
+        $this->assertResponseCode($response, 400);
+        Mail::assertNothingQueued();
+        $response->assertExactJson([
+            'error' => true,
+            'key' => 'personal_access_client_is_not_configured',
+            'message' => 'Personal access client is not configured',
+        ]);
+    }
+
+    public function test_store_fails_if_password_is_incorrect(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([]);
+        $this->createPersonalAccessClient();
+        Passport::actingAs($data->user);
+        Mail::fake();
+
+        // Act
+        $response = $this->postJson(route('api.v1.api-tokens.store'), [
+            'name' => 'Test Token',
+            'password' => 'wrong-password',
+        ]);
+
+        // Assert
+        $this->assertResponseCode($response, 422);
+        $response->assertJsonValidationErrors(['password' => 'The password is incorrect.']);
+        $this->assertSame(0, Token::query()->where('user_id', $data->user->getKey())->count());
+        Mail::assertNothingQueued();
+    }
+
+    public function test_store_fails_if_password_is_missing(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([]);
+        $this->createPersonalAccessClient();
+        Passport::actingAs($data->user);
 
         // Act
         $response = $this->postJson(route('api.v1.api-tokens.store'), [
@@ -110,12 +164,32 @@ class ApiTokenEndpointTest extends ApiEndpointTestAbstract
         ]);
 
         // Assert
-        $this->assertResponseCode($response, 400);
-        $response->assertExactJson([
-            'error' => true,
-            'key' => 'personal_access_client_is_not_configured',
-            'message' => 'Personal access client is not configured',
+        $this->assertResponseCode($response, 422);
+        $response->assertJsonValidationErrors(['password']);
+        $this->assertSame(0, Token::query()->where('user_id', $data->user->getKey())->count());
+    }
+
+    public function test_store_is_rate_limited(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([]);
+        $this->createPersonalAccessClient();
+        Passport::actingAs($data->user);
+
+        // Act
+        for ($i = 0; $i < 6; $i++) {
+            $this->postJson(route('api.v1.api-tokens.store'), [
+                'name' => 'Test Token',
+                'password' => 'wrong-password',
+            ]);
+        }
+        $response = $this->postJson(route('api.v1.api-tokens.store'), [
+            'name' => 'Test Token',
+            'password' => 'password',
         ]);
+
+        // Assert
+        $this->assertResponseCode($response, 429);
     }
 
     public function test_revoke_endpoint_revokes_api_token(): void

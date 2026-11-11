@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test';
 import type { APIRequestContext, Page } from '@playwright/test';
-import { PLAYWRIGHT_BASE_URL } from '../../playwright/config';
+import { PLAYWRIGHT_BASE_URL, TEST_USER_PASSWORD } from '../../playwright/config';
 
 // ──────────────────────────────────────────────────
 // Types
@@ -29,29 +29,34 @@ export interface TestContext {
  */
 async function createApiToken(page: Page): Promise<string> {
     for (let attempt = 0; attempt < 3; attempt++) {
-        const result = await page.evaluate(async (baseUrl) => {
-            const xsrfCookie = document.cookie.split('; ').find((c) => c.startsWith('XSRF-TOKEN='));
-            const xsrfToken = xsrfCookie
-                ? decodeURIComponent(xsrfCookie.split('=').slice(1).join('='))
-                : '';
+        const result = await page.evaluate(
+            async ({ baseUrl, password }) => {
+                const xsrfCookie = document.cookie
+                    .split('; ')
+                    .find((c) => c.startsWith('XSRF-TOKEN='));
+                const xsrfToken = xsrfCookie
+                    ? decodeURIComponent(xsrfCookie.split('=').slice(1).join('='))
+                    : '';
 
-            const res = await fetch(`${baseUrl}/api/v1/users/me/api-tokens`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Accept: 'application/json',
-                    'X-XSRF-TOKEN': xsrfToken,
-                },
-                body: JSON.stringify({ name: 'playwright-test' }),
-            });
+                const res = await fetch(`${baseUrl}/api/v1/users/me/api-tokens`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Accept: 'application/json',
+                        'X-XSRF-TOKEN': xsrfToken,
+                    },
+                    body: JSON.stringify({ name: 'playwright-test', password }),
+                });
 
-            if (!res.ok) {
-                return null;
-            }
+                if (!res.ok) {
+                    return null;
+                }
 
-            const body = await res.json();
-            return body.data.access_token as string;
-        }, PLAYWRIGHT_BASE_URL);
+                const body = await res.json();
+                return body.data.access_token as string;
+            },
+            { baseUrl: PLAYWRIGHT_BASE_URL, password: TEST_USER_PASSWORD }
+        );
 
         if (result) {
             return result;

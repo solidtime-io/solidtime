@@ -5362,7 +5362,9 @@ Please note that the access token is only shown in this response and cannot be r
             {
                 name: 'body',
                 type: 'Body',
-                schema: z.object({ name: z.string().min(1).max(255) }).passthrough(),
+                schema: z
+                    .object({ name: z.string().min(1).max(255), password: z.string() })
+                    .passthrough(),
             },
         ],
         response: z.object({ data: ApiTokenWithAccessTokenResource }).passthrough(),
