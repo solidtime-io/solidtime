@@ -6,6 +6,7 @@ namespace App\Filament\Resources\TimeEntryResource\Pages;
 
 use App\Filament\Resources\TimeEntryResource;
 use App\Models\Member;
+use App\Models\TimeEntry;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 
@@ -13,11 +14,18 @@ class EditTimeEntry extends EditRecord
 {
     protected static string $resource = TimeEntryResource::class;
 
+    private ?string $originalProjectId = null;
+
+    private ?string $originalTaskId = null;
+
     protected function getHeaderActions(): array
     {
         return [
             DeleteAction::make()
-                ->icon('heroicon-m-trash'),
+                ->icon('heroicon-m-trash')
+                ->after(function (TimeEntry $record): void {
+                    TimeEntryResource::recalculateSpentTime([$record->project_id], [$record->task_id]);
+                }),
         ];
     }
 
@@ -38,5 +46,23 @@ class EditTimeEntry extends EditRecord
         $data['client_id'] = TimeEntryResource::getClientIdForProject($data['project_id'] ?? null);
 
         return $data;
+    }
+
+    protected function beforeSave(): void
+    {
+        /** @var TimeEntry $timeEntry */
+        $timeEntry = $this->getRecord();
+        $this->originalProjectId = $timeEntry->project_id;
+        $this->originalTaskId = $timeEntry->task_id;
+    }
+
+    protected function afterSave(): void
+    {
+        /** @var TimeEntry $timeEntry */
+        $timeEntry = $this->getRecord();
+        TimeEntryResource::recalculateSpentTime(
+            [$this->originalProjectId, $timeEntry->project_id],
+            [$this->originalTaskId, $timeEntry->task_id]
+        );
     }
 }
