@@ -5,14 +5,14 @@
     },
     "Services": {
         "repository": "solidtime-io/extension-services",
-        "ref": "v0.0.8"
+        "ref": "v0.0.9"
     },
     "Invoicing": {
         "repository": "solidtime-io/extension-invoicing",
-        "ref": "v0.0.13"
+        "ref": "v0.0.14"
     },
     "Auditing": {
         "repository": "solidtime-io/extension-auditing",
-        "ref": "v0.0.5"
+        "ref": "v0.0.6"
     }
 }
