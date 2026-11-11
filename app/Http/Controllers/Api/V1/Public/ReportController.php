@@ -64,6 +64,7 @@ class ReportController extends Controller
         $filter->addTaskIdsFilter($properties->taskIds?->toArray());
         $filter->addClientIdsFilter($properties->clientIds?->toArray());
         $timeEntriesQuery = $filter->get();
+        $showAmounts = $properties->showAmounts ?? true;
 
         $data = $timeEntryAggregationService->getAggregatedTimeEntriesWithDescriptions(
             $timeEntriesQuery->clone(),
@@ -74,7 +75,7 @@ class ReportController extends Controller
             false,
             $report->properties->start,
             $report->properties->end,
-            true,
+            $showAmounts,
             $report->properties->roundingType,
             $report->properties->roundingMinutes,
         );
@@ -87,7 +88,7 @@ class ReportController extends Controller
             true,
             $report->properties->start,
             $report->properties->end,
-            true,
+            $showAmounts,
             $report->properties->roundingType,
             $report->properties->roundingMinutes,
         );

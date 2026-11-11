@@ -21,6 +21,7 @@ use App\Service\Dto\ReportPropertiesDto;
 use App\Service\TimeEntryFilter;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
+use Illuminate\Testing\TestResponse;
 use Tests\Unit\Endpoint\Api\V1\ApiEndpointTestAbstract;
 
 class PublicReportEndpointTest extends ApiEndpointTestAbstract
@@ -671,23 +672,11 @@ class PublicReportEndpointTest extends ApiEndpointTestAbstract
         ]);
     }
 
-    public function test_show_returns_show_amounts_false_when_report_has_it_set(): void
+    public function test_show_returns_show_amounts_false_and_hides_all_costs_when_report_has_it_set(): void
     {
         // Arrange
-        $organization = Organization::factory()->create();
-        $reportDto = new ReportPropertiesDto;
-        $reportDto->start = now()->subDays(2);
-        $reportDto->end = now();
-        $reportDto->group = TimeEntryAggregationType::Project;
-        $reportDto->subGroup = TimeEntryAggregationType::Task;
-        $reportDto->historyGroup = TimeEntryAggregationTypeInterval::Day;
-        $reportDto->weekStart = Weekday::Monday;
-        $reportDto->timezone = 'Europe/Vienna';
-        $reportDto->showAmounts = false;
-        $report = Report::factory()->forOrganization($organization)->public()->create([
-            'public_until' => null,
-            'properties' => $reportDto,
-        ]);
+        $now = Carbon::now('Europe/Vienna');
+        $report = $this->createReportWithBillableTimeEntry($now, false);
 
         // Act
         $response = $this->getJson(route('api.v1.public.reports.show'), [
@@ -697,25 +686,26 @@ class PublicReportEndpointTest extends ApiEndpointTestAbstract
         // Assert
         $response->assertOk();
         $response->assertJsonPath('show_amounts', false);
+        $response->assertJsonPath('data.seconds', 3600);
+        $response->assertJsonPath('data.cost', null);
+        $response->assertJsonPath('data.grouped_data.0.seconds', 3600);
+        $response->assertJsonPath('data.grouped_data.0.cost', null);
+        $response->assertJsonPath('data.grouped_data.0.grouped_data.0.seconds', 3600);
+        $response->assertJsonPath('data.grouped_data.0.grouped_data.0.cost', null);
+        $response->assertJsonPath('history_data.seconds', 3600);
+        $response->assertJsonPath('history_data.cost', null);
+        $response->assertJsonCount(3, 'history_data.grouped_data');
+        $response->assertJsonPath('history_data.grouped_data.0.cost', null);
+        $response->assertJsonPath('history_data.grouped_data.1.seconds', 3600);
+        $response->assertJsonPath('history_data.grouped_data.1.cost', null);
+        $response->assertJsonPath('history_data.grouped_data.2.cost', null);
     }
 
-    public function test_show_returns_show_amounts_true_when_report_has_it_set(): void
+    public function test_show_returns_show_amounts_true_and_all_costs_when_report_has_it_set(): void
     {
         // Arrange
-        $organization = Organization::factory()->create();
-        $reportDto = new ReportPropertiesDto;
-        $reportDto->start = now()->subDays(2);
-        $reportDto->end = now();
-        $reportDto->group = TimeEntryAggregationType::Project;
-        $reportDto->subGroup = TimeEntryAggregationType::Task;
-        $reportDto->historyGroup = TimeEntryAggregationTypeInterval::Day;
-        $reportDto->weekStart = Weekday::Monday;
-        $reportDto->timezone = 'Europe/Vienna';
-        $reportDto->showAmounts = true;
-        $report = Report::factory()->forOrganization($organization)->public()->create([
-            'public_until' => null,
-            'properties' => $reportDto,
-        ]);
+        $now = Carbon::now('Europe/Vienna');
+        $report = $this->createReportWithBillableTimeEntry($now, true);
 
         // Act
         $response = $this->getJson(route('api.v1.public.reports.show'), [
@@ -725,34 +715,65 @@ class PublicReportEndpointTest extends ApiEndpointTestAbstract
         // Assert
         $response->assertOk();
         $response->assertJsonPath('show_amounts', true);
+        $this->assertCostsAreVisible($response);
     }
 
-    public function test_show_returns_show_amounts_true_when_report_has_no_preference_set(): void
+    public function test_show_returns_show_amounts_true_and_all_costs_when_report_has_no_preference_set(): void
     {
         // Arrange
-        $organization = Organization::factory()->create();
-        $reportDto = new ReportPropertiesDto;
-        $reportDto->start = now()->subDays(2);
-        $reportDto->end = now();
-        $reportDto->group = TimeEntryAggregationType::Project;
-        $reportDto->subGroup = TimeEntryAggregationType::Task;
-        $reportDto->historyGroup = TimeEntryAggregationTypeInterval::Day;
-        $reportDto->weekStart = Weekday::Monday;
-        $reportDto->timezone = 'Europe/Vienna';
-        // showAmounts intentionally left null (not set)
-        $report = Report::factory()->forOrganization($organization)->public()->create([
-            'public_until' => null,
-            'properties' => $reportDto,
-        ]);
+        $now = Carbon::now('Europe/Vienna');
+        $report = $this->createReportWithBillableTimeEntry($now, null);
 
         // Act
         $response = $this->getJson(route('api.v1.public.reports.show'), [
             'X-Api-Key' => $report->share_secret,
         ]);
 
-        // Assert: defaults to true when not set
+        // Assert
         $response->assertOk();
         $response->assertJsonPath('show_amounts', true);
+        $this->assertCostsAreVisible($response);
+    }
+
+    private function createReportWithBillableTimeEntry(Carbon $now, ?bool $showAmounts): Report
+    {
+        $organization = Organization::factory()->create();
+        $reportDto = new ReportPropertiesDto;
+        $reportDto->start = $now->copy()->subDays(2);
+        $reportDto->end = $now->copy();
+        $reportDto->group = TimeEntryAggregationType::Project;
+        $reportDto->subGroup = TimeEntryAggregationType::Task;
+        $reportDto->historyGroup = TimeEntryAggregationTypeInterval::Day;
+        $reportDto->weekStart = Weekday::Monday;
+        $reportDto->timezone = $now->getTimezone()->getName();
+        $reportDto->showAmounts = $showAmounts;
+        $report = Report::factory()->forOrganization($organization)->public()->create([
+            'public_until' => null,
+            'properties' => $reportDto,
+        ]);
+        $project = Project::factory()->forOrganization($organization)->create();
+        $task = Task::factory()->forOrganization($organization)->forProject($project)->create();
+        TimeEntry::factory()->forOrganization($organization)->forTask($task)->billableRate(10000)
+            ->startWithDuration($now->copy()->subDay(), 3600)->create();
+
+        return $report;
+    }
+
+    private function assertCostsAreVisible(TestResponse $response): void
+    {
+        $response->assertJsonPath('data.seconds', 3600);
+        $response->assertJsonPath('data.cost', 10000);
+        $response->assertJsonPath('data.grouped_data.0.seconds', 3600);
+        $response->assertJsonPath('data.grouped_data.0.cost', 10000);
+        $response->assertJsonPath('data.grouped_data.0.grouped_data.0.seconds', 3600);
+        $response->assertJsonPath('data.grouped_data.0.grouped_data.0.cost', 10000);
+        $response->assertJsonPath('history_data.seconds', 3600);
+        $response->assertJsonPath('history_data.cost', 10000);
+        $response->assertJsonCount(3, 'history_data.grouped_data');
+        $response->assertJsonPath('history_data.grouped_data.0.cost', 0);
+        $response->assertJsonPath('history_data.grouped_data.1.seconds', 3600);
+        $response->assertJsonPath('history_data.grouped_data.1.cost', 10000);
+        $response->assertJsonPath('history_data.grouped_data.2.cost', 0);
     }
 
     public function test_show_returns_only_entries_matching_the_time_entry_type_filter(): void

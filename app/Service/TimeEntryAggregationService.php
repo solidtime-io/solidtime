@@ -188,7 +188,7 @@ class TimeEntryAggregationService
             }
 
             if ($fillGapsInTimeGroupsIsPossible) {
-                $group1Response = $this->fillGapsInTimeGroups($group1Response, $group1Type, $group2Type, $timezone, $startOfWeek, $start, $end);
+                $group1Response = $this->fillGapsInTimeGroups($group1Response, $group1Type, $group2Type, $timezone, $startOfWeek, $start, $end, $showBillableRate);
             }
         } else {
             $group1Response = null;
@@ -411,7 +411,7 @@ class TimeEntryAggregationService
      *            }>
      *        }>
      */
-    public function fillGapsInTimeGroups(array $data, TimeEntryAggregationType $groupType, ?TimeEntryAggregationType $subGroupType, string $timezone, Weekday $startOfWeek, Carbon $start, Carbon $end): array
+    public function fillGapsInTimeGroups(array $data, TimeEntryAggregationType $groupType, ?TimeEntryAggregationType $subGroupType, string $timezone, Weekday $startOfWeek, Carbon $start, Carbon $end, bool $showBillableRate): array
     {
         $interval = $groupType->toInterval();
         if ($interval === null) {
@@ -426,7 +426,8 @@ class TimeEntryAggregationService
                     $timezone,
                     $startOfWeek,
                     $start,
-                    $end
+                    $end,
+                    $showBillableRate
                 );
             }
 
@@ -464,14 +465,15 @@ class TimeEntryAggregationService
                                 $timezone,
                                 $startOfWeek,
                                 $start,
-                                $end
+                                $end,
+                                $showBillableRate
                             ),
                     ];
                 } else {
                     $filledData[] = [
                         'key' => $slot,
                         'seconds' => 0,
-                        'cost' => 0,
+                        'cost' => $showBillableRate ? 0 : null,
                         'grouped_type' => $subGroupType?->value,
                         'grouped_data' => $subGroupType === null ? null : [],
                     ];
