@@ -106,6 +106,7 @@ const InvoiceStoreRequest = z
     .object({
         due_at: z.union([z.string(), z.null()]).optional(),
         paid_date: z.union([z.string(), z.null()]).optional(),
+        seller_logo: z.union([z.string(), z.null()]).optional(),
         seller_name: z.string(),
         seller_vatin: z.union([z.string(), z.null()]).optional(),
         seller_address_line_1: z.union([z.string(), z.null()]).optional(),
@@ -173,6 +174,7 @@ const DetailedInvoiceResource = z
         seller_address_country: z.string(),
         seller_phone: z.string(),
         seller_email: z.string(),
+        seller_logo_url: z.union([z.string(), z.null()]),
         recipient: InvoiceRecipientResource,
         paid_date: z.string(),
         due_at: z.string(),
@@ -200,6 +202,7 @@ const InvoiceUpdateRequest = z
         status: InvoiceStatus,
         due_at: z.union([z.string(), z.null()]),
         paid_date: z.union([z.string(), z.null()]),
+        seller_logo: z.union([z.string(), z.null()]),
         seller_name: z.string(),
         seller_vatin: z.union([z.string(), z.null()]),
         seller_address_line_1: z.union([z.string(), z.null()]),
@@ -255,6 +258,7 @@ const InvoiceSettingResource = z
         notes_default: z.union([z.string(), z.null()]),
         tax_rate_default: z.union([z.number(), z.null()]),
         e_invoicing_enabled: z.boolean(),
+        logo_url: z.union([z.string(), z.null()]),
         organization_id: z.string(),
     })
     .passthrough();
@@ -274,6 +278,7 @@ const InvoiceSettingUpdateRequest = z
         notes_default: z.union([z.string(), z.null()]),
         tax_rate_default: z.union([z.number(), z.null()]),
         e_invoicing_enabled: z.boolean(),
+        logo: z.union([z.string(), z.null()]),
     })
     .partial()
     .passthrough();
