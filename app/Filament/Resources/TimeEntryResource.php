@@ -7,8 +7,11 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\TimeEntryResource\Pages\CreateTimeEntry;
 use App\Filament\Resources\TimeEntryResource\Pages\EditTimeEntry;
 use App\Filament\Resources\TimeEntryResource\Pages\ListTimeEntries;
+use App\Jobs\RecalculateSpentTimeForProject;
+use App\Jobs\RecalculateSpentTimeForTask;
 use App\Models\Member;
 use App\Models\Project;
+use App\Models\Task;
 use App\Models\TimeEntry;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -23,6 +26,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
 
 class TimeEntryResource extends Resource
 {
@@ -121,7 +125,13 @@ class TimeEntryResource extends Resource
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                    DeleteBulkAction::make()
+                        ->after(function (Collection $records): void {
+                            static::recalculateSpentTime(
+                                $records->pluck('project_id')->all(),
+                                $records->pluck('task_id')->all()
+                            );
+                        }),
                 ]),
             ]);
     }
@@ -145,6 +155,29 @@ class TimeEntryResource extends Resource
         $project = Project::query()->find($projectId);
 
         return $project?->client_id;
+    }
+
+    /**
+     * Recalculate the stored spent time of the given projects and tasks.
+     *
+     * @param  array<int, string|null>  $projectIds
+     * @param  array<int, string|null>  $taskIds
+     */
+    public static function recalculateSpentTime(array $projectIds, array $taskIds): void
+    {
+        $projectIds = array_values(array_unique(array_filter($projectIds)));
+        $taskIds = array_values(array_unique(array_filter($taskIds)));
+
+        if (count($projectIds) > 0) {
+            Project::query()->whereKey($projectIds)->each(function (Project $project): void {
+                RecalculateSpentTimeForProject::dispatch($project);
+            });
+        }
+        if (count($taskIds) > 0) {
+            Task::query()->whereKey($taskIds)->each(function (Task $task): void {
+                RecalculateSpentTimeForTask::dispatch($task);
+            });
+        }
     }
 
     public static function getPages(): array

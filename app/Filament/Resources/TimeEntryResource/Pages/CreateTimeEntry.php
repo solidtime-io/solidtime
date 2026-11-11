@@ -6,6 +6,7 @@ namespace App\Filament\Resources\TimeEntryResource\Pages;
 
 use App\Filament\Resources\TimeEntryResource;
 use App\Models\Member;
+use App\Models\TimeEntry;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateTimeEntry extends CreateRecord
@@ -29,5 +30,12 @@ class CreateTimeEntry extends CreateRecord
         $data['client_id'] = TimeEntryResource::getClientIdForProject($data['project_id'] ?? null);
 
         return $data;
+    }
+
+    protected function afterCreate(): void
+    {
+        /** @var TimeEntry $timeEntry */
+        $timeEntry = $this->getRecord();
+        TimeEntryResource::recalculateSpentTime([$timeEntry->project_id], [$timeEntry->task_id]);
     }
 }
