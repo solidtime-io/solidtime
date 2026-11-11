@@ -7,7 +7,6 @@ import { RadioGroupIndicator, RadioGroupItem, RadioGroupRoot, type AcceptableVal
 import BillableIcon from '@/packages/ui/src/Icons/BillableIcon.vue';
 import { useBillableRatesLock } from '@/packages/ui/src/utils/useBillableRatesLock';
 import ReportingRoundingControls from '@/Components/Common/Reporting/ReportingRoundingControls.vue';
-import ReportingViewOptions from '@/Components/Common/Reporting/ReportingViewOptions.vue';
 import TaskMultiselectDropdown from '@/Components/Common/Task/TaskMultiselectDropdown.vue';
 import ClientMultiselectDropdown from '@/Components/Common/Client/ClientMultiselectDropdown.vue';
 import MemberMultiselectDropdown from '@/Components/Common/Member/MemberMultiselectDropdown.vue';
@@ -35,11 +34,8 @@ const entryType = defineModel<'work' | 'break' | null>('entryType', { required: 
 const roundingEnabled = defineModel<boolean>('roundingEnabled', { required: true });
 const roundingType = defineModel<TimeEntryRoundingType>('roundingType', { required: true });
 const roundingMinutes = defineModel<number>('roundingMinutes', { required: true });
-const showAmounts = defineModel<boolean>('showAmounts', { default: true });
 const startDate = defineModel<string>('startDate', { required: true });
 const endDate = defineModel<string>('endDate', { required: true });
-
-withDefaults(defineProps<{ showViewOptions?: boolean }>(), { showViewOptions: true });
 
 const { locked: billableRatesLocked, requestUpgrade } = useBillableRatesLock();
 
@@ -222,12 +218,11 @@ async function createTag(name: string) {
                     v-model:minutes="roundingMinutes"
                     @change="emit('submit')" />
             </div>
-            <div class="flex items-center gap-2">
+            <div>
                 <DateRangePicker
                     v-model:start="startDate"
                     v-model:end="endDate"
                     @submit="emit('submit')" />
-                <ReportingViewOptions v-if="showViewOptions" v-model:show-amounts="showAmounts" />
             </div>
         </MainContainer>
     </div>

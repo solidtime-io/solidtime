@@ -7,7 +7,7 @@ import {
     EllipsisVerticalIcon,
     LockClosedIcon,
 } from '@heroicons/vue/20/solid';
-import { SaveIcon } from '@lucide/vue';
+import { EyeOff, SaveIcon } from '@lucide/vue';
 import { getOrganizationCurrencyString } from '@/utils/money';
 import {
     formatReportingDuration,
@@ -24,6 +24,7 @@ import MainContainer from '@/packages/ui/src/MainContainer.vue';
 import ReportingExportModal from '@/Components/Common/Reporting/ReportingExportModal.vue';
 import ReportingPieChart from '@/Components/Common/Reporting/ReportingPieChart.vue';
 import ReportingFilterBar from '@/Components/Common/Reporting/ReportingFilterBar.vue';
+import ReportingViewOptions from '@/Components/Common/Reporting/ReportingViewOptions.vue';
 import { SecondaryButton } from '@/packages/ui/src';
 import {
     DropdownMenu,
@@ -323,6 +324,7 @@ const tableData = computed(() => {
             <ReportingTabNavbar active="reporting" class="hidden sm:flex"></ReportingTabNavbar>
         </div>
         <div class="hidden sm:flex space-x-2">
+            <ReportingViewOptions v-if="canToggleAmounts" v-model:show-amounts="showAmounts" />
             <DropdownMenu>
                 <DropdownMenuTrigger as-child>
                     <SecondaryButton :icon="ArrowDownTrayIcon" :loading="exportLoading">
@@ -396,10 +398,8 @@ const tableData = computed(() => {
         v-model:rounding-enabled="roundingEnabled"
         v-model:rounding-type="roundingType"
         v-model:rounding-minutes="roundingMinutes"
-        v-model:show-amounts="showAmounts"
         v-model:start-date="startDate"
-        v-model:end-date="endDate"
-        :show-view-options="canToggleAmounts" />
+        v-model:end-date="endDate" />
     <MainContainer>
         <div class="pt-10 w-full px-3 relative">
             <ReportingChart
@@ -422,6 +422,12 @@ const tableData = computed(() => {
                         :group-by-options="
                             groupByOptions.filter((el) => el.value !== group)
                         "></ReportingGroupBySelect>
+                    <span
+                        v-if="canToggleAmounts && !showAmounts"
+                        class="!ml-auto flex items-center gap-1.5 text-xs font-normal text-text-tertiary">
+                        <EyeOff class="h-3.5 w-3.5" />
+                        Amounts hidden
+                    </span>
                 </div>
                 <div
                     class="grid items-center"

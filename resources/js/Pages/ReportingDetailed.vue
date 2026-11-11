@@ -51,6 +51,7 @@ import { isAllowedToPerformPremiumAction } from '@/utils/billing';
 import { canCreateProjects, canViewAllTimeEntries } from '@/utils/permissions';
 import ReportingExportModal from '@/Components/Common/Reporting/ReportingExportModal.vue';
 import ReportingFilterBar from '@/Components/Common/Reporting/ReportingFilterBar.vue';
+import ReportingViewOptions from '@/Components/Common/Reporting/ReportingViewOptions.vue';
 import { useTimeEntriesReportQuery } from '@/utils/useTimeEntriesReportQuery';
 import { useTimeEntriesMutations } from '@/utils/useTimeEntriesMutations';
 import { useOrganizationQuery } from '@/utils/useOrganizationQuery';
@@ -274,7 +275,8 @@ async function downloadExport(format: ExportFormat) {
                 <PageTitle :icon="ChartBarIcon" title="Reporting"></PageTitle>
                 <ReportingTabNavbar active="detailed" class="hidden sm:flex"></ReportingTabNavbar>
             </div>
-            <div class="hidden sm:block">
+            <div class="hidden sm:flex space-x-2">
+                <ReportingViewOptions v-if="canToggleAmounts" v-model:show-amounts="showAmounts" />
                 <DropdownMenu>
                     <DropdownMenuTrigger as-child>
                         <SecondaryButton :icon="ArrowDownTrayIcon" :loading="exportLoading">
@@ -347,10 +349,8 @@ async function downloadExport(format: ExportFormat) {
             v-model:rounding-enabled="roundingEnabled"
             v-model:rounding-type="roundingType"
             v-model:rounding-minutes="roundingMinutes"
-            v-model:show-amounts="showAmounts"
             v-model:start-date="startDate"
             v-model:end-date="endDate"
-            :show-view-options="canToggleAmounts"
             @submit="updateFilteredTimeEntries" />
         <TimeEntryMassActionRow
             :selected-time-entries="selectedTimeEntries"
