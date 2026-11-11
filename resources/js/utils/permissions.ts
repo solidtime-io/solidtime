@@ -129,6 +129,9 @@ export function canViewAllTimeEntries() {
 export function canViewInvoices() {
     return currentUserHasPermission('invoices:view');
 }
+export function canUpdateInvoiceSettings() {
+    return currentUserHasPermission('invoice-settings:update');
+}
 export function canCreateReports() {
     return currentUserHasPermission('reports:create');
 }
