@@ -53,6 +53,47 @@ function todayAt(hour: number, minute: number = 0): string {
     return d.toISOString().replace(/\.\d{3}Z$/, 'Z');
 }
 
+// Cross-day tests anchor to Wednesday and Thursday of the current week instead of today and
+// tomorrow. E2E users start the week on Monday, so both days are always in the visible week,
+// whichever day the suite runs on.
+function wednesdayAt(hour: number, minute: number = 0): Date {
+    const now = new Date();
+    const daysSinceMonday = (now.getDay() + 6) % 7;
+    return new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate() - daysSinceMonday + 2,
+        hour,
+        minute,
+        0,
+        0
+    );
+}
+
+function thursdayAt(hour: number, minute: number = 0): Date {
+    const d = wednesdayAt(hour, minute);
+    d.setDate(d.getDate() + 1);
+    return d;
+}
+
+function toApiTimestamp(date: Date): string {
+    return date.toISOString().replace(/\.\d{3}Z$/, 'Z');
+}
+
+// Local calendar date (YYYY-MM-DD), matching FullCalendar's data-date attributes
+function toDateStr(date: Date): string {
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${date.getFullYear()}-${month}-${day}`;
+}
+
+async function columnHeaderCenterX(page: Page, date: Date): Promise<number> {
+    const header = page.locator(`.fc-col-header-cell[data-date="${toDateStr(date)}"]`);
+    await expect(header).toBeVisible();
+    const box = await header.boundingBox();
+    return box!.x + box!.width / 2;
+}
+
 /**
  * These tests verify that changing the project on a time entry via the calendar
  * updates the billable status to match the new project's is_billable setting.
@@ -962,14 +1003,9 @@ test.describe('Drag-to-Move Events', () => {
         page,
         ctx,
     }) => {
-        const now = new Date();
-        const dayOfWeek = now.getDay();
-        // Need today to have a previous day visible in the week view (skip Sunday with Monday week start)
-        test.skip(dayOfWeek === 1, 'Skipping on Monday — previous day not visible in week view');
-
-        // Create entry: today 00:30 → today 01:30 (1 hour, near midnight)
-        const start = todayAt(0, 30);
-        const end = todayAt(1, 30);
+        // Create entry: Thursday 00:30 → Thursday 01:30 (1 hour, near midnight)
+        const start = toApiTimestamp(thursdayAt(0, 30));
+        const end = toApiTimestamp(thursdayAt(1, 30));
         await createTimeEntryWithTimestampsViaApi(ctx, {
             description: 'Drag up past midnight test',
             start,
@@ -978,11 +1014,10 @@ test.describe('Drag-to-Move Events', () => {
         await goToCalendar(page);
         await scrollCalendarToTime(page, '00:00:00');
 
-        const todayStr = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-            .toISOString()
-            .split('T')[0];
-        const todayCol = page.locator(`.fc-timegrid-col[data-date="${todayStr}"]`);
-        const event = todayCol
+        const thursdayCol = page.locator(
+            `.fc-timegrid-col[data-date="${toDateStr(thursdayAt(0))}"]`
+        );
+        const event = thursdayCol
             .locator('.fc-event')
             .filter({ hasText: 'Drag up past midnight test' });
         await expect(event).toBeVisible({ timeout: 10000 });
@@ -1018,10 +1053,7 @@ test.describe('Drag-to-Move Events', () => {
         expect(newDurationMs).toBe(3600000);
 
         // The event should have moved to the previous day
-        const yesterdayStr = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1)
-            .toISOString()
-            .split('T')[0];
-        expect(newStart.toISOString().split('T')[0]).toBe(yesterdayStr);
+        expect(toDateStr(newStart)).toBe(toDateStr(wednesdayAt(0)));
     });
 });
 
@@ -1261,8 +1293,8 @@ test.describe('Resize Events', () => {
     });
 
     test('resize bottom edge across day boundary changes end date', async ({ page, ctx }) => {
-        const start = todayAt(10);
-        const end = todayAt(11);
+        const start = toApiTimestamp(wednesdayAt(10));
+        const end = toApiTimestamp(wednesdayAt(11));
         await createTimeEntryWithTimestampsViaApi(ctx, {
             description: 'Cross resize end test',
             start,
@@ -1271,26 +1303,8 @@ test.describe('Resize Events', () => {
         await goToCalendar(page);
         await scrollCalendarToTime(page, '09:00:00');
 
-        // Find a column AFTER today (for end resize, end must be > start)
-        const headers = page.locator('.fc-col-header-cell');
-        const headerCount = await headers.count();
-        let targetX: number | undefined;
-        let todayIndex = -1;
-        for (let i = 0; i < headerCount; i++) {
-            const header = headers.nth(i);
-            const isToday = await header.evaluate((el) => el.classList.contains('fc-day-today'));
-            if (isToday) {
-                todayIndex = i;
-                break;
-            }
-        }
-        // Pick first column after today, or skip if today is last
-        for (let i = todayIndex + 1; i < headerCount; i++) {
-            const box = await headers.nth(i).boundingBox();
-            targetX = box!.x + box!.width / 2;
-            break;
-        }
-        test.skip(targetX === undefined, 'No column after today to resize to');
+        // Resize into Thursday's column (for end resize, end must be > start)
+        const targetX = await columnHeaderCenterX(page, thursdayAt(0));
 
         const event = page
             .locator('.fc-event')
@@ -1318,7 +1332,7 @@ test.describe('Resize Events', () => {
                 // First drag down vertically to engage resize (like test 3.1)
                 await page.mouse.move(centerX, bottomY + slotHeight * 4, { steps: 15 });
                 // Then move horizontally to a later day column
-                await page.mouse.move(targetX!, bottomY + slotHeight * 4, { steps: 10 });
+                await page.mouse.move(targetX, bottomY + slotHeight * 4, { steps: 10 });
                 await page.mouse.up();
             })(),
         ]);
@@ -1340,8 +1354,8 @@ test.describe('Resize Events', () => {
         page,
         ctx,
     }) => {
-        const start = todayAt(10);
-        const end = todayAt(14);
+        const start = toApiTimestamp(wednesdayAt(10));
+        const end = toApiTimestamp(wednesdayAt(14));
         await createTimeEntryWithTimestampsViaApi(ctx, {
             description: 'Cross resize end test',
             start,
@@ -1350,30 +1364,8 @@ test.describe('Resize Events', () => {
         await goToCalendar(page);
         await scrollCalendarToTime(page, '09:00:00');
 
-        // Find a non-today column header that is AFTER today (later day needed for end-edge resize)
-        const headers = page.locator('.fc-col-header-cell');
-        const headerCount = await headers.count();
-        let targetX: number | undefined;
-        let foundToday = false;
-        for (let i = 0; i < headerCount; i++) {
-            const header = headers.nth(i);
-            const isToday = await header.evaluate((el) => el.classList.contains('fc-day-today'));
-            if (isToday) {
-                foundToday = true;
-                continue;
-            }
-            if (foundToday) {
-                const box = await header.boundingBox();
-                targetX = box!.x + box!.width / 2;
-                break;
-            }
-        }
-        // If today is the last column, use the one before today instead won't work for end resize,
-        // so skip this test in that edge case
-        if (targetX === undefined) {
-            test.skip();
-            return;
-        }
+        // Resize into Thursday's column (later day needed for end-edge resize)
+        const targetX = await columnHeaderCenterX(page, thursdayAt(0));
 
         const event = page
             .locator('.fc-event')
@@ -1398,7 +1390,7 @@ test.describe('Resize Events', () => {
                 await page.waitForTimeout(100);
                 await page.mouse.down();
                 // Move to a different day column at same Y position
-                await page.mouse.move(targetX!, bottomY - 3, { steps: 15 });
+                await page.mouse.move(targetX, bottomY - 3, { steps: 15 });
                 await page.mouse.up();
             })(),
         ]);
@@ -1464,22 +1456,9 @@ test.describe('Resize Events', () => {
     });
 
     test('multi-day event end resize on last day works correctly', async ({ page, ctx }) => {
-        // Create entry spanning today evening → tomorrow morning
-        const start = todayAt(20);
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        const tomorrowStr = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, '0')}-${String(tomorrow.getDate()).padStart(2, '0')}`;
-        const end = new Date(
-            tomorrow.getFullYear(),
-            tomorrow.getMonth(),
-            tomorrow.getDate(),
-            10,
-            0,
-            0,
-            0
-        )
-            .toISOString()
-            .replace(/\.\d{3}Z$/, 'Z');
+        // Create entry spanning Wednesday evening → Thursday morning
+        const start = toApiTimestamp(wednesdayAt(20));
+        const end = toApiTimestamp(thursdayAt(10));
 
         await createTimeEntryWithTimestampsViaApi(ctx, {
             description: 'Multi-day end resize',
@@ -1488,14 +1467,14 @@ test.describe('Resize Events', () => {
         });
         await goToCalendar(page);
 
-        // Check if tomorrow column is visible
-        const tomorrowCol = page.locator(`.fc-timegrid-col[data-date="${tomorrowStr}"]`);
-        test.skip((await tomorrowCol.count()) === 0, 'Tomorrow not visible in current view');
+        const thursdayCol = page.locator(
+            `.fc-timegrid-col[data-date="${toDateStr(thursdayAt(0))}"]`
+        );
 
         await scrollCalendarToTime(page, '09:00:00');
 
-        // Find the event segment on tomorrow's column
-        const event = tomorrowCol
+        // Find the event segment on Thursday's column
+        const event = thursdayCol
             .locator('.fc-event')
             .filter({ hasText: 'Multi-day end resize' })
             .first();
@@ -1541,22 +1520,9 @@ test.describe('Resize Events', () => {
         page,
         ctx,
     }) => {
-        // Create entry spanning today → tomorrow
-        const start = todayAt(10);
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        const tomorrowStr = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, '0')}-${String(tomorrow.getDate()).padStart(2, '0')}`;
-        const end = new Date(
-            tomorrow.getFullYear(),
-            tomorrow.getMonth(),
-            tomorrow.getDate(),
-            14,
-            0,
-            0,
-            0
-        )
-            .toISOString()
-            .replace(/\.\d{3}Z$/, 'Z');
+        // Create entry spanning Wednesday → Thursday
+        const start = toApiTimestamp(wednesdayAt(10));
+        const end = toApiTimestamp(thursdayAt(14));
 
         await createTimeEntryWithTimestampsViaApi(ctx, {
             description: 'Backward end resize multi',
@@ -1565,29 +1531,16 @@ test.describe('Resize Events', () => {
         });
         await goToCalendar(page);
 
-        // Check if tomorrow column is visible
-        const tomorrowCol = page.locator(`.fc-timegrid-col[data-date="${tomorrowStr}"]`);
-        test.skip((await tomorrowCol.count()) === 0, 'Tomorrow not visible in current view');
+        const thursdayCol = page.locator(
+            `.fc-timegrid-col[data-date="${toDateStr(thursdayAt(0))}"]`
+        );
 
         await scrollCalendarToTime(page, '12:00:00');
 
-        // Find today's column header to get its X center
-        const headers = page.locator('.fc-col-header-cell');
-        const headerCount = await headers.count();
-        let todayX: number | undefined;
-        for (let i = 0; i < headerCount; i++) {
-            const header = headers.nth(i);
-            const isToday = await header.evaluate((el) => el.classList.contains('fc-day-today'));
-            if (isToday) {
-                const box = await header.boundingBox();
-                todayX = box!.x + box!.width / 2;
-                break;
-            }
-        }
-        test.skip(todayX === undefined, 'Could not find today column header');
+        const wednesdayX = await columnHeaderCenterX(page, wednesdayAt(0));
 
-        // Find event segment on tomorrow's column and resize end backward to today
-        const event = tomorrowCol
+        // Find event segment on Thursday's column and resize end backward to Wednesday
+        const event = thursdayCol
             .locator('.fc-event')
             .filter({ hasText: 'Backward end resize multi' })
             .first();
@@ -1609,9 +1562,9 @@ test.describe('Resize Events', () => {
                 await page.mouse.move(centerX, bottomY - 3);
                 await page.waitForTimeout(100);
                 await page.mouse.down();
-                // Drag down a bit first, then move to today's column at a Y after the start
+                // Drag down a bit first, then move to Wednesday's column at a Y after the start
                 await page.mouse.move(centerX, bottomY + slotHeight, { steps: 5 });
-                await page.mouse.move(todayX!, bottomY + slotHeight, { steps: 10 });
+                await page.mouse.move(wednesdayX, bottomY + slotHeight, { steps: 10 });
                 await page.mouse.up();
             })(),
         ]);
@@ -1627,8 +1580,8 @@ test.describe('Resize Events', () => {
     });
 
     test('resize end to earlier column prevents end before start', async ({ page, ctx }) => {
-        const start = todayAt(10);
-        const end = todayAt(14);
+        const start = toApiTimestamp(thursdayAt(10));
+        const end = toApiTimestamp(thursdayAt(14));
         await createTimeEntryWithTimestampsViaApi(ctx, {
             description: 'End before start test',
             start,
@@ -1637,25 +1590,8 @@ test.describe('Resize Events', () => {
         await goToCalendar(page);
         await scrollCalendarToTime(page, '09:00:00');
 
-        // Find a column BEFORE today
-        const headers = page.locator('.fc-col-header-cell');
-        const headerCount = await headers.count();
-        let targetX: number | undefined;
-        let todayIndex = -1;
-        for (let i = 0; i < headerCount; i++) {
-            const header = headers.nth(i);
-            const isToday = await header.evaluate((el) => el.classList.contains('fc-day-today'));
-            if (isToday) {
-                todayIndex = i;
-                break;
-            }
-        }
-        for (let i = todayIndex - 1; i >= 0; i--) {
-            const box = await headers.nth(i).boundingBox();
-            targetX = box!.x + box!.width / 2;
-            break;
-        }
-        test.skip(targetX === undefined, 'No column before today to test');
+        // Target Wednesday's column, the day before the entry
+        const targetX = await columnHeaderCenterX(page, wednesdayAt(0));
 
         const event = page
             .locator('.fc-event')
@@ -1683,7 +1619,7 @@ test.describe('Resize Events', () => {
         await page.waitForTimeout(100);
         await page.mouse.down();
         // Move to earlier column at a Y position near the top of the grid (before start time)
-        await page.mouse.move(targetX!, eventBox!.y - slotHeight * 4, { steps: 15 });
+        await page.mouse.move(targetX, eventBox!.y - slotHeight * 4, { steps: 15 });
         await page.mouse.up();
 
         // Wait for any potential API call
@@ -1732,30 +1668,21 @@ test.describe('Click-Drag Selection to Create', () => {
     test('drag-to-create spanning two days opens create modal with correct cross-day times', async ({
         page,
     }) => {
-        const now = new Date();
-        const dayOfWeek = now.getDay();
-        // Need today and tomorrow both visible (skip Saturday with Monday week start)
-        test.skip(dayOfWeek === 6, 'Skipping on Saturday — tomorrow not visible in week view');
-
         await goToCalendar(page);
         await expect(page.locator('.fc')).toBeVisible();
         // Use mid-day times so both start and end slots are visible in the viewport
         await scrollCalendarToTime(page, '10:00:00');
 
-        // Find today's and tomorrow's columns
-        const todayStr = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-            .toISOString()
-            .split('T')[0];
-        const tomorrowStr = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1)
-            .toISOString()
-            .split('T')[0];
+        // Find Wednesday's and Thursday's columns
+        const wednesdayStr = toDateStr(wednesdayAt(0));
+        const thursdayStr = toDateStr(thursdayAt(0));
 
-        const todayCol = page.locator(`.fc-timegrid-col[data-date="${todayStr}"]`);
-        const tomorrowCol = page.locator(`.fc-timegrid-col[data-date="${tomorrowStr}"]`);
-        await expect(todayCol).toBeVisible();
-        await expect(tomorrowCol).toBeVisible();
+        const wednesdayCol = page.locator(`.fc-timegrid-col[data-date="${wednesdayStr}"]`);
+        const thursdayCol = page.locator(`.fc-timegrid-col[data-date="${thursdayStr}"]`);
+        await expect(wednesdayCol).toBeVisible();
+        await expect(thursdayCol).toBeVisible();
 
-        // Find the 11:00 slot (start) and 13:00 slot (end on tomorrow)
+        // Find the 11:00 slot (start) and 13:00 slot (end on Thursday)
         const startSlot = page.locator('.fc-timegrid-slot-lane[data-time="11:00:00"]').first();
         const endSlot = page.locator('.fc-timegrid-slot-lane[data-time="13:00:00"]').first();
         await expect(startSlot).toBeVisible();
@@ -1763,18 +1690,18 @@ test.describe('Click-Drag Selection to Create', () => {
 
         const startSlotBox = await startSlot.boundingBox();
         const endSlotBox = await endSlot.boundingBox();
-        const todayColBox = await todayCol.boundingBox();
-        const tomorrowColBox = await tomorrowCol.boundingBox();
+        const wednesdayColBox = await wednesdayCol.boundingBox();
+        const thursdayColBox = await thursdayCol.boundingBox();
 
-        // Start drag at 11:00 on today's column
-        const startX = todayColBox!.x + todayColBox!.width / 2;
+        // Start drag at 11:00 on Wednesday's column
+        const startX = wednesdayColBox!.x + wednesdayColBox!.width / 2;
         const startY = startSlotBox!.y + 2;
 
-        // End drag at 13:00 on tomorrow's column
-        const endX = tomorrowColBox!.x + tomorrowColBox!.width / 2;
+        // End drag at 13:00 on Thursday's column
+        const endX = thursdayColBox!.x + thursdayColBox!.width / 2;
         const endY = endSlotBox!.y + 2;
 
-        // Drag from today to tomorrow — move down first, then across
+        // Drag from Wednesday to Thursday, moving down first, then across
         const slotHeight = await getSlotHeight(page);
         await page.mouse.move(startX, startY);
         await page.mouse.down();
@@ -1792,9 +1719,9 @@ test.describe('Click-Drag Selection to Create', () => {
         await expect(dialog.getByText('Start')).toBeVisible();
         await expect(dialog.getByText('End')).toBeVisible();
 
-        // Start date should be today, end date should be tomorrow
-        await expect(dialog.getByText(todayStr)).toBeVisible();
-        await expect(dialog.getByText(tomorrowStr)).toBeVisible();
+        // Start date should be Wednesday, end date should be Thursday
+        await expect(dialog.getByText(wednesdayStr)).toBeVisible();
+        await expect(dialog.getByText(thursdayStr)).toBeVisible();
     });
 });
 
@@ -1876,17 +1803,9 @@ test.describe('Timezone & Localization', () => {
 
 test.describe('Multi-Day Events', () => {
     test('event spanning 2 days renders and is visible', async ({ page, ctx }) => {
-        // Create entry that spans from today 22:00 to tomorrow 02:00
-        const now = new Date();
-        const dayOfWeek = now.getDay();
-        // If today is Saturday (6), the entry would span to next week and may not be visible
-        test.skip(dayOfWeek === 6, 'Skipping on Saturday — multi-day would span to next week');
-
-        const startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 22, 0, 0);
-        const endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 2, 0, 0);
-
-        const start = startDate.toISOString().replace(/\.\d{3}Z$/, 'Z');
-        const end = endDate.toISOString().replace(/\.\d{3}Z$/, 'Z');
+        // Create entry that spans from Wednesday 22:00 to Thursday 02:00
+        const start = toApiTimestamp(wednesdayAt(22));
+        const end = toApiTimestamp(thursdayAt(2));
 
         await createTimeEntryWithTimestampsViaApi(ctx, {
             description: 'Multi day entry',
@@ -1901,14 +1820,8 @@ test.describe('Multi-Day Events', () => {
     });
 
     test('multi-day event can be edited via click', async ({ page, ctx }) => {
-        const now = new Date();
-        test.skip(now.getDay() === 6, 'Skip on Saturday');
-
-        const startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 22, 0, 0);
-        const endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 2, 0, 0);
-
-        const start = startDate.toISOString().replace(/\.\d{3}Z$/, 'Z');
-        const end = endDate.toISOString().replace(/\.\d{3}Z$/, 'Z');
+        const start = toApiTimestamp(wednesdayAt(22));
+        const end = toApiTimestamp(thursdayAt(2));
 
         await createTimeEntryWithTimestampsViaApi(ctx, {
             description: 'Multi day edit test',
@@ -1927,14 +1840,8 @@ test.describe('Multi-Day Events', () => {
     });
 
     test('multi-day event context menu works', async ({ page, ctx }) => {
-        const now = new Date();
-        test.skip(now.getDay() === 6, 'Skip on Saturday');
-
-        const startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 22, 0, 0);
-        const endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 2, 0, 0);
-
-        const start = startDate.toISOString().replace(/\.\d{3}Z$/, 'Z');
-        const end = endDate.toISOString().replace(/\.\d{3}Z$/, 'Z');
+        const start = toApiTimestamp(wednesdayAt(22));
+        const end = toApiTimestamp(thursdayAt(2));
 
         await createTimeEntryWithTimestampsViaApi(ctx, {
             description: 'Multi day ctx test',
@@ -1954,16 +1861,11 @@ test.describe('Multi-Day Events', () => {
         page,
         ctx,
     }) => {
-        const now = new Date();
-        const dayOfWeek = now.getDay();
-        // Need today and tomorrow both visible (skip Saturday)
-        test.skip(dayOfWeek === 6, 'Skipping on Saturday — multi-day would span to next week');
-
-        // Create entry: today 22:00 → tomorrow 02:00 (4 hours, spanning 2 days)
-        const startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 22, 0, 0);
-        const endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 2, 0, 0);
-        const start = startDate.toISOString().replace(/\.\d{3}Z$/, 'Z');
-        const end = endDate.toISOString().replace(/\.\d{3}Z$/, 'Z');
+        // Create entry: Wednesday 22:00 → Thursday 02:00 (4 hours, spanning 2 days)
+        const startDate = wednesdayAt(22);
+        const endDate = thursdayAt(2);
+        const start = toApiTimestamp(startDate);
+        const end = toApiTimestamp(endDate);
 
         await createTimeEntryWithTimestampsViaApi(ctx, {
             description: 'Multi day drag test',
@@ -1973,12 +1875,9 @@ test.describe('Multi-Day Events', () => {
         await goToCalendar(page);
         await scrollCalendarToTime(page, '00:00:00');
 
-        // Find the clipped segment on tomorrow's column (00:00-02:00)
-        const tomorrowStr = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1)
-            .toISOString()
-            .split('T')[0];
-        const tomorrowCol = page.locator(`.fc-timegrid-col[data-date="${tomorrowStr}"]`);
-        const event = tomorrowCol.locator('.fc-event').filter({ hasText: 'Multi day drag test' });
+        // Find the clipped segment on Thursday's column (00:00-02:00)
+        const thursdayCol = page.locator(`.fc-timegrid-col[data-date="${toDateStr(endDate)}"]`);
+        const event = thursdayCol.locator('.fc-event').filter({ hasText: 'Multi day drag test' });
         await expect(event).toBeVisible({ timeout: 10000 });
 
         const eventBox = await event.boundingBox();
@@ -2013,27 +1912,19 @@ test.describe('Multi-Day Events', () => {
         // Duration must be preserved (4 hours)
         expect(Math.abs(newDurationMs - origDurationMs)).toBeLessThan(60000);
 
-        // The start should still be on today (not jumped to tomorrow)
-        const todayStr = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-            .toISOString()
-            .split('T')[0];
-        expect(newStart.toISOString().split('T')[0]).toBe(todayStr);
+        // The start should still be on Wednesday (not jumped to Thursday)
+        expect(toDateStr(newStart)).toBe(toDateStr(startDate));
     });
 
     test('dragging clipped segment of multi-day event upward shifts event earlier', async ({
         page,
         ctx,
     }) => {
-        const now = new Date();
-        const dayOfWeek = now.getDay();
-        // Need today and tomorrow both visible (skip Saturday)
-        test.skip(dayOfWeek === 6, 'Skipping on Saturday — multi-day would span to next week');
-
-        // Create entry: today 22:00 → tomorrow 02:00 (4 hours, spanning 2 days)
-        const startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 22, 0, 0);
-        const endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 2, 0, 0);
-        const start = startDate.toISOString().replace(/\.\d{3}Z$/, 'Z');
-        const end = endDate.toISOString().replace(/\.\d{3}Z$/, 'Z');
+        // Create entry: Wednesday 22:00 → Thursday 02:00 (4 hours, spanning 2 days)
+        const startDate = wednesdayAt(22);
+        const endDate = thursdayAt(2);
+        const start = toApiTimestamp(startDate);
+        const end = toApiTimestamp(endDate);
 
         await createTimeEntryWithTimestampsViaApi(ctx, {
             description: 'Multi day drag up test',
@@ -2043,12 +1934,9 @@ test.describe('Multi-Day Events', () => {
         await goToCalendar(page);
         await scrollCalendarToTime(page, '00:00:00');
 
-        // Find the clipped segment on tomorrow's column (00:00-02:00)
-        const tomorrowStr = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1)
-            .toISOString()
-            .split('T')[0];
-        const tomorrowCol = page.locator(`.fc-timegrid-col[data-date="${tomorrowStr}"]`);
-        const event = tomorrowCol
+        // Find the clipped segment on Thursday's column (00:00-02:00)
+        const thursdayCol = page.locator(`.fc-timegrid-col[data-date="${toDateStr(endDate)}"]`);
+        const event = thursdayCol
             .locator('.fc-event')
             .filter({ hasText: 'Multi day drag up test' });
         await expect(event).toBeVisible({ timeout: 10000 });
