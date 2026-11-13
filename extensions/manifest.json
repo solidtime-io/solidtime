@@ -14,5 +14,9 @@
     "Auditing": {
         "repository": "solidtime-io/extension-auditing",
         "ref": "v0.0.5"
+    },
+    "SSO": {
+        "repository": "solidtime-io/extension-sso",
+        "ref": "feature/sso"
     }
 }
