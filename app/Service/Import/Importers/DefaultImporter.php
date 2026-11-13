@@ -19,6 +19,7 @@ use App\Service\Import\ImportDatabaseHelper;
 use App\Service\TimezoneService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Override;
 
 abstract class DefaultImporter implements ImporterContract
@@ -210,13 +211,13 @@ abstract class DefaultImporter implements ImporterContract
 
     /**
      * Uses the same rule as registration and invitations, so every email the app accepts can be re-imported.
-     * The value is not trimmed, so it matches existing users exactly as stored.
+     * The value is lowercased (not trimmed), so it matches existing users exactly as stored.
      *
      * @throws ImportException
      */
     protected function validateEmail(mixed $email, string $field): string
     {
-        $email = is_string($email) ? $email : '';
+        $email = is_string($email) ? Str::lower($email) : '';
         if (Validator::make(['email' => $email], ['email' => ['required', 'email:rfc,strict']])->fails()) {
             throw new ImportException('Value of '.$field.' ("'.$email.'") is not a valid email address');
         }

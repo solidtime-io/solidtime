@@ -17,6 +17,7 @@ use App\Service\DeletionService;
 use App\Service\TimezoneService;
 use App\Service\UserService;
 use Brick\Money\IsoCurrencyProvider;
+use Closure;
 use Exception;
 use Filament\Actions\BulkAction;
 use Filament\Actions\DeleteAction;
@@ -36,7 +37,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Korridor\LaravelModelValidationRules\Rules\UniqueEloquent;
+use Illuminate\Support\Str;
 use STS\FilamentImpersonate\Actions\Impersonate;
 
 class UserResource extends Resource
@@ -71,12 +72,25 @@ class UserResource extends Resource
                     ->label('Email')
                     ->required()
                     ->rules($record?->is_placeholder ? [] : [
-                        UniqueEloquent::make(User::class, 'email')
-                            ->ignore($record?->getKey()),
+                        // Compared lowercased, since that is how the email is stored (see dehydrateStateUsing).
+                        // Wrapped, because Filament evaluates closures in rules() itself.
+                        fn (): Closure => function (string $attribute, mixed $value, Closure $fail) use ($record): void {
+                            $emailAlreadyInUse = is_string($value) && User::query()
+                                ->where('email', '=', Str::lower($value))
+                                ->where('is_placeholder', '=', false)
+                                ->when($record !== null, fn (Builder $query) => $query->whereKeyNot($record->getKey()))
+                                ->exists();
+
+                            if ($emailAlreadyInUse) {
+                                $fail(__('validation.unique', ['attribute' => $attribute]));
+                            }
+                        },
                     ])
                     ->rule([
                         'email:rfc,strict',
                     ])
+                    // Emails are stored lowercase, and login and invitations look them up lowercased.
+                    ->dehydrateStateUsing(fn (?string $state): ?string => $state !== null ? Str::lower($state) : null)
                     ->maxLength(255),
                 Toggle::make('is_placeholder')
                     ->label('Is Placeholder?')
