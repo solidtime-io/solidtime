@@ -8,6 +8,7 @@ use App\Service\BillingContract;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 use Nwidart\Modules\Facades\Module;
+use STS\FilamentImpersonate\ImpersonateManager;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -62,6 +63,7 @@ class HandleInertiaRequests extends Middleware
                 'goal_limit' => $billing->getGoalLimit($currentOrganization),
                 'can_use_billable_rates' => $billing->canUseBillableRates($currentOrganization),
             ] : null,
+            'is_impersonating' => app(ImpersonateManager::class)->isImpersonating(),
             'flash' => [
                 'message' => fn () => $request->session()->get('message'),
                 'bannerText' => fn () => $request->session()->get('bannerText'),
