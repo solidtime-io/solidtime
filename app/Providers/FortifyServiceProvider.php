@@ -31,7 +31,7 @@ class FortifyServiceProvider extends ServiceProvider
      * Hash of a random value that is checked when no user exists for the email,
      * so login takes the same time whether the email is registered or not.
      */
-    private const ABSENT_USER_PASSWORD_HASH = '$2y$12$PtSQLk/QWOJJpg42pGEkt.TTR7NwCq0.g/0EOWb2B6eDww4zR92.2';
+    private const string ABSENT_USER_PASSWORD_HASH = '$2y$12$PtSQLk/QWOJJpg42pGEkt.TTR7NwCq0.g/0EOWb2B6eDww4zR92.2';
 
     /**
      * Register any application services.
