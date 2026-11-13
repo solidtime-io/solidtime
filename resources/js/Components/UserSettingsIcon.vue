@@ -12,12 +12,14 @@ import {
     UserCircleIcon,
     ArrowLeftOnRectangleIcon,
     ChatBubbleLeftRightIcon,
+    ArrowUturnLeftIcon,
 } from '@heroicons/vue/24/solid';
 import { openFeedback } from '@/utils/feedback';
 
 const page = usePage<{
     has_services_extension?: boolean;
     has_billing_extension?: boolean;
+    is_impersonating?: boolean;
     auth: {
         user: User & {
             all_teams: Organization[];
@@ -62,6 +64,16 @@ const logout = () => {
                         <ChatBubbleLeftRightIcon class="w-5 h-5 text-icon-default" />
                         <span>Feedback</span>
                     </button>
+                </DropdownMenuItem>
+
+                <!-- A full page load, since leaving returns to the admin panel, which is not an Inertia page. -->
+                <DropdownMenuItem v-if="page.props.is_impersonating" as-child>
+                    <a
+                        :href="route('filament-impersonate.leave')"
+                        class="inline-flex items-center gap-2.5 w-full">
+                        <ArrowUturnLeftIcon class="w-5 h-5 text-icon-default" />
+                        <span>Exit impersonation</span>
+                    </a>
                 </DropdownMenuItem>
 
                 <form class="w-full" @submit.prevent="logout">
