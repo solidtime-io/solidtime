@@ -1,5 +1,5 @@
 import { expect } from '@playwright/test';
-import type { Browser, Page } from '@playwright/test';
+import type { Browser, BrowserContextOptions, Page } from '@playwright/test';
 import { PLAYWRIGHT_BASE_URL } from '../../playwright/config';
 import { getInvitationAcceptUrl } from './mailpit';
 import type { TestContext } from './api';
@@ -10,9 +10,10 @@ import type { TestContext } from './api';
 export async function registerUser(
     browser: Browser,
     name: string,
-    email: string
+    email: string,
+    contextOptions: BrowserContextOptions = {}
 ): Promise<{ page: Page; close: () => Promise<void> }> {
-    const context = await browser.newContext();
+    const context = await browser.newContext(contextOptions);
     const page = await context.newPage();
 
     await page.goto(PLAYWRIGHT_BASE_URL + '/register');
