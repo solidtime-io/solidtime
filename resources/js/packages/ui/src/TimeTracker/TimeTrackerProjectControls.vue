@@ -41,7 +41,7 @@ function updateProject() {
 </script>
 
 <template>
-    <div class="flex items-center w-[130px] @2xl:w-auto shrink min-w-0">
+    <div class="flex items-center w-[130px] @2xl:w-auto shrink min-w-0 *:w-full">
         <TimeTrackerProjectTaskDropdown
             v-model:project="currentTimeEntry.project_id"
             v-model:task="currentTimeEntry.task_id"
