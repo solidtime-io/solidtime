@@ -441,4 +441,21 @@ class MemberServiceTest extends TestCaseWithDatabase
             'billable_rate' => 1,
         ]);
     }
+
+    public function test_add_member_merges_placeholder_with_same_email_in_different_case(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $user = User::factory()->create(['email' => 'user@example.com']);
+        $placeholderUser = User::factory()->placeholder()->create(['email' => 'User@Example.com']);
+        $placeholderMember = Member::factory()->forOrganization($organization)->forUser($placeholderUser)->role(Role::Placeholder)->create();
+        $timeEntry = TimeEntry::factory()->forMember($placeholderMember)->create();
+
+        // Act
+        $newMember = $this->memberService->addMember($user, $organization, Role::Employee);
+
+        // Assert
+        $this->assertDatabaseMissing(Member::class, ['id' => $placeholderMember->getKey()]);
+        $this->assertDatabaseHas(TimeEntry::class, ['id' => $timeEntry->getKey(), 'member_id' => $newMember->getKey(), 'user_id' => $user->getKey()]);
+    }
 }

@@ -67,4 +67,23 @@ class UserVerifyCommandTest extends TestCaseWithDatabase
         $command->expectsOutput('User with email "'.$user->email.'" already verified.')
             ->assertExitCode(1);
     }
+
+    public function test_it_finds_user_if_email_is_given_in_different_case(): void
+    {
+        // Arrange
+        $user = User::factory()->create([
+            'email' => 'test@test.test',
+            'email_verified_at' => null,
+        ]);
+        Member::factory()->forUser($user)->forOrganization(Organization::factory()->create())->create();
+
+        // Act
+        $command = $this->artisan('admin:user:verify', ['email' => 'Test@TEST.test']);
+
+        // Assert
+        $command->expectsOutput('User with email "test@test.test" has been verified.')
+            ->assertExitCode(0)
+            ->run();
+        $this->assertNotNull($user->refresh()->email_verified_at);
+    }
 }
