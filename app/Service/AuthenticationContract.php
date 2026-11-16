@@ -14,7 +14,7 @@ class AuthenticationContract
 {
     public const string PASSWORD_REGISTRATION_DISABLED_MESSAGE = 'Create your account by signing in with single sign-on.';
 
-    public const string EMAIL_CHANGE_LOCKED_MESSAGE = 'Your email address is managed by your organization and cannot be changed here. Ask your administrator to change it.';
+    public const string EMAIL_CHANGE_LOCKED_MESSAGE = 'Your email address comes from the identity provider you sign in with. Changes there are taken over on your next sign-in.';
 
     /**
      * Whether the user may use their local password: to log in, to reset it and to confirm their identity.

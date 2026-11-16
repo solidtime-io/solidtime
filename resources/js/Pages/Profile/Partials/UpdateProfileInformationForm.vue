@@ -258,8 +258,8 @@ onBeforeUnmount(() => {
                     v-if="user && !user.can_change_email"
                     class="mt-2 text-sm text-text-secondary"
                     data-testid="email_change_locked">
-                    Your email address is managed by your organization and cannot be changed here.
-                    Ask your administrator to change it.
+                    Your email address comes from the identity provider you sign in with. Changes
+                    there are taken over on your next sign-in.
                 </p>
 
                 <div v-else-if="pendingEmail" class="mt-2 text-sm">
