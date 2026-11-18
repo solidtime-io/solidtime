@@ -35,6 +35,7 @@ class ImportFactory extends Factory
             'ignore_limits' => false,
             'report' => null,
             'error_message' => null,
+            'error_details' => null,
             'started_at' => null,
             'finished_at' => null,
             'organization_id' => Organization::factory(),

@@ -30,7 +30,10 @@ return new class extends Migration
             // Imports started by a super admin (admin panel) are not limited by the configured import limits
             $table->boolean('ignore_limits')->default(false);
             $table->jsonb('report')->nullable();
+            // Error message shown to the user
             $table->text('error_message')->nullable();
+            // Technical error details (exception chain and stack trace), only visible in the admin panel
+            $table->text('error_details')->nullable();
             $table->dateTime('started_at')->nullable();
             $table->dateTime('finished_at')->nullable();
             $table->uuid('organization_id');

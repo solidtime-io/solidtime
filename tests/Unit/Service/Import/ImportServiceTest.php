@@ -208,7 +208,37 @@ class ImportServiceTest extends TestCase
         $import->refresh();
         $this->assertSame(ImportStatus::Failed, $import->status);
         $this->assertSame('Unexpected error during import', $import->error_message);
+        $this->assertStringStartsWith('RuntimeException: Something went wrong', (string) $import->error_details);
         $this->assertSame(0, TimeEntry::query()->count());
+    }
+
+    public function test_process_stores_previous_exception_in_error_details_if_importer_wraps_unknown_error(): void
+    {
+        // Arrange
+        Storage::fake(config('filesystems.private'));
+        Storage::disk(config('filesystems.private'))->put('import/test', 'data');
+        $import = Import::factory()->create([
+            'file_path' => 'import/test',
+        ]);
+        $importer = $this->mock(ImporterContract::class, function (MockInterface $mock): void {
+            $mock->shouldReceive('init')->once();
+            $mock->shouldReceive('importData')
+                ->once()
+                ->andThrow(new ImportException('Unknown error', previous: new RuntimeException('Not null violation')));
+        });
+        $this->mock(ImporterProvider::class, function (MockInterface $mock) use ($importer): void {
+            $mock->shouldReceive('getImporter')->with('toggl_time_entries')->andReturn($importer);
+        });
+
+        // Act
+        app(ImportService::class)->process($import);
+
+        // Assert
+        $import->refresh();
+        $this->assertSame(ImportStatus::Failed, $import->status);
+        $this->assertSame('Unknown error', $import->error_message);
+        $this->assertStringStartsWith(ImportException::class.': Unknown error', (string) $import->error_details);
+        $this->assertStringContainsString('Caused by: RuntimeException: Not null violation', (string) $import->error_details);
     }
 
     public function test_process_fails_and_rolls_back_if_import_exceeds_record_limit(): void

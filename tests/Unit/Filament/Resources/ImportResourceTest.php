@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Tests\Unit\Filament\Resources;
 
 use App\Filament\Resources\ImportResource;
+use App\Filament\Resources\OrganizationResource;
+use App\Filament\Resources\UserResource;
 use App\Models\Import;
 use App\Models\User;
 use Illuminate\Support\Facades\Config;
@@ -56,5 +58,25 @@ class ImportResourceTest extends FilamentTestCase
 
         // Assert
         $response->assertSuccessful();
+    }
+
+    public function test_view_page_of_failed_import_shows_error_details_and_links_to_organization_and_user(): void
+    {
+        // Arrange
+        $import = Import::factory()->failed()->create([
+            'error_details' => 'RuntimeException: Not null violation',
+        ]);
+
+        // Act
+        $response = Livewire::test(ImportResource\Pages\ViewImport::class, [
+            'record' => $import->getKey(),
+        ]);
+
+        // Assert
+        $response->assertSuccessful();
+        $response->assertFormFieldExists('error_details');
+        $response->assertSchemaStateSet(['error_details' => 'RuntimeException: Not null violation']);
+        $response->assertSee(OrganizationResource::getUrl('view', ['record' => $import->organization_id]), false);
+        $response->assertSee(UserResource::getUrl('view', ['record' => $import->user_id]), false);
     }
 }

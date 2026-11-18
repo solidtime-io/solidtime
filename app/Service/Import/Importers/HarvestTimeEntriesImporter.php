@@ -160,10 +160,10 @@ class HarvestTimeEntriesImporter extends DefaultImporter
         } catch (ImportException $exception) {
             throw $exception;
         } catch (CsvException $exception) {
-            throw new ImportException('Invalid CSV data');
+            throw new ImportException('Invalid CSV data', previous: $exception);
         } catch (Exception $exception) {
             report($exception);
-            throw new ImportException('Unknown error');
+            throw new ImportException('Unknown error', previous: $exception);
         }
     }
 

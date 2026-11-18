@@ -26,6 +26,7 @@ use Illuminate\Support\Carbon;
  * @property bool $ignore_limits
  * @property array<string, mixed>|null $report
  * @property string|null $error_message
+ * @property string|null $error_details
  * @property Carbon|null $started_at
  * @property Carbon|null $finished_at
  * @property string $organization_id
@@ -67,6 +68,7 @@ class Import extends Model
      */
     protected $hidden = [
         'credentials',
+        'error_details',
     ];
 
     /**

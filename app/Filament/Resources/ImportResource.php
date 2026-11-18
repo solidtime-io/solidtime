@@ -48,10 +48,27 @@ class ImportResource extends Resource
                 Select::make('organization_id')
                     ->label('Organization')
                     ->relationship(name: 'organization', titleAttribute: 'name')
+                    ->hintAction(
+                        Action::make('open-organization')
+                            ->label('Open organization')
+                            ->icon('heroicon-o-arrow-top-right-on-square')
+                            ->url(fn (?Import $record): ?string => $record !== null
+                                ? OrganizationResource::getUrl('view', ['record' => $record->organization_id])
+                                : null)
+                    )
                     ->disabled(),
                 Select::make('user_id')
                     ->label('User')
                     ->relationship(name: 'user', titleAttribute: 'email')
+                    ->hintAction(
+                        Action::make('open-user')
+                            ->label('Open user')
+                            ->icon('heroicon-o-arrow-top-right-on-square')
+                            ->hidden(fn (?Import $record): bool => $record?->user_id === null)
+                            ->url(fn (?Import $record): ?string => $record?->user_id !== null
+                                ? UserResource::getUrl('view', ['record' => $record->user_id])
+                                : null)
+                    )
                     ->disabled(),
                 TextInput::make('type')
                     ->label('Type')
@@ -75,6 +92,15 @@ class ImportResource extends Resource
                     ->disabled(),
                 Textarea::make('error_message')
                     ->label('Error message')
+                    ->columnSpanFull()
+                    ->disabled(),
+                Textarea::make('error_details')
+                    ->label('Error details')
+                    ->helperText('Exception chain and stack trace, only visible in the admin panel')
+                    // The attribute is hidden for serialization, so it is not filled into the form automatically
+                    ->formatStateUsing(fn (Import $record): ?string => $record->error_details)
+                    ->rows(15)
+                    ->extraInputAttributes(['style' => 'font-family: monospace; font-size: 80%;'])
                     ->columnSpanFull()
                     ->disabled(),
                 PrettyJsonField::make('report')
@@ -102,10 +128,14 @@ class ImportResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('organization.name')
+                    ->url(fn (Import $record): string => OrganizationResource::getUrl('view', ['record' => $record->organization_id]))
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('user.email')
                     ->label('User')
+                    ->url(fn (Import $record): ?string => $record->user_id !== null
+                        ? UserResource::getUrl('view', ['record' => $record->user_id])
+                        : null)
                     ->searchable()
                     ->toggleable(),
                 TextColumn::make('type')

@@ -205,7 +205,7 @@ class TogglDataImporter extends DefaultImporter
             throw $exception;
         } catch (Exception $exception) {
             report($exception);
-            throw new ImportException('Unknown error');
+            throw new ImportException('Unknown error', previous: $exception);
         } finally {
             $temporaryDirectory?->delete();
             $temporaryDirectoryZip?->delete();
