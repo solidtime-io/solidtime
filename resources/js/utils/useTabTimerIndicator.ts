@@ -25,15 +25,10 @@ const drawn = new Map<IndicatorState, string | null>();
 
 /**
  * Browsers cache /favicon.ico for a day. The href of the favicon link changes whenever the favicon changes
- * (another file or a new asset version), so a hash of it is used as cache buster.
+ * (another file or a new asset version), so it is used as cache buster.
  */
 function faviconUrl(linkHref: string): string {
-    let hash = 5381;
-    for (let i = 0; i < linkHref.length; i++) {
-        hash = ((hash << 5) + hash + linkHref.charCodeAt(i)) >>> 0;
-    }
-
-    return `${FAVICON_PATH}?v=${hash.toString(36)}`;
+    return `${FAVICON_PATH}?v=${encodeURIComponent(linkHref)}`;
 }
 
 function loadBaseImage(linkHref: string): Promise<HTMLImageElement> {
