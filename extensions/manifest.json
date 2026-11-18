@@ -17,6 +17,6 @@
     },
     "SSO": {
         "repository": "solidtime-io/extension-sso",
-        "ref": "feature/sso"
+        "ref": "v0.0.1"
     }
 }
