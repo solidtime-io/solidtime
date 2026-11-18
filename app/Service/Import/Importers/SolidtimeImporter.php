@@ -160,7 +160,7 @@ class SolidtimeImporter extends DefaultImporter
                 if ($project['client_id'] !== '') {
                     $clientId = $this->clientImportHelper->getKeyByExternalIdentifier($project['client_id']);
                     if ($clientId === null) {
-                        throw new Exception('Client does not exist');
+                        throw new ImportException('Project references a client that does not exist in the import');
                     }
                 }
 
@@ -183,8 +183,17 @@ class SolidtimeImporter extends DefaultImporter
 
             foreach ($projectMembersReader as $projectMember) {
                 $userId = $this->userImportHelper->getKeyByExternalIdentifier($projectMember['user_id']);
+                if ($userId === null) {
+                    throw new ImportException('Project member references a user that does not exist in the import');
+                }
                 $memberId = $this->memberImportHelper->getKeyByExternalIdentifier($projectMember['member_id']);
+                if ($memberId === null) {
+                    throw new ImportException('Project member references a member that does not exist in the import');
+                }
                 $projectId = $this->projectImportHelper->getKeyByExternalIdentifier($projectMember['project_id']);
+                if ($projectId === null) {
+                    throw new ImportException('Project member references a project that does not exist in the import');
+                }
                 $this->projectMemberImportHelper->getKey([
                     'project_id' => $projectId,
                     'member_id' => $memberId,
@@ -197,7 +206,7 @@ class SolidtimeImporter extends DefaultImporter
             foreach ($tasksReader as $task) {
                 $projectId = $this->projectImportHelper->getKeyByExternalIdentifier($task['project_id']);
                 if ($projectId === null) {
-                    throw new Exception('Project does not exist');
+                    throw new ImportException('Task references a project that does not exist in the import');
                 }
                 $this->checkTaskNameLength($task['name']);
                 $this->taskImportHelper->getKey([

@@ -1,0 +1,2 @@
+id,user_id,name,email,organization_id,billable_rate,role,created_at,updated_at
+06e6e605-86bd-417b-b75d-02f671e5d520,0446cdd8-3ad1-43d6-9231-9e0dc4eeb71c,"Peter Tester",peter.test@email.test,ee5a8cd6-312f-4ae6-b044-e2014f09ecc2,,admin,2024-08-22T10:36:48Z,2024-08-22T10:36:48Z

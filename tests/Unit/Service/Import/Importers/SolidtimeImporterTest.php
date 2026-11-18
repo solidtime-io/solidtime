@@ -206,6 +206,28 @@ class SolidtimeImporterTest extends ImporterTestAbstract
         $this->fail();
     }
 
+    public function test_import_throws_exception_if_project_member_references_member_that_does_not_exist(): void
+    {
+        // Arrange
+        $zipPath = $this->createTestZip('solidtime_import_test_missing_project_member_member');
+        $timezone = 'Europe/Vienna';
+        $organization = Organization::factory()->create();
+        $importer = new SolidtimeImporter;
+        $importer->init($organization);
+        $data = file_get_contents($zipPath);
+
+        // Act
+        try {
+            $importer->importData($data, $timezone);
+        } catch (Exception $e) {
+            $this->assertInstanceOf(ImportException::class, $e);
+            $this->assertSame('Project member references a member that does not exist in the import', $e->getMessage());
+
+            return;
+        }
+        $this->fail();
+    }
+
     public function test_import_skips_running_time_entries(): void
     {
         // Arrange
