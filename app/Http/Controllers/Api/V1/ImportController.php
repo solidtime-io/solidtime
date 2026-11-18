@@ -28,7 +28,7 @@ class ImportController extends Controller
      *
      * @response array{data: array<array{ key: string, name: string, description: string }>}
      */
-    public function index(Organization $organization, ImporterProvider $importerProvider): JsonResponse
+    public function importers(Organization $organization, ImporterProvider $importerProvider): JsonResponse
     {
         $this->checkPermission($organization, 'import');
 
@@ -99,7 +99,7 @@ class ImportController extends Controller
      *
      * @operationId getImports
      */
-    public function indexImports(Organization $organization, ImportIndexRequest $request): ImportCollection
+    public function index(Organization $organization, ImportIndexRequest $request): ImportCollection
     {
         $this->checkPermission($organization, 'import');
 

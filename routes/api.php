@@ -183,9 +183,9 @@ Route::prefix('v1')->name('v1.')->group(static function (): void {
 
         // Import routes
         Route::name('import.')->prefix('/organizations/{organization}')->group(static function (): void {
-            Route::get('/importers', [ImportController::class, 'index'])->name('index');
+            Route::get('/importers', [ImportController::class, 'importers'])->name('importers');
             Route::post('/import', [ImportController::class, 'import'])->name('import')->middleware('check-organization-blocked');
-            Route::get('/imports', [ImportController::class, 'indexImports'])->name('imports.index');
+            Route::get('/imports', [ImportController::class, 'index'])->name('imports.index');
             Route::get('/imports/{import}', [ImportController::class, 'show'])->name('imports.show');
         });
 

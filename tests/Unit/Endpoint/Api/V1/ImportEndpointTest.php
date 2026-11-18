@@ -19,7 +19,7 @@ use PHPUnit\Framework\Attributes\UsesClass;
 #[UsesClass(ImportController::class)]
 class ImportEndpointTest extends ApiEndpointTestAbstract
 {
-    public function test_index_fails_if_user_does_not_have_permission(): void
+    public function test_importers_fails_if_user_does_not_have_permission(): void
     {
         // Arrange
         $data = $this->createUserWithPermission();
@@ -27,13 +27,13 @@ class ImportEndpointTest extends ApiEndpointTestAbstract
         Passport::actingAs($data->user);
 
         // Act
-        $response = $this->getJson(route('api.v1.import.index', ['organization' => $data->organization->getKey()]));
+        $response = $this->getJson(route('api.v1.import.importers', ['organization' => $data->organization->getKey()]));
 
         // Assert
         $response->assertForbidden();
     }
 
-    public function test_index_returns_importers_if_user_has_permission(): void
+    public function test_importers_returns_importers_if_user_has_permission(): void
     {
         // Arrange
         $data = $this->createUserWithPermission([
@@ -42,7 +42,7 @@ class ImportEndpointTest extends ApiEndpointTestAbstract
         Passport::actingAs($data->user);
 
         // Act
-        $response = $this->getJson(route('api.v1.import.index', ['organization' => $data->organization->getKey()]));
+        $response = $this->getJson(route('api.v1.import.importers', ['organization' => $data->organization->getKey()]));
 
         // Assert
         $response->assertOk();
