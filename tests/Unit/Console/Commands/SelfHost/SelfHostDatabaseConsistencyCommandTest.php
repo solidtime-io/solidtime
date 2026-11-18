@@ -9,6 +9,7 @@ use App\Enums\Role;
 use App\Models\Client;
 use App\Models\Organization;
 use App\Models\Project;
+use App\Models\ProjectMember;
 use App\Models\Task;
 use App\Models\TimeEntry;
 use App\Models\User;
@@ -200,5 +201,23 @@ class SelfHostDatabaseConsistencyCommandTest extends TestCaseWithDatabase
         $this->assertSame(Command::FAILURE, $exitCode);
         $output = Artisan::output();
         $this->assertSame("Consistency problem: Time entries have an end that is before the start\n  - ".$timeEntry->getKey()."\n", $output);
+    }
+
+    public function test_checks_that_project_members_belong_to_the_organization_of_the_project(): void
+    {
+        // Arrange
+        $user = $this->createUserWithRole(Role::Owner);
+        $otherUser = $this->createUserWithRole(Role::Owner);
+        $project = Project::factory()->forOrganization($user->organization)->create();
+        ProjectMember::factory()->forProject($project)->forMember($user->member)->create();
+        $projectMember = ProjectMember::factory()->forProject($project)->forMember($otherUser->member)->create();
+
+        // Act
+        $exitCode = $this->withoutMockingConsoleOutput()->artisan('self-host:database-consistency');
+
+        // Assert
+        $this->assertSame(Command::FAILURE, $exitCode);
+        $output = Artisan::output();
+        $this->assertSame("Consistency problem: Project members have a member that does not belong to the organization of the project\n  - ".$projectMember->getKey()."\n", $output);
     }
 }

@@ -106,6 +106,15 @@ class SelfHostDatabaseConsistency extends Command
             })->get();
         $this->logProblems($problems, 'Users have a current organization that they are not a member of', $hadAProblem);
 
+        // Project members need to be a member of the organization of the project
+        $problems = DB::table('project_members')
+            ->select(['project_members.id as id'])
+            ->join('projects', 'project_members.project_id', '=', 'projects.id')
+            ->join('members', 'project_members.member_id', '=', 'members.id')
+            ->whereColumn('members.organization_id', '!=', 'projects.organization_id')
+            ->get();
+        $this->logProblems($problems, 'Project members have a member that does not belong to the organization of the project', $hadAProblem);
+
         return $hadAProblem ? self::FAILURE : self::SUCCESS;
     }
 
