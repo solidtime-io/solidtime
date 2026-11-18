@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useWhitelabel } from '@/utils/whitelabel';
 import FormSection from '@/Components/FormSection.vue';
 import { Field, FieldLabel, FieldDescription } from '@/packages/ui/src/field';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/packages/ui/src';
@@ -8,13 +9,17 @@ import { themeSetting } from '@/utils/theme';
 import { groupSimilarTimeEntriesSetting } from '@/utils/timeEntryGrouping';
 
 const preferredColor = usePreferredColorScheme();
+
+const whitelabel = useWhitelabel();
 </script>
 
 <template>
     <FormSection>
         <template #title> Theme</template>
 
-        <template #description> Choose how you want solidtime to look on your device </template>
+        <template #description>
+            Choose how you want {{ whitelabel.name }} to look on your device
+        </template>
 
         <template #form>
             <!-- Theme -->

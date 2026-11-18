@@ -59,6 +59,8 @@ jobs:
             echo "services_ref=$(jq -r '.Services.ref' extensions/manifest.json)"
             echo "invoicing_repository=$(jq -r '.Invoicing.repository' extensions/manifest.json)"
             echo "invoicing_ref=$(jq -r '.Invoicing.ref' extensions/manifest.json)"
+            echo "whitelabel_repository=$(jq -r '.Whitelabel.repository' extensions/manifest.json)"
+            echo "whitelabel_ref=$(jq -r '.Whitelabel.ref' extensions/manifest.json)"
           } >> "$GITHUB_OUTPUT"
 
       - name: "Checkout billing extension"
@@ -108,6 +110,18 @@ jobs:
       - name: "Install npm dependencies in invoicing extension"
         run: cd extensions/Invoicing && npm ci
 
+      - name: "Checkout whitelabel extension"
+        uses: actions/checkout@v7
+        with:
+          repository: ${{ steps.extension-manifest.outputs.whitelabel_repository }}
+          ref: ${{ steps.extension-manifest.outputs.whitelabel_ref }}
+          path: extensions/Whitelabel
+          ssh-key: ${{ secrets.SSH_PRIVATE_KEY_WHITELABEL_EXTENSION }}
+
+      - name: "Install composer dependencies in whitelabel extension"
+        working-directory: extensions/Whitelabel
+        run: composer install -n --prefer-dist --ignore-platform-reqs
+
       - name: "Run composer install"
         run: composer install -n --prefer-dist --ignore-platform-reqs
 
@@ -119,6 +133,9 @@ jobs:
 
       - name: "Activate invoicing extension"
         run: php artisan module:enable Invoicing
+
+      - name: "Activate whitelabel extension"
+        run: php artisan module:enable Whitelabel
 
       - name: "Install dependencies"
         run: npm ci
@@ -133,7 +150,7 @@ jobs:
           php artisan passport:keys
 
       - name: "Run PHPUnit (extensions)"
-        run: php artisan test extensions/Billing/tests extensions/Services/tests extensions/Invoicing/tests --stop-on-failure
+        run: php artisan test extensions/Billing/tests extensions/Services/tests extensions/Invoicing/tests extensions/Whitelabel/tests --stop-on-failure
 
       - name: "Run PHPUnit (core)"
         run: php artisan test --testsuite=Unit,Feature --stop-on-failure

@@ -7,8 +7,10 @@ use App\Http\Controllers\Web\HomeController;
 use App\Http\Controllers\Web\OrganizationController;
 use App\Http\Controllers\Web\OrganizationInvitationController;
 use App\Http\Controllers\Web\OtherBrowserSessionsController;
+use App\Http\Controllers\Web\RobotsTxtController;
 use App\Http\Controllers\Web\UserController;
 use App\Http\Controllers\Web\UserProfileController;
+use App\Http\Controllers\Web\WebManifestController;
 use App\Service\PermissionStore;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Route;
@@ -26,6 +28,10 @@ use Inertia\Inertia;
 */
 
 Route::get('/', [HomeController::class, 'index']);
+
+Route::get('/site.webmanifest', [WebManifestController::class, 'show'])->name('web-manifest');
+
+Route::get('/robots.txt', [RobotsTxtController::class, 'show'])->name('robots-txt');
 
 Route::get('/shared-report', function () {
     return Inertia::render('SharedReport');

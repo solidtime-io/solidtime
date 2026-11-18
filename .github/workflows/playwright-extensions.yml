@@ -19,7 +19,7 @@ jobs:
             extensions: Billing Services Invoicing
           - variant: onpremise
             billing: false
-            extensions: Invoicing
+            extensions: Invoicing Whitelabel
 
     services:
       mailpit:
@@ -77,6 +77,8 @@ jobs:
             echo "services_ref=$(jq -r '.Services.ref' extensions/manifest.json)"
             echo "invoicing_repository=$(jq -r '.Invoicing.repository' extensions/manifest.json)"
             echo "invoicing_ref=$(jq -r '.Invoicing.ref' extensions/manifest.json)"
+            echo "whitelabel_repository=$(jq -r '.Whitelabel.repository' extensions/manifest.json)"
+            echo "whitelabel_ref=$(jq -r '.Whitelabel.ref' extensions/manifest.json)"
           } >> "$GITHUB_OUTPUT"
 
       - name: "Checkout billing extension"
@@ -131,6 +133,20 @@ jobs:
 
       - name: "Install npm dependencies in invoicing extension"
         run: cd extensions/Invoicing && npm ci
+
+      - name: "Checkout whitelabel extension"
+        if: contains(matrix.extensions, 'Whitelabel')
+        uses: actions/checkout@v7
+        with:
+          repository: ${{ steps.extension-manifest.outputs.whitelabel_repository }}
+          ref: ${{ steps.extension-manifest.outputs.whitelabel_ref }}
+          path: extensions/Whitelabel
+          ssh-key: ${{ secrets.SSH_PRIVATE_KEY_WHITELABEL_EXTENSION }}
+
+      - name: "Install composer dependencies in whitelabel extension"
+        if: contains(matrix.extensions, 'Whitelabel')
+        working-directory: extensions/Whitelabel
+        run: composer install -n --prefer-dist --ignore-platform-reqs
 
       - name: "Run composer install"
         run: composer install -n --prefer-dist

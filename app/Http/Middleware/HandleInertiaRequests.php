@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Http\Middleware;
 
 use App\Service\BillingContract;
+use App\Service\WhitelabelContract;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 use Inertia\Middleware;
 use Nwidart\Modules\Facades\Module;
 
@@ -54,6 +56,17 @@ class HandleInertiaRequests extends Middleware
             'has_invoicing_extension' => $hasInvoicing,
             'has_services_extension' => $hasServices,
             'has_goals_extension' => $hasGoals,
+            // Once prop: resolved on full page loads only, the client keeps it for the following Inertia visits
+            'whitelabel' => Inertia::once(function (): array {
+                /** @var WhitelabelContract $whitelabel */
+                $whitelabel = app(WhitelabelContract::class);
+
+                return [
+                    'name' => $whitelabel->getName(),
+                    'logo_url' => $whitelabel->getWebLogoUrl(),
+                    'dark_logo_url' => $whitelabel->getDarkLogoUrl(),
+                ];
+            }),
             'billing' => $currentOrganization !== null ? [
                 'has_subscription' => $billing->hasSubscription($currentOrganization),
                 'has_trial' => $billing->hasTrial($currentOrganization),

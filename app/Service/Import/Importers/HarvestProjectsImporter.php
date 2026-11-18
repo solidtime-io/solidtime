@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service\Import\Importers;
 
+use App\Service\WhitelabelContract;
 use Exception;
 use Illuminate\Support\Str;
 use League\Csv\Exception as CsvException;
@@ -103,6 +104,6 @@ class HarvestProjectsImporter extends DefaultImporter
     #[Override]
     public function getDescription(): string
     {
-        return __('importer.harvest_projects.description');
+        return __('importer.harvest_projects.description', ['app' => app(WhitelabelContract::class)->getName()]);
     }
 }

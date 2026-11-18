@@ -14,5 +14,9 @@
     "Auditing": {
         "repository": "solidtime-io/extension-auditing",
         "ref": "v0.0.5"
+    },
+    "Whitelabel": {
+        "repository": "solidtime-io/extension-whitelabel",
+        "ref": "feature/whitelabel"
     }
 }

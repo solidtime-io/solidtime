@@ -21,6 +21,7 @@ use App\Service\GoalsContract;
 use App\Service\IpLookup\IpLookupServiceContract;
 use App\Service\IpLookup\NoIpLookupService;
 use App\Service\PermissionStore;
+use App\Service\WhitelabelContract;
 use DateTimeInterface;
 use Dedoc\Scramble\Scramble;
 use Dedoc\Scramble\Support\Generator\OpenApi;
@@ -28,6 +29,7 @@ use Dedoc\Scramble\Support\Generator\SecurityScheme;
 use Dedoc\Scramble\Support\Generator\SecuritySchemes\OAuthFlow;
 use Filament\Schemas\Components\Section;
 use Filament\Tables\Table;
+use Illuminate\Contracts\View\View as ViewContract;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Foundation\Application;
@@ -36,6 +38,7 @@ use Illuminate\Mail\Markdown;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -109,6 +112,12 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(IpLookupServiceContract::class, NoIpLookupService::class);
         $this->app->bind(BillingContract::class);
         $this->app->bind(GoalsContract::class);
+        $this->app->scoped(WhitelabelContract::class);
+        // Every view (including mail components) gets $whitelabel. A composer and not View::share(), so the instance is
+        // resolved when the view renders: scoped to the request (Octane) and rebound by the whitelabel extension.
+        View::composer('*', function (ViewContract $view): void {
+            $view->with('whitelabel', $this->app->make(WhitelabelContract::class));
+        });
 
         // Storage
         // The local driver ignores the ResponseContentDisposition option of temporaryUrl,
