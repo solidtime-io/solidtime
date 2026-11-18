@@ -104,7 +104,8 @@ class ImportService
             $import->status = ImportStatus::Completed;
             $import->report = $importer->getReport()->toArray();
         } catch (ImportException $exception) {
-            report($exception);
+            // Import exceptions are not reported, they are caused by invalid import data or the importers already
+            // reported the underlying unexpected error
             $import->status = ImportStatus::Failed;
             $import->error_message = $exception->getMessage();
             $import->error_details = ErrorDetailsFormatter::format($exception);

@@ -17,6 +17,7 @@ use App\Service\Import\Importers\ImportException;
 use App\Service\Import\ImportService;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use InvalidArgumentException;
@@ -182,6 +183,7 @@ class ImportServiceTest extends TestCase
     public function test_process_marks_import_as_failed_with_message_if_importer_throws_import_exception(): void
     {
         // Arrange
+        Exceptions::fake();
         Storage::fake(config('filesystems.private'));
         $organization = Organization::factory()->create();
         Storage::disk(config('filesystems.private'))->put('import/test', 'Invalid CSV data');
@@ -201,11 +203,13 @@ class ImportServiceTest extends TestCase
         $this->assertNull($import->report);
         $this->assertNull($import->credentials);
         $this->assertNotNull($import->finished_at);
+        Exceptions::assertNotReported(ImportException::class);
     }
 
     public function test_process_marks_import_as_failed_with_generic_message_and_rolls_back_on_unexpected_error(): void
     {
         // Arrange
+        Exceptions::fake();
         Storage::fake(config('filesystems.private'));
         $organization = Organization::factory()->create();
         Storage::disk(config('filesystems.private'))->put('import/test', 'data');
@@ -234,6 +238,7 @@ class ImportServiceTest extends TestCase
         $this->assertSame('Unexpected error during import', $import->error_message);
         $this->assertStringStartsWith('RuntimeException: Something went wrong', (string) $import->error_details);
         $this->assertSame(0, TimeEntry::query()->count());
+        Exceptions::assertReported(fn (RuntimeException $exception): bool => $exception->getMessage() === 'Something went wrong');
     }
 
     public function test_process_stores_previous_exception_in_error_details_if_importer_wraps_unknown_error(): void
