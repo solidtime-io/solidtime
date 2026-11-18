@@ -182,6 +182,29 @@ class InvitationEndpointTest extends ApiEndpointTestAbstract
         ]);
     }
 
+    public function test_store_fails_if_an_invitation_with_the_same_email_in_different_case_already_exists(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'invitations:create',
+        ]);
+        Passport::actingAs($data->user);
+        OrganizationInvitation::factory()->forOrganization($data->organization)->create([
+            'email' => 'User@Email.test',
+        ]);
+
+        // Act
+        $response = $this->postJson(route('api.v1.invitations.store', $data->organization->getKey()), [
+            'email' => 'user@email.test',
+            'role' => Role::Employee->value,
+        ]);
+
+        // Assert
+        $response->assertStatus(400);
+        $response->assertJsonPath('key', 'invitation_for_the_email_already_exists');
+        $this->assertSame(1, OrganizationInvitation::query()->whereBelongsTo($data->organization, 'organization')->count());
+    }
+
     public function test_store_works_if_user_invites_user_who_is_also_a_placeholder(): void
     {
         // Arrange

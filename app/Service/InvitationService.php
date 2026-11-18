@@ -49,7 +49,7 @@ class InvitationService
         }
 
         if (OrganizationInvitation::query()
-            ->where('email', $email)
+            ->whereRaw('lower(email) = ?', [$email])
             ->whereBelongsTo($organization, 'organization')
             ->exists()) {
             throw new InvitationForTheEmailAlreadyExistsApiException;
