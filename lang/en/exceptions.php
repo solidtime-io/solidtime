@@ -7,6 +7,8 @@ use App\Exceptions\Api\CanNotRemoveOwnerFromOrganization;
 use App\Exceptions\Api\ChangingRoleOfPlaceholderIsNotAllowed;
 use App\Exceptions\Api\ChangingRoleToPlaceholderIsNotAllowed;
 use App\Exceptions\Api\EntityStillInUseApiException;
+use App\Exceptions\Api\ExportAlreadyInProgressApiException;
+use App\Exceptions\Api\ExportFileNotAvailableApiException;
 use App\Exceptions\Api\FeatureIsNotAvailableInFreePlanApiException;
 use App\Exceptions\Api\InactiveUserCanNotBeUsedApiException;
 use App\Exceptions\Api\InvitationForTheEmailAlreadyExistsApiException;
@@ -43,6 +45,8 @@ return [
         OrganizationNeedsAtLeastOneOwner::KEY => 'Organization needs at least one owner',
         ChangingRoleToPlaceholderIsNotAllowed::KEY => 'Changing role to placeholder is not allowed',
         ExportException::KEY => 'Export failed, please try again later or contact support',
+        ExportAlreadyInProgressApiException::KEY => 'An export of this organization is already in progress',
+        ExportFileNotAvailableApiException::KEY => 'The export file is not available, please create a new export',
         OrganizationHasNoSubscriptionButMultipleMembersException::KEY => 'Organization has no subscription but multiple members',
         PdfRendererIsNotConfiguredException::KEY => 'PDF renderer is not configured',
         FeatureIsNotAvailableInFreePlanApiException::KEY => 'Feature is not available in free plan',

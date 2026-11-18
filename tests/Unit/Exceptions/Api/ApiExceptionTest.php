@@ -10,6 +10,8 @@ use App\Exceptions\Api\CanNotRemoveOwnerFromOrganization;
 use App\Exceptions\Api\ChangingRoleOfPlaceholderIsNotAllowed;
 use App\Exceptions\Api\ChangingRoleToPlaceholderIsNotAllowed;
 use App\Exceptions\Api\EntityStillInUseApiException;
+use App\Exceptions\Api\ExportAlreadyInProgressApiException;
+use App\Exceptions\Api\ExportFileNotAvailableApiException;
 use App\Exceptions\Api\FeatureIsNotAvailableInFreePlanApiException;
 use App\Exceptions\Api\InactiveUserCanNotBeUsedApiException;
 use App\Exceptions\Api\InvitationForTheEmailAlreadyExistsApiException;
@@ -44,6 +46,8 @@ class ApiExceptionTest extends TestCase
         yield ChangingRoleOfPlaceholderIsNotAllowed::class => [new ChangingRoleOfPlaceholderIsNotAllowed];
         yield ChangingRoleToPlaceholderIsNotAllowed::class => [new ChangingRoleToPlaceholderIsNotAllowed];
         yield EntityStillInUseApiException::class => [new EntityStillInUseApiException('member', 'time_entry')];
+        yield ExportAlreadyInProgressApiException::class => [new ExportAlreadyInProgressApiException];
+        yield ExportFileNotAvailableApiException::class => [new ExportFileNotAvailableApiException];
         yield FeatureIsNotAvailableInFreePlanApiException::class => [new FeatureIsNotAvailableInFreePlanApiException];
         yield InactiveUserCanNotBeUsedApiException::class => [new InactiveUserCanNotBeUsedApiException];
         yield InvitationForTheEmailAlreadyExistsApiException::class => [new InvitationForTheEmailAlreadyExistsApiException];

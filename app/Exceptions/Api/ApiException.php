@@ -8,14 +8,15 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use LogicException;
+use Throwable;
 
 abstract class ApiException extends Exception
 {
     public const string KEY = 'api_exception';
 
-    public function __construct()
+    public function __construct(?Throwable $previous = null)
     {
-        parent::__construct(static::KEY);
+        parent::__construct(static::KEY, 0, $previous);
     }
 
     /**

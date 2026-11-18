@@ -72,7 +72,7 @@ test('test that export button triggers export and shows success modal', async ({
             (response) =>
                 response.url().includes('/export') &&
                 response.request().method() === 'POST' &&
-                response.status() === 200,
+                response.status() === 202,
             { timeout: 60000 }
         ),
         page.getByRole('button', { name: 'Export Organization Data' }).click(),
@@ -80,6 +80,11 @@ test('test that export button triggers export and shows success modal', async ({
 
     // Success modal should appear after export completes
     await expect(page.getByText('The export was successful!')).toBeVisible();
+    await page.getByRole('button', { name: 'Close' }).click();
+
+    // The export is listed and can be downloaded again
+    await expect(page.getByText('Recent exports')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Download' }).first()).toBeVisible();
 });
 
 test('test that import type dropdown has multiple options', async ({ page }) => {

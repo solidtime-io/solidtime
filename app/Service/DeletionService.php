@@ -8,6 +8,7 @@ use App\Enums\Role;
 use App\Events\BeforeOrganizationDeletion;
 use App\Exceptions\Api\CanNotDeleteUserWhoIsOwnerOfOrganizationWithMultipleMembers;
 use App\Models\Client;
+use App\Models\Export;
 use App\Models\Goal;
 use App\Models\Import;
 use App\Models\Member;
@@ -93,6 +94,20 @@ class DeletionService
         if (count($importFilePaths) > 0) {
             DB::afterCommit(function () use ($importFilePaths): void {
                 Storage::disk(config('filesystems.private'))->delete($importFilePaths);
+            });
+        }
+
+        // Delete all exports, the stored export files are deleted after the transaction is committed,
+        // since the deletion of files is not reversible via a database rollback
+        $exportFilePaths = Export::query()
+            ->whereBelongsTo($organization, 'organization')
+            ->whereNotNull('file_path')
+            ->pluck('file_path')
+            ->all();
+        Export::query()->whereBelongsTo($organization, 'organization')->delete();
+        if (count($exportFilePaths) > 0) {
+            DB::afterCommit(function () use ($exportFilePaths): void {
+                Storage::disk(config('filesystems.private'))->delete($exportFilePaths);
             });
         }
 

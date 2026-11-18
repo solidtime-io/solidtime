@@ -9,6 +9,7 @@ use App\Events\BeforeOrganizationDeletion;
 use App\Exceptions\Api\CanNotDeleteUserWhoIsOwnerOfOrganizationWithMultipleMembers;
 use App\Models\Audit;
 use App\Models\Client;
+use App\Models\Export;
 use App\Models\Goal;
 use App\Models\Import;
 use App\Models\Member;
@@ -65,7 +66,8 @@ class DeletionServiceTest extends TestCaseWithDatabase
      *     owner: User,
      *     reports: Collection<Report>,
      *     goals: Collection<Goal>,
-     *     imports: Collection<Import>
+     *     imports: Collection<Import>,
+     *     exports: Collection<Export>
      * }
      */
     private function createOrganizationWithAllRelations(): object
@@ -121,6 +123,13 @@ class DeletionServiceTest extends TestCaseWithDatabase
         $importWithoutFile = Import::factory()->forOrganization($organization)->forUser($userEmployee)->failed()->create();
         $imports = collect([$importWithFile, $importWithoutFile]);
 
+        $exportWithFile = Export::factory()->forOrganization($organization)->forUser($userOwner)->completed()->create([
+            'file_path' => 'exports/'.$organization->getKey().'/'.Str::uuid().'.zip',
+        ]);
+        Storage::disk(config('filesystems.private'))->put($exportWithFile->file_path, 'export data');
+        $exportWithoutFile = Export::factory()->forOrganization($organization)->forUser($userEmployee)->failed()->create();
+        $exports = collect([$exportWithFile, $exportWithoutFile]);
+
         $timeEntries = TimeEntry::factory()->forOrganization($organization)->forMember($memberOwner)->createMany(2);
         $timeEntriesWithTask = TimeEntry::factory()->forTask($task1)->forOrganization($organization)->forMember($memberEmployee)->createMany(2);
         $timeEntriesWithProject = TimeEntry::factory()->forProject($projectWithClient)->forOrganization($organization)->forMember($memberPlaceholder)->createMany(2);
@@ -139,6 +148,7 @@ class DeletionServiceTest extends TestCaseWithDatabase
             'reports' => $reports,
             'goals' => $goals,
             'imports' => $imports,
+            'exports' => $exports,
         ];
     }
 
@@ -158,6 +168,8 @@ class DeletionServiceTest extends TestCaseWithDatabase
         $this->assertSame(0, Goal::query()->whereBelongsTo($organization, 'organization')->count());
         $this->assertSame(0, Import::query()->whereBelongsTo($organization, 'organization')->count());
         $this->assertSame([], Storage::disk(config('filesystems.private'))->allFiles('import/'.$organization->getKey()));
+        $this->assertSame(0, Export::query()->whereBelongsTo($organization, 'organization')->count());
+        $this->assertSame([], Storage::disk(config('filesystems.private'))->allFiles('exports/'.$organization->getKey()));
         $this->assertSame(0, TimeEntry::query()->whereBelongsTo($organization, 'organization')->count());
     }
 
@@ -174,6 +186,8 @@ class DeletionServiceTest extends TestCaseWithDatabase
         $this->assertSame(2, Goal::query()->whereBelongsTo($organization, 'organization')->count());
         $this->assertSame(2, Import::query()->whereBelongsTo($organization, 'organization')->count());
         $this->assertCount(1, Storage::disk(config('filesystems.private'))->allFiles('import/'.$organization->getKey()));
+        $this->assertSame(2, Export::query()->whereBelongsTo($organization, 'organization')->count());
+        $this->assertCount(1, Storage::disk(config('filesystems.private'))->allFiles('exports/'.$organization->getKey()));
         $this->assertSame($specialCase ? 7 : 6, TimeEntry::query()->whereBelongsTo($organization, 'organization')->count());
     }
 

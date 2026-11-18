@@ -100,7 +100,7 @@ export type MyMemberships = ZodiosResponseByAlias<SolidTimeApi, 'getMyMembership
 
 export type MyMembership = MyMemberships[0];
 
-export type OrganizationExportResponse = ZodiosResponseByAlias<SolidTimeApi, 'exportOrganization'>;
+export type Export = ZodiosResponseByAlias<SolidTimeApi, 'getExport'>['data'];
 
 export type ReportIndexResponse = ZodiosResponseByAlias<SolidTimeApi, 'getReports'>;
 

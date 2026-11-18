@@ -4,7 +4,12 @@ declare(strict_types=1);
 
 namespace App\Service\Export;
 
+use App\Enums\ExportStatus;
+use App\Enums\ExportType;
+use App\Exceptions\Api\ExportAlreadyInProgressApiException;
+use App\Jobs\ProcessExport;
 use App\Models\Client;
+use App\Models\Export;
 use App\Models\Member;
 use App\Models\Organization;
 use App\Models\OrganizationInvitation;
@@ -13,8 +18,10 @@ use App\Models\ProjectMember;
 use App\Models\Tag;
 use App\Models\Task;
 use App\Models\TimeEntry;
+use App\Models\User;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\File;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
@@ -25,18 +32,117 @@ use League\Csv\Exception as LeagueCsvException;
 use League\Csv\UnavailableStream;
 use League\Csv\Writer;
 use Spatie\TemporaryDirectory\TemporaryDirectory;
+use Throwable;
 use ZipArchive;
 
 class ExportService
 {
     public const string VERSION = '1.0';
 
+    private const int ERROR_DETAILS_MAX_LENGTH = 50000;
+
     /**
+     * Creates an export of all data of the organization and queues it.
+     *
+     * @throws ExportAlreadyInProgressApiException
+     */
+    public function createOrganizationExport(Organization $organization, ?User $user): Export
+    {
+        if (Export::query()->whereBelongsTo($organization, 'organization')->active()->exists()) {
+            throw new ExportAlreadyInProgressApiException;
+        }
+
+        $export = new Export;
+        $export->type = ExportType::Organization;
+        $export->status = ExportStatus::Pending;
+        $export->organization()->associate($organization);
+        $export->user()->associate($user);
+
+        try {
+            $export->save();
+        } catch (UniqueConstraintViolationException) {
+            // Another export of the organization was created in the meantime
+            throw new ExportAlreadyInProgressApiException;
+        }
+
+        ProcessExport::dispatch($export);
+
+        return $export;
+    }
+
+    /**
+     * Runs the export, the result (file path or error message) is stored on the export.
+     */
+    public function process(Export $export): void
+    {
+        if ($export->status !== ExportStatus::Pending) {
+            Log::warning('Skipping export that is not pending', [
+                'export_id' => $export->getKey(),
+                'status' => $export->status->value,
+            ]);
+
+            return;
+        }
+
+        $export->status = ExportStatus::Running;
+        $export->started_at = Carbon::now();
+        $export->save();
+
+        try {
+            $export->file_path = $this->export($export->organization, $export->getKey());
+            $export->status = ExportStatus::Completed;
+        } catch (Throwable $exception) {
+            // Export exceptions are already reported in the export method
+            if (! $exception instanceof ExportException) {
+                report($exception);
+            }
+            $export->status = ExportStatus::Failed;
+            $export->error_message = 'Export failed, please try again later or contact support';
+            $export->error_details = $this->getErrorDetails($exception->getPrevious() ?? $exception);
+        } finally {
+            $export->finished_at = Carbon::now();
+            $export->save();
+        }
+    }
+
+    /**
+     * Marks an export as failed that could not be finished, for example because the job timed out or the worker crashed.
+     */
+    public function markAsFailed(Export $export, string $errorMessage): void
+    {
+        $export->status = ExportStatus::Failed;
+        $export->error_message = $errorMessage;
+        $export->finished_at = Carbon::now();
+        $export->save();
+    }
+
+    /**
+     * Technical details of the exception and all previous exceptions for debugging in the admin panel.
+     */
+    private function getErrorDetails(Throwable $exception): string
+    {
+        $parts = [];
+        $current = $exception;
+        while ($current !== null) {
+            $parts[] = $current::class.': '.$current->getMessage()."\n".
+                'at '.$current->getFile().':'.$current->getLine()."\n".
+                $current->getTraceAsString();
+            $current = $current->getPrevious();
+        }
+
+        return Str::limit(implode("\n\nCaused by: ", $parts), self::ERROR_DETAILS_MAX_LENGTH);
+    }
+
+    /**
+     * Creates the export ZIP file and stores it on the private disk.
+     *
+     * @return string Path of the ZIP file on the private disk
+     *
      * @throws ExportException
      */
-    public function export(Organization $organization): string
+    public function export(Organization $organization, ?string $exportId = null): string
     {
-        $exportId = Str::uuid();
+        $exportId ??= (string) Str::uuid();
         $timeStamp = Carbon::now();
         $temporaryDirectory = TemporaryDirectory::make();
         Log::debug('Start exporting organization', [
@@ -365,9 +471,10 @@ class ExportService
             $zip->close();
 
             // Upload ZIP file to private storage
-            $filename = 'export_'.$organization->getKey().'_'.$timeStamp->format('Y-m-d_H-i-s').'_'.$exportId.'.zip';
+            $folder = 'exports/'.$organization->getKey();
+            $filename = $exportId.'.zip';
             Storage::disk(config('filesystems.private'))->putFileAs(
-                'exports',
+                $folder,
                 new File($temporaryDirectoryZip->path('export.zip')),
                 $filename
             );
@@ -381,11 +488,11 @@ class ExportService
                 'export_id' => $exportId,
             ]);
 
-            return 'exports/'.$filename;
+            return $folder.'/'.$filename;
         } catch (UnavailableStream|CannotInsertRecord|Exception|LeagueCsvException $exception) {
             report($exception);
 
-            throw new ExportException;
+            throw new ExportException(previous: $exception);
         }
     }
 }

@@ -192,6 +192,9 @@ Route::prefix('v1')->name('v1.')->group(static function (): void {
         // Export routes
         Route::name('export.')->prefix('/organizations/{organization}')->group(static function (): void {
             Route::post('/export', [ExportController::class, 'export'])->name('export');
+            Route::get('/exports', [ExportController::class, 'index'])->name('exports.index');
+            Route::get('/exports/{export}', [ExportController::class, 'show'])->name('exports.show');
+            Route::get('/exports/{export}/download', [ExportController::class, 'download'])->name('exports.download');
         });
 
     });

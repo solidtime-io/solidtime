@@ -38,6 +38,22 @@ const ClientUpdateRequest = z
     .object({ name: z.string().min(1).max(255), is_archived: z.boolean().optional() })
     .passthrough();
 const DestroyWithPasswordRequest = z.object({ password: z.string() }).passthrough();
+const ExportType = z.literal('organization');
+const ExportStatus = z.enum(['pending', 'running', 'completed', 'failed']);
+const ExportResource = z
+    .object({
+        id: z.string(),
+        type: ExportType,
+        status: ExportStatus,
+        download_available: z.boolean(),
+        error_message: z.union([z.string(), z.null()]),
+        user_id: z.union([z.string(), z.null()]),
+        started_at: z.union([z.string(), z.null()]),
+        finished_at: z.union([z.string(), z.null()]),
+        created_at: z.union([z.string(), z.null()]),
+    })
+    .passthrough();
+const ExportCollection = z.array(ExportResource);
 const ImportRequest = z.object({ type: z.string(), data: z.string().max(52428800) }).passthrough();
 const ImportSource = z.enum(['file', 'api']);
 const ImportStatus = z.enum(['pending', 'running', 'completed', 'failed']);
@@ -860,6 +876,10 @@ export const schemas = {
     ClientResource,
     ClientStoreRequest,
     ClientUpdateRequest,
+    ExportType,
+    ExportStatus,
+    ExportResource,
+    ExportCollection,
     ImportRequest,
     ImportSource,
     ImportStatus,
@@ -1632,6 +1652,8 @@ const endpoints = makeApi([
         method: 'post',
         path: '/v1/organizations/:organization/export',
         alias: 'exportOrganization',
+        description: `The export is processed in the background. Use the returned export ID to poll the status of the export and
+the download endpoint to get the download URL once the export is completed.`,
         requestFormat: 'json',
         parameters: [
             {
@@ -1640,7 +1662,162 @@ const endpoints = makeApi([
                 schema: z.string(),
             },
         ],
-        response: z.object({ success: z.boolean(), download_url: z.string() }).passthrough(),
+        response: z.object({ data: ExportResource }).passthrough(),
+        errors: [
+            {
+                status: 400,
+                description: `API exception`,
+                schema: z
+                    .object({ error: z.boolean(), key: z.string(), message: z.string() })
+                    .passthrough(),
+            },
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 403,
+                description: `Authorization error`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 404,
+                description: `Not found`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+        ],
+    },
+    {
+        method: 'get',
+        path: '/v1/organizations/:organization/exports',
+        alias: 'getExports',
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'organization',
+                type: 'Path',
+                schema: z.string(),
+            },
+            {
+                name: 'page',
+                type: 'Query',
+                schema: z.number().int().gte(1).lte(2147483647).optional(),
+            },
+        ],
+        response: z
+            .object({
+                data: ExportCollection,
+                links: z
+                    .object({
+                        first: z.union([z.string(), z.null()]),
+                        last: z.union([z.string(), z.null()]),
+                        prev: z.union([z.string(), z.null()]),
+                        next: z.union([z.string(), z.null()]),
+                    })
+                    .passthrough(),
+                meta: z
+                    .object({
+                        current_page: z.number().int().gte(1),
+                        from: z.union([z.number(), z.null()]),
+                        last_page: z.number().int().gte(1),
+                        links: z.array(
+                            z
+                                .object({
+                                    url: z.union([z.string(), z.null()]),
+                                    label: z.string(),
+                                    active: z.boolean(),
+                                })
+                                .passthrough()
+                        ),
+                        path: z.union([z.string(), z.null()]),
+                        per_page: z.number().int().gte(0),
+                        to: z.union([z.number(), z.null()]),
+                        total: z.number().int().gte(0),
+                    })
+                    .passthrough(),
+            })
+            .passthrough(),
+        errors: [
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 403,
+                description: `Authorization error`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 404,
+                description: `Not found`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 422,
+                description: `Validation error`,
+                schema: z
+                    .object({ message: z.string(), errors: z.record(z.array(z.string())) })
+                    .passthrough(),
+            },
+        ],
+    },
+    {
+        method: 'get',
+        path: '/v1/organizations/:organization/exports/:export',
+        alias: 'getExport',
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'organization',
+                type: 'Path',
+                schema: z.string(),
+            },
+            {
+                name: 'export',
+                type: 'Path',
+                schema: z.string(),
+            },
+        ],
+        response: z.object({ data: ExportResource }).passthrough(),
+        errors: [
+            {
+                status: 401,
+                description: `Unauthenticated`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 403,
+                description: `Authorization error`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+            {
+                status: 404,
+                description: `Not found`,
+                schema: z.object({ message: z.string() }).passthrough(),
+            },
+        ],
+    },
+    {
+        method: 'get',
+        path: '/v1/organizations/:organization/exports/:export/download',
+        alias: 'downloadExport',
+        description: `The download URL is only valid for a short time, request a new one for every download.`,
+        requestFormat: 'json',
+        parameters: [
+            {
+                name: 'organization',
+                type: 'Path',
+                schema: z.string(),
+            },
+            {
+                name: 'export',
+                type: 'Path',
+                schema: z.string(),
+            },
+        ],
+        response: z.object({ download_url: z.string() }).passthrough(),
         errors: [
             {
                 status: 400,
