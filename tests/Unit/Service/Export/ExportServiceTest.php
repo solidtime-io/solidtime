@@ -157,6 +157,29 @@ class ExportServiceTest extends TestCaseWithDatabase
         Queue::assertPushed(ProcessExport::class, fn (ProcessExport $job): bool => $job->export->is($export));
     }
 
+    public function test_create_organization_export_marks_stale_export_of_the_organization_as_failed_and_creates_new_export(): void
+    {
+        // Arrange
+        Queue::fake();
+        $organization = Organization::factory()->create();
+        $staleExport = Export::factory()->forOrganization($organization)->running()->create([
+            'started_at' => now()->subHours(3),
+        ]);
+        $otherStaleExport = Export::factory()->running()->create([
+            'started_at' => now()->subHours(3),
+        ]);
+
+        // Act
+        $export = app(ExportService::class)->createOrganizationExport($organization, null);
+
+        // Assert
+        $this->assertSame(ExportStatus::Pending, $export->status);
+        $staleExport->refresh();
+        $this->assertSame(ExportStatus::Failed, $staleExport->status);
+        $this->assertSame('Export could not be finished', $staleExport->error_message);
+        $this->assertSame(ExportStatus::Running, $otherStaleExport->refresh()->status);
+    }
+
     public function test_database_allows_only_one_active_export_per_organization(): void
     {
         // Arrange
@@ -188,6 +211,24 @@ class ExportServiceTest extends TestCaseWithDatabase
         $this->assertNotNull($export->finished_at);
         $this->assertNull($export->error_message);
         Storage::disk(config('filesystems.private'))->assertExists($export->file_path);
+    }
+
+    public function test_process_deletes_export_file_if_export_was_deleted_while_running(): void
+    {
+        // Arrange
+        $this->mockPrivateStorage();
+        $organization = Organization::factory()->create();
+        $export = Export::factory()->forOrganization($organization)->create();
+        // Simulates a deletion of the export (for example by the deletion of the organization) while it is running
+        Export::query()->whereKey($export->getKey())->delete();
+
+        // Act
+        app(ExportService::class)->process($export);
+
+        // Assert
+        $this->assertNotNull($export->file_path);
+        Storage::disk(config('filesystems.private'))->assertMissing($export->file_path);
+        $this->assertFalse(Export::query()->whereKey($export->getKey())->exists());
     }
 
     public function test_process_marks_export_as_failed_with_error_details_if_export_fails(): void

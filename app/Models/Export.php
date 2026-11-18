@@ -40,6 +40,16 @@ class Export extends Model
 
     use HasUuids;
 
+    /**
+     * Time in seconds a running export can exceed the job timeout before it is considered stale.
+     */
+    private const int RUNNING_STALE_BUFFER_SECONDS = 300;
+
+    /**
+     * Time in seconds a pending export can exceed the job timeout before it is considered stale.
+     */
+    private const int PENDING_STALE_BUFFER_SECONDS = 3600;
+
     private const int DOWNLOAD_FILENAME_SLUG_MAX_LENGTH = 40;
 
     /**
@@ -107,5 +117,29 @@ class Export extends Model
     public function scopeActive(Builder $builder): Builder
     {
         return $builder->whereIn('status', ExportStatus::active());
+    }
+
+    /**
+     * Active exports that are not finished in time, for example because the worker crashed or the job timed out.
+     * The buffers cover small delays after the job timeout (running) and the time the job waits in the queue (pending).
+     *
+     * @param  Builder<Export>  $builder
+     * @return Builder<Export>
+     */
+    public function scopeStale(Builder $builder): Builder
+    {
+        $jobTimeout = (int) config('export.job_timeout');
+        $runningStaleBefore = Carbon::now()->subSeconds($jobTimeout + self::RUNNING_STALE_BUFFER_SECONDS);
+        $pendingStaleBefore = Carbon::now()->subSeconds($jobTimeout + self::PENDING_STALE_BUFFER_SECONDS);
+
+        return $builder->where(function (Builder $query) use ($runningStaleBefore, $pendingStaleBefore): void {
+            $query->where(function (Builder $query) use ($runningStaleBefore): void {
+                $query->where('status', ExportStatus::Running)
+                    ->where('started_at', '<', $runningStaleBefore);
+            })->orWhere(function (Builder $query) use ($pendingStaleBefore): void {
+                $query->where('status', ExportStatus::Pending)
+                    ->where('created_at', '<', $pendingStaleBefore);
+            });
+        });
     }
 }

@@ -19,6 +19,7 @@ use App\Models\Tag;
 use App\Models\Task;
 use App\Models\TimeEntry;
 use App\Models\User;
+use App\Service\ErrorDetailsFormatter;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\UniqueConstraintViolationException;
@@ -39,8 +40,6 @@ class ExportService
 {
     public const string VERSION = '1.0';
 
-    private const int ERROR_DETAILS_MAX_LENGTH = 50000;
-
     /**
      * Creates an export of all data of the organization and queues it.
      *
@@ -48,6 +47,10 @@ class ExportService
      */
     public function createOrganizationExport(Organization $organization, ?User $user): Export
     {
+        // Stale exports would block new exports until the export:prune command runs
+        Export::query()->whereBelongsTo($organization, 'organization')->stale()->get()
+            ->each(fn (Export $staleExport) => $this->markAsFailed($staleExport, 'Export could not be finished'));
+
         if (Export::query()->whereBelongsTo($organization, 'organization')->active()->exists()) {
             throw new ExportAlreadyInProgressApiException;
         }
@@ -98,10 +101,18 @@ class ExportService
             }
             $export->status = ExportStatus::Failed;
             $export->error_message = 'Export failed, please try again later or contact support';
-            $export->error_details = $this->getErrorDetails($exception->getPrevious() ?? $exception);
+            $export->error_details = ErrorDetailsFormatter::format($exception->getPrevious() ?? $exception);
         } finally {
             $export->finished_at = Carbon::now();
             $export->save();
+        }
+
+        // The export (and its organization) can be deleted while the export is running, the file would be orphaned
+        if ($export->file_path !== null && ! Export::query()->whereKey($export->getKey())->exists()) {
+            Log::warning('Deleting file of export that was deleted while it was running', [
+                'export_id' => $export->getKey(),
+            ]);
+            Storage::disk(config('filesystems.private'))->delete($export->file_path);
         }
     }
 
@@ -114,23 +125,6 @@ class ExportService
         $export->error_message = $errorMessage;
         $export->finished_at = Carbon::now();
         $export->save();
-    }
-
-    /**
-     * Technical details of the exception and all previous exceptions for debugging in the admin panel.
-     */
-    private function getErrorDetails(Throwable $exception): string
-    {
-        $parts = [];
-        $current = $exception;
-        while ($current !== null) {
-            $parts[] = $current::class.': '.$current->getMessage()."\n".
-                'at '.$current->getFile().':'.$current->getLine()."\n".
-                $current->getTraceAsString();
-            $current = $current->getPrevious();
-        }
-
-        return Str::limit(implode("\n\nCaused by: ", $parts), self::ERROR_DETAILS_MAX_LENGTH);
     }
 
     /**

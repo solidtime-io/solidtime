@@ -10,6 +10,7 @@ use App\Jobs\ProcessImport;
 use App\Models\Import;
 use App\Models\Organization;
 use App\Models\User;
+use App\Service\ErrorDetailsFormatter;
 use App\Service\Import\Importers\ImporterContract;
 use App\Service\Import\Importers\ImporterProvider;
 use App\Service\Import\Importers\ImportException;
@@ -19,14 +20,11 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use LogicException;
 use Throwable;
 
 class ImportService
 {
-    private const int ERROR_DETAILS_MAX_LENGTH = 50000;
-
     /**
      * Stores the import file and queues the import.
      *
@@ -38,6 +36,10 @@ class ImportService
     {
         // Throws an InvalidArgumentException if the importer type is unknown
         app(ImporterProvider::class)->getImporter($importerType);
+
+        // Stale imports would block new imports until the import:prune command runs
+        Import::query()->whereBelongsTo($organization, 'organization')->stale()->get()
+            ->each(fn (Import $staleImport) => $this->markAsFailed($staleImport, 'Import could not be finished'));
 
         if (Import::query()->whereBelongsTo($organization, 'organization')->active()->exists()) {
             throw new ImportException('Import is already in progress');
@@ -105,12 +107,12 @@ class ImportService
             report($exception);
             $import->status = ImportStatus::Failed;
             $import->error_message = $exception->getMessage();
-            $import->error_details = $this->getErrorDetails($exception);
+            $import->error_details = ErrorDetailsFormatter::format($exception);
         } catch (Throwable $exception) {
             report($exception);
             $import->status = ImportStatus::Failed;
             $import->error_message = 'Unexpected error during import';
-            $import->error_details = $this->getErrorDetails($exception);
+            $import->error_details = ErrorDetailsFormatter::format($exception);
         } finally {
             $import->credentials = null;
             $import->finished_at = Carbon::now();
@@ -128,23 +130,6 @@ class ImportService
         $import->credentials = null;
         $import->finished_at = Carbon::now();
         $import->save();
-    }
-
-    /**
-     * Technical details of the exception and all previous exceptions for debugging in the admin panel.
-     */
-    private function getErrorDetails(Throwable $exception): string
-    {
-        $parts = [];
-        $current = $exception;
-        while ($current !== null) {
-            $parts[] = $current::class.': '.$current->getMessage()."\n".
-                'at '.$current->getFile().':'.$current->getLine()."\n".
-                $current->getTraceAsString();
-            $current = $current->getPrevious();
-        }
-
-        return Str::limit(implode("\n\nCaused by: ", $parts), self::ERROR_DETAILS_MAX_LENGTH);
     }
 
     /**

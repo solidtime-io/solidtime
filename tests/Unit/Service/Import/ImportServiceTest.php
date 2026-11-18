@@ -94,6 +94,30 @@ class ImportServiceTest extends TestCase
         $this->assertSame(3, Import::query()->count());
     }
 
+    public function test_create_file_import_marks_stale_import_of_the_organization_as_failed_and_creates_new_import(): void
+    {
+        // Arrange
+        Queue::fake();
+        Storage::fake(config('filesystems.private'));
+        $organization = Organization::factory()->create();
+        $staleImport = Import::factory()->forOrganization($organization)->running()->create([
+            'started_at' => now()->subHours(3),
+        ]);
+        $otherStaleImport = Import::factory()->running()->create([
+            'started_at' => now()->subHours(3),
+        ]);
+
+        // Act
+        $import = app(ImportService::class)->createFileImport($organization, null, 'toggl_time_entries', 'data', 'Europe/Vienna');
+
+        // Assert
+        $this->assertSame(ImportStatus::Pending, $import->status);
+        $staleImport->refresh();
+        $this->assertSame(ImportStatus::Failed, $staleImport->status);
+        $this->assertSame('Import could not be finished', $staleImport->error_message);
+        $this->assertSame(ImportStatus::Running, $otherStaleImport->refresh()->status);
+    }
+
     public function test_create_file_import_throws_exception_if_importer_type_is_unknown(): void
     {
         // Arrange

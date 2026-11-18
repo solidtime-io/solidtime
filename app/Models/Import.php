@@ -46,6 +46,18 @@ class Import extends Model
     use HasUuids;
 
     /**
+     * Time in seconds a running import can exceed the job timeout before it is considered stale.
+     * Note: The job itself can not mark a timed out import as failed, since the timeout handler runs while the
+     * import transaction is still open and the change is rolled back when the worker is killed.
+     */
+    private const int RUNNING_STALE_BUFFER_SECONDS = 300;
+
+    /**
+     * Time in seconds a pending import can exceed the job timeout before it is considered stale.
+     */
+    private const int PENDING_STALE_BUFFER_SECONDS = 3600;
+
+    /**
      * The attributes that should be cast.
      *
      * @var array<string, string>
@@ -96,5 +108,29 @@ class Import extends Model
     public function scopeActive(Builder $builder): Builder
     {
         return $builder->whereIn('status', ImportStatus::active());
+    }
+
+    /**
+     * Active imports that are not finished in time, for example because the worker crashed or the job timed out.
+     * The buffers cover small delays after the job timeout (running) and the time the job waits in the queue (pending).
+     *
+     * @param  Builder<Import>  $builder
+     * @return Builder<Import>
+     */
+    public function scopeStale(Builder $builder): Builder
+    {
+        $jobTimeout = (int) config('import.job_timeout');
+        $runningStaleBefore = Carbon::now()->subSeconds($jobTimeout + self::RUNNING_STALE_BUFFER_SECONDS);
+        $pendingStaleBefore = Carbon::now()->subSeconds($jobTimeout + self::PENDING_STALE_BUFFER_SECONDS);
+
+        return $builder->where(function (Builder $query) use ($runningStaleBefore, $pendingStaleBefore): void {
+            $query->where(function (Builder $query) use ($runningStaleBefore): void {
+                $query->where('status', ImportStatus::Running)
+                    ->where('started_at', '<', $runningStaleBefore);
+            })->orWhere(function (Builder $query) use ($pendingStaleBefore): void {
+                $query->where('status', ImportStatus::Pending)
+                    ->where('created_at', '<', $pendingStaleBefore);
+            });
+        });
     }
 }
