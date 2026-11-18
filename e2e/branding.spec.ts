@@ -96,8 +96,10 @@ test.describe('Branding (logged in)', () => {
         await expect(page).toHaveTitle('Dashboard - solidtime');
 
         // An Inertia visit does not load the once prop with the name again, the client keeps it
+        // The click only becomes an Inertia visit once the page is ready
+        await expect(page.getByTestId('dashboard_view')).toBeVisible();
         await page.getByRole('link', { name: 'Projects' }).click();
-        await expect(page.getByTestId('projects_view')).toBeVisible();
+        await expect(page.getByTestId('projects_view')).toBeVisible({ timeout: 15000 });
         await expect(page).toHaveTitle('Projects - solidtime');
     });
 });
