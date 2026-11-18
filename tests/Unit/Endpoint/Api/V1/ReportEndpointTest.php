@@ -89,11 +89,67 @@ class ReportEndpointTest extends ApiEndpointTestAbstract
         $response->assertForbidden();
     }
 
+    public function test_store_endpoint_fails_if_user_can_not_view_all_projects(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'reports:create',
+            'time-entries:view:all',
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.reports.store', [$data->organization->getKey()]), [
+            'name' => 'Test Report',
+            'is_public' => true,
+            'properties' => [
+                'group' => TimeEntryAggregationType::Project->value,
+                'sub_group' => TimeEntryAggregationType::Task->value,
+                'history_group' => TimeEntryAggregationType::Day->value,
+                'start' => Carbon::now()->subDays(30)->toIso8601ZuluString(),
+                'end' => Carbon::now()->toIso8601ZuluString(),
+            ],
+        ]);
+
+        // Assert
+        $response->assertForbidden();
+        $this->assertDatabaseCount(Report::class, 0);
+    }
+
+    public function test_store_endpoint_fails_if_user_can_not_view_all_time_entries(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'reports:create',
+            'projects:view:all',
+        ]);
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->postJson(route('api.v1.reports.store', [$data->organization->getKey()]), [
+            'name' => 'Test Report',
+            'is_public' => true,
+            'properties' => [
+                'group' => TimeEntryAggregationType::Project->value,
+                'sub_group' => TimeEntryAggregationType::Task->value,
+                'history_group' => TimeEntryAggregationType::Day->value,
+                'start' => Carbon::now()->subDays(30)->toIso8601ZuluString(),
+                'end' => Carbon::now()->toIso8601ZuluString(),
+            ],
+        ]);
+
+        // Assert
+        $response->assertForbidden();
+        $this->assertDatabaseCount(Report::class, 0);
+    }
+
     public function test_store_endpoint_creates_new_report_with_minimal_properties(): void
     {
         // Arrange
         $data = $this->createUserWithPermission([
             'reports:create',
+            'projects:view:all',
+            'time-entries:view:all',
         ]);
         Passport::actingAs($data->user);
 
@@ -128,6 +184,8 @@ class ReportEndpointTest extends ApiEndpointTestAbstract
         // Arrange
         $data = $this->createUserWithPermission([
             'reports:create',
+            'projects:view:all',
+            'time-entries:view:all',
         ]);
         Passport::actingAs($data->user);
 
@@ -175,6 +233,8 @@ class ReportEndpointTest extends ApiEndpointTestAbstract
         // Arrange
         $data = $this->createUserWithPermission([
             'reports:create',
+            'projects:view:all',
+            'time-entries:view:all',
         ]);
         Passport::actingAs($data->user);
 
@@ -230,6 +290,8 @@ class ReportEndpointTest extends ApiEndpointTestAbstract
         // Arrange
         $data = $this->createUserWithPermission([
             'reports:create',
+            'projects:view:all',
+            'time-entries:view:all',
         ]);
         Passport::actingAs($data->user);
 
@@ -263,6 +325,8 @@ class ReportEndpointTest extends ApiEndpointTestAbstract
         // Arrange
         $data = $this->createUserWithPermission([
             'reports:create',
+            'projects:view:all',
+            'time-entries:view:all',
         ]);
         Passport::actingAs($data->user);
 
@@ -301,11 +365,57 @@ class ReportEndpointTest extends ApiEndpointTestAbstract
         $response->assertForbidden();
     }
 
+    public function test_update_endpoint_fails_if_user_can_not_view_all_projects(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'reports:update',
+            'time-entries:view:all',
+        ]);
+        $report = Report::factory()->forOrganization($data->organization)->private()->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.reports.update', [$data->organization->getKey(), $report->getKey()]), [
+            'is_public' => true,
+        ]);
+
+        // Assert
+        $response->assertForbidden();
+        $report->refresh();
+        $this->assertFalse($report->is_public);
+        $this->assertNull($report->share_secret);
+    }
+
+    public function test_update_endpoint_fails_if_user_can_not_view_all_time_entries(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'reports:update',
+            'projects:view:all',
+        ]);
+        $report = Report::factory()->forOrganization($data->organization)->private()->create();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->putJson(route('api.v1.reports.update', [$data->organization->getKey(), $report->getKey()]), [
+            'is_public' => true,
+        ]);
+
+        // Assert
+        $response->assertForbidden();
+        $report->refresh();
+        $this->assertFalse($report->is_public);
+        $this->assertNull($report->share_secret);
+    }
+
     public function test_update_endpoint_fails_if_report_does_not_exist(): void
     {
         // Arrange
         $data = $this->createUserWithPermission([
             'reports:update',
+            'projects:view:all',
+            'time-entries:view:all',
         ]);
         Passport::actingAs($data->user);
 
@@ -323,6 +433,8 @@ class ReportEndpointTest extends ApiEndpointTestAbstract
         // Arrange
         $data = $this->createUserWithPermission([
             'reports:update',
+            'projects:view:all',
+            'time-entries:view:all',
         ]);
         $report = Report::factory()->create();
         Passport::actingAs($data->user);
@@ -341,6 +453,8 @@ class ReportEndpointTest extends ApiEndpointTestAbstract
         // Arrange
         $data = $this->createUserWithPermission([
             'reports:update',
+            'projects:view:all',
+            'time-entries:view:all',
         ]);
         $report = Report::factory()->forOrganization($data->organization)->create();
         Passport::actingAs($data->user);
@@ -365,6 +479,8 @@ class ReportEndpointTest extends ApiEndpointTestAbstract
         // Arrange
         $data = $this->createUserWithPermission([
             'reports:update',
+            'projects:view:all',
+            'time-entries:view:all',
         ]);
         $report = Report::factory()->forOrganization($data->organization)->create();
         Passport::actingAs($data->user);
@@ -389,6 +505,8 @@ class ReportEndpointTest extends ApiEndpointTestAbstract
         // Arrange
         $data = $this->createUserWithPermission([
             'reports:update',
+            'projects:view:all',
+            'time-entries:view:all',
         ]);
         $report = Report::factory()->private()->forOrganization($data->organization)->create();
         Passport::actingAs($data->user);
@@ -415,6 +533,8 @@ class ReportEndpointTest extends ApiEndpointTestAbstract
         // Arrange
         $data = $this->createUserWithPermission([
             'reports:update',
+            'projects:view:all',
+            'time-entries:view:all',
         ]);
         $report = Report::factory()->public()->forOrganization($data->organization)->create();
         Passport::actingAs($data->user);
@@ -441,6 +561,8 @@ class ReportEndpointTest extends ApiEndpointTestAbstract
         // Arrange
         $data = $this->createUserWithPermission([
             'reports:update',
+            'projects:view:all',
+            'time-entries:view:all',
         ]);
         $report = Report::factory()->public()->forOrganization($data->organization)->create();
         $secret = $report->share_secret;
@@ -468,6 +590,8 @@ class ReportEndpointTest extends ApiEndpointTestAbstract
         // Arrange
         $data = $this->createUserWithPermission([
             'reports:update',
+            'projects:view:all',
+            'time-entries:view:all',
         ]);
         $report = Report::factory()->forOrganization($data->organization)->create();
         Passport::actingAs($data->user);
@@ -498,6 +622,8 @@ class ReportEndpointTest extends ApiEndpointTestAbstract
         // Arrange
         $data = $this->createUserWithPermission([
             'reports:update',
+            'projects:view:all',
+            'time-entries:view:all',
         ]);
         $report = Report::factory()->public()->forOrganization($data->organization)->create([
             'public_until' => null,
@@ -523,6 +649,8 @@ class ReportEndpointTest extends ApiEndpointTestAbstract
         // Arrange
         $data = $this->createUserWithPermission([
             'reports:update',
+            'projects:view:all',
+            'time-entries:view:all',
         ]);
         $report = Report::factory()->public()->forOrganization($data->organization)->create([
             'public_until' => Carbon::now()->addDays(30),
@@ -611,6 +739,8 @@ class ReportEndpointTest extends ApiEndpointTestAbstract
         // Arrange
         $data = $this->createUserWithPermission([
             'reports:create',
+            'projects:view:all',
+            'time-entries:view:all',
         ]);
         Passport::actingAs($data->user);
 
@@ -656,6 +786,8 @@ class ReportEndpointTest extends ApiEndpointTestAbstract
         // Arrange
         $data = $this->createUserWithPermission([
             'reports:create',
+            'projects:view:all',
+            'time-entries:view:all',
         ]);
         Passport::actingAs($data->user);
 
@@ -691,6 +823,8 @@ class ReportEndpointTest extends ApiEndpointTestAbstract
         // Arrange
         $data = $this->createUserWithPermission([
             'reports:create',
+            'projects:view:all',
+            'time-entries:view:all',
         ]);
         $project = Project::factory()->forOrganization($data->organization)->create();
         $client = Client::factory()->forOrganization($data->organization)->create();
@@ -798,6 +932,8 @@ class ReportEndpointTest extends ApiEndpointTestAbstract
         // Arrange
         $data = $this->createUserWithPermission([
             'reports:create',
+            'projects:view:all',
+            'time-entries:view:all',
         ]);
         $tag = Tag::factory()->forOrganization($data->organization)->create();
         Passport::actingAs($data->user);
@@ -831,6 +967,8 @@ class ReportEndpointTest extends ApiEndpointTestAbstract
         // Arrange
         $data = $this->createUserWithPermission([
             'reports:create',
+            'projects:view:all',
+            'time-entries:view:all',
         ]);
         Passport::actingAs($data->user);
 
