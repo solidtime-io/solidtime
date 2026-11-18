@@ -10,6 +10,7 @@ use App\Filament\Widgets\TimeEntriesCreated;
 use App\Filament\Widgets\TimeEntriesImported;
 use App\Filament\Widgets\UserRegistrations;
 use App\Http\Middleware\AuthenticateFilamentPanel;
+use App\Service\WhitelabelContract;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Navigation\NavigationGroup;
@@ -35,6 +36,10 @@ class AdminPanelProvider extends PanelProvider
         $panel->default()
             ->id('admin')
             ->path('admin')
+            ->brandName(fn (): string => app(WhitelabelContract::class)->getName())
+            ->brandLogo(fn (): ?string => app(WhitelabelContract::class)->getWebLogoUrl())
+            ->darkModeBrandLogo(fn (): ?string => app(WhitelabelContract::class)->getDarkLogoUrl())
+            ->favicon(fn (): ?string => app(WhitelabelContract::class)->getFaviconUrl())
             ->colors([
                 'primary' => Color::Amber,
             ])

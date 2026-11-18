@@ -1,10 +1,28 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
+import { useWhitelabel } from '@/utils/whitelabel';
+
+const whitelabel = useWhitelabel();
 </script>
 
 <template>
     <Link :href="'/'">
+        <template v-if="whitelabel.logo_url">
+            <img
+                :src="whitelabel.logo_url"
+                :alt="whitelabel.name"
+                :class="[
+                    'h-12 py-2 max-w-64 object-contain',
+                    { 'dark:hidden': whitelabel.dark_logo_url },
+                ]" />
+            <img
+                v-if="whitelabel.dark_logo_url"
+                :src="whitelabel.dark_logo_url"
+                :alt="whitelabel.name"
+                class="h-12 py-2 max-w-64 object-contain hidden dark:block" />
+        </template>
         <svg
+            v-else
             class="h-12 py-2 text-text-primary"
             viewBox="0 0 168 30"
             fill="none"

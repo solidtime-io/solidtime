@@ -55,7 +55,8 @@ class ImportEndpointTest extends ApiEndpointTestAbstract
         $toggleTimeEntries = collect($response->json('data'))->where('key', 'toggl_time_entries')->first();
         $this->assertSame('toggl_time_entries', $toggleTimeEntries['key']);
         $this->assertSame('Toggl Time Entries', $toggleTimeEntries['name']);
-        $this->assertSame(__('importer.toggl_time_entries.description'), $toggleTimeEntries['description']);
+        $this->assertSame(__('importer.toggl_time_entries.description', ['app' => 'solidtime']), $toggleTimeEntries['description']);
+        $this->assertStringEndsWith('the same as in solidtime.', $toggleTimeEntries['description']);
     }
 
     public function test_import_fails_if_user_does_not_have_permission(): void

@@ -9,13 +9,13 @@ import type { User } from '@/types/models';
 import { QueryClient, VueQueryPlugin } from '@tanstack/vue-query';
 import { type DefineComponent } from 'vue';
 import { setupPrefetching } from '@/utils/prefetch';
+import { getWhitelabel } from '@/utils/whitelabel';
 
-const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 const pinia = createPinia();
 const queryClient = new QueryClient();
 
 createInertiaApp({
-    title: (title) => `${title} - ${appName}`,
+    title: (title) => (title ? `${title} - ${getWhitelabel().name}` : getWhitelabel().name),
     resolve: (name) => {
         if (name.includes('Invoicing::')) {
             const [module, page] = name.split('::');

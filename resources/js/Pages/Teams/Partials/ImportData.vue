@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useWhitelabel } from '@/utils/whitelabel';
 import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import { computed, onMounted, ref } from 'vue';
 import { useNotificationsStore } from '@/utils/notification';
@@ -125,6 +126,8 @@ const filenames = computed(() => {
 const importType = ref<ImportType | null>(null);
 
 const showResultModal = ref(false);
+
+const whitelabel = useWhitelabel();
 </script>
 
 <template>
@@ -163,8 +166,8 @@ const showResultModal = ref(false);
                 <InformationCircleIcon class="h-5 min-w-0 w-5 text-bg-tertiary" />
                 <p class="flex-1">
                     Import existing data from Toggl, Clockify, Harvest, generic CSV files or a
-                    different solidtime instance. Please select the type of data you want to import
-                    and follow the instructions.
+                    different {{ whitelabel.name }} instance. Please select the type of data you
+                    want to import and follow the instructions.
                 </p>
             </div>
             <div

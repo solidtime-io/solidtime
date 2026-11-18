@@ -7,6 +7,7 @@ namespace Tests;
 use App\Service\BillableRateService;
 use App\Service\BillingContract;
 use App\Service\PermissionStore;
+use App\Service\WhitelabelContract;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
@@ -32,6 +33,8 @@ abstract class TestCase extends BaseTestCase
         if ($this->mockBillingContract) {
             $this->actAsOrganizationWithoutSubscriptionAndWithoutTrial();
         }
+        // Core tests use the default branding, independent of an installed whitelabel extension and its environment variables
+        $this->app->instance(WhitelabelContract::class, new WhitelabelContract);
         // Note: The following line can be used to test timezone edge cases.
         // $this->travelTo(Carbon::now()->timezone('Europe/Vienna')->setHour(0)->setMinute(59)->setSecond(0));
     }
@@ -115,6 +118,20 @@ abstract class TestCase extends BaseTestCase
             $mock->shouldReceive('getTrialUntil')->andReturn(null);
             $mock->shouldReceive('isBlocked')->andReturn(false);
             $mock->shouldReceive('canUseBillableRates')->andReturn(false);
+        });
+    }
+
+    protected function actAsWhitelabeledInstance(): void
+    {
+        $this->mock(WhitelabelContract::class, function (MockInterface $mock): void {
+            $mock->shouldReceive('getName')->andReturn('Acme Time');
+            $mock->shouldReceive('getLogoUrl')->andReturn('https://cdn.acme.test/logo.png');
+            $mock->shouldReceive('getLogoSvgUrl')->andReturn('https://cdn.acme.test/logo.svg');
+            $mock->shouldReceive('getWebLogoUrl')->andReturn('https://cdn.acme.test/logo.svg');
+            $mock->shouldReceive('getDarkLogoUrl')->andReturn('https://cdn.acme.test/logo-dark.png');
+            $mock->shouldReceive('getFaviconUrl')->andReturn('https://cdn.acme.test/favicon.png');
+            $mock->shouldReceive('getFaviconPath')->andReturn(null);
+            $mock->shouldReceive('getThemeColor')->andReturn('#12ab34');
         });
     }
 }
