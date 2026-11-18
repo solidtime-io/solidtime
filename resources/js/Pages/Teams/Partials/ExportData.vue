@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useWhitelabel } from '@/utils/whitelabel';
 import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import { ref } from 'vue';
 import { useNotificationsStore } from '@/utils/notification';
@@ -43,6 +44,8 @@ async function exportData() {
         }
     }
 }
+
+const whitelabel = useWhitelabel();
 </script>
 
 <template>
@@ -69,9 +72,9 @@ async function exportData() {
             <div class="py-2 px-3 sm:px-4 text-sm flex items-center space-x-3">
                 <InformationCircleIcon class="h-5 min-w-0 w-5 text-bg-tertiary" />
                 <p class="flex-1">
-                    Export your solidtime organization data. This will include all clients,
-                    projects, tasks, and time entries. You will receive a zip file with json files
-                    for each entity.
+                    Export your {{ whitelabel.name }} organization data. This will include all
+                    clients, projects, tasks, and time entries. You will receive a zip file with
+                    json files for each entity.
                 </p>
             </div>
         </Card>

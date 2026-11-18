@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Http\Controllers\Web\FaviconController;
 use App\Http\Controllers\Web\HealthCheckController;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
@@ -43,6 +44,8 @@ class RouteServiceProvider extends ServiceProvider
                     Route::get('health-check/up', [HealthCheckController::class, 'up']);
                     Route::get('health-check/debug', [HealthCheckController::class, 'debug']);
                 });
+
+            Route::get('favicon.ico', [FaviconController::class, 'show'])->name('favicon');
 
             Route::middleware('api')
                 ->prefix('api')

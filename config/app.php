@@ -105,6 +105,11 @@ return [
     'local_email_verification' => (bool) env('APP_LOCAL_EMAIL_VERIFICATION', false),
 
     /*
+     * Controls the robots.txt response. "allow" lets crawlers index the instance, "deny" (default) blocks all crawlers.
+     */
+    'robots_txt' => env('APP_ROBOTS_TXT', 'deny'),
+
+    /*
     |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------

@@ -9,6 +9,7 @@ use App\Enums\TimeEntryType;
 use App\Jobs\RecalculateSpentTimeForProject;
 use App\Jobs\RecalculateSpentTimeForTask;
 use App\Models\TimeEntry;
+use App\Service\WhitelabelContract;
 use Carbon\Exceptions\InvalidFormatException;
 use Exception;
 use Illuminate\Support\Carbon;
@@ -275,6 +276,6 @@ class ClockifyTimeEntriesImporter extends DefaultImporter
     #[Override]
     public function getDescription(): string
     {
-        return __('importer.clockify_time_entries.description');
+        return __('importer.clockify_time_entries.description', ['app' => app(WhitelabelContract::class)->getName()]);
     }
 }

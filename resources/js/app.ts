@@ -9,13 +9,13 @@ import type { User } from '@/types/models';
 import { QueryClient, VueQueryPlugin } from '@tanstack/vue-query';
 import { type DefineComponent } from 'vue';
 import { setupPrefetching } from '@/utils/prefetch';
+import { getWhitelabel } from '@/utils/whitelabel';
 
 interface ExtensionManifest {
     name?: string;
     alias?: string;
 }
 
-const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 const pinia = createPinia();
 const queryClient = new QueryClient();
 const extensionManifests = import.meta.glob('../../extensions/**/module.json', {
@@ -59,7 +59,7 @@ function resolveExtensionDirectory(moduleName: string): string {
 }
 
 createInertiaApp({
-    title: (title) => `${title} - ${appName}`,
+    title: (title) => (title ? `${title} - ${getWhitelabel().name}` : getWhitelabel().name),
     resolve: (name) => {
         // "Module::Page" (both halves present) resolves to that extension's page
         // directory; everything else is a host page under resources/js/Pages.

@@ -10,6 +10,7 @@ use App\Models\Concerns\CustomAuditable;
 use App\Models\Concerns\HasUuids;
 use App\Models\Passport\Token;
 use App\Service\AuthenticationContract;
+use App\Service\WhitelabelContract;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
@@ -27,6 +28,8 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Laravel\Fortify\Contracts\TwoFactorAuthenticationProvider;
+use Laravel\Fortify\Fortify;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Passport\AuthCode;
 use Laravel\Passport\Contracts\OAuthenticatable;
@@ -161,6 +164,19 @@ class User extends Authenticatable implements AuditableContract, FilamentUser, M
         })->join(' '));
 
         return 'https://ui-avatars.com/api/?name='.urlencode($name).'&color=7F9CF5&background=EBF4FF';
+    }
+
+    /**
+     * Get the two factor authentication QR code URL.
+     * Overrides the Fortify default, so authenticator apps show the whitelabel name instead of APP_NAME as issuer.
+     */
+    public function twoFactorQrCodeUrl(): string
+    {
+        return app(TwoFactorAuthenticationProvider::class)->qrCodeUrl(
+            app(WhitelabelContract::class)->getName(),
+            $this->{Fortify::username()},
+            Fortify::currentEncrypter()->decrypt($this->two_factor_secret)
+        );
     }
 
     public function isSuperAdmin(): bool

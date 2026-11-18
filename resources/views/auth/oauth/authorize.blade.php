@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>{{ config('app.name') }} - Authorization</title>
+    <title>{{ $whitelabel->getName() }} - Authorization</title>
     @vite('resources/css/app.css')
     <script>
         // Theme evaluation script - similar to theme.ts
@@ -62,6 +62,12 @@
 <div
     class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-default-background">
     <div>
+        @if($whitelabel->getWebLogoUrl() !== null)
+        <img src="{{ $whitelabel->getWebLogoUrl() }}" alt="{{ $whitelabel->getName() }}" class="h-12 py-2 max-w-64 object-contain @if($whitelabel->getDarkLogoUrl() !== null) dark:hidden @endif">
+        @if($whitelabel->getDarkLogoUrl() !== null)
+        <img src="{{ $whitelabel->getDarkLogoUrl() }}" alt="{{ $whitelabel->getName() }}" class="h-12 py-2 max-w-64 object-contain hidden dark:block">
+        @endif
+        @else
         <svg
             class="h-12 py-2 fill-text-primary"
             viewBox="0 0 168 30"
@@ -87,6 +93,7 @@
             <path
                 d="M9.20323 29.5437C8.03825 29.5437 6.88622 29.3883 5.74714 29.0777C4.63394 28.767 3.58547 28.3528 2.60172 27.835C1.64385 27.2914 0.828369 26.6701 0.155273 25.9711L3.84435 22.2043C4.46567 22.8515 5.20349 23.3564 6.0578 23.7188C6.938 24.0812 7.86998 24.2624 8.85373 24.2624C9.42328 24.2624 9.85043 24.1848 10.1352 24.0295C10.4459 23.8741 10.6012 23.6541 10.6012 23.3693C10.6012 22.9551 10.3811 22.6444 9.94104 22.4373C9.52683 22.2043 8.97023 22.0102 8.27125 21.8548C7.59815 21.6736 6.88623 21.4665 6.13547 21.2335C5.38471 20.9746 4.65983 20.6381 3.96085 20.2239C3.26187 19.8097 2.69232 19.2272 2.25222 18.4764C1.83801 17.7257 1.63091 16.7678 1.63091 15.6028C1.63091 14.3861 1.95451 13.3247 2.60172 12.4186C3.27481 11.4866 4.20679 10.7617 5.39765 10.2439C6.58851 9.70029 7.98648 9.42847 9.59155 9.42847C11.2225 9.42847 12.7758 9.71324 14.2514 10.2828C15.7271 10.8264 16.9179 11.6549 17.824 12.7681L14.0961 16.5348C13.4748 15.8358 12.7888 15.3569 12.038 15.098C11.2872 14.8132 10.6012 14.6708 9.97987 14.6708C9.38444 14.6708 8.95729 14.7615 8.6984 14.9427C8.43952 15.098 8.31008 15.318 8.31008 15.6028C8.31008 15.9394 8.51719 16.2112 8.9314 16.4183C9.3715 16.6254 9.9281 16.8196 10.6012 17.0008C11.3002 17.1561 12.0121 17.3632 12.737 17.6221C13.4877 17.881 14.1997 18.2434 14.8728 18.7094C15.5717 19.1495 16.1283 19.7449 16.5426 20.4957C16.9827 21.2465 17.2027 22.2173 17.2027 23.4081C17.2027 25.298 16.4778 26.7995 15.0281 27.9127C13.5783 29 11.6367 29.5437 9.20323 29.5437Z" />
         </svg>
+        @endif
     </div>
 
     <div
