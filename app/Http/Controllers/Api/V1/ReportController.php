@@ -32,6 +32,19 @@ class ReportController extends Controller
     }
 
     /**
+     * Public reports aggregate all time entries of the organization and are not scoped to the visibility of
+     * the user that created them, so only users that can see all projects and time entries may create or
+     * update (and thereby publish) reports.
+     *
+     * @throws AuthorizationException
+     */
+    private function checkCanExposeOrganizationData(Organization $organization): void
+    {
+        $this->checkPermission($organization, 'projects:view:all');
+        $this->checkPermission($organization, 'time-entries:view:all');
+    }
+
+    /**
      * Get reports
      *
      * @throws AuthorizationException
@@ -77,6 +90,7 @@ class ReportController extends Controller
     public function store(Organization $organization, ReportStoreRequest $request, TimezoneService $timezoneService, ReportService $reportService): DetailedReportResource
     {
         $this->checkPermission($organization, 'reports:create');
+        $this->checkCanExposeOrganizationData($organization);
         $user = $this->user();
 
         $report = new Report;
@@ -136,6 +150,7 @@ class ReportController extends Controller
     public function update(Organization $organization, Report $report, ReportUpdateRequest $request, ReportService $reportService): DetailedReportResource
     {
         $this->checkPermission($organization, 'reports:update', $report);
+        $this->checkCanExposeOrganizationData($organization);
 
         if ($request->has('name')) {
             $report->name = $request->getName();
