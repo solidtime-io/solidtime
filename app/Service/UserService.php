@@ -22,6 +22,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use InvalidArgumentException;
 
 class UserService
@@ -42,7 +43,7 @@ class UserService
     ): User {
         $user = new User;
         $user->name = $name;
-        $user->email = strtolower($email);
+        $user->email = Str::lower($email);
         $user->password = Hash::make($password);
         $user->timezone = $timezone;
         $user->week_start = $weekStart;

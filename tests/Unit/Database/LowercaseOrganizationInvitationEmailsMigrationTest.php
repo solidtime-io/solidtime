@@ -6,8 +6,10 @@ namespace Tests\Unit\Database;
 
 use App\Models\Organization;
 use App\Models\OrganizationInvitation;
+use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCaseWithDatabase;
 
 class LowercaseOrganizationInvitationEmailsMigrationTest extends TestCaseWithDatabase
@@ -98,5 +100,23 @@ class LowercaseOrganizationInvitationEmailsMigrationTest extends TestCaseWithDat
         // Assert
         $this->assertSame('user@email.test', $invitation->refresh()->email);
         $this->assertSame('user@email.test', $otherInvitation->refresh()->email);
+    }
+
+    public function test_lowercases_placeholder_user_emails_but_not_other_user_emails(): void
+    {
+        // Arrange
+        $placeholder = User::factory()->placeholder()->create([
+            'email' => 'Placeholder@Email.test',
+        ]);
+        // Non-placeholder emails are lowercased by an earlier migration, this one must not touch them
+        $user = User::factory()->create();
+        DB::table('users')->where('id', '=', $user->getKey())->update(['email' => 'Real.User@Email.test']);
+
+        // Act
+        $this->runMigration();
+
+        // Assert
+        $this->assertSame('placeholder@email.test', $placeholder->refresh()->email);
+        $this->assertSame('Real.User@Email.test', $user->refresh()->email);
     }
 }
