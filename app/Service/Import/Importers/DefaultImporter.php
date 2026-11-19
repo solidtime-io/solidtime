@@ -211,6 +211,37 @@ abstract class DefaultImporter implements ImporterContract
         }
     }
 
+    /**
+     * @throws ImportException
+     */
+    protected function checkUtf8(string $data, string $fileName = 'The file'): void
+    {
+        if (! mb_check_encoding($data, 'UTF-8')) {
+            throw new ImportException($fileName.' is not UTF-8 encoded, please export or save it as UTF-8 and try again');
+        }
+    }
+
+    /**
+     * Checks the file line by line, so large files are not loaded into memory at once. A line break is a single byte
+     * that never occurs inside a multibyte UTF-8 character, so splitting at line breaks is safe.
+     *
+     * @throws ImportException
+     */
+    protected function checkFileUtf8(string $path, string $fileName): void
+    {
+        $handle = fopen($path, 'rb');
+        if ($handle === false) {
+            throw new ImportException('File "'.$fileName.'" can not be opened');
+        }
+        try {
+            while (($line = fgets($handle)) !== false) {
+                $this->checkUtf8($line, 'File "'.$fileName.'"');
+            }
+        } finally {
+            fclose($handle);
+        }
+    }
+
     #[Override]
     public function getReport(): ReportDto
     {

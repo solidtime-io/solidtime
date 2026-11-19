@@ -318,4 +318,32 @@ class SolidtimeImporterTest extends ImporterTestAbstract
         }
         $this->fail();
     }
+
+    public function test_import_fails_if_csv_file_in_zip_is_not_utf8_encoded(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $timezone = 'Europe/Vienna';
+        $zipPath = $this->createTestZip('solidtime_import_test_1');
+        $zip = new ZipArchive;
+        $zip->open($zipPath);
+        $timeEntries = $zip->getFromName('time_entries.csv');
+        $zip->addFromString('time_entries.csv', $timeEntries."\xE9\n");
+        $zip->close();
+        $importer = new SolidtimeImporter;
+        $importer->init($organization);
+        $data = file_get_contents($zipPath);
+
+        // Act
+        try {
+            $importer->importData($data, $timezone);
+        } catch (ImportException $e) {
+            // Assert
+            $this->assertSame('File "time_entries.csv" is not UTF-8 encoded, please export or save it as UTF-8 and try again', $e->getMessage());
+            $this->assertSame(0, TimeEntry::query()->count());
+
+            return;
+        }
+        $this->fail();
+    }
 }

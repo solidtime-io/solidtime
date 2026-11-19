@@ -53,6 +53,7 @@ class SolidtimeImporter extends DefaultImporter
             if (! file_exists($temporaryDirectory->path('clients.csv'))) {
                 throw new ImportException('File "clients.csv" missing in ZIP');
             }
+            $this->checkFileUtf8($temporaryDirectory->path('clients.csv'), 'clients.csv');
             $clientsReader = Reader::createFromPath($temporaryDirectory->path('clients.csv'));
             $clientsReader->setHeaderOffset(0);
             $clientsReader->setDelimiter(',');
@@ -62,6 +63,7 @@ class SolidtimeImporter extends DefaultImporter
             if (! file_exists($temporaryDirectory->path('members.csv'))) {
                 throw new ImportException('File "members.csv" missing in ZIP');
             }
+            $this->checkFileUtf8($temporaryDirectory->path('members.csv'), 'members.csv');
             $membersReader = Reader::createFromPath($temporaryDirectory->path('members.csv'));
             $membersReader->setHeaderOffset(0);
             $membersReader->setDelimiter(',');
@@ -71,6 +73,7 @@ class SolidtimeImporter extends DefaultImporter
             if (! file_exists($temporaryDirectory->path('organization_invitations.csv'))) {
                 throw new ImportException('File "organization_invitations.csv" missing in ZIP');
             }
+            $this->checkFileUtf8($temporaryDirectory->path('organization_invitations.csv'), 'organization_invitations.csv');
             $organizationInvitationsReader = Reader::createFromPath($temporaryDirectory->path('organization_invitations.csv'));
             $organizationInvitationsReader->setHeaderOffset(0);
             $organizationInvitationsReader->setDelimiter(',');
@@ -80,6 +83,7 @@ class SolidtimeImporter extends DefaultImporter
             if (! file_exists($temporaryDirectory->path('project_members.csv'))) {
                 throw new ImportException('File "project_members.csv" missing in ZIP');
             }
+            $this->checkFileUtf8($temporaryDirectory->path('project_members.csv'), 'project_members.csv');
             $projectMembersReader = Reader::createFromPath($temporaryDirectory->path('project_members.csv'));
             $projectMembersReader->setHeaderOffset(0);
             $projectMembersReader->setDelimiter(',');
@@ -89,6 +93,7 @@ class SolidtimeImporter extends DefaultImporter
             if (! file_exists($temporaryDirectory->path('projects.csv'))) {
                 throw new ImportException('File "projects.csv" missing in ZIP');
             }
+            $this->checkFileUtf8($temporaryDirectory->path('projects.csv'), 'projects.csv');
             $projectsReader = Reader::createFromPath($temporaryDirectory->path('projects.csv'));
             $projectsReader->setHeaderOffset(0);
             $projectsReader->setDelimiter(',');
@@ -98,6 +103,7 @@ class SolidtimeImporter extends DefaultImporter
             if (! file_exists($temporaryDirectory->path('tags.csv'))) {
                 throw new ImportException('File "tags.csv" missing in ZIP');
             }
+            $this->checkFileUtf8($temporaryDirectory->path('tags.csv'), 'tags.csv');
             $tagsReader = Reader::createFromPath($temporaryDirectory->path('tags.csv'));
             $tagsReader->setHeaderOffset(0);
             $tagsReader->setDelimiter(',');
@@ -107,6 +113,7 @@ class SolidtimeImporter extends DefaultImporter
             if (! file_exists($temporaryDirectory->path('tasks.csv'))) {
                 throw new ImportException('File "tasks.csv" missing in ZIP');
             }
+            $this->checkFileUtf8($temporaryDirectory->path('tasks.csv'), 'tasks.csv');
             $tasksReader = Reader::createFromPath($temporaryDirectory->path('tasks.csv'));
             $tasksReader->setHeaderOffset(0);
             $tasksReader->setDelimiter(',');
@@ -116,6 +123,7 @@ class SolidtimeImporter extends DefaultImporter
             if (! file_exists($temporaryDirectory->path('time_entries.csv'))) {
                 throw new ImportException('File "time_entries.csv" missing in ZIP');
             }
+            $this->checkFileUtf8($temporaryDirectory->path('time_entries.csv'), 'time_entries.csv');
             $timeEntriesReader = Reader::createFromPath($temporaryDirectory->path('time_entries.csv'));
             $timeEntriesReader->setHeaderOffset(0);
             $timeEntriesReader->setDelimiter(',');

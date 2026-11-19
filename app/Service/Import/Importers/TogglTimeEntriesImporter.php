@@ -48,6 +48,7 @@ class TogglTimeEntriesImporter extends DefaultImporter
     public function importData(string $data, string $timezone): void
     {
         try {
+            $this->checkUtf8($data);
             $reader = Reader::createFromString($data);
             $reader->setHeaderOffset(0);
             $reader->setDelimiter(',');

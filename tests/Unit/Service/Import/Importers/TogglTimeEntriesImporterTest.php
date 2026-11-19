@@ -144,6 +144,30 @@ class TogglTimeEntriesImporterTest extends ImporterTestAbstract
         $this->fail();
     }
 
+    public function test_import_fails_if_file_is_not_utf8_encoded(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $timezone = 'Europe/Vienna';
+        $importer = new TogglTimeEntriesImporter;
+        $importer->init($organization);
+        // "Caf\xE9" is "Café" encoded as Windows-1252 / ISO-8859-1
+        $data = "User,Email,Client,Project,Task,Description,Billable,Start date,Start time,End date,End time,Duration,Tags,Amount (EUR)\n".
+            "Peter Tester,peter.test@email.test,,Project without Client,,\"Caf\xE9\",No,2024-03-04,10:23:52,2024-03-04,11:23:52,01:00:00,\"\",";
+
+        // Act
+        try {
+            $importer->importData($data, $timezone);
+        } catch (ImportException $e) {
+            // Assert
+            $this->assertSame('The file is not UTF-8 encoded, please export or save it as UTF-8 and try again', $e->getMessage());
+            $this->assertSame(0, TimeEntry::query()->count());
+
+            return;
+        }
+        $this->fail();
+    }
+
     public function test_import_drops_billable_flags_and_rates_if_organization_can_not_use_billable_rates(): void
     {
         // Arrange
