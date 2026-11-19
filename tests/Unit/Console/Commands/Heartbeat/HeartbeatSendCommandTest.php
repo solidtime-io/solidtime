@@ -11,9 +11,11 @@ use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
 use PHPUnit\Framework\Attributes\CoversClass;
 use Tests\TestCase;
+use TiMacDonald\Log\LogEntry;
 
 #[CoversClass(HeartbeatSendCommand::class)]
 class HeartbeatSendCommandTest extends TestCase
@@ -25,6 +27,7 @@ class HeartbeatSendCommandTest extends TestCase
         config([
             'heartbeat.scheduler_url' => 'https://monitor.example.com/scheduler',
             'heartbeat.queue_url' => 'https://monitor.example.com/queue',
+            'queue.default' => 'database',
         ]);
         Http::fake([
             'https://monitor.example.com/scheduler' => Http::response('OK', 200),
@@ -69,6 +72,7 @@ class HeartbeatSendCommandTest extends TestCase
         config([
             'heartbeat.scheduler_url' => null,
             'heartbeat.queue_url' => 'https://monitor.example.com/queue',
+            'queue.default' => 'database',
         ]);
         Http::fake();
         Queue::fake();
@@ -107,6 +111,7 @@ class HeartbeatSendCommandTest extends TestCase
         config([
             'heartbeat.scheduler_url' => 'https://monitor.example.com/scheduler',
             'heartbeat.queue_url' => 'https://monitor.example.com/queue',
+            'queue.default' => 'database',
         ]);
         Http::fake([
             'https://monitor.example.com/scheduler' => Http::response(null, 500),
@@ -140,5 +145,33 @@ class HeartbeatSendCommandTest extends TestCase
 
         // Assert
         $this->assertSame(Command::SUCCESS, $exitCode);
+    }
+
+    public function test_skips_queue_heartbeat_if_queue_connection_uses_sync_driver(): void
+    {
+        // Arrange
+        config([
+            'heartbeat.scheduler_url' => 'https://monitor.example.com/scheduler',
+            'heartbeat.queue_url' => 'https://monitor.example.com/queue',
+            'queue.default' => 'sync',
+        ]);
+        Http::fake([
+            'https://monitor.example.com/scheduler' => Http::response('OK', 200),
+        ]);
+        Queue::fake();
+
+        // Act
+        $exitCode = $this->withoutMockingConsoleOutput()->artisan('heartbeat:send');
+
+        // Assert
+        $this->assertSame(Command::SUCCESS, $exitCode);
+        Http::assertSentCount(1);
+        Http::assertSent(fn (Request $request): bool => $request->url() === 'https://monitor.example.com/scheduler');
+        Queue::assertNotPushed(HeartbeatQueueJob::class);
+        Log::assertLoggedTimes(fn (LogEntry $log): bool => $log->level === 'warning'
+            && $log->message === 'Skipped queue heartbeat, because the queue connection uses the sync driver'
+            && $log->context === ['queue_connection' => 'sync'],
+            1
+        );
     }
 }

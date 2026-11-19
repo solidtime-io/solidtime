@@ -50,7 +50,8 @@ class HeartbeatSendCommand extends Command
 
         if ($schedulerUrl !== null) {
             try {
-                Http::timeout((int) config('heartbeat.timeout', 5))
+                Http::timeout((int) config('heartbeat.timeout'))
+                    ->connectTimeout(2)
                     ->get($schedulerUrl)
                     ->throw();
                 $this->info('Scheduler heartbeat sent.');
@@ -63,8 +64,17 @@ class HeartbeatSendCommand extends Command
         }
 
         if ($queueUrl !== null) {
-            HeartbeatQueueJob::dispatch(Carbon::now()->getTimestampMs());
-            $this->info('Queue heartbeat job dispatched.');
+            $queueConnection = config('queue.default');
+            if (config('queue.connections.'.$queueConnection.'.driver') === 'sync') {
+                // With the sync driver the job would run inline in the scheduler, so the heartbeat would not prove that a queue worker is running.
+                Log::warning('Skipped queue heartbeat, because the queue connection uses the sync driver', [
+                    'queue_connection' => $queueConnection,
+                ]);
+                $this->warn('Skipped queue heartbeat, because the queue connection uses the sync driver.');
+            } else {
+                HeartbeatQueueJob::dispatch(Carbon::now()->getTimestampMs());
+                $this->info('Queue heartbeat job dispatched.');
+            }
         }
 
         return self::SUCCESS;
