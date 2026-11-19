@@ -634,8 +634,25 @@ export async function createPlaceholderMemberViaImportApi(
             },
         }
     );
-    expect(response.status()).toBe(200);
-    return await response.json();
+    expect(response.status()).toBe(202);
+    const body = await response.json();
+    const importId = body.data.id;
+
+    // Imports are processed in the background, wait until it is finished
+    await expect
+        .poll(
+            async () => {
+                const statusResponse = await ctx.request.get(
+                    `${PLAYWRIGHT_BASE_URL}/api/v1/organizations/${ctx.orgId}/imports/${importId}`
+                );
+                expect(statusResponse.status()).toBe(200);
+                return (await statusResponse.json()).data.status;
+            },
+            { timeout: 15000 }
+        )
+        .toBe('completed');
+
+    return body;
 }
 
 // ──────────────────────────────────────────────────

@@ -16,6 +16,7 @@ use RuntimeException;
 use Tests\TestCaseWithDatabase;
 
 #[CoversClass(ProcessImport::class)]
+#[CoversClass(ImportStatus::class)]
 class ProcessImportTest extends TestCaseWithDatabase
 {
     public function test_job_processes_import_via_import_service(): void

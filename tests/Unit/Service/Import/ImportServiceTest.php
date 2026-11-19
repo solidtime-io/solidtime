@@ -11,9 +11,11 @@ use App\Models\Import;
 use App\Models\Organization;
 use App\Models\TimeEntry;
 use App\Models\User;
+use App\Service\ErrorDetailsFormatter;
 use App\Service\Import\Importers\ImporterContract;
 use App\Service\Import\Importers\ImporterProvider;
 use App\Service\Import\Importers\ImportException;
+use App\Service\Import\Importers\ReportDto;
 use App\Service\Import\ImportService;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -28,6 +30,8 @@ use Tests\TestCase;
 
 #[CoversClass(ImportService::class)]
 #[CoversClass(ImporterProvider::class)]
+#[CoversClass(ErrorDetailsFormatter::class)]
+#[CoversClass(ReportDto::class)]
 class ImportServiceTest extends TestCase
 {
     use RefreshDatabase;

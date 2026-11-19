@@ -16,6 +16,7 @@ use RuntimeException;
 use Tests\TestCaseWithDatabase;
 
 #[CoversClass(ProcessExport::class)]
+#[CoversClass(ExportStatus::class)]
 class ProcessExportTest extends TestCaseWithDatabase
 {
     public function test_job_processes_export_via_export_service(): void

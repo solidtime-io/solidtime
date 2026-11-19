@@ -19,6 +19,7 @@ use App\Models\Tag;
 use App\Models\Task;
 use App\Models\TimeEntry;
 use App\Models\User;
+use App\Service\ErrorDetailsFormatter;
 use App\Service\Export\ExportException;
 use App\Service\Export\ExportService;
 use Illuminate\Database\UniqueConstraintViolationException;
@@ -32,6 +33,7 @@ use Tests\TestCaseWithDatabase;
 use ZipArchive;
 
 #[CoversClass(ExportService::class)]
+#[CoversClass(ErrorDetailsFormatter::class)]
 class ExportServiceTest extends TestCaseWithDatabase
 {
     private function getFullOrganization(): Organization
