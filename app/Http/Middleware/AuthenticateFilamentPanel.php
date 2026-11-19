@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Http\Middleware;
 
 use Filament\Http\Middleware\Authenticate as Middleware;
-use Illuminate\Http\Request;
 
 class AuthenticateFilamentPanel extends Middleware
 {
