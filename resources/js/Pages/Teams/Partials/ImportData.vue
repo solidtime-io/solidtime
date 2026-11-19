@@ -197,6 +197,14 @@ const showResultModal = ref(false);
                 <span class="text-text-primary font-semibold">Time entries created:</span>
                 {{ reportResult?.time_entries.created }}
             </div>
+            <div
+                v-if="reportResult && reportResult.time_entries.skipped > 0"
+                class="py-2.5 px-3 border-t border-t-card-background-separator">
+                <span class="text-text-primary font-semibold"
+                    >Time entries skipped (already existed):</span
+                >
+                {{ reportResult.time_entries.skipped }}
+            </div>
         </template>
         <template #footer>
             <SecondaryButton @click="showResultModal = false"> Close </SecondaryButton>

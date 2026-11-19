@@ -69,7 +69,9 @@ const ImportResource = z
                     clients: z.object({ created: z.number().int() }).passthrough(),
                     projects: z.object({ created: z.number().int() }).passthrough(),
                     tasks: z.object({ created: z.number().int() }).passthrough(),
-                    time_entries: z.object({ created: z.number().int() }).passthrough(),
+                    time_entries: z
+                        .object({ created: z.number().int(), skipped: z.number().int() })
+                        .passthrough(),
                     tags: z.object({ created: z.number().int() }).passthrough(),
                     users: z.object({ created: z.number().int() }).passthrough(),
                 })

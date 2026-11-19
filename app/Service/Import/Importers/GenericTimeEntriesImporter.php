@@ -166,6 +166,9 @@ class GenericTimeEntriesImporter extends DefaultImporter
                     $member,
                     $this->organization
                 );
+                if ($this->skipIfAlreadyExists($timeEntry)) {
+                    continue;
+                }
                 $timeEntry->save();
                 $this->timeEntriesCreated++;
             }

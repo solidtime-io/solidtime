@@ -176,14 +176,10 @@ class ImporterTestAbstract extends TestCase
     /**
      * @param  object{user1: User, project1: Project, project2: Project, tag1: Tag, tag2: Tag}  $testScenario
      */
-    protected function checkTimeEntries(object $testScenario, bool $secondRun = false, bool $billableDefault = false): void
+    protected function checkTimeEntries(object $testScenario, bool $billableDefault = false): void
     {
         $timeEntries = TimeEntry::all();
-        if ($secondRun) {
-            $this->assertCount(4, $timeEntries);
-        } else {
-            $this->assertCount(2, $timeEntries);
-        }
+        $this->assertCount(2, $timeEntries);
         $timeEntry1 = $timeEntries->firstWhere('description', '');
         $this->assertNotNull($timeEntry1);
         $this->assertSame('', $timeEntry1->description);

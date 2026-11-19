@@ -14,16 +14,19 @@ class ReportDto
 
     public int $timeEntriesCreated;
 
+    public int $timeEntriesSkipped;
+
     public int $tagsCreated;
 
     public int $usersCreated;
 
-    public function __construct(int $clientsCreated, int $projectsCreated, int $tasksCreated, int $timeEntriesCreated, int $tagsCreated, int $usersCreated)
+    public function __construct(int $clientsCreated, int $projectsCreated, int $tasksCreated, int $timeEntriesCreated, int $timeEntriesSkipped, int $tagsCreated, int $usersCreated)
     {
         $this->clientsCreated = $clientsCreated;
         $this->projectsCreated = $projectsCreated;
         $this->tasksCreated = $tasksCreated;
         $this->timeEntriesCreated = $timeEntriesCreated;
+        $this->timeEntriesSkipped = $timeEntriesSkipped;
         $this->tagsCreated = $tagsCreated;
         $this->usersCreated = $usersCreated;
     }
@@ -47,6 +50,7 @@ class ReportDto
      *    },
      *    time_entries: array{
      *       created: int,
+     *       skipped: int,
      *    },
      *    tags: array{
      *       created: int,
@@ -70,6 +74,7 @@ class ReportDto
             ],
             'time_entries' => [
                 'created' => $this->timeEntriesCreated,
+                'skipped' => $this->timeEntriesSkipped,
             ],
             'tags' => [
                 'created' => $this->tagsCreated,
