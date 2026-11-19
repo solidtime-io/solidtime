@@ -932,6 +932,7 @@ class TimeEntryController extends Controller
     {
         $this->checkAnyPermission($organization, ['time-entries:delete:all', 'time-entries:delete:own']);
         $canDeleteAll = $this->hasPermission($organization, 'time-entries:delete:all');
+        $member = $canDeleteAll ? null : $this->member($organization);
 
         $ids = $request->validated('ids');
         $timeEntries = TimeEntry::query()
@@ -956,7 +957,7 @@ class TimeEntryController extends Controller
                 continue;
             }
 
-            if (! $canDeleteAll && $timeEntry->member_id !== $this->member($organization)->getKey()) {
+            if ($member !== null && $timeEntry->member_id !== $member->getKey()) {
                 $error->push($id);
 
                 continue;
