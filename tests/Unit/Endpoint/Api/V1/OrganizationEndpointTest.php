@@ -649,4 +649,24 @@ class OrganizationEndpointTest extends ApiEndpointTestAbstract
         $response->assertOk();
         $response->assertJsonPath('data.can_use_billable_rates', false);
     }
+
+    public function test_delete_endpoint_fails_for_passwordless_user(): void
+    {
+        // Arrange
+        $data = $this->createUserWithPermission([
+            'organizations:delete',
+        ]);
+        $data->user->forceFill(['password' => null])->save();
+        Passport::actingAs($data->user);
+
+        // Act
+        $response = $this->deleteJson(route('api.v1.organizations.destroy', [$data->organization->getKey()]));
+
+        // Assert
+        $response->assertUnprocessable();
+        $response->assertJsonValidationErrors(['password']);
+        $this->assertDatabaseHas(Organization::class, [
+            'id' => $data->organization->getKey(),
+        ]);
+    }
 }

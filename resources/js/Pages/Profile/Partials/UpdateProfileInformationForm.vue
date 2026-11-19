@@ -250,11 +250,19 @@ onBeforeUnmount(() => {
                     type="email"
                     class="block w-full"
                     required
-                    :disabled="!isUserLoaded"
+                    :disabled="!user?.can_change_email"
                     autocomplete="username" />
                 <FieldError v-if="fieldErrors.email">{{ fieldErrors.email }}</FieldError>
+                <!-- The email is managed elsewhere, e.g. by the organization's identity provider. -->
+                <p
+                    v-if="user && !user.can_change_email"
+                    class="mt-2 text-sm text-text-secondary"
+                    data-testid="email_change_locked">
+                    Your email address comes from the identity provider you sign in with. Changes
+                    there are taken over on your next sign-in.
+                </p>
 
-                <div v-if="pendingEmail" class="mt-2 text-sm">
+                <div v-else-if="pendingEmail" class="mt-2 text-sm">
                     <p class="text-text-primary">
                         A verification link was sent to
                         <span class="font-medium">{{ pendingEmail }}</span

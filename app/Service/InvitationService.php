@@ -79,6 +79,7 @@ class InvitationService
         $invitations = OrganizationInvitation::query()
             ->whereRaw('lower(email) = ?', [Str::lower($user->email)])
             ->whereNotNull('accepted_at')
+            ->with('organization')
             ->get();
 
         foreach ($invitations as $invitation) {

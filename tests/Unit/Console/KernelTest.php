@@ -111,4 +111,41 @@ class KernelTest extends TestCase
         // Assert
         $this->assertCount(0, $events);
     }
+
+    public function test_heartbeat_runs_every_minute_if_a_heartbeat_url_is_configured(): void
+    {
+        // Arrange
+        config([
+            'heartbeat.scheduler_url' => null,
+            'heartbeat.queue_url' => 'https://monitor.example.com/queue',
+        ]);
+
+        // Act
+        $schedule = app()->make(Kernel::class)->resolveConsoleSchedule();
+        $events = collect($schedule->events())->filter(fn ($event) => str_contains($event->command, 'heartbeat:send'))->values();
+
+        // Assert
+        $this->assertCount(1, $events);
+        $this->assertSame('* * * * *', $events[0]->expression);
+        $this->assertTrue($events[0]->onOneServer);
+        $this->assertFalse($events[0]->withoutOverlapping);
+        $this->assertTrue($events[0]->filtersPass(app()));
+    }
+
+    public function test_heartbeat_does_not_run_if_no_heartbeat_url_is_configured(): void
+    {
+        // Arrange
+        config([
+            'heartbeat.scheduler_url' => null,
+            'heartbeat.queue_url' => null,
+        ]);
+
+        // Act
+        $schedule = app()->make(Kernel::class)->resolveConsoleSchedule();
+        $events = collect($schedule->events())->filter(fn ($event) => str_contains($event->command, 'heartbeat:send'))->values();
+
+        // Assert
+        $this->assertCount(1, $events);
+        $this->assertFalse($events[0]->filtersPass(app()));
+    }
 }

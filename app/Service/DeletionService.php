@@ -6,6 +6,7 @@ namespace App\Service;
 
 use App\Enums\Role;
 use App\Events\BeforeOrganizationDeletion;
+use App\Events\BeforeUserDeletion;
 use App\Exceptions\Api\CanNotDeleteUserWhoIsOwnerOfOrganizationWithMultipleMembers;
 use App\Models\Client;
 use App\Models\Goal;
@@ -163,6 +164,8 @@ class DeletionService
                 throw new CanNotDeleteUserWhoIsOwnerOfOrganizationWithMultipleMembers;
             }
         }
+
+        BeforeUserDeletion::dispatch($user);
 
         /** @var Member $member */
         foreach ($members as $member) {

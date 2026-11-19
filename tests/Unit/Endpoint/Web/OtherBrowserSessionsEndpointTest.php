@@ -6,8 +6,10 @@ namespace Tests\Unit\Endpoint\Web;
 
 use App\Http\Controllers\Web\OtherBrowserSessionsController;
 use App\Models\User;
+use App\Service\AuthenticationContract;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 
 #[CoversClass(OtherBrowserSessionsController::class)]
@@ -99,5 +101,66 @@ class OtherBrowserSessionsEndpointTest extends EndpointTestAbstract
         // The current user's other sessions are removed, while another user's session is untouched.
         $this->assertDatabaseMissing('sessions', ['id' => 'other-session-of-current-user']);
         $this->assertDatabaseHas('sessions', ['id' => 'session-of-another-user']);
+    }
+
+    private function seedOtherSession(User $user, string $id = 'other-session'): void
+    {
+        DB::table('sessions')->insert([
+            'id' => $id,
+            'user_id' => $user->getKey(),
+            'ip_address' => '192.0.2.10',
+            'user_agent' => '',
+            'payload' => '',
+            'last_activity' => now()->timestamp,
+        ]);
+    }
+
+    public function test_passwordless_user_can_revoke_other_sessions_without_confirming(): void
+    {
+        config(['session.driver' => 'database']);
+        $user = User::factory()->create(['password' => null]);
+        $otherUser = User::factory()->create();
+        $this->actingAs($user)->withSession(['current-session' => true]);
+        $currentId = app('session.store')->getId();
+        $this->withCookie(config('session.cookie'), $currentId);
+        $this->seedOtherSession($user, $currentId);
+        $this->seedOtherSession($user);
+        $this->seedOtherSession($otherUser, 'unrelated-session');
+
+        $response = $this->delete('/user/other-browser-sessions');
+
+        $response->assertRedirect()->assertSessionHasNoErrors();
+        $this->assertAuthenticatedAs($user);
+        $this->assertDatabaseHas('sessions', ['id' => $currentId]);
+        $this->assertDatabaseHas('sessions', ['id' => 'unrelated-session']);
+        $this->assertDatabaseMissing('sessions', ['id' => 'other-session']);
+        $this->assertNull($user->fresh()->password);
+    }
+
+    public function test_user_with_a_disallowed_local_password_revokes_other_sessions_without_confirming(): void
+    {
+        config(['session.driver' => 'database']);
+        $user = User::factory()->create();
+        $originalPasswordHash = $user->password;
+        $this->actingAs($user);
+        $this->seedOtherSession($user);
+        $this->partialMock(AuthenticationContract::class, function (MockInterface $mock): void {
+            $mock->shouldReceive('isPasswordLoginAllowed')->andReturn(false);
+        });
+
+        $this->delete('/user/other-browser-sessions')->assertRedirect()->assertSessionHasNoErrors();
+
+        $this->assertDatabaseMissing('sessions', ['id' => 'other-session']);
+        // The password they may not use is not rehashed with whatever they entered
+        $this->assertSame($originalPasswordHash, $user->fresh()->password);
+    }
+
+    public function test_passwordless_logout_does_not_report_success_for_unsupported_session_storage(): void
+    {
+        config(['session.driver' => 'array']);
+        $user = User::factory()->create(['password' => null]);
+        $this->actingAs($user);
+
+        $this->delete('/user/other-browser-sessions')->assertSessionHasErrors('password');
     }
 }

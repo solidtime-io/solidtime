@@ -9,9 +9,11 @@ use App\Enums\Weekday;
 use App\Models\Concerns\CustomAuditable;
 use App\Models\Concerns\HasUuids;
 use App\Models\Passport\Token;
+use App\Service\AuthenticationContract;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
+use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -24,6 +26,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Passport\AuthCode;
 use Laravel\Passport\Contracts\OAuthenticatable;
@@ -160,11 +163,34 @@ class User extends Authenticatable implements AuditableContract, FilamentUser, M
         return 'https://ui-avatars.com/api/?name='.urlencode($name).'&color=7F9CF5&background=EBF4FF';
     }
 
-    public function canAccessPanel(Panel $panel): bool
+    public function isSuperAdmin(): bool
     {
         return $this->is_placeholder === false
-            && in_array($this->email, config('auth.super_admins', []), true)
+            && in_array(Str::lower($this->email), config()->array('auth.super_admins'), true)
             && $this->hasVerifiedEmail();
+    }
+
+    /**
+     * Sends the reset link, unless the user may not use a password. The unsent token stays, so Fortify throttles
+     * them like everyone else and doesn't reveal SSO-only accounts; ResetUserPassword refuses it anyway.
+     */
+    public function sendPasswordResetNotification(#[\SensitiveParameter] $token): void
+    {
+        if (! app(AuthenticationContract::class)->isPasswordLoginAllowed($this)) {
+            return;
+        }
+
+        $this->notify(new ResetPassword($token));
+    }
+
+    public function hasLocalPassword(): bool
+    {
+        return is_string($this->password) && $this->password !== '';
+    }
+
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return $this->isSuperAdmin();
     }
 
     public function isMemberOfOrganization(Organization $organization): bool

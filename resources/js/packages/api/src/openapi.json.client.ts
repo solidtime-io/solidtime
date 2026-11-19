@@ -37,7 +37,11 @@ const ClientStoreRequest = z.object({ name: z.string().min(1).max(255) }).passth
 const ClientUpdateRequest = z
     .object({ name: z.string().min(1).max(255), is_archived: z.boolean().optional() })
     .passthrough();
-const DestroyWithPasswordRequest = z.object({ password: z.string() }).passthrough();
+const DestroyWithPasswordRequest = z
+    .object({
+        password: z.string().nullish(),
+    })
+    .passthrough();
 const ImportRequest = z.object({ type: z.string(), data: z.string() }).passthrough();
 const InvitationResource = z
     .object({ id: z.string(), email: z.string(), role: z.string() })
@@ -106,6 +110,7 @@ const InvoiceStoreRequest = z
     .object({
         due_at: z.union([z.string(), z.null()]).optional(),
         paid_date: z.union([z.string(), z.null()]).optional(),
+        seller_logo: z.union([z.string(), z.null()]).optional(),
         seller_name: z.string(),
         seller_vatin: z.union([z.string(), z.null()]).optional(),
         seller_address_line_1: z.union([z.string(), z.null()]).optional(),
@@ -173,6 +178,7 @@ const DetailedInvoiceResource = z
         seller_address_country: z.string(),
         seller_phone: z.string(),
         seller_email: z.string(),
+        seller_logo_url: z.union([z.string(), z.null()]),
         recipient: InvoiceRecipientResource,
         paid_date: z.string(),
         due_at: z.string(),
@@ -200,6 +206,7 @@ const InvoiceUpdateRequest = z
         status: InvoiceStatus,
         due_at: z.union([z.string(), z.null()]),
         paid_date: z.union([z.string(), z.null()]),
+        seller_logo: z.union([z.string(), z.null()]),
         seller_name: z.string(),
         seller_vatin: z.union([z.string(), z.null()]),
         seller_address_line_1: z.union([z.string(), z.null()]),
@@ -255,6 +262,7 @@ const InvoiceSettingResource = z
         notes_default: z.union([z.string(), z.null()]),
         tax_rate_default: z.union([z.number(), z.null()]),
         e_invoicing_enabled: z.boolean(),
+        logo_url: z.union([z.string(), z.null()]),
         organization_id: z.string(),
     })
     .passthrough();
@@ -274,6 +282,7 @@ const InvoiceSettingUpdateRequest = z
         notes_default: z.union([z.string(), z.null()]),
         tax_rate_default: z.union([z.number(), z.null()]),
         e_invoicing_enabled: z.boolean(),
+        logo: z.union([z.string(), z.null()]),
     })
     .partial()
     .passthrough();
@@ -800,6 +809,8 @@ const UserResource = z
         timezone: z.string(),
         week_start: Weekday,
         send_time_entry_still_running_email: z.boolean(),
+        confirms_with_password: z.boolean(),
+        can_change_email: z.boolean(),
     })
     .passthrough();
 const UserUpdateRequest = z

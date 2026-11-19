@@ -1,18 +1,22 @@
 {
     "Billing": {
         "repository": "solidtime-io/extension-billing",
-        "ref": "v0.0.15"
+        "ref": "v0.0.16"
     },
     "Services": {
         "repository": "solidtime-io/extension-services",
-        "ref": "v0.0.8"
+        "ref": "v0.0.10"
     },
     "Invoicing": {
         "repository": "solidtime-io/extension-invoicing",
-        "ref": "v0.0.13"
+        "ref": "v0.0.15"
     },
     "Auditing": {
         "repository": "solidtime-io/extension-auditing",
         "ref": "v0.0.5"
+    },
+    "SSO": {
+        "repository": "solidtime-io/extension-sso",
+        "ref": "v0.0.1"
     }
 }

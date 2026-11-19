@@ -4,18 +4,19 @@ import { useForm } from '@inertiajs/vue3';
 import ActionMessage from '@/Components/ActionMessage.vue';
 import ActionSection from '@/Components/ActionSection.vue';
 import DialogModal from '@/packages/ui/src/DialogModal.vue';
-import { Field, FieldError } from '@/packages/ui/src/field';
+import { FieldError } from '@/packages/ui/src/field';
+import IdentityConfirmationInput from '@/Components/Common/IdentityConfirmation/IdentityConfirmationInput.vue';
 import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
 import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
-import TextInput from '@/packages/ui/src/Input/TextInput.vue';
 import type { Session } from '@/types/jetstream';
 
-defineProps<{
+const props = defineProps<{
     sessions: Session[];
+    confirmsWithPassword: boolean;
 }>();
 
 const confirmingLogout = ref(false);
-const passwordInput = ref<HTMLElement | null>(null);
+const confirmationInput = ref<InstanceType<typeof IdentityConfirmationInput> | null>(null);
 
 const form = useForm({
     password: '',
@@ -23,23 +24,27 @@ const form = useForm({
 
 const confirmLogout = () => {
     confirmingLogout.value = true;
-
-    setTimeout(() => passwordInput.value?.focus(), 250);
+    setTimeout(() => confirmationInput.value?.focus(), 250);
 };
 
 const logoutOtherBrowserSessions = () => {
-    form.delete(route('other-browser-sessions.destroy'), {
-        preserveScroll: true,
-        onSuccess: () => closeModal(),
-        onError: () => passwordInput.value?.focus(),
-        onFinish: () => form.reset(),
-    });
+    if (form.processing) return;
+    // Users without a password log out other sessions without confirming, see OtherBrowserSessionsController.
+    form.transform(() => (props.confirmsWithPassword ? { password: form.password } : {})).delete(
+        route('other-browser-sessions.destroy'),
+        {
+            preserveScroll: true,
+            onSuccess: () => closeModal(),
+            onError: () => confirmationInput.value?.focus(),
+            onFinish: () => form.reset(),
+        }
+    );
 };
 
 const closeModal = () => {
     confirmingLogout.value = false;
-
     form.reset();
+    form.clearErrors();
 };
 </script>
 
@@ -55,8 +60,11 @@ const closeModal = () => {
             <div class="max-w-xl text-sm text-text-secondary">
                 If necessary, you may log out of all of your other browser sessions across all of
                 your devices. Some of your recent sessions are listed below; however, this list may
-                not be exhaustive. If you feel your account has been compromised, you should also
-                update your password.
+                not be exhaustive.
+                <template v-if="confirmsWithPassword">
+                    If you feel your account has been compromised, you should also update your
+                    password.
+                </template>
             </div>
 
             <!-- Other Browser Sessions -->
@@ -128,23 +136,21 @@ const closeModal = () => {
                 <template #title> Log Out Other Browser Sessions </template>
 
                 <template #content>
-                    Please enter your password to confirm you would like to log out of your other
-                    browser sessions across all of your devices.
+                    Log out of your other browser sessions across all of your devices.
+                    <template v-if="confirmsWithPassword"
+                        >Please enter your password to confirm.</template
+                    >
 
-                    <Field class="mt-4">
-                        <TextInput
-                            ref="passwordInput"
-                            v-model="form.password"
-                            type="password"
-                            class="block w-3/4"
-                            placeholder="Password"
-                            autocomplete="current-password"
-                            @keyup.enter="logoutOtherBrowserSessions" />
-
-                        <FieldError v-if="form.errors.password">{{
-                            form.errors.password
-                        }}</FieldError>
-                    </Field>
+                    <IdentityConfirmationInput
+                        v-if="confirmsWithPassword"
+                        ref="confirmationInput"
+                        v-model:password="form.password"
+                        :confirms-with-password="confirmsWithPassword"
+                        :error="form.errors.password ?? ''"
+                        @submit="logoutOtherBrowserSessions" />
+                    <FieldError v-else-if="form.errors.password" class="mt-4">{{
+                        form.errors.password
+                    }}</FieldError>
                 </template>
 
                 <template #footer>

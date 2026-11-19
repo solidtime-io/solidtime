@@ -11,14 +11,18 @@ import OrganizationTimeEntrySettings from '@/Pages/Teams/Partials/OrganizationTi
 import OrganizationTrial from '@/Pages/Teams/Partials/OrganizationTrial.vue';
 import { isBillingActivated, isInTrial } from '@/utils/billing';
 import { canManageBilling } from '@/utils/permissions';
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useOrganizationStore } from '@/utils/useOrganization';
 import { storeToRefs } from 'pinia';
+import { useUserQuery } from '@/utils/useUserQuery';
 
 defineProps<{
     team: Organization;
     permissions: Permissions;
 }>();
+
+const { user } = useUserQuery();
+const confirmsWithPassword = computed(() => user.value?.confirms_with_password ?? false);
 
 const loading = ref(true);
 const orgStore = useOrganizationStore();
@@ -62,7 +66,10 @@ onMounted(async () => {
 
                     <template v-if="permissions.canDeleteTeam">
                         <SectionBorder />
-                        <DeleteTeamForm class="mt-10 sm:mt-0" :team="team" />
+                        <DeleteTeamForm
+                            class="mt-10 sm:mt-0"
+                            :team="team"
+                            :confirms-with-password="confirmsWithPassword" />
                     </template>
                 </template>
             </div>
