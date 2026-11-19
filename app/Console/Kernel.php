@@ -51,8 +51,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('heartbeat:send')
             ->when(fn (): bool => filled(config('heartbeat.scheduler_url')) || filled(config('heartbeat.queue_url')))
             ->everyMinute()
-            ->onOneServer()
-            ->withoutOverlapping();
+            ->onOneServer();
     }
 
     /**

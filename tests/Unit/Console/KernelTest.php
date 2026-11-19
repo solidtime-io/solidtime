@@ -128,6 +128,7 @@ class KernelTest extends TestCase
         $this->assertCount(1, $events);
         $this->assertSame('* * * * *', $events[0]->expression);
         $this->assertTrue($events[0]->onOneServer);
+        $this->assertFalse($events[0]->withoutOverlapping);
         $this->assertTrue($events[0]->filtersPass(app()));
     }
 

@@ -16,6 +16,9 @@ return [
     | The queue URL may contain the placeholder "{latency_ms}", which is replaced
     | with the time in milliseconds between dispatching and executing the job.
     |
+    | The queue heartbeat is skipped if the queue connection uses the "sync"
+    | driver, since there is no queue worker to monitor in that case.
+    |
     */
 
     'scheduler_url' => env('HEARTBEAT_SCHEDULER_URL'),
@@ -24,6 +27,8 @@ return [
 
     /*
     | Timeout in seconds for the HTTP request to the heartbeat URLs.
+    | An empty or zero value falls back to the default, since a timeout of 0
+    | would disable the timeout.
     */
-    'timeout' => (int) env('HEARTBEAT_TIMEOUT', 5),
+    'timeout' => max(1, (int) (env('HEARTBEAT_TIMEOUT') ?: 5)),
 ];

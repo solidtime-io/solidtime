@@ -45,7 +45,8 @@ class HeartbeatQueueJob implements ShouldQueue
         $url = str_replace('{latency_ms}', (string) $latencyMs, $queueUrl);
 
         try {
-            Http::timeout((int) config('heartbeat.timeout', 5))
+            Http::timeout((int) config('heartbeat.timeout'))
+                ->connectTimeout(2)
                 ->get($url)
                 ->throw();
         } catch (Throwable $exception) {
