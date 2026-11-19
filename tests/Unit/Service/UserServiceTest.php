@@ -61,6 +61,15 @@ class UserServiceTest extends TestCase
         Event::assertNotDispatched(Verified::class);
     }
 
+    public function test_create_user_lowercases_non_ascii_characters_in_email(): void
+    {
+        // Act
+        $user = $this->userService->createUser('Test User', 'Ünal@Example.test', 'password', 'Europe/Vienna', Weekday::Monday, 'EUR');
+
+        // Assert
+        $this->assertSame('ünal@example.test', $user->email);
+    }
+
     public function test_assign_organization_entities_to_different_user(): void
     {
         // Arrange

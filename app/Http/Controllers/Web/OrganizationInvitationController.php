@@ -10,13 +10,14 @@ use App\Models\User;
 use App\Service\MemberService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use RuntimeException;
 
 class OrganizationInvitationController extends Controller
 {
     public function accept(OrganizationInvitation $invitation, MemberService $memberService): RedirectResponse
     {
-        $email = strtolower($invitation->email);
+        $email = Str::lower($invitation->email);
         $role = Role::tryFrom($invitation->role);
         if ($role === null || $role === Role::Owner || $role === Role::Placeholder) {
             throw new RuntimeException('Invalid role');

@@ -16,13 +16,14 @@ use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
 class InvitationService
 {
     public function hasAcceptedInvitationForEmail(string $email): bool
     {
         return OrganizationInvitation::query()
-            ->whereRaw('lower(email) = ?', [strtolower($email)])
+            ->whereRaw('lower(email) = ?', [Str::lower($email)])
             ->whereNotNull('accepted_at')
             ->exists();
     }
@@ -30,7 +31,7 @@ class InvitationService
     public function hasPendingInvitationForEmail(string $email): bool
     {
         return OrganizationInvitation::query()
-            ->whereRaw('lower(email) = ?', [strtolower($email)])
+            ->whereRaw('lower(email) = ?', [Str::lower($email)])
             ->whereNull('accepted_at')
             ->exists();
     }
@@ -42,14 +43,14 @@ class InvitationService
     {
         // Normalize the email so it matches how user emails are stored (see UserService::createUser),
         // otherwise a mixed-case invite silently fails to link on registration.
-        $email = strtolower($email);
+        $email = Str::lower($email);
 
         if (app(MemberService::class)->isEmailAlreadyMember($organization, $email)) {
             throw new UserIsAlreadyMemberOfOrganizationApiException;
         }
 
         if (OrganizationInvitation::query()
-            ->where('email', $email)
+            ->whereRaw('lower(email) = ?', [$email])
             ->whereBelongsTo($organization, 'organization')
             ->exists()) {
             throw new InvitationForTheEmailAlreadyExistsApiException;
@@ -76,7 +77,7 @@ class InvitationService
         $organizations = new Collection;
 
         $invitations = OrganizationInvitation::query()
-            ->whereRaw('lower(email) = ?', [strtolower($user->email)])
+            ->whereRaw('lower(email) = ?', [Str::lower($user->email)])
             ->whereNotNull('accepted_at')
             ->with('organization')
             ->get();

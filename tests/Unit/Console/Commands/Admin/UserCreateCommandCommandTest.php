@@ -115,4 +115,54 @@ class UserCreateCommandCommandTest extends TestCaseWithDatabase
         $this->assertNotNull($user->password);
         $this->assertTrue(Hash::check('password', $user->password));
     }
+
+    public function test_it_stores_email_lowercased(): void
+    {
+        // Act
+        $exitCode = $this->withoutMockingConsoleOutput()->artisan('admin:user:create', [
+            'name' => 'Test User',
+            'email' => 'Mail@TestUser.test',
+        ]);
+
+        // Assert
+        $this->assertSame(Command::SUCCESS, $exitCode);
+        $this->assertDatabaseHas(User::class, [
+            'email' => 'mail@testuser.test',
+        ]);
+    }
+
+    public function test_it_fails_if_user_with_email_in_different_case_already_exists(): void
+    {
+        // Arrange
+        User::factory()->create([
+            'email' => 'mail@testuser.test',
+        ]);
+
+        // Act
+        $exitCode = $this->withoutMockingConsoleOutput()->artisan('admin:user:create', [
+            'name' => 'Test User',
+            'email' => 'MAIL@testuser.test',
+        ]);
+
+        // Assert
+        $this->assertSame(Command::FAILURE, $exitCode);
+        $output = Artisan::output();
+        $this->assertStringContainsString('User with email "mail@testuser.test" already exists.', $output);
+        $this->assertSame(1, User::query()->count());
+    }
+
+    public function test_it_fails_if_email_is_invalid(): void
+    {
+        // Act
+        $exitCode = $this->withoutMockingConsoleOutput()->artisan('admin:user:create', [
+            'name' => 'Test User',
+            'email' => 'not-an-email',
+        ]);
+
+        // Assert
+        $this->assertSame(Command::FAILURE, $exitCode);
+        $output = Artisan::output();
+        $this->assertStringContainsString('"not-an-email" is not a valid email address.', $output);
+        $this->assertSame(0, User::query()->count());
+    }
 }

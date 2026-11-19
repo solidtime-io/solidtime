@@ -7,6 +7,7 @@ namespace App\Console\Commands\Admin;
 use App\Models\User;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Console\Command;
+use Illuminate\Support\Str;
 
 class UserVerifyCommand extends Command
 {
@@ -30,7 +31,8 @@ class UserVerifyCommand extends Command
      */
     public function handle(): int
     {
-        $email = $this->argument('email');
+        // Emails are stored lowercase (see UserService::createUser)
+        $email = Str::lower((string) $this->argument('email'));
 
         $this->info('Start verifying user with email "'.$email.'"');
 

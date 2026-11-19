@@ -23,6 +23,7 @@ use App\Models\TimeEntry;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use InvalidArgumentException;
 
 class MemberService
@@ -64,8 +65,9 @@ class MemberService
         $placeholders = Member::query()
             ->whereHas('user', function (Builder $query) use ($user): void {
                 /** @var Builder<User> $query */
+                // Placeholders come from imports and may keep the casing of the source file
                 $query->where('is_placeholder', '=', true)
-                    ->where('email', '=', $user->email);
+                    ->whereRaw('lower(email) = ?', [Str::lower($user->email)]);
             })
             ->whereBelongsTo($organization, 'organization')
             ->with(['user'])

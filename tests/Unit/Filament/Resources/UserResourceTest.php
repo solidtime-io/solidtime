@@ -446,4 +446,107 @@ class UserResourceTest extends FilamentTestCase
             'record' => $organization->getKey(),
         ]), $organization);
     }
+
+    public function test_create_user_stores_email_lowercased(): void
+    {
+        // Arrange
+        $userFake = User::factory()->make();
+
+        // Act
+        Livewire::test(UserResource\Pages\CreateUser::class)
+            ->fillForm([
+                'name' => $userFake->name,
+                'email' => 'New.User@Example.com',
+                'password_create' => 'password',
+                'timezone' => $userFake->timezone,
+                'week_start' => $userFake->week_start->value,
+                'currency' => 'EUR',
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        // Assert
+        $this->assertDatabaseHas(User::class, ['email' => 'new.user@example.com']);
+    }
+
+    public function test_create_user_fails_if_email_is_already_used_in_different_case(): void
+    {
+        // Arrange
+        User::factory()->create(['email' => 'existing@example.com']);
+        $userFake = User::factory()->make();
+
+        // Act
+        Livewire::test(UserResource\Pages\CreateUser::class)
+            ->fillForm([
+                'name' => $userFake->name,
+                'email' => 'Existing@Example.com',
+                'password_create' => 'password',
+                'timezone' => $userFake->timezone,
+                'week_start' => $userFake->week_start->value,
+                'currency' => 'EUR',
+            ])
+            ->call('create')
+            ->assertHasFormErrors(['email']);
+
+        // Assert
+        $this->assertSame(1, User::query()->where('email', '=', 'existing@example.com')->count());
+    }
+
+    public function test_create_user_succeeds_if_email_is_only_used_by_placeholder(): void
+    {
+        // Arrange
+        User::factory()->placeholder()->create(['email' => 'existing@example.com']);
+        $userFake = User::factory()->make();
+
+        // Act
+        Livewire::test(UserResource\Pages\CreateUser::class)
+            ->fillForm([
+                'name' => $userFake->name,
+                'email' => 'existing@example.com',
+                'password_create' => 'password',
+                'timezone' => $userFake->timezone,
+                'week_start' => $userFake->week_start->value,
+                'currency' => 'EUR',
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        // Assert
+        $this->assertSame(1, User::query()->where('email', '=', 'existing@example.com')->where('is_placeholder', '=', false)->count());
+    }
+
+    public function test_edit_user_can_keep_own_email_and_stores_it_lowercased(): void
+    {
+        // Arrange
+        $user = User::factory()->create(['email' => 'user@example.com']);
+
+        // Act
+        Livewire::test(UserResource\Pages\EditUser::class, ['record' => $user->getKey()])
+            ->fillForm([
+                'email' => 'User@Example.com',
+            ])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        // Assert
+        $this->assertSame('user@example.com', $user->refresh()->email);
+    }
+
+    public function test_edit_user_fails_if_email_is_used_by_other_user_in_different_case(): void
+    {
+        // Arrange
+        User::factory()->create(['email' => 'other@example.com']);
+        $user = User::factory()->create(['email' => 'user@example.com']);
+
+        // Act
+        Livewire::test(UserResource\Pages\EditUser::class, ['record' => $user->getKey()])
+            ->fillForm([
+                'email' => 'Other@Example.com',
+            ])
+            ->call('save')
+            ->assertHasFormErrors(['email']);
+
+        // Assert
+        $this->assertSame('user@example.com', $user->refresh()->email);
+    }
 }

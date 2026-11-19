@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Service\Import\Importers;
 
+use App\Models\Member;
 use App\Models\Organization;
 use App\Models\TimeEntry;
 use App\Models\User;
@@ -229,5 +230,26 @@ class GenericTimeEntriesImporterTest extends ImporterTestAbstract
             $this->assertFalse($timeEntry->billable);
             $this->assertNull($timeEntry->billable_rate);
         }
+    }
+
+    public function test_import_lowercases_user_email_and_matches_existing_user(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $user = User::factory()->create(['email' => 'ivanna@example.com']);
+        Member::factory()->forOrganization($organization)->forUser($user)->create();
+        $timezone = 'Europe/Vienna';
+        $importer = new GenericTimeEntriesImporter;
+        $importer->init($organization);
+        $data = "description,billable,client,project,tags,start,end,task,user_name,user_email\n".
+            '"Working hard","true","","","","2024-03-04T09:23:00Z","2024-03-04T10:23:00Z","","Ivanna","Ivanna@Example.com"';
+
+        // Act
+        $importer->importData($data, $timezone);
+
+        // Assert
+        $this->assertSame(1, User::query()->whereRaw('lower(email) = ?', ['ivanna@example.com'])->count());
+        $this->assertSame(0, User::query()->where('email', '=', 'Ivanna@Example.com')->count());
+        $this->assertSame(1, TimeEntry::query()->where('user_id', '=', $user->getKey())->count());
     }
 }
