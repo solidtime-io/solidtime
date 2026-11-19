@@ -11,7 +11,15 @@ jobs:
       - name: "Checkout code"
         uses: actions/checkout@v7
 
-      - name: "Check code style"
-        uses: aglipanci/laravel-pint-action@2.6
+      - name: "Setup PHP"
+        uses: shivammathur/setup-php@v2
         with:
-          configPath: "pint.json"
+          php-version: '8.3'
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv
+          coverage: none
+
+      - name: "Run composer install"
+        run: composer install -n --prefer-dist
+
+      - name: "Check code style"
+        run: vendor/bin/pint --test --config pint.json
