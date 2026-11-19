@@ -1,3 +1,5 @@
+# Set to ghcr.io/solidtime-io/frankenphp to use images from .github/workflows/build-php-base.yml
+ARG FRANKENPHP_IMAGE=dunglas/frankenphp
 ARG PHP_VERSION=8.3.36
 ARG FRANKENPHP_VERSION=1.13
 ARG COMPOSER_VERSION=2.8
@@ -6,7 +8,7 @@ ARG DOCKER_FILES_BASE_PATH="docker/prod/"
 
 FROM composer:${COMPOSER_VERSION} AS vendor
 
-FROM dunglas/frankenphp:${FRANKENPHP_VERSION}-builder-php${PHP_VERSION} AS upstream
+FROM ${FRANKENPHP_IMAGE}:${FRANKENPHP_VERSION}-builder-php${PHP_VERSION} AS upstream
 
 COPY --from=caddy:builder /usr/bin/xcaddy /usr/bin/xcaddy
 
@@ -21,7 +23,7 @@ RUN CGO_ENABLED=1 \
         --with github.com/dunglas/frankenphp/caddy=./caddy/ \
         --with github.com/dunglas/caddy-cbrotli
 
-FROM dunglas/frankenphp:${FRANKENPHP_VERSION}-php${PHP_VERSION}
+FROM ${FRANKENPHP_IMAGE}:${FRANKENPHP_VERSION}-php${PHP_VERSION}
 
 COPY --from=upstream /usr/local/bin/frankenphp /usr/local/bin/frankenphp
 

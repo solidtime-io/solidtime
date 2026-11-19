@@ -1,0 +1,213 @@
+# Builds our own php + FrankenPHP base images from the upstream recipes, so a PHP security release
+# can be shipped without waiting for the official php and dunglas/frankenphp images to be rebuilt.
+# To use the result, set FRANKENPHP_IMAGE=ghcr.io/solidtime-io/frankenphp and the new PHP_VERSION
+# in docker/prod/Dockerfile.
+on:
+  workflow_dispatch:
+    inputs:
+      php_version:
+        description: 'PHP version, e.g. 8.3.37'
+        required: true
+      php_sha256:
+        description: 'SHA256 of php-<version>.tar.xz from php.net/downloads'
+        required: true
+      frankenphp_version:
+        description: 'FrankenPHP release without the v, e.g. 1.13.5'
+        required: true
+
+permissions:
+  packages: write
+  contents: read
+
+env:
+  PHP_REPO: ghcr.io/solidtime-io/php
+  FRANKENPHP_REPO: ghcr.io/solidtime-io/frankenphp
+  DEBIAN_RELEASE: trixie
+  PHP_VERSION: ${{ inputs.php_version }}
+  PHP_SHA256: ${{ inputs.php_sha256 }}
+  FRANKENPHP_VERSION: ${{ inputs.frankenphp_version }}
+
+name: Build - PHP base images
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - runs-on: "ubuntu-24.04-arm"
+            platform: "linux/arm64"
+          - runs-on: "ubuntu-24.04"
+            platform: "linux/amd64"
+    runs-on: ${{ matrix.runs-on }}
+    timeout-minutes: 120
+
+    steps:
+      - name: "Validate inputs"
+        run: |
+          [[ "$PHP_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "Invalid php_version"; exit 1; }
+          [[ "$PHP_SHA256" =~ ^[0-9a-f]{64}$ ]] || { echo "Invalid php_sha256"; exit 1; }
+          [[ "$FRANKENPHP_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "Invalid frankenphp_version"; exit 1; }
+          platform=${{ matrix.platform }}
+          echo "PLATFORM_PAIR=${platform//\//-}" >> "$GITHUB_ENV"
+          echo "PHP_MINOR=${PHP_VERSION%.*}" >> "$GITHUB_ENV"
+
+      - name: "Check out docker-library/php"
+        uses: actions/checkout@v7
+        with:
+          repository: docker-library/php
+          path: php-docker
+
+      - name: "Check out FrankenPHP"
+        uses: actions/checkout@v7
+        with:
+          repository: php/frankenphp
+          ref: v${{ inputs.frankenphp_version }}
+          path: frankenphp
+
+      # Upstream builds without tags, so Go stamps a pseudo-version; matching that keeps our binary
+      # byte-identical to dunglas/frankenphp for the same PHP base, which makes builds comparable
+      - name: "Drop git tags from the FrankenPHP checkout"
+        run: git -C frankenphp tag -l | xargs -r git -C frankenphp tag -d
+
+      - name: "Pin PHP version in the php Dockerfile"
+        run: |
+          dockerfile="php-docker/${PHP_MINOR}/${DEBIAN_RELEASE}/zts/Dockerfile"
+          url="https://www.php.net/distributions/php-${PHP_VERSION}.tar.xz"
+          sed -i -E \
+            -e "s|^ENV PHP_VERSION .*|ENV PHP_VERSION ${PHP_VERSION}|" \
+            -e "s|^ENV PHP_URL=.*|ENV PHP_URL=\"${url}\" PHP_ASC_URL=\"${url}.asc\"|" \
+            -e "s|^ENV PHP_SHA256=.*|ENV PHP_SHA256=\"${PHP_SHA256}\"|" \
+            "$dockerfile"
+          grep -E '^ENV PHP_(VERSION|URL|SHA256)' "$dockerfile"
+          [ "$(grep -cF "$PHP_VERSION" "$dockerfile")" -ge 2 ] || { echo "Pinning failed"; exit 1; }
+
+      - name: "Read Go version from FrankenPHP"
+        run: |
+          go_version=$(awk '/variable "GO_VERSION"/{f=1} f && /default/{gsub(/[" ]/, "", $3); print $3; exit}' frankenphp/docker-bake.hcl)
+          [ -n "$go_version" ] || { echo "Could not read GO_VERSION"; exit 1; }
+          echo "GO_VERSION=${go_version}" >> "$GITHUB_ENV"
+
+      - name: "Login to GitHub Container Registry"
+        uses: docker/login-action@v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Set up Docker Buildx"
+        uses: docker/setup-buildx-action@v4
+
+      - name: "Build php"
+        id: php
+        uses: docker/build-push-action@v7
+        with:
+          context: php-docker/${{ env.PHP_MINOR }}/${{ env.DEBIAN_RELEASE }}/zts
+          platforms: ${{ matrix.platform }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/solidtime-io/solidtime
+          outputs: type=image,name=${{ env.PHP_REPO }},push-by-digest=true,name-canonical=true,push=true
+
+      - name: "Build FrankenPHP builder"
+        id: builder
+        uses: docker/build-push-action@v7
+        with:
+          context: frankenphp
+          target: builder
+          platforms: ${{ matrix.platform }}
+          build-contexts: |
+            php-base=docker-image://${{ env.PHP_REPO }}@${{ steps.php.outputs.digest }}
+            golang-base=docker-image://golang:${{ env.GO_VERSION }}-${{ env.DEBIAN_RELEASE }}
+          build-args: |
+            FRANKENPHP_VERSION=v${{ env.FRANKENPHP_VERSION }}
+          secrets: |
+            github-token=${{ secrets.GITHUB_TOKEN }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/solidtime-io/solidtime
+          outputs: type=image,name=${{ env.FRANKENPHP_REPO }},push-by-digest=true,name-canonical=true,push=true
+          cache-from: type=gha,scope=frankenphp-${{ env.PLATFORM_PAIR }}
+          cache-to: type=gha,mode=max,scope=frankenphp-${{ env.PLATFORM_PAIR }}
+
+      - name: "Build FrankenPHP runner"
+        id: runner
+        uses: docker/build-push-action@v7
+        with:
+          context: frankenphp
+          target: runner
+          platforms: ${{ matrix.platform }}
+          build-contexts: |
+            php-base=docker-image://${{ env.PHP_REPO }}@${{ steps.php.outputs.digest }}
+            golang-base=docker-image://golang:${{ env.GO_VERSION }}-${{ env.DEBIAN_RELEASE }}
+          build-args: |
+            FRANKENPHP_VERSION=v${{ env.FRANKENPHP_VERSION }}
+          secrets: |
+            github-token=${{ secrets.GITHUB_TOKEN }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/solidtime-io/solidtime
+          outputs: type=image,name=${{ env.FRANKENPHP_REPO }},push-by-digest=true,name-canonical=true,push=true
+          cache-from: type=gha,scope=frankenphp-${{ env.PLATFORM_PAIR }}
+
+      - name: "Export digests"
+        run: |
+          for image in php builder runner; do mkdir -p "${{ runner.temp }}/digests/${image}"; done
+          touch "${{ runner.temp }}/digests/php/${PHP_DIGEST#sha256:}"
+          touch "${{ runner.temp }}/digests/builder/${BUILDER_DIGEST#sha256:}"
+          touch "${{ runner.temp }}/digests/runner/${RUNNER_DIGEST#sha256:}"
+        env:
+          PHP_DIGEST: ${{ steps.php.outputs.digest }}
+          BUILDER_DIGEST: ${{ steps.builder.outputs.digest }}
+          RUNNER_DIGEST: ${{ steps.runner.outputs.digest }}
+
+      - name: "Upload digests"
+        uses: actions/upload-artifact@v7
+        with:
+          name: base-digests-${{ env.PLATFORM_PAIR }}
+          path: ${{ runner.temp }}/digests
+          if-no-files-found: error
+          retention-days: 1
+
+  merge:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs:
+      - build
+    steps:
+      - name: "Download digests"
+        uses: actions/download-artifact@v8
+        with:
+          path: ${{ runner.temp }}/digests
+          pattern: base-digests-*
+          merge-multiple: true
+
+      - name: "Login to GitHub Container Registry"
+        uses: docker/login-action@v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Set up Docker Buildx"
+        uses: docker/setup-buildx-action@v4
+
+      - name: "Create manifest lists and push"
+        working-directory: ${{ runner.temp }}/digests
+        run: |
+          fp_minor="${FRANKENPHP_VERSION%.*}"
+          # Same tag scheme as dunglas/frankenphp, so only the image name changes in docker/prod/Dockerfile
+          docker buildx imagetools create \
+            -t "${PHP_REPO}:${PHP_VERSION}-zts-${DEBIAN_RELEASE}" \
+            -t "${PHP_REPO}:${PHP_VERSION}-zts" \
+            $(cd php && printf "${PHP_REPO}@sha256:%s " *)
+          docker buildx imagetools create \
+            -t "${FRANKENPHP_REPO}:${FRANKENPHP_VERSION}-builder-php${PHP_VERSION}" \
+            -t "${FRANKENPHP_REPO}:${fp_minor}-builder-php${PHP_VERSION}" \
+            -t "${FRANKENPHP_REPO}:${fp_minor}-builder-php${PHP_VERSION}-${DEBIAN_RELEASE}" \
+            $(cd builder && printf "${FRANKENPHP_REPO}@sha256:%s " *)
+          docker buildx imagetools create \
+            -t "${FRANKENPHP_REPO}:${FRANKENPHP_VERSION}-php${PHP_VERSION}" \
+            -t "${FRANKENPHP_REPO}:${fp_minor}-php${PHP_VERSION}" \
+            -t "${FRANKENPHP_REPO}:${fp_minor}-php${PHP_VERSION}-${DEBIAN_RELEASE}" \
+            $(cd runner && printf "${FRANKENPHP_REPO}@sha256:%s " *)
+
+      - name: "Inspect images"
+        run: |
+          docker buildx imagetools inspect "${FRANKENPHP_REPO}:${FRANKENPHP_VERSION%.*}-builder-php${PHP_VERSION}"
+          docker buildx imagetools inspect "${FRANKENPHP_REPO}:${FRANKENPHP_VERSION%.*}-php${PHP_VERSION}"
