@@ -16,20 +16,21 @@ use RuntimeException;
  * an import are skipped and every further one is created. Re-importing the same data therefore creates nothing,
  * while identical time entries within one import are still kept.
  *
- * Existing time entries are loaded lazily per UTC month of their start, so only the months an import touches are
- * queried. A month is always loaded before the first time entry of that month is created by the import, so time
- * entries created by the import itself are never counted as existing.
+ * Existing time entries are loaded lazily per member and UTC month of their start, so only the members and months an
+ * import touches are queried (backed by the (member_id, start) index). A member month is always loaded before the
+ * first time entry of that member month is created by the import, so time entries created by the import itself are
+ * never counted as existing.
  */
 class TimeEntryDeduplicator
 {
     private const string DATE_FORMAT = 'Y-m-d H:i:s';
 
     /**
-     * Remaining number of existing time entries per fingerprint, grouped by month ("Y-m")
+     * Remaining number of existing time entries per fingerprint, grouped by member and month ("<member_id>|Y-m")
      *
      * @var array<string, array<string, int>>
      */
-    private array $existingCountsByMonth = [];
+    private array $existingCounts = [];
 
     public function __construct(private readonly string $organizationId) {}
 
@@ -39,8 +40,9 @@ class TimeEntryDeduplicator
      */
     public function claimExisting(TimeEntry $timeEntry): bool
     {
-        // Note: The raw attributes contain the timestamps exactly as they will be stored (UTC, "Y-m-d H:i:s"). Reading
-        // them directly is also much faster than going through the datetime casts.
+        // Note: The raw attributes contain the values exactly as they will be stored (timestamps in UTC as
+        // "Y-m-d H:i:s", the type as its enum value). Reading them directly is also much faster than going through
+        // the casts.
         $attributes = $timeEntry->getAttributes();
         $start = $attributes['start'] ?? null;
         $end = $attributes['end'] ?? null;
@@ -48,25 +50,27 @@ class TimeEntryDeduplicator
             return false;
         }
 
+        $memberId = $timeEntry->member_id;
         $month = substr($start, 0, 7);
-        if (! isset($this->existingCountsByMonth[$month])) {
-            $this->existingCountsByMonth[$month] = $this->loadMonth($month);
+        $bucket = $memberId.'|'.$month;
+        if (! isset($this->existingCounts[$bucket])) {
+            $this->existingCounts[$bucket] = $this->loadMemberMonth($memberId, $month);
         }
 
         $fingerprint = $this->getFingerprint(
-            $timeEntry->member_id,
             $start,
             $end,
             $timeEntry->project_id,
             $timeEntry->task_id,
-            $timeEntry->description
+            $timeEntry->description,
+            (string) ($attributes['type'] ?? 'work')
         );
 
-        $remaining = $this->existingCountsByMonth[$month][$fingerprint] ?? 0;
+        $remaining = $this->existingCounts[$bucket][$fingerprint] ?? 0;
         if ($remaining === 0) {
             return false;
         }
-        $this->existingCountsByMonth[$month][$fingerprint] = $remaining - 1;
+        $this->existingCounts[$bucket][$fingerprint] = $remaining - 1;
 
         return true;
     }
@@ -75,7 +79,7 @@ class TimeEntryDeduplicator
      * @param  string  $month  Month in the format "Y-m"
      * @return array<string, int>
      */
-    private function loadMonth(string $month): array
+    private function loadMemberMonth(string $memberId, string $month): array
     {
         $monthStart = Carbon::createFromFormat('Y-m-d H:i:s', $month.'-01 00:00:00', 'UTC');
         if ($monthStart === null) {
@@ -84,26 +88,27 @@ class TimeEntryDeduplicator
         $monthEnd = $monthStart->copy()->addMonth();
 
         $counts = [];
-        // The query builder (without models) returns the timestamps exactly as stored, so they can be compared with
-        // the raw attributes of the imported time entries.
+        // The query builder (without models) returns the values exactly as stored, so they can be compared with the
+        // raw attributes of the imported time entries. The cursor avoids holding all rows in memory at once.
         $rows = TimeEntry::query()
             ->where('organization_id', '=', $this->organizationId)
+            ->where('member_id', '=', $memberId)
             ->where('start', '>=', $monthStart->format(self::DATE_FORMAT))
             ->where('start', '<', $monthEnd->format(self::DATE_FORMAT))
             ->whereNotNull('end')
             ->toBase()
-            ->select(['member_id', 'start', 'end', 'project_id', 'task_id', 'description'])
-            ->get();
+            ->select(['start', 'end', 'project_id', 'task_id', 'description', 'type'])
+            ->cursor();
 
         foreach ($rows as $row) {
-            /** @var object{member_id: string, start: string, end: string, project_id: string|null, task_id: string|null, description: string} $row */
+            /** @var object{start: string, end: string, project_id: string|null, task_id: string|null, description: string, type: string} $row */
             $fingerprint = $this->getFingerprint(
-                $row->member_id,
                 $row->start,
                 $row->end,
                 $row->project_id,
                 $row->task_id,
-                $row->description
+                $row->description,
+                $row->type
             );
             $counts[$fingerprint] = ($counts[$fingerprint] ?? 0) + 1;
         }
@@ -111,9 +116,9 @@ class TimeEntryDeduplicator
         return $counts;
     }
 
-    private function getFingerprint(string $memberId, string $start, string $end, ?string $projectId, ?string $taskId, string $description): string
+    private function getFingerprint(string $start, string $end, ?string $projectId, ?string $taskId, string $description, string $type): string
     {
-        $json = json_encode([$memberId, $start, $end, $projectId, $taskId, $description]);
+        $json = json_encode([$start, $end, $projectId, $taskId, $description, $type], JSON_INVALID_UTF8_SUBSTITUTE);
         if ($json === false) {
             throw new RuntimeException('Failed to encode time entry fingerprint');
         }

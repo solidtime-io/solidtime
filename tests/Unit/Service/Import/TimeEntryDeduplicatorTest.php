@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Service\Import;
 
+use App\Enums\TimeEntryType;
 use App\Models\Member;
 use App\Models\Organization;
 use App\Models\Project;
@@ -105,6 +106,7 @@ class TimeEntryDeduplicatorTest extends TestCase
             'end' => $deduplicator->claimExisting($this->makeTimeEntry(duration: 3601)),
             'project' => $deduplicator->claimExisting($this->makeTimeEntry(attributes: ['project_id' => $project->getKey()])),
             'member' => $deduplicator->claimExisting($this->makeTimeEntry(attributes: ['member_id' => $otherMember->getKey()])),
+            'type' => $deduplicator->claimExisting($this->makeTimeEntry(attributes: ['type' => TimeEntryType::Break])),
         ];
 
         // Assert
@@ -114,6 +116,7 @@ class TimeEntryDeduplicatorTest extends TestCase
             'end' => false,
             'project' => false,
             'member' => false,
+            'type' => false,
         ], $results);
     }
 
@@ -176,9 +179,10 @@ class TimeEntryDeduplicatorTest extends TestCase
         $this->assertFalse($result);
     }
 
-    public function test_loads_each_month_only_once(): void
+    public function test_loads_each_member_month_only_once(): void
     {
         // Arrange
+        $otherMember = Member::factory()->forOrganization($this->organization)->create();
         $deduplicator = new TimeEntryDeduplicator($this->organization->getKey());
 
         // Act
@@ -188,9 +192,28 @@ class TimeEntryDeduplicatorTest extends TestCase
         $deduplicator->claimExisting($this->makeTimeEntry('2024-03-20 09:00:00'));
         $deduplicator->claimExisting($this->makeTimeEntry('2024-04-01 09:00:00'));
         $deduplicator->claimExisting($this->makeTimeEntry('2024-03-05 09:00:00'));
+        $deduplicator->claimExisting($this->makeTimeEntry('2024-03-06 09:00:00', attributes: ['member_id' => $otherMember->getKey()]));
+        $deduplicator->claimExisting($this->makeTimeEntry('2024-03-07 09:00:00', attributes: ['member_id' => $otherMember->getKey()]));
         $queryLog = DB::getQueryLog();
 
         // Assert
-        $this->assertCount(2, $queryLog);
+        $this->assertCount(3, $queryLog);
+    }
+
+    public function test_only_loads_time_entries_of_the_member(): void
+    {
+        // Arrange
+        $otherMember = Member::factory()->forOrganization($this->organization)->create();
+        $this->makeTimeEntry(attributes: ['member_id' => $otherMember->getKey()])->save();
+        $deduplicator = new TimeEntryDeduplicator($this->organization->getKey());
+
+        // Act
+        $results = [
+            $deduplicator->claimExisting($this->makeTimeEntry()),
+            $deduplicator->claimExisting($this->makeTimeEntry(attributes: ['member_id' => $otherMember->getKey()])),
+        ];
+
+        // Assert
+        $this->assertSame([false, true], $results);
     }
 }
