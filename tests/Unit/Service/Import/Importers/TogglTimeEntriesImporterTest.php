@@ -42,7 +42,7 @@ class TogglTimeEntriesImporterTest extends ImporterTestAbstract
         $queryLog = DB::getQueryLog();
 
         // Assert
-        $this->assertCount(22, $queryLog);
+        $this->assertCount(23, $queryLog);
         $testScenario = $this->checkTestScenarioAfterImportExcludingTimeEntries();
         $this->checkTimeEntries($testScenario);
         $this->assertSame(2, $report->timeEntriesCreated);
@@ -84,7 +84,7 @@ class TogglTimeEntriesImporterTest extends ImporterTestAbstract
         $this->assertSame(1, $report->clientsCreated);
     }
 
-    public function test_import_of_test_file_twice_succeeds(): void
+    public function test_import_of_test_file_twice_skips_existing_time_entries(): void
     {
         // Arrange
         $organization = Organization::factory()->create();
@@ -108,10 +108,11 @@ class TogglTimeEntriesImporterTest extends ImporterTestAbstract
         $queryLog = DB::getQueryLog();
 
         // Assert
-        $this->assertCount(14, $queryLog);
+        $this->assertCount(13, $queryLog);
         $testScenario = $this->checkTestScenarioAfterImportExcludingTimeEntries();
-        $this->checkTimeEntries($testScenario, true);
-        $this->assertSame(2, $report->timeEntriesCreated);
+        $this->checkTimeEntries($testScenario);
+        $this->assertSame(0, $report->timeEntriesCreated);
+        $this->assertSame(2, $report->timeEntriesSkipped);
         $this->assertSame(0, $report->tagsCreated);
         $this->assertSame(0, $report->tasksCreated);
         $this->assertSame(0, $report->usersCreated);

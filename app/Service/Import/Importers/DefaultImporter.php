@@ -12,10 +12,12 @@ use App\Models\Project;
 use App\Models\ProjectMember;
 use App\Models\Tag;
 use App\Models\Task;
+use App\Models\TimeEntry;
 use App\Models\User;
 use App\Service\BillableRateService;
 use App\Service\ColorService;
 use App\Service\Import\ImportDatabaseHelper;
+use App\Service\Import\TimeEntryDeduplicator;
 use App\Service\TimezoneService;
 use Illuminate\Database\Eloquent\Builder;
 use Override;
@@ -57,6 +59,10 @@ abstract class DefaultImporter implements ImporterContract
     protected ImportDatabaseHelper $taskImportHelper;
 
     protected int $timeEntriesCreated;
+
+    protected int $timeEntriesSkipped;
+
+    protected TimeEntryDeduplicator $timeEntryDeduplicator;
 
     protected ColorService $colorService;
 
@@ -197,6 +203,8 @@ abstract class DefaultImporter implements ImporterContract
             ],
         ]);
         $this->timeEntriesCreated = 0;
+        $this->timeEntriesSkipped = 0;
+        $this->timeEntryDeduplicator = new TimeEntryDeduplicator($organization->getKey());
         $this->colorService = app(ColorService::class);
         $this->timezoneService = app(TimezoneService::class);
     }
@@ -211,6 +219,21 @@ abstract class DefaultImporter implements ImporterContract
         }
     }
 
+    /**
+     * Returns true if an equal time entry already exists in the organization, for example because the same data was
+     * imported before. The time entry is counted as skipped and should not be saved.
+     */
+    protected function skipIfAlreadyExists(TimeEntry $timeEntry): bool
+    {
+        if ($this->timeEntryDeduplicator->claimExisting($timeEntry)) {
+            $this->timeEntriesSkipped++;
+
+            return true;
+        }
+
+        return false;
+    }
+
     #[Override]
     public function getReport(): ReportDto
     {
@@ -219,6 +242,7 @@ abstract class DefaultImporter implements ImporterContract
             projectsCreated: $this->projectImportHelper->getCreatedCount(),
             tasksCreated: $this->taskImportHelper->getCreatedCount(),
             timeEntriesCreated: $this->timeEntriesCreated,
+            timeEntriesSkipped: $this->timeEntriesSkipped,
             tagsCreated: $this->tagImportHelper->getCreatedCount(),
             usersCreated: $this->userImportHelper->getCreatedCount(),
         );

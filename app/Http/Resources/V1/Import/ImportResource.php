@@ -41,6 +41,7 @@ class ImportResource extends BaseResource
              *   },
              *   time_entries: array{
              *     created: int,
+             *     skipped: int,
              *   },
              *   tags: array{
              *     created: int,

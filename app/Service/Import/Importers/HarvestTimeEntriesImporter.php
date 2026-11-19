@@ -148,6 +148,9 @@ class HarvestTimeEntriesImporter extends DefaultImporter
                     $member,
                     $this->organization
                 );
+                if ($this->skipIfAlreadyExists($timeEntry)) {
+                    continue;
+                }
                 $timeEntry->save();
                 $this->timeEntriesCreated++;
             }

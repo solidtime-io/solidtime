@@ -60,7 +60,7 @@ class ClockifyTimeEntriesImporterTest extends ImporterTestAbstract
 
         // Assert
         $testScenario = $this->checkTestScenarioAfterImportExcludingTimeEntries(false, true);
-        $this->checkTimeEntries($testScenario, false, true);
+        $this->checkTimeEntries($testScenario, true);
         $this->assertSame(2, $report->timeEntriesCreated);
         $this->assertSame(2, $report->tagsCreated);
         $this->assertSame(1, $report->tasksCreated);
@@ -94,7 +94,7 @@ class ClockifyTimeEntriesImporterTest extends ImporterTestAbstract
         $this->assertSame(1, $report->clientsCreated);
     }
 
-    public function test_import_of_test_file_twice_succeeds(): void
+    public function test_import_of_test_file_twice_skips_existing_time_entries(): void
     {
         // Arrange
         $organization = Organization::factory()->create();
@@ -112,8 +112,9 @@ class ClockifyTimeEntriesImporterTest extends ImporterTestAbstract
 
         // Assert
         $testScenario = $this->checkTestScenarioAfterImportExcludingTimeEntries();
-        $this->checkTimeEntries($testScenario, true);
-        $this->assertSame(2, $report->timeEntriesCreated);
+        $this->checkTimeEntries($testScenario);
+        $this->assertSame(0, $report->timeEntriesCreated);
+        $this->assertSame(2, $report->timeEntriesSkipped);
         $this->assertSame(0, $report->tagsCreated);
         $this->assertSame(0, $report->tasksCreated);
         $this->assertSame(0, $report->usersCreated);

@@ -94,7 +94,7 @@ class SolidtimeImporterTest extends ImporterTestAbstract
         $queryLog = DB::getQueryLog();
 
         // Assert
-        $this->assertCount(25, $queryLog);
+        $this->assertCount(26, $queryLog);
         $testScenario = $this->checkTestScenarioAfterImportExcludingTimeEntries(true);
         $this->checkTimeEntries($testScenario);
         $this->assertSame(2, $report->timeEntriesCreated);
@@ -253,7 +253,7 @@ class SolidtimeImporterTest extends ImporterTestAbstract
         $this->assertNull(TimeEntry::query()->where('description', 'Still running')->first());
     }
 
-    public function test_import_of_test_file_twice_succeeds(): void
+    public function test_import_of_test_file_twice_skips_existing_time_entries(): void
     {
         // Arrange
         $zipPath = $this->createTestZip('solidtime_import_test_1');
@@ -278,10 +278,11 @@ class SolidtimeImporterTest extends ImporterTestAbstract
         $queryLog = DB::getQueryLog();
 
         // Assert
-        $this->assertCount(13, $queryLog);
+        $this->assertCount(12, $queryLog);
         $testScenario = $this->checkTestScenarioAfterImportExcludingTimeEntries(true);
-        $this->checkTimeEntries($testScenario, true);
-        $this->assertSame(2, $report->timeEntriesCreated);
+        $this->checkTimeEntries($testScenario);
+        $this->assertSame(0, $report->timeEntriesCreated);
+        $this->assertSame(2, $report->timeEntriesSkipped);
         $this->assertSame(0, $report->tagsCreated);
         $this->assertSame(0, $report->tasksCreated);
         $this->assertSame(0, $report->usersCreated);

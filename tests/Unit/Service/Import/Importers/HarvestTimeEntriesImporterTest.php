@@ -106,6 +106,52 @@ class HarvestTimeEntriesImporterTest extends ImporterTestAbstract
         $this->assertSame(1, $report->clientsCreated);
     }
 
+    public function test_import_of_test_file_twice_skips_existing_time_entries(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $timezone = 'Europe/Vienna';
+        $importer = new HarvestTimeEntriesImporter;
+        $importer->init($organization);
+        $data = Storage::disk('testfiles')->get('harvest_time_entries_import_test_1.csv');
+        $importer->importData($data, $timezone);
+        $importer = new HarvestTimeEntriesImporter;
+        $importer->init($organization);
+
+        // Act
+        $importer->importData($data, $timezone);
+        $report = $importer->getReport();
+
+        // Assert
+        $this->assertSame(0, $report->timeEntriesCreated);
+        $this->assertSame(2, $report->timeEntriesSkipped);
+        $this->assertSame(2, TimeEntry::query()->count());
+    }
+
+    public function test_import_skips_existing_time_entries_with_fractional_hours(): void
+    {
+        // Arrange
+        $organization = Organization::factory()->create();
+        $timezone = 'Europe/Vienna';
+        $importer = new HarvestTimeEntriesImporter;
+        $importer->init($organization);
+        // Note: 1.33 hours are 4788.000000000001 seconds as float
+        $data = "Date,Client,Project,Project Code,Task,Notes,Hours,Billable?,Invoiced?,Approved?,First Name,Last Name,Roles,Employee?,Billable Rate,Billable Amount,Cost Rate,Cost Amount,Currency,External Reference URL\n".
+            '2024-03-04,,Project without Client,,,"","1,33",No,No,No,Peter,Tester,,Yes,"100,0","133,0","0,0","0,0",Euro - EUR,';
+        $importer->importData($data, $timezone);
+        $importer = new HarvestTimeEntriesImporter;
+        $importer->init($organization);
+
+        // Act
+        $importer->importData($data, $timezone);
+        $report = $importer->getReport();
+
+        // Assert
+        $this->assertSame(0, $report->timeEntriesCreated);
+        $this->assertSame(1, $report->timeEntriesSkipped);
+        $this->assertSame(1, TimeEntry::query()->count());
+    }
+
     public function test_import_fails_if_hours_are_negative(): void
     {
         // Arrange

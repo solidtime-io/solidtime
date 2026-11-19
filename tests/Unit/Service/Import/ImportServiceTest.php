@@ -177,7 +177,7 @@ class ImportServiceTest extends TestCase
             'clients' => ['created' => 1],
             'projects' => ['created' => 2],
             'tasks' => ['created' => 1],
-            'time_entries' => ['created' => 2],
+            'time_entries' => ['created' => 2, 'skipped' => 0],
             'tags' => ['created' => 2],
             'users' => ['created' => 1],
         ], $import->report);
