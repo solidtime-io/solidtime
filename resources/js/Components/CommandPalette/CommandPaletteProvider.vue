@@ -141,6 +141,14 @@ async function createTimeEntry(timeEntry: Omit<CreateTimeEntryBody, 'member_id'>
     showCreateTimeEntryModal.value = false;
 }
 
+function adoptProjectBillableDefault() {
+    // Adopt the project's billable default when a project is picked, like the time tracker does.
+    const project = projects.value.find((p) => p.id === currentTimeEntry.value.project_id);
+    if (project) {
+        currentTimeEntry.value.billable = project.is_billable;
+    }
+}
+
 async function handleProjectTaskSelect() {
     showProjectSelector.value = false;
     showTaskSelector.value = false;
@@ -225,7 +233,8 @@ const firstProjectId = computed(() => projects.value[0]?.id ?? '');
                 :currency="getOrganizationCurrencyString()"
                 :enable-estimated-time="isAllowedToPerformPremiumAction()"
                 :organization-billable-rate="organization?.billable_rate ?? null"
-                class="w-full" />
+                class="w-full"
+                @changed="adoptProjectBillableDefault" />
         </template>
         <template #footer>
             <SecondaryButton @click="showProjectSelector = false"> Cancel </SecondaryButton>
@@ -250,7 +259,8 @@ const firstProjectId = computed(() => projects.value[0]?.id ?? '');
                 :currency="getOrganizationCurrencyString()"
                 :enable-estimated-time="isAllowedToPerformPremiumAction()"
                 :organization-billable-rate="organization?.billable_rate ?? null"
-                class="w-full" />
+                class="w-full"
+                @changed="adoptProjectBillableDefault" />
         </template>
         <template #footer>
             <SecondaryButton @click="showTaskSelector = false"> Cancel </SecondaryButton>
