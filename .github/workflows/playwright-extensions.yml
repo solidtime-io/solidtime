@@ -160,9 +160,13 @@ jobs:
             php artisan module:enable "$extension"
           done
 
+      # APP_URL is the address of the Octane server below and the public disk is linked, so files
+      # uploaded in the specs (e.g. the whitelabel logo) are reachable under their URLs.
       - name: "Prepare Laravel Application"
         run: |
           cp .env.ci .env
+          sed -i 's#^APP_URL=.*#APP_URL=http://127.0.0.1:8000#' .env
+          php artisan storage:link
           php artisan key:generate
           php artisan passport:keys
           php artisan migrate --seed
