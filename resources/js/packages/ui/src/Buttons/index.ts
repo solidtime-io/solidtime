@@ -11,9 +11,9 @@ export const buttonVariants = cva(
                 destructive:
                     'bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90 dark:bg-destructive/70',
                 outline:
-                    'border shadow-xs hover:text-text-primary bg-card-background dark:bg-transparent border-input dark:border-input hover:bg-white/5',
+                    'border shadow-xs hover:text-text-primary bg-card-background dark:bg-transparent border-input dark:border-input hover:bg-black/5 dark:hover:bg-white/5',
                 secondary: 'bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80',
-                ghost: 'hover:bg-white/5',
+                ghost: 'hover:bg-black/5 dark:hover:bg-white/5',
                 link: 'text-primary underline-offset-4 hover:underline',
                 input: 'border-input-border border bg-input-background text-text-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent shadow-sm',
             },
