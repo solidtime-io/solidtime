@@ -9,20 +9,20 @@ services:
         labels:
             - "traefik.enable=true"
             - "traefik.docker.network=${NETWORK_NAME}"
-            - "traefik.http.services.solidtime-dev.loadbalancer.server.port=80"
-            - "traefik.http.routers.solidtime-dev.rule=Host(`${NGINX_HOST_NAME}`)"
-            - "traefik.http.routers.solidtime-dev.entrypoints=web"
-            - "traefik.http.routers.solidtime-dev.service=solidtime-dev"
-            - "traefik.http.routers.solidtime-dev-https.rule=Host(`${NGINX_HOST_NAME}`)"
-            - "traefik.http.routers.solidtime-dev-https.service=solidtime-dev"
-            - "traefik.http.routers.solidtime-dev-https.entrypoints=websecure"
-            - "traefik.http.routers.solidtime-dev-https.tls=true"
+            - "traefik.http.services.${TRAEFIK_PREFIX:-solidtime-dev}.loadbalancer.server.port=80"
+            - "traefik.http.routers.${TRAEFIK_PREFIX:-solidtime-dev}.rule=Host(`${NGINX_HOST_NAME}`)"
+            - "traefik.http.routers.${TRAEFIK_PREFIX:-solidtime-dev}.entrypoints=web"
+            - "traefik.http.routers.${TRAEFIK_PREFIX:-solidtime-dev}.service=${TRAEFIK_PREFIX:-solidtime-dev}"
+            - "traefik.http.routers.${TRAEFIK_PREFIX:-solidtime-dev}-https.rule=Host(`${NGINX_HOST_NAME}`)"
+            - "traefik.http.routers.${TRAEFIK_PREFIX:-solidtime-dev}-https.service=${TRAEFIK_PREFIX:-solidtime-dev}"
+            - "traefik.http.routers.${TRAEFIK_PREFIX:-solidtime-dev}-https.entrypoints=websecure"
+            - "traefik.http.routers.${TRAEFIK_PREFIX:-solidtime-dev}-https.tls=true"
             # vite
-            - "traefik.http.services.solidtime-dev-vite.loadbalancer.server.port=5173"
+            - "traefik.http.services.${TRAEFIK_PREFIX:-solidtime-dev}-vite.loadbalancer.server.port=5173"
             # http
-            - "traefik.http.routers.solidtime-dev-vite.rule=Host(`${VITE_HOST_NAME}`)"
-            - "traefik.http.routers.solidtime-dev-vite.service=solidtime-dev-vite"
-            - "traefik.http.routers.solidtime-dev-vite.entrypoints=web"
+            - "traefik.http.routers.${TRAEFIK_PREFIX:-solidtime-dev}-vite.rule=Host(`${VITE_HOST_NAME}`)"
+            - "traefik.http.routers.${TRAEFIK_PREFIX:-solidtime-dev}-vite.service=${TRAEFIK_PREFIX:-solidtime-dev}-vite"
+            - "traefik.http.routers.${TRAEFIK_PREFIX:-solidtime-dev}-vite.entrypoints=web"
         extra_hosts:
             - "host.docker.internal:host-gateway"
             - "storage.${NGINX_HOST_NAME}:${REVERSE_PROXY_IP:-10.100.100.10}"
@@ -95,14 +95,14 @@ services:
         labels:
             - "traefik.enable=true"
             - "traefik.docker.network=${NETWORK_NAME}"
-            - "traefik.http.services.solidtime-dev-mailpit.loadbalancer.server.port=8025"
-            - "traefik.http.routers.solidtime-dev-mailpit.rule=Host(`mail.${NGINX_HOST_NAME}`)"
-            - "traefik.http.routers.solidtime-dev-mailpit.entrypoints=web"
-            - "traefik.http.routers.solidtime-dev-mailpit.service=solidtime-dev-mailpit"
-            - "traefik.http.routers.solidtime-dev-mailpit-https.rule=Host(`mail.${NGINX_HOST_NAME}`)"
-            - "traefik.http.routers.solidtime-dev-mailpit-https.service=solidtime-dev-mailpit"
-            - "traefik.http.routers.solidtime-dev-mailpit-https.entrypoints=websecure"
-            - "traefik.http.routers.solidtime-dev-mailpit-https.tls=true"
+            - "traefik.http.services.${TRAEFIK_PREFIX:-solidtime-dev}-mailpit.loadbalancer.server.port=8025"
+            - "traefik.http.routers.${TRAEFIK_PREFIX:-solidtime-dev}-mailpit.rule=Host(`mail.${NGINX_HOST_NAME}`)"
+            - "traefik.http.routers.${TRAEFIK_PREFIX:-solidtime-dev}-mailpit.entrypoints=web"
+            - "traefik.http.routers.${TRAEFIK_PREFIX:-solidtime-dev}-mailpit.service=${TRAEFIK_PREFIX:-solidtime-dev}-mailpit"
+            - "traefik.http.routers.${TRAEFIK_PREFIX:-solidtime-dev}-mailpit-https.rule=Host(`mail.${NGINX_HOST_NAME}`)"
+            - "traefik.http.routers.${TRAEFIK_PREFIX:-solidtime-dev}-mailpit-https.service=${TRAEFIK_PREFIX:-solidtime-dev}-mailpit"
+            - "traefik.http.routers.${TRAEFIK_PREFIX:-solidtime-dev}-mailpit-https.entrypoints=websecure"
+            - "traefik.http.routers.${TRAEFIK_PREFIX:-solidtime-dev}-mailpit-https.tls=true"
         networks:
             - sail
             - reverse-proxy
@@ -110,18 +110,20 @@ services:
         image: mcr.microsoft.com/playwright:v1.60.0-jammy
         command: ['npx', 'playwright', 'test', '--ui-port=8080', '--ui-host=0.0.0.0']
         working_dir: /src
+        environment:
+            PLAYWRIGHT_BASE_URL: 'http://${NGINX_HOST_NAME}'
         extra_hosts:
             - "${NGINX_HOST_NAME}:${REVERSE_PROXY_IP:-10.100.100.10}"
             - "${VITE_HOST_NAME}:${REVERSE_PROXY_IP:-10.100.100.10}"
         labels:
             - "traefik.enable=true"
             - "traefik.docker.network=${NETWORK_NAME}"
-            - "traefik.http.services.solidtime-dev-playwright.loadbalancer.server.port=8080"
-            - "traefik.http.routers.solidtime-dev-playwright.rule=Host(`playwright.${NGINX_HOST_NAME}`)"
-            - "traefik.http.routers.solidtime-dev-playwright.entrypoints=web"
-            - "traefik.http.routers.solidtime-dev-playwright-https.rule=Host(`playwright.${NGINX_HOST_NAME}`)"
-            - "traefik.http.routers.solidtime-dev-playwright-https.entrypoints=websecure"
-            - "traefik.http.routers.solidtime-dev-playwright-https.tls=true"
+            - "traefik.http.services.${TRAEFIK_PREFIX:-solidtime-dev}-playwright.loadbalancer.server.port=8080"
+            - "traefik.http.routers.${TRAEFIK_PREFIX:-solidtime-dev}-playwright.rule=Host(`playwright.${NGINX_HOST_NAME}`)"
+            - "traefik.http.routers.${TRAEFIK_PREFIX:-solidtime-dev}-playwright.entrypoints=web"
+            - "traefik.http.routers.${TRAEFIK_PREFIX:-solidtime-dev}-playwright-https.rule=Host(`playwright.${NGINX_HOST_NAME}`)"
+            - "traefik.http.routers.${TRAEFIK_PREFIX:-solidtime-dev}-playwright-https.entrypoints=websecure"
+            - "traefik.http.routers.${TRAEFIK_PREFIX:-solidtime-dev}-playwright-https.tls=true"
         networks:
             - sail
             - reverse-proxy
@@ -148,27 +150,27 @@ services:
             - "traefik.enable=true"
             - "traefik.docker.network=${NETWORK_NAME}"
             # Storage Frontend
-            - "traefik.http.services.solidtime-dev-storage-frontend.loadbalancer.server.port=9000"
+            - "traefik.http.services.${TRAEFIK_PREFIX:-solidtime-dev}-storage-frontend.loadbalancer.server.port=9000"
             # http
-            - "traefik.http.routers.solidtime-dev-storage-frontend.rule=Host(`storage.${NGINX_HOST_NAME}`)"
-            - "traefik.http.routers.solidtime-dev-storage-frontend.service=solidtime-dev-storage-frontend"
-            - "traefik.http.routers.solidtime-dev-storage-frontend.entrypoints=web"
+            - "traefik.http.routers.${TRAEFIK_PREFIX:-solidtime-dev}-storage-frontend.rule=Host(`storage.${NGINX_HOST_NAME}`)"
+            - "traefik.http.routers.${TRAEFIK_PREFIX:-solidtime-dev}-storage-frontend.service=${TRAEFIK_PREFIX:-solidtime-dev}-storage-frontend"
+            - "traefik.http.routers.${TRAEFIK_PREFIX:-solidtime-dev}-storage-frontend.entrypoints=web"
             # https
-            - "traefik.http.routers.solidtime-dev-storage-frontend-https.rule=Host(`storage.${NGINX_HOST_NAME}`)"
-            - "traefik.http.routers.solidtime-dev-storage-frontend-https.service=solidtime-dev-storage-frontend"
-            - "traefik.http.routers.solidtime-dev-storage-frontend-https.entrypoints=websecure"
-            - "traefik.http.routers.solidtime-dev-storage-frontend-https.tls=true"
+            - "traefik.http.routers.${TRAEFIK_PREFIX:-solidtime-dev}-storage-frontend-https.rule=Host(`storage.${NGINX_HOST_NAME}`)"
+            - "traefik.http.routers.${TRAEFIK_PREFIX:-solidtime-dev}-storage-frontend-https.service=${TRAEFIK_PREFIX:-solidtime-dev}-storage-frontend"
+            - "traefik.http.routers.${TRAEFIK_PREFIX:-solidtime-dev}-storage-frontend-https.entrypoints=websecure"
+            - "traefik.http.routers.${TRAEFIK_PREFIX:-solidtime-dev}-storage-frontend-https.tls=true"
             # Storage Management
-            - "traefik.http.services.solidtime-dev-storage-management.loadbalancer.server.port=8900"
+            - "traefik.http.services.${TRAEFIK_PREFIX:-solidtime-dev}-storage-management.loadbalancer.server.port=8900"
             # http
-            - "traefik.http.routers.solidtime-dev-storage-management.rule=Host(`storage-management.${NGINX_HOST_NAME}`)"
-            - "traefik.http.routers.solidtime-dev-storage-management.service=solidtime-dev-storage-management"
-            - "traefik.http.routers.solidtime-dev-storage-management.entrypoints=web"
+            - "traefik.http.routers.${TRAEFIK_PREFIX:-solidtime-dev}-storage-management.rule=Host(`storage-management.${NGINX_HOST_NAME}`)"
+            - "traefik.http.routers.${TRAEFIK_PREFIX:-solidtime-dev}-storage-management.service=${TRAEFIK_PREFIX:-solidtime-dev}-storage-management"
+            - "traefik.http.routers.${TRAEFIK_PREFIX:-solidtime-dev}-storage-management.entrypoints=web"
             # https
-            - "traefik.http.routers.solidtime-dev-storage-management-https.rule=Host(`storage-management.${NGINX_HOST_NAME}`)"
-            - "traefik.http.routers.solidtime-dev-storage-management-https.service=solidtime-dev-storage-management"
-            - "traefik.http.routers.solidtime-dev-storage-management-https.entrypoints=websecure"
-            - "traefik.http.routers.solidtime-dev-storage-management-https.tls=true"
+            - "traefik.http.routers.${TRAEFIK_PREFIX:-solidtime-dev}-storage-management-https.rule=Host(`storage-management.${NGINX_HOST_NAME}`)"
+            - "traefik.http.routers.${TRAEFIK_PREFIX:-solidtime-dev}-storage-management-https.service=${TRAEFIK_PREFIX:-solidtime-dev}-storage-management"
+            - "traefik.http.routers.${TRAEFIK_PREFIX:-solidtime-dev}-storage-management-https.entrypoints=websecure"
+            - "traefik.http.routers.${TRAEFIK_PREFIX:-solidtime-dev}-storage-management-https.tls=true"
 
     minio-create-bucket:
         image: minio/mc:latest
