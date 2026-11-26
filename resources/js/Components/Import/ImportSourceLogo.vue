@@ -64,10 +64,10 @@ withDefaults(
                 fill="#FFFFFF"
                 d="M39.5037 53.165C39.5041 54.668 38.2859 55.8867 36.7829 55.8867H33.1779C31.6755 55.8867 30.4575 54.669 30.457 53.1667L30.4537 42.7934C30.4531 40.7809 31.832 39.0302 33.7887 38.5594L39.4993 37.1854L39.5037 53.165Z" />
         </svg>
-        <!-- solidtime mark -->
+        <!-- solidtime mark, light on dark in both themes like the other brand marks -->
         <span
             v-else-if="source === 'solidtime'"
-            class="h-full w-full bg-card-background-active text-text-primary flex items-center justify-center">
+            class="h-full w-full bg-[oklch(0.25_0_0)] text-[oklch(0.97_0_0)] flex items-center justify-center">
             <svg viewBox="0 0 700 700" class="h-3/4 w-3/4" xmlns="http://www.w3.org/2000/svg">
                 <g transform="translate(0 700) scale(0.1 -0.1)" fill="currentColor">
                     <path
