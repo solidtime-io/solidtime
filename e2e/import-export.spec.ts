@@ -238,7 +238,10 @@ test('test that a running import opens its step and does not block the navigatio
         created_at: new Date().toISOString(),
     };
     await page.route(/\/api\/v1\/organizations\/[^/]+\/imports(\?.*)?$/, async (route) => {
-        const response = await route.fetch();
+        // Firefox accepts zstd, which the server uses but Playwright can not decode
+        const response = await route.fetch({
+            headers: { ...route.request().headers(), 'accept-encoding': 'identity' },
+        });
         const json = await response.json();
         json.data = [runningImport, ...json.data];
         await route.fulfill({ response, json });
