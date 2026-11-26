@@ -5,6 +5,11 @@ import { ArrowsRightLeftIcon } from '@heroicons/vue/16/solid';
 import PageTitle from '@/Components/Common/PageTitle.vue';
 import ImportData from '@/Pages/Teams/Partials/ImportData.vue';
 import ExportData from '@/Pages/Teams/Partials/ExportData.vue';
+import { onMounted } from 'vue';
+import { useOrganizationStore } from '@/utils/useOrganization';
+
+// The organization name and date/time formats are shown in the import and export sections
+onMounted(() => useOrganizationStore().fetchOrganization());
 </script>
 
 <template>

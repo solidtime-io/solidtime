@@ -1,287 +1,119 @@
 <script setup lang="ts">
-import PrimaryButton from '@/packages/ui/src/Buttons/PrimaryButton.vue';
-import { computed, onMounted, onUnmounted, ref } from 'vue';
-import { useNotificationsStore } from '@/utils/notification';
-import { api } from '@/packages/api/src';
-import { Field, FieldLabel } from '@/packages/ui/src/field';
-import { DocumentIcon } from '@heroicons/vue/24/solid';
-import {
-    ArrowDownOnSquareIcon,
-    ExclamationTriangleIcon,
-    InformationCircleIcon,
-} from '@heroicons/vue/24/outline';
+import { computed, onMounted, ref } from 'vue';
+import { storeToRefs } from 'pinia';
+import { ArrowDownOnSquareIcon, ExclamationTriangleIcon } from '@heroicons/vue/24/outline';
 import { canUseBillableRates } from '@/utils/billing';
-
 import { getCurrentOrganizationId } from '@/utils/useUser';
-import type { Import, ImportReport, ImportType } from '@/packages/api/src';
-import DialogModal from '@/packages/ui/src/DialogModal.vue';
-import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
-import { initializeStores } from '@/utils/init';
+import type { Import } from '@/packages/api/src';
 import { CardTitle } from '@/packages/ui/src';
 import Card from '@/Components/Common/Card.vue';
+import { formatDateTimeLocalized } from '@/packages/ui/src/utils/time';
+import { useOrganizationStore } from '@/utils/useOrganization';
+import ImportWizard from '@/Components/Import/ImportWizard.vue';
+import { useImports } from '@/Components/Import/useImports';
+import type { ImportSourceId } from '@/Components/Import/importSources';
 
-const importTypeOptions = ref<ImportType[]>([]);
+const organizationId = getCurrentOrganizationId();
+const importsState = useImports(organizationId ?? '');
+const { imports, importers } = importsState;
 
-const { addNotification } = useNotificationsStore();
+const { organization } = storeToRefs(useOrganizationStore());
 
-const loading = ref(false);
+// Recent imports are only shown while no source is open in the wizard
+const openSource = ref<ImportSourceId | null>(null);
 
 const billableRatesLocked = computed(() => !canUseBillableRates());
 
 onMounted(async () => {
-    const organizationId = getCurrentOrganizationId();
-    if (organizationId) {
-        importTypeOptions.value = (
-            await api.getImporters({
-                params: {
-                    organization: organizationId,
-                },
-            })
-        ).data;
-    }
-});
-
-const reportResult = ref<ImportReport | null>();
-const files = ref<FileList | null>(null);
-
-async function importData() {
-    if (importType.value === null) {
-        addNotification('error', 'Please select the import type');
-        return;
-    }
-    if (files.value?.length !== 1) {
-        addNotification('error', 'Please select the CSV or ZIP file that you want to import');
-        return;
-    }
-    const rawBase64String = await toBase64(files.value[0]!);
-    const base64String = rawBase64String.split(';')[1]!.replace('base64,', '') as string;
-    const organizationId = getCurrentOrganizationId();
     if (organizationId !== null) {
-        const { handleApiRequestNotifications } = useNotificationsStore();
-        loading.value = true;
-        try {
-            const response = await handleApiRequestNotifications(() => {
-                if (importType.value) {
-                    return api.importData(
-                        {
-                            type: importType.value.key,
-                            data: base64String,
-                        },
-                        {
-                            params: {
-                                organization: organizationId,
-                            },
-                        }
-                    );
-                }
-                return new Promise<never>((resolve, reject) => {
-                    reject('Import type is null');
-                });
-            });
-            if (response === undefined) {
-                return;
-            }
-            const finishedImport = await handleApiRequestNotifications(() =>
-                waitForImport(organizationId, response.data)
-            );
-            if (finishedImport === undefined || isUnmounted) {
-                return;
-            }
-            if (finishedImport.status === 'failed') {
-                addNotification(
-                    'error',
-                    'Import failed',
-                    finishedImport.error_message ?? 'The import failed, no data was imported.'
-                );
-                return;
-            }
-            initializeStores();
-            reportResult.value = finishedImport.report;
-            if (reportResult.value) {
-                showResultModal.value = true;
-            }
-        } finally {
-            loading.value = false;
-        }
+        await importsState.load();
     }
-}
-
-const IMPORT_POLL_INTERVAL_MS = 2000;
-
-let isUnmounted = false;
-onUnmounted(() => {
-    isUnmounted = true;
 });
 
-/**
- * The import is processed in the background, poll it until it is completed or failed.
- */
-async function waitForImport(organizationId: string, currentImport: Import): Promise<Import> {
-    while (
-        (currentImport.status === 'pending' || currentImport.status === 'running') &&
-        !isUnmounted
-    ) {
-        await new Promise((resolve) => setTimeout(resolve, IMPORT_POLL_INTERVAL_MS));
-        currentImport = (
-            await api.getImport({
-                params: {
-                    organization: organizationId,
-                    import: currentImport.id,
-                },
-            })
-        ).data;
+function importTypeName(type: string): string {
+    return importers.value.find((importer) => importer.key === type)?.name ?? type;
+}
+
+function statusLabel(item: Import): string {
+    switch (item.status) {
+        case 'pending':
+            return 'Waiting';
+        case 'running':
+            return 'In progress';
+        case 'completed':
+            return 'Completed';
+        case 'failed':
+            return 'Failed';
     }
-    return currentImport;
+    return item.status;
 }
-
-const importFile = ref<HTMLInputElement | null>();
-
-function toBase64(file: File): Promise<string> {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => {
-            if (reader.result instanceof ArrayBuffer) {
-                const decoder = new TextDecoder();
-                const str = decoder.decode(reader.result);
-                return reject(str);
-            } else if (reader.result) {
-                resolve(reader.result);
-            }
-        };
-        reader.onerror = reject;
-    });
-}
-
-function updateFiles() {
-    files.value = importFile.value?.files ?? null;
-}
-
-const currentImporterDescription = computed(() => {
-    if (importType.value === null) {
-        return '';
-    }
-    return importType.value.description;
-});
-
-const filenames = computed(() => {
-    return files.value?.item(0)?.name ?? 'Import File selected';
-});
-
-const importType = ref<ImportType | null>(null);
-
-const showResultModal = ref(false);
 </script>
 
 <template>
-    <DialogModal closeable :show="showResultModal" @close="showResultModal = false">
-        <template #title>Import Result</template>
-        <template #content>
-            <div class="pb-6">
-                The import was successful! Here is an overview of the imported data:
-            </div>
-
-            <div class="py-2.5 px-3 border-t border-t-card-background-separator">
-                <span class="text-text-primary font-semibold">Clients created:</span>
-                {{ reportResult?.clients.created }}
-            </div>
-            <div class="py-2.5 px-3 border-t border-t-card-background-separator">
-                <span class="text-text-primary font-semibold">Projects created:</span>
-                {{ reportResult?.projects.created }}
-            </div>
-            <div class="py-2.5 px-3 border-t border-t-card-background-separator">
-                <span class="text-text-primary font-semibold">Tasks created:</span>
-                {{ reportResult?.tasks.created }}
-            </div>
-            <div class="py-2.5 px-3 border-t border-t-card-background-separator">
-                <span class="text-text-primary font-semibold">Time entries created:</span>
-                {{ reportResult?.time_entries.created }}
-            </div>
-        </template>
-        <template #footer>
-            <SecondaryButton @click="showResultModal = false"> Close </SecondaryButton>
-        </template>
-    </DialogModal>
-    <div>
+    <!-- Same spacing between title and card as the dashboard cards -->
+    <div class="flex flex-col gap-1.5">
         <CardTitle title="Import Data" :icon="ArrowDownOnSquareIcon"></CardTitle>
-        <Card class="mb-3">
-            <div class="py-2 px-3 sm:px-4 text-sm flex items-center space-x-3">
-                <InformationCircleIcon class="h-5 min-w-0 w-5 text-bg-tertiary" />
-                <p class="flex-1">
-                    Import existing data from Toggl, Clockify, Harvest, generic CSV files or a
-                    different solidtime instance. Please select the type of data you want to import
-                    and follow the instructions.
-                </p>
-            </div>
-            <div
-                v-if="billableRatesLocked"
-                class="py-2 px-3 sm:px-4 text-sm flex items-center space-x-3 border-t border-card-background-separator">
-                <ExclamationTriangleIcon class="h-5 min-w-0 w-5 text-yellow-500" />
-                <p class="flex-1">
+        <div v-if="billableRatesLocked" class="mb-1.5 text-sm text-text-secondary">
+            <p class="flex items-start space-x-2">
+                <ExclamationTriangleIcon class="h-5 min-w-0 w-5 text-yellow-500 shrink-0" />
+                <span>
                     Billable rates and billable status will not be imported, since they are not
                     available in the free plan. All projects and time entries will be imported as
                     non-billable.
-                </p>
-            </div>
-        </Card>
+                </span>
+            </p>
+        </div>
 
         <Card>
-            <div class="px-4 py-5 sm:px-5">
-                <Field>
-                    <FieldLabel for="importType">Import Type</FieldLabel>
-                    <select
-                        id="importType"
-                        v-model="importType"
-                        name="importType"
-                        class="block w-full border-input-border bg-input-background text-text-primary focus:border-input-border-active rounded-md shadow-sm">
-                        <option :value="null" selected disabled>
-                            Select an import type to get instructions...
-                        </option>
-                        <option
-                            v-for="importTypeOption in importTypeOptions"
-                            :key="importTypeOption.key"
-                            :value="importTypeOption">
-                            {{ importTypeOption.name }}
-                        </option>
-                    </select>
-                    <div v-if="currentImporterDescription" class="py-3 text-text-primary">
-                        <div class="font-semibold text-text-secondary py-1">Instructions:</div>
-                        <div class="max-w-2xl" v-html="currentImporterDescription"></div>
-                    </div>
-                </Field>
+            <ImportWizard v-model:source="openSource" :state="importsState" />
+        </Card>
 
-                <div
-                    class="mt-2 flex justify-center rounded-lg border border-dashed border-border-primary px-6 py-10">
-                    <div class="text-center">
-                        <DocumentIcon
-                            class="mx-auto h-8 w-8 text-text-secondary"
-                            aria-hidden="true" />
-
-                        <div class="mt-4 flex text-sm leading-6 text-text-secondary">
-                            <label
-                                for="file-upload"
-                                class="relative cursor-pointer rounded-md font-semibold text-text-primary focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2 focus-within:ring-offset-gray-900 hover:text-indigo-500">
-                                <span v-if="files">{{ filenames }}</span>
-                                <span v-else>Upload the Export file</span>
-                                <input
-                                    id="file-upload"
-                                    ref="importFile"
-                                    name="file-upload"
-                                    type="file"
-                                    class="sr-only"
-                                    @change="updateFiles" />
-                            </label>
+        <Card v-if="openSource === null && imports.length > 0" class="mt-1.5">
+            <div class="px-4 py-3 sm:px-5 text-sm" data-testid="recent_imports">
+                <div class="font-semibold text-text-primary pb-2">Recent imports</div>
+                <ul>
+                    <li
+                        v-for="item in imports"
+                        :key="item.id"
+                        class="py-2 border-t first:border-t-0 border-card-background-separator">
+                        <div class="flex items-center justify-between space-x-3">
+                            <div class="text-text-primary">
+                                <span v-if="item.created_at">
+                                    {{
+                                        formatDateTimeLocalized(
+                                            item.created_at,
+                                            organization?.date_format,
+                                            organization?.time_format
+                                        )
+                                    }}
+                                </span>
+                                <span class="pl-3">{{ importTypeName(item.type) }}</span>
+                            </div>
+                            <span
+                                :class="[
+                                    item.status === 'failed'
+                                        ? 'text-red-500'
+                                        : 'text-text-tertiary',
+                                    'whitespace-nowrap',
+                                ]"
+                                >{{ statusLabel(item) }}</span
+                            >
                         </div>
-                        <p class="text-xs leading-5 text-text-secondary">
-                            CSV and ZIP are supported
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            <div
-                class="flex items-center justify-end px-4 py-3 bg-card-background border-t border-card-background-separator text-end sm:px-6 shadow sm:rounded-bl-md sm:rounded-br-md">
-                <PrimaryButton :loading @click="importData">Import Data </PrimaryButton>
+                        <div
+                            v-if="item.status === 'completed' && item.report"
+                            class="text-text-secondary text-xs pt-1">
+                            {{ item.report.time_entries.created }} time entries,
+                            {{ item.report.projects.created }} projects,
+                            {{ item.report.clients.created }} clients,
+                            {{ item.report.tasks.created }} tasks created
+                        </div>
+                        <div
+                            v-else-if="item.status === 'failed' && item.error_message"
+                            class="text-text-secondary text-xs pt-1">
+                            {{ item.error_message }}
+                        </div>
+                    </li>
+                </ul>
             </div>
         </Card>
     </div>

@@ -7,10 +7,11 @@ import { api, type Export } from '@/packages/api/src';
 import { getCurrentOrganizationId } from '@/utils/useUser';
 import DialogModal from '@/packages/ui/src/DialogModal.vue';
 import SecondaryButton from '@/packages/ui/src/Buttons/SecondaryButton.vue';
-import { ArrowUpOnSquareIcon, InformationCircleIcon } from '@heroicons/vue/24/outline';
+import { ArrowUpOnSquareIcon } from '@heroicons/vue/24/outline';
 import { CardTitle } from '@/packages/ui/src';
 import Card from '@/Components/Common/Card.vue';
 import { useOrganizationStore } from '@/utils/useOrganization';
+import ImportLinkButton from '@/Components/Import/ImportLinkButton.vue';
 import { formatDateTimeLocalized } from '@/packages/ui/src/utils/time';
 
 const EXPORT_POLL_INTERVAL_MS = 2000;
@@ -196,21 +197,11 @@ function statusLabel(item: Export): string {
             <SecondaryButton @click="showResultModal = false"> Close </SecondaryButton>
         </template>
     </DialogModal>
-    <div>
+    <!-- Same spacing between title and card as the dashboard cards -->
+    <div class="flex flex-col gap-1.5">
         <CardTitle title="Export Data" :icon="ArrowUpOnSquareIcon"></CardTitle>
-        <Card class="mb-3">
-            <div class="py-2 px-3 sm:px-4 text-sm flex items-center space-x-3">
-                <InformationCircleIcon class="h-5 min-w-0 w-5 text-bg-tertiary" />
-                <p class="flex-1">
-                    Export your solidtime organization data. This will include all clients,
-                    projects, tasks, and time entries. You will receive a zip file with CSV files
-                    for each entity. The export is prepared in the background, you can leave this
-                    page and download it later.
-                </p>
-            </div>
-        </Card>
         <Card>
-            <div class="py-6 flex-col items-center flex space-y-5 text-center text-sm">
+            <div class="py-6 px-4 flex-col items-center flex space-y-5 text-center text-sm">
                 <div>
                     The following organization will be exported: <br />
                     <strong class="font-semibold">{{ organization?.name }}</strong>
@@ -218,14 +209,23 @@ function statusLabel(item: Export): string {
                 <PrimaryButton :loading="loading || exportInProgress" @click="exportData"
                     >Export Organization Data
                 </PrimaryButton>
+                <div class="flex flex-col items-center gap-1">
+                    <p class="max-w-md text-text-secondary">
+                        Export your solidtime organization data. This will include all clients,
+                        projects, tasks, and time entries.
+                    </p>
+                    <ImportLinkButton
+                        href="https://docs.solidtime.io/user-guide/export"
+                        label="Read the export docs" />
+                </div>
                 <div v-if="exportInProgress" class="text-text-secondary">
                     The export is being prepared, the download starts automatically when it is
                     ready.
                 </div>
             </div>
-            <div
-                v-if="exports.length > 0"
-                class="border-t border-card-background-separator px-4 py-3 sm:px-5 text-sm">
+        </Card>
+        <Card v-if="exports.length > 0" class="mt-1.5">
+            <div class="px-4 py-3 sm:px-5 text-sm">
                 <div class="font-semibold text-text-primary pb-2">Recent exports</div>
                 <ul>
                     <li
