@@ -8,6 +8,7 @@ use App\Enums\Role;
 use App\Jobs\RecalculateSpentTimeForProject;
 use App\Jobs\RecalculateSpentTimeForTask;
 use App\Models\TimeEntry;
+use App\Service\WhitelabelContract;
 use Carbon\Exceptions\InvalidFormatException;
 use Exception;
 use Illuminate\Support\Carbon;
@@ -206,6 +207,6 @@ class TogglTimeEntriesImporter extends DefaultImporter
     #[Override]
     public function getDescription(): string
     {
-        return __('importer.toggl_time_entries.description');
+        return __('importer.toggl_time_entries.description', ['app' => app(WhitelabelContract::class)->getName()]);
     }
 }

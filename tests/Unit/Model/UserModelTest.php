@@ -16,6 +16,7 @@ use App\Models\User;
 use App\Providers\Filament\AdminPanelProvider;
 use Filament\Panel;
 use Illuminate\Support\Facades\Config;
+use Laravel\Fortify\Fortify;
 use PHPUnit\Framework\Attributes\CoversClass;
 
 #[CoversClass(User::class)]
@@ -282,5 +283,38 @@ class UserModelTest extends ModelTestAbstract
             [$authCode->getKey()],
             $authCodesRel->pluck('id')->toArray()
         );
+    }
+
+    public function test_two_factor_qr_code_url_uses_solidtime_as_issuer_by_default(): void
+    {
+        // Arrange
+        $user = User::factory()->create([
+            'email' => 'user@example.com',
+            'two_factor_secret' => Fortify::currentEncrypter()->encrypt('SECRETSECRETSECR'),
+        ]);
+
+        // Act
+        $url = $user->twoFactorQrCodeUrl();
+
+        // Assert
+        $this->assertStringStartsWith('otpauth://totp/solidtime:user%40example.com?', $url);
+        $this->assertStringContainsString('issuer=solidtime', $url);
+    }
+
+    public function test_two_factor_qr_code_url_uses_the_whitelabel_name_as_issuer(): void
+    {
+        // Arrange
+        $this->actAsWhitelabeledInstance();
+        $user = User::factory()->create([
+            'email' => 'user@example.com',
+            'two_factor_secret' => Fortify::currentEncrypter()->encrypt('SECRETSECRETSECR'),
+        ]);
+
+        // Act
+        $url = $user->twoFactorQrCodeUrl();
+
+        // Assert
+        $this->assertStringStartsWith('otpauth://totp/Acme%20Time:user%40example.com?', $url);
+        $this->assertStringContainsString('issuer=Acme%20Time', $url);
     }
 }

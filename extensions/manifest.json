@@ -18,5 +18,9 @@
     "SSO": {
         "repository": "solidtime-io/extension-sso",
         "ref": "v0.0.1"
+    },
+    "Whitelabel": {
+        "repository": "solidtime-io/extension-whitelabel",
+        "ref": "feature/whitelabel"
     }
 }

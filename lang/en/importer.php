@@ -13,7 +13,7 @@ return [
             'In the free Clockify plan it\'s currently not possible to select more than one year. '.
             'You can export each year separately and import them one after another.'.
             '<br> 4. Now click Export -> Save as CSV. The Export dropdown is in the header of the export table left of the printer symbol. '.
-            '<br><br>Before you import make sure that the Timezone settings in Clockify are the same as in solidtime.',
+            '<br><br>Before you import make sure that the Timezone settings in Clockify are the same as in :app.',
     ],
     'generic_projects' => [
         'name' => 'Generic Projects',
@@ -42,7 +42,7 @@ return [
         'name' => 'Toggl Time Entries',
         'description' => '<strong>Important:</strong> If you want to import a Toggl organization use the "Toggl Data Importer" before using this importer, since this export contains more details. '.
             '<br><br>1. Go to Admin -> Settings -> Data export. <br>2. Under "Time entries" select the year you want to export and click on "Export time entries". <br><br>You can export all years one after another and import them one after another. '.
-            ' <br>Before you import make sure that the Timezone settings in Toggl are the same as in solidtime.',
+            ' <br>Before you import make sure that the Timezone settings in Toggl are the same as in :app.',
     ],
     'solidtime_importer' => [
         'name' => 'Solidtime',
@@ -58,13 +58,13 @@ return [
         'name' => 'Harvest Projects',
         'description' => '1. Go to "Projects" (top navigation)<br>2. Click on the "Export" button'.
             '<br>3. Select which projects you would like to export and select CSV format '.
-            '<br><br>Before you import make sure that the Timezone settings in Harvest are the same as in solidtime.',
+            '<br><br>Before you import make sure that the Timezone settings in Harvest are the same as in :app.',
     ],
     'harvest_time_entries' => [
         'name' => 'Harvest Time Entries',
         'description' => '<strong>Important:</strong> If you also want to import your projects use the "Harvest Projects" importer before this one, since that export contains more details such as billable status and estimated time.<br><br>'.
             '1. Go to Settings (right top corner)<br>2. Click on "Import/Export" in the left navigation'.
             '<br>3. Now click on "Export all time" '.
-            '<br><br>Before you import make sure that the Timezone settings in Harvest are the same as in solidtime.',
+            '<br><br>Before you import make sure that the Timezone settings in Harvest are the same as in :app.',
     ],
 ];
