@@ -115,7 +115,7 @@ RUN arch="$(uname -m)" \
     x86) _cronic_fname='supercronic-linux-386' ;; \
     *) echo >&2 "error: unsupported architecture: $arch"; exit 1 ;; \
     esac \
-    && wget -q "https://github.com/aptible/supercronic/releases/download/v0.2.38/${_cronic_fname}" \
+    && wget -q "https://github.com/aptible/supercronic/releases/download/v0.2.51/${_cronic_fname}" \
     -O /usr/bin/supercronic \
     && chmod +x /usr/bin/supercronic \
     && mkdir -p /etc/supercronic \
