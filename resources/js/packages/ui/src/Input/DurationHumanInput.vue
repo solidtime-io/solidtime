@@ -30,15 +30,23 @@ function updateDuration() {
         organization?.value?.interval_format === 'decimal' ? 'hours' : 'minutes'
     );
     if (seconds && seconds > 0) {
-        const newStartDate = getDayJsInstance()(end.value).subtract(seconds, 's');
-        start.value = newStartDate.utc().format();
+        if (props.anchor === 'start') {
+            end.value = getDayJsInstance()(start.value).add(seconds, 's').utc().format();
+        } else {
+            start.value = getDayJsInstance()(end.value).subtract(seconds, 's').utc().format();
+        }
     }
     updateTimeEntryInputValue();
 }
 
-const props = defineProps<{
-    class?: string;
-}>();
+const props = withDefaults(
+    defineProps<{
+        class?: string;
+        // The endpoint to keep fixed when the duration changes.
+        anchor?: 'start' | 'end';
+    }>(),
+    { anchor: 'end', class: undefined }
+);
 
 watch([start, end], updateTimeEntryInputValue);
 onMounted(() => updateTimeEntryInputValue());

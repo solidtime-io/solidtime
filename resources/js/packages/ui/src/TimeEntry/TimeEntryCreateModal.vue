@@ -202,6 +202,7 @@ const billableProxy = computed({
             <TimeRangeFields
                 v-model:start="localStart"
                 v-model:end="localEnd"
+                duration-anchor="start"
                 show-hint
                 class="pt-4"></TimeRangeFields>
         </template>
